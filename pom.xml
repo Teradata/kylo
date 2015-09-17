@@ -8,7 +8,7 @@
 	<parent>
 		<artifactId>data-lake-starter</artifactId>
 		<groupId>com.thinkbiganalytics.bdp</groupId>
-		<version>0.2.0</version>
+		<version>1.0.0</version>
 	</parent>
 
 	<dependencies>
