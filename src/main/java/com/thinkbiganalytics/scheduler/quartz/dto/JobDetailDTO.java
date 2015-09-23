@@ -12,24 +12,20 @@ public class JobDetailDTO {
 
     private String name;
     private String group;
-    private JobKey jobKey;
     private String description;
     private Class<? extends Job> jobClass;
     @JsonIgnore
     private JobDataMap jobDataMap;
     private boolean durability;
     private boolean shouldRecover;
-    private transient JobKey key;
 
-
-    public JobDetailDTO(String name, String group, JobKey jobKey, String description, Class<? extends Job> jobClass, JobDataMap jobDataMap, boolean durability, boolean shouldRecover, JobKey key, boolean isPersistJobDataAfterExecution, boolean isConcurrentExectionDisallowed, boolean requestsRecovery) {
+    public JobDetailDTO(){
 
     }
 
     public JobDetailDTO(JobDetail jobDetail) {
         this.name = jobDetail.getKey().getName();
         this.group = jobDetail.getKey().getGroup();
-        this.jobKey = jobDetail.getKey();
         this.description = jobDetail.getDescription();
         this.jobClass = jobDetail.getJobClass();
         this.jobDataMap = jobDetail.getJobDataMap();
@@ -61,14 +57,6 @@ public class JobDetailDTO {
 
     public void setGroup(String group) {
         this.group = group;
-    }
-
-    public JobKey getJobKey() {
-        return jobKey;
-    }
-
-    public void setJobKey(JobKey jobKey) {
-        this.jobKey = jobKey;
     }
 
     public String getDescription() {
@@ -111,13 +99,6 @@ public class JobDetailDTO {
         this.shouldRecover = shouldRecover;
     }
 
-    public JobKey getKey() {
-        return key;
-    }
-
-    public void setKey(JobKey key) {
-        this.key = key;
-    }
 
     public boolean isPersistJobDataAfterExecution() {
         return isPersistJobDataAfterExecution;

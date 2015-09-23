@@ -79,16 +79,11 @@ public class QuartzScheduler {
 	}
 
 	
-	public void startScheduler() {
+	public void startScheduler() throws SchedulerException{
 		Scheduler sched = getScheduler();
 		if (sched != null) {
 			LOG.info("------- Starting Scheduler ---------------------");
-			try {
 				sched.start();
-			} catch (SchedulerException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 	}
 
@@ -96,21 +91,27 @@ public class QuartzScheduler {
 	public void restartScheduler() throws SchedulerException {
 		Scheduler sched = getScheduler();
 		if (sched != null) {
-			if (sched.isShutdown()) {
+			if (sched.isInStandbyMode()) {
 				sched.start();
 			}
 		}
 	}
 
-	public boolean deleteJob(JobKey key) throws SchedulerException {
+	public boolean deleteJob(String jobName, String jobGroup) throws SchedulerException {
 		Scheduler sched = getScheduler();
 		boolean success = false;
 		if (sched != null) {
-			success = sched.deleteJob(key);
+			success = sched.deleteJob(new JobKey(jobName,jobGroup));
 		}
 		return success;
 	}
 
+	public void standbyScheduler()  throws SchedulerException {
+		Scheduler sched = getScheduler();
+		if (sched != null) {
+			sched.standby();
+		}
+	}
 
 	
 	public void shutdownScheduler() {
@@ -181,10 +182,7 @@ public class QuartzScheduler {
 	}
 
 	
-	public void deleteJob(String name, String group) throws SchedulerException {
-		JobKey key = new JobKey(name, group);
-		deleteJob(key);
-	}
+
 
 	
 	public boolean isSchedulerStopped() throws SchedulerException {
@@ -245,19 +243,19 @@ public class QuartzScheduler {
 
 	}
 
-	public void updateTrigger(String name, String group, String cronExpression) throws ParseException, SchedulerException {
+	public void updateTrigger(String name, String group, String cronExpression) throws  SchedulerException {
 
 		CronTrigger trigger = newTrigger().withIdentity(name, group).withSchedule(cronSchedule(cronExpression)).build();
 		updateTrigger(name, group, trigger);
 	}
 
-	public void pauseTrigger(String name, String group) throws ParseException, SchedulerException {
+	public void pauseTrigger(String name, String group) throws  SchedulerException {
 		Scheduler sched = getScheduler();
 		if (sched != null) {
 			sched.pauseTrigger(new TriggerKey(name, group));
 		}
 	}
-	public void resumeTrigger(String name, String group) throws ParseException, SchedulerException {
+	public void resumeTrigger(String name, String group) throws  SchedulerException {
 		Scheduler sched = getScheduler();
 		if (sched != null) {
 			sched.resumeTrigger(new TriggerKey(name, group));
@@ -322,7 +320,6 @@ public class QuartzScheduler {
 					JobTriggerDetail detail = new JobTriggerDetail();
 					list.add(detail);
 					detail.setGroupName(group);
-					detail.setJobKey(jobKey);
 					JobDetail jobDetail = sched.getJobDetail(jobKey);
 					detail.setJobDetail(new JobDetailDTO(jobDetail));
 
@@ -331,7 +328,12 @@ public class QuartzScheduler {
 					List<TriggerDTO> dtoList = new ArrayList<TriggerDTO>();
 					if (jobTriggers != null) {
 						for (Trigger trigger : jobTriggers) {
+							Trigger.TriggerState state = sched.getTriggerState(trigger.getKey());
 							TriggerDTO dto = new TriggerDTO(trigger);
+							dto.setState(state.name());
+							if(Trigger.TriggerState.PAUSED.equals(state)){
+								dto.paused = true;
+							}
 							dtoList.add(dto);
 							triggerDtoMap.put(trigger.getKey(), dto);
 						}

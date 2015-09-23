@@ -22,6 +22,8 @@ public class TriggerDTO {
 	private String description;
 	public boolean paused;
 
+	public String state;
+
 	public TriggerDTO() {
 
 	}
@@ -42,6 +44,7 @@ public class TriggerDTO {
 		this.endTime = trigger.getEndTime();
 		this.finalFireTime = trigger.getFinalFireTime();
 		this.previousFireTime = trigger.getPreviousFireTime();
+
 	}
 
 	public Date getNextFireTime() {
@@ -148,4 +151,11 @@ public class TriggerDTO {
 		this.paused = paused;
 	}
 
+	public String getState() {
+		return state;
+	}
+
+	public void setState(String state) {
+		this.state = state;
+	}
 }

@@ -9,7 +9,6 @@ import org.quartz.JobKey;
 public class JobTriggerDetail {
 
 	public String groupName;
-	public JobKey jobKey;
 	public JobDetailDTO jobDetail;
 	public List<TriggerDTO> triggers;
 
@@ -19,14 +18,6 @@ public class JobTriggerDetail {
 
 	public void setGroupName(String groupName) {
 		this.groupName = groupName;
-	}
-
-	public JobKey getJobKey() {
-		return jobKey;
-	}
-
-	public void setJobKey(JobKey jobKey) {
-		this.jobKey = jobKey;
 	}
 
 	public JobDetailDTO getJobDetail() {
