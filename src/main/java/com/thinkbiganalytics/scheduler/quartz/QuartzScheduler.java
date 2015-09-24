@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.scheduler.quartz;
 
+import com.thinkbiganalytics.scheduler.JobIdentifier;
+import com.thinkbiganalytics.scheduler.JobSchedulerExecption;
 import com.thinkbiganalytics.scheduler.quartz.dto.JobDetailDTO;
 import com.thinkbiganalytics.scheduler.quartz.dto.JobTriggerDetail;
 import com.thinkbiganalytics.scheduler.quartz.dto.TriggerDTO;
@@ -22,11 +24,6 @@ import static org.quartz.TriggerBuilder.newTrigger;
 @Service
 public class QuartzScheduler {
 
-
-	  public enum QUARTZ_MODE {
-		SHUTDOWN, STARTED, STANDBY
-	}
-
 	private static Logger LOG = LoggerFactory.getLogger(QuartzScheduler.class);
 
 	@Autowired
@@ -39,6 +36,120 @@ public class QuartzScheduler {
 	{
 
 	}
+
+	private JobDetail getJobDetail(JobIdentifier jobIdentifier, Object task, String runMethod) throws NoSuchMethodException, ClassNotFoundException {
+		MethodInvokingJobDetailFactoryBean bean = new MethodInvokingJobDetailFactoryBean();
+		bean.setTargetObject(task);
+		bean.setTargetMethod(runMethod);
+		bean.setName(jobIdentifier.getName());
+		bean.setGroup(jobIdentifier.getGroupName());
+		bean.afterPropertiesSet();
+		return bean.getObject();
+	}
+
+
+	public void scheduleWithCronExpression(JobIdentifier jobIdentifier, Runnable task, String cronExpression) throws JobSchedulerExecption{
+		scheduleWithCronExpressionInTimeZone(jobIdentifier, task, "run", cronExpression, null);
+	}
+
+	void scheduleWithCronExpressionInTimeZone(JobIdentifier jobIdentifier, Runnable task, String cronExpression, TimeZone timeZone) throws JobSchedulerExecption {
+		scheduleWithCronExpressionInTimeZone(jobIdentifier, task, "run", cronExpression,timeZone);
+	}
+	public void scheduleWithCronExpression(JobIdentifier jobIdentifier,Object task, String runMethod, String cronExpression) throws JobSchedulerExecption {
+		scheduleWithCronExpressionInTimeZone(jobIdentifier, task, runMethod, cronExpression,null);
+	}
+
+	public void scheduleWithCronExpressionInTimeZone(JobIdentifier jobIdentifier,Object task, String runMethod, String cronExpression, TimeZone timeZone) throws JobSchedulerExecption {
+		try {
+			JobDetail jobDetail = getJobDetail(jobIdentifier,task,runMethod);
+			if(timeZone == null){
+				timeZone = TimeZone.getDefault();
+			}
+
+			Trigger trigger = TriggerBuilder.newTrigger()
+					.withIdentity(new TriggerKey("trigger_"+jobIdentifier.getUniqueName(), jobIdentifier.getGroupName()))
+					.forJob(jobDetail)
+					.withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)
+							.inTimeZone(timeZone)
+							.withMisfireHandlingInstructionFireAndProceed()).build();
+
+
+			scheduleJob(jobDetail,trigger);
+		}
+		catch(Exception e){
+			throw new JobSchedulerExecption();
+		}
+	}
+
+
+	public  void schedule(JobIdentifier jobIdentifier, Runnable task, Date startTime) throws JobSchedulerExecption{
+		schedule(jobIdentifier, task, "run", startTime);
+	}
+
+	public  void schedule(JobIdentifier jobIdentifier,Object task, String runMethod, Date startTime) throws JobSchedulerExecption {
+
+		scheduleWithFixedDelay(jobIdentifier, task, runMethod, startTime, 0L);
+	}
+
+
+	public  void scheduleWithFixedDelay(JobIdentifier jobIdentifier,Object task, String runMethod, Date startTime, long startDelay) throws JobSchedulerExecption {
+		try {
+			JobDetail jobDetail = getJobDetail(jobIdentifier, task, runMethod);
+			Date triggerStartTime = startTime;
+			if(startDelay > 0L || startTime == null) {
+				triggerStartTime = new Date(System.currentTimeMillis() + startDelay);
+			}
+			Trigger trigger = newTrigger().withIdentity(new TriggerKey(jobIdentifier.getName(), jobIdentifier.getGroupName())).forJob(jobDetail).startAt(triggerStartTime).build();
+			getScheduler().scheduleJob(jobDetail, trigger);
+		} catch (Exception e) {
+			throw new JobSchedulerExecption();
+		}
+	}
+
+
+	public  void scheduleWithFixedDelay(JobIdentifier jobIdentifier, Runnable runnable, Date startTime, long startDelay) throws JobSchedulerExecption {
+		scheduleWithFixedDelay(jobIdentifier, runnable, "run", startTime, startDelay);
+	}
+
+
+
+	public  void scheduleAtFixedRate(JobIdentifier jobIdentifier,Object task, String runMethod, Date startTime, long period) throws JobSchedulerExecption {
+		scheduleAtFixedRateWithDelay(jobIdentifier, task, runMethod, startTime, period, 0L);
+	}
+
+	public  void scheduleAtFixedRate(JobIdentifier jobIdentifier, Runnable runnable, Date startTime, long period) throws JobSchedulerExecption {
+		scheduleAtFixedRate(jobIdentifier, runnable, "run", startTime, period);
+	}
+
+
+	public  void scheduleAtFixedRateWithDelay(JobIdentifier jobIdentifier,Object task, String runMethod, Date startTime, long period, long startDelay) throws JobSchedulerExecption {
+		try {
+			JobDetail jobDetail = getJobDetail(jobIdentifier, task, runMethod);
+			Date triggerStartTime = startTime;
+			if(startDelay > 0L || startTime == null) {
+				triggerStartTime = new Date(System.currentTimeMillis() + startDelay);
+			}
+			Trigger trigger = TriggerBuilder.newTrigger().withIdentity(new TriggerKey(jobIdentifier.getName(), jobIdentifier.getGroupName())).forJob(jobDetail).startAt(triggerStartTime).withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInMilliseconds(period).repeatForever()).build();
+			getScheduler().scheduleJob(jobDetail, trigger);
+		} catch (Exception e) {
+			throw new JobSchedulerExecption();
+		}
+	}
+
+	public  void scheduleAtFixedRateWithDelay(JobIdentifier jobIdentifier, Runnable runnable, Date startTime, long period, long startDelay) throws JobSchedulerExecption {
+		scheduleAtFixedRateWithDelay(jobIdentifier, runnable, startTime, period, startDelay);
+	}
+
+
+	/** Quartz Specific Methods **/
+
+
+
+
+
+
+
+
 
 
 	public void scheduleJob(JobDetail jobDetail, CronTrigger cronTrigger) throws SchedulerException{
@@ -87,16 +198,6 @@ public class QuartzScheduler {
 		}
 	}
 
-	
-	public void restartScheduler() throws SchedulerException {
-		Scheduler sched = getScheduler();
-		if (sched != null) {
-			if (sched.isInStandbyMode()) {
-				sched.start();
-			}
-		}
-	}
-
 	public boolean deleteJob(String jobName, String jobGroup) throws SchedulerException {
 		Scheduler sched = getScheduler();
 		boolean success = false;
@@ -106,7 +207,7 @@ public class QuartzScheduler {
 		return success;
 	}
 
-	public void standbyScheduler()  throws SchedulerException {
+	public void pauseScheduler()  throws SchedulerException {
 		Scheduler sched = getScheduler();
 		if (sched != null) {
 			sched.standby();
@@ -148,14 +249,6 @@ public class QuartzScheduler {
 		return null;
 	}
 
-
-	public void executeJob(JobDetail job) throws SchedulerException {
-		// jobs can be fired directly... (rather than waiting for a trigger)
-		Scheduler sched = getScheduler();
-		if (sched != null) {
-			sched.addJob(job, true);
-		}
-	}
 
 	
 	public void triggerJob(String name, String group) throws SchedulerException {
@@ -226,22 +319,7 @@ public class QuartzScheduler {
 		}
 	}
 
-	public QUARTZ_MODE getMode() throws SchedulerException {
-		Scheduler sched = getScheduler();
-		if (sched != null) {
-			if (sched.isInStandbyMode()) {
-				return QUARTZ_MODE.STANDBY;
-			} else if (sched.isStarted()) {
-				return QUARTZ_MODE.STARTED;
-			} else if (sched.isShutdown()) {
-				return QUARTZ_MODE.SHUTDOWN;
-			}
 
-		}
-
-		return null;
-
-	}
 
 	public void updateTrigger(String name, String group, String cronExpression) throws  SchedulerException {
 
