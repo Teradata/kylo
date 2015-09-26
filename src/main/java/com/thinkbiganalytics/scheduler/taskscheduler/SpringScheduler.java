@@ -2,11 +2,11 @@ package com.thinkbiganalytics.scheduler.taskscheduler;
 
 import com.thinkbiganalytics.scheduler.JobIdentifier;
 import com.thinkbiganalytics.scheduler.JobScheduler;
-import com.thinkbiganalytics.scheduler.JobSchedulerExecption;
+import com.thinkbiganalytics.scheduler.JobSchedulerException;
 import com.thinkbiganalytics.scheduler.TriggerIdentifier;
+import com.thinkbiganalytics.scheduler.JobInfo;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 import org.springframework.scheduling.TaskScheduler;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 import org.springframework.scheduling.support.CronTrigger;
 
@@ -32,70 +32,80 @@ public class SpringScheduler  implements JobScheduler{
     }
 
     @Override
-    public void scheduleWithCronExpressionInTimeZone(JobIdentifier scheduleIdentifier, Runnable task, String cronExpression, TimeZone timeZone) throws JobSchedulerExecption {
+    public void scheduleWithCronExpressionInTimeZone(JobIdentifier jobIdentifier, Runnable runnable, String cronExpression, TimeZone timeZone) throws JobSchedulerException {
         CronTrigger cronTrigger = new CronTrigger(cronExpression,timeZone);
-        taskScheduler.schedule(task,cronTrigger);
+        taskScheduler.schedule(runnable,cronTrigger);
     }
 
     @Override
-    public void scheduleWithCronExpression(JobIdentifier scheduleIdentifier, Runnable task, String cronExpression) throws JobSchedulerExecption {
+    public void scheduleWithCronExpression(JobIdentifier jobIdentifier, Runnable task, String cronExpression) throws JobSchedulerException {
         CronTrigger cronTrigger = new CronTrigger(cronExpression);
         taskScheduler.schedule(task, cronTrigger);
     }
 
     @Override
-    public void schedule(JobIdentifier scheduleIdentifier, Runnable task, Date startTime) throws JobSchedulerExecption {
+    public void schedule(JobIdentifier jobIdentifier, Runnable task, Date startTime) throws JobSchedulerException {
         taskScheduler.schedule(task, startTime);
     }
 
     @Override
-    public void scheduleWithFixedDelay(JobIdentifier scheduleIdentifier, Runnable runnable, Date startTime, long startDelay) throws JobSchedulerExecption {
+    public void scheduleWithFixedDelay(JobIdentifier jobIdentifier, Runnable runnable, Date startTime, long startDelay) throws JobSchedulerException {
         taskScheduler.scheduleWithFixedDelay(runnable, startTime, startDelay);
     }
 
     @Override
-    public void scheduleWithFixedDelay(JobIdentifier scheduleIdentifier, Runnable runnable, long startDelay) throws JobSchedulerExecption {
+    public void scheduleWithFixedDelay(JobIdentifier jobIdentifier, Runnable runnable, long startDelay) throws JobSchedulerException {
         taskScheduler.scheduleWithFixedDelay(runnable, startDelay);
     }
 
     @Override
-    public void scheduleAtFixedRate(JobIdentifier scheduleIdentifier, Runnable runnable, long period) throws JobSchedulerExecption {
-        taskScheduler.scheduleAtFixedRate(runnable,period);
+    public void scheduleAtFixedRate(JobIdentifier jobIdentifier, Runnable runnable, long period) throws JobSchedulerException {
+        taskScheduler.scheduleAtFixedRate(runnable, period);
     }
 
     @Override
-    public void scheduleAtFixedRate(JobIdentifier scheduleIdentifier, Runnable runnable, Date startTime, long period) throws JobSchedulerExecption {
-        taskScheduler.scheduleAtFixedRate(runnable,startTime,period);
+    public void scheduleAtFixedRate(JobIdentifier jobIdentifier, Runnable runnable, Date startTime, long period) throws JobSchedulerException {
+        taskScheduler.scheduleAtFixedRate(runnable, startTime, period);
     }
 
 
     @Override
-    public void startScheduler() throws JobSchedulerExecption {
+    public void startScheduler() throws JobSchedulerException {
       throw new UnsupportedOperationException();
     }
 
     @Override
-    public void pauseScheduler() throws JobSchedulerExecption {
+    public void pauseScheduler() throws JobSchedulerException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void shutdownScheduler() throws JobSchedulerExecption {
+    public void triggerJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void triggerJob(JobIdentifier jobKey) throws JobSchedulerExecption {
+    public void pauseAll() throws JobSchedulerException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void pauseTrigger(TriggerIdentifier triggerKey) throws JobSchedulerExecption {
+    public void resumeAll() throws JobSchedulerException {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public void deleteJob(JobIdentifier jobKey) throws JobSchedulerExecption {
+    public void pauseTrigger(TriggerIdentifier triggerIdentifier) throws JobSchedulerException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void deleteJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void resumeTrigger(TriggerIdentifier triggerIdentifier) throws JobSchedulerException {
         throw new UnsupportedOperationException();
     }
 
@@ -115,7 +125,33 @@ public class SpringScheduler  implements JobScheduler{
     }
 
     @Override
-    public void scheduleQuartzJobBean(JobIdentifier jobKey, Class<? extends QuartzJobBean> clazz, String cronExpression, Map<String, Object> jobData) {
+    public Date getPreviousFireTime(String cronExpression) throws ParseException {
+        return CronExpressionUtil.getPreviousFireTime(cronExpression);
+    }
+
+    @Override
+    public Date getPreviousFireTime(Date lastFireTime, String cronExpression) throws ParseException {
+        return CronExpressionUtil.getPreviousFireTime(lastFireTime, cronExpression);
+    }
+
+    @Override
+    public List<Date> getPreviousFireTimes(String cronExpression, Integer count) throws ParseException {
+        return CronExpressionUtil.getPreviousFireTimes(cronExpression, count);
+    }
+
+
+    @Override
+    public List<JobInfo> getJobs() throws JobSchedulerException {
+        return null;
+    }
+
+    @Override
+    public void updateTrigger(TriggerIdentifier triggerIdentifier, String cronExpression) throws JobSchedulerException {
         throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public Map<String, Object> getMetaData() throws JobSchedulerException {
+       return null;
     }
 }

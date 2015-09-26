@@ -22,7 +22,14 @@ public void testNextFireTimes(){
             List<Date> dates = CronExpressionUtil.getNextFireTimes(cronExpression, 20);
             int count = 1;
             for(Date date:dates){
-                LOG.info(count+". "+date);
+                System.out.println(count + ". " + date);
+                count++;
+            }
+
+            dates = CronExpressionUtil.getPreviousFireTimes(cronExpression, 20);
+            count = 1;
+            for(Date date:dates){
+                System.out.println(count + ". " + date);
                 count++;
             }
         } catch (ParseException e) {

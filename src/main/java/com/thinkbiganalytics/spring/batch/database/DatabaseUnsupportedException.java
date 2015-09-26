@@ -14,10 +14,10 @@ public class DatabaseUnsupportedException extends RuntimeException {
 
     public DatabaseUnsupportedException(Throwable cause) {
         super(cause);
-      initMessage();
+       initMessage();
     }
     private void initMessage(){
-        message = "Pipeline Controller only supports mysql or Postgres Db.";
+        message = "Your database is not supported by Pipeline Controller";
     }
 
     @Override

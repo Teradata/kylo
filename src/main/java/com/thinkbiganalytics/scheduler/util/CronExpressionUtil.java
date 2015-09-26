@@ -10,10 +10,30 @@ import java.util.Date;
 import java.util.List;
 
 /**
- * Created by sr186054 on 9/23/15.
+ *Generic Cron Utility for calculating Cron Dates both Previous and Next Occurrences
  */
 public class CronExpressionUtil {
     private static Logger LOG = LoggerFactory.getLogger(CronExpressionUtil.class);
+
+    public static Long getCronInterval(String cronExpression) throws ParseException{
+        Date nextValidTime = getNextFireTime(cronExpression);
+        Date subsequentNextValidTime = getNextFireTime(nextValidTime,cronExpression);
+        long interval = subsequentNextValidTime.getTime() - nextValidTime.getTime();
+        return interval;
+    }
+
+    public static Date getPreviousFireTime(String cronExpression) throws ParseException{
+        Long interval = getCronInterval(cronExpression);
+        Date nextValidTime = getNextFireTime(cronExpression);
+        return new Date(nextValidTime.getTime() - interval);
+    }
+
+    public static Date getPreviousFireTime(Date lastFireTime, String cronExpression) throws ParseException{
+        Long interval = getCronInterval(cronExpression);
+        Date nextValidTime = getNextFireTime(lastFireTime,cronExpression);
+        return new Date(nextValidTime.getTime() - interval);
+    }
+
 
     public static Date getNextFireTime(String cronExpression) throws ParseException{
         CronExpression c = new CronExpression(cronExpression);
@@ -33,6 +53,18 @@ public class CronExpressionUtil {
             Date nextDate = cron.getNextValidTimeAfter(lastDate);
             dates.add(nextDate);
             lastDate = nextDate;
+        }
+        return dates;
+    }
+
+    public static List<Date> getPreviousFireTimes(String cronExpression, Integer count) throws ParseException{
+        List<Date> dates = new ArrayList<Date>();
+        Long interval = getCronInterval(cronExpression);
+        Date nextFireTime = getNextFireTime(cronExpression);
+        for(int i=0; i<count; i++) {
+            Date previous = new Date(nextFireTime.getTime() - interval);
+            dates.add(previous);
+            nextFireTime = previous;
         }
         return dates;
     }
