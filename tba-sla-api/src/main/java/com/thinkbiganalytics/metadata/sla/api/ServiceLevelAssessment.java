@@ -11,11 +11,11 @@ import org.joda.time.DateTime;
  *
  * @author Sean Felten
  */
-public interface SLAAssessment {
+public interface ServiceLevelAssessment {
 
     DateTime getTime();
     
-    SLA getSLA();
+    ServiceLevelAgreement getSLA();
     
     AssessmentResult getResult();
     

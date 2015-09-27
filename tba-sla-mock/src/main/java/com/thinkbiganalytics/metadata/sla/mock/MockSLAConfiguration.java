@@ -8,10 +8,10 @@ import org.springframework.context.annotation.Configuration;
 
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.SLA;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
-import com.thinkbiganalytics.metadata.sla.spi.SLAProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.mock.MockSLAProvider;
 
 /**
@@ -22,15 +22,15 @@ import com.thinkbiganalytics.metadata.sla.spi.mock.MockSLAProvider;
 public class MockSLAConfiguration {
     
     @Bean(name="slaProvider")
-    public SLAProvider slaProvider() {
+    public ServiceLevelAgreementProvider slaProvider() {
         return new MockSLAProvider();
     }
     
     @Bean(name="exampleSLA1")
-    public SLA exampleSLA1() {
+    public ServiceLevelAgreement exampleSLA1() {
         return slaProvider().builder()
-            .name("Example SLA #1")
-            .description("This is an example of an SLA with 1 obligation with 1 metric")
+            .name("Example ServiceLevelAgreement #1")
+            .description("This is an example of an ServiceLevelAgreement with 1 obligation with 1 metric")
             .obligationBuilder()
                 .description("An obligation that must be met")
                 .metric(testMetric1())

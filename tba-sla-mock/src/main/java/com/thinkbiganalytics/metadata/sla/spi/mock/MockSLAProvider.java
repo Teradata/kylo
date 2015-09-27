@@ -15,29 +15,29 @@ import java.util.UUID;
 
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
-import com.thinkbiganalytics.metadata.sla.api.SLA;
-import com.thinkbiganalytics.metadata.sla.api.SLA.ID;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.SLABuilder;
-import com.thinkbiganalytics.metadata.sla.spi.SLAProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 /**
  *
  * @author Sean Felten
  */
-public class MockSLAProvider implements SLAProvider {
+public class MockSLAProvider implements ServiceLevelAgreementProvider {
     
     private Set<ObligationAssessor<Obligation>> obligationAssessors;
     private Set<MetricAssessor<Metric>> metricAssessors;
-    private Map<SLA.ID, SLA> slas;
+    private Map<ServiceLevelAgreement.ID, ServiceLevelAgreement> slas;
 
     /**
      * 
      */
     public MockSLAProvider() {
-        this.slas = Collections.synchronizedMap(new HashMap<SLA.ID, SLA>());
+        this.slas = Collections.synchronizedMap(new HashMap<ServiceLevelAgreement.ID, ServiceLevelAgreement>());
         this.obligationAssessors = Collections.synchronizedSet(new HashSet<ObligationAssessor<Obligation>>());
         this.metricAssessors = Collections.synchronizedSet(new HashSet<MetricAssessor<Metric>>());
     }
@@ -49,30 +49,30 @@ public class MockSLAProvider implements SLAProvider {
     }
 
     @Override
-    public List<SLA> getSLAs() {
+    public List<ServiceLevelAgreement> getSLAs() {
         synchronized (this.slas) {
-            return new ArrayList<SLA>(this.slas.values());
+            return new ArrayList<ServiceLevelAgreement>(this.slas.values());
         }
     }
 
     @Override
-    public SLA getSLA(ID id) {
+    public ServiceLevelAgreement getSLA(ID id) {
         return this.slas.get(id);
     }
 
     @Override
-    public SLA remove(ID id) {
+    public ServiceLevelAgreement remove(ID id) {
         return this.slas.remove(id);
     }
     
     @Override
-    public SLABuilder builder() {
+    public ServiceLevelAgreementBuilder builder() {
         return new MockSLABuilder();
     }
     
     
     private MockSLA addSLA(MockSLA sla) {
-        MockSLAID id = new MockSLAID();
+        SLAID id = new SLAID();
         sla.setId(id);
         this.slas.put(id, sla);
         return sla;
@@ -80,7 +80,7 @@ public class MockSLAProvider implements SLAProvider {
     
     
     
-    private class MockSLABuilder implements SLABuilder {
+    private class MockSLABuilder implements ServiceLevelAgreementBuilder {
         
         private String name;
         private String descrtion;
@@ -91,19 +91,19 @@ public class MockSLAProvider implements SLAProvider {
         }
 
         @Override
-        public SLABuilder name(String name) {
+        public ServiceLevelAgreementBuilder name(String name) {
             this.name = name;
             return this;
         }
 
         @Override
-        public SLABuilder description(String description) {
+        public ServiceLevelAgreementBuilder description(String description) {
             this.descrtion = description;
             return this;
         }
 
         @Override
-        public SLABuilder obligation(Obligation obligation) {
+        public ServiceLevelAgreementBuilder obligation(Obligation obligation) {
             this.obligations.add(obligation);
             return this;
         }
@@ -114,7 +114,7 @@ public class MockSLAProvider implements SLAProvider {
         }
         
         @Override
-        public SLA build() {
+        public ServiceLevelAgreement build() {
             this.sla.setName(this.name);
             this.sla.setDescription(this.descrtion);
             this.sla.getObligations().addAll(this.obligations);
@@ -157,7 +157,7 @@ public class MockSLAProvider implements SLAProvider {
         }
         
         @Override
-        public SLABuilder add() {
+        public ServiceLevelAgreementBuilder add() {
             MockObligation ob = (MockObligation) build();
             this.sla.obligations.add(ob);
             return this.slaBuilder;
@@ -165,13 +165,30 @@ public class MockSLAProvider implements SLAProvider {
     }
     
     
-    private static class MockSLAID implements SLA.ID {
-        private final UUID uuid = UUID.randomUUID();
+    private static class SLAID implements ServiceLevelAgreement.ID {
+        private final UUID uuid;
+        
+        public SLAID() {
+            this(UUID.randomUUID());
+        }
+        
+        public SLAID(String str) {
+            this(UUID.fromString(str));
+        }
+        
+        public SLAID(UUID id) {
+            this.uuid = id;
+        }
+        
+        @Override
+        public String toString() {
+            return this.uuid.toString();
+        }
     }
     
-    private static class MockSLA implements SLA {
+    private static class MockSLA implements ServiceLevelAgreement {
         
-        private SLA.ID id;
+        private ServiceLevelAgreement.ID id;
         private String name;
         private String description;
         private Set<Obligation> obligations;
@@ -180,11 +197,11 @@ public class MockSLAProvider implements SLAProvider {
             this.obligations = new HashSet<Obligation>();
         }
 
-        public SLA.ID getId() {
+        public ServiceLevelAgreement.ID getId() {
             return id;
         }
 
-        public void setId(SLA.ID id) {
+        public void setId(ServiceLevelAgreement.ID id) {
             this.id = id;
         }
 
@@ -225,7 +242,7 @@ public class MockSLAProvider implements SLAProvider {
         }
 
         @Override
-        public SLA getSLA() {
+        public ServiceLevelAgreement getSLA() {
             return this.sla;
         }
 

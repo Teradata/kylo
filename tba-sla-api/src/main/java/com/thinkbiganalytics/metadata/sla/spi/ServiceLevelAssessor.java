@@ -5,16 +5,16 @@ package com.thinkbiganalytics.metadata.sla.spi;
 
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
-import com.thinkbiganalytics.metadata.sla.api.SLA;
-import com.thinkbiganalytics.metadata.sla.api.SLAAssessment;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 /**
  *
  * @author Sean Felten
  */
-public interface SLAAssessor {
+public interface ServiceLevelAssessor {
 
-    SLAAssessment assess(SLA sla);
+    ServiceLevelAssessment assess(ServiceLevelAgreement sla);
     
     void registerObligationAssessor(ObligationAssessor<? extends Obligation> assessor);
     

@@ -10,7 +10,7 @@ import java.util.Set;
  *
  * @author Sean Felten
  */
-public interface SLA {
+public interface ServiceLevelAgreement {
     interface ID extends Serializable {};
     
     ID getId();

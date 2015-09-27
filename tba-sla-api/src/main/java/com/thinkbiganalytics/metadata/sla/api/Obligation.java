@@ -7,7 +7,7 @@ public interface Obligation {
 
     String getDescription();
     
-    SLA getSLA();
+    ServiceLevelAgreement getSLA();
     
     Set<Metric> getMetrics();
 

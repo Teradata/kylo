@@ -18,5 +18,5 @@ public interface ObligationBuilder {
     
     Obligation build();
     
-    SLABuilder add();
+    ServiceLevelAgreementBuilder add();
 }

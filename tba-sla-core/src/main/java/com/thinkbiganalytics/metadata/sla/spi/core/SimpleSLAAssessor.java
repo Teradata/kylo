@@ -7,30 +7,30 @@ import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
-import com.thinkbiganalytics.metadata.sla.api.SLA;
-import com.thinkbiganalytics.metadata.sla.api.SLAAssessment;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessor;
-import com.thinkbiganalytics.metadata.sla.spi.SLAAssessor;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 
 /**
  *
  * @author Sean Felten
  */
-public class SimpleSLAAssessor implements SLAAssessor {
+public class SimpleSLAAssessor implements ServiceLevelAssessor {
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.sla.spi.SLAAssessor#assess(com.thinkbiganalytics.metadata.sla.api.SLA)
+     * @see com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor#assess(com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement)
      */
     @Override
-    public SLAAssessment assess(SLA sla) {
+    public ServiceLevelAssessment assess(ServiceLevelAgreement sla) {
         // TODO Auto-generated method stub
         return null;
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.sla.spi.SLAAssessor#registerAssessor(com.thinkbiganalytics.metadata.sla.spi.ObligationAssessor)
+     * @see com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor#registerAssessor(com.thinkbiganalytics.metadata.sla.spi.ObligationAssessor)
      */
     @Override
     public void registerObligationAssessor(ObligationAssessor<? extends Obligation> assessor) {
@@ -39,7 +39,7 @@ public class SimpleSLAAssessor implements SLAAssessor {
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.sla.spi.SLAAssessor#registerAssessor(com.thinkbiganalytics.metadata.sla.spi.MetricAssessor)
+     * @see com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor#registerAssessor(com.thinkbiganalytics.metadata.sla.spi.MetricAssessor)
      */
     @Override
     public void registerMetricAssessor(MetricAssessor<? extends Metric> assessor) {
