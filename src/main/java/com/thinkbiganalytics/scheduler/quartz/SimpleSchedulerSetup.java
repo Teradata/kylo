@@ -64,7 +64,9 @@ public class SimpleSchedulerSetup implements InitializingBean {
         triggerFactoryBean.setCronExpression(cronExpression);
         triggerFactoryBean.setJobDetail(jobDetailFactory.getObject());
         triggerFactoryBean.setGroup(this.groupName);
-        triggerFactoryBean.setName("trigger_"+this.jobName);
+        if(this.jobName != null) {
+            triggerFactoryBean.setName("trigger_" + this.jobName);
+        }
         applicationContext.getAutowireCapableBeanFactory().initializeBean(triggerFactoryBean, UUID.randomUUID().toString());
 
         quartzScheduler.scheduleJob(jobDetailFactory, triggerFactoryBean);
