@@ -359,6 +359,23 @@ public class QuartzScheduler implements JobScheduler {
     return map;
     }
 
+    public boolean jobExists(JobIdentifier jobIdentifier){
+        Set<JobKey> jobKeys = null;
+        try {
+            jobKeys = getScheduler().getJobKeys(GroupMatcher.jobGroupEquals(jobIdentifier.getGroup()));
+         if(jobKeys != null && !jobKeys.isEmpty()){
+            for(JobKey key : jobKeys){
+                if(jobIdentifierForJobKey(key).equals(jobIdentifier)){
+                    return true;
+                }
+            }
+        }
+        } catch (SchedulerException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 
 
     //Quartz Specific methods
@@ -383,21 +400,26 @@ public class QuartzScheduler implements JobScheduler {
         scheduleJob(job, trigger);
     }
 
-
-    public void scheduleJob(String groupName, String jobName,Class<? extends QuartzJobBean> clazz, String cronExpression,Map<String,Object> jobData)  throws SchedulerException{
+    public void scheduleJob(JobIdentifier jobIdentifier, TriggerIdentifier triggerIdentifier,Class<? extends QuartzJobBean> clazz, String cronExpression,Map<String,Object> jobData)  throws SchedulerException{
         JobDataMap jobDataMap = new JobDataMap(jobData);
         JobDetail job = newJob(clazz)
-                .withIdentity(jobName, groupName)
+                .withIdentity(jobIdentifier.getName(),jobIdentifier.getGroup())
                 .requestRecovery(false)
                 .setJobData(jobDataMap)
                 .build();
         CronTrigger trigger = newTrigger()
-                .withIdentity("triggerFor_"+jobName, groupName)
+                .withIdentity(triggerIdentifier.getName(),triggerIdentifier.getGroup())
                 .withSchedule(cronSchedule(cronExpression).inTimeZone(TimeZone.getTimeZone("UTC"))
                         .withMisfireHandlingInstructionFireAndProceed())
                 .forJob(job.getKey())
                 .build();
         scheduleJob(job, trigger);
+
+    }
+
+
+    public void scheduleJob(String groupName, String jobName,Class<? extends QuartzJobBean> clazz, String cronExpression,Map<String,Object> jobData)  throws SchedulerException{
+        scheduleJob(new JobIdentifier(jobName,groupName), new TriggerIdentifier(jobName,groupName), clazz,cronExpression,jobData);
     }
 
     public void updateTrigger(TriggerIdentifier triggerIdentifier, Trigger trigger) throws SchedulerException {
