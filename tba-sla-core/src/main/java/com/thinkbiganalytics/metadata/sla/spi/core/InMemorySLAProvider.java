@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.sla.spi.mock;
+package com.thinkbiganalytics.metadata.sla.spi.core;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -27,25 +27,20 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
  *
  * @author Sean Felten
  */
-public class MockSLAProvider implements ServiceLevelAgreementProvider {
+public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
     
-    private Set<ObligationAssessor<Obligation>> obligationAssessors;
-    private Set<MetricAssessor<Metric>> metricAssessors;
-    private Map<ServiceLevelAgreement.ID, ServiceLevelAgreement> slas;
+    private Map<SLAID, ServiceLevelAgreement> slas;
 
     /**
      * 
      */
-    public MockSLAProvider() {
-        this.slas = Collections.synchronizedMap(new HashMap<ServiceLevelAgreement.ID, ServiceLevelAgreement>());
-        this.obligationAssessors = Collections.synchronizedSet(new HashSet<ObligationAssessor<Obligation>>());
-        this.metricAssessors = Collections.synchronizedSet(new HashSet<MetricAssessor<Metric>>());
+    public InMemorySLAProvider() {
+        this.slas = Collections.synchronizedMap(new HashMap<SLAID, ServiceLevelAgreement>());
     }
     
     @Override
     public ID resolve(Serializable ser) {
-        // TODO Auto-generated method stub
-        return null;
+        return resolveImpl(ser);
     }
 
     @Override
@@ -67,27 +62,56 @@ public class MockSLAProvider implements ServiceLevelAgreementProvider {
     
     @Override
     public ServiceLevelAgreementBuilder build() {
-        return new MockSLABuilder();
+        return new SLABuilderImpl();
     }
     
+    @Override
+    public ServiceLevelAgreementBuilder build(ID id) {
+        return new SLABuilderImpl(resolveImpl(id));
+    }
     
-    private MockSLA addSLA(MockSLA sla) {
+    private SLAImpl addSLA(SLAImpl sla) {
         SLAID id = new SLAID();
         sla.setId(id);
         this.slas.put(id, sla);
         return sla;
     }
     
+    private SLAImpl replaceSLA(SLAID id, SLAImpl sla) {
+        sla.setId(id);
+        this.slas.put(id, sla);
+        return sla;
+    }
     
+    private SLAID resolveImpl(Serializable ser) {
+        // TODO: throw unknown ID exception?
+        if (ser instanceof String) {
+            return new SLAID((String) ser);
+        } else if (ser instanceof UUID) {
+            return new SLAID((UUID) ser);
+        } else if (ser instanceof SLAID) { 
+            return (SLAID) ser;
+        } else {
+            throw new IllegalArgumentException("Invalid ID source type: " + ser.getClass());
+        }
+    }
+
+
     
-    private class MockSLABuilder implements ServiceLevelAgreementBuilder {
+    private class SLABuilderImpl implements ServiceLevelAgreementBuilder {
         
+        private SLAID id;
         private String name;
         private String descrtion;
         private Set<Obligation> obligations = new HashSet<Obligation>();
-        private MockSLA sla = new MockSLA();
+        private SLAImpl sla = new SLAImpl();
         
-        public MockSLABuilder() {
+        public SLABuilderImpl() {
+            this(null);
+        }
+        
+        public SLABuilderImpl(SLAID id) {
+            this.id = id;
         }
 
         @Override
@@ -103,14 +127,8 @@ public class MockSLAProvider implements ServiceLevelAgreementProvider {
         }
 
         @Override
-        public ServiceLevelAgreementBuilder obligation(Obligation obligation) {
-            this.obligations.add(obligation);
-            return this;
-        }
-
-        @Override
         public ObligationBuilder obligationBuilder() {
-            return new MockObligationBuilder(this.sla, this);
+            return new ObligationBuilderImpl(this.sla, this);
         }
         
         @Override
@@ -118,18 +136,23 @@ public class MockSLAProvider implements ServiceLevelAgreementProvider {
             this.sla.setName(this.name);
             this.sla.setDescription(this.descrtion);
             this.sla.getObligations().addAll(this.obligations);
-            return sla;
+            
+            if (this.id == null) {
+                return addSLA(sla);
+            } else {
+                return replaceSLA(this.id, sla);
+            }
         }
     }
 
-    private class MockObligationBuilder implements ObligationBuilder {
+    private class ObligationBuilderImpl implements ObligationBuilder {
         
-        private MockSLABuilder slaBuilder;
-        private MockSLA sla;
+        private SLABuilderImpl slaBuilder;
+        private SLAImpl sla;
         private String description;
         private Set<Metric> metrics = new HashSet<Metric>();
         
-        public MockObligationBuilder(MockSLA sla, MockSLABuilder slaBldr) {
+        public ObligationBuilderImpl(SLAImpl sla, SLABuilderImpl slaBldr) {
             this.slaBuilder = slaBldr;
             this.sla = sla;
         }
@@ -148,7 +171,7 @@ public class MockSLAProvider implements ServiceLevelAgreementProvider {
         
         @Override
         public Obligation build() {
-            MockObligation ob = new MockObligation();
+            ObligationImpl ob = new ObligationImpl();
             ob.description = this.description;
             ob.metrics = this.metrics;
             ob.sla = this.sla;
@@ -158,7 +181,7 @@ public class MockSLAProvider implements ServiceLevelAgreementProvider {
         
         @Override
         public ServiceLevelAgreementBuilder add() {
-            MockObligation ob = (MockObligation) build();
+            ObligationImpl ob = (ObligationImpl) build();
             this.sla.obligations.add(ob);
             return this.slaBuilder;
         }
@@ -186,14 +209,14 @@ public class MockSLAProvider implements ServiceLevelAgreementProvider {
         }
     }
     
-    private static class MockSLA implements ServiceLevelAgreement {
+    private static class SLAImpl implements ServiceLevelAgreement {
         
         private ServiceLevelAgreement.ID id;
         private String name;
         private String description;
         private Set<Obligation> obligations;
         
-        public MockSLA() {
+        public SLAImpl() {
             this.obligations = new HashSet<Obligation>();
         }
 
@@ -201,7 +224,7 @@ public class MockSLAProvider implements ServiceLevelAgreementProvider {
             return id;
         }
 
-        public void setId(ServiceLevelAgreement.ID id) {
+        protected void setId(ServiceLevelAgreement.ID id) {
             this.id = id;
         }
 
@@ -209,7 +232,7 @@ public class MockSLAProvider implements ServiceLevelAgreementProvider {
             return name;
         }
 
-        public void setName(String name) {
+        protected void setName(String name) {
             this.name = name;
         }
 
@@ -217,7 +240,7 @@ public class MockSLAProvider implements ServiceLevelAgreementProvider {
             return description;
         }
 
-        public void setDescription(String description) {
+        protected void setDescription(String description) {
             this.description = description;
         }
 
@@ -225,14 +248,14 @@ public class MockSLAProvider implements ServiceLevelAgreementProvider {
             return obligations;
         }
 
-        public void setObligations(Set<Obligation> obligations) {
+        protected void setObligations(Set<Obligation> obligations) {
             this.obligations = obligations;
         }
     }
 
-    private static class MockObligation implements Obligation {
+    private static class ObligationImpl implements Obligation {
         
-        private MockSLA sla;
+        private SLAImpl sla;
         private String description;
         private Set<Metric> metrics = new HashSet<Metric>();
 

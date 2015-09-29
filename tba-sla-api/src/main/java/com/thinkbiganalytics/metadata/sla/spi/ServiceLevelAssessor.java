@@ -16,7 +16,7 @@ public interface ServiceLevelAssessor {
 
     ServiceLevelAssessment assess(ServiceLevelAgreement sla);
     
-    void registerObligationAssessor(ObligationAssessor<? extends Obligation> assessor);
+    void registerObligationAssessor(ObligationAssessor<Obligation> assessor);
     
-    void registerMetricAssessor(MetricAssessor<? extends Metric> assessor);
+    void registerMetricAssessor(MetricAssessor<Metric> assessor);
 }

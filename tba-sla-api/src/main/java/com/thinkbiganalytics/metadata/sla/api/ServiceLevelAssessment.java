@@ -17,9 +17,9 @@ public interface ServiceLevelAssessment {
     
     ServiceLevelAgreement getSLA();
     
-    AssessmentResult getResult();
+    String getMessage();
     
-    AssessmentSeverity getSeverity();
+    AssessmentResult getResult();
     
     Set<ObligationAssessment> getObligationAssessments();
 }

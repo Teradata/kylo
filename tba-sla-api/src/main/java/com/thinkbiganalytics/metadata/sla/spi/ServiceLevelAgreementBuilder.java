@@ -16,8 +16,6 @@ public interface ServiceLevelAgreementBuilder {
     
     ServiceLevelAgreementBuilder description(String description);
     
-    ServiceLevelAgreementBuilder obligation(Obligation obligation);
-    
     ObligationBuilder obligationBuilder();
     
     ServiceLevelAgreement build();

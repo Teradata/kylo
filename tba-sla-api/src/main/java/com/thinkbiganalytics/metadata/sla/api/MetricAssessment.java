@@ -11,10 +11,8 @@ public interface MetricAssessment {
     
     Metric getMetric();
     
-    String getDescription();
+    String getMessage();
     
     AssessmentResult getResult();
-    
-    AssessmentSeverity getSeverity();
 
 }

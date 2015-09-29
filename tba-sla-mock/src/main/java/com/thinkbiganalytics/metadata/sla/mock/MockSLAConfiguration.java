@@ -12,6 +12,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor.MetricContext;
 import com.thinkbiganalytics.metadata.sla.spi.mock.MockSLAProvider;
 
 /**
@@ -28,7 +29,7 @@ public class MockSLAConfiguration {
     
     @Bean(name="exampleSLA1")
     public ServiceLevelAgreement exampleSLA1() {
-        return slaProvider().builder()
+        return slaProvider().build()
             .name("Example ServiceLevelAgreement #1")
             .description("This is an example of an ServiceLevelAgreement with 1 obligation with 1 metric")
             .obligationBuilder()
@@ -52,15 +53,15 @@ public class MockSLAConfiguration {
             }
             
             @Override
-            public void assess(TestMetric metric, MetricAssessmentBuilder builder) {
+            public void assess(TestMetric metric, MetricContext context, MetricAssessmentBuilder builder) {
                 if (metric.isSuccess()) {
                     builder
-                        .description("This metric was a success")
+                        .message("This metric was a success")
                         .result(AssessmentResult.SUCCESS)
                         .metric(metric);
                 } else {
                     builder
-                        .description("This metric was a failure")
+                        .message("This metric was a failure")
                         .result(AssessmentResult.FAILURE)
                         .metric(metric);
                 }

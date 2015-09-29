@@ -13,9 +13,9 @@ public interface ObligationAssessment {
     
     Obligation getObligation();
     
-    AssessmentResult getResult();
+    String getMessage();
     
-    AssessmentSeverity getSeverity();
+    AssessmentResult getResult();
     
     Set<MetricAssessment> getMetricAssessments();
 

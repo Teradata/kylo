@@ -22,6 +22,8 @@ public interface ServiceLevelAgreementProvider {
     
     ServiceLevelAgreement remove(ServiceLevelAgreement.ID id);
 
-    ServiceLevelAgreementBuilder builder();
+    ServiceLevelAgreementBuilder build();
+    
+    ServiceLevelAgreementBuilder build(ServiceLevelAgreement.ID id);
     
 }
