@@ -26,6 +26,9 @@ public class SimpleSchedulerSetup implements InitializingBean {
 
     private String targetMethod;
 
+    private String jobName;
+    private String groupName;
+
     /**
      * Configure the quartz scheduler
      * @param jobRunner the target job runner (implementing a run() method)
@@ -53,13 +56,25 @@ public class SimpleSchedulerSetup implements InitializingBean {
         MethodInvokingJobDetailFactoryBean jobDetailFactory = new MethodInvokingJobDetailFactoryBean();
         jobDetailFactory.setTargetObject(this.jobRunner);
         jobDetailFactory.setTargetMethod(this.targetMethod);
+        jobDetailFactory.setName(this.jobName);
+        jobDetailFactory.setGroup(this.groupName);
         applicationContext.getAutowireCapableBeanFactory().initializeBean(jobDetailFactory, UUID.randomUUID().toString());
 
         CronTriggerFactoryBean triggerFactoryBean = new CronTriggerFactoryBean();
         triggerFactoryBean.setCronExpression(cronExpression);
         triggerFactoryBean.setJobDetail(jobDetailFactory.getObject());
+        triggerFactoryBean.setGroup(this.groupName);
+        triggerFactoryBean.setName("trigger_"+this.jobName);
         applicationContext.getAutowireCapableBeanFactory().initializeBean(triggerFactoryBean, UUID.randomUUID().toString());
 
         quartzScheduler.scheduleJob(jobDetailFactory, triggerFactoryBean);
+    }
+
+    public void setJobName(String jobName) {
+        this.jobName = jobName;
+    }
+
+    public void setGroupName(String groupName) {
+        this.groupName = groupName;
     }
 }
