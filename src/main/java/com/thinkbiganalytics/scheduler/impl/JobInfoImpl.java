@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.scheduler.impl;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.scheduler.JobIdentifier;
 import com.thinkbiganalytics.scheduler.JobInfo;
@@ -18,6 +19,7 @@ public class JobInfoImpl implements JobInfo {
     private List<TriggerInfo> triggers;
     private String description;
     private Class jobClass;
+    @JsonIgnore
     private Map<String,Object> jobData;
     public JobInfoImpl() {
 

@@ -380,6 +380,9 @@ public class QuartzScheduler implements JobScheduler {
         Trigger trigger = null;
         try {
           trigger = getScheduler().getTrigger(triggerKeyForTriggerIdentifier(triggerIdentifier));
+            if(trigger != null){
+                return true;
+            }
         } catch (SchedulerException e) {
             e.printStackTrace();
         }
