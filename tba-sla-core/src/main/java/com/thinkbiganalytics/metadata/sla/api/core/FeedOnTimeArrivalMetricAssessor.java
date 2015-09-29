@@ -3,12 +3,21 @@
  */
 package com.thinkbiganalytics.metadata.sla.api.core;
 
-import javax.inject.Inject;
+import java.util.Date;
+import java.util.Map;
 
+import javax.inject.Inject;
+import javax.inject.Named;
+
+import org.joda.time.DateTime;
+import org.quartz.Calendar;
+
+import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.pipelinecontroller.repositories.FeedRepository;
+import com.thinkbiganalytics.pipelinecontroller.rest.dataobjects.ExecutedFeed;
 
 /**
  *
@@ -18,12 +27,13 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
     
     @Inject
     private FeedRepository reedRepository;
+    
+    @Inject
+    @Named("holidayCalanders")
+    private Map<String, Calendar> holidayCalendars;
+    
 
-    /**
-     * 
-     */
     public FeedOnTimeArrivalMetricAssessor() {
-        // TODO Auto-generated constructor stub
     }
 
     /* (non-Javadoc)
@@ -39,8 +49,29 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
      */
     @Override
     public void assess(FeedOnTimeArrivalMetric metric, MetricAssessmentBuilder builder) {
-        String feed = metric.getFeedName();
-//        this.reedRepository.find
+        String feedName = metric.getFeedName();
+        ExecutedFeed feed = this.reedRepository.findLastCompletedFeed(feedName);
+        DateTime lastFeedTime = feed.getEndTime();
+        
+        Calendar calendar = this.holidayCalendars.get(metric.getClaendarName());
+        DateTime midnight = DateTime.now().withTimeAtStartOfDay();
+        Date expectedDate = metric.getExpectedExpression().getNextValidTimeAfter(midnight.toDate());
+        DateTime lateTime = new DateTime(expectedDate).plus(metric.getLatePeriod());
+        DateTime asOfTime = new DateTime(expectedDate).minus(metric.getAsOfPeriod());
+        boolean isHodiday = calendar.isTimeIncluded(asOfTime.getMillis());
+        
+        builder.metric(metric);
+        
+        if (isHodiday) {
+            builder.message("No data expected for feed " + feedName + " due to a holiday");
+            builder.result(AssessmentResult.SUCCESS);
+        } else if (lastFeedTime.isAfter(midnight) && lastFeedTime.isBefore(lateTime)) {
+            builder.message("Data for feed " + feedName + " arrived on " + lastFeedTime + ", which was before late time: " + lateTime);
+            builder.result(AssessmentResult.SUCCESS);
+        } else {
+            builder.message("Data for feed " + feedName + " has not arrived before the late time: " + lateTime);
+            builder.result(AssessmentResult.FAILURE);
+        }
     }
 
 }

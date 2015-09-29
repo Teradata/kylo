@@ -22,7 +22,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
     private CronExpression expectedExpression;
     private Period latePeriod;
     private Period asOfPeriod;
-    private String claendarName;
+    private String clalendarName;
 //    private Chronology chronology;
 //    private Calendar calendar;
     
@@ -77,11 +77,11 @@ public class FeedOnTimeArrivalMetric implements Metric {
     }
 
     public String getClaendarName() {
-        return claendarName;
+        return clalendarName;
     }
 
-    public void setClaendarName(String claendarName) {
-        this.claendarName = claendarName;
+    public void setClalendarName(String claendarName) {
+        this.clalendarName = claendarName;
     }
     
     
