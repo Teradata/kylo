@@ -376,6 +376,16 @@ public class QuartzScheduler implements JobScheduler {
         return false;
     }
 
+    public boolean triggerExists(TriggerIdentifier triggerIdentifier){
+        Trigger trigger = null;
+        try {
+          trigger = getScheduler().getTrigger(triggerKeyForTriggerIdentifier(triggerIdentifier));
+        } catch (SchedulerException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
 
 
     //Quartz Specific methods
