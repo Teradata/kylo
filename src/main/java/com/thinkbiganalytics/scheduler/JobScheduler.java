@@ -1,3 +1,4 @@
+
 package com.thinkbiganalytics.scheduler;
 
 import java.text.ParseException;
@@ -107,6 +108,20 @@ public interface JobScheduler {
      * @throws JobSchedulerException
      */
     void resumeAll() throws JobSchedulerException;
+
+    /**
+     * Check to see if a Trigger currently exists in the Scheduler
+     * @param triggerIdentifier
+     * @return
+     */
+    boolean triggerExists(TriggerIdentifier triggerIdentifier);
+
+    /**
+     * Check to see if a Job currently exists in the Scheduler
+     * @param jobIdentifier
+     * @return
+     */
+    boolean jobExists(JobIdentifier jobIdentifier);
 
     /**
      * Manually Trigger a specific Job

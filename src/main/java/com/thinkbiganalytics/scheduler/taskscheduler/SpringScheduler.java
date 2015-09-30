@@ -151,6 +151,16 @@ public class SpringScheduler  implements JobScheduler{
     }
 
     @Override
+    public boolean triggerExists(TriggerIdentifier triggerIdentifier) {
+        return false;
+    }
+
+    @Override
+    public boolean jobExists(JobIdentifier jobIdentifier) {
+        return false;
+    }
+
+    @Override
     public Map<String, Object> getMetaData() throws JobSchedulerException {
        return null;
     }

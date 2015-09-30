@@ -222,14 +222,28 @@ public class QuartzScheduler implements JobScheduler {
     }
 
     public void updateTrigger(TriggerIdentifier triggerIdentifier, String cronExpression) throws  JobSchedulerException {
-
-        CronTrigger trigger = newTrigger().withIdentity(triggerIdentifier.getName(), triggerIdentifier.getGroup()).withSchedule(cronSchedule(cronExpression)).build();
         try {
-            updateTrigger(triggerIdentifier, trigger);
+            Trigger trigger = getScheduler().getTrigger(triggerKeyForTriggerIdentifier(triggerIdentifier));
+            if(trigger != null) {
+                if (trigger instanceof CronTrigger) {
+                    CronTrigger cronTrigger = (CronTrigger) trigger;
+                    String existingCronExpression = cronTrigger.getCronExpression();
+                    //only update if the incoming Cron Expression differs from the current one in the Schedueler
+                    if (!cronExpression.equalsIgnoreCase(existingCronExpression)) {
+                        CronTrigger newTrigger = newTrigger().withIdentity(triggerIdentifier.getName(), triggerIdentifier.getGroup()).withSchedule(cronSchedule(cronExpression)).build();
+                        updateTrigger(triggerIdentifier, newTrigger);
+                    }
+                } else {
+                    // the triggger is not a cron trigger... remove it and add this new one
+                    getScheduler().unscheduleJob(triggerKeyForTriggerIdentifier(triggerIdentifier));
+                    updateTrigger(triggerIdentifier,cronExpression);
+                }
+            }
         } catch (SchedulerException e) {
             throw new JobSchedulerException(e);
         }
     }
+
 
     @Override
     public void deleteJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
@@ -344,32 +358,32 @@ public class QuartzScheduler implements JobScheduler {
 
     public Map<String,Object> getMetaData()  throws JobSchedulerException {
         Map<String,Object> map = new HashMap<String,Object>();
-       try {
-        SchedulerMetaData metaData =  getScheduler().getMetaData();
-        if(metaData != null) {
+        try {
+            SchedulerMetaData metaData =  getScheduler().getMetaData();
+            if(metaData != null) {
 
-            ObjectMapper objectMapper = new ObjectMapper();
-            map = objectMapper.convertValue(metaData,Map.class);
+                ObjectMapper objectMapper = new ObjectMapper();
+                map = objectMapper.convertValue(metaData,Map.class);
 
-        }
-        } catch (IllegalArgumentException | SchedulerException e) {
-               throw new JobSchedulerException(e);
             }
+        } catch (IllegalArgumentException | SchedulerException e) {
+            throw new JobSchedulerException(e);
+        }
 
-    return map;
+        return map;
     }
 
     public boolean jobExists(JobIdentifier jobIdentifier){
         Set<JobKey> jobKeys = null;
         try {
             jobKeys = getScheduler().getJobKeys(GroupMatcher.jobGroupEquals(jobIdentifier.getGroup()));
-         if(jobKeys != null && !jobKeys.isEmpty()){
-            for(JobKey key : jobKeys){
-                if(jobIdentifierForJobKey(key).equals(jobIdentifier)){
-                    return true;
+            if(jobKeys != null && !jobKeys.isEmpty()){
+                for(JobKey key : jobKeys){
+                    if(jobIdentifierForJobKey(key).equals(jobIdentifier)){
+                        return true;
+                    }
                 }
             }
-        }
         } catch (SchedulerException e) {
             e.printStackTrace();
         }
@@ -379,7 +393,7 @@ public class QuartzScheduler implements JobScheduler {
     public boolean triggerExists(TriggerIdentifier triggerIdentifier){
         Trigger trigger = null;
         try {
-          trigger = getScheduler().getTrigger(triggerKeyForTriggerIdentifier(triggerIdentifier));
+            trigger = getScheduler().getTrigger(triggerKeyForTriggerIdentifier(triggerIdentifier));
             if(trigger != null){
                 return true;
             }
@@ -390,11 +404,10 @@ public class QuartzScheduler implements JobScheduler {
     }
 
 
-
     //Quartz Specific methods
 
     public SchedulerMetaData getSchedulerMetaData()  throws SchedulerException {
-           return getScheduler().getMetaData();
+        return getScheduler().getMetaData();
     }
 
 
