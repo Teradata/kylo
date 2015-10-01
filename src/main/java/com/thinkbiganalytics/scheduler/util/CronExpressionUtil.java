@@ -16,39 +16,60 @@ public class CronExpressionUtil {
     private static Logger LOG = LoggerFactory.getLogger(CronExpressionUtil.class);
 
     public static Long getCronInterval(String cronExpression) throws ParseException{
-        Date nextValidTime = getNextFireTime(cronExpression);
-        Date subsequentNextValidTime = getNextFireTime(nextValidTime,cronExpression);
+        return getCronInterval(new CronExpression(cronExpression));
+    }
+
+    public static Long getCronInterval(CronExpression cron) throws ParseException{
+        Date nextValidTime = getNextFireTime(cron);
+        Date subsequentNextValidTime = getNextFireTime(nextValidTime, cron);
         long interval = subsequentNextValidTime.getTime() - nextValidTime.getTime();
         return interval;
     }
 
     public static Date getPreviousFireTime(String cronExpression) throws ParseException{
-        Long interval = getCronInterval(cronExpression);
-        Date nextValidTime = getNextFireTime(cronExpression);
+        return getPreviousFireTime(new CronExpression(cronExpression));
+    }
+
+    public static Date getPreviousFireTime(CronExpression cron) throws ParseException{
+        Long interval = getCronInterval(cron);
+        Date nextValidTime = getNextFireTime(cron);
         return new Date(nextValidTime.getTime() - interval);
     }
 
     public static Date getPreviousFireTime(Date lastFireTime, String cronExpression) throws ParseException{
-        Long interval = getCronInterval(cronExpression);
-        Date nextValidTime = getNextFireTime(lastFireTime,cronExpression);
+        return getPreviousFireTime(lastFireTime, new CronExpression(cronExpression));
+    }
+
+    public static Date getPreviousFireTime(Date lastFireTime, CronExpression cron) throws ParseException{
+        Long interval = getCronInterval(cron);
+        Date nextValidTime = getNextFireTime(lastFireTime,cron);
         return new Date(nextValidTime.getTime() - interval);
     }
 
 
     public static Date getNextFireTime(String cronExpression) throws ParseException{
-        CronExpression c = new CronExpression(cronExpression);
-       return  c.getNextValidTimeAfter(new Date());
+        return getNextFireTime(new CronExpression(cronExpression));
+    }
+
+    public static Date getNextFireTime(CronExpression cron) throws ParseException{
+       return  cron.getNextValidTimeAfter(new Date());
     }
 
     public static Date getNextFireTime(Date lastFireTime, String cronExpression) throws ParseException{
-        CronExpression c = new CronExpression(cronExpression);
-        return  c.getNextValidTimeAfter(lastFireTime);
+        return getNextFireTime(lastFireTime, new CronExpression(cronExpression));
+    }
+
+    public static Date getNextFireTime(Date lastFireTime, CronExpression cron) throws ParseException{
+        return  cron.getNextValidTimeAfter(lastFireTime);
     }
 
     public static List<Date> getNextFireTimes(String cronExpression, Integer count) throws ParseException{
+        return getNextFireTimes(new CronExpression(cronExpression), count);
+    }
+
+    public static List<Date> getNextFireTimes(CronExpression cron, Integer count) throws ParseException{
         List<Date> dates = new ArrayList<Date>();
         Date lastDate = new Date();
-        CronExpression cron = new CronExpression(cronExpression);
         for(int i=0; i<count; i++) {
             Date nextDate = cron.getNextValidTimeAfter(lastDate);
             dates.add(nextDate);
@@ -58,9 +79,13 @@ public class CronExpressionUtil {
     }
 
     public static List<Date> getPreviousFireTimes(String cronExpression, Integer count) throws ParseException{
+        return getPreviousFireTimes(new CronExpression(cronExpression), count);
+    }
+
+    public static List<Date> getPreviousFireTimes(CronExpression cron, Integer count) throws ParseException{
         List<Date> dates = new ArrayList<Date>();
-        Long interval = getCronInterval(cronExpression);
-        Date nextFireTime = getNextFireTime(cronExpression);
+        Long interval = getCronInterval(cron);
+        Date nextFireTime = getNextFireTime(cron);
         for(int i=0; i<count; i++) {
             Date previous = new Date(nextFireTime.getTime() - interval);
             dates.add(previous);
