@@ -6,7 +6,7 @@ package com.thinkbiganalytics.metadata.sla.spi;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**
- *
+ * Thrown when an assessor could not be found that can assess a particular kind of metric.
  * @author Sean Felten
  */
 public class AssessorNotFoundException extends RuntimeException {
@@ -14,16 +14,10 @@ public class AssessorNotFoundException extends RuntimeException {
     
     private final Metric metric;
     
-    /**
-     * 
-     */
     public AssessorNotFoundException(Metric metric) {
         this.metric = metric;
     }
 
-    /**
-     * @param message
-     */
     public AssessorNotFoundException(String message, Metric metric) {
         super(message);
         this.metric = metric;

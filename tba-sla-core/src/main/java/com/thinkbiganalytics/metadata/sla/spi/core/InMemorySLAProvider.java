@@ -124,6 +124,12 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
             this.descrtion = description;
             return this;
         }
+        
+        @Override
+        public ServiceLevelAgreementBuilder obligation(Obligation obligation) {
+            this.sla.getObligations().add(obligation);
+            return this;
+        }
 
         @Override
         public ObligationBuilder obligationBuilder() {
@@ -134,7 +140,6 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         public ServiceLevelAgreement build() {
             this.sla.setName(this.name);
             this.sla.setDescription(this.descrtion);
-            this.sla.getObligations().addAll(this.obligations);
             
             if (this.id == null) {
                 return addSLA(sla);
@@ -180,7 +185,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         @Override
         public ServiceLevelAgreementBuilder add() {
             ObligationImpl ob = (ObligationImpl) build();
-            this.sla.obligations.add(ob);
+            this.sla.getObligations().add(ob);
             return this.slaBuilder;
         }
     }

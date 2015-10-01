@@ -4,7 +4,8 @@
 package com.thinkbiganalytics.metadata.sla.api;
 
 /**
- *
+ * Thrown when there is a problem when attempting to assess an SLA.
+ *  
  * @author Sean Felten
  */
 public class ServiceLevelAssessmentException extends RuntimeException {
