@@ -12,6 +12,6 @@
   <modules>
       <module>tba-sla-api</module>
       <module>tba-sla-core</module>
-      <module>tba-sla-mock</module>
+      
   </modules>
 </project>

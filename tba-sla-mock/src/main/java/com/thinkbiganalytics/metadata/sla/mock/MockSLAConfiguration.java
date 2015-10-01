@@ -29,7 +29,7 @@ public class MockSLAConfiguration {
     
     @Bean(name="exampleSLA1")
     public ServiceLevelAgreement exampleSLA1() {
-        return slaProvider().build()
+        return slaProvider().builder()
             .name("Example ServiceLevelAgreement #1")
             .description("This is an example of an ServiceLevelAgreement with 1 obligation with 1 metric")
             .obligationBuilder()

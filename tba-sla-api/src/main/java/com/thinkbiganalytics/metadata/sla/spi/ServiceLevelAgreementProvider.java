@@ -16,14 +16,14 @@ public interface ServiceLevelAgreementProvider {
     
     ServiceLevelAgreement.ID resolve(Serializable ser);
     
-    List<ServiceLevelAgreement> getSLAs();
+    List<ServiceLevelAgreement> getAgreements();
     
-    ServiceLevelAgreement getSLA(ServiceLevelAgreement.ID id);
+    ServiceLevelAgreement getAgreement(ServiceLevelAgreement.ID id);
     
-    ServiceLevelAgreement remove(ServiceLevelAgreement.ID id);
+    ServiceLevelAgreement removeAgreement(ServiceLevelAgreement.ID id);
 
-    ServiceLevelAgreementBuilder build();
+    ServiceLevelAgreementBuilder builder();
     
-    ServiceLevelAgreementBuilder build(ServiceLevelAgreement.ID id);
+    ServiceLevelAgreementBuilder builder(ServiceLevelAgreement.ID id);
     
 }

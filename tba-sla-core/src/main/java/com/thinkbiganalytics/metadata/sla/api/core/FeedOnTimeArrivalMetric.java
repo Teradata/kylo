@@ -23,16 +23,28 @@ public class FeedOnTimeArrivalMetric implements Metric {
     private Period latePeriod;
     private Period asOfPeriod;
     private String clalendarName;
-//    private Chronology chronology;
-//    private Calendar calendar;
     
 
     /**
      * 
      */
     public FeedOnTimeArrivalMetric() {
-        // TODO Auto-generated constructor stub
     }
+    
+
+    public FeedOnTimeArrivalMetric(String feedName, 
+                                   CronExpression expectedExpression, 
+                                   Period latePeriod,
+                                   Period asOfPeriod, 
+                                   String clalendarName) {
+        super();
+        this.feedName = feedName;
+        this.expectedExpression = expectedExpression;
+        this.latePeriod = latePeriod;
+        this.asOfPeriod = asOfPeriod;
+        this.clalendarName = clalendarName;
+    }
+
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.sla.api.Metric#getDescription()
@@ -41,7 +53,8 @@ public class FeedOnTimeArrivalMetric implements Metric {
     public String getDescription() {
         Formatter f = new Formatter();
 //        f.format("", getfe)
-        return null;
+        // TODO: format default description
+        return toString();
     }
 
     public String getFeedName() {
@@ -76,7 +89,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
         this.asOfPeriod = asOfPeriod;
     }
 
-    public String getClaendarName() {
+    public String getCalendarName() {
         return clalendarName;
     }
 

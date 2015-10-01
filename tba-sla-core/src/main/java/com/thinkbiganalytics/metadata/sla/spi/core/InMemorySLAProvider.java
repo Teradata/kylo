@@ -10,6 +10,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -17,13 +18,11 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID;
-import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
-import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
-/**
+/** 
  *
  * @author Sean Felten
  */
@@ -44,29 +43,29 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
     }
 
     @Override
-    public List<ServiceLevelAgreement> getSLAs() {
+    public List<ServiceLevelAgreement> getAgreements() {
         synchronized (this.slas) {
             return new ArrayList<ServiceLevelAgreement>(this.slas.values());
         }
     }
 
     @Override
-    public ServiceLevelAgreement getSLA(ID id) {
+    public ServiceLevelAgreement getAgreement(ID id) {
         return this.slas.get(id);
     }
 
     @Override
-    public ServiceLevelAgreement remove(ID id) {
+    public ServiceLevelAgreement removeAgreement(ID id) {
         return this.slas.remove(id);
     }
     
     @Override
-    public ServiceLevelAgreementBuilder build() {
+    public ServiceLevelAgreementBuilder builder() {
         return new SLABuilderImpl();
     }
     
     @Override
-    public ServiceLevelAgreementBuilder build(ID id) {
+    public ServiceLevelAgreementBuilder builder(ID id) {
         return new SLABuilderImpl(resolveImpl(id));
     }
     
@@ -160,13 +159,13 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         @Override
         public ObligationBuilder description(String descr) {
             this.description = descr;
-            return null;
+            return this;
         }
 
         @Override
         public ObligationBuilder metric(Metric metric) {
             this.metrics.add(metric);
-            return null;
+            return this;
         }
         
         @Override
@@ -175,7 +174,6 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
             ob.description = this.description;
             ob.metrics = this.metrics;
             ob.sla = this.sla;
-            this.sla.obligations.add(ob);
             return ob;
         }
         
@@ -207,6 +205,24 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         public String toString() {
             return this.uuid.toString();
         }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (! this.getClass().equals(obj.getClass()))
+                return false;
+            
+            return Objects.equals(this.uuid, ((SLAID) obj).uuid);
+         }
+        
+        @Override
+        public int hashCode() {
+            return Objects.hash(getClass(), this.uuid);
+        }
+        
     }
     
     private static class SLAImpl implements ServiceLevelAgreement {

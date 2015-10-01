@@ -49,14 +49,14 @@ public class MockSLAProvider implements ServiceLevelAgreementProvider {
     }
 
     @Override
-    public List<ServiceLevelAgreement> getSLAs() {
+    public List<ServiceLevelAgreement> getAgreements() {
         synchronized (this.slas) {
             return new ArrayList<ServiceLevelAgreement>(this.slas.values());
         }
     }
 
     @Override
-    public ServiceLevelAgreement getSLA(ID id) {
+    public ServiceLevelAgreement getAgreement(ID id) {
         return this.slas.get(id);
     }
 
@@ -66,7 +66,7 @@ public class MockSLAProvider implements ServiceLevelAgreementProvider {
     }
     
     @Override
-    public ServiceLevelAgreementBuilder build() {
+    public ServiceLevelAgreementBuilder builder() {
         return new MockSLABuilder();
     }
     

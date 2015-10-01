@@ -19,8 +19,6 @@ import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessor;
-import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 
 /**
@@ -81,9 +79,9 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
      * ObligationAssessor)
      */
     @Override
-    public void registerObligationAssessor(ObligationAssessor<Obligation> assessor) {
-        this.obligationAssessors.remove(assessor);
+    public ObligationAssessor<Obligation> registerObligationAssessor(ObligationAssessor<Obligation> assessor) {
         this.obligationAssessors.add(assessor);
+        return assessor;
     }
 
     /*
@@ -94,9 +92,9 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
      * MetricAssessor)
      */
     @Override
-    public void registerMetricAssessor(MetricAssessor<Metric> assessor) {
-        this.metricAssessors.remove(assessor);
+    public MetricAssessor<Metric> registerMetricAssessor(MetricAssessor<Metric> assessor) {
         this.metricAssessors.add(assessor);
+        return assessor;
     }
 
     protected ObligationAssessor<? extends Obligation> createDefaultObligationAssessor() {
