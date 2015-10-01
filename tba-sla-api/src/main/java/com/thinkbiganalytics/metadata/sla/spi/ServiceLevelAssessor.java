@@ -28,12 +28,12 @@ public interface ServiceLevelAssessor {
      * @param assessor the assessor
      * @return the same assessor (aids registration of new assessor beans in spring by providing this method as a factory method)
      */
-    ObligationAssessor<Obligation> registerObligationAssessor(ObligationAssessor<Obligation> assessor);
+    ObligationAssessor<? extends Obligation> registerObligationAssessor(ObligationAssessor<? extends Obligation> assessor);
     
     /**
      * Registers an assessor of metrics that match its expected obligation type.
      * @param assessor the assessor
      * @return the same assessor (aids registration of new assessor beans in spring by providing this method as a factory method)
      */
-    MetricAssessor<Metric> registerMetricAssessor(MetricAssessor<Metric> assessor);
+    MetricAssessor<? extends Metric> registerMetricAssessor(MetricAssessor<? extends Metric> assessor);
 }

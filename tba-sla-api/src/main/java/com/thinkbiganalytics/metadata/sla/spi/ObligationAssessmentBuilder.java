@@ -38,5 +38,5 @@ public interface ObligationAssessmentBuilder {
          * @param metric the metric to assess
          * @return the metric's assessment
          */
-        MetricAssessment assess(Metric metric);
+        <M extends Metric> MetricAssessment assess(M metric);
 }

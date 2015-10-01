@@ -17,7 +17,7 @@ public interface MetricAssessor<M extends Metric> {
      * @param metric the metric being checked
      * @return true if this assessor should be used to assess the given metric, otherwise false
      */
-    boolean accepts(Metric metric);
+    <M extends Metric> boolean accepts(M metric);
     
     /**
      * Generates a new assessment of the given metric.

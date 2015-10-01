@@ -27,16 +27,16 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
  */
 public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
 
-    private Set<ObligationAssessor<Obligation>> obligationAssessors;
-    private Set<MetricAssessor<Metric>> metricAssessors;
-    private ObligationAssessor<Obligation> defaultObligationAssessor;
+    private Set<ObligationAssessor<? extends Obligation>> obligationAssessors;
+    private Set<MetricAssessor<? extends Metric>> metricAssessors;
+    private ObligationAssessor<? extends Obligation> defaultObligationAssessor;
 
     /**
      * 
      */
     public SimpleServiceLevelAssessor() {
-        this.obligationAssessors = Collections.synchronizedSet(new HashSet<ObligationAssessor<Obligation>>());
-        this.metricAssessors = Collections.synchronizedSet(new HashSet<MetricAssessor<Metric>>());
+        this.obligationAssessors = Collections.synchronizedSet(new HashSet<ObligationAssessor<? extends Obligation>>());
+        this.metricAssessors = Collections.synchronizedSet(new HashSet<MetricAssessor<? extends Metric>>());
     }
 
     /*
@@ -53,7 +53,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         
         for (Obligation ob : sla.getObligations()) {
             ObligationAssessmentBuilderImpl builder = new ObligationAssessmentBuilderImpl(ob);
-            ObligationAssessor<Obligation> assessor = findAssessor(ob);
+            ObligationAssessor<Obligation> assessor = (ObligationAssessor<Obligation>) findAssessor(ob);
             assessor.assess(ob, builder);
             
             ObligationAssessment obAssessment = builder.build();
@@ -79,7 +79,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
      * ObligationAssessor)
      */
     @Override
-    public ObligationAssessor<Obligation> registerObligationAssessor(ObligationAssessor<Obligation> assessor) {
+    public ObligationAssessor<? extends Obligation> registerObligationAssessor(ObligationAssessor<? extends Obligation> assessor) {
         this.obligationAssessors.add(assessor);
         return assessor;
     }
@@ -92,7 +92,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
      * MetricAssessor)
      */
     @Override
-    public MetricAssessor<Metric> registerMetricAssessor(MetricAssessor<Metric> assessor) {
+    public MetricAssessor<? extends Metric> registerMetricAssessor(MetricAssessor<? extends Metric> assessor) {
         this.metricAssessors.add(assessor);
         return assessor;
     }
@@ -102,9 +102,9 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
     }
 
     
-    protected ObligationAssessor<Obligation> findAssessor(Obligation obligation) {
+    protected ObligationAssessor<? extends Obligation> findAssessor(Obligation obligation) {
         synchronized (this.obligationAssessors) {
-            for (ObligationAssessor<Obligation> assessor : this.obligationAssessors) {
+            for (ObligationAssessor<? extends Obligation> assessor : this.obligationAssessors) {
                 if (assessor.accepts(obligation)) {
                     return assessor;
                 }
@@ -114,11 +114,12 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         return this.defaultObligationAssessor;
     }
     
-    protected MetricAssessor<Metric> findAssessor(Metric metric) {
+    @SuppressWarnings("unchecked")
+    protected <M extends Metric> MetricAssessor<M> findAssessor(M metric) {
         synchronized (this.metricAssessors) {
-            for (MetricAssessor<Metric> accessor : this.metricAssessors) {
+            for (MetricAssessor<? extends Metric> accessor : this.metricAssessors) {
                 if (accessor.accepts(metric)) {
-                    return accessor;
+                    return (MetricAssessor<M>) accessor;
                 }
             }
         }
@@ -158,8 +159,8 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         }
 
         @Override
-        public MetricAssessment assess(Metric metric) {
-            MetricAssessor<Metric> assessor = findAssessor(metric);
+        public <M extends Metric> MetricAssessment assess(M metric) {
+            MetricAssessor<M> assessor = findAssessor(metric);
             MetricAssessmentBuilderImpl builder = new MetricAssessmentBuilderImpl(metric);
 
             assessor.assess(metric, builder);
@@ -169,6 +170,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         }
         
         protected ObligationAssessment build() {
+            this.assessment.setObligation(this.obligation);
             this.assessment.setMessage(this.message);
             this.assessment.setResult(this.result);
             return this.assessment;
