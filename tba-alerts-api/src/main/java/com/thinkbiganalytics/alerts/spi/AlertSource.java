@@ -3,9 +3,8 @@
  */
 package com.thinkbiganalytics.alerts.spi;
 
-import java.net.URI;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.Set;
 
 import org.joda.time.DateTime;
 
@@ -17,7 +16,7 @@ import com.thinkbiganalytics.alerts.api.Alert;
  */
 public interface AlertSource {
 
-    Map<URI, AlertDescriptor> getAlertTypes();
+    Set<AlertDescriptor> getAlertTypes();
     
     void addNodifier(AlertNotifyReceiver receiver);
     
