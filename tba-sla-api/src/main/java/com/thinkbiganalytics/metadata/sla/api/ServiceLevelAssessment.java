@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.sla.api;
 
+import java.io.Serializable;
 import java.util.Set;
 
 import org.joda.time.DateTime;
@@ -12,7 +13,7 @@ import org.joda.time.DateTime;
  * 
  * @author Sean Felten
  */
-public interface ServiceLevelAssessment {
+public interface ServiceLevelAssessment extends Serializable {
 
     /**
      * @return the time when this assessment was generated

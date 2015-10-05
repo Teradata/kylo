@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.sla.api;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Set;
  * 
  * @author Sean Felten
  */
-public interface ObligationAssessment {
+public interface ObligationAssessment extends Serializable {
     
     /**
      * @return the obligation that was assesssed

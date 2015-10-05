@@ -17,7 +17,9 @@ import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
  * @author Sean Felten
  */
 public class SimpleObligationAssessment implements ObligationAssessment {
-
+    
+    private static final long serialVersionUID = -6209570471757886664L;
+    
     private Obligation obligation;
     private String message = "";
     private AssessmentResult result = AssessmentResult.SUCCESS;

@@ -12,7 +12,9 @@ import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
  * @author Sean Felten
  */
 public class SimpleMetricAssessment implements MetricAssessment {
-
+    
+    private static final long serialVersionUID = -209788646749034842L;
+    
     private Metric metric;
     private String message = "";
     private AssessmentResult result = AssessmentResult.SUCCESS;

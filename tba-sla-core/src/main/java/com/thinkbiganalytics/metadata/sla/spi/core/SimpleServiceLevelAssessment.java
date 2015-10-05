@@ -19,7 +19,9 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
  * @author Sean Felten
  */
 public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
-
+    
+    private static final long serialVersionUID = 2752726049105871947L;
+    
     private DateTime time;
     private ServiceLevelAgreement sla;
     private String message = "";

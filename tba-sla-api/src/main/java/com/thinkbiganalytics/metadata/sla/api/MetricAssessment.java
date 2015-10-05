@@ -3,12 +3,14 @@
  */
 package com.thinkbiganalytics.metadata.sla.api;
 
+import java.io.Serializable;
+
 /**
  * Reports an assessment of a metric.
  * 
  * @author Sean Felten
  */
-public interface MetricAssessment {
+public interface MetricAssessment extends Serializable {
     
     /**
      * @return the metric that was assessed
