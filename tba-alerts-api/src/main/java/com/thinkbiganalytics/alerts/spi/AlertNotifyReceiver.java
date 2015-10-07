@@ -9,5 +9,5 @@ package com.thinkbiganalytics.alerts.spi;
  */
 public interface AlertNotifyReceiver {
 
-    int alertsAvailable();
+    void alertsAvailable(int count);
 }

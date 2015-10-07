@@ -28,7 +28,12 @@ public interface Alert {
     /** The severity level that alerts may have */
     enum Level { INFO, WARNING, MINOR, MAJOR, CRITICAL, FATAL }
     
-
+    
+    /**
+     * @return the ID of the alert
+     */
+    ID getId();
+    
     /**
      * A unique URI defining the type of alert this is.  URIs allow for a more heirarichical 
      * type structure.
@@ -52,18 +57,18 @@ public interface Alert {
     AlertSource getSource();
     
     /**
-     * AlertResponders will only be invoked when actionable alerts.  Alerts whose 
-     * state may be changed by AlertResponder should have this method return true.
+     * AlertResponders will only be invoked for actionable alerts.  Alerts whose 
+     * state may be changed by AlertResponders should have this method return true.
      * @return whether this alert is actionable
      */
-    boolean isActionale();
+    boolean isActionable();
     
     /**
      * Gets ordered list of state change events showing the state transitions this alert
      * has gone through.
      * @return the list of state changes
      */
-    List<AlertChangeEvent> getEvents();
+    List<? extends AlertChangeEvent> getEvents();
     
     /**
      * The payload containing type-specific data for this alert.  The kind of object

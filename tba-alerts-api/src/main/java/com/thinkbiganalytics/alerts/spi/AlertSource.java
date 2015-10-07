@@ -18,7 +18,9 @@ public interface AlertSource {
 
     Set<AlertDescriptor> getAlertTypes();
     
-    void addNodifier(AlertNotifyReceiver receiver);
+    void addNotifier(AlertNotifyReceiver receiver);
+    
+    Alert getAlert(Alert.ID id);
     
     Iterator<? extends Alert> getAlerts();
 

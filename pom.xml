@@ -9,5 +9,6 @@
   <packaging>pom</packaging>
   <modules>
       <module>tba-alerts-api</module>
+      <module>tba-alerts-core</module>
   </modules>
 </project>
