@@ -9,10 +9,7 @@ import org.quartz.*;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.quartz.CronTriggerFactoryBean;
-import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
-import org.springframework.scheduling.quartz.QuartzJobBean;
-import org.springframework.scheduling.quartz.SchedulerFactoryBean;
+import org.springframework.scheduling.quartz.*;
 import org.springframework.stereotype.Service;
 
 import java.lang.reflect.InvocationTargetException;
@@ -413,6 +410,26 @@ public class QuartzScheduler implements JobScheduler {
         scheduleJob(job, trigger);
     }
 
+    public void scheduleJob(JobIdentifier jobIdentifier, TriggerIdentifier triggerIdentifier,Object obj, String targetMethod, String cronExpression,Map<String,Object> jobData)  throws SchedulerException{
+        MethodInvokingJobDetailFactoryBean jobDetailFactory = new MethodInvokingJobDetailFactoryBean();
+        jobDetailFactory.setTargetObject(obj);
+        jobDetailFactory.setTargetMethod(targetMethod);
+        jobDetailFactory.setName(jobIdentifier.getName());
+        jobDetailFactory.setGroup(jobIdentifier.getGroup());
+
+        JobDetailFactoryBean jobDetailFactoryBean2 = new JobDetailFactoryBean();
+
+       // applicationContext.getAutowireCapableBeanFactory().initializeBean(jobDetailFactory, UUID.randomUUID().toString());
+
+        CronTriggerFactoryBean triggerFactoryBean = new CronTriggerFactoryBean();
+        triggerFactoryBean.setCronExpression(cronExpression);
+        triggerFactoryBean.setJobDetail(jobDetailFactory.getObject());
+        triggerFactoryBean.setGroup(triggerIdentifier.getGroup());
+         triggerFactoryBean.setName(triggerIdentifier.getName());
+        scheduleJob(jobDetailFactory,triggerFactoryBean);
+
+    }
+
     public void scheduleJob(JobIdentifier jobIdentifier, TriggerIdentifier triggerIdentifier,Class<? extends QuartzJobBean> clazz, String cronExpression,Map<String,Object> jobData)  throws SchedulerException{
 
         JobDataMap jobDataMap = new JobDataMap(jobData);
@@ -430,6 +447,7 @@ public class QuartzScheduler implements JobScheduler {
         scheduleJob(job, trigger);
 
     }
+
 
 
     public void scheduleJob(String groupName, String jobName,Class<? extends QuartzJobBean> clazz, String cronExpression,Map<String,Object> jobData)  throws SchedulerException{
