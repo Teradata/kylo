@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.alerts.spi;
 
+import java.io.Serializable;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -15,6 +16,8 @@ import com.thinkbiganalytics.alerts.api.Alert;
  * @author Sean Felten
  */
 public interface AlertSource {
+
+    Alert.ID resolve(Serializable value);
 
     Set<AlertDescriptor> getAlertTypes();
     

@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.alerts.api.core;
 
+import java.io.Serializable;
+import java.net.URI;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,6 +14,8 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -23,6 +27,7 @@ import com.google.common.collect.Iterators;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.ID;
+import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.AlertListener;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
@@ -39,8 +44,8 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
     
     private Set<AlertListener> listeners;
     private List<AlertResponder> responders;
-    private List<AlertSource> sources;
-    private List<AlertManager> managers;
+    private Map<String, AlertSource> sources;
+    private Map<String, AlertManager> managers;
     private Map<Alert.ID, AlertManager> pendingResponses;
     
     private volatile Executor listenersExecutor;
@@ -53,8 +58,8 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
     public BaseAlertProvider() {
         this.listeners = Collections.synchronizedSet(new HashSet<AlertListener>());
         this.responders = Collections.synchronizedList(new ArrayList<AlertResponder>());
-        this.sources = Collections.synchronizedList(new ArrayList<AlertSource>());
-        this.managers = Collections.synchronizedList(new ArrayList<AlertManager>());
+        this.sources = Collections.synchronizedMap(new HashMap<String, AlertSource>());
+        this.managers = Collections.synchronizedMap(new HashMap<String, AlertManager>());
         this.pendingResponses = Collections.synchronizedMap(new LinkedHashMap<Alert.ID, AlertManager>());
     }
     
@@ -70,8 +75,16 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
         }
     }
     
-    public void setStartTime(DateTime time) {
-        this.lastAlertsTime = time;
+    
+    @Override
+    public ID resolve(Serializable value) {
+        if (value instanceof String) {
+            return SourceAlertID.create((String) value, this.sources);
+        } else if (value instanceof SourceAlertID) {
+            return (SourceAlertID) value;
+        } else {
+            throw new IllegalArgumentException("Unrecognized alert ID format: " + value);
+        }
     }
     
     /* (non-Javadoc)
@@ -91,12 +104,28 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
     }
     
     public void addAlertSource(AlertSource src) {
-        this.sources.add(src);
+        this.sources.put(createSourceId(src), src);
     }
     
     public void addAlertManager(AlertManager mgr) {
         addAlertSource(mgr);
-        this.managers.add(mgr);
+        this.managers.put(createSourceId(mgr), mgr);
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.alerts.api.AlertProvider#getAlert(com.thinkbiganalytics.alerts.api.Alert.ID)
+     */
+    @Override
+    public Alert getAlert(ID id) {
+        SourceAlertID srcId = asSourceAlertId(id);
+        AlertSource src = this.sources.get(srcId.sourceId);
+        
+        if (src != null) {
+            Alert alert = src.getAlert(srcId.alertId);
+            return new AlertDecorator(srcId, alert);
+        } else {
+            return null;
+        }
     }
 
     /* (non-Javadoc)
@@ -104,7 +133,7 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
      */
     @Override
     public Iterator<? extends Alert> getAlerts(DateTime since) {
-        List<AlertSource> srcs = snapshotSources();
+        Map<String, AlertSource> srcs = snapshotSources();
         return combineAlerts(since, srcs);
     }
 
@@ -113,8 +142,16 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
      */
     @Override
     public Iterator<? extends Alert> getAlerts(ID since) {
-        // TODO is this method needed?
-        return Collections.<Alert>emptyList().iterator();
+        Alert sinceAlert = getAlert(since);
+        
+        if (sinceAlert != null) {
+            DateTime created = sinceAlert.getEvents().get(sinceAlert.getEvents().size() - 1).getChangeTime();
+            Map<String, AlertSource> srcs = snapshotSources();
+            
+            return combineAlerts(created, srcs);
+        } else {
+            return Collections.<Alert>emptySet().iterator();
+        }
     }
 
     /* (non-Javadoc)
@@ -135,24 +172,39 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
         
         exec.execute(new Runnable() {
             public void run() {
-                DateTime last = BaseAlertProvider.this.lastAlertsTime;
-                List<AlertSource> srcList = snapshotSources();
-                Iterator<SimpleEntry<? extends Alert, AlertSource>> combinedAlerts 
-                    = combineAlertsAndSources(last, srcList);
+                DateTime sinceTime = BaseAlertProvider.this.lastAlertsTime;
+                Map<String, AlertSource> srcList = snapshotSources();
+                Iterator<AlertDecorator> combinedAlerts = combineAlerts(sinceTime, srcList);
                 
                 while (combinedAlerts.hasNext()) {
-                    SimpleEntry<? extends Alert, AlertSource> entry = combinedAlerts.next();
-                    Alert alert = entry.getKey();
-                    AlertSource src = entry.getValue();
+                    AlertDecorator decorator = combinedAlerts.next();
+                    AlertSource src = srcList.get(decorator.id.sourceId);
                     
-                    notifyListeners(alert);
+                    notifyListeners(decorator);
                     
-                    if (src instanceof AlertManager && alert.isActionable()) {
-                        notifyRepsonders(alert, (AlertManager) src);
+                    if (src instanceof AlertManager && decorator.isActionable()) {
+                        notifyRepsonders(decorator, (AlertManager) src);
                     }
+                    
+                    sinceTime = getCreationTime(decorator);
                 }
+                
+                BaseAlertProvider.this.lastAlertsTime = sinceTime;
             }
         });
+    }
+    
+    protected DateTime getCreationTime(AlertDecorator decorator) {
+        List<? extends AlertChangeEvent> events = decorator.getEvents();
+        // There should always be at least one creation event; the last one in the list
+        return events.get(events.size() - 1).getChangeTime();
+    }
+
+    /**
+     * Generates a unique, internal ID for this source
+     */
+    protected static String createSourceId(AlertSource src) {
+        return Integer.toString(src.hashCode());
     }
     
     protected Executor getListenersExecutor() {
@@ -180,35 +232,24 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
         return respondersExecutor;
     }
 
-    protected Iterator<SimpleEntry<? extends Alert, AlertSource>> combineAlertsAndSources(DateTime since, 
-                                                                                          List<AlertSource> srcList) {
-        List<Iterator<SimpleEntry<? extends Alert, AlertSource>>> iterators = new ArrayList<>();
+    protected Iterator<AlertDecorator> combineAlerts(DateTime since, Map<String, AlertSource> srcs) {
+        List<Iterator<AlertDecorator>> iterators = new ArrayList<>();
         
-        for (AlertSource src : srcList) {
-            Function<Alert, SimpleEntry<? extends Alert, AlertSource>> func = combineFunction(src);
-            Iterator<? extends Alert> itr = src.getAlerts(since);
+        for (Entry<String, AlertSource> src : srcs.entrySet()) {
+            Function<Alert, AlertDecorator> func = decorateAlertFunction(src.getKey(), src.getValue());
+            Iterator<? extends Alert> itr = src.getValue().getAlerts(since);
             iterators.add(Iterators.transform(itr, func));
         }
         
         return Iterators.concat(iterators.iterator());
     }
-    
-    protected Iterator<? extends Alert> combineAlerts(DateTime since, List<AlertSource> srcList) {
-        List<Iterator<? extends Alert>> iterators = new ArrayList<>();
-        
-        for (AlertSource src : srcList) {
-            Iterator<? extends Alert> itr = src.getAlerts(since);
-            iterators.add(itr);
-        }
-        
-        return Iterators.concat(iterators.iterator());
-    }
 
-    private Function<Alert, SimpleEntry<? extends Alert, AlertSource>> combineFunction(final AlertSource src) {
-        return new Function<Alert, SimpleEntry<? extends Alert,AlertSource>>() {
+    private Function<Alert, AlertDecorator> decorateAlertFunction(final Object srcId, final AlertSource src) {
+        return new Function<Alert, AlertDecorator>() {
             @Override
-            public SimpleEntry<? extends Alert, AlertSource> apply(Alert input) {
-                return new SimpleEntry<Alert, AlertSource>(input, src);
+            public AlertDecorator apply(Alert input) {
+                SourceAlertID id = new SourceAlertID(input.getId(), src);
+                return new AlertDecorator(id, input);
             }
         };
     }
@@ -300,25 +341,143 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
         return respList;
     }
     
-    protected List<AlertSource> snapshotSources() {
-        List<AlertSource> srcList;
+    protected Map<String, AlertSource> snapshotSources() {
+        Map<String, AlertSource> srcList;
         
         synchronized (BaseAlertProvider.this.sources) {
-            srcList = new ArrayList<>(BaseAlertProvider.this.sources);
+            srcList = new HashMap<>(BaseAlertProvider.this.sources);
         }
         return srcList;
     }
 
     private SimpleEntry<Alert, AlertManager> findActionableAlert(ID id) {
-        for (AlertManager src : this.managers) {
-            Alert alert = src.getAlert(id);
+        SourceAlertID srcId = asSourceAlertId(id);
+        AlertManager mgr = this.managers.get(srcId.sourceId);
+        Alert alert = mgr.getAlert(srcId.alertId);
+        
+        if (alert != null && alert.isActionable()) {
+            return new SimpleEntry<>(alert, mgr);
+        } else {
+            return null;
+        }
+    }
+    
+    private SourceAlertID asSourceAlertId(ID id) {
+        if (id instanceof SourceAlertID) {
+            return (SourceAlertID) id;
+        } else {
+            // Can only happen if the client uses a different ID than was supplied by this provider.
+            throw new IllegalArgumentException("Unrecognized sourceAlert ID type: " + id);
+        }
+    }
+
+    /**
+     * Decorates an alert ID with an internal identifier of its source.
+     */
+    protected static class SourceAlertID implements Alert.ID {
+        private static final long serialVersionUID = -3799345314250454959L;
+
+        private final Alert.ID alertId;
+        private final String sourceId;
+        
+        public static SourceAlertID create(String str, Map<String, AlertSource> sources) {
+            int sepIdx = str.lastIndexOf(":");
+            String alertPart = str.substring(0, sepIdx);
+            String srcId = str.substring(sepIdx + 1);
+            AlertSource src = sources.get(srcId);
             
-            if (alert != null && alert.isActionable()) {
-                return new SimpleEntry<>(alert, src);
+            if (src != null) {
+                Alert.ID alertId = src.resolve(alertPart);
+                return new SourceAlertID(alertId, src);
+            } else {
+                throw new IllegalArgumentException("Unrecognized alert ID: " + str);
             }
+            
         }
         
-        return null;
+        public SourceAlertID(ID alertId, AlertSource src) {
+            super();
+            this.alertId = alertId;
+            this.sourceId = createSourceId(src);
+        }
+        
+        @Override
+        public String toString() {
+            return this.alertId.toString() + ":" + this.sourceId;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (! this.getClass().equals(obj.getClass()))
+                return false;
+            
+            SourceAlertID that = (SourceAlertID) obj;
+            
+            return Objects.equals(this.alertId, that.alertId) &&
+                    Objects.equals(this.sourceId, that.sourceId);
+         }
+        
+        @Override
+        public int hashCode() {
+            return Objects.hash(getClass(), this.alertId, this.sourceId);
+        }
+    }
+    
+    /**
+     * Decorates an alert so that with a provider-specific ID that points to the 
+     * underlying alert source.
+     */
+    protected static class AlertDecorator implements Alert {
+        
+        private final SourceAlertID id;
+        private final Alert sourceAlert;
+
+        public AlertDecorator(SourceAlertID id, Alert alert) {
+            super();
+            this.id = id;
+            this.sourceAlert = alert;
+        }
+        
+        public Alert getSourceAlert() {
+            return this.sourceAlert;
+        }
+
+        @Override
+        public ID getId() {
+            return this.id;
+        }
+
+        public URI getType() {
+            return sourceAlert.getType();
+        }
+
+        public String getDescription() {
+            return sourceAlert.getDescription();
+        }
+
+        public Level getLevel() {
+            return sourceAlert.getLevel();
+        }
+
+        public AlertSource getSource() {
+            return sourceAlert.getSource();
+        }
+
+        public boolean isActionable() {
+            return sourceAlert.isActionable();
+        }
+
+        public List<? extends AlertChangeEvent> getEvents() {
+            return sourceAlert.getEvents();
+        }
+
+        public <C> C getContent() {
+            return sourceAlert.getContent();
+        }
     }
     
     

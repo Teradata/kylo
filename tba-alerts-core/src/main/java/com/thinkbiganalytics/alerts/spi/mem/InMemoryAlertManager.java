@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.alerts.spi.mem;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -81,6 +82,19 @@ public class InMemoryAlertManager implements AlertManager {
             return null;
         }
     }
+    
+    @Override
+    public ID resolve(Serializable ser) {
+        if (ser instanceof String) {
+            return new AlertID((String) ser);
+        } else if (ser instanceof UUID) {
+            return new AlertID((UUID) ser);
+        } else if (ser instanceof AlertID) { 
+            return (AlertID) ser;
+        } else {
+            throw new IllegalArgumentException("Invalid ID source format: " + ser.getClass());
+        }
+    }
 
     @Override
     public Iterator<? extends Alert> getAlerts() {
@@ -97,7 +111,8 @@ public class InMemoryAlertManager implements AlertManager {
     public Iterator<? extends Alert> getAlerts(DateTime since) {
         this.alertsLock.readLock().lock();
         try {
-            return Iterators.transform(this.alertsByTime.subMap(since, DateTime.now()).values().iterator(),
+            DateTime higher = this.alertsByTime.higherKey(since);
+            return Iterators.transform(this.alertsByTime.subMap(higher, DateTime.now()).values().iterator(),
                     new Function<AtomicReference<Alert>, Alert>() { 
                         @Override
                         public Alert apply(AtomicReference<Alert> ref) {
@@ -212,7 +227,6 @@ public class InMemoryAlertManager implements AlertManager {
         public int hashCode() {
             return Objects.hash(getClass(), this.uuid);
         }
-        
     }
     
     protected class GenericAlert implements Alert {

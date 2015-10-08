@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 
 import org.joda.time.DateTime;
 import org.junit.Before;
@@ -18,11 +19,15 @@ import org.mockito.MockitoAnnotations;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.State;
+import com.thinkbiganalytics.alerts.api.core.BaseAlertProvider.AlertDecorator;
+import com.thinkbiganalytics.alerts.api.core.BaseAlertProvider.SourceAlertID;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.AlertListener;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
@@ -55,39 +60,90 @@ public class BaseAlertProviderTest {
         provider.addListener(this.listener);
         provider.addResponder(this.responder);
     }
+    
+    @Test
+    public void testResolve() {
+        TestAlert mgrAlert = new TestAlert(this.manager);
+        TestAlert srcAlert = new TestAlert(this.source);
+        SourceAlertID mgrId = new SourceAlertID(mgrAlert.getId(), this.manager);
+        SourceAlertID srcId = new SourceAlertID(srcAlert.getId(), this.source);
+        String mgrIdStr = mgrId.toString();
+        String srcIdStr = srcId.toString();
+        
+        this.provider.addAlertSource(this.source);
+        this.provider.addAlertManager(this.manager);
+
+        when(this.source.resolve(any(TestID.class))).thenReturn(srcAlert.getId());
+        when(this.manager.resolve(any(TestID.class))).thenReturn(mgrAlert.getId());
+        when(this.source.resolve(any(String.class))).thenReturn(srcAlert.getId());
+        when(this.manager.resolve(any(String.class))).thenReturn(mgrAlert.getId());
+        
+        Alert.ID mgrObjResolved = this.provider.resolve(mgrId);
+        Alert.ID srcObjResolved = this.provider.resolve(srcId);
+        Alert.ID mgrStrResolved = this.provider.resolve(mgrIdStr);
+        Alert.ID srcStrResolved = this.provider.resolve(srcIdStr);
+        
+        assertThat(mgrObjResolved).isInstanceOf(SourceAlertID.class).isEqualTo(mgrId).isEqualTo(mgrStrResolved);
+        assertThat(srcObjResolved).isInstanceOf(SourceAlertID.class).isEqualTo(srcId).isEqualTo(srcStrResolved);
+    }
+    
+    @Test
+    public void testGetAlert() {
+        TestAlert mgrAlert = new TestAlert(this.manager);
+        TestAlert srcAlert = new TestAlert(this.source);
+        SourceAlertID mgrId = new SourceAlertID(mgrAlert.getId(), this.manager);
+        SourceAlertID srcId = new SourceAlertID(srcAlert.getId(), this.source);
+        
+        this.provider.addAlertSource(this.source);
+        this.provider.addAlertManager(this.manager);
+        
+        when(this.source.getAlert(any(Alert.ID.class))).thenReturn(srcAlert);
+        when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(mgrAlert);
+        
+        Alert getMgrAlert = providerToSourceAlertFunction().apply(this.provider.getAlert(mgrId));
+        Alert getSrcAlert = providerToSourceAlertFunction().apply(this.provider.getAlert(srcId));
+        
+        assertThat(getMgrAlert).isEqualTo(mgrAlert);
+        assertThat(getSrcAlert).isEqualTo(srcAlert);
+    }
 
     @Test
-    public void testGetAlertsSourceOnly() {
-        final TestAlert srcAlert = new TestAlert(this.source);
+    public void testGetAlertsSinceTimeSourceOnly() {
+        DateTime since = DateTime.now().minusSeconds(1);
+        TestAlert srcAlert = new TestAlert(this.source);
         
         this.provider.addAlertSource(this.source);
         
         when(this.source.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
         
-        Iterator<? extends Alert> itr = this.provider.getAlerts(DateTime.now().minusSeconds(1));
+        Iterator<? extends Alert> results = this.provider.getAlerts(since);
+        Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
         Alert alert = itr.next();
         
         assertThat(alert).isEqualTo(srcAlert);
     }
 
     @Test
-    public void testGetAlertsManagerOnly() {
-        final TestAlert mgrAlert = new TestAlert(this.manager);
+    public void testGetAlertsSinceTimeManagerOnly() {
+        DateTime since = DateTime.now().minusSeconds(1);
+        TestAlert mgrAlert = new TestAlert(this.manager);
         
         this.provider.addAlertManager(this.manager);
         
         when(this.manager.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
         
-        Iterator<? extends Alert> itr = this.provider.getAlerts(DateTime.now().minusSeconds(1));
+        Iterator<? extends Alert> results = this.provider.getAlerts(since);
+        Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
         Alert alert = itr.next();
         
         assertThat(alert).isEqualTo(mgrAlert);
     }
 
     @Test
-    public void testGetAlertsAllSources() {
-        final TestAlert mgrAlert = new TestAlert(this.manager);
-        final TestAlert srcAlert = new TestAlert(this.source);
+    public void testGetAlertsSinceTimeAllSources() {
+        DateTime since = DateTime.now().minusSeconds(1);
+        TestAlert mgrAlert = new TestAlert(this.manager);
+        TestAlert srcAlert = new TestAlert(this.source);
         
         this.provider.addAlertSource(this.source);
         this.provider.addAlertManager(this.manager);
@@ -95,64 +151,86 @@ public class BaseAlertProviderTest {
         when(this.source.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
         when(this.manager.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
         
-        Iterator<? extends Alert> itr = this.provider.getAlerts(DateTime.now().minusSeconds(1));
+        Iterator<? extends Alert> results = this.provider.getAlerts(since);
+        Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
         List<Alert> alerts = Lists.newArrayList(itr);
         
-        assertThat(alerts).contains(srcAlert, mgrAlert);
+        assertThat(alerts).hasSize(2).contains(srcAlert, mgrAlert);
+    }
+    
+    @Test
+    public void testGetAlertsIdAllSources() {
+        DateTime since = DateTime.now().minusSeconds(1);
+        TestAlert sinceAlert = new TestAlert(this.source, since);
+        TestAlert srcAlert = new TestAlert(this.source);
+        TestAlert mgrAlert = new TestAlert(this.manager);
+        
+        this.provider.addAlertSource(this.source);
+        this.provider.addAlertManager(this.manager);
+        
+        when(this.source.getAlert(any(Alert.ID.class))).thenReturn(sinceAlert);
+        when(this.source.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(srcAlert));
+        when(this.manager.getAlerts(any(DateTime.class))).thenAnswer(iteratorAnswer(mgrAlert));
+        
+        Iterator<? extends Alert> results = this.provider.getAlerts(new SourceAlertID(sinceAlert.getId(), this.source));
+        Iterator<? extends Alert> itr = Iterators.transform(results, providerToSourceAlertFunction());
+        List<Alert> alerts = Lists.newArrayList(itr);
+        
+        assertThat(alerts).hasSize(2).contains(srcAlert, mgrAlert);
     }
     
     @Test
     public void testRespondToActionable() {
-        final TestAlert mgrAlert = new TestAlert(this.manager, true);
+        TestAlert mgrAlert = new TestAlert(this.manager, true);
         
         this.provider.addAlertManager(this.manager);
         
         when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(mgrAlert);
         
-        this.provider.respondTo(mgrAlert.getId(), this.responder);
+        this.provider.respondTo(new SourceAlertID(mgrAlert.getId(), this.manager), this.responder);
         
-        verify(this.responder).alertChange(eq(mgrAlert), any(AlertResponse.class));
+        verify(this.responder).alertChange(any(Alert.class), any(AlertResponse.class));
     }
     
     @Test
     public void testRespondToNonActionable() {
-        final TestAlert mgrAlert = new TestAlert(this.manager, false);
+        TestAlert mgrAlert = new TestAlert(this.manager, false);
         
         this.provider.addAlertManager(this.manager);
         
         when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(mgrAlert);
         
-        this.provider.respondTo(mgrAlert.getId(), this.responder);
+        this.provider.respondTo(new SourceAlertID(mgrAlert.getId(), this.manager), this.responder);
         
-        verify(this.responder, never()).alertChange(eq(mgrAlert), any(AlertResponse.class));
+        verify(this.responder, never()).alertChange(any(Alert.class), any(AlertResponse.class));
     }
     
     @Test
     public void testRespondToChange() {
-        final TestAlert initAlert = new TestAlert(this.manager, true);
-        final TestAlert resultAlert = new TestAlert(this.manager, true);
+        TestAlert initMgrAlert = new TestAlert(this.manager, true);
+        TestAlert resultMgrAlert = new TestAlert(this.manager, true);
         
         this.provider.addAlertManager(this.manager);
         
-        when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(initAlert);
-        when(this.manager.changeState(any(Alert.class), any(Alert.State.class), any())).thenReturn(resultAlert);
+        when(this.manager.getAlert(any(Alert.ID.class))).thenReturn(initMgrAlert);
+        when(this.manager.changeState(any(Alert.class), any(Alert.State.class), any())).thenReturn(resultMgrAlert);
         
-        this.provider.respondTo(initAlert.getId(), new AlertResponder() {
+        this.provider.respondTo(new SourceAlertID(initMgrAlert.getId(), this.manager), new AlertResponder() {
             @Override
             public void alertChange(Alert alert, AlertResponse response) {
                 response.handle("handled");
             }
         });
         
-        verify(this.manager).changeState(initAlert, Alert.State.HANDLED, "handled");
-        verify(this.listener, atLeastOnce()).alertChange(resultAlert);
+        verify(this.manager).changeState(initMgrAlert, Alert.State.HANDLED, "handled");
+        verify(this.listener, atLeastOnce()).alertChange(any(Alert.class));
         verify(this.responder, atLeastOnce()).alertChange(any(Alert.class), any(AlertResponse.class));
     }
 
     @Test
     public void testAlertsAvailable() {
-        final TestAlert mgrAlert = new TestAlert(this.manager, true);
-        final TestAlert srcAlert = new TestAlert(this.source);
+        TestAlert mgrAlert = new TestAlert(this.manager, true);
+        TestAlert srcAlert = new TestAlert(this.source);
         
         this.provider.addAlertSource(this.source);
         this.provider.addAlertManager(this.manager);
@@ -163,10 +241,8 @@ public class BaseAlertProviderTest {
         
         this.provider.alertsAvailable(2);
         
-        verify(this.listener).alertChange(srcAlert);
-        verify(this.listener).alertChange(mgrAlert);
-        verify(this.responder, never()).alertChange(eq(srcAlert), any(AlertResponse.class));
-        verify(this.responder).alertChange(eq(mgrAlert), any(AlertResponse.class));
+        verify(this.listener, times(2)).alertChange(any(Alert.class));
+        verify(this.responder, times(1)).alertChange(any(Alert.class), any(AlertResponse.class));
     }
     
     
@@ -183,25 +259,52 @@ public class BaseAlertProviderTest {
         return Arrays.asList(alerts).iterator();
     }
 
+    private Function<Alert, Alert> providerToSourceAlertFunction() {
+        return new Function<Alert, Alert>() {
+            @Override
+            public Alert apply(Alert input) {
+                return ((AlertDecorator) input).getSourceAlert();
+            }
+        };
+    }
+    
+    
+    private static class TestID implements Alert.ID { 
+        @Override
+        public String toString() {
+            return "TestID:" + hashCode();
+        }
+    }
     
     private class TestAlert implements Alert {
         
+        private TestID id = new TestID();
         private AlertSource source;
         private boolean actionable;
+        private DateTime createdTime;
         
         public TestAlert(AlertSource src) {
             this(src, src instanceof AlertManager);
         }
         
         public TestAlert(AlertSource src, boolean actionable) {
-            this.source =  src;
-            this.actionable = actionable;
+            this(src, actionable, DateTime.now());
+        }
+        
+        public TestAlert(AlertSource src, DateTime created) {
+            this(src, src instanceof AlertManager, created);
         }
 
+        public TestAlert(AlertSource src, boolean actionable, DateTime created) {
+            this.source =  src;
+            this.actionable = actionable;
+            this.createdTime = created;
+        }
+        
         @Override
         @SuppressWarnings("serial")
         public ID getId() {
-            return new ID() { };
+            return this.id;
         }
 
         @Override
@@ -248,6 +351,7 @@ public class BaseAlertProviderTest {
 
         public TestChangeEvent(TestAlert alert) {
             this.alert = alert;
+            this.time = alert.createdTime;
         }
 
         @Override

@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.alerts.api;
 
+import java.io.Serializable;
 import java.util.Iterator;
 
 import org.joda.time.DateTime;
@@ -15,7 +16,17 @@ import org.joda.time.DateTime;
  */
 public interface AlertProvider {
     
-    // TODO: add criteria-based search
+    // TODO: add criteria-based alert search
+    
+    // TODO: add criteria-based listener/responder alert filtering
+    
+    /**
+     * Resolves and reconstitutes one of the acceptable serializable ID formats (such as its toString() form) into 
+     * a valid alert ID.
+     * @param value one of the serializable formats
+     * @return an alert ID
+     */
+    Alert.ID resolve(Serializable value);
     
     /**
      * Registers a listener that will be called whenever the state of an alert
@@ -31,6 +42,13 @@ public interface AlertProvider {
      * @param responder
      */
     void addResponder(AlertResponder responder);
+    
+    /**
+     * Retrieves a specific alert
+     * @param id the alert's ID
+     * @return the alert, or null if no alert exists with that ID
+     */
+    Alert getAlert(Alert.ID id);
     
     /**
      * Gets a stream of all alerts that may have been created after the given time.  
