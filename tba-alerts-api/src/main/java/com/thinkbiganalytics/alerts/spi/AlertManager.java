@@ -3,7 +3,7 @@
  */
 package com.thinkbiganalytics.alerts.spi;
 
-import java.net.URL;
+import java.net.URI;
 
 import com.thinkbiganalytics.alerts.api.Alert;
 
@@ -13,7 +13,7 @@ import com.thinkbiganalytics.alerts.api.Alert;
  */
 public interface AlertManager extends AlertSource {
 
-    <C> Alert create(URL type, String description, C content);
+    <C> Alert create(URI type, Alert.Level level, String description, C content);
     
     <C> Alert changeState(Alert alert, Alert.State newState, C content);
     
