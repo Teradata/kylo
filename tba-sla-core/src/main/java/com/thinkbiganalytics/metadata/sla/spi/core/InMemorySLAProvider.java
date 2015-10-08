@@ -91,7 +91,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         } else if (ser instanceof SLAID) { 
             return (SLAID) ser;
         } else {
-            throw new IllegalArgumentException("Invalid ID source type: " + ser.getClass());
+            throw new IllegalArgumentException("Invalid ID source format: " + ser.getClass());
         }
     }
 
