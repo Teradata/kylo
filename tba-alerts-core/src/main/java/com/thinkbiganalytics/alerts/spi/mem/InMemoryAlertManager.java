@@ -58,11 +58,16 @@ public class InMemoryAlertManager implements AlertManager {
     }
 
     @Override
-    public Set<AlertDescriptor> getAlertTypes() {
+    public Set<AlertDescriptor> getAlertDescriptors() {
         return this.descriptors;
     }
     
-    public void setAlertTypes(Collection<AlertDescriptor> types) {
+    @Override
+    public boolean addDescriptor(AlertDescriptor descriptor) {
+        return this.descriptors.add(descriptor);
+    }
+    
+    public void setAlertDescriptors(Collection<AlertDescriptor> types) {
         this.descriptors.addAll(types);
     }
 

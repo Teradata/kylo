@@ -25,8 +25,8 @@ public class AlertDescriptor {
     /**
      * 
      */
-    public AlertDescriptor(URI type, String descr, String content) {
-        this(type, content, descr, false, Collections.<Alert.State, String>emptyMap());
+    public AlertDescriptor(URI type, String content, String descr, boolean respondable) {
+        this(type, content, descr, respondable, Collections.<Alert.State, String>emptyMap());
     }
     
     /**
@@ -40,11 +40,11 @@ public class AlertDescriptor {
         this.stateContentTypes = Collections.unmodifiableMap(new HashMap<>(states));
     }
 
-    protected URI getAlertType() {
+    public URI getAlertType() {
         return alertType;
     }
 
-    protected String getContentType() {
+    public String getContentType() {
         return contentType;
     }
     
@@ -56,7 +56,7 @@ public class AlertDescriptor {
         return respondable;
     }
 
-    protected Map<Alert.State, String> getStateContentTypes() {
+    public Map<Alert.State, String> getStateContentTypes() {
         return stateContentTypes;
     }
     

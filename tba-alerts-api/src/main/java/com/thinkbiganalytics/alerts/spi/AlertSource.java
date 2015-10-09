@@ -19,7 +19,7 @@ public interface AlertSource {
 
     Alert.ID resolve(Serializable value);
 
-    Set<AlertDescriptor> getAlertTypes();
+    Set<AlertDescriptor> getAlertDescriptors();
     
     void addNotifier(AlertNotifyReceiver receiver);
     
