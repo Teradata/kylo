@@ -82,4 +82,16 @@ public class SimpleSchedulerSetup implements InitializingBean {
     public void setGroupName(String groupName) {
         this.groupName = groupName;
     }
+
+    public void setConcurrent(boolean concurrent) {
+        this.concurrent = concurrent;
+    }
+
+    public void setCronExpression(String cronExpression) {
+        this.cronExpression = cronExpression;
+    }
+
+    public void setTargetMethod(String targetMethod) {
+        this.targetMethod = targetMethod;
+    }
 }
