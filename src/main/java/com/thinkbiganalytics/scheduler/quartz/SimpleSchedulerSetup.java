@@ -28,6 +28,7 @@ public class SimpleSchedulerSetup implements InitializingBean {
 
     private String jobName;
     private String groupName;
+    private boolean concurrent = true;
 
     /**
      * Configure the quartz scheduler
@@ -58,6 +59,7 @@ public class SimpleSchedulerSetup implements InitializingBean {
         jobDetailFactory.setTargetMethod(this.targetMethod);
         jobDetailFactory.setName(this.jobName);
         jobDetailFactory.setGroup(this.groupName);
+        jobDetailFactory.setConcurrent(concurrent);
         applicationContext.getAutowireCapableBeanFactory().initializeBean(jobDetailFactory, UUID.randomUUID().toString());
 
         CronTriggerFactoryBean triggerFactoryBean = new CronTriggerFactoryBean();
