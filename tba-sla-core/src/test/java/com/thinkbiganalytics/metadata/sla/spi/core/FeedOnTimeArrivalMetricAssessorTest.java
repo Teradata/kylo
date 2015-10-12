@@ -43,7 +43,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     private MetricAssessmentBuilder builder;
 
     @InjectMocks
-    private FeedOnTimeArrivalMetricAssessor assessor;
+    private FeedOnTimeArrivalMetricAssessor assessor = new FeedOnTimeArrivalMetricAssessor();
     
     @Before
     public void setUp() throws Exception {
