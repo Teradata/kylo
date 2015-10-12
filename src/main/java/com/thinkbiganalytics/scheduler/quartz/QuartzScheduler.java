@@ -431,7 +431,9 @@ public class QuartzScheduler implements JobScheduler {
     }
 
     public void scheduleJob(JobIdentifier jobIdentifier, TriggerIdentifier triggerIdentifier,Class<? extends QuartzJobBean> clazz, String cronExpression,Map<String,Object> jobData)  throws SchedulerException{
-
+if(jobData == null){
+    jobData = new HashMap<>();
+}
         JobDataMap jobDataMap = new JobDataMap(jobData);
         JobDetail job = newJob(clazz)
                 .withIdentity(jobIdentifier.getName(),jobIdentifier.getGroup())
