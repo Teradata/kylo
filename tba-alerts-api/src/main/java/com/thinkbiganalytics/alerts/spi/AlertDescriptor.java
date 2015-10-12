@@ -7,6 +7,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import com.thinkbiganalytics.alerts.api.Alert;
 
@@ -60,4 +61,26 @@ public class AlertDescriptor {
         return stateContentTypes;
     }
     
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (! this.getClass().equals(obj.getClass()))
+            return false;
+        
+        AlertDescriptor that = (AlertDescriptor) obj;
+        
+        return Objects.equals(this.alertType, that.alertType) &&
+                Objects.equals(this.contentType, that.contentType) &&
+                Objects.equals(this.description, that.description) &&
+                Objects.equals(this.respondable, that.respondable) &&
+                Objects.equals(this.stateContentTypes, that.stateContentTypes);
+     }
+    
+    @Override
+    public int hashCode() {
+        return Objects.hash(this.alertType, this.contentType, this.description, this.respondable, this.stateContentTypes);
+    }
 }

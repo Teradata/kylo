@@ -8,16 +8,24 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -30,6 +38,7 @@ import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
+import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
@@ -41,25 +50,71 @@ import com.thinkbiganalytics.alerts.spi.AlertSource;
  */
 public class InMemoryAlertManager implements AlertManager {
     
+    public static final int MAX_ALERTS = 2000;
+    
     private final Set<AlertDescriptor> descriptors;
     private final Set<AlertNotifyReceiver> alertReceivers;
     private final Map<Alert.ID, AtomicReference<Alert>> alertsById;
     private final NavigableMap<DateTime, AtomicReference<Alert>> alertsByTime;
     private final ReadWriteLock alertsLock = new ReentrantReadWriteLock();
 
+    private volatile Executor receiversExecutor;
+    private AtomicInteger changeCount = new AtomicInteger(0);
+
     /**
      * 
      */
     public InMemoryAlertManager() {
-        this.descriptors = new ConcurrentSkipListSet<>();
-        this.alertReceivers = new ConcurrentSkipListSet<>();
+        this.descriptors = Collections.synchronizedSet(new HashSet<AlertDescriptor>());
+        this.alertReceivers = Collections.synchronizedSet(new HashSet<AlertNotifyReceiver>());
         this.alertsById = new ConcurrentHashMap<>();
         this.alertsByTime = new ConcurrentSkipListMap<>();
     }
+    
+    public void setReceiversExecutor(Executor receiversExecutor) {
+        synchronized (this) {
+            this.receiversExecutor = receiversExecutor;
+        }
+    }
+
+    protected Executor getRespondersExecutor() {
+        if (this.receiversExecutor == null) {
+            synchronized (this) {
+                if (this.receiversExecutor == null) {
+                    this.receiversExecutor = Executors.newFixedThreadPool(1);
+                }
+            }
+        }
+        
+        return receiversExecutor;
+    }
+
+    private void signalReceivers() {
+        Executor exec = getRespondersExecutor();
+        final Set<AlertNotifyReceiver> receivers;
+        
+        synchronized (this.alertReceivers) {
+            receivers = new HashSet<>(this.alertReceivers);
+        }
+        
+        exec.execute(new Runnable() {
+            @Override
+            public void run() {
+                int count = InMemoryAlertManager.this.changeCount.get();
+                
+                for (AlertNotifyReceiver receiver : receivers) {
+                    receiver.alertsAvailable(count);
+                }
+            }
+        });
+    }
+
 
     @Override
     public Set<AlertDescriptor> getAlertDescriptors() {
-        return this.descriptors;
+        synchronized (this.descriptors) {
+            return new HashSet<>(this.descriptors);
+        }
     }
     
     @Override
@@ -68,12 +123,13 @@ public class InMemoryAlertManager implements AlertManager {
     }
     
     public void setAlertDescriptors(Collection<AlertDescriptor> types) {
-        this.descriptors.addAll(types);
+        synchronized (this.descriptors) {
+            this.descriptors.addAll(types);
+        }
     }
 
     @Override
-    public void addNotifier(AlertNotifyReceiver receiver) {
-        this.alertReceivers.remove(receiver);
+    public void addReceiver(AlertNotifyReceiver receiver) {
         this.alertReceivers.add(receiver);
     }
 
@@ -103,7 +159,7 @@ public class InMemoryAlertManager implements AlertManager {
 
     @Override
     public Iterator<? extends Alert> getAlerts() {
-        return Iterators.transform(this.alertsById.values().iterator(), 
+        return Iterators.transform(this.alertsByTime.values().iterator(), 
                 new Function<AtomicReference<Alert>, Alert>() { 
                     @Override
                     public Alert apply(AtomicReference<Alert> ref) {
@@ -117,14 +173,20 @@ public class InMemoryAlertManager implements AlertManager {
         this.alertsLock.readLock().lock();
         try {
             DateTime higher = this.alertsByTime.higherKey(since);
-            return Iterators.transform(this.alertsByTime.subMap(higher, DateTime.now()).values().iterator(),
-                    new Function<AtomicReference<Alert>, Alert>() { 
-                        @Override
-                        public Alert apply(AtomicReference<Alert> ref) {
-                            return ref.get();
-                        }
-                    });
-                    
+            
+            if (higher != null) {
+                SortedMap<DateTime, AtomicReference<Alert>> submap = this.alertsByTime.subMap(higher, DateTime.now());
+                
+                return Iterators.transform(submap.values().iterator(),
+                        new Function<AtomicReference<Alert>, Alert>() {
+                            @Override
+                            public Alert apply(AtomicReference<Alert> ref) {
+                                return ref.get();
+                            }
+                        });
+            } else {
+                return Collections.<Alert>emptySet().iterator();
+            }
         } finally {
             this.alertsLock.readLock().unlock();
         }
@@ -160,9 +222,23 @@ public class InMemoryAlertManager implements AlertManager {
 
     @Override
     public <C> Alert changeState(Alert alert, State newState, C content) {
-        GenericAlert oldAlert = (GenericAlert) alert;
-        GenericAlert newAlert = new GenericAlert(oldAlert, newState, content);
-        return null;
+        AtomicReference<Alert> ref = this.alertsById.get(alert.getId());
+        
+        if (ref != null) {
+            GenericAlert oldAlert = (GenericAlert) alert;
+            GenericAlert newAlert = new GenericAlert(oldAlert, newState, content);
+            boolean changed = ref.compareAndSet(oldAlert, newAlert);
+            
+            if (changed) {
+                this.changeCount.incrementAndGet();
+                signalReceivers();
+                return newAlert;
+            } else {
+                throw new ConcurrentModificationException("The state of this alert has aready been changed");
+            }
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -185,16 +261,34 @@ public class InMemoryAlertManager implements AlertManager {
 
     protected void addAlert(GenericAlert alert, DateTime createdTime) {
         AtomicReference<Alert> ref = new AtomicReference<Alert>(alert);
+        int count = 0;
         
         this.alertsLock.writeLock().lock();
         try {
             this.alertsByTime.put(createdTime, ref);
             this.alertsById.put(alert.getId(), ref);
+            count = this.changeCount.incrementAndGet();
         } finally {
             this.alertsLock.writeLock().unlock();
         }
+        
+        if (count > 0) {
+            signalReceivers();
+        }
     }
     
+    
+    private class AlertByIdMap extends LinkedHashMap<Alert.ID, AtomicReference<Alert>> {
+        @Override
+        protected boolean removeEldestEntry(java.util.Map.Entry<ID, AtomicReference<Alert>> eldest) {
+            if (this.size() > MAX_ALERTS) {
+                InMemoryAlertManager.this.alertsByTime.values().remove(eldest.getValue());
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
     
     private static class AlertID implements Alert.ID {
         private final UUID uuid;

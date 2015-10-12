@@ -21,7 +21,7 @@ public interface AlertSource {
 
     Set<AlertDescriptor> getAlertDescriptors();
     
-    void addNotifier(AlertNotifyReceiver receiver);
+    void addReceiver(AlertNotifyReceiver receiver);
     
     Alert getAlert(Alert.ID id);
     

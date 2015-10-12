@@ -168,7 +168,7 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
     
     @Override
     public void alertsAvailable(int count) {
-        Executor exec = this.listenersExecutor;
+        Executor exec = getListenersExecutor();
         
         exec.execute(new Runnable() {
             public void run() {
