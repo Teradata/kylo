@@ -183,7 +183,7 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
                     notifyListeners(decorator);
                     
                     if (src instanceof AlertManager && decorator.isActionable()) {
-                        notifyRepsonders(decorator, (AlertManager) src);
+                        notifyResponders(decorator, (AlertManager) src);
                     }
                     
                     sinceTime = getCreationTime(decorator);
@@ -256,7 +256,7 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
     
     private void notifyChanged(Alert alert, AlertManager manager) {
         notifyListeners(alert);
-        notifyRepsonders(alert, manager);
+        notifyResponders(alert, manager);
     }
 
     protected void notifyListeners(final Alert alert) {
@@ -277,7 +277,7 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
         });
     }
 
-    private void notifyRepsonders(Alert alert, AlertManager manager) {
+    private void notifyResponders(Alert alert, AlertManager manager) {
         this.pendingResponses.put(alert.getId(), manager);
         signalResponders();
     }
