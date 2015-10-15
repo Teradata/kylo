@@ -25,8 +25,8 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.State;
-import com.thinkbiganalytics.alerts.api.core.BaseAlertProvider.AlertDecorator;
-import com.thinkbiganalytics.alerts.api.core.BaseAlertProvider.SourceAlertID;
+import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider.AlertDecorator;
+import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider.SourceAlertID;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.AlertListener;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
@@ -36,7 +36,7 @@ import com.thinkbiganalytics.alerts.spi.AlertSource;
 
 public class BaseAlertProviderTest {
     
-    private BaseAlertProvider provider = new BaseAlertProvider();
+    private AggregatingAlertProvider provider = new AggregatingAlertProvider();
     
     @Mock
     private AlertSource source;

@@ -40,7 +40,7 @@ import com.thinkbiganalytics.alerts.spi.AlertSource;
  *
  * @author Sean Felten
  */
-public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
+public class AggregatingAlertProvider implements AlertProvider, AlertNotifyReceiver {
     
     private Set<AlertListener> listeners;
     private List<AlertResponder> responders;
@@ -55,7 +55,7 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
     /**
      * 
      */
-    public BaseAlertProvider() {
+    public AggregatingAlertProvider() {
         this.listeners = Collections.synchronizedSet(new HashSet<AlertListener>());
         this.responders = Collections.synchronizedList(new ArrayList<AlertResponder>());
         this.sources = Collections.synchronizedMap(new HashMap<String, AlertSource>());
@@ -172,7 +172,7 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
         
         exec.execute(new Runnable() {
             public void run() {
-                DateTime sinceTime = BaseAlertProvider.this.lastAlertsTime;
+                DateTime sinceTime = AggregatingAlertProvider.this.lastAlertsTime;
                 Map<String, AlertSource> srcList = snapshotSources();
                 Iterator<AlertDecorator> combinedAlerts = combineAlerts(sinceTime, srcList);
                 
@@ -189,7 +189,7 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
                     sinceTime = getCreationTime(decorator);
                 }
                 
-                BaseAlertProvider.this.lastAlertsTime = sinceTime;
+                AggregatingAlertProvider.this.lastAlertsTime = sinceTime;
             }
         });
     }
@@ -326,8 +326,8 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
     protected List<AlertListener> snapshotListeners() {
         List<AlertListener> listenerList;
         
-        synchronized (BaseAlertProvider.this.listeners) {
-            listenerList = new ArrayList<>(BaseAlertProvider.this.listeners);
+        synchronized (AggregatingAlertProvider.this.listeners) {
+            listenerList = new ArrayList<>(AggregatingAlertProvider.this.listeners);
         }
         return listenerList;
     }
@@ -335,8 +335,8 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
     protected List<AlertResponder> snapshotResponderts() {
         List<AlertResponder> respList;
         
-        synchronized (BaseAlertProvider.this.responders) {
-            respList = new ArrayList<>(BaseAlertProvider.this.responders);
+        synchronized (AggregatingAlertProvider.this.responders) {
+            respList = new ArrayList<>(AggregatingAlertProvider.this.responders);
         }
         return respList;
     }
@@ -344,8 +344,8 @@ public class BaseAlertProvider implements AlertProvider, AlertNotifyReceiver {
     protected Map<String, AlertSource> snapshotSources() {
         Map<String, AlertSource> srcList;
         
-        synchronized (BaseAlertProvider.this.sources) {
-            srcList = new HashMap<>(BaseAlertProvider.this.sources);
+        synchronized (AggregatingAlertProvider.this.sources) {
+            srcList = new HashMap<>(AggregatingAlertProvider.this.sources);
         }
         return srcList;
     }
