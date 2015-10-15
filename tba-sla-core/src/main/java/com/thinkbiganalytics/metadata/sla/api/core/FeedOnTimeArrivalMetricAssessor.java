@@ -68,14 +68,14 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
             builder.metric(metric);
             
             if (isHodiday) {
-                builder.message("No data expected for feed " + feedName + " due to a holiday");
-                builder.result(AssessmentResult.SUCCESS);
+                builder.message("No data expected for feed " + feedName + " due to a holiday")
+                       .result(AssessmentResult.SUCCESS);
             } else if (lastFeedTime.isBefore(lateTime)) {
-                builder.message("Data for feed " + feedName + " arrived on " + lastFeedTime + ", which was before late time: " + lateTime);
-                builder.result(AssessmentResult.SUCCESS);
+                builder.message("Data for feed " + feedName + " arrived on " + lastFeedTime + ", which was before late time: " + lateTime)
+                       .result(AssessmentResult.SUCCESS);
             } else {
-                builder.message("Data for feed " + feedName + " has not arrived before the late time: " + lateTime);
-                builder.result(AssessmentResult.FAILURE);
+                builder.message("Data for feed " + feedName + " has not arrived before the late time: " + lateTime)
+                       .result(AssessmentResult.FAILURE);
             }
         } catch (ParseException e) {
             LOG.error("The cron expression configured for the feed " + metric.getFeedName() 
