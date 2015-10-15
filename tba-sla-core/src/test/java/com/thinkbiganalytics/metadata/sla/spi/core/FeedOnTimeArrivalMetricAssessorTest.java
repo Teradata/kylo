@@ -20,14 +20,17 @@ import org.quartz.CronExpression;
 import org.quartz.impl.calendar.BaseCalendar;
 
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetric;
 import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.pipelinecontroller.repositories.FeedRepository;
 import com.thinkbiganalytics.pipelinecontroller.rest.dataobjects.ExecutedFeed;
+import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
 public class FeedOnTimeArrivalMetricAssessorTest {
     
+    private DateTime lateTime;
     private FeedOnTimeArrivalMetric metric;
     
     @Mock
@@ -50,9 +53,15 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         initMocks(this);
         
         when(this.calendars.get(any(String.class))).thenReturn(this.calendar);
+        when(this.builder.message(any(String.class))).thenReturn(this.builder);
+        when(this.builder.metric(any(Metric.class))).thenReturn(this.builder);
+        when(this.builder.result(any(AssessmentResult.class))).thenReturn(this.builder);
         
+        CronExpression cron = new CronExpression("0 0 12 1/1 * ? *");  // Noon every day
+        
+        this.lateTime = new DateTime(CronExpressionUtil.getPreviousFireTime(cron)).plusHours(4);
         this.metric = new FeedOnTimeArrivalMetric("feed", 
-                                                  new CronExpression("0 0 12 1/1 * ? *"), // Noon every day
+                                                  cron, 
                                                   Period.hours(4), 
                                                   Period.days(2), 
                                                   "USA");
@@ -60,7 +69,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
 
     @Test
     public void testMinuteBeforeLate() throws ParseException {
-        DateTime feedEnd = DateTime.now().withTimeAtStartOfDay().plusHours(16).minusMinutes(1);
+        DateTime feedEnd = this.lateTime.minusMinutes(1);
         when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(createExecutedFeed(feedEnd));
         when(this.calendar.isTimeIncluded(anyLong())).thenReturn(false);
         
@@ -71,7 +80,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     
     @Test
     public void testMinuteAfterLate() throws ParseException {
-        DateTime feedEnd = DateTime.now().withTimeAtStartOfDay().plusHours(16).plusMinutes(1);
+        DateTime feedEnd = this.lateTime.plusMinutes(1);
         when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(createExecutedFeed(feedEnd));
         when(this.calendar.isTimeIncluded(anyLong())).thenReturn(false);
         
@@ -82,7 +91,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     
     @Test
     public void testLateButHoliday() throws ParseException {
-        DateTime feedEnd = DateTime.now().withTimeAtStartOfDay().plusHours(16).plusMinutes(1);
+        DateTime feedEnd = this.lateTime.plusMinutes(1);
         when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(createExecutedFeed(feedEnd));
         when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
         
