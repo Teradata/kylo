@@ -3,13 +3,10 @@
  */
 package com.thinkbiganalytics.metadata.sla.api.core;
 
-import java.util.Formatter;
-
-import org.joda.time.Chronology;
 import org.joda.time.Period;
-import org.quartz.Calendar;
 import org.quartz.CronExpression;
 
+import com.google.common.base.MoreObjects;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**
@@ -22,7 +19,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
     private CronExpression expectedExpression;
     private Period latePeriod;
     private Period asOfPeriod;
-    private String clalendarName;
+    private String calendarName;
     
 
     /**
@@ -42,7 +39,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
         this.expectedExpression = expectedExpression;
         this.latePeriod = latePeriod;
         this.asOfPeriod = asOfPeriod;
-        this.clalendarName = clalendarName;
+        this.calendarName = clalendarName;
     }
 
 
@@ -51,10 +48,14 @@ public class FeedOnTimeArrivalMetric implements Metric {
      */
     @Override
     public String getDescription() {
-        Formatter f = new Formatter();
-//        f.format("", getfe)
-        // TODO: format default description
-        return toString();
+        return MoreObjects.toStringHelper(this)
+                .omitNullValues()
+                .add("feedName", this.feedName)
+                .add("expectedExpression", this.expectedExpression)
+                .add("latePeriod", this.latePeriod)
+                .add("asOfPeriod", this.asOfPeriod)
+                .add("calendarName", this.calendarName)
+                .toString();
     }
 
     public String getFeedName() {
@@ -90,11 +91,11 @@ public class FeedOnTimeArrivalMetric implements Metric {
     }
 
     public String getCalendarName() {
-        return clalendarName;
+        return calendarName;
     }
 
-    public void setClalendarName(String claendarName) {
-        this.clalendarName = claendarName;
+    public void setCalendarName(String claendarName) {
+        this.calendarName = claendarName;
     }
     
     

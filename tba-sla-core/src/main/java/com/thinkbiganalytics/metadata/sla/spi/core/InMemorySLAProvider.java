@@ -14,6 +14,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import org.joda.time.DateTime;
+
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -234,6 +236,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         
         private ServiceLevelAgreement.ID id;
         private String name;
+        private DateTime creationTime = DateTime.now();
         private String description;
         private Set<Obligation> obligations;
         
@@ -249,6 +252,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
             this.id = id;
         }
 
+        @Override
         public String getName() {
             return name;
         }
@@ -256,7 +260,17 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         protected void setName(String name) {
             this.name = name;
         }
+        
+        @Override
+        public DateTime getCreationTime() {
+            return this.creationTime;
+        }
+        
+        public void setCreationTime(DateTime creationTime) {
+            this.creationTime = creationTime;
+        }
 
+        @Override
         public String getDescription() {
             return description;
         }
@@ -265,6 +279,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
             this.description = description;
         }
 
+        @Override
         public Set<Obligation> getObligations() {
             return obligations;
         }

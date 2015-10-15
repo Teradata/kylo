@@ -7,6 +7,7 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import com.thinkbiganalytics.alerts.api.Alert;
+import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 

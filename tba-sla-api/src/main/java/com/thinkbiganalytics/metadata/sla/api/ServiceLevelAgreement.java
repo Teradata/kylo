@@ -6,6 +6,8 @@ package com.thinkbiganalytics.metadata.sla.api;
 import java.io.Serializable;
 import java.util.Set;
 
+import org.joda.time.DateTime;
+
 /**
  * Describes an SLA, which is a collection of obligations that must be met when assessed.
  * 
@@ -23,6 +25,11 @@ public interface ServiceLevelAgreement {
      * @return the name of this SLA
      */
     String getName();
+    
+    /**
+     * @return the time when this SLA was created
+     */
+    DateTime getCreationTime();
     
     /**
      * @return a description of this SLA
