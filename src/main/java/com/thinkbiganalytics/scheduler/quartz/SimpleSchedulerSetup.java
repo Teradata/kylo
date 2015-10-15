@@ -28,7 +28,7 @@ public class SimpleSchedulerSetup implements InitializingBean {
 
     private String jobName;
     private String groupName;
-    private boolean concurrent = true;
+    private Boolean concurrent = true;
 
     /**
      * Configure the quartz scheduler
@@ -83,7 +83,7 @@ public class SimpleSchedulerSetup implements InitializingBean {
         this.groupName = groupName;
     }
 
-    public void setConcurrent(boolean concurrent) {
+    public void setConcurrent(Boolean concurrent) {
         this.concurrent = concurrent;
     }
 
