@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+    http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+
+    <bean id="jiraRestClientConfig" class="com.thinkbiganalytics.jira.JiraRestClientConfig">
+        <property name="apiPath" value="${jira.apiPath}"/>
+        <property name="host" value="${jira.host}"/>
+        <property name="username" value="${jira.username}"/>
+        <property name="password" value="${jira.password}" />
+        <property name="keystorePath" value="${jira.keystorePath}" />
+        <property name="keystorePassword" value="${jira.keystorePassword}" />
+        <property name="https" value="${jira.https}"/>
+        <property name="keystoreOnClasspath" value="${jira.keystoreOnClasspath}"/>
+    </bean>
+
+    <bean id="jiraClient" class="com.thinkbiganalytics.jira.JiraJerseyClient">
+        <constructor-arg  ref="jiraRestClientConfig"/>
+    </bean>
+
+</beans>
