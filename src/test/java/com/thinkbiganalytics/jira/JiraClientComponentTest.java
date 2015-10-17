@@ -24,10 +24,26 @@ public class JiraClientComponentTest {
    @Test
     public void testJiraClient() {
         try {
-            String summary = "Test Jira Issue Summary on "+System.currentTimeMillis();
         Issue issue = jiraClient.getIssue("TDB-2");
         Assert.assertEquals("TDB-2",issue.getKey());
             System.out.println("ISSUE "+issue);
+        } catch (JiraException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Test
+    public void testCreateIssue(){
+        String summary = "Test Jira Issue Summary on "+System.currentTimeMillis();
+        try {
+          Issue issue =  jiraClient.createIssue("JRTT",summary,"Desc","Task","scott.reisdorf");
+           Assert.assertNotNull(issue);
+            summary = "Test2 Jira Issue Summary on "+System.currentTimeMillis();
+          issue =  jiraClient.createIssue("JRTT",summary,"Desc2","Task","scott.reisdorf");
+            Assert.assertNotNull(issue);
+            summary = "Test3 Jira Issue Summary on "+System.currentTimeMillis();
+            issue =  jiraClient.createIssue("JRTT",summary,"Desc3","Task","scott.reisdorf");
+            Assert.assertNotNull(issue);
         } catch (JiraException e) {
             e.printStackTrace();
         }

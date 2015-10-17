@@ -2,6 +2,9 @@ package com.thinkbiganalytics.jira;
 
 
 import com.google.common.base.Predicate;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.rest.JerseyClientException;
 import com.thinkbiganalytics.rest.JerseyRestClient;
@@ -11,6 +14,7 @@ import org.apache.commons.lang3.StringUtils;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Created by sr186054 on 10/15/15.
@@ -18,11 +22,28 @@ import java.util.*;
 public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
 
     private String apiPath = "/rest/api/latest/";
-    Map<String, List<String>> issueTypeNameCache = new HashMap<>();
+
+    LoadingCache<String, List<String>> issueTypeNameCache;
 
     public JiraJerseyClient(JiraRestClientConfig config) {
         super(config);
         this.apiPath = config.getApiPath();
+
+// cache the Issue Types related to a project since they will not change much.
+// But if they do, expire the cache after a certain amount of time
+
+      this.issueTypeNameCache = CacheBuilder.newBuilder()
+                .expireAfterAccess(20, TimeUnit.MINUTES)
+                .build(
+                        new CacheLoader<String, List<String>>() {
+                            public List<String> load(String key) {
+                                try {
+                                    return loadIssueTypeNamesForProject(key);
+                                } catch (JiraException e) {
+                                    return null;
+                                }
+                            }
+                        });
     }
 
     protected WebTarget getBaseTarget() {
@@ -125,8 +146,7 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
      * @return
      * @throws JiraException
      */
-    public List<String> getIssueTypeNamesForProject(String projectKey) throws JiraException {
-        if (!issueTypeNameCache.containsKey(projectKey)) {
+    private List<String> loadIssueTypeNamesForProject(String projectKey) throws JiraException {
             List<IssueType> issueTypes = null;
             issueTypes = getIssueTypesForProject(projectKey);
             List<String> names = new ArrayList<>();
@@ -134,12 +154,20 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
                 for (IssueType issueType : issueTypes) {
                     names.add(issueType.getName());
                 }
-                issueTypeNameCache.put(projectKey, names);
             }
-        }
-
-        return issueTypeNameCache.get(projectKey);
+        return names;
     }
+
+
+    /**
+     * return the List of String names of the IssueTypes for a given Project
+     * @param projectKey
+     * @return
+     */
+    public List<String>getIssueTypeNamesForProject(String projectKey){
+        return issueTypeNameCache.getUnchecked(projectKey);
+    }
+
 
     /**
      * Check to see if a given issue type is valid for a Project
@@ -151,8 +179,19 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
      */
     public boolean isValidIssueType(String projectKey, final String issueTypeName) {
 
-        try {
             List<String> issueTypes  = getIssueTypeNamesForProject(projectKey);
+
+       return isValidIssueType(issueTypes, issueTypeName);
+
+    }
+
+    /**
+     * check gto see if the issueType List has the passed in issueTypeName
+     * @param issueTypes
+     * @param issueTypeName
+     * @return
+     */
+    public boolean isValidIssueType(List<String> issueTypes, final String issueTypeName ) {
 
         if (issueTypes != null) {
             Predicate<String> matchesProject = new Predicate<String>() {
@@ -163,9 +202,6 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
             };
             Collection<String> matchingTypes = Collections2.filter(issueTypes, matchesProject);
             return matchingTypes != null && !matchingTypes.isEmpty();
-        }
-        } catch (JiraException e) {
-            e.printStackTrace();
         }
         return false;
 
@@ -193,17 +229,17 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
             assignee.setName(assigneeName);
             issue.setAssignee(assignee);
 
-
             //Validate the parameters
-            boolean validIssueType = isValidIssueType(projectKey, issueType);
+            List<String> issueTypes = getIssueTypeNamesForProject(projectKey);
 
             //Validate the Project Name
-            if (!issueTypeNameCache.containsKey(projectKey)) {
+            if (issueTypes == null) {
                 throw new JiraException("Unable to Create Issue: Project " + projectKey + " does not exist.  Issue Details are: " + issue);
             }
+            boolean validIssueType = isValidIssueType(issueTypes,issueType);
             if (!validIssueType) {
                 //set it to the first one??
-                throw new JiraException("Unable to Create Issue: Issue type " + issueType + " is not allowed for Project " + projectKey + ".  Valid Issue Types are: " + issueTypeNameCache.get(projectKey) + ". Issue Details are:" + issue);
+                throw new JiraException("Unable to Create Issue: Issue type " + issueType + " is not allowed for Project " + projectKey + ".  Valid Issue Types are: " + issueTypes + ". Issue Details are:" + issue);
             }
 
             //Validate the Assignee

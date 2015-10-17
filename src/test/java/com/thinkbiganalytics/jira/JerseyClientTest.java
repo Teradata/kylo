@@ -1,6 +1,8 @@
 package com.thinkbiganalytics.jira;
 
 import com.thinkbiganalytics.jira.domain.Issue;
+
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -32,6 +34,8 @@ public class JerseyClientTest {
 
         Issue issue = null;
         try {
+            issue = client.createIssue("JRTT","Test Summary for new Jira Client","Test Description","Task","scott.reisdorf");
+            Assert.assertNotNull(issue);
             issue = client.createIssue("JRTT","Test Summary for new Jira Client","Test Description","Task","scott.reisdorf");
         } catch (JiraException e) {
             e.printStackTrace();
