@@ -16,6 +16,7 @@ import java.util.UUID;
 
 import org.joda.time.DateTime;
 
+import com.thinkbiganalytics.metadata.sla.api.DuplicateAgreementNameException;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -31,12 +32,14 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
     
     private Map<SLAID, ServiceLevelAgreement> slas;
+    private Map<String, ID> nameToSlas;
 
     /**
      * 
      */
     public InMemorySLAProvider() {
         this.slas = Collections.synchronizedMap(new HashMap<SLAID, ServiceLevelAgreement>());
+        this.nameToSlas = Collections.synchronizedMap(new HashMap<String, ID>());
     }
     
     @Override
@@ -55,10 +58,30 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
     public ServiceLevelAgreement getAgreement(ID id) {
         return this.slas.get(id);
     }
+    
+    @Override
+    public ServiceLevelAgreement findAgreementByName(String slaName) {
+        ID id = this.nameToSlas.get(slaName);
+        
+        if (id != null) {
+            return this.slas.get(id);
+        } else {
+            return null;
+        }
+    }
 
     @Override
     public ServiceLevelAgreement removeAgreement(ID id) {
-        return this.slas.remove(id);
+        synchronized (this.slas) {
+            ServiceLevelAgreement sla = this.slas.remove(id);
+            
+            if (sla != null) {
+                this.nameToSlas.remove(sla.getName());
+                return sla;
+            } else {
+                return null;
+            }
+        }
     }
     
     @Override
@@ -72,16 +95,32 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
     }
     
     private SLAImpl addSLA(SLAImpl sla) {
-        SLAID id = new SLAID();
-        sla.setId(id);
-        this.slas.put(id, sla);
-        return sla;
+        synchronized (this.slas) {
+            SLAID id = new SLAID();
+            
+            if (this.nameToSlas.containsKey(sla.getName())) {
+                throw new DuplicateAgreementNameException(sla.getName());
+            } else {
+                sla.setId(id);
+                this.slas.put(id, sla);
+                this.nameToSlas.put(sla.getName(), id);
+                return sla;
+            }
+        }
     }
     
     private SLAImpl replaceSLA(SLAID id, SLAImpl sla) {
-        sla.setId(id);
-        this.slas.put(id, sla);
-        return sla;
+        ServiceLevelAgreement oldSla = this.slas.get(id);
+        ServiceLevelAgreement.ID namedId = this.nameToSlas.get(sla.getName());
+        
+        // Make sure the name of the new SLA does not match that of another SLA besides the one being replaced.
+        if (namedId == null || oldSla.getId().equals(namedId)) {
+            sla.setId(id);
+            this.slas.put(id, sla);
+            return sla;
+        } else {
+            throw new DuplicateAgreementNameException(sla.getName());
+        }
     }
     
     private SLAID resolveImpl(Serializable ser) {
@@ -104,7 +143,6 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         private SLAID id;
         private String name;
         private String descrtion;
-        private Set<Obligation> obligations = new HashSet<Obligation>();
         private SLAImpl sla = new SLAImpl();
         
         public SLABuilderImpl() {
@@ -194,6 +232,9 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
     
     
     private static class SLAID implements ServiceLevelAgreement.ID {
+        
+        private static final long serialVersionUID = 8914036758972637669L;
+        
         private final UUID uuid;
         
         public SLAID() {
@@ -265,10 +306,6 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         public DateTime getCreationTime() {
             return this.creationTime;
         }
-        
-        public void setCreationTime(DateTime creationTime) {
-            this.creationTime = creationTime;
-        }
 
         @Override
         public String getDescription() {
@@ -282,10 +319,6 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         @Override
         public Set<Obligation> getObligations() {
             return obligations;
-        }
-
-        protected void setObligations(Set<Obligation> obligations) {
-            this.obligations = obligations;
         }
     }
 

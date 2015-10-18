@@ -7,6 +7,7 @@ import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.thinkbiganalytics.metadata.sla.api.DuplicateAgreementNameException;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
@@ -51,18 +52,43 @@ public class InMemorySLAProviderTest {
                                         
     }
     
+    @Test(expected=DuplicateAgreementNameException.class)
+    public void testCreateDuplicateName() {
+        this.provider.builder().name("testCreateSLA").build(); 
+        this.provider.builder().name("testCreateSLA").build();
+    }
+    
+    @Test
+    public void testFindByName() {
+        ServiceLevelAgreement sla = this.provider.builder()
+                .name("testCreateSLA")
+                .build();
+        
+        ServiceLevelAgreement found = this.provider.findAgreementByName(sla.getName());
+        
+        assertThat(found).isNotNull();
+        assertThat(found.getId()).isEqualTo(sla.getId());
+        assertThat(found.getName()).isEqualTo(sla.getName());
+    }
+    
     @Test
     public void testReplace() {
         ServiceLevelAgreement.ID id = this.provider.builder().name("First").build().getId();
         
-        this.provider.builder(id)
-            .name("Second")
-            .build();
+        this.provider.builder(id).name("Second").build();
         
         ServiceLevelAgreement second = this.provider.getAgreement(id);
         
         assertThat(second).isNotNull();
         assertThat(second.getName()).isEqualTo("Second");
+    }
+    
+    @Test(expected=DuplicateAgreementNameException.class)
+    public void testReplaceDuplicateName() {
+        ServiceLevelAgreement.ID id = this.provider.builder().name("Initial").build().getId();
+        
+        this.provider.builder().name("Another").build();
+        this.provider.builder(id).name("Another").build();
     }
     
     @Test

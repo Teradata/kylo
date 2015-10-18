@@ -15,6 +15,8 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 public interface ServiceLevelAgreementProvider {
     
+    // TODO Add criteria-based SLA search methods
+    
     /**
      * Resolves an ID from a serialized form, for instance the string result from the toSting() method of an ID.
      * @param ser some serializable form
@@ -32,6 +34,14 @@ public interface ServiceLevelAgreementProvider {
      * @return the SLA corresponding to the given ID, or null if the SLA no longer exists
      */
     ServiceLevelAgreement getAgreement(ServiceLevelAgreement.ID id);
+    
+    /**
+     * Search for an SLA by name.
+     * @param slaName to name to match
+     * @return the SLA or null if not found
+     */
+    // TODO: remove/deprecate this method when criteria-based search methods are added
+    ServiceLevelAgreement findAgreementByName(String slaName);
     
     /**
      * Removes an SLA with the given ID.
