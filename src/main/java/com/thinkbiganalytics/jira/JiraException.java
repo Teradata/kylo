@@ -3,7 +3,7 @@ package com.thinkbiganalytics.jira;
 /**
  * Created by sr186054 on 10/16/15.
  */
-public class JiraException extends Throwable {
+public class JiraException extends Exception {
 
     public JiraException() {
     }
