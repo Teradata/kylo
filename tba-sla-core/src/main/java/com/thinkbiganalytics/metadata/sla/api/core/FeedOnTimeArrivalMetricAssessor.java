@@ -70,7 +70,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
             
             builder
                 .metric(metric)
-                .compartWith(expectedDate, feedName);
+                .compareWith(expectedDate, feedName);
             
             if (isHodiday) {
                 builder.message("No data expected for feed " + feedName + " due to a holiday")

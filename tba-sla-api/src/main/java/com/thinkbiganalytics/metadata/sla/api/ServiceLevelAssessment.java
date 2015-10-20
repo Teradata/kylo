@@ -23,7 +23,7 @@ public interface ServiceLevelAssessment extends Comparable<ServiceLevelAssessmen
     /**
      * @return the SLA that was assessed
      */
-    ServiceLevelAgreement getSLA();
+    ServiceLevelAgreement getAgreement();
     
     /**
      * @return a message describing the result of this assessment

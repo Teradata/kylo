@@ -66,7 +66,7 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
      * @see com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment#getSLA()
      */
     @Override
-    public ServiceLevelAgreement getSLA() {
+    public ServiceLevelAgreement getAgreement() {
         return this.sla;
     }
 
@@ -112,7 +112,7 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
                 // Note: natural ordering is really just by result but adding SLA name into comparison for grouping purposes.
                 ComparisonChain chain = ComparisonChain
                         .start()
-                        .compare(this.getSLA().getName(), sla.getSLA().getName());
+                        .compare(this.getAgreement().getName(), sla.getAgreement().getName());
                 
                 for (int idx = 0; idx < list1.size(); idx++) {
                     chain = chain.compare(list1.get(idx), list2.get(idx));

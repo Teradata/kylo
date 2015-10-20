@@ -41,7 +41,7 @@ public interface MetricAssessmentBuilder {
      * @return this builder
      */
     @SuppressWarnings("unchecked")
-    MetricAssessmentBuilder compartWith(Comparable<? extends Serializable> value, Comparable<? extends Serializable>... otherValues);
+    MetricAssessmentBuilder compareWith(Comparable<? extends Serializable> value, Comparable<? extends Serializable>... otherValues);
 
     /**
      * @param result the result status of this assessment

@@ -9,10 +9,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.commons.collections.comparators.ComparatorChain;
 import org.apache.commons.lang3.ArrayUtils;
 
-import com.google.common.collect.ComparisonChain;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
@@ -250,7 +248,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
 
         @Override
         @SuppressWarnings("unchecked")
-        public MetricAssessmentBuilder compartWith(Comparable<? extends Serializable> value, 
+        public MetricAssessmentBuilder compareWith(Comparable<? extends Serializable> value, 
                                                    Comparable<? extends Serializable>... otherValues) {
             this.comparables = ArrayUtils.toArray(value);
             this.comparables = ArrayUtils.addAll(this.comparables, otherValues);
