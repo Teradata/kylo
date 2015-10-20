@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.sla.api.core;
 
 import java.text.ParseException;
+import java.util.Date;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -50,6 +51,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
      * @see com.thinkbiganalytics.metadata.sla.spi.MetricAssessor#assess(com.thinkbiganalytics.metadata.sla.api.Metric, com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder)
      */
     @Override
+    @SuppressWarnings("unchecked")
     public void assess(FeedOnTimeArrivalMetric metric, MetricAssessmentBuilder builder) {
         LOG.debug("Assessing metric: " + metric);
         
@@ -60,12 +62,15 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         DateTime lastFeedTime = feed.getEndTime();
         
         try {
-            DateTime expectedTime = new DateTime(CronExpressionUtil.getPreviousFireTime(metric.getExpectedExpression()));
+            Date expectedDate = CronExpressionUtil.getPreviousFireTime(metric.getExpectedExpression());
+            DateTime expectedTime = new DateTime(expectedDate);
             DateTime lateTime = expectedTime.plus(metric.getLatePeriod());
             DateTime asOfTime = expectedTime.minus(metric.getAsOfPeriod());
             boolean isHodiday = calendar.isTimeIncluded(asOfTime.getMillis());
             
-            builder.metric(metric);
+            builder
+                .metric(metric)
+                .compartWith(expectedDate, feedName);
             
             if (isHodiday) {
                 builder.message("No data expected for feed " + feedName + " due to a holiday")

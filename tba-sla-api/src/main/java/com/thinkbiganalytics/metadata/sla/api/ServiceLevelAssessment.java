@@ -13,7 +13,7 @@ import org.joda.time.DateTime;
  * 
  * @author Sean Felten
  */
-public interface ServiceLevelAssessment extends Serializable {
+public interface ServiceLevelAssessment extends Comparable<ServiceLevelAssessment>, Serializable {
 
     /**
      * @return the time when this assessment was generated

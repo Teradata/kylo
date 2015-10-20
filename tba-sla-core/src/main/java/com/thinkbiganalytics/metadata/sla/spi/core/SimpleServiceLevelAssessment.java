@@ -3,13 +3,19 @@
  */
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.joda.time.DateTime;
 
+import com.google.common.collect.ComparisonChain;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
+import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
@@ -88,6 +94,37 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
         return new HashSet<ObligationAssessment>(this.obligationAssessments);
     }
     
+    @Override
+    public int compareTo(ServiceLevelAssessment sla) {
+        int result = getResult().compareTo(sla.getResult());
+        
+        if (result != 0) {
+            return result;
+        } else {
+            List<ObligationAssessment> list1 = new ArrayList<>(getObligationAssessments());
+            List<ObligationAssessment> list2 = new ArrayList<>(sla.getObligationAssessments());
+            result = list1.size() - list2.size();
+            
+            if (result == 0) {
+                Collections.sort(list1);
+                Collections.sort(list2);
+    
+                // Note: natural ordering is really just by result but adding SLA name into comparison for grouping purposes.
+                ComparisonChain chain = ComparisonChain
+                        .start()
+                        .compare(this.getSLA().getName(), sla.getSLA().getName());
+                
+                for (int idx = 0; idx < list1.size(); idx++) {
+                    chain = chain.compare(list1.get(idx), list2.get(idx));
+                }
+                
+                return chain.result();
+            } else {
+                return result;
+            }
+        }
+    }
+
     protected boolean add(ObligationAssessment assessment) {
         return this.obligationAssessments.add(assessment);
     }
@@ -111,6 +148,4 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     protected void setResult(AssessmentResult result) {
         this.result = result;
     }
-
-    
 }

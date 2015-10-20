@@ -10,7 +10,7 @@ import java.io.Serializable;
  * 
  * @author Sean Felten
  */
-public interface MetricAssessment extends Serializable {
+public interface MetricAssessment extends Comparable<MetricAssessment>, Serializable {
     
     /**
      * @return the metric that was assessed

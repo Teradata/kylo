@@ -3,10 +3,16 @@
  */
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
+import java.io.Serializable;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.apache.commons.collections.comparators.ComparatorChain;
+import org.apache.commons.lang3.ArrayUtils;
+
+import com.google.common.collect.ComparisonChain;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
@@ -132,6 +138,8 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         private Obligation obligation;
         private String message = "";
         private AssessmentResult result = AssessmentResult.SUCCESS;
+        private Comparator<ObligationAssessment> comparator;
+        private Comparable<? extends Serializable>[] comparables;
 
         private SimpleObligationAssessment assessment;
         
@@ -157,6 +165,22 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
             this.message = descr;
             return this;
         }
+        
+        @Override
+        public ObligationAssessmentBuilder comparator(Comparator<ObligationAssessment> comp) {
+            this.comparator = comp;
+            return this;
+        }
+        
+        @Override
+        @SuppressWarnings("unchecked")
+        public ObligationAssessmentBuilder compareWith(final Comparable<? extends Serializable> value, 
+                                                       @SuppressWarnings("unchecked") 
+                                                       final Comparable<? extends Serializable>... otherValeus) {
+            this.comparables = ArrayUtils.toArray(value);
+            this.comparables = ArrayUtils.addAll(this.comparables, otherValeus);
+            return this;
+        }
 
         @Override
         public <M extends Metric> MetricAssessment assess(M metric) {
@@ -173,6 +197,15 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
             this.assessment.setObligation(this.obligation);
             this.assessment.setMessage(this.message);
             this.assessment.setResult(this.result);
+            
+            if (this.comparator != null) {
+                this.assessment.setComparator(this.comparator);
+            }
+            
+            if (this.comparables != null) {
+                this.assessment.setComparables(this.comparables);
+            }
+            
             return this.assessment;
         }
     }
@@ -184,6 +217,8 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         private Metric metric;
         private String message = "";
         private AssessmentResult result = AssessmentResult.SUCCESS;
+        private Comparator<MetricAssessment> comparator;
+        private Comparable<? extends Serializable>[] comparables;
         
         public MetricAssessmentBuilderImpl(Metric metric) {
             this.metric = metric;
@@ -207,10 +242,34 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
             return this;
         }
         
+        @Override
+        public MetricAssessmentBuilder comparitor(Comparator<MetricAssessment> comp) {
+            this.comparator = comp;
+            return this;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public MetricAssessmentBuilder compartWith(Comparable<? extends Serializable> value, 
+                                                   Comparable<? extends Serializable>... otherValues) {
+            this.comparables = ArrayUtils.toArray(value);
+            this.comparables = ArrayUtils.addAll(this.comparables, otherValues);
+            return this;
+        }
+
         protected MetricAssessment build() {
             SimpleMetricAssessment assessment = new SimpleMetricAssessment(this.metric);
             assessment.setMessage(this.message);
             assessment.setResult(this.result);
+            
+            if (this.comparator != null) {
+                assessment.setComparator(this.comparator);
+            }
+            
+            if (this.comparables != null) {
+                assessment.setComparables(this.comparables);
+            }
+            
             return assessment;
         }
     }

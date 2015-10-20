@@ -11,7 +11,7 @@ import java.util.Set;
  * 
  * @author Sean Felten
  */
-public interface ObligationAssessment extends Serializable {
+public interface ObligationAssessment extends Comparable<ObligationAssessment>, Serializable {
     
     /**
      * @return the obligation that was assesssed
