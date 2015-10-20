@@ -9,6 +9,7 @@ import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.rest.JerseyClientException;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.jira.domain.*;
+import com.thinkbiganalytics.rest.JodaTimeMapperProvider;
 import org.apache.commons.lang3.StringUtils;
 
 import javax.ws.rs.client.WebTarget;
@@ -44,6 +45,9 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
                                 }
                             }
                         });
+        if(client != null){
+            client.register(JodaTimeMapperProvider.class);
+        }
     }
 
     protected WebTarget getBaseTarget() {
@@ -210,52 +214,51 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
 
     /**
      * Create a new Jira Issue
-     *
-     * @param projectKey
-     * @param summary
-     * @param description
-     * @param issueType
-     * @param assigneeName
+     * @param issue
      * @return
      * @throws JiraException
      */
-    public Issue createIssue(String projectKey, String summary, String description, String issueType, String assigneeName) throws JiraException {
-        //validate issuetype before creating
-        Issue issue = null;
+    public Issue createIssue(Issue issue) throws JiraException {
 
-            //Create the issue
-            issue = new Issue(projectKey, issueType, summary, description);
-            User assignee = new User();
-            assignee.setName(assigneeName);
-            issue.setAssignee(assignee);
 
-            //Validate the parameters
-            List<String> issueTypes = getIssueTypeNamesForProject(projectKey);
+        String projectKey = issue.getProject() != null ? issue.getProject().getKey() : null;
+        String issueType = issue.getIssueType() != null ? issue.getIssueType().getName() : null;
+        String summary = issue.getSummary();
+        String description = issue.getDescription();
+        String assigneeName = issue.getAssignee() != null ? issue.getAssignee().getName() : null;
 
-            //Validate the Project Name
-            if (issueTypes == null) {
-                throw new JiraException("Unable to Create Issue: Project " + projectKey + " does not exist.  Issue Details are: " + issue);
-            }
-            boolean validIssueType = isValidIssueType(issueTypes,issueType);
-            if (!validIssueType) {
-                //set it to the first one??
-                throw new JiraException("Unable to Create Issue: Issue type " + issueType + " is not allowed for Project " + projectKey + ".  Valid Issue Types are: " + issueTypes + ". Issue Details are:" + issue);
-            }
 
-            //Validate the Assignee
+        //Validate the parameters
+        List<String> issueTypes = getIssueTypeNamesForProject(projectKey);
 
-            boolean assignable = isAssignable(projectKey, assigneeName);
-            if (!assignable) {
-                throw new JiraException("Unable to Create Issue: User " + assigneeName + " is not allowed to be assigned issues for Project " + projectKey + ". Issue Details are:" + issue);
-            }
+        //Validate the Project Name
+        if (issueTypes == null) {
+            throw new JiraException("Unable to Create Issue: Project " + projectKey + " does not exist.  Issue Details are: " + issue);
+        }
+        boolean validIssueType = isValidIssueType(issueTypes,issueType);
+        if (!validIssueType) {
+            //set it to the first one??
+            throw new JiraException("Unable to Create Issue: Issue type " + issueType + " is not allowed for Project " + projectKey + ".  Valid Issue Types are: " + issueTypes + ". Issue Details are:" + issue);
+        }
 
-            //Validate required fields
-            if(StringUtils.isBlank(summary)){
-                throw new JiraException("Unable to Create Issue: Summary is required");
-            }
-            if(StringUtils.isBlank(description)){
-                throw new JiraException("Unable to Create Issue: Description is required");
-            }
+        //Validate the Assignee
+        if(StringUtils.isBlank(assigneeName)){
+            //default it to the current Rest client user name
+            assigneeName = super.getUsername();
+        }
+
+        boolean assignable = isAssignable(projectKey, assigneeName);
+        if (!assignable) {
+            throw new JiraException("Unable to Create Issue: User " + assigneeName + " is not allowed to be assigned issues for Project " + projectKey + ". Issue Details are:" + issue);
+        }
+
+        //Validate required fields
+        if(StringUtils.isBlank(summary)){
+            throw new JiraException("Unable to Create Issue: Summary is required");
+        }
+        if(StringUtils.isBlank(description)){
+            throw new JiraException("Unable to Create Issue: Description is required");
+        }
 
         try {
             //Transform it to a CreateIssue
@@ -271,7 +274,24 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
             throw new JiraException(message, e);
         }
         return issue;
+    }
 
+
+    /**
+     * Create a new Jira Issue
+     *
+     * @param projectKey
+     * @param summary
+     * @param description
+     * @param issueType
+     * @param assigneeName
+     * @return
+     * @throws JiraException
+     */
+    public Issue createIssue(String projectKey, String summary, String description, String issueType, String assigneeName) throws JiraException {
+        //validate issuetype before creating
+        Issue issue = new IssueBuilder(projectKey,issueType).setSummary(summary).setDescription(description).setAssignee(assigneeName).build();
+        return createIssue(issue);
 
     }
 

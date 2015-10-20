@@ -21,6 +21,16 @@ public interface JiraClient {
      */
     Issue createIssue(String projectKey, String summary, String description, String issueType, String assigneeName) throws JiraException;
 
+
+    /**
+     * Create a new Jira Issue from an Issue object
+     * Use IssueBuilder to create this initial issue object
+     * @param issue
+     * @return
+     * @throws JiraException
+     */
+    Issue createIssue(Issue issue) throws JiraException;
+
     /**
      * Get a Jira Issue by its Key (i.e. JIRA-1)
      * @param key
@@ -28,6 +38,7 @@ public interface JiraClient {
      * @throws JiraException
      */
     Issue getIssue(String key) throws JiraException;
+
 
 
     /**

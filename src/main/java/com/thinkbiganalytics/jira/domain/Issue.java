@@ -60,6 +60,14 @@ public class Issue extends  BasicIssue  {
         this.description = description;
         this.summary = summary;
     }
+
+
+    public Issue(String projectKey, String issueTypeName, String summary,String description, String assigneeName) {
+        this(projectKey,issueTypeName,summary,description);
+        User user = new User();
+        user.setName(assigneeName);
+        this.setAssignee(user);
+    }
     public Issue(GetIssue getIssue) {
         super(getIssue);
         this.status = getIssue.getFields().getStatus();

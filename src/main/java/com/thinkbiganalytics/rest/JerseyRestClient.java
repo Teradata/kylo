@@ -23,7 +23,7 @@ import java.util.concurrent.Future;
 
 /**
  * Generic JerseyRestClient
- * <p>
+ *
  * Created by sr186054 on 10/15/15.
  */
 public class JerseyRestClient {
@@ -31,8 +31,9 @@ public class JerseyRestClient {
     protected static final Logger LOG = LoggerFactory.getLogger(JerseyRestClient.class);
 
 
-    private Client client;
+    protected Client client;
     private String uri;
+    private String username;
 
     public JerseyRestClient(JerseyClientConfig config) {
         SSLContext sslContext = null;
@@ -71,15 +72,21 @@ public class JerseyRestClient {
             client = ClientBuilder.newClient();
         }
         client.register(JacksonFeature.class);
-        client.register(JodaTimeMapperProvider.class);
+     //   client.register(JodaTimeMapperProvider.class);
 
 
         HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), config.getPassword());
         client.register(feature);
         this.uri = config.getUrl();
+        this.username = config.getUsername();
 
 
     }
+
+    public String getUsername() {
+        return username;
+    }
+
 
     /**
      * allow implementers to override to change the base target
@@ -180,6 +187,7 @@ public class JerseyRestClient {
             throw new JerseyClientException(msg, e);
         }
     }
+
 
 
 }
