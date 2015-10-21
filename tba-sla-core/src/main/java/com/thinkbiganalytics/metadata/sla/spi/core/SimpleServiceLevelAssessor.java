@@ -4,9 +4,12 @@
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -138,7 +141,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         private String message = "";
         private AssessmentResult result = AssessmentResult.SUCCESS;
         private Comparator<ObligationAssessment> comparator;
-        private Comparable<? extends Serializable>[] comparables;
+        private List<Comparable<? extends Serializable>> comparables;
 
         private SimpleObligationAssessment assessment;
         
@@ -176,8 +179,9 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         public ObligationAssessmentBuilder compareWith(final Comparable<? extends Serializable> value, 
                                                        @SuppressWarnings("unchecked") 
                                                        final Comparable<? extends Serializable>... otherValeus) {
-            this.comparables = ArrayUtils.toArray(value);
-            this.comparables = ArrayUtils.addAll(this.comparables, otherValeus);
+            ;
+            this.comparables = new ArrayList<Comparable<? extends Serializable>>(Arrays.asList(value));
+            this.comparables.addAll(Arrays.asList(value));
             return this;
         }
 
@@ -211,13 +215,11 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
     
     private class MetricAssessmentBuilderImpl implements MetricAssessmentBuilder {
         
-        private ObligationAssessmentBuilderImpl obligationBuilder;
-        
         private Metric metric;
         private String message = "";
         private AssessmentResult result = AssessmentResult.SUCCESS;
         private Comparator<MetricAssessment> comparator;
-        private Comparable<? extends Serializable>[] comparables;
+        private List<Comparable<? extends Serializable>> comparables;
         
         public MetricAssessmentBuilderImpl(Metric metric) {
             this.metric = metric;
@@ -251,8 +253,8 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         @SuppressWarnings("unchecked")
         public MetricAssessmentBuilder compareWith(Comparable<? extends Serializable> value, 
                                                    Comparable<? extends Serializable>... otherValues) {
-            this.comparables = ArrayUtils.toArray(value);
-            this.comparables = ArrayUtils.addAll(this.comparables, otherValues);
+            this.comparables = new ArrayList<Comparable<? extends Serializable>>(Arrays.asList(value));
+            this.comparables.addAll(Arrays.asList(value));
             return this;
         }
 

@@ -96,33 +96,28 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     
     @Override
     public int compareTo(ServiceLevelAssessment sla) {
-        int result = getResult().compareTo(sla.getResult());
+        ComparisonChain chain = ComparisonChain
+                .start()
+                .compare(this.getResult(), sla.getResult())
+                .compare(this.getAgreement().getName(), sla.getAgreement().getName());
         
-        if (result != 0) {
-            return result;
-        } else {
-            List<ObligationAssessment> list1 = new ArrayList<>(getObligationAssessments());
-            List<ObligationAssessment> list2 = new ArrayList<>(sla.getObligationAssessments());
-            result = list1.size() - list2.size();
-            
-            if (result == 0) {
-                Collections.sort(list1);
-                Collections.sort(list2);
-    
-                // Note: natural ordering is really just by result but adding SLA name into comparison for grouping purposes.
-                ComparisonChain chain = ComparisonChain
-                        .start()
-                        .compare(this.getAgreement().getName(), sla.getAgreement().getName());
-                
-                for (int idx = 0; idx < list1.size(); idx++) {
-                    chain = chain.compare(list1.get(idx), list2.get(idx));
-                }
-                
-                return chain.result();
-            } else {
-                return result;
-            }
+        if (chain.result() != 0) {
+            return chain.result();
         }
+        
+        List<ObligationAssessment> list1 = new ArrayList<>(this.getObligationAssessments());
+        List<ObligationAssessment> list2 = new ArrayList<>(sla.getObligationAssessments());
+        
+        chain = chain.compare(list1.size(), list2.size());
+    
+        Collections.sort(list1);
+        Collections.sort(list2);
+        
+        for (int idx = 0; idx < list1.size(); idx++) {
+            chain = chain.compare(list1.get(idx), list2.get(idx));
+        }
+        
+        return chain.result();
     }
 
     protected boolean add(ObligationAssessment assessment) {

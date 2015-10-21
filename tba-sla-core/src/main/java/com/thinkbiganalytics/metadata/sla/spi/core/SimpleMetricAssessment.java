@@ -4,7 +4,9 @@
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Comparator;
+import java.util.List;
 
 import com.google.common.collect.ComparisonChain;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
@@ -27,7 +29,7 @@ public class SimpleMetricAssessment implements MetricAssessment {
     private String message = "";
     private AssessmentResult result = AssessmentResult.SUCCESS;
     private Comparator<MetricAssessment> comparator = DEF_COMPARATOR;
-    private Comparable<? extends Serializable>[] comparables;
+    private List<Comparable<? extends Serializable>> comparables = Collections.emptyList();
     
     /**
      * 
@@ -84,7 +86,7 @@ public class SimpleMetricAssessment implements MetricAssessment {
         this.comparator = comparator;
     }
     
-    protected void setComparables(Comparable<? extends Serializable>[] comparables) {
+    protected void setComparables(List<Comparable<? extends Serializable>> comparables) {
         this.comparables = comparables;
     }
 
@@ -99,8 +101,8 @@ public class SimpleMetricAssessment implements MetricAssessment {
                 SimpleMetricAssessment s1 = (SimpleMetricAssessment) o1;
                 SimpleMetricAssessment s2 = (SimpleMetricAssessment) o2;
                 
-                for (int idx = 0; idx < s1.comparables.length; idx++) {
-                    chain = chain.compare(s1.comparables[idx], s2.comparables[idx]);
+                for (int idx = 0; idx < s1.comparables.size(); idx++) {
+                    chain = chain.compare(s1.comparables.get(idx), s2.comparables.get(idx));
                 }
             }
             

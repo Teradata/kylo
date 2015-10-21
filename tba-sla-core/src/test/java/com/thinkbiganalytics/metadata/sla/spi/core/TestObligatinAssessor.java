@@ -41,14 +41,19 @@ public class TestObligatinAssessor implements ObligationAssessor<Obligation> {
             result = result.max(assessment.getResult());
         }
         
-        if (this.expectedDescription != null && ! obligation.getDescription().equals(this.expectedDescription)) {
-            builder
-                .message("The expected description does not match: " + this.expectedDescription)
-                .compareWith(this.expectedDescription);
-            result = AssessmentResult.FAILURE;
+        if (this.expectedDescription != null) {
+            builder.compareWith(this.expectedDescription);
+            
+            if (! obligation.getDescription().equals(this.expectedDescription)) {
+                builder.message("The expected description does not match: " + this.expectedDescription);
+                result = AssessmentResult.FAILURE;
+            }
         }
         
         builder.result(result);
     }
 
+    protected void setExpectedDescription(String expectedDescription) {
+        this.expectedDescription = expectedDescription;
+    }
 }

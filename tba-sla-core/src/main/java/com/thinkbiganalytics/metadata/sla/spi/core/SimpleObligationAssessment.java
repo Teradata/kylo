@@ -35,7 +35,7 @@ public class SimpleObligationAssessment implements ObligationAssessment {
     private AssessmentResult result = AssessmentResult.SUCCESS;
     private Set<MetricAssessment> metricAssessments;
     private Comparator<ObligationAssessment> comparator = DEF_COMPARATOR;
-    private Comparable<? extends Serializable>[] comparables;
+    private List<Comparable<? extends Serializable>> comparables = Collections.emptyList();
 
     /**
      * 
@@ -121,7 +121,7 @@ public class SimpleObligationAssessment implements ObligationAssessment {
         this.comparator = comparator;
     }
     
-    protected void setComparables(Comparable<? extends Serializable>[] comparables) {
+    protected void setComparables(List<Comparable<? extends Serializable>> comparables) {
         this.comparables = comparables;
     }
 
@@ -136,8 +136,8 @@ public class SimpleObligationAssessment implements ObligationAssessment {
                 SimpleObligationAssessment s1 = (SimpleObligationAssessment) o1;
                 SimpleObligationAssessment s2 = (SimpleObligationAssessment) o2;
                 
-                for (int idx = 0; idx < s1.comparables.length; idx++) {
-                    chain = chain.compare(s1.comparables[idx], s2.comparables[idx]);
+                for (int idx = 0; idx < s1.comparables.size(); idx++) {
+                    chain = chain.compare(s1.comparables.get(idx), s2.comparables.get(idx));
                 }
             }
             

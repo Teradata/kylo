@@ -29,4 +29,12 @@ class TestMetric implements Metric {
     public String getStringValue() {
         return stringValue;
     }
+    
+    protected void setIntValue(int intValue) {
+        this.intValue = intValue;
+    }
+    
+    protected void setStringValue(String stringValue) {
+        this.stringValue = stringValue;
+    }
 }
