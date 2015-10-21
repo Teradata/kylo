@@ -41,6 +41,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
     public SimpleServiceLevelAssessor() {
         this.obligationAssessors = Collections.synchronizedSet(new HashSet<ObligationAssessor<? extends Obligation>>());
         this.metricAssessors = Collections.synchronizedSet(new HashSet<MetricAssessor<? extends Metric>>());
+        this.defaultObligationAssessor = createDefaultObligationAssessor();
     }
 
     /*

@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
-import static org.assertj.core.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.*;
 
@@ -13,11 +12,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 import org.quartz.Calendar;
 import org.quartz.CronExpression;
-import org.quartz.impl.calendar.BaseCalendar;
 
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
