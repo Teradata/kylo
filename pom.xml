@@ -86,7 +86,7 @@
 
         <dependency>
         	<groupId>com.thinkbiganalytics.bdp</groupId>
-        	<artifactId>pipeline-controller</artifactId>
+        	<artifactId>pipeline-components</artifactId>
         	<version>1.1.1-SNAPSHOT</version>
         </dependency>
     </dependencies>
