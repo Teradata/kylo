@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.rest;
 
 import com.google.common.io.ByteStreams;
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.SslConfigurator;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -30,10 +31,13 @@ public class JerseyRestClient {
 
     protected static final Logger LOG = LoggerFactory.getLogger(JerseyRestClient.class);
 
+    public static final String HOST_NOT_SET_VALUE = "NOT_SET";
 
     protected Client client;
     private String uri;
     private String username;
+
+    public boolean isHostConfigured;
 
     public JerseyRestClient(JerseyClientConfig config) {
         SSLContext sslContext = null;
@@ -72,7 +76,6 @@ public class JerseyRestClient {
             client = ClientBuilder.newClient();
         }
         client.register(JacksonFeature.class);
-     //   client.register(JodaTimeMapperProvider.class);
 
 
         HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), config.getPassword());
@@ -80,7 +83,15 @@ public class JerseyRestClient {
         this.uri = config.getUrl();
         this.username = config.getUsername();
 
+        if(StringUtils.isNotBlank(config.getHost()) && ! HOST_NOT_SET_VALUE.equals(config.getHost())) {
+            this.isHostConfigured = true;
+        }
 
+
+    }
+
+    public boolean isHostConfigured() {
+        return isHostConfigured;
     }
 
     public String getUsername() {

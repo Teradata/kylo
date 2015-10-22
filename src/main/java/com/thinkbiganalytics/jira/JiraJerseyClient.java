@@ -295,6 +295,18 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
 
     }
 
+    public ServerInfo getServerInfo() throws JiraException {
+        ServerInfo serverInfo = null;
+        try {
+       serverInfo = get("/serverInfo",null,ServerInfo.class);
+
+        } catch (JerseyClientException e) {
+            String message = "Error getting serverinfo "+e.getMessage();
+            throw new JiraException(message, e);
+        }
+        return serverInfo;
+    }
+
 
 
 }

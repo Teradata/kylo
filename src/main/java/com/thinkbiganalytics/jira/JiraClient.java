@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.jira;
 
 import com.thinkbiganalytics.jira.domain.Issue;
+import com.thinkbiganalytics.jira.domain.ServerInfo;
 
 import java.util.List;
 
@@ -49,4 +50,13 @@ public interface JiraClient {
      */
     List<String> getIssueTypeNamesForProject(String projectKey);
 
+
+    /**
+     * Gets the Server info
+     * @return
+     * @throws JiraException
+     */
+    ServerInfo getServerInfo() throws JiraException;
+
+    boolean isHostConfigured();
 }
