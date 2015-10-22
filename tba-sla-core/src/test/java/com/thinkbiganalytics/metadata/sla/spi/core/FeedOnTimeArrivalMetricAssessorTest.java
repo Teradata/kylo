@@ -14,7 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.quartz.Calendar;
 import org.quartz.CronExpression;
+import org.quartz.impl.calendar.HolidayCalendar;
 
+import com.thinkbiganalytics.calendar.HolidayCalendarService;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetric;
@@ -33,10 +35,10 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     private FeedRepository feedRepository;
     
     @Mock
-    private Map<String, Calendar> calendars;
+    private HolidayCalendar calendar;
     
     @Mock
-    private Calendar calendar;
+    private HolidayCalendarService calendarService;
     
     @Mock
     private MetricAssessmentBuilder builder;
@@ -48,7 +50,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     public void setUp() throws Exception {
         initMocks(this);
         
-        when(this.calendars.get(any(String.class))).thenReturn(this.calendar);
+        when(this.calendarService.getCalendar(any(String.class))).thenReturn(this.calendar);
         when(this.builder.message(any(String.class))).thenReturn(this.builder);
         when(this.builder.metric(any(Metric.class))).thenReturn(this.builder);
         when(this.builder.result(any(AssessmentResult.class))).thenReturn(this.builder);
@@ -67,7 +69,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     public void testMinuteBeforeLate() throws ParseException {
         DateTime feedEnd = this.lateTime.minusMinutes(1);
         when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(createExecutedFeed(feedEnd));
-        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(false);
+        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
         
         this.assessor.assess(metric, this.builder);
         
@@ -78,7 +80,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     public void testMinuteAfterLate() throws ParseException {
         DateTime feedEnd = this.lateTime.plusMinutes(1);
         when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(createExecutedFeed(feedEnd));
-        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(false);
+        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
         
         this.assessor.assess(metric, this.builder);
         
@@ -89,7 +91,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     public void testLateButHoliday() throws ParseException {
         DateTime feedEnd = this.lateTime.plusMinutes(1);
         when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(createExecutedFeed(feedEnd));
-        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
+        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(false);
         
         this.assessor.assess(metric, this.builder);
         

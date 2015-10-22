@@ -5,16 +5,15 @@ package com.thinkbiganalytics.metadata.sla.api.core;
 
 import java.text.ParseException;
 import java.util.Date;
-import java.util.Map;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.joda.time.DateTime;
 import org.quartz.Calendar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.thinkbiganalytics.calendar.HolidayCalendarService;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessmentException;
@@ -35,8 +34,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
     private FeedRepository feedRepository;
     
     @Inject
-    @Named("holidayCalanders")
-    private Map<String, Calendar> holidayCalendars;
+    private HolidayCalendarService calendarService;
     
 
     /* (non-Javadoc)
@@ -55,8 +53,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
     public void assess(FeedOnTimeArrivalMetric metric, MetricAssessmentBuilder builder) {
         LOG.debug("Assessing metric: " + metric);
         
-        Calendar calendar = this.holidayCalendars.get(metric.getCalendarName());
-        
+        Calendar calendar = getCalandar(metric);
         String feedName = metric.getFeedName();
         ExecutedFeed feed = this.feedRepository.findLastCompletedFeed(feedName);
         DateTime lastFeedTime = feed.getEndTime();
@@ -66,7 +63,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
             DateTime expectedTime = new DateTime(expectedDate);
             DateTime lateTime = expectedTime.plus(metric.getLatePeriod());
             DateTime asOfTime = expectedTime.minus(metric.getAsOfPeriod());
-            boolean isHodiday = calendar.isTimeIncluded(asOfTime.getMillis());
+            boolean isHodiday = ! calendar.isTimeIncluded(asOfTime.getMillis());
             
             builder
                 .metric(metric)
@@ -85,12 +82,12 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         } catch (ParseException e) {
             LOG.error("The cron expression configured for the feed " + metric.getFeedName() 
                 + " is invalid: " + metric.getExpectedExpression());
-            throw new ServiceLevelAssessmentException("Unavble to assess metric: " + metric, e);
+            throw new ServiceLevelAssessmentException("Unable to assess metric: " + metric, e);
         }
     }
-    
-    public void setHolidayCalendars(Map<String, Calendar> holidayCalendars) {
-        this.holidayCalendars = holidayCalendars;
+
+    private Calendar getCalandar(FeedOnTimeArrivalMetric metric) {
+        return this.calendarService.getCalendar(metric.getCalendarName());
     }
 
 }
