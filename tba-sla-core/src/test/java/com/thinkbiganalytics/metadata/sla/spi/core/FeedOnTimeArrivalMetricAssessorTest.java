@@ -95,6 +95,15 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         
         verify(this.builder).result(AssessmentResult.SUCCESS);
     }
+    
+    @Test
+    public void testFeedNotFound() throws ParseException {
+        when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(null);
+        
+        this.assessor.assess(metric, this.builder);
+        
+        verify(this.builder).result(AssessmentResult.FAILURE);
+    }
 
     
     private ExecutedFeed createExecutedFeed(final DateTime endTime) {

@@ -52,22 +52,30 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
     @SuppressWarnings("unchecked")
     public void assess(FeedOnTimeArrivalMetric metric, MetricAssessmentBuilder builder) {
         LOG.debug("Assessing metric: ", metric);
+       
+        builder.metric(metric);
         
         Calendar calendar = getCalandar(metric);
         String feedName = metric.getFeedName();
         ExecutedFeed feed = this.feedRepository.findLastCompletedFeed(feedName);
-        DateTime lastFeedTime = feed.getEndTime();
+        
+        if (feed == null) {
+            LOG.debug("No feed with the specified name could not be found: {}", feedName);
+            
+            builder.message("No feed with the specified name could not be found: " + feedName)
+                   .result(AssessmentResult.FAILURE);
+            return;
+        }
         
         try {
+            DateTime lastFeedTime = feed.getEndTime();
             Date expectedDate = CronExpressionUtil.getPreviousFireTime(metric.getExpectedExpression());
             DateTime expectedTime = new DateTime(expectedDate);
             DateTime lateTime = expectedTime.plus(metric.getLatePeriod());
             DateTime asOfTime = expectedTime.minus(metric.getAsOfPeriod());
             boolean isHodiday = ! calendar.isTimeIncluded(asOfTime.getMillis());
             
-            builder
-                .metric(metric)
-                .compareWith(expectedDate, feedName);
+            builder.compareWith(expectedDate, feedName);
             
             if (isHodiday) {
                 LOG.debug("No data expected for feed {} due to a holiday", feedName);
