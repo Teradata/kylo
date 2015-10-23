@@ -1,6 +1,9 @@
 package com.thinkbiganalytics.scheduler.quartz;
 
+import com.thinkbiganalytics.scheduler.JobIdentifier;
 import org.quartz.SchedulerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -31,6 +34,8 @@ public class SimpleSchedulerQuartzJobBeanSetup {
     private String jobName;
     private String quartzJobBean;
     private Map<String,Object> dataMap;
+    private boolean fireImmediately;
+    private static final Logger LOG = LoggerFactory.getLogger(SimpleSchedulerQuartzJobBeanSetup.class);
 
     @Autowired
     @Qualifier("quartzScheduler")
@@ -50,6 +55,18 @@ public class SimpleSchedulerQuartzJobBeanSetup {
         try {
             Class clazz = Class.forName(quartzJobBean);
             quartzScheduler.scheduleJob("Podium", jobName, clazz, cronExpresson, dataMap);
+
+            if(fireImmediately){
+                try {
+                    JobIdentifier jobIdentifier = new JobIdentifier(jobName, groupName);
+                    quartzScheduler.triggerJob(jobIdentifier);
+                }
+                catch (Exception e){
+                    LOG.error("Error trying to fire cron job immediately "+jobName+", "+groupName+" , "+e.getMessage(),e);
+                }
+            }
+
+
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }
@@ -77,5 +94,9 @@ public class SimpleSchedulerQuartzJobBeanSetup {
 
     public void setQuartzScheduler(QuartzScheduler quartzScheduler) {
         this.quartzScheduler = quartzScheduler;
+    }
+
+    public void setFireImmediately(boolean fireImmediately) {
+        this.fireImmediately = fireImmediately;
     }
 }
