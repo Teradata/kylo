@@ -23,7 +23,7 @@ public interface Alert {
      * The states that this alert may transition through, listed within the change events.  
      * For non-actionable alerts this state will never transition beyond created.
      */
-    enum State { CREATED, UNHANDLED, IN_PROCESS, HANDLED, CLEARED }
+    enum State { CREATED, UNHANDLED, IN_PROGRESS, HANDLED, CLEARED }
     
     /** The severity level that alerts may have */
     enum Level { INFO, WARNING, MINOR, MAJOR, CRITICAL, FATAL }

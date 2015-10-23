@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -22,7 +21,6 @@ import java.util.SortedMap;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
-import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -31,6 +29,8 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterators;
@@ -38,7 +38,6 @@ import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.State;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
-import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.spi.AlertDescriptor;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertNotifyReceiver;
@@ -49,6 +48,8 @@ import com.thinkbiganalytics.alerts.spi.AlertSource;
  * @author Sean Felten
  */
 public class InMemoryAlertManager implements AlertManager {
+    
+    private static final Logger LOG = LoggerFactory.getLogger(InMemoryAlertManager.class);
     
     public static final int MAX_ALERTS = 2000;
     
@@ -88,27 +89,6 @@ public class InMemoryAlertManager implements AlertManager {
         
         return receiversExecutor;
     }
-
-    private void signalReceivers() {
-        Executor exec = getRespondersExecutor();
-        final Set<AlertNotifyReceiver> receivers;
-        
-        synchronized (this.alertReceivers) {
-            receivers = new HashSet<>(this.alertReceivers);
-        }
-        
-        exec.execute(new Runnable() {
-            @Override
-            public void run() {
-                int count = InMemoryAlertManager.this.changeCount.get();
-                
-                for (AlertNotifyReceiver receiver : receivers) {
-                    receiver.alertsAvailable(count);
-                }
-            }
-        });
-    }
-
 
     @Override
     public Set<AlertDescriptor> getAlertDescriptors() {
@@ -272,12 +252,37 @@ public class InMemoryAlertManager implements AlertManager {
             this.alertsLock.writeLock().unlock();
         }
         
+        LOG.info("Alert added - pending notifications: {}", count);
+        
         if (count > 0) {
             signalReceivers();
         }
     }
     
     
+    private void signalReceivers() {
+        Executor exec = getRespondersExecutor();
+        final Set<AlertNotifyReceiver> receivers;
+        
+        synchronized (this.alertReceivers) {
+            receivers = new HashSet<>(this.alertReceivers);
+        }
+        
+        exec.execute(new Runnable() {
+            @Override
+            public void run() {
+                int count = InMemoryAlertManager.this.changeCount.get();
+                
+                LOG.info("Notifying receivers: {} about events: {}", receivers.size(), count);
+                
+                for (AlertNotifyReceiver receiver : receivers) {
+                    receiver.alertsAvailable(count);
+                }
+            }
+        });
+    }
+
+
     private class AlertByIdMap extends LinkedHashMap<Alert.ID, AtomicReference<Alert>> {
         @Override
         protected boolean removeEldestEntry(java.util.Map.Entry<ID, AtomicReference<Alert>> eldest) {
@@ -346,7 +351,7 @@ public class InMemoryAlertManager implements AlertManager {
             this.content = content;
             this.source = InMemoryAlertManager.this;
             this.events = Collections.unmodifiableList(Collections.singletonList(
-                    new GenericChangeEvent(this.id, State.CREATED)));
+                    new GenericChangeEvent(this.id, State.UNHANDLED)));
         }
 
         public GenericAlert(URI type, Level level, Object content) {

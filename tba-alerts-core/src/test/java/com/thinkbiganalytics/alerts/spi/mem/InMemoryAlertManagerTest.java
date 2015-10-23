@@ -149,12 +149,12 @@ public class InMemoryAlertManagerTest {
     public void testChangeState() {
         Alert alert = this.manager.create(URI.create("urn:alert:test1"), Alert.Level.INFO, "test1", "created"); 
         
-        Alert changed = this.manager.changeState(alert, Alert.State.IN_PROCESS, "in progress");
+        Alert changed = this.manager.changeState(alert, Alert.State.IN_PROGRESS, "in progress");
         
         Alert retrieved = this.manager.getAlert(alert.getId());
         
-        assertThat(changed.getEvents()).hasSize(2).extracting("state").contains(Alert.State.CREATED, Alert.State.IN_PROCESS);
-        assertThat(retrieved.getEvents()).hasSize(2).extracting("state").contains(Alert.State.CREATED, Alert.State.IN_PROCESS);
+        assertThat(changed.getEvents()).hasSize(2).extracting("state").contains(Alert.State.UNHANDLED, Alert.State.IN_PROGRESS);
+        assertThat(retrieved.getEvents()).hasSize(2).extracting("state").contains(Alert.State.UNHANDLED, Alert.State.IN_PROGRESS);
     }
 
     @Test
@@ -167,7 +167,7 @@ public class InMemoryAlertManagerTest {
     @Test
     public void testNotifyRecieverChange() {
         Alert alert = this.manager.create(URI.create("urn:alert:test1"), Alert.Level.INFO, "test1", "created"); 
-        this.manager.changeState(alert, Alert.State.IN_PROCESS, "in progress");
+        this.manager.changeState(alert, Alert.State.IN_PROGRESS, "in progress");
         
         verify(this.receiver, times(2)).alertsAvailable(any(Integer.class));
     }
