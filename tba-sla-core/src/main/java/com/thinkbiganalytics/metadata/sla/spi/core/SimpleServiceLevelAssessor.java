@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.ArrayUtils;
+import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -56,12 +59,17 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
      */
     @Override
     public ServiceLevelAssessment assess(ServiceLevelAgreement sla) {
+        Log.info("Assessing SLA: {}", sla.getName());
+        
         SimpleServiceLevelAssessment slaAssessment = new SimpleServiceLevelAssessment(sla);
         AssessmentResult result = AssessmentResult.SUCCESS;
         
         for (Obligation ob : sla.getObligations()) {
             ObligationAssessmentBuilderImpl builder = new ObligationAssessmentBuilderImpl(ob);
             ObligationAssessor<Obligation> assessor = (ObligationAssessor<Obligation>) findAssessor(ob);
+            
+            Log.debug("Assessing obligation \"{}\" with assessor: {}", assessor);
+            
             assessor.assess(ob, builder);
             
             ObligationAssessment obAssessment = builder.build();
@@ -76,6 +84,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
             slaAssessment.setMessage("At least one of the SLA obligations resulted in the status: " + result);
         }
         
+        Log.debug("Completed assessment of SLA {}: {}", sla.getName(), slaAssessment.getResult());
         return slaAssessment;
     }
 
@@ -277,7 +286,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
 
     
     protected class DefaultObligationAssessor implements ObligationAssessor<Obligation> {
-
+        
         @Override
         public boolean accepts(Obligation obligation) {
             // Accepts any obligations
@@ -292,6 +301,8 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
             // Iterate through and assess each metric.
             // Obligation is considered successful if all metrics are successful
             for (Metric metric : obligation.getMetrics()) {
+                Log.debug("Assessing metric: {}", metric);
+                
                 MetricAssessment assessment = builder.assess(metric);
                 metricAssessments.add(assessment);
             }

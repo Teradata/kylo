@@ -51,7 +51,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
     @Override
     @SuppressWarnings("unchecked")
     public void assess(FeedOnTimeArrivalMetric metric, MetricAssessmentBuilder builder) {
-        LOG.debug("Assessing metric: " + metric);
+        LOG.debug("Assessing metric: ", metric);
         
         Calendar calendar = getCalandar(metric);
         String feedName = metric.getFeedName();
@@ -70,12 +70,18 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
                 .compareWith(expectedDate, feedName);
             
             if (isHodiday) {
+                LOG.debug("No data expected for feed {} due to a holiday", feedName);
+                
                 builder.message("No data expected for feed " + feedName + " due to a holiday")
                        .result(AssessmentResult.SUCCESS);
             } else if (lastFeedTime.isBefore(lateTime)) {
+                LOG.debug("Data for feed {} arrived on {}, which was before late time: ", feedName, lastFeedTime, lateTime);
+                
                 builder.message("Data for feed " + feedName + " arrived on " + lastFeedTime + ", which was before late time: " + lateTime)
                        .result(AssessmentResult.SUCCESS);
             } else {
+                LOG.debug("Data for feed {} has not arrived before the late time: ", feedName, lateTime);
+                
                 builder.message("Data for feed " + feedName + " has not arrived before the late time: " + lateTime)
                        .result(AssessmentResult.FAILURE);
             }

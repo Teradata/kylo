@@ -4,7 +4,6 @@ import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.*;
 
 import java.text.ParseException;
-import java.util.Map;
 
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -12,7 +11,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.quartz.Calendar;
 import org.quartz.CronExpression;
 import org.quartz.impl.calendar.HolidayCalendar;
 
