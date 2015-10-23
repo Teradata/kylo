@@ -54,19 +54,7 @@ public class SimpleSchedulerQuartzJobBeanSetup {
     public void scheduleMetadataJob()  throws SchedulerException {
         try {
             Class clazz = Class.forName(quartzJobBean);
-            quartzScheduler.scheduleJob("Podium", jobName, clazz, cronExpresson, dataMap);
-
-            if(fireImmediately){
-                try {
-                    JobIdentifier jobIdentifier = new JobIdentifier(jobName, groupName);
-                    quartzScheduler.triggerJob(jobIdentifier);
-                }
-                catch (Exception e){
-                    LOG.error("Error trying to fire cron job immediately "+jobName+", "+groupName+" , "+e.getMessage(),e);
-                }
-            }
-
-
+            quartzScheduler.scheduleJob("Podium", jobName, clazz, cronExpresson, dataMap,fireImmediately);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
         }

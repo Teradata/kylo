@@ -431,21 +431,38 @@ public class QuartzScheduler implements JobScheduler {
     }
 
     public void scheduleJob(JobIdentifier jobIdentifier, TriggerIdentifier triggerIdentifier,Class<? extends QuartzJobBean> clazz, String cronExpression,Map<String,Object> jobData)  throws SchedulerException{
-if(jobData == null){
-    jobData = new HashMap<>();
-}
+        scheduleJob(jobIdentifier,triggerIdentifier,clazz,cronExpression,jobData,false);
+    }
+    public void scheduleJob(JobIdentifier jobIdentifier, TriggerIdentifier triggerIdentifier,Class<? extends QuartzJobBean> clazz, String cronExpression,Map<String,Object> jobData, boolean fireImmediately)  throws SchedulerException{
+        if(jobData == null){
+            jobData = new HashMap<>();
+        }
+
         JobDataMap jobDataMap = new JobDataMap(jobData);
         JobDetail job = newJob(clazz)
-                .withIdentity(jobIdentifier.getName(),jobIdentifier.getGroup())
+                .withIdentity(jobIdentifier.getName(), jobIdentifier.getGroup())
                 .requestRecovery(false)
                 .setJobData(jobDataMap)
                 .build();
-        CronTrigger trigger = newTrigger()
+       TriggerBuilder triggerBuilder = newTrigger()
                 .withIdentity(triggerIdentifier.getName(),triggerIdentifier.getGroup())
                 .withSchedule(cronSchedule(cronExpression).inTimeZone(TimeZone.getTimeZone("UTC"))
                         .withMisfireHandlingInstructionFireAndProceed())
-                .forJob(job.getKey())
-                .build();
+                .forJob(job.getKey());
+
+        if(fireImmediately) {
+            Date previousTriggerTime = null;
+            try {
+                previousTriggerTime =   CronExpressionUtil.getPreviousFireTime(cronExpression);
+                if(previousTriggerTime != null) {
+                    triggerBuilder.startAt(previousTriggerTime);
+                }
+            }
+            catch (ParseException e) {
+
+            }
+        }
+        Trigger trigger = triggerBuilder.build();
         scheduleJob(job, trigger);
 
     }
@@ -453,7 +470,10 @@ if(jobData == null){
 
 
     public void scheduleJob(String groupName, String jobName,Class<? extends QuartzJobBean> clazz, String cronExpression,Map<String,Object> jobData)  throws SchedulerException{
-        scheduleJob(new JobIdentifier(jobName,groupName), new TriggerIdentifier(jobName,groupName), clazz,cronExpression,jobData);
+        scheduleJob(groupName,jobName, clazz,cronExpression,jobData,false);
+    }
+    public void scheduleJob(String groupName, String jobName,Class<? extends QuartzJobBean> clazz, String cronExpression,Map<String,Object> jobData,boolean fireImmediately)  throws SchedulerException{
+        scheduleJob(new JobIdentifier(jobName,groupName), new TriggerIdentifier(jobName,groupName), clazz,cronExpression,jobData,fireImmediately);
     }
 
     public void updateTrigger(TriggerIdentifier triggerIdentifier, Trigger trigger) throws SchedulerException {
