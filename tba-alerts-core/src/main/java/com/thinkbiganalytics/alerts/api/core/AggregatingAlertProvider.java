@@ -129,7 +129,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         AlertSource src = this.sources.get(srcId.sourceId);
         
         if (src != null) {
-            return getAlert(srcId, src);
+            return getAlert(srcId.alertId, src);
         } else {
             return null;
         }
@@ -318,7 +318,8 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
                     LOG.info("Invoking responders for alerts: {}", respList);
 
                     for (AlertResponder responder : respList) {
-                        Alert alert = getAlert(id, manager);
+                        SourceAlertID srcId = asSourceAlertId(id);
+                        Alert alert = getAlert(srcId.alertId, manager);
 
                         LOG.info("Alert change: {}  from source: {}  responder: {}", alert, manager, responder);
                         
@@ -329,7 +330,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
                 }
             });
     }
-    
+
     private void alertChange(Alert alert, AlertResponder responder, AlertManager manager) {
         ManagerAlertResponse resp = new ManagerAlertResponse(alert, manager);
         
