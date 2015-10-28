@@ -13,15 +13,30 @@ public interface AlertResponse {
 
     /**
      * Changes an alert status to in-progress.
+     */
+    <C> void inProgress();
+    
+    /**
+     * Changes an alert status to in-progress.
      * @param content alert type-specific content associated with the state change
      */
     <C> void inProgress(C content);
     
     /**
      * Changes an alert status to handled.
+     */
+    <C> void handle();
+    
+    /**
+     * Changes an alert status to handled.
      * @param content alert type-specific content associated with the state change
      */
     <C> void handle(C content);
+    
+    /**
+     * Changes an alert status to unhandled.
+     */
+    <C> void unHandle();
     
     /**
      * Changes an alert status to unhandled.

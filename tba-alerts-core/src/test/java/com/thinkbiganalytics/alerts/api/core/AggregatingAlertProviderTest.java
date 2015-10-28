@@ -4,6 +4,7 @@ import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.*;
 import static org.assertj.core.api.Assertions.*;
 
+import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,16 +26,16 @@ import com.google.common.util.concurrent.MoreExecutors;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.Alert.State;
-import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider.AlertDecorator;
-import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider.SourceAlertID;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
 import com.thinkbiganalytics.alerts.api.AlertListener;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
+import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider.AlertInvocationHandler;
+import com.thinkbiganalytics.alerts.api.core.AggregatingAlertProvider.SourceAlertID;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.alerts.spi.AlertSource;
 
-public class BaseAlertProviderTest {
+public class AggregatingAlertProviderTest {
     
     private AggregatingAlertProvider provider = new AggregatingAlertProvider();
     
@@ -54,8 +55,8 @@ public class BaseAlertProviderTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
         
-        provider.setListenersExecutor(MoreExecutors.sameThreadExecutor());
-        provider.setRespondersExecutor(MoreExecutors.sameThreadExecutor());
+        provider.setListenersExecutor(MoreExecutors.directExecutor());
+        provider.setRespondersExecutor(MoreExecutors.directExecutor());
         provider.addListener(this.listener);
         provider.addResponder(this.responder);
     }
@@ -221,7 +222,7 @@ public class BaseAlertProviderTest {
             }
         });
         
-        verify(this.manager).changeState(initMgrAlert, Alert.State.HANDLED, "handled");
+        verify(this.manager).changeState(any(Alert.class), eq(Alert.State.HANDLED), eq("handled"));
         verify(this.listener, atLeastOnce()).alertChange(any(Alert.class));
         verify(this.responder, atLeastOnce()).alertChange(any(Alert.class), any(AlertResponse.class));
     }
@@ -262,7 +263,9 @@ public class BaseAlertProviderTest {
         return new Function<Alert, Alert>() {
             @Override
             public Alert apply(Alert input) {
-                return ((AlertDecorator) input).getSourceAlert();
+                Proxy.isProxyClass(input.getClass());
+                AlertInvocationHandler handler = (AlertInvocationHandler) Proxy.getInvocationHandler(input);
+                return handler.getWrappedAlert();
             }
         };
     }

@@ -4,6 +4,9 @@
 package com.thinkbiganalytics.alerts.api.core;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.URI;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
@@ -30,6 +33,7 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.ID;
 import com.thinkbiganalytics.alerts.api.AlertChangeEvent;
+import com.thinkbiganalytics.alerts.api.AlertCriteria;
 import com.thinkbiganalytics.alerts.api.AlertListener;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
@@ -50,7 +54,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
     private List<AlertResponder> responders;
     private Map<String, AlertSource> sources;
     private Map<String, AlertManager> managers;
-    private Map<SourceAlertID, AlertManager> pendingResponses;
+//    private Map<SourceAlertID, AlertManager> pendingResponses;
     
     private volatile Executor listenersExecutor;
     private volatile Executor respondersExecutor;
@@ -64,7 +68,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         this.responders = Collections.synchronizedList(new ArrayList<AlertResponder>());
         this.sources = Collections.synchronizedMap(new HashMap<String, AlertSource>());
         this.managers = Collections.synchronizedMap(new HashMap<String, AlertManager>());
-        this.pendingResponses = Collections.synchronizedMap(new LinkedHashMap<SourceAlertID, AlertManager>());
+//        this.pendingResponses = Collections.synchronizedMap(new LinkedHashMap<SourceAlertID, AlertManager>());
     }
     
     public void setListenersExecutor(Executor listenersExecutor) {
@@ -108,12 +112,12 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
     }
     
     public void addAlertSource(AlertSource src) {
-        this.sources.put(createSourceId(src), src);
+        this.sources.put(createAlertSourceId(src), src);
     }
     
     public void addAlertManager(AlertManager mgr) {
         addAlertSource(mgr);
-        this.managers.put(createSourceId(mgr), mgr);
+        this.managers.put(createAlertSourceId(mgr), mgr);
         mgr.addReceiver(this);
     }
 
@@ -126,8 +130,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         AlertSource src = this.sources.get(srcId.sourceId);
         
         if (src != null) {
-            Alert alert = src.getAlert(srcId.alertId);
-            return new AlertDecorator(srcId, alert);
+            return getAlert(srcId, src);
         } else {
             return null;
         }
@@ -150,7 +153,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         Alert sinceAlert = getAlert(since);
         
         if (sinceAlert != null) {
-            DateTime created = sinceAlert.getEvents().get(sinceAlert.getEvents().size() - 1).getChangeTime();
+            DateTime created = getCreationTime(sinceAlert);
             Map<String, AlertSource> srcs = snapshotSources();
             
             return combineAlerts(created, srcs);
@@ -167,7 +170,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         SimpleEntry<Alert, AlertManager> found = findActionableAlert(id);
         
         if (found != null) {
-            AlertDecorator decorator = new AlertDecorator(found.getKey(), found.getValue());
+            Alert decorator = wrapAlert(found.getKey(), found.getValue());
             alertChange(decorator, responder, found.getValue());
         }
     }
@@ -182,21 +185,21 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
             public void run() {
                 DateTime sinceTime = AggregatingAlertProvider.this.lastAlertsTime;
                 Map<String, AlertSource> srcList = snapshotSources();
-                Iterator<AlertDecorator> combinedAlerts = combineAlerts(sinceTime, srcList);
+                Iterator<Alert> combinedAlerts = combineAlerts(sinceTime, srcList);
                 
                 while (combinedAlerts.hasNext()) {
-                    AlertDecorator decorator = combinedAlerts.next();
-                    AlertSource src = srcList.get(decorator.id.sourceId);
+                    Alert alert = combinedAlerts.next();
+                    AlertSource src = srcList.get(getSourceId(alert));
                     
-                    LOG.info("Alert {} received from {}", decorator.getId(), src);
+                    LOG.info("Alert {} received from {}", alert.getId(), src);
                     
-                    notifyListeners(decorator);
+                    notifyListeners(alert);
                     
-                    if (src instanceof AlertManager && decorator.isActionable()) {
-                        notifyResponders(decorator, (AlertManager) src);
+                    if (src instanceof AlertManager && alert.isActionable()) {
+                        notifyResponders(alert.getId(), (AlertManager) src);
                     }
                     
-                    sinceTime = getCreationTime(decorator);
+                    sinceTime = getCreationTime(alert);
                 }
                 
                 AggregatingAlertProvider.this.lastAlertsTime = sinceTime;
@@ -204,20 +207,37 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         });
     }
     
-    protected DateTime getCreationTime(AlertDecorator decorator) {
-        List<? extends AlertChangeEvent> events = decorator.getEvents();
-        // There should always be at least one creation event; the last one in the list
-        return events.get(events.size() - 1).getChangeTime();
+    
+    
+    private Alert getAlert(Alert.ID id, AlertSource src) {
+        Alert alert = src.getAlert(id);
+        
+        if (alert != null) {
+            return wrapAlert(alert, src);
+        } else {
+            return null;
+        }
+    }
+
+    private DateTime getCreationTime(Alert alert) {
+        List<? extends AlertChangeEvent> events = alert.getEvents();
+        // There should always be at least one creation event; the top one in the list
+        return events.get(0).getChangeTime();
     }
 
     /**
      * Generates a unique, internal ID for this source
      */
-    protected static String createSourceId(AlertSource src) {
+    private static String createAlertSourceId(AlertSource src) {
         return Integer.toString(src.hashCode());
     }
     
-    protected Executor getListenersExecutor() {
+    private static String getSourceId(Alert decorator) {
+        SourceAlertID srcAlertId = (SourceAlertID) decorator.getId();
+        return srcAlertId.sourceId;
+    }
+    
+    private Executor getListenersExecutor() {
         if (this.listenersExecutor == null) {
             synchronized (this) {
                 if (this.listenersExecutor == null) {
@@ -230,7 +250,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         return listenersExecutor;
     }
 
-    protected Executor getRespondersExecutor() {
+    private Executor getRespondersExecutor() {
         if (this.respondersExecutor == null) {
             synchronized (this) {
                 if (this.respondersExecutor == null) {
@@ -242,44 +262,42 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         return respondersExecutor;
     }
 
-    protected Iterator<AlertDecorator> combineAlerts(DateTime since, Map<String, AlertSource> srcs) {
-        List<Iterator<AlertDecorator>> iterators = new ArrayList<>();
+    private Iterator<Alert> combineAlerts(DateTime since, Map<String, AlertSource> srcs) {
+        List<Iterator<Alert>> iterators = new ArrayList<>();
         
-        for (Entry<String, AlertSource> src : srcs.entrySet()) {
-            Function<Alert, AlertDecorator> func = decorateAlertFunction(src.getKey(), src.getValue());
-            Iterator<? extends Alert> itr = src.getValue().getAlerts(since);
+        for (AlertSource src : srcs.values()) {
+            Function<Alert, Alert> func = wrapAlertFunction(src);
+            Iterator<? extends Alert> itr = src.getAlerts(since);
             
-            LOG.info("{} alerts available from {} since: {}", itr.hasNext() ? "There are " : "No", src.getValue(), since);
+            LOG.info("{} alerts available from {} since: {}", itr.hasNext() ? "There are " : "No", src, since);
             
             iterators.add(Iterators.transform(itr, func));
         }
         
+        // TODO: This iterator produces the alerts of all sources grouped by source.  If we want to 
+        // order by alert time then we will have to created a multiplexing iterator rather
+        // than this one from Google collections.
         return Iterators.concat(iterators.iterator());
     }
 
-    private Function<Alert, AlertDecorator> decorateAlertFunction(final Object srcId, final AlertSource src) {
-        return new Function<Alert, AlertDecorator>() {
+    private Function<Alert, Alert> wrapAlertFunction(final AlertSource src) {
+        return new Function<Alert, Alert>() {
             @Override
-            public AlertDecorator apply(Alert input) {
-                return new AlertDecorator(input, src);
+            public Alert apply(Alert input) {
+                return wrapAlert(input, src);
             }
         };
     }
     
-    private void notifyChanged(AlertDecorator alert, AlertManager manager) {
+    private void notifyChanged(Alert alert, AlertManager manager) {
         notifyListeners(alert);
-        notifyResponders(alert, manager);
+        notifyResponders(alert.getId(), manager);
     }
 
-    protected void notifyListeners(final Alert alert) {
-        Executor exec = getListenersExecutor();
-        final List<? extends AlertListener> list;
-    
-        synchronized (this.listeners) {
-            list = new ArrayList<>(this.listeners);
-        }
+    private void notifyListeners(final Alert alert) {
+        final List<? extends AlertListener> list = snapshotListeners();
         
-        exec.execute(new Runnable() {
+        getListenersExecutor().execute(new Runnable() {
             @Override
             public void run() {
                 for (AlertListener listener : list) {
@@ -288,52 +306,33 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
             }
         });
     }
+        
+    private void notifyResponders(final Alert.ID id, final AlertManager manager) {
+        LOG.info("Notifying responders of change for alert ID: {}", id);
 
-    private void notifyResponders(AlertDecorator alert, AlertManager manager) {
-        this.pendingResponses.put(alert.getSourceId(), manager);
-        signalResponders();
-    }
-
-    private void signalResponders() {
-        Executor exec = getRespondersExecutor();
-        final Map<SourceAlertID, AlertManager> pending = new HashMap<>();
+        final List<AlertResponder> respList = snapshotResponderts();
         
-        synchronized (this.pendingResponses) {
-            for (Map.Entry<SourceAlertID, AlertManager> entry : this.pendingResponses.entrySet()) {
-                pending.put(entry.getKey(), entry.getValue());
-            }
-        }
-        
-        LOG.info("Firing changes for alert(s): {}", pending.size());
-        
-        if (pending.size() > 0) {
-            exec.execute(new Runnable() {
+        getRespondersExecutor().execute(new Runnable() {
                 @Override
                 public void run() {
-                    List<AlertResponder> respList = snapshotResponderts();
                     
                     LOG.info("Invoking responders for alerts: {}", respList);
 
-                    for (Map.Entry<SourceAlertID, AlertManager> entry : pending.entrySet()) {
-                        for (AlertResponder responder : respList) {
-                            AlertManager manager = entry.getValue();
-                            Alert alert = manager.getAlert(entry.getKey().alertId);
+                    for (AlertResponder responder : respList) {
+                        Alert alert = getAlert(id, manager);
 
-                            LOG.info("Alert change: {}  from manager: {}  responder: {}", alert, manager, responder);
-                            
-                            if (alert != null) {
-                                AlertDecorator decorator = new AlertDecorator(alert, manager);
-                                alertChange(decorator, responder, manager);
-                            }
+                        LOG.info("Alert change: {}  from source: {}  responder: {}", alert, manager, responder);
+                        
+                        if (alert != null) {
+                            alertChange(alert, responder, manager);
                         }
                     }
                 }
             });
-        }
     }
     
-    protected void alertChange(AlertDecorator alert, AlertResponder responder, AlertManager manager) {
-        ManagerAlertResponse resp = new ManagerAlertResponse(alert.getSourceAlert(), manager);
+    private void alertChange(Alert alert, AlertResponder responder, AlertManager manager) {
+        ManagerAlertResponse resp = new ManagerAlertResponse(alert, manager);
         
         responder.alertChange(alert, resp);
         
@@ -342,7 +341,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         }
     }
     
-    protected List<AlertListener> snapshotListeners() {
+    private List<AlertListener> snapshotListeners() {
         List<AlertListener> listenerList;
         
         synchronized (AggregatingAlertProvider.this.listeners) {
@@ -351,7 +350,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         return listenerList;
     }
     
-    protected List<AlertResponder> snapshotResponderts() {
+    private List<AlertResponder> snapshotResponderts() {
         List<AlertResponder> respList;
         
         synchronized (AggregatingAlertProvider.this.responders) {
@@ -360,11 +359,11 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         return respList;
     }
     
-    protected Map<String, AlertSource> snapshotSources() {
+    private Map<String, AlertSource> snapshotSources() {
         Map<String, AlertSource> srcList;
         
-        synchronized (AggregatingAlertProvider.this.sources) {
-            srcList = new HashMap<>(AggregatingAlertProvider.this.sources);
+        synchronized (this.sources) {
+            srcList = new HashMap<>(this.sources);
         }
         return srcList;
     }
@@ -372,10 +371,15 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
     private SimpleEntry<Alert, AlertManager> findActionableAlert(ID id) {
         SourceAlertID srcId = asSourceAlertId(id);
         AlertManager mgr = this.managers.get(srcId.sourceId);
-        Alert alert = mgr.getAlert(srcId.alertId);
         
-        if (alert != null && alert.isActionable()) {
-            return new SimpleEntry<>(alert, mgr);
+        if (mgr !=  null) {
+            Alert alert = mgr.getAlert(srcId.alertId);
+            
+            if (alert != null && alert.isActionable()) {
+                return new SimpleEntry<>(alert, mgr);
+            } else {
+                return null;
+            } 
         } else {
             return null;
         }
@@ -387,6 +391,39 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         } else {
             // Can only happen if the client uses a different ID than was supplied by this provider.
             throw new IllegalArgumentException("Unrecognized sourceAlert ID type: " + id);
+        }
+    }
+    
+    private Alert wrapAlert(final Alert srcAlert, final AlertSource src) {
+        return wrapAlert(new SourceAlertID(srcAlert.getId(), src), srcAlert);
+    }
+    
+    private Alert wrapAlert(final SourceAlertID id, final Alert alert) {
+        InvocationHandler handler = new AlertInvocationHandler(alert, new SourceAlertID(id, alert.getSource()));
+        return (Alert) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class<?>[] {Alert.class}, handler);
+    }
+    
+    protected static class AlertInvocationHandler implements InvocationHandler {
+        private Alert wrapped;
+        private SourceAlertID proxyId;
+        
+        public AlertInvocationHandler(Alert wrapped, SourceAlertID proxyId) {
+            super();
+            this.wrapped = wrapped;
+            this.proxyId = proxyId;
+        }
+
+        @Override
+        public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+            if (method.getName().equals("getId")) {
+                return (Alert.ID) this.proxyId;
+            } else {
+                return method.invoke(this.wrapped, args);
+            }
+        }
+        
+        public Alert getWrappedAlert() {
+            return this.wrapped;
         }
     }
 
@@ -417,7 +454,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         public SourceAlertID(ID alertId, AlertSource src) {
             super();
             this.alertId = alertId;
-            this.sourceId = createSourceId(src);
+            this.sourceId = createAlertSourceId(src);
         }
         
         @Override
@@ -446,83 +483,32 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         }
     }
     
-    /**
-     * Decorates an alert so that with a provider-specific ID that points to the 
-     * underlying alert source.
-     */
-    protected static class AlertDecorator implements Alert {
-        
-        private final SourceAlertID id;
-        private final Alert sourceAlert;
-
-        private AlertDecorator(SourceAlertID id, Alert alert) {
-            super();
-            this.id = id;
-            this.sourceAlert = alert;
-        }
-        
-        public AlertDecorator(Alert srcAlert, AlertSource src) {
-            this(new SourceAlertID(srcAlert.getId(), src), srcAlert);
-        }
-
-        public Alert getSourceAlert() {
-            return this.sourceAlert;
-        }
-        
-        public SourceAlertID getSourceId() {
-            return this.id;
-        }
-
-        @Override
-        public ID getId() {
-            return this.id;
-        }
-
-        public URI getType() {
-            return sourceAlert.getType();
-        }
-
-        public String getDescription() {
-            return sourceAlert.getDescription();
-        }
-
-        public Level getLevel() {
-            return sourceAlert.getLevel();
-        }
-
-        public AlertSource getSource() {
-            return sourceAlert.getSource();
-        }
-
-        public boolean isActionable() {
-            return sourceAlert.isActionable();
-        }
-
-        public List<? extends AlertChangeEvent> getEvents() {
-            return sourceAlert.getEvents();
-        }
-
-        public <C> C getContent() {
-            return sourceAlert.getContent();
-        }
-    }
     
-    
-    private class ManagerAlertResponse implements AlertResponse {
+    protected class ManagerAlertResponse implements AlertResponse {
         
         private final Alert targetAlert;
         private final AlertManager manager;
 
-        private AlertDecorator resultAlert = null;
+        private Alert resultAlert = null;
         
         public ManagerAlertResponse(Alert alert, AlertManager mgr) {
             this.targetAlert = alert;
             this.manager = mgr;
         }
+        
+        @Override
+        public <C> void inProgress() {
+            inProgress(null);
+        }
 
         @Override
         public <C> void inProgress(C content) {
             changed(this.manager.changeState(this.targetAlert, Alert.State.IN_PROGRESS, content));
+        }
+        
+        @Override
+        public <C> void handle() {
+            handle(null);
         }
 
         @Override
@@ -530,6 +516,11 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
             changed(this.manager.changeState(this.targetAlert, Alert.State.HANDLED, content));
         }
 
+        @Override
+        public <C> void unHandle() {
+            unHandle(null);
+        }
+        
         @Override
         public <C> void unHandle(C content) {
             changed(this.manager.changeState(this.targetAlert, Alert.State.UNHANDLED, content));
@@ -541,7 +532,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         }
         
         private void changed(Alert alert) {
-            this.resultAlert = new AlertDecorator(alert, this.manager);
+            this.resultAlert = wrapAlert(alert, this.manager);
             notifyChanged(this.resultAlert, this.manager);
         }
     }
