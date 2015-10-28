@@ -169,8 +169,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         SimpleEntry<Alert, AlertManager> found = findActionableAlert(id);
         
         if (found != null) {
-            Alert decorator = wrapAlert(found.getKey(), found.getValue());
-            alertChange(decorator, responder, found.getValue());
+            alertChange(found.getKey(), responder, found.getValue());
         }
     }
     
@@ -220,8 +219,8 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
 
     private DateTime getCreationTime(Alert alert) {
         List<? extends AlertChangeEvent> events = alert.getEvents();
-        // There should always be at least one creation event; the top one in the list
-        return events.get(0).getChangeTime();
+        // There should always be at least one creation event; the last one in the list
+        return events.get(events.size() - 1).getChangeTime();
     }
 
     /**
@@ -373,7 +372,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         AlertManager mgr = this.managers.get(srcId.sourceId);
         
         if (mgr !=  null) {
-            Alert alert = mgr.getAlert(srcId.alertId);
+            Alert alert = getAlert(srcId.alertId, mgr);
             
             if (alert != null && alert.isActionable()) {
                 return new SimpleEntry<>(alert, mgr);
@@ -399,8 +398,12 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
     }
     
     private Alert wrapAlert(final SourceAlertID id, final Alert alert) {
-        InvocationHandler handler = new AlertInvocationHandler(alert, new SourceAlertID(id, alert.getSource()));
-        return (Alert) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class<?>[] {Alert.class}, handler);
+        if (Proxy.isProxyClass(alert.getClass())) {
+            return alert;
+        } else {
+            InvocationHandler handler = new AlertInvocationHandler(alert, new SourceAlertID(id, alert.getSource()));
+            return (Alert) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class<?>[] {Alert.class}, handler);
+        }
     }
     
     protected static class AlertInvocationHandler implements InvocationHandler {
