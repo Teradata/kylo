@@ -401,7 +401,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         if (Proxy.isProxyClass(alert.getClass())) {
             return alert;
         } else {
-            InvocationHandler handler = new AlertInvocationHandler(alert, new SourceAlertID(id, alert.getSource()));
+            InvocationHandler handler = new AlertInvocationHandler(alert, id);
             return (Alert) Proxy.newProxyInstance(this.getClass().getClassLoader(), new Class<?>[] {Alert.class}, handler);
         }
     }
