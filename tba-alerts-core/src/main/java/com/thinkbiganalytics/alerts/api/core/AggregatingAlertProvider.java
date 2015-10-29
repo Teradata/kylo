@@ -406,9 +406,18 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         }
     }
     
+    private Alert unwrapAlert(Alert proxy) {
+        if (Proxy.isProxyClass(proxy.getClass())) {
+            AlertInvocationHandler handler = (AlertInvocationHandler) Proxy.getInvocationHandler(proxy);
+            return handler.wrapped;
+        } else {
+            return proxy;  // not a proxy
+        }
+    }
+    
     protected static class AlertInvocationHandler implements InvocationHandler {
-        private Alert wrapped;
-        private SourceAlertID proxyId;
+        private final Alert wrapped;
+        private final SourceAlertID proxyId;
         
         public AlertInvocationHandler(Alert wrapped, SourceAlertID proxyId) {
             super();
@@ -489,13 +498,13 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
     
     protected class ManagerAlertResponse implements AlertResponse {
         
-        private final Alert targetAlert;
+        private final Alert targetAlert;  // This should be the original olert from the manager
         private final AlertManager manager;
 
         private Alert resultAlert = null;
         
         public ManagerAlertResponse(Alert alert, AlertManager mgr) {
-            this.targetAlert = alert;
+            this.targetAlert = unwrapAlert(alert);
             this.manager = mgr;
         }
         
