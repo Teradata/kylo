@@ -19,7 +19,7 @@ public class CronExpressionUtil {
         return getCronInterval(new CronExpression(cronExpression));
     }
 
-    public static Long getCronInterval(CronExpression cron) throws ParseException{
+    public static Long getCronInterval(CronExpression cron) {
         Date nextValidTime = getNextFireTime(cron);
         Date subsequentNextValidTime = getNextFireTime(nextValidTime, cron);
         long interval = subsequentNextValidTime.getTime() - nextValidTime.getTime();
@@ -30,7 +30,7 @@ public class CronExpressionUtil {
         return getPreviousFireTime(new CronExpression(cronExpression));
     }
 
-    public static Date getPreviousFireTime(CronExpression cron) throws ParseException{
+    public static Date getPreviousFireTime(CronExpression cron) {
         Long interval = getCronInterval(cron);
         Date nextValidTime = getNextFireTime(cron);
         return new Date(nextValidTime.getTime() - interval);
@@ -40,7 +40,7 @@ public class CronExpressionUtil {
         return getPreviousFireTime(lastFireTime, new CronExpression(cronExpression));
     }
 
-    public static Date getPreviousFireTime(Date lastFireTime, CronExpression cron) throws ParseException{
+    public static Date getPreviousFireTime(Date lastFireTime, CronExpression cron) {
         Long interval = getCronInterval(cron);
         Date nextValidTime = getNextFireTime(lastFireTime,cron);
         return new Date(nextValidTime.getTime() - interval);
@@ -51,7 +51,7 @@ public class CronExpressionUtil {
         return getNextFireTime(new CronExpression(cronExpression));
     }
 
-    public static Date getNextFireTime(CronExpression cron) throws ParseException{
+    public static Date getNextFireTime(CronExpression cron) {
        return  cron.getNextValidTimeAfter(new Date());
     }
 
@@ -59,7 +59,7 @@ public class CronExpressionUtil {
         return getNextFireTime(lastFireTime, new CronExpression(cronExpression));
     }
 
-    public static Date getNextFireTime(Date lastFireTime, CronExpression cron) throws ParseException{
+    public static Date getNextFireTime(Date lastFireTime, CronExpression cron) {
         return  cron.getNextValidTimeAfter(lastFireTime);
     }
 
