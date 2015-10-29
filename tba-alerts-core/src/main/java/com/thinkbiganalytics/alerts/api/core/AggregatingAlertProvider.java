@@ -498,9 +498,9 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
     
     protected class ManagerAlertResponse implements AlertResponse {
         
-        private final Alert targetAlert;  // This should be the original olert from the manager
         private final AlertManager manager;
 
+        private Alert targetAlert;  // This should be the original olert from the manager
         private Alert resultAlert = null;
         
         public ManagerAlertResponse(Alert alert, AlertManager mgr) {
@@ -544,6 +544,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
         }
         
         private void changed(Alert alert) {
+            this.targetAlert = alert;  // Alert from the manager
             this.resultAlert = wrapAlert(alert, this.manager);
             notifyChanged(this.resultAlert, this.manager);
         }

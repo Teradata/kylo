@@ -207,12 +207,15 @@ public class InMemoryAlertManager implements AlertManager {
         if (ref != null) {
             GenericAlert oldAlert = (GenericAlert) alert;
             GenericAlert newAlert = new GenericAlert(oldAlert, newState, content);
-            ref.set(newAlert);
-//            boolean changed = ref.compareAndSet(oldAlert, newAlert);
+            boolean changed = ref.compareAndSet(oldAlert, newAlert);
             
-            this.changeCount.incrementAndGet();
-            signalReceivers();
-            return newAlert;
+            if (changed) {
+                this.changeCount.incrementAndGet();
+                signalReceivers();
+                return newAlert;
+            } else {
+                throw new ConcurrentModificationException("The state of this alert has aready been changed");
+            }
         } else {
             return null;
         }
