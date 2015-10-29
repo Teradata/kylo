@@ -6,6 +6,12 @@ package com.thinkbiganalytics.metadata.sla.api.core;
 import org.joda.time.Period;
 import org.quartz.CronExpression;
 
+import com.cronutils.descriptor.CronDescriptor;
+import com.cronutils.model.Cron;
+import com.cronutils.model.CronType;
+import com.cronutils.model.definition.CronDefinition;
+import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.parser.CronParser;
 import com.google.common.base.MoreObjects;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 
@@ -48,6 +54,15 @@ public class FeedOnTimeArrivalMetric implements Metric {
      */
     @Override
     public String getDescription() {
+        StringBuilder bldr = new StringBuilder("Data should arrive from feed ");
+        bldr.append("\"").append(this.feedName).append("\" ")
+            .append(generateCronDescription(this.expectedExpression.toString()))
+            .append(" and no more than ").append(this.latePeriod).append(" hours later");
+        return bldr.toString();
+    }
+    
+    @Override
+    public String toString() {
         return MoreObjects.toStringHelper(this)
                 .omitNullValues()
                 .add("feedName", this.feedName)
@@ -98,6 +113,11 @@ public class FeedOnTimeArrivalMetric implements Metric {
         this.calendarName = claendarName;
     }
     
-    
+    private String generateCronDescription(String cronExp) {
+        CronDefinition quartzDef = CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ);
+        CronParser parser = new CronParser(quartzDef);
+        Cron c = parser.parse("cronExp");
+        return CronDescriptor.instance().describe(c);
+    }
 
 }

@@ -33,6 +33,11 @@
             <artifactId>guava</artifactId>
             <version>${guava.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.cronutils</groupId>
+            <artifactId>cron-utils</artifactId>
+            <version>3.1.1</version>
+        </dependency>
 
         <!-- Testing -->
         <dependency>
