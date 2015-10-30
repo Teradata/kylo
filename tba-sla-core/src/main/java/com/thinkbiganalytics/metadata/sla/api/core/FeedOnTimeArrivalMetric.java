@@ -39,13 +39,13 @@ public class FeedOnTimeArrivalMetric implements Metric {
                                    CronExpression expectedExpression, 
                                    Period latePeriod,
                                    Period asOfPeriod, 
-                                   String clalendarName) {
+                                   String calendarName) {
         super();
         this.feedName = feedName;
         this.expectedExpression = expectedExpression;
         this.latePeriod = latePeriod;
         this.asOfPeriod = asOfPeriod;
-        this.calendarName = clalendarName;
+        this.calendarName = calendarName;
     }
 
 
