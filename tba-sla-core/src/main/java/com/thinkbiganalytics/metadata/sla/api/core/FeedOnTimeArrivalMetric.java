@@ -116,7 +116,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
     private String generateCronDescription(String cronExp) {
         CronDefinition quartzDef = CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ);
         CronParser parser = new CronParser(quartzDef);
-        Cron c = parser.parse("cronExp");
+        Cron c = parser.parse(cronExp);
         return CronDescriptor.instance().describe(c);
     }
 
