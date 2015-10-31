@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.sla.api.core;
 
+import java.util.Locale;
+
 import org.joda.time.Period;
 import org.quartz.CronExpression;
 
@@ -54,10 +56,10 @@ public class FeedOnTimeArrivalMetric implements Metric {
      */
     @Override
     public String getDescription() {
-        StringBuilder bldr = new StringBuilder("Data should arrive from feed ");
+        StringBuilder bldr = new StringBuilder("Data expected from feed ");
         bldr.append("\"").append(this.feedName).append("\" ")
             .append(generateCronDescription(this.expectedExpression.toString()))
-            .append(" and no more than ").append(this.latePeriod).append(" hours later");
+            .append(", and no more than ").append(this.latePeriod.getHours()).append(" hours late");
         return bldr.toString();
     }
     
@@ -117,7 +119,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
         CronDefinition quartzDef = CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ);
         CronParser parser = new CronParser(quartzDef);
         Cron c = parser.parse(cronExp);
-        return CronDescriptor.instance().describe(c);
+        return CronDescriptor.instance(Locale.US).describe(c);
     }
 
 }
