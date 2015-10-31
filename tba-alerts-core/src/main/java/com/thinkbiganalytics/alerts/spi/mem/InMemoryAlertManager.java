@@ -278,6 +278,8 @@ public class InMemoryAlertManager implements AlertManager {
                 for (AlertNotifyReceiver receiver : receivers) {
                     receiver.alertsAvailable(count);
                 }
+                
+                InMemoryAlertManager.this.changeCount.getAndAdd(-count);
             }
         });
     }
