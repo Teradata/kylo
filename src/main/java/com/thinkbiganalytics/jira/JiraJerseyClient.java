@@ -268,6 +268,7 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
             GetIssue response = post("/issue/", createIssue, GetIssue.class);
             //transform the result back to a populated issue
             issue = getIssue(response.getKey());
+            LOG.info("Created JIRA Issue {}, - {}",issue.getKey(),issue.getSummary());
 
         } catch (JerseyClientException e) {
             String message = "Error Creating Issue " + issue;

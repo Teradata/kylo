@@ -9,6 +9,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
 /**
  * Created by mk186074 on 10/14/15.
  */
@@ -23,13 +31,31 @@ public class JiraClientComponentTest {
 
    @Test
     public void testJiraClient() {
-        try {
-        Issue issue = jiraClient.getIssue("TDB-2");
-        Assert.assertEquals("TDB-2",issue.getKey());
-            System.out.println("ISSUE "+issue);
-        } catch (JiraException e) {
-            e.printStackTrace();
-        }
+
+try {
+    ExecutorService executorService = Executors.newFixedThreadPool(1);
+    Set<Callable<Issue>> callables = new HashSet<Callable<Issue>>();
+
+    for (int i = 0; i < 1; i++) {
+        callables.add(new Callable<Issue>() {
+            public Issue call() throws Exception {
+                return jiraClient.getIssue("JRTT-927");
+            }
+        });
+    }
+
+    List<Future<Issue>> futures = executorService.invokeAll(callables);
+
+    for (Future<Issue> future : futures) {
+        System.out.println("future.get = " + future.get().getKey() + " - " + future.get().getSummary());
+    }
+
+    executorService.shutdown();
+
+}catch(Exception e) {
+    e.printStackTrace();
+}
+
     }
 
     @Test
