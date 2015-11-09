@@ -55,7 +55,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
        
         builder.metric(metric);
         
-        Calendar calendar = getCalandar(metric);
+        Calendar calendar = getCalendar(metric);
         String feedName = metric.getFeedName();
         ExecutedFeed feed = this.feedRepository.findLastCompletedFeed(feedName);
         
@@ -72,16 +72,16 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         DateTime expectedTime = new DateTime(expectedDate);
         DateTime lateTime = expectedTime.plus(metric.getLatePeriod());
         DateTime asOfTime = expectedTime.minus(metric.getAsOfPeriod());
-        boolean isHodiday = ! calendar.isTimeIncluded(asOfTime.getMillis());
-        
+        boolean isHoliday = ! calendar.isTimeIncluded(asOfTime.getMillis());
+
         builder.compareWith(expectedDate, feedName);
         
-        if (isHodiday) {
+        if (isHoliday) {
             LOG.debug("No data expected for feed {} due to a holiday", feedName);
             
             builder.message("No data expected for feed " + feedName + " due to a holiday")
                    .result(AssessmentResult.SUCCESS);
-        } else if (lastFeedTime.isBefore(lateTime)) {
+        } else if (lastFeedTime.isAfter(expectedTime) && lastFeedTime.isBefore(lateTime)) {
             LOG.debug("Data for feed {} arrived on {}, which was before late time: ", feedName, lastFeedTime, lateTime);
             
             builder.message("Data for feed " + feedName + " arrived on " + lastFeedTime + ", which was before late time: " + lateTime)
@@ -89,12 +89,12 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         } else {
             LOG.debug("Data for feed {} has not arrived before the late time: ", feedName, lateTime);
             
-            builder.message("Data for feed " + feedName + " has not arrived before the late time: " + lateTime)
-                   .result(AssessmentResult.FAILURE);
+            builder.message("Data for feed " + feedName + " has not arrived before the late time: " + lateTime+"\n The last successful feed was on "+lastFeedTime )
+                    .result(AssessmentResult.FAILURE);
         }
     }
 
-    private Calendar getCalandar(FeedOnTimeArrivalMetric metric) {
+    private Calendar getCalendar(FeedOnTimeArrivalMetric metric) {
         return this.calendarService.getCalendar(metric.getCalendarName());
     }
 
