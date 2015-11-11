@@ -72,10 +72,11 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         DateTime expectedTime = new DateTime(expectedDate);
         DateTime lateTime = expectedTime.plus(metric.getLatePeriod());
         DateTime asOfTime = expectedTime.minus(metric.getAsOfPeriod());
-        boolean isHoliday = ! calendar.isTimeIncluded(asOfTime.getMillis());
+        boolean isHoliday = !calendar.isTimeIncluded(asOfTime.getMillis());
 
         builder.compareWith(expectedDate, feedName);
-        
+
+       // LOG.info("isHoliday for "+feed.getName()+" returned "+isHoliday+" for Calendar "+metric.getCalendarName()+" with asOfDate as "+asOfTime);
         if (isHoliday) {
             LOG.debug("No data expected for feed {} due to a holiday", feedName);
             
