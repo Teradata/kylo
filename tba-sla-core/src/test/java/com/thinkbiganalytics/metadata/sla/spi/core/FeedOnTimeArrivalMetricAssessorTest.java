@@ -73,6 +73,48 @@ public class FeedOnTimeArrivalMetricAssessorTest {
         
         verify(this.builder).result(AssessmentResult.SUCCESS);
     }
+
+    @Test
+    public void testNewFeedSuccess() throws ParseException {
+        DateTime feedEnd = null;
+
+        CronExpression cron = new CronExpression("0 0 0/1 1/1 * ? *"); //fire every hour on the next hour
+
+        this.lateTime = new DateTime(CronExpressionUtil.getPreviousFireTime(cron)).plusHours(4);
+        this.metric = new FeedOnTimeArrivalMetric("feed",
+                cron,
+                Period.hours(4),
+                Period.days(2),
+                "USA");
+
+
+        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
+
+        this.assessor.assess(metric, this.builder);
+
+        verify(this.builder).result(AssessmentResult.SUCCESS);
+    }
+
+    @Test
+    public void testNewFeedFailure() throws ParseException {
+        DateTime feedEnd = null;
+
+        CronExpression cron = new CronExpression("0 0 0/3 1/1 * ? *"); //fire every hour on the next hour
+
+        this.lateTime = new DateTime(CronExpressionUtil.getPreviousFireTime(cron)).plusHours(1);
+        this.metric = new FeedOnTimeArrivalMetric("feed",
+                cron,
+                Period.hours(1),
+                Period.days(0),
+                "USA");
+
+
+        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
+
+        this.assessor.assess(metric, this.builder);
+
+        verify(this.builder).result(AssessmentResult.FAILURE);
+    }
     
     @Test
     public void testMinuteAfterLate() throws ParseException {

@@ -58,16 +58,13 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         Calendar calendar = getCalendar(metric);
         String feedName = metric.getFeedName();
         ExecutedFeed feed = this.feedRepository.findLastCompletedFeed(feedName);
-        
-        if (feed == null) {
-            LOG.debug("No feed with the specified name could be found: {}", feedName);
-            
-            builder.message("No feed with the specified name could be found: " + feedName)
-                   .result(AssessmentResult.FAILURE);
-            return;
+
+
+
+        DateTime lastFeedTime = null;
+        if(feed != null){
+            lastFeedTime = feed.getEndTime();
         }
-        
-        DateTime lastFeedTime = feed.getEndTime();
         Date expectedDate = CronExpressionUtil.getPreviousFireTime(metric.getExpectedExpression());
         DateTime expectedTime = new DateTime(expectedDate);
         DateTime lateTime = expectedTime.plus(metric.getLatePeriod());
@@ -76,13 +73,21 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
 
         builder.compareWith(expectedDate, feedName);
 
-       // LOG.info("isHoliday for "+feed.getName()+" returned "+isHoliday+" for Calendar "+metric.getCalendarName()+" with asOfDate as "+asOfTime);
         if (isHoliday) {
             LOG.debug("No data expected for feed {} due to a holiday", feedName);
-            
             builder.message("No data expected for feed " + feedName + " due to a holiday")
                    .result(AssessmentResult.SUCCESS);
-        } else if (lastFeedTime.isAfter(expectedTime) && lastFeedTime.isBefore(lateTime)) {
+        } else if (lastFeedTime == null && (DateTime.now().isAfter(lateTime) || DateTime.now().isEqual(lateTime)) ){
+            LOG.debug("No feed with the specified name could be found: {}", feedName);
+            builder.message("No feed with the specified name could be found: " + feedName)
+                    .result(AssessmentResult.FAILURE);
+            return;
+        }
+        else if(lastFeedTime == null && DateTime.now().isBefore(lateTime)) {
+            builder.message("No feed with the specified name could be found: " + feedName+" but the it is still before the late time of "+lateTime)
+                    .result(AssessmentResult.SUCCESS);
+        }
+       else if (lastFeedTime != null && lastFeedTime.isAfter(expectedTime) && lastFeedTime.isBefore(lateTime)) {
             LOG.debug("Data for feed {} arrived on {}, which was before late time: ", feedName, lastFeedTime, lateTime);
             
             builder.message("Data for feed " + feedName + " arrived on " + lastFeedTime + ", which was before late time: " + lateTime)
