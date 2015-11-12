@@ -140,7 +140,7 @@ public class FeedOnTimeArrivalMetricAssessorTest {
     @Test
     public void testFeedNotFound() throws ParseException {
         when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(null);
-
+        when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
         this.assessor.assess(metric, this.builder);
 
         verify(this.builder).result(AssessmentResult.FAILURE);
