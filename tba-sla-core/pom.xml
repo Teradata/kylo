@@ -46,6 +46,7 @@
             <artifactId>powermock-mockito-release-full</artifactId>
             <version>1.6.3</version>
             <scope>test</scope>
+            <type>pom</type>
         </dependency>
 
         <!-- Testing -->
