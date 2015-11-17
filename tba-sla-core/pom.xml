@@ -41,7 +41,27 @@
             <version>3.1.1</version>
              -->
         </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-mockito-release-full</artifactId>
+            <version>1.6.3</version>
+            <scope>test</scope>
+        </dependency>
 
+        <!--
+         <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-module-junit4</artifactId>
+            <version>1.6.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.powermock</groupId>
+            <artifactId>powermock-api-mockito</artifactId>
+            <version>1.6.2</version>
+            <scope>test</scope>
+        </dependency>
+        -->
         <!-- Testing -->
         <dependency>
             <groupId>org.assertj</groupId>
