@@ -181,18 +181,11 @@ public class FeedOnTimeArrivalMetricAssessorTest {
 
     @Test
     public void testMinuteAfterLate() throws ParseException {
-        PowerMockito.mockStatic(DateTime.class);
-        PowerMockito.mockStatic(CronExpressionUtil.class);
-
-
         DateTime feedEnd = this.lateTime.plusMinutes(1);
-        BDDMockito.given(DateTime.now()).willReturn(feedEnd);
         when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(createExecutedFeed(feedEnd));
         when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
 
         this.assessor.assess(metric, this.builder);
-
-        PowerMockito.verifyStatic();
 
         verify(this.builder).result(AssessmentResult.FAILURE);
     }
