@@ -17,6 +17,8 @@ public interface TriggerInfo {
 
     String getCronExpression();
 
+    String getCronExpressionSummary();
+
     String getDescription();
 
     TriggerInfo.TriggerState getState();
@@ -37,9 +39,15 @@ public interface TriggerInfo {
 
     void setCronExpression(String cronExpression);
 
+    void setCronExpressionSummary(String summary);
+
     void setDescription(String description);
 
     void setState(TriggerInfo.TriggerState state);
+
+    void setTriggerClass(Class triggerClass);
+
+    Class getTriggerClass();
 
     public static enum TriggerState {
         NONE,

@@ -133,6 +133,20 @@ public interface JobScheduler {
 
 
     /**
+     *
+     * @param jobIdentifier
+     * @throws JobSchedulerException
+     */
+    void pauseTriggersOnJob(JobIdentifier jobIdentifier) throws JobSchedulerException;
+
+    /**
+     *
+     * @param jobIdentifier
+     * @throws JobSchedulerException
+     */
+    void resumeTriggersOnJob(JobIdentifier jobIdentifier) throws JobSchedulerException;
+
+    /**
      * Update a Triggers Cron Expression
      * @param triggerIdentifier
      * @param cronExpression

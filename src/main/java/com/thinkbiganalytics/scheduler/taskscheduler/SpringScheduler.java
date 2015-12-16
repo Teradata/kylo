@@ -85,6 +85,16 @@ public class SpringScheduler  implements JobScheduler{
     }
 
     @Override
+    public void pauseTriggersOnJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void resumeTriggersOnJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public void pauseAll() throws JobSchedulerException {
         throw new UnsupportedOperationException();
     }
