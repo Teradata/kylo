@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.rest;
 
 
+import org.apache.commons.lang3.StringUtils;
 import org.glassfish.jersey.internal.util.collection.Values;
 
 /**
@@ -8,6 +9,7 @@ import org.glassfish.jersey.internal.util.collection.Values;
  */
 public class JerseyClientConfig {
     private String host;
+    private Integer port;
     private String username;
     private String password;
     private boolean https;
@@ -117,6 +119,9 @@ public class JerseyClientConfig {
         else {
             url ="http://"+url;
         }
+        if(port != null){
+            url +=":"+port;
+        }
         return url;
     }
 
@@ -151,5 +156,13 @@ public class JerseyClientConfig {
 
     public void setUseConnectionPooling(boolean useConnectionPooling) {
         this.useConnectionPooling = useConnectionPooling;
+    }
+
+    public Integer getPort() {
+        return port;
+    }
+
+    public void setPort(Integer port) {
+        this.port = port;
     }
 }

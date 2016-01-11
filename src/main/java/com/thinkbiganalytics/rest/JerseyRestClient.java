@@ -141,16 +141,21 @@ public class JerseyRestClient {
         }
         client.register(JacksonFeature.class);
 
-
-
-        HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), config.getPassword());
-        client.register(feature);
+        if(StringUtils.isNotBlank(getUsername())) {
+            HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), config.getPassword());
+            client.register(feature);
+        }
         this.uri = config.getUrl();
         this.username = config.getUsername();
 
         if(StringUtils.isNotBlank(config.getHost()) && ! HOST_NOT_SET_VALUE.equals(config.getHost())) {
             this.isHostConfigured = true;
+            LOG.info("Jersey Rest Client initialized");
         }
+        else{
+            LOG.info("Jersey Rest Client not initialized");
+        }
+
 
 
     }
@@ -212,7 +217,7 @@ public class JerseyRestClient {
     public <T> T get(String path, Map<String, String> params, Class<T> clazz) throws JerseyClientException {
         WebTarget target = buildTarget(path, params);
         try {
-            return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(clazz);
+            return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE,MediaType.APPLICATION_XML_TYPE).get(clazz);
         } catch (Exception e) {
             String msg = "Get Error for " + target.getUri().toString();
             LOG.error(msg);
@@ -220,10 +225,11 @@ public class JerseyRestClient {
         }
     }
 
+
     public <T> T get(String path, Map<String, String> params, GenericType<T> type) throws JerseyClientException {
         WebTarget target = buildTarget(path, params);
         try {
-            return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).get(type);
+            return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(type);
         } catch (ClientErrorException e) {
             String msg = "Get Error for " + target.getUri().toString();
             LOG.error(msg);
