@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.spark.spark_launcher.helpers;
+package com.thinkbiganalytics.spark.helpers;
 
 import java.io.BufferedReader;
 import java.io.IOException;

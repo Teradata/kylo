@@ -3,11 +3,11 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.thinkbiganalytics.spark</groupId>
-    <artifactId>spark-launcher-demo</artifactId>
+    <artifactId>thinkbig-spark</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>spark-launcher-demo</name>
+    <name>thinkbig-spark</name>
     <url>http://maven.apache.org</url>
 
     <properties>
@@ -19,8 +19,8 @@
         <mvncompilerplugin.version>3.1</mvncompilerplugin.version>
         <mvnassemblyplugin.version>2.4.1</mvnassemblyplugin.version>
         <mvnjavadocplugin.version>2.10.3</mvnjavadocplugin.version>
-        <!--<mainClass.name>com.thinkbiganalytics.spark.spark_launcher.SparkLauncherDemo</mainClass.name>-->
-        <mainClass.name>com.thinkbiganalytics.spark.spark_launcher.ValidateRecords</mainClass.name>
+        <!--<mainClass.name>com.thinkbiganalytics.spark.spark_launcher.SparkLauncher</mainClass.name>-->
+        <mainClass.name>com.thinkbiganalytics.spark.ValidateRecords</mainClass.name>
     </properties>
 
     <dependencies>
@@ -55,18 +55,6 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${apachecommons.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-core</artifactId>
-            <version>1.11</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.tika</groupId>
-            <artifactId>tika-parsers</artifactId>
-            <version>1.11</version>
         </dependency>
 
     </dependencies>

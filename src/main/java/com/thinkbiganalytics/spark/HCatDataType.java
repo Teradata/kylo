@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2015. Teradata Inc.
  */
-package com.thinkbiganalytics.spark.spark_launcher;
+package com.thinkbiganalytics.spark;
 
 import java.io.Serializable;
 import java.math.BigDecimal;

@@ -1,8 +1,6 @@
-package com.thinkbiganalytics.spark.spark_launcher;
+package com.thinkbiganalytics.spark;
 
-import org.apache.spark.launcher.SparkLauncher;
-
-import com.thinkbiganalytics.spark.spark_launcher.helpers.InputStreamReaderRunnable;
+import com.thinkbiganalytics.spark.helpers.InputStreamReaderRunnable;
 
 import java.util.Arrays;
 
@@ -13,7 +11,7 @@ import java.util.Arrays;
  * @author jagrut
  */
 
-public class SparkLauncherDemo {
+public class SparkLauncher {
 
     public static void main(String[] args) throws Exception {
 
@@ -24,10 +22,10 @@ public class SparkLauncherDemo {
 		 */
         String[] args2;
         if ((args.length < 1) || (args[0] == null)) {
-            System.out.println("[SparkLauncherDemo] Spark master must be provided via command line argument.");
+            System.out.println("[SparkLauncher] Spark master must be provided via command line argument.");
             return;
         } else {
-            System.out.println("[SparkLauncherDemo] Spark master will be set to: " + args[0]);
+            System.out.println("[SparkLauncher] Spark master will be set to: " + args[0]);
             args2=Arrays.copyOfRange(args, 1, args.length);
             for (String arg : args2) {
                 System.out.println("   "+arg);
@@ -36,7 +34,7 @@ public class SparkLauncherDemo {
 		
 		/* Configuration parameters for spark launcher */
         String APPLICATION_JAR = "target/spark-launcher-demo-0.0.1-SNAPSHOT-jar-with-dependencies.jar";
-        String MAIN_CLASS = "com.thinkbiganalytics.spark.spark_launcher.ValidateRecords";
+        String MAIN_CLASS = "com.thinkbiganalytics.spark.ValidateRecords";
         String SPARK_MASTER = args[0];
         String DRIVER_MEMORY = "512m";
         String NUM_EXECUTORS = "1";
@@ -46,13 +44,13 @@ public class SparkLauncherDemo {
 		
 		
 		/* Launch the spark job as a child process */
-        Process spark = new SparkLauncher()
+        Process spark = new org.apache.spark.launcher.SparkLauncher()
                 .setAppResource(APPLICATION_JAR)
                 .setMainClass(MAIN_CLASS)
                 .setMaster(SPARK_MASTER)
-                .setConf(SparkLauncher.DRIVER_MEMORY, DRIVER_MEMORY)
-                .setConf(SparkLauncher.EXECUTOR_CORES, NUM_EXECUTORS)
-                .setConf(SparkLauncher.EXECUTOR_MEMORY, EXECUTOR_MEMORY)
+                .setConf(org.apache.spark.launcher.SparkLauncher.DRIVER_MEMORY, DRIVER_MEMORY)
+                .setConf(org.apache.spark.launcher.SparkLauncher.EXECUTOR_CORES, NUM_EXECUTORS)
+                .setConf(org.apache.spark.launcher.SparkLauncher.EXECUTOR_MEMORY, EXECUTOR_MEMORY)
                 .addAppArgs(args2)
                         //.addAppArgs(new String[]{"emp_sr", "employee", "20151202100000"})
                 .setSparkHome(SPARK_HOME)

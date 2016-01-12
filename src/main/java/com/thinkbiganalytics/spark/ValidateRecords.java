@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.spark.spark_launcher;
+package com.thinkbiganalytics.spark;
 
 
 import org.apache.spark.SparkContext;
