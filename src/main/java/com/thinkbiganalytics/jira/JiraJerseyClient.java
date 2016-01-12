@@ -76,7 +76,7 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
      */
     public User getAssignableUser(String projectKey, String username) throws JerseyClientException {
 
-        Map<String, String> params = new HashMap<String, String>();
+        Map<String, Object> params = new HashMap<String, Object>();
         params.put("project", projectKey);
         params.put("username", username);
 
@@ -114,7 +114,7 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
     public CreateMeta getCreateMetadata(String projectKey) throws JiraException {
 
         try {
-            Map<String, String> params = new HashMap<String, String>();
+            Map<String, Object> params = new HashMap<String, Object>();
             params.put("projectKeys", projectKey);
             params.put("expand", "projects.issuetypes.fields");
             String str = get("/issue/createmeta", params, String.class);
