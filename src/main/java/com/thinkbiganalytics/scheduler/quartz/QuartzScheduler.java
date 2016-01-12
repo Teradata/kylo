@@ -200,6 +200,46 @@ public class QuartzScheduler implements JobScheduler {
         }
     }
 
+    public void pauseTriggersOnJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
+        try {
+            JobKey jobKey = jobKeyForJobIdentifier(jobIdentifier);
+            List<? extends Trigger> jobTriggers = getScheduler().getTriggersOfJob(jobKey);
+            List<TriggerInfo> triggerInfoList = new ArrayList<TriggerInfo>();
+            if (jobTriggers != null) {
+                for (Trigger trigger : jobTriggers) {
+                   TriggerIdentifier triggerIdentifier = triggerIdentifierForTriggerKey(trigger.getKey());
+                    try {
+                        pauseTrigger(triggerIdentifier);
+                    }catch (JobSchedulerException e){
+
+                    }
+                }
+            }
+        } catch (SchedulerException e) {
+            throw new JobSchedulerException("Unable to pause Active Triggers the Job " + jobIdentifier, e);
+        }
+    }
+
+    public void resumeTriggersOnJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
+        try {
+            JobKey jobKey = jobKeyForJobIdentifier(jobIdentifier);
+            List<? extends Trigger> jobTriggers = getScheduler().getTriggersOfJob(jobKey);
+            List<TriggerInfo> triggerInfoList = new ArrayList<TriggerInfo>();
+            if (jobTriggers != null) {
+                for (Trigger trigger : jobTriggers) {
+                    TriggerIdentifier triggerIdentifier = triggerIdentifierForTriggerKey(trigger.getKey());
+                    try {
+                        resumeTrigger(triggerIdentifier);
+                    }catch (JobSchedulerException e){
+
+                    }
+                }
+            }
+        } catch (SchedulerException e) {
+            throw new JobSchedulerException("Unable to resume paused Triggers the Job " + jobIdentifier, e);
+        }
+    }
+
     @Override
     public void resumeTrigger(TriggerIdentifier triggerIdentifier) throws JobSchedulerException {
         try {
@@ -274,11 +314,16 @@ public class QuartzScheduler implements JobScheduler {
     private TriggerInfo buildTriggerInfo(JobIdentifier jobIdentifier,Trigger trigger){
         TriggerInfo triggerInfo = new TriggerInfoImpl(jobIdentifier,triggerIdentifierForTriggerKey(trigger.getKey()));
         triggerInfo.setDescription(trigger.getDescription());
+
         String cronExpression = null;
+        triggerInfo.setCronExpressionSummary("");
         if (trigger instanceof CronTrigger) {
             CronTrigger ct = (CronTrigger) trigger;
             cronExpression = ct.getCronExpression();
+            triggerInfo.setCronExpressionSummary(ct.getExpressionSummary());
         }
+
+        triggerInfo.setTriggerClass(trigger.getClass());
         triggerInfo.setCronExpression(cronExpression);
         triggerInfo.setNextFireTime(trigger.getNextFireTime());
         triggerInfo.setStartTime(trigger.getStartTime());

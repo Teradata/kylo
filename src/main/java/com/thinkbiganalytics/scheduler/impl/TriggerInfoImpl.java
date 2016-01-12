@@ -24,6 +24,8 @@ public class TriggerInfoImpl implements TriggerInfo {
     private String cronExpression;
     private String description;
     public TriggerState state;
+    private Class triggerClass;
+    private String cronExpressionSummary;
 
     public TriggerInfoImpl() {
 
@@ -120,5 +122,25 @@ public class TriggerInfoImpl implements TriggerInfo {
     @Override
     public void setState(TriggerState state) {
         this.state = state;
+    }
+
+    @Override
+    public Class getTriggerClass() {
+        return triggerClass;
+    }
+
+    @Override
+    public void setTriggerClass(Class triggerClass) {
+        this.triggerClass = triggerClass;
+    }
+
+    @Override
+    public String getCronExpressionSummary() {
+        return cronExpressionSummary;
+    }
+
+    @Override
+    public void setCronExpressionSummary(String cronExpressionSummary) {
+        this.cronExpressionSummary = cronExpressionSummary;
     }
 }

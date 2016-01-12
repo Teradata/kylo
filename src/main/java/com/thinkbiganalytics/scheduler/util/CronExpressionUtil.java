@@ -36,6 +36,15 @@ public class CronExpressionUtil {
         return new Date(nextValidTime.getTime() - interval);
     }
 
+    public static Date getPreviousFireTime(CronExpression cron, int previousNumber) {
+        if(previousNumber <= 0){
+            previousNumber = 1;
+        }
+       List<Date> dates = getPreviousFireTimes(cron,previousNumber);
+        return dates.get(previousNumber-1);
+
+    }
+
     public static Date getPreviousFireTime(Date lastFireTime, String cronExpression) throws ParseException{
         return getPreviousFireTime(lastFireTime, new CronExpression(cronExpression));
     }
@@ -82,7 +91,7 @@ public class CronExpressionUtil {
         return getPreviousFireTimes(new CronExpression(cronExpression), count);
     }
 
-    public static List<Date> getPreviousFireTimes(CronExpression cron, Integer count) throws ParseException{
+    public static List<Date> getPreviousFireTimes(CronExpression cron, Integer count){
         List<Date> dates = new ArrayList<Date>();
         Long interval = getCronInterval(cron);
         Date nextFireTime = getNextFireTime(cron);
