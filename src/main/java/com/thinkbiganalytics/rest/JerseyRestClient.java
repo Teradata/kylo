@@ -29,9 +29,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.client.*;
-import javax.ws.rs.core.GenericType;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
+import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketTimeoutException;
@@ -181,10 +179,10 @@ public class JerseyRestClient {
     }
 
 
-    private WebTarget buildTarget(String path, Map<String, String> params) {
+    private WebTarget buildTarget(String path, Map<String, Object> params) {
         WebTarget target = getBaseTarget().path(path);
         if (params != null) {
-            for (Map.Entry<String, String> entry : params.entrySet()) {
+            for (Map.Entry<String, Object> entry : params.entrySet()) {
                 target = target.queryParam(entry.getKey(), entry.getValue());
 
             }
@@ -192,7 +190,7 @@ public class JerseyRestClient {
         return target;
     }
 
-    public <T> Future<T> getAsync(String path, Map<String, String> params, Class<T> clazz) throws JerseyClientException {
+    public <T> Future<T> getAsync(String path, Map<String, Object> params, Class<T> clazz) throws JerseyClientException {
         WebTarget target = buildTarget(path, params);
         try {
             return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).async().get(clazz);
@@ -203,7 +201,7 @@ public class JerseyRestClient {
         }
     }
 
-    public <T> Future<T> getAsync(String path, Map<String, String> params, GenericType<T> type) throws JerseyClientException {
+    public <T> Future<T> getAsync(String path, Map<String, Object> params, GenericType<T> type) throws JerseyClientException {
         WebTarget target = buildTarget(path, params);
         try {
             return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).async().get(type);
@@ -214,10 +212,10 @@ public class JerseyRestClient {
         }
     }
 
-    public <T> T get(String path, Map<String, String> params, Class<T> clazz) throws JerseyClientException {
+    public <T> T get(String path, Map<String, Object> params, Class<T> clazz) throws JerseyClientException {
         WebTarget target = buildTarget(path, params);
         try {
-            return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE,MediaType.APPLICATION_XML_TYPE).get(clazz);
+            return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
         } catch (Exception e) {
             String msg = "Get Error for " + target.getUri().toString();
             LOG.error(msg);
@@ -226,7 +224,7 @@ public class JerseyRestClient {
     }
 
 
-    public <T> T get(String path, Map<String, String> params, GenericType<T> type) throws JerseyClientException {
+    public <T> T get(String path, Map<String, Object> params, GenericType<T> type) throws JerseyClientException {
         WebTarget target = buildTarget(path, params);
         try {
             return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(type);
@@ -260,6 +258,30 @@ public class JerseyRestClient {
         }
     }
 
+    public <T> T put(String path, Object object, Class<T> returnType) throws JerseyClientException {
+        WebTarget target = buildTarget(path, null);
+        try {
+            return target.request().put(Entity.entity(object, MediaType.APPLICATION_JSON), returnType);
+        } catch (ClientErrorException e) {
+            String msg = "Put Error for " + target.getUri().toString();
+            LOG.error(msg);
+            throw new JerseyClientException(msg, e);
+        }
+    }
+
+    public <T> T postForm(String path, Form form,Class<T> returnType) throws JerseyClientException {
+        WebTarget target = buildTarget(path, null);
+        try {
+         //   Response response = target.request().post(Entity.entity(form,MediaType.APPLICATION_FORM_URLENCODED_TYPE));
+          //  return response;
+          return  target.request().post(Entity.entity(form,MediaType.APPLICATION_FORM_URLENCODED_TYPE), returnType);
+        } catch (ClientErrorException e) {
+            String msg = "Post Error for " + target.getUri().toString();
+            LOG.error(msg);
+            throw new JerseyClientException(msg, e);
+        }
+    }
+
     public <T> Future<T> postAsync(String path, Object object, Class<T> returnType) throws JerseyClientException {
         WebTarget target = buildTarget(path, null);
         try {
@@ -270,6 +292,7 @@ public class JerseyRestClient {
             throw new JerseyClientException(msg, e);
         }
     }
+
 
 
 
