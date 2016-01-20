@@ -21,6 +21,7 @@ import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.*;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.flowfile.attributes.CoreAttributes;
+import org.apache.nifi.logging.ProcessorLog;
 import org.apache.nifi.processor.DataUnit;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -163,12 +164,7 @@ public class IngestHDFS extends AbstractHadoopProcessor {
 
         // Set umask once, to avoid thread safety issues doing it in onTrigger
         final PropertyValue umaskProp = context.getProperty(UMASK);
-        final short dfsUmask;
-        if (umaskProp.isSet()) {
-            dfsUmask = Short.parseShort(umaskProp.getValue(), 8);
-        } else {
-            dfsUmask = FsPermission.DEFAULT_UMASK;
-        }
+        final short dfsUmask = resolveUMask(umaskProp);
         final Configuration conf = getConfiguration();
         FsPermission.setUMask(conf, new FsPermission(dfsUmask));
     }
@@ -222,7 +218,7 @@ public class IngestHDFS extends AbstractHadoopProcessor {
                 if (!hdfs.mkdirs(configuredRootDirPath)) {
                     throw new IOException(configuredRootDirPath.toString() + " could not be created");
                 }
-                changeOwner(context, hdfs, configuredRootDirPath);
+                changeOwner(getLogger(), context, hdfs, configuredRootDirPath);
             }
 
             // If destination file already exists, resolve that based on processor configuration
@@ -308,7 +304,7 @@ public class IngestHDFS extends AbstractHadoopProcessor {
                         + " to its final filename");
             }
 
-            changeOwner(context, hdfs, copyFile);
+            changeOwner(getLogger(), context, hdfs, copyFile);
 
             getLogger().info("copied {} to HDFS at {} in {} milliseconds at a rate of {}",
                     new Object[]{flowFile, copyFile, millis, dataRate});
@@ -332,7 +328,7 @@ public class IngestHDFS extends AbstractHadoopProcessor {
         }
     }
 
-    protected void changeOwner(final ProcessContext context, final FileSystem hdfs, final Path name) {
+    static void changeOwner(ProcessorLog logger, final ProcessContext context, final FileSystem hdfs, final Path name) {
         try {
             // Change owner and group of file if configured to do so
             String owner = context.getProperty(REMOTE_OWNER).getValue();
@@ -341,8 +337,18 @@ public class IngestHDFS extends AbstractHadoopProcessor {
                 hdfs.setOwner(name, owner, group);
             }
         } catch (Exception e) {
-            getLogger().warn("Could not change owner or group of {} on HDFS due to {}", new Object[]{name, e});
+            logger.warn("Could not change owner or group of {} on HDFS due to {}", new Object[]{name, e});
         }
+    }
+
+    static short resolveUMask(final PropertyValue umaskProp) {
+        final short dfsUmask;
+        if (umaskProp.isSet()) {
+            dfsUmask = Short.parseShort(umaskProp.getValue(), 8);
+        } else {
+            dfsUmask = FsPermission.DEFAULT_UMASK;
+        }
+        return dfsUmask;
     }
 
     /*
@@ -391,5 +397,7 @@ public class IngestHDFS extends AbstractHadoopProcessor {
             }
         };
     }
+
+
 
 }

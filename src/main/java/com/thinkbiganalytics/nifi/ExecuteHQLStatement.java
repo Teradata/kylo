@@ -89,11 +89,8 @@ public class ExecuteHQLStatement extends AbstractProcessor {
         final ProcessorLog logger = getLogger();
         FlowFile incoming = session.get();
 
-        getLogger().info("Incoming: " + (incoming == null ? " NULL!!!" : "SET"));
         final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
         final String ddlQuery = (incoming == null ? context.getProperty(SQL_DDL_STATEMENT).getValue() : context.getProperty(SQL_DDL_STATEMENT).evaluateAttributeExpressions(incoming).getValue());
-        getLogger().info("DDL QUERY got " + ddlQuery);
-        getLogger().info("EXPRESSION " + context.getProperty(SQL_DDL_STATEMENT).evaluateAttributeExpressions(incoming).getValue());
 
         final StopWatch stopWatch = new StopWatch(true);
 
@@ -103,7 +100,6 @@ public class ExecuteHQLStatement extends AbstractProcessor {
 
             boolean result = st.execute(ddlQuery);
             session.getProvenanceReporter().modifyContent(outgoing, "Execution result " + result, stopWatch.getElapsed(TimeUnit.MILLISECONDS));
-
             session.transfer(outgoing, REL_SUCCESS);
         } catch (final ProcessException | SQLException e) {
             e.printStackTrace();

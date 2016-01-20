@@ -152,10 +152,10 @@ public class ExecuteSparkJob extends AbstractProcessor {
 
         try {
               /* Configuration parameters for spark launcher */
-            String appJar = context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(incoming).getValue(); //"target/spark-launcher-demo-0.0.1-SNAPSHOT-jar-with-dependencies.jar";
-            String mainClass = context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(incoming).getValue();
-            String sparkMaster = context.getProperty(SPARK_MASTER).evaluateAttributeExpressions(incoming).getValue();
-            String appArgs = context.getProperty(MAIN_ARGS).evaluateAttributeExpressions(incoming).getValue();
+            String appJar = context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(outgoing).getValue(); //"target/spark-launcher-demo-0.0.1-SNAPSHOT-jar-with-dependencies.jar";
+            String mainClass = context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(outgoing).getValue();
+            String sparkMaster = context.getProperty(SPARK_MASTER).evaluateAttributeExpressions(outgoing).getValue();
+            String appArgs = context.getProperty(MAIN_ARGS).evaluateAttributeExpressions(outgoing).getValue();
             String[] args = null;
             if (!StringUtils.isEmpty(appArgs)) {
                 args = appArgs.split(",");
@@ -197,12 +197,17 @@ public class ExecuteSparkJob extends AbstractProcessor {
             Thread errorThread = new Thread(errorStreamReaderRunnable, "stream error");
             errorThread.start();
 
-            System.out.println("*** Waiting for job to complete ***");
+            logger.info("Waiting for Spark job to complete");
 
              /* Wait for job completion */
             int exitCode = spark.waitFor();
-            System.out.println("*** Completed with status " + exitCode);
-            session.transfer(outgoing, REL_SUCCESS);
+            if (exitCode != 0) {
+                logger.info("*** Completed with failed status " + exitCode);
+                session.transfer(outgoing, REL_SUCCESS);
+            }else{
+                logger.info("*** Completed with status " + exitCode);
+                session.transfer(outgoing, REL_SUCCESS);
+            }
         } catch (final IOException | InterruptedException e) {
             e.printStackTrace();
             logger.error("Unable to execute Spark job", new Object[]{incoming, e});

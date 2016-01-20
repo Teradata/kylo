@@ -4,12 +4,14 @@
 package com.thinkbiganalytics.nifi;
 
 
+import com.thinkbiganalytics.components.TableRegisterSupport;
+import com.thinkbiganalytics.controller.ThriftService;
+import com.thinkbiganalytics.util.ColumnSpec;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.dbcp.DBCPService;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.ProcessorLog;
 import org.apache.nifi.processor.AbstractProcessor;
@@ -22,58 +24,71 @@ import org.apache.nifi.util.StopWatch;
 
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.*;
-
 
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"hive", "ddl", "register", "thinkbig"})
-@CapabilityDescription("Creates a table based on a prototype table as a reference. ")
+@CapabilityDescription("Creates a set of tables managed by the Think Big platform. ")
 public class TableRegister extends AbstractProcessor {
 
     // Relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
             .name("success")
-            .description("Successfully created FlowFile from .")
+            .description("Successfully created tables.")
             .build();
     public static final Relationship REL_FAILURE = new Relationship.Builder()
             .name("failure")
-            .description("SQL query execution failed. Incoming FlowFile will be penalized and routed to this relationship")
+            .description("Table execution failed. Incoming FlowFile will be penalized and routed to this relationship")
             .build();
     private final Set<Relationship> relationships;
 
-    public static final PropertyDescriptor DBCP_SERVICE = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor THRIFT_SERVICE = new PropertyDescriptor.Builder()
             .name("Database Connection Pooling Service")
             .description("The Controller Service that is used to obtain connection to database")
             .required(true)
-            .identifiesControllerService(DBCPService.class)
+            .identifiesControllerService(ThriftService.class)
             .build();
 
-    public static final PropertyDescriptor PROTOTYPE_TABLE = new PropertyDescriptor.Builder()
-            .name("PrototypeTableName")
-            .description("Qualified name of the Hive table used to generate this temporary feed table. Essentially the prototype table is cloned with a new name and location")
+    public static final PropertyDescriptor SOURCE = new PropertyDescriptor.Builder()
+            .name("Source")
+            .description("Name representing the source category")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .expressionLanguageSupported(true)
             .build();
 
-    public static final PropertyDescriptor TEMP_TABLE = new PropertyDescriptor.Builder()
-            .name("TempTableName")
-            .description("Qualified name of the temporary table to be created.")
+    public static final PropertyDescriptor TABLE_ENTITY = new PropertyDescriptor.Builder()
+            .name("Table Entity")
+            .description("Name of the master table")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .expressionLanguageSupported(true)
             .build();
 
-    public static final PropertyDescriptor LOCATION = new PropertyDescriptor.Builder()
-            .name("DataLocation")
-            .description("URI location of the data for this external table")
+    public static final PropertyDescriptor COLUMN_SPECS = new PropertyDescriptor.Builder()
+            .name("ColumnSpecs")
+            .description("Pipe-delim format with the specifications for the columns (column name|data type|comment")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .expressionLanguageSupported(true)
             .build();
 
+    public static final PropertyDescriptor FORMAT_SPECS = new PropertyDescriptor.Builder()
+            .name("Format specification")
+            .description("Provide format and delimiter specification. This is the full clause starting with the INPUTFORMAT such as: INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat' ")
+            .required(true)
+            .defaultValue("ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde' ")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
+
+    public static final PropertyDescriptor PARTITION_SPECS = new PropertyDescriptor.Builder()
+            .name("Partition specification")
+            .description("Provide list of partition columns column-delimited")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
 
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -84,10 +99,13 @@ public class TableRegister extends AbstractProcessor {
         relationships = Collections.unmodifiableSet(r);
 
         final List<PropertyDescriptor> pds = new ArrayList<>();
-        pds.add(DBCP_SERVICE);
-        pds.add(PROTOTYPE_TABLE);
-        pds.add(TEMP_TABLE);
-        pds.add(LOCATION);
+        pds.add(THRIFT_SERVICE);
+        pds.add(COLUMN_SPECS);
+        pds.add(FORMAT_SPECS);
+        pds.add(SOURCE);
+        pds.add(PARTITION_SPECS);
+        pds.add(TABLE_ENTITY);
+
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -101,55 +119,38 @@ public class TableRegister extends AbstractProcessor {
         return propDescriptors;
     }
 
+
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
         final ProcessorLog logger = getLogger();
         FlowFile incoming = session.get();
 
-        final DBCPService dbcpService = context.getProperty(DBCP_SERVICE).asControllerService(DBCPService.class);
+        final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
 
         final StopWatch stopWatch = new StopWatch(true);
-        String ddl = "";
 
-        //ALTER TABLE tableA CHANGE ts ts BIGINT AFTER id;
+        try (final Connection conn = thriftService.getConnection()) {
 
-        try (final Connection con = dbcpService.getConnection();
-             final Statement st = con.createStatement()) {
             FlowFile outgoing = (incoming == null ? session.create() : incoming);
 
-            String prototypeTable = context.getProperty(PROTOTYPE_TABLE).getValue();
-            String location = context.getProperty(LOCATION).getValue();
-            String tempTable = context.getProperty(TEMP_TABLE).getValue();
+            String entity = context.getProperty(TABLE_ENTITY).evaluateAttributeExpressions(outgoing).getValue();
+            String source = context.getProperty(SOURCE).evaluateAttributeExpressions(outgoing).getValue();
+            String formatOptions = context.getProperty(FORMAT_SPECS).evaluateAttributeExpressions(outgoing).getValue();
+            String partitionSpecs = context.getProperty(PARTITION_SPECS).evaluateAttributeExpressions(outgoing).getValue();
+            ColumnSpec[] partitions = ColumnSpec.createFromString(partitionSpecs);
+            String specString = context.getProperty(COLUMN_SPECS).evaluateAttributeExpressions(outgoing).getValue();
+            ColumnSpec[] columnSpecs = ColumnSpec.createFromString(specString);
 
-            ddl = createDDL(prototypeTable, location, tempTable, true);
-            st.execute(ddl);
+            TableRegisterSupport register = new TableRegisterSupport(conn);
+            boolean result = register.registerStandardTables(source, entity, formatOptions, partitions, columnSpecs);
+            Relationship relnResult = (result ? REL_SUCCESS : REL_FAILURE);
 
-            //session.putAttribute(outgoing, SharedProperties.FEED_TABLE, tempTable);
-            session.transfer(outgoing, REL_SUCCESS);
+            session.transfer(outgoing, relnResult);
 
         } catch (final ProcessException | SQLException e) {
-            e.printStackTrace();
-            logger.error("Unable to execute SQL DDL {} for {} due to {}; routing to failure", new Object[]{ddl, incoming, e});
+            logger.error("Unable to obtain connection for {} due to {}; routing to failure", new Object[]{incoming, e});
             session.transfer(incoming, REL_FAILURE);
         }
-    }
-
-    protected String createDDL(String prototypeTable, String location, String tempTable, boolean managedTable) {
-
-        StringBuffer sb = new StringBuffer();
-        sb.append("CREATE ");
-        if (!managedTable) {
-            sb.append("EXTERNAL ");
-        }
-        sb.append("TABLE IF NOT EXISTS ")
-                .append(tempTable)
-                .append(" LIKE ")
-                .append(prototypeTable);
-        if (!managedTable) {
-            sb.append(" LOCATION '")
-                    .append(location).append("'");
-        }
-        return sb.toString();
     }
 
 }
