@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.spark;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -63,15 +65,16 @@ public class HCatDataType implements Cloneable, Serializable {
     private HCatDataType(Long min, Long max, int digits) {
         this.numeric = true;
         this.isint = true;
-        this.min = min;
-        this.max = max;
+        this.min = BigInteger.valueOf(min);
+        this.max = BigInteger.valueOf(max);
         this.digits = digits;
     }
 
     private HCatDataType(Double min, Double max, int digits) {
         this.numeric = true;
-        this.min = min;
-        this.max = max;
+        this.min = BigDecimal.valueOf(min);
+        this.max = BigDecimal.valueOf(max);
+
         this.digits = digits;
     }
 
@@ -113,8 +116,8 @@ public class HCatDataType implements Cloneable, Serializable {
             // Determine min max based on column precision
             if (decSize != null) {
                 dataType.digits = decDigits;
-                dataType.max = Math.abs(Math.pow(decSize, 10) - 1);
-                dataType.min = Math.abs(Math.pow(decSize, 10) - 1) * -1;
+                dataType.max = BigDecimal.valueOf(Math.abs(Math.pow(decSize, 10) - 1));
+                dataType.min =  BigDecimal.valueOf(Math.abs(Math.pow(decSize, 10) - 1) * -1);
 
             } else if (strLen != null) {
                 dataType.maxlength = strLen;
@@ -136,13 +139,14 @@ public class HCatDataType implements Cloneable, Serializable {
     }
 
     public boolean isConvertible(String val) {
-        if (val == null) return true;
+        if (StringUtils.isEmpty(val)) return true;
         if (numeric) {
             try {
                 if (isint) {
 
                     if (isbig) {
                         BigInteger num = new BigInteger(val);
+
                         if (min.compareTo(num) >= 0) return false;
                         if (max.compareTo(num) <= 0) return false;
                     } else {

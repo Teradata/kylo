@@ -34,7 +34,8 @@ public class SparkLauncher {
 		
 		/* Configuration parameters for spark launcher */
         String APPLICATION_JAR = "target/spark-launcher-demo-0.0.1-SNAPSHOT-jar-with-dependencies.jar";
-        String MAIN_CLASS = "com.thinkbiganalytics.spark.ValidateRecords";
+        //String MAIN_CLASS = "com.thinkbiganalytics.spark.ValidateRecords";
+        String MAIN_CLASS = "com.thinkbiganalytics.spark.MergeDedupe";
         String SPARK_MASTER = args[0];
         String DRIVER_MEMORY = "512m";
         String NUM_EXECUTORS = "1";
@@ -77,7 +78,7 @@ public class SparkLauncher {
 
 		/* Wait for job completion */
         int exitCode = spark.waitFor();
-		
+
 		/* Print completion and exit code */
         System.out.println("*** Job finished with exit code:" + exitCode + " ***");
         System.out.println("*** Spark Launcher Demo - End ***");

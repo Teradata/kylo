@@ -51,7 +51,7 @@ public class ValidateRecords implements Serializable {
         this.invalidTableName = entity + "_invalid";
         ;
         this.feedTablename = targetDatabase + "." + entity + "_feed";
-        this.refTablename = targetDatabase + "." + entity;
+        this.refTablename = targetDatabase + "." + validTableName;
         this.partition = partition;
         this.targetDatabase = targetDatabase;
     }
@@ -73,7 +73,7 @@ public class ValidateRecords implements Serializable {
     }
 
     private void filterAndWriteResults(JavaRDD<Row> rddData, final boolean valid, String targetTable) throws Exception {
-        System.out.println("-- WOW ");
+
         // Filter either good or bad records and convert to a data frame
         JavaRDD<Row> results = rddData.filter(new Function<Row, Boolean>() {
             public Boolean call(Row row) {
@@ -125,6 +125,7 @@ public class ValidateRecords implements Serializable {
         for (StructField field : fields) {
             String colName = field.name();
             String dataType = field.dataType().simpleString();
+            System.out.println("Table ["+refTablename+"] Field ["+colName+"] dataType ["+dataType+"]");
             cols.add(HCatDataType.createFromDataType(colName, dataType));
         }
         return cols.toArray(new HCatDataType[0]);
