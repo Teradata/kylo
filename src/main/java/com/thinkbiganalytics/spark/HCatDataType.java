@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.spark;
 
+import com.thinkbiganalytics.spark.util.InvalidFormatException;
 import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
@@ -21,86 +22,129 @@ public class HCatDataType implements Cloneable, Serializable {
 
     // Build rules around the various column types
     static {
-        dataTypes.put("tinyint", new HCatDataType((long) Byte.MIN_VALUE, (long) Byte.MAX_VALUE, 0));
-        dataTypes.put("smallint", new HCatDataType((long) Short.MIN_VALUE, (long) Short.MAX_VALUE, 0));
-        dataTypes.put("int", new HCatDataType((long) Integer.MIN_VALUE, (long) Integer.MAX_VALUE, 0));
+        dataTypes.put("tinyint", new HCatDataType((long) Byte.MIN_VALUE, (long) Byte.MAX_VALUE));
+        dataTypes.put("smallint", new HCatDataType((long) Short.MIN_VALUE, (long) Short.MAX_VALUE));
+        dataTypes.put("int", new HCatDataType((long) Integer.MIN_VALUE, (long) Integer.MAX_VALUE));
         dataTypes.put("bigint", new HCatDataType(BigInteger.class));
-        dataTypes.put("float", new HCatDataType((double) Float.MIN_VALUE, (double) Float.MAX_VALUE, 0));
-        dataTypes.put("double", new HCatDataType(Double.MIN_VALUE, Double.MAX_VALUE, 0));
+        dataTypes.put("float", new HCatDataType((double) Float.MIN_VALUE, (double) Float.MAX_VALUE));
+        dataTypes.put("double", new HCatDataType(Double.MIN_VALUE, Double.MAX_VALUE));
+        dataTypes.put("real", new HCatDataType(Double.MIN_VALUE, Double.MAX_VALUE));
         dataTypes.put("decimal", new HCatDataType(BigDecimal.class));
         dataTypes.put("string", new HCatDataType(Long.MAX_VALUE));
         dataTypes.put("varchar", new HCatDataType(65355L));
         dataTypes.put("char", new HCatDataType(255L));
     }
 
-    private boolean isbig;
+    /**
+     * Class instance returned from converting string to native of this type
+     */
+    private Class convertibleType;
 
-    private boolean istring;
+    /**
+     * Whether this is string type
+     */
+    private boolean isstring;
 
-    private boolean binary;
+    /**
+     * whether this is unchecked type (essentially any type not defined)
+     */
+    private boolean unchecked;
 
-    boolean numeric;
+    /**
+     * Whether the value is numeric
+     */
+    boolean isnumeric;
 
-    private boolean isint;
-
+    /**
+     * Minimum size of number
+     */
     private Comparable min;
 
+    /**
+     * Maximum size of number
+     */
     private Comparable max;
 
+    /**
+     * Max length of string
+     */
     private long maxlength;
 
+    /**
+     * Number of digits supported (precision)
+     */
     private int digits;
 
+    /**
+     * Name of the field (set after clone)
+     */
     private String name;
 
+    /**
+     * Hive data type (set after clone)
+     */
+    private String nativeType;
+
+
     private HCatDataType() {
-        this.binary = true;
+        this.unchecked = true;
+        this.convertibleType = String.class;
     }
 
     private HCatDataType(long length) {
         this.maxlength = length;
-        this.istring = true;
+        this.isstring = true;
+        this.convertibleType = String.class;
     }
 
-    private HCatDataType(Long min, Long max, int digits) {
-        this.numeric = true;
-        this.isint = true;
-        this.min = BigInteger.valueOf(min);
-        this.max = BigInteger.valueOf(max);
-        this.digits = digits;
+    private HCatDataType(Long min, Long max) {
+        this.isnumeric = true;
+        this.min = min;
+        this.max = max;
+        this.convertibleType = Long.class;
     }
 
-    private HCatDataType(Double min, Double max, int digits) {
-        this.numeric = true;
-        this.min = BigDecimal.valueOf(min);
-        this.max = BigDecimal.valueOf(max);
-
-        this.digits = digits;
+    private HCatDataType(Double min, Double max) {
+        this.isnumeric = true;
+        this.min = min;
+        this.max = max;
+        this.convertibleType = Double.class;
     }
 
     private HCatDataType(Class clazz) {
-        this.numeric = true;
-        this.isbig = true;
+        this.isnumeric = true;
+        this.convertibleType = clazz;
+        BigDecimal minDecimal = new BigDecimal("-9.2E18");
+        BigDecimal maxDecimal = new BigDecimal("9.2E18");
         if (clazz == BigInteger.class) {
-            this.isint = true;
-            this.min = new BigDecimal("-9.2E18").toBigInteger();
-            this.max = new BigDecimal("9.2E18").toBigInteger();
+            this.min = minDecimal.toBigInteger();
+            this.max = maxDecimal.toBigInteger();
+        } else if (clazz == BigDecimal.class) {
+            // Note: Not sure what to set this to. for now it is not validated anyway
+            this.min = minDecimal;
+            this.max = maxDecimal;
+        } else {
+            throw new RuntimeException("Invalid class for constructor " + clazz.getCanonicalName());
         }
     }
 
+    /**
+     * Generate a data type validator for the given hive data type
+     *
+     * @param columnType the defined hive column type
+     * @return
+     */
+    public static HCatDataType createFromDataType(String name, String columnType) {
 
-    public static HCatDataType createFromDataType(String name, String stype) {
-
-        String type = stype;
         Integer decSize = null;
         Integer decDigits = null;
         Long strLen = null;
-
-        // Extract precision portion as in Decimal(8,2) or varchar(255)
-        int idx = stype.indexOf("(");
+        String dataType = columnType.toLowerCase();
+        // Extract precision and scale portion as in Decimal(8,2) or varchar(255)
+        int idx = columnType.indexOf("(");
         if (idx > -1) {
-            type = stype.substring(0, idx);
-            String precisionPart = stype.substring(idx + 1, stype.length() - 1);
+            dataType = columnType.substring(0, idx);
+            String precisionPart = columnType.substring(idx + 1, columnType.length() - 1);
             String[] parts = precisionPart.split(",");
             if (parts.length == 2) {
                 decSize = Integer.parseInt(parts[0]);
@@ -109,23 +153,24 @@ public class HCatDataType implements Cloneable, Serializable {
                 strLen = Long.parseLong(parts[0]);
             }
         }
-        HCatDataType dataType = dataTypes.get(type);
-        dataType = (dataType == null ? UNCHECKED_TYPE : dataType);
+        HCatDataType hcatType = dataTypes.get(dataType);
+        hcatType = (hcatType == null ? UNCHECKED_TYPE : hcatType);
         try {
-            dataType = (HCatDataType) dataType.clone();
+            hcatType = (HCatDataType) hcatType.clone();
+            hcatType.name = name;
+            hcatType.nativeType = dataType;
             // Determine min max based on column precision
             if (decSize != null) {
-                dataType.digits = decDigits;
-                dataType.max = BigDecimal.valueOf(Math.abs(Math.pow(decSize, 10) - 1));
-                dataType.min =  BigDecimal.valueOf(Math.abs(Math.pow(decSize, 10) - 1) * -1);
-
+                hcatType.digits = decDigits;
+                hcatType.max = BigDecimal.valueOf(Integer.parseInt(StringUtils.repeat("9",decSize))+1);
+                hcatType.min = BigDecimal.valueOf(-1*(Integer.parseInt(StringUtils.repeat("9", decSize))+1));
             } else if (strLen != null) {
-                dataType.maxlength = strLen;
+                hcatType.maxlength = strLen;
             }
         } catch (CloneNotSupportedException e) {
             throw new RuntimeException("Unexpected clone exception", e);
         }
-        return (dataType == null ? UNCHECKED_TYPE : dataType);
+        return (hcatType == null ? UNCHECKED_TYPE : hcatType);
     }
 
     private int getNumberOfDecimalPlaces(BigDecimal bigDecimal) {
@@ -138,41 +183,68 @@ public class HCatDataType implements Cloneable, Serializable {
         return getNumberOfDecimalPlaces(new BigDecimal(dbl));
     }
 
-    public boolean isConvertible(String val) {
-        if (StringUtils.isEmpty(val)) return true;
-        if (numeric) {
-            try {
-                if (isint) {
+    public Class getConvertibleType() {
+        return this.convertibleType;
+    }
 
-                    if (isbig) {
-                        BigInteger num = new BigInteger(val);
+    public <T extends Comparable> T toNativeValue(String val) throws InvalidFormatException {
+        try {
+            if (StringUtils.isEmpty(val) || convertibleType == String.class) {
+                return (unchecked || isstring ? (T) val : null);
+            } else if (convertibleType == Long.class) {
+                return (T) new Long(val);
+            } else if (convertibleType == Double.class) {
+                return (T) new Double(val);
+            } else if (convertibleType == BigInteger.class) {
+                return (T) new BigInteger(val);
+            } else if (convertibleType == BigDecimal.class) {
+                return (T) new BigDecimal(val);
+            } else {
+                throw new RuntimeException("Unexpected conversion [" + convertibleType + "] for value [" + val + "]");
+            }
+        } catch (NumberFormatException | ClassCastException e) {
+            throw new InvalidFormatException(this, val);
+        }
+    }
 
-                        if (min.compareTo(num) >= 0) return false;
-                        if (max.compareTo(num) <= 0) return false;
-                    } else {
-                        Long num = new Long(val);
-                        if (min.compareTo(num) >= 0) return false;
-                        if (max.compareTo(num) <= 0) return false;
+    /**
+     * Validate scale (digits following the decimal)
+     * @param val the native value
+     * @return whether passes validation
+     */
+    private boolean validatePrecision(Comparable val) {
+        if (convertibleType == BigDecimal.class) {
+            if (getNumberOfDecimalPlaces((BigDecimal) val) > digits) return false;
+        } else if (convertibleType == Double.class) {
+            if (getNumberOfDecimalPlaces((Double) val) > digits) return false;
+        }
+        return true;
+    }
+
+    /**
+     * Tests whether the string value can be converted to the hive data type defined by this class. If
+     * it is not convertible then hive will not be able to show the value
+     * @param val the string value
+     * @return whether value is valid
+     */
+    public boolean isValueConvertibleToType(String val) {
+        try {
+            Comparable nativeValue = toNativeValue(val);
+            if (nativeValue != null) {
+                if (isnumeric) {
+                    if (min.compareTo(nativeValue) >= 0) return false;
+                    if (max.compareTo(nativeValue) <= 0) return false;
+                    if (!validatePrecision(nativeValue)) {
+                        return false;
                     }
-                } else {
-                    if (isbig) {
-                        BigDecimal num = new BigDecimal(val);
-                        if (min.compareTo(num) >= 0) return false;
-                        if (max.compareTo(num) <= 0) return false;
-                        if (getNumberOfDecimalPlaces(num) > digits) return false;
-                    } else {
-                        Double num = new Double(val);
-                        if (min.compareTo(num) >= 0) return false;
-                        if (max.compareTo(num) <= 0) return false;
-                        if (getNumberOfDecimalPlaces(num) > digits) return false;
-                    }
+
+                } else if (isstring) {
+                    if (val.length() > maxlength) return false;
                 }
-            } catch (NumberFormatException e) {
-                return false;
             }
 
-        } else if (istring) {
-            if (val.length() > maxlength) return false;
+        } catch (InvalidFormatException | ClassCastException e) {
+            return false;
         }
         return true;
     }
@@ -185,4 +257,9 @@ public class HCatDataType implements Cloneable, Serializable {
     public String getName() {
         return name;
     }
+
+    public String getNativeType() {
+        return nativeType;
+    }
+
 }
