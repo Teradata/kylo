@@ -4,6 +4,7 @@
 
 package com.thinkbiganalytics.util;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.nifi.logging.LogLevel;
 import org.apache.nifi.logging.ProcessorLog;
 
@@ -33,7 +34,7 @@ public class InputStreamReaderRunnable implements Runnable {
         try {
             String line = reader.readLine();
             while (line != null) {
-                System.out.println(line);
+                //System.out.println(line);
                 if (level == LogLevel.DEBUG) {
                     logger.debug(line);
                 } else if (level == LogLevel.INFO) {
@@ -45,7 +46,7 @@ public class InputStreamReaderRunnable implements Runnable {
                 }
                 line = reader.readLine();
             }
-            reader.close();
+            IOUtils.closeQuietly(reader);
         } catch (IOException e) {
             e.printStackTrace();
         }

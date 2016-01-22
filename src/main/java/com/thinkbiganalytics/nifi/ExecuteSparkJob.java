@@ -203,7 +203,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
             int exitCode = spark.waitFor();
             if (exitCode != 0) {
                 logger.info("*** Completed with failed status " + exitCode);
-                session.transfer(outgoing, REL_SUCCESS);
+                session.transfer(outgoing, REL_FAILURE);
             }else{
                 logger.info("*** Completed with status " + exitCode);
                 session.transfer(outgoing, REL_SUCCESS);

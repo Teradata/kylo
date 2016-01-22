@@ -13,11 +13,10 @@ Specifications for managed Hive tables
  */
 public enum TableType {
 
-    FEED("/model.db/", "/etl/", "feed", true, false, true),
-    VALID("/model.db/", "/etl/", "valid", true, false, false),
-    INVALID("/model.db/", "/etl", "invalid", true, false, true),
-    PROTOTYPE("/model.db/", "/etl/", "proto"),
-    MASTER("/app/warehouse/", "/app/warehouse/", "", false, true, false);
+    FEED("/model.db/", "/etl/", "feed", true, false, true,false),
+    VALID("/model.db/", "/etl/", "valid", true, false, false,false),
+    INVALID("/model.db/", "/etl", "invalid", true, false, true,true),
+    MASTER("/app/warehouse/", "/app/warehouse/", "", false, true, false,false);
 
     private String tableRoot;
     private String dataRoot;
@@ -25,27 +24,20 @@ public enum TableType {
     private boolean orc;
     private boolean strings;
     private boolean feedPartition;
-
-    TableType(String tableRoot, String dataRoot, String suffix) {
-        this.tableRoot = tableRoot;
-        this.dataRoot = dataRoot;
-        this.suffix = suffix;
-    }
+    private boolean addReasonCode;
 
     TableType(String tableRoot, String dataRoot, String suffix, boolean feedPartition) {
-        this.tableRoot = tableRoot;
-        this.dataRoot = dataRoot;
-        this.suffix = suffix;
-        this.feedPartition = feedPartition;
+        this(tableRoot,dataRoot,suffix,feedPartition,false,false,false);
     }
 
-    TableType(String tableRoot, String dataRoot, String suffix, boolean feedPartition, boolean orc, boolean strings) {
+    TableType(String tableRoot, String dataRoot, String suffix, boolean feedPartition, boolean orc, boolean strings, boolean addReasonCode) {
         this.tableRoot = tableRoot;
         this.dataRoot = dataRoot;
         this.suffix = suffix;
         this.feedPartition = feedPartition;
         this.orc = orc;
         this.strings = strings;
+        this.addReasonCode = addReasonCode;
     }
 
     public String deriveTablename(String entity) {
@@ -80,6 +72,10 @@ public enum TableType {
                 if (i++ > 0) sb.append(", ");
                 sb.append(spec.toCreateSQL(isStrings()));
             }
+        }
+        // Handle the special case for writing error reason in invalid table
+        if (addReasonCode) {
+            sb.append(", dlp_reject_reason string ");
         }
         return sb.toString();
     }
