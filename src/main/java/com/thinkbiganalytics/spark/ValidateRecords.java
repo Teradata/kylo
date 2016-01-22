@@ -38,6 +38,10 @@ import java.util.Vector;
  */
 public class ValidateRecords implements Serializable {
 
+    private static String REJECT_REASON_COL = "dlp_reject_reason";
+
+    private static String VALID_INVALID_COL = "dlp_valid";
+
     /*
     Valid validation result
      */
@@ -122,11 +126,11 @@ public class ValidateRecords implements Serializable {
             final DataFrame validatedDF = hiveContext.createDataFrame(newResults, schema).toDF();
 
             // Pull out just the valid or invalid records
-            DataFrame invalidDF = validatedDF.filter("dlp_valid = '0'").drop("dlp_valid").toDF();
+            DataFrame invalidDF = validatedDF.filter(VALID_INVALID_COL+" = '0'").drop(VALID_INVALID_COL).toDF();
             writeToTargetTable(invalidDF, invalidTableName);
 
             // Write out the valid records (dropping our two columns)
-            DataFrame validDF = validatedDF.filter("dlp_valid = '1'").drop("dlp_valid").drop("dlp_reject_reason").toDF();
+            DataFrame validDF = validatedDF.filter(VALID_INVALID_COL+" = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").toDF();
             writeToTargetTable(validDF, validTableName);
 
 
@@ -147,8 +151,9 @@ public class ValidateRecords implements Serializable {
         for (StructField field : fields) {
             fieldsList.add(field);
         }
-        fieldsList.add(fieldsList.size() - 1, new StructField("dlp_valid", DataTypes.StringType, true, Metadata.empty()));
-        fieldsList.add(fieldsList.size() - 1, new StructField("dlp_reject_reason", DataTypes.StringType, true, Metadata.empty()));
+        // Insert our two custom fields before the processing partition column
+        fieldsList.add(fieldsList.size() - 1, new StructField(VALID_INVALID_COL, DataTypes.StringType, true, Metadata.empty()));
+        fieldsList.add(fieldsList.size() - 1, new StructField(REJECT_REASON_COL, DataTypes.StringType, true, Metadata.empty()));
 
         return new StructType(fieldsList.toArray(new StructField[0]));
     }
