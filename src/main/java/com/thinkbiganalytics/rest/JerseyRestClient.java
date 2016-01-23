@@ -269,6 +269,19 @@ public class JerseyRestClient {
         }
     }
 
+
+    public <T> T delete(String path,Map<String,Object> params,Class<T> returnType) throws JerseyClientException {
+        WebTarget target = buildTarget(path, params);
+        try {
+
+            return target.request().delete(returnType);
+        } catch (ClientErrorException e) {
+            String msg = "Delete Error for " + target.getUri().toString();
+            LOG.error(msg);
+            throw new JerseyClientException(msg, e);
+        }
+    }
+
     public <T> T postForm(String path, Form form,Class<T> returnType) throws JerseyClientException {
         WebTarget target = buildTarget(path, null);
         try {
