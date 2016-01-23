@@ -130,10 +130,10 @@ public class JerseyRestClient {
         }
 
         if(sslContext != null) {
-            LOG.info("Created new JIRA Client with SSL");
+            LOG.info("Created new Jersey Client with SSL");
             client = ClientBuilder.newBuilder().withConfig(clientConfig).sslContext(sslContext).build();
         } else {
-            LOG.info("Created new JIRA Client without SSL");
+            LOG.info("Created new Jersey Client without SSL");
             client = ClientBuilder.newClient(clientConfig);
 
         }
