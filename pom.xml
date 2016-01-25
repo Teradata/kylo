@@ -31,6 +31,7 @@
             <scope>test</scope>
         </dependency>
 
+
         <dependency> <!-- Spark dependency -->
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
