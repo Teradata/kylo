@@ -8,5 +8,7 @@
   <name>thinkbig-metadata</name>
   <modules>
     <module>thinkbig-metadata-orientdb</module>
+    <module>thinkbig-metadata-api</module>
+    <module>thinkbig-metadata-core</module>
   </modules>
 </project>
