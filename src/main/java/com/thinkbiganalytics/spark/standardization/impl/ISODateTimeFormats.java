@@ -9,7 +9,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 public enum ISODateTimeFormats {
-    DATE_ONLY(ISODateTimeFormat.dateTime()),
+    DATE_ONLY(ISODateTimeFormat.date()),
     DATE_TIME_NO_MILLIS(ISODateTimeFormat.dateTimeNoMillis()),
     DATE_TIME(ISODateTimeFormat.dateTime());
 

@@ -19,7 +19,9 @@ import java.io.IOException;
  */
 public class DateTimeStandardizer implements StandardizationPolicy {
 
-    public enum OutputFormats { DATE_ONLY, DATETIME, DATETIME_NOMILLIS };
+    public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS}
+
+    ;
 
     private OutputFormats outputFormat;
 
@@ -94,6 +96,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
         System.out.println(standardizer.convertValue("1/14/1974"));
         System.out.println(standardizer.convertValue("1/1/1974"));
         System.out.println(standardizer.convertValue("12/01/2014"));
+        System.out.println(standardizer.convertValue("1/14/1974"));
 
         standardizer = new DateTimeStandardizer("MM/dd/YYYY HH:mm:ss", OutputFormats.DATETIME_NOMILLIS);
         System.out.println(standardizer.convertValue("1/14/1974 6:00:00"));
