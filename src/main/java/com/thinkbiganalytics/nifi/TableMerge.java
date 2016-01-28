@@ -138,7 +138,7 @@ public class TableMerge extends AbstractProcessor {
             session.getProvenanceReporter().modifyContent(outgoing, "Execution completed", stopWatch.getElapsed(TimeUnit.MILLISECONDS));
             session.transfer(outgoing, REL_SUCCESS);
 
-        } catch (final Exception  e) {
+        } catch (final Exception e) {
             logger.error("Unable to execute merge dedupe for {} due to {}; routing to failure", new Object[]{incoming, e});
             session.transfer(incoming, REL_FAILURE);
         }

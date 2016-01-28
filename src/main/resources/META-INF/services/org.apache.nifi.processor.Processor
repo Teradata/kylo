@@ -19,8 +19,8 @@
 com.thinkbiganalytics.nifi.ExecuteHQL
 com.thinkbiganalytics.nifi.ExecuteHQLStatement
 com.thinkbiganalytics.nifi.TableMerge
-com.thinkbiganalytics.nifi.ValidateData
 com.thinkbiganalytics.nifi.ExecuteSparkJob
 com.thinkbiganalytics.nifi.IngestHDFS
 com.thinkbiganalytics.nifi.TableRegister
 com.thinkbiganalytics.nifi.CreateHDFSFolder
+com.thinkbiganalytics.nifi.GetTableData

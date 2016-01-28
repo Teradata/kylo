@@ -2,7 +2,7 @@
  * Copyright (c) 2015. Teradata Inc.
  */
 
-package com.thinkbiganalytics.driver.hive;
+package com.thinkbiganalytics.util;
 
 /*
  * Licensed to the Apache Software Foundation (ASF) under one or more
@@ -21,30 +21,125 @@ package com.thinkbiganalytics.driver.hive;
  * limitations under the License.
  */
 
+
+import static java.sql.Types.ARRAY;
+import static java.sql.Types.BIGINT;
+import static java.sql.Types.BINARY;
+import static java.sql.Types.BIT;
+import static java.sql.Types.BLOB;
+import static java.sql.Types.BOOLEAN;
+import static java.sql.Types.CHAR;
+import static java.sql.Types.CLOB;
+import static java.sql.Types.DATE;
+import static java.sql.Types.DECIMAL;
+import static java.sql.Types.DOUBLE;
+import static java.sql.Types.FLOAT;
+import static java.sql.Types.INTEGER;
+import static java.sql.Types.LONGNVARCHAR;
+import static java.sql.Types.LONGVARBINARY;
+import static java.sql.Types.LONGVARCHAR;
+import static java.sql.Types.NCHAR;
+import static java.sql.Types.NUMERIC;
+import static java.sql.Types.NVARCHAR;
+import static java.sql.Types.REAL;
+import static java.sql.Types.ROWID;
+import static java.sql.Types.SMALLINT;
+import static java.sql.Types.TIME;
+import static java.sql.Types.TIMESTAMP;
+import static java.sql.Types.TINYINT;
+import static java.sql.Types.VARBINARY;
+import static java.sql.Types.VARCHAR;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.sql.*;
+import java.util.List;
+
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
+import org.apache.avro.SchemaBuilder.FieldAssembler;
 import org.apache.avro.file.DataFileWriter;
 import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumWriter;
 import org.apache.commons.lang3.StringUtils;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-
-import static java.sql.Types.*;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * JDBC / SQL common functions.
  */
 public class JdbcCommon {
+
+    public static Logger logger = LoggerFactory.getLogger(JdbcCommon.class);
+
+    public static long convertToCSVStream(final ResultSet rs, final OutputStream outStream) throws SQLException, IOException {
+
+        if (rs == null || rs.getMetaData() == null) {
+            logger.warn("Received empty resultset or no metadata.");
+            return 0;
+        }
+        OutputStreamWriter writer = new OutputStreamWriter(outStream);
+        final ResultSetMetaData meta = rs.getMetaData();
+
+        // Write header
+        final int nrOfColumns = meta.getColumnCount();
+        StringBuffer sb = new StringBuffer();
+        for (int i = 1; i <= nrOfColumns; i++) {
+            String columnName = meta.getColumnName(i);
+            sb.append(columnName);
+            if (i != nrOfColumns) {
+                sb.append(",");
+            } else {
+                sb.append("\n");
+            }
+        }
+        writer.append(sb.toString());
+        long nrOfRows = 0;
+        while (rs.next()) {
+            sb = new StringBuffer();
+            nrOfRows++;
+            for (int i = 1; i <= nrOfColumns; i++) {
+                String val = null;
+                // TODO: Support escaping commas, XML, CLOB, JSON, ARRAYS, etc.
+
+                int colType = meta.getColumnType(i);
+                if (colType == Types.DATE || colType == Types.TIMESTAMP || colType == Types.TIME_WITH_TIMEZONE || colType == Types.TIMESTAMP_WITH_TIMEZONE) {
+                    Timestamp sqlDate = rs.getTimestamp(i);
+                    if (sqlDate != null) {
+                        DateTimeFormatter formatter = ISODateTimeFormat.basicDateTime().withZoneUTC();
+                        val = formatter.print(new DateTime(sqlDate.getTime()));
+                    }
+                } else if (colType == Types.TIME) {
+                    Time time = rs.getTime(i);
+                    DateTimeFormatter formatter = ISODateTimeFormat.time().withZoneUTC();
+                    val = formatter.print(new DateTime(time.getTime()));
+                } else {
+                    val = rs.getString(i);
+                }
+                sb.append((val == null ? "" : val));
+                if (i != nrOfColumns) {
+                    sb.append(",");
+                } else {
+                    sb.append("\n");
+                }
+            }
+            writer.append(sb.toString());
+        }
+        writer.flush();
+        return nrOfRows;
+    }
+
 
     public static long convertToAvroStream(final ResultSet rs, final OutputStream outStream) throws SQLException, IOException {
         final Schema schema = createSchema(rs);
@@ -115,7 +210,7 @@ public class JdbcCommon {
             tableName = "NiFi_ExecuteSQL_Record";
         }
 
-        final SchemaBuilder.FieldAssembler<Schema> builder = SchemaBuilder.record(tableName).namespace("any.data").fields();
+        final FieldAssembler<Schema> builder = SchemaBuilder.record(tableName).namespace("any.data").fields();
 
         /**
          * Some missing Avro types - Decimal, Date types. May need some additional work.
@@ -130,13 +225,19 @@ public class JdbcCommon {
                 case VARCHAR:
                     builder.name(meta.getColumnName(i)).type().unionOf().nullBuilder().endNull().and().stringType().endUnion().noDefault();
                     break;
-
                 case BIT:
                 case BOOLEAN:
                     builder.name(meta.getColumnName(i)).type().unionOf().nullBuilder().endNull().and().booleanType().endUnion().noDefault();
                     break;
 
                 case INTEGER:
+                    if (meta.isSigned(i)) {
+                        builder.name(meta.getColumnName(i)).type().unionOf().nullBuilder().endNull().and().intType().endUnion().noDefault();
+                    } else {
+                        builder.name(meta.getColumnName(i)).type().unionOf().nullBuilder().endNull().and().longType().endUnion().noDefault();
+                    }
+                    break;
+
                 case SMALLINT:
                 case TINYINT:
                     builder.name(meta.getColumnName(i)).type().unionOf().nullBuilder().endNull().and().intType().endUnion().noDefault();
@@ -190,5 +291,27 @@ public class JdbcCommon {
         }
 
         return builder.endRecord();
+    }
+
+    public static void main(String[] args) throws SQLException, IOException {
+
+        //CREATE USER 'thinkbig'@'localhost' IDENTIFIED BY 'thinkbig';
+        //GRANT ALL PRIVILEGES ON *.* TO 'thinkbig'@'localhost' IDENTIFIED BY 'thinkbig' WITH GRANT OPTION;
+        //FLUSH PRIVILEGES;
+
+        com.mysql.jdbc.jdbc2.optional.MysqlDataSource ds
+                = new com.mysql.jdbc.jdbc2.optional.MysqlDataSource();
+        ds.setServerName("localhost");
+        ds.setPortNumber(3306);
+        ds.setDatabaseName("pipeline_db");
+        ds.setUser("thinkbig");
+        ds.setPassword("thinkbig");
+
+        Connection conn = ds.getConnection();
+        Statement st = conn.createStatement();
+        ResultSet rs = st.executeQuery("SELECT * FROM BATCH_STEP_EXECUTION");
+        OutputStream os = new ByteArrayOutputStream();
+        JdbcCommon.convertToCSVStream(rs, os);
+        System.out.println(os.toString());
     }
 }
