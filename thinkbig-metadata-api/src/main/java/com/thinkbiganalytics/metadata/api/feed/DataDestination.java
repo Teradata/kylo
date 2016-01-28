@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api;
+package com.thinkbiganalytics.metadata.api.feed;
 
 /**
  *

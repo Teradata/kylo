@@ -10,5 +10,6 @@
     <module>thinkbig-metadata-orientdb</module>
     <module>thinkbig-metadata-api</module>
     <module>thinkbig-metadata-core</module>
+    <module>thinkbig-metadata-server</module>
   </modules>
 </project>
