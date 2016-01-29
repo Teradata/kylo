@@ -14,7 +14,6 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 public class CoreDataOperation implements DataOperation {
 
     private ID id;
-    private State state;
     private Result result;
     private String status;
     private Feed source;
@@ -22,10 +21,6 @@ public class CoreDataOperation implements DataOperation {
 
     public ID getId() {
         return id;
-    }
-
-    public State getState() {
-        return state;
     }
 
     public Result getResult() {

@@ -15,13 +15,9 @@ public interface DataOperation {
     
     interface ID extends Serializable {};
     
-    enum Result { SUCCESS, FAILURE, CANCELED }
-    
-    enum State { PENDING, IN_PROGRESS, COMPLETE }
+    enum Result { IN_PROGRESS, SUCCESS, FAILURE, CANCELED }
     
     ID getId();
-    
-    State getState();
     
     Result getResult();
     

@@ -4,6 +4,8 @@ import java.nio.file.Path;
 import java.util.List;
 
 import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
+import com.thinkbiganalytics.metadata.api.event.ChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.DataDestination;
 
 public interface DatasetProvider {
@@ -14,5 +16,8 @@ public interface DatasetProvider {
     
     
     DataOperation createOperation(DirectoryDataset ds, DataDestination dest, List<Path> paths);
+    
+    
+    void addListener(DirectoryDataset ds, ChangeEventListener<DirectoryDataset, FileList> listener);
 
 }
