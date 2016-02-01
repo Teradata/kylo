@@ -163,6 +163,7 @@ public class ExecuteHQL extends AbstractProcessor {
             setQueryTimeout(st, queryTimeout);
             final LongHolder nrOfRows = new LongHolder(0L);
             FlowFile outgoing = (incoming == null ? session.create() : incoming);
+
             outgoing = session.write(outgoing, new OutputStreamCallback() {
                 @Override
                 public void process(final OutputStream out) throws IOException {

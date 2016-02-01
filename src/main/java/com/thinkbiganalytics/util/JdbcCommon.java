@@ -83,7 +83,7 @@ public class JdbcCommon {
 
     public static Logger logger = LoggerFactory.getLogger(JdbcCommon.class);
 
-    public static long convertToCSVStream(final ResultSet rs, final OutputStream outStream) throws SQLException, IOException {
+    public static long convertToCSVStream(final ResultSet rs, final OutputStream outStream, final RowVisitor visitor) throws SQLException, IOException {
 
         if (rs == null || rs.getMetaData() == null) {
             logger.warn("Received empty resultset or no metadata.");
@@ -107,6 +107,7 @@ public class JdbcCommon {
         writer.append(sb.toString());
         long nrOfRows = 0;
         while (rs.next()) {
+            if (visitor != null) visitor.visitRow(rs);
             sb = new StringBuffer();
             nrOfRows++;
             for (int i = 1; i <= nrOfColumns; i++) {
@@ -116,16 +117,19 @@ public class JdbcCommon {
                 int colType = meta.getColumnType(i);
                 if (colType == Types.DATE || colType == Types.TIMESTAMP || colType == Types.TIME_WITH_TIMEZONE || colType == Types.TIMESTAMP_WITH_TIMEZONE) {
                     Timestamp sqlDate = rs.getTimestamp(i);
+                    if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, sqlDate);
                     if (sqlDate != null) {
                         DateTimeFormatter formatter = ISODateTimeFormat.basicDateTime().withZoneUTC();
                         val = formatter.print(new DateTime(sqlDate.getTime()));
                     }
                 } else if (colType == Types.TIME) {
                     Time time = rs.getTime(i);
+                    if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, time);
                     DateTimeFormatter formatter = ISODateTimeFormat.time().withZoneUTC();
                     val = formatter.print(new DateTime(time.getTime()));
                 } else {
                     val = rs.getString(i);
+                    if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, val);
                 }
                 sb.append((val == null ? "" : val));
                 if (i != nrOfColumns) {
@@ -311,7 +315,7 @@ public class JdbcCommon {
         Statement st = conn.createStatement();
         ResultSet rs = st.executeQuery("SELECT * FROM BATCH_STEP_EXECUTION");
         OutputStream os = new ByteArrayOutputStream();
-        JdbcCommon.convertToCSVStream(rs, os);
+        JdbcCommon.convertToCSVStream(rs, os, null);
         System.out.println(os.toString());
     }
 }

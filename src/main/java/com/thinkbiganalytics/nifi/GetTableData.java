@@ -9,6 +9,7 @@ import com.thinkbiganalytics.controller.MetadataService;
 import com.thinkbiganalytics.metadata.BatchLoadStatus;
 import com.thinkbiganalytics.metadata.BatchLoadStatusImpl;
 import com.thinkbiganalytics.metadata.MetadataClient;
+import com.thinkbiganalytics.util.AbstractRowVisitor;
 import com.thinkbiganalytics.util.JdbcCommon;
 import org.apache.commons.lang.Validate;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -70,10 +71,10 @@ public class GetTableData extends AbstractProcessor {
             .name("nodata")
             .description("Successful but no new data to process.")
             .build();
-        public static final Relationship REL_SUCCESS = new Relationship.Builder()
-                .name("success")
-                .description("Successful created new flow file from the table.")
-                .build();
+    public static final Relationship REL_SUCCESS = new Relationship.Builder()
+            .name("success")
+            .description("Successful created new flow file from the table.")
+            .build();
     public static final Relationship REL_FAILURE = new Relationship.Builder()
             .name("failure")
             .description("Table extract execution failed. Incoming FlowFile will be penalized and routed to this relationship")
@@ -230,16 +231,20 @@ public class GetTableData extends AbstractProcessor {
                 public void process(final OutputStream out) throws IOException {
                     ResultSet rs = null;
                     try {
+                        Date lastLoadDate = null;
+                        LastFieldVisitor visitor = null;
                         GetTableDataSupport support = new GetTableDataSupport(conn, queryTimeout);
                         if (strategy == LoadStrategy.FULL_LOAD) {
                             rs = support.selectFullLoad(tableName, selectFields);
                         } else if (strategy == LoadStrategy.INCREMENTAL) {
                             BatchLoadStatus status = client.getLastLoad(feedName);
-                            rs = support.selectIncremental(tableName, selectFields, dateField, overlapTime, (status != null ? status.getLastLoadDate() : null));
+                            lastLoadDate = (status != null ? status.getLastLoadDate() : null);
+                            visitor = new LastFieldVisitor(dateField, lastLoadDate);
+                            rs = support.selectIncremental(tableName, selectFields, dateField, overlapTime, lastLoadDate);
                         } else {
                             throw new RuntimeException("Unsupported loadStrategy [" + loadStrategy + "]");
                         }
-                        nrOfRows.set(JdbcCommon.convertToCSVStream(rs, out));
+                        nrOfRows.set(JdbcCommon.convertToCSVStream(rs, out, visitor));
 
                     } catch (final SQLException e) {
                         throw new IOException("SQL execution failure", e);
@@ -282,6 +287,36 @@ public class GetTableData extends AbstractProcessor {
                 logger.error("Unable to execute SQL select from table due to {}; routing to failure", new Object[]{incoming, e});
                 session.transfer(incoming, REL_FAILURE);
             }
+        }
+    }
+
+    /**
+     * Track the max date we read
+     */
+    static class LastFieldVisitor extends AbstractRowVisitor {
+
+        private String colName;
+        private Date lastModifyDate = new Date(0L);
+
+        public LastFieldVisitor(String lastModifyColumnName, Date lastModifyDate) {
+            Validate.notEmpty(colName);
+            this.colName = lastModifyColumnName;
+            this.lastModifyDate = (lastModifyDate == null ? new Date(0L) : lastModifyDate);
+        }
+
+        @Override
+        public void visitColumn(String columnName, int colType, Date value) {
+            if (colName.equals(columnName)) {
+                if (value != null) {
+                    if (value.after(lastModifyDate)) {
+                        lastModifyDate = new Date(value.getTime());
+                    }
+                }
+            }
+        }
+
+        public Date getLastModifyDate() {
+            return lastModifyDate;
         }
     }
 }
