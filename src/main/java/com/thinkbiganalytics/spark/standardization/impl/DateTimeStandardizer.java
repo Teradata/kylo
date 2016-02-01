@@ -12,34 +12,35 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
 import java.io.IOException;
+import java.util.Date;
 
 
 /**
- * Convert date time to an ISO8601 format used by Hive
+ * Convert date time by a provided input format to an ISO8601 format used by Hive.  If the input format is null, the date is assumed to be
+ * epoch time, otherwise the formatting pattern is used to convert the date.
  */
 public class DateTimeStandardizer implements StandardizationPolicy {
 
     public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS}
 
-    ;
-
     private OutputFormats outputFormat;
 
     private transient DateTimeFormatter outputFormatter;
 
-    private transient DateTimeFormatter formatter;
+    private transient DateTimeFormatter inputFormatter;
 
     private String inputDateFormat;
 
     private boolean valid;
 
-    private boolean useUtc;
-
     private int errCount = 0;
+
+    public DateTimeStandardizer(OutputFormats outputFormat) {
+        this(null, outputFormat);
+    }
 
     public DateTimeStandardizer(String inputDateFormat, OutputFormats outputFormat) {
 
-        Validate.notEmpty(inputDateFormat);
         Validate.notNull(outputFormat);
         this.inputDateFormat = inputDateFormat;
         this.outputFormat = outputFormat;
@@ -50,8 +51,13 @@ public class DateTimeStandardizer implements StandardizationPolicy {
     public String convertValue(String value) {
         if (!valid) return value;
         try {
-            DateTime dt = formatter.withZoneUTC().parseDateTime(value);
-            return outputFormatter.print(dt);
+            if (inputFormatter != null) {
+                DateTime dt = inputFormatter.parseDateTime(value);
+                return outputFormatter.withZoneUTC().print(dt);
+            }
+            // epoch time
+            long lValue = Long.parseLong(value);
+            return outputFormatter.withZoneUTC().print(lValue);
 
         } catch (IllegalArgumentException e) {
             // Don't overload logs with errors
@@ -77,7 +83,9 @@ public class DateTimeStandardizer implements StandardizationPolicy {
                     this.outputFormatter = ISODateTimeFormat.dateTimeNoMillis();
                     break;
             }
-            this.formatter = DateTimeFormat.forPattern(this.inputDateFormat);
+            if (inputDateFormat != null) {
+                this.inputFormatter = DateTimeFormat.forPattern(this.inputDateFormat);
+            }
             valid = true;
         } catch (IllegalArgumentException e) {
             System.out.println("Illegal date parser format [" + inputDateFormat + "]. Standardizer will be skipped.");
@@ -91,6 +99,10 @@ public class DateTimeStandardizer implements StandardizationPolicy {
     }
 
     public static void main(String[] args) {
+        DateTimeStandardizer epochStandardizer = new DateTimeStandardizer(OutputFormats.DATETIME);
+        System.out.println(epochStandardizer.convertValue((new Date().getTime()) + ""));
+
+
         DateTimeStandardizer standardizer = new DateTimeStandardizer("MM/dd/YYYY", OutputFormats.DATE_ONLY);
 
         System.out.println(standardizer.convertValue("1/14/1974"));
