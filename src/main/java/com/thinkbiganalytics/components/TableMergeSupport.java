@@ -181,8 +181,6 @@ public class TableMergeSupport implements Serializable {
      * @param id              the primary key
      * @param lastModifyField the last modify date field used to determine
      * @param selectFields    the list of fields in the select clause of the source table
-     * @param spec            the partition specification or null if none
-     * @param partitionValues the values containing the distinct partition data to process this iterator
      * @param sourceTable     the source table
      * @param targetTable     the target table
      * @return the sql string

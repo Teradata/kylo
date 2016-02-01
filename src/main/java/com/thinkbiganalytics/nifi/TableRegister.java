@@ -142,7 +142,6 @@ public class TableRegister extends AbstractProcessor {
 
             TableRegisterSupport register = new TableRegisterSupport(conn);
             boolean result = register.registerStandardTables(source, entity, formatOptions, partitions, columnSpecs);
-            result = (result && register.registerProfileTable(source, entity));
             Relationship relnResult = (result ? REL_SUCCESS : REL_FAILURE);
 
             session.transfer(outgoing, relnResult);
