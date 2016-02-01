@@ -153,7 +153,7 @@ public class Profiler {
 
 		if (profileObjectType.equals("table")) {
 			retVal = "select * from " + profileObjectDesc;
-			if (partitionKey != null) {
+			if (partitionKey != null && !"ALL".equalsIgnoreCase(partitionKey)) {
 				retVal += " where processing_dttm = '"+partitionKey+"'";
 			}
 		}

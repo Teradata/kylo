@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.spark.helpers;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +15,8 @@ import java.io.InputStreamReader;
 
 public class InputStreamReaderRunnable implements Runnable {
 
+    private Logger logger = LoggerFactory.getLogger(InputStreamReaderRunnable.class);
+
     private BufferedReader reader;
     
     public InputStreamReaderRunnable(InputStream is) {
@@ -22,7 +27,7 @@ public class InputStreamReaderRunnable implements Runnable {
         try {
             String line = reader.readLine();
             while (line != null) {
-                System.out.println(line);
+                logger.info(line);
                 line = reader.readLine();
             }
             reader.close();
