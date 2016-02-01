@@ -16,24 +16,22 @@ public enum TableType {
     FEED("/model.db/", "/etl/", "feed", true, false, true,false),
     VALID("/model.db/", "/etl/", "valid", true, false, false,false),
     INVALID("/model.db/", "/etl", "invalid", true, false, true,true),
-    MASTER("/app/warehouse/", "/app/warehouse/", "", false, true, false,false);
+    MASTER("/app/warehouse/", "/app/warehouse/", "", false, true, false,false),
+    PROFILE("/model.db/", "/etl/", "profile", true, true, true,false);
 
-    private String tableRoot;
-    private String dataRoot;
-    private String suffix;
+    private String tableLocation;
+    private String partitionLocation;
+    private String tableSuffix;
     private boolean orc;
     private boolean strings;
     private boolean feedPartition;
     private boolean addReasonCode;
 
-    TableType(String tableRoot, String dataRoot, String suffix, boolean feedPartition) {
-        this(tableRoot,dataRoot,suffix,feedPartition,false,false,false);
-    }
 
     TableType(String tableRoot, String dataRoot, String suffix, boolean feedPartition, boolean orc, boolean strings, boolean addReasonCode) {
-        this.tableRoot = tableRoot;
-        this.dataRoot = dataRoot;
-        this.suffix = suffix;
+        this.tableLocation = tableRoot;
+        this.partitionLocation = dataRoot;
+        this.tableSuffix = suffix;
         this.feedPartition = feedPartition;
         this.orc = orc;
         this.strings = strings;
@@ -41,7 +39,7 @@ public enum TableType {
     }
 
     public String deriveTablename(String entity) {
-        return entity + (!StringUtils.isEmpty(suffix) ? "_"+suffix : "");
+        return entity + (!StringUtils.isEmpty(tableSuffix) ? "_"+ tableSuffix : "");
     }
 
     public String deriveQualifiedName(String source, String entity) {
@@ -51,10 +49,10 @@ public enum TableType {
     public String deriveLocationSpecification(String source, String entity) {
         StringBuffer sb = new StringBuffer();
         sb.append(" LOCATION '")
-        .append(tableRoot)
+        .append(tableLocation)
         .append(source).append("/")
         .append(entity).append("/")
-        .append(suffix).append("'");
+        .append(tableSuffix).append("'");
         return sb.toString();
     }
 

@@ -90,6 +90,7 @@ public class TableRegister extends AbstractProcessor {
             .expressionLanguageSupported(true)
             .build();
 
+
     private final List<PropertyDescriptor> propDescriptors;
 
     public TableRegister() {
@@ -127,8 +128,6 @@ public class TableRegister extends AbstractProcessor {
 
         final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
 
-        final StopWatch stopWatch = new StopWatch(true);
-
         try (final Connection conn = thriftService.getConnection()) {
 
             FlowFile outgoing = (incoming == null ? session.create() : incoming);
@@ -143,6 +142,7 @@ public class TableRegister extends AbstractProcessor {
 
             TableRegisterSupport register = new TableRegisterSupport(conn);
             boolean result = register.registerStandardTables(source, entity, formatOptions, partitions, columnSpecs);
+            result = (result && register.registerProfileTable(source, entity));
             Relationship relnResult = (result ? REL_SUCCESS : REL_FAILURE);
 
             session.transfer(outgoing, relnResult);

@@ -46,23 +46,37 @@ public class TableRegisterSupport {
 
 
     public boolean registerTable(String source, String tableEntity, String formatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs, TableType tableType) {
-        String ddl = "";
-        boolean result = true;
         Validate.notNull(conn);
+
+        String ddl = createDDL(source, tableEntity, columnSpecs, partitions, formatOptions, tableType);
+        return createTable(ddl);
+    }
+
+    protected boolean createTable(String ddl) {
+        Validate.notNull(conn);
+
         try (final Statement st = conn.createStatement()) {
-
-            ddl = createDDL(source, tableEntity, columnSpecs, partitions, formatOptions, tableType);
             st.execute(ddl);
-
+            return true;
         } catch (final SQLException e) {
             logger.error("Failed to create tables DDL {}", ddl, e);
             return false;
         }
-        return result;
+    }
+
+    public boolean registerProfileTable(String source, String tableEntity) {
+
+        String tableName = TableType.PROFILE.deriveQualifiedName(source, tableEntity);
+        String columnSQL = " `columnname` string,`metrictype` string,`metricvalue` string";
+        String formatSQL = TableType.PROFILE.deriveFormatSpecification(null);
+        String partitionSQL = TableType.PROFILE.derivePartitionSpecification(null);
+        String locationSQL = TableType.PROFILE.deriveLocationSpecification(source, tableEntity);
+
+        String ddl = createDDL(tableName, columnSQL, partitionSQL, formatSQL, locationSQL);
+        return createTable(ddl);
     }
 
     public boolean registerStandardTables(String source, String tableEntity, String formatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs) {
-        String ddl = "";
         boolean result = true;
         registerDatabase(source);
         TableType[] tableTypes = new TableType[]{TableType.FEED, TableType.INVALID, TableType.VALID, TableType.MASTER};
@@ -86,6 +100,10 @@ public class TableRegisterSupport {
         String locationSQL = tableType.deriveLocationSpecification(source, entity);
         String formatOptionsSQL = tableType.deriveFormatSpecification(formatOptions);
 
+        return createDDL(tableName, columnsSQL, partitionSQL, formatOptionsSQL, locationSQL);
+    }
+
+    protected String createDDL(String tableName, String columnsSQL, String partitionSQL, String formatOptionsSQL, String locationSQL) {
         StringBuffer sb = new StringBuffer();
         sb.append("CREATE EXTERNAL ");
         sb.append("TABLE IF NOT EXISTS `")

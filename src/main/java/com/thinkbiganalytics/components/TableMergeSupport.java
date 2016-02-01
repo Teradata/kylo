@@ -127,6 +127,89 @@ public class TableMergeSupport implements Serializable {
         return sb.toString();
     }
 
+    /**
+     * Generates a query for merging data from a source table into the target table adhering to partitions and
+     * using a last modify date and a primary key
+     *
+     * @param id              the primary key
+     * @param lastModifyField the last modify date field used to determine
+     * @param selectFields    the list of fields in the select clause of the source table
+     * @param spec            the partition specification or null if none
+     * @param partitionValues the values containing the distinct partition data to process this iterator
+     * @param sourceTable     the source table
+     * @param targetTable     the target table
+     * @return the sql string
+     */
+    protected String generateDedupePartitionQueryPK(String id, String lastModifyField, String[] selectFields, PartitionSpec spec, String[] partitionValues, String sourceTable, String targetTable, String feedPartitionValue) {
+
+        String selectSQL = StringUtils.join(selectFields, ",");
+        String targetSqlWhereClause = spec.toTargetSQLWhere(partitionValues);
+        String sourceSqlWhereClause = spec.toSourceSQLWhere(partitionValues);
+        String partitionClause = spec.toPartitionSpec(partitionValues);
+
+        StringBuffer sb = new StringBuffer();
+
+//        CREATE VIEW reconcile_view AS
+        sb.append("insert overwrite table ").append(targetTable).append(" ").append(partitionClause)
+                .append("SELECT t1.").append(selectSQL).append(" FROM")
+                .append("(SELECT ").append(selectSQL).append(" FROM ").append(targetTable).append(" where ").append(targetSqlWhereClause)
+                .append("  UNION ALL")
+                .append(" SELECT ").append(selectSQL).append(" FROM ").append(sourceTable)
+                .append(" where ")
+                .append(" processing_dttm='" + feedPartitionValue + "' and ")
+                .append(sourceSqlWhereClause).append(" ) t1")
+                .append(" JOIN")
+                .append("(SELECT ").append(id).append(", max(").append(lastModifyField).append(") max_modified FROM ")
+                .append("(SELECT ").append(selectSQL).append(" FROM ").append(targetTable).append(" where ").append(targetSqlWhereClause)
+                .append(" UNION ALL ")
+                .append(" SELECT ").append(selectSQL).append(" FROM ").append(sourceTable)
+                .append(" where ")
+                .append(" processing_dttm='" + feedPartitionValue + "' and ")
+                .append(sourceSqlWhereClause)
+                .append(") t2")
+                .append(" GROUP BY ").append(id).append(") s")
+                .append(" ON t1.").append(id).append(" = s.").append(id).append(" AND t1.").append(lastModifyField).append(" = ").append("s.max_modified");
+
+
+        return sb.toString();
+    }
+
+    /**
+     * Generates a query for merging data from a source table into the target table and
+     * using a last modify date and a primary key
+     *
+     * @param id              the primary key
+     * @param lastModifyField the last modify date field used to determine
+     * @param selectFields    the list of fields in the select clause of the source table
+     * @param spec            the partition specification or null if none
+     * @param partitionValues the values containing the distinct partition data to process this iterator
+     * @param sourceTable     the source table
+     * @param targetTable     the target table
+     * @return the sql string
+     */
+    protected String generateDedupeNonPartitionQueryPK(String id, String lastModifyField, String[] selectFields, String sourceTable, String targetTable, String feedPartitionValue) {
+
+        String selectSQL = StringUtils.join(selectFields, ",");
+        StringBuffer sb = new StringBuffer();
+
+//        CREATE VIEW reconcile_view AS
+        sb.append("insert overwrite table ").append(targetTable).append(" ")
+                .append("SELECT t1.").append(selectSQL).append(" FROM")
+                .append("(SELECT ").append(selectSQL).append(" FROM ").append(targetTable)
+                .append("  UNION ALL")
+                .append(" SELECT ").append(selectSQL).append(" FROM ").append(sourceTable).append(" ) t1")
+                .append(" JOIN")
+                .append("(SELECT ").append(id).append(", max(").append(lastModifyField).append(") max_modified FROM ")
+                .append("(SELECT ").append(selectSQL).append(" FROM ").append(targetTable)
+                .append(" UNION ALL ")
+                .append(" SELECT ").append(selectSQL).append(" FROM ").append(sourceTable)
+                .append(") t2")
+                .append(" GROUP BY ").append(id).append(") s")
+                .append(" ON t1.").append(id).append(" = s.").append(id).append(" AND t1.").append(lastModifyField).append(" = ").append("s.max_modified");
+
+
+        return sb.toString();
+    }
 
     protected void dedupe(String sql) {
 
@@ -147,14 +230,14 @@ public class TableMergeSupport implements Serializable {
         String sql = "";
         try (final Statement st = conn.createStatement()) {
             sql = spec.toDistinctSelectSQL(sourceTable, feedPartition);
-            logger.info("Executing batch query ["+sql+"]");
+            logger.info("Executing batch query [" + sql + "]");
             ResultSet rs = st.executeQuery(sql);
             int count = rs.getMetaData().getColumnCount();
             while (rs.next()) {
                 String[] values = new String[count];
                 for (int i = 1; i <= count; i++) {
                     Object oVal = rs.getObject(i);
-                    values[i-1] = StringUtils.defaultString(oVal.toString(),"");
+                    values[i - 1] = StringUtils.defaultString(oVal.toString(), "");
                 }
                 v.add(values);
             }
@@ -202,7 +285,8 @@ public class TableMergeSupport implements Serializable {
     public static void main(String[] args) {
         TableMergeSupport support = new TableMergeSupport();
         PartitionSpec spec = new PartitionSpec("country|string|country\nyear|int|year(hired)");
-        String sql = support.generateDedupePartitionQuery(new String[]{"id", "name", "hired", "company", "zip", "phone", "email", "hired"}, spec, new String[]{"USA", "2015"}, "emp_sr3.employee_feed", "emp_sr3.employee", "20160119083715");
+        //String sql = support.generateDedupePartitionQueryPK("id", "hired", new String[]{"id", "name", "company", "zip", "phone", "email", "hired"}, spec, new String[]{"USA", "2015"}, "emp_sr5.employee_valid", "emp_sr5.employee", "20160119074340");
+        String sql = support.generateDedupeNonPartitionQuery(new String[]{"id", "name", "company", "zip", "phone", "email", "hired"}, "emp_sr5.employee_valid", "emp_sr5.employee", "20160119074340");
         System.out.println(sql);
     }
 

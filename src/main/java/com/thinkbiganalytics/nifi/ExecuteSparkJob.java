@@ -193,7 +193,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
             inputThread.start();
 
              /* Read/clear the process error stream */
-            InputStreamReaderRunnable errorStreamReaderRunnable = new InputStreamReaderRunnable(LogLevel.ERROR, logger, spark.getErrorStream());
+            InputStreamReaderRunnable errorStreamReaderRunnable = new InputStreamReaderRunnable(LogLevel.WARN, logger, spark.getErrorStream());
             Thread errorThread = new Thread(errorStreamReaderRunnable, "stream error");
             errorThread.start();
 
