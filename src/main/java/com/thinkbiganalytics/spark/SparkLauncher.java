@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.spark;
 
-import com.thinkbiganalytics.spark.helpers.InputStreamReaderRunnable;
+import com.thinkbiganalytics.spark.util.InputStreamReaderRunnable;
 
 import java.util.Arrays;
 
@@ -34,7 +34,7 @@ public class SparkLauncher {
 		
 		/* Configuration parameters for spark launcher */
         String APPLICATION_JAR = "target/spark-launcher-demo-0.0.1-SNAPSHOT-jar-with-dependencies.jar";
-        //String MAIN_CLASS = "com.thinkbiganalytics.spark.ValidateRecords";
+        //String MAIN_CLASS = "com.thinkbiganalytics.spark.Validator";
         String MAIN_CLASS = "com.thinkbiganalytics.spark.MergeDedupe";
         String SPARK_MASTER = args[0];
         String DRIVER_MEMORY = "512m";

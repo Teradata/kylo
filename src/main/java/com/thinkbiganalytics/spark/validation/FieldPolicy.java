@@ -2,7 +2,7 @@
  * Copyright (c) 2016. Teradata Inc.
  */
 
-package com.thinkbiganalytics.spark;
+package com.thinkbiganalytics.spark.validation;
 
 import com.thinkbiganalytics.spark.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.spark.validation.Validator;

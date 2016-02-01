@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.spark.helpers;
+package com.thinkbiganalytics.spark.util;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

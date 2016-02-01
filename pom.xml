@@ -20,7 +20,7 @@
         <mvnassemblyplugin.version>2.4.1</mvnassemblyplugin.version>
         <mvnjavadocplugin.version>2.10.3</mvnjavadocplugin.version>
         <!--<mainClass.name>com.thinkbiganalytics.spark.spark_launcher.SparkLauncher</mainClass.name>-->
-        <mainClass.name>com.thinkbiganalytics.spark.ValidateRecords</mainClass.name>
+        <mainClass.name>com.thinkbiganalytics.spark.datavalidator.Validator</mainClass.name>
     </properties>
 
     <dependencies>

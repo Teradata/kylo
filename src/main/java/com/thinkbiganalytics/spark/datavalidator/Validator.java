@@ -1,11 +1,13 @@
-package com.thinkbiganalytics.spark;
+package com.thinkbiganalytics.spark.datavalidator;
 
 
+import com.thinkbiganalytics.spark.validation.FieldPolicy;
+import com.thinkbiganalytics.spark.validation.FieldPolicyBuilder;
+import com.thinkbiganalytics.spark.validation.HCatDataType;
 import com.thinkbiganalytics.spark.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.spark.standardization.impl.AcceptsEmptyValues;
 import com.thinkbiganalytics.spark.standardization.impl.DateTimeStandardizer;
 import com.thinkbiganalytics.spark.standardization.impl.RemoveControlCharsStandardizer;
-import com.thinkbiganalytics.spark.validation.Validator;
 import com.thinkbiganalytics.spark.validation.impl.CreditCardValidator;
 import com.thinkbiganalytics.spark.validation.impl.EmailValidator;
 import com.thinkbiganalytics.spark.validation.impl.IPAddressValidator;
@@ -36,7 +38,7 @@ import java.util.Vector;
  * <p>
  * blog.cloudera.com/blog/2015/07/how-to-do-data-quality-checks-using-apache-spark-dataframes/
  */
-public class ValidateRecords implements Serializable {
+public class Validator implements Serializable {
 
     private static String REJECT_REASON_COL = "dlp_reject_reason";
 
@@ -67,7 +69,7 @@ public class ValidateRecords implements Serializable {
     private HCatDataType[] schema;
     private Map<String, FieldPolicy> policyMap = new HashMap<String, FieldPolicy>();
 
-    public ValidateRecords(String targetDatabase, String entity, String partition) {
+    public Validator(String targetDatabase, String entity, String partition) {
         super();
         SparkContext sparkContext = SparkContext.getOrCreate();
         hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
@@ -126,11 +128,11 @@ public class ValidateRecords implements Serializable {
             final DataFrame validatedDF = hiveContext.createDataFrame(newResults, schema).toDF();
 
             // Pull out just the valid or invalid records
-            DataFrame invalidDF = validatedDF.filter(VALID_INVALID_COL+" = '0'").drop(VALID_INVALID_COL).toDF();
+            DataFrame invalidDF = validatedDF.filter(VALID_INVALID_COL + " = '0'").drop(VALID_INVALID_COL).toDF();
             writeToTargetTable(invalidDF, invalidTableName);
 
             // Write out the valid records (dropping our two columns)
-            DataFrame validDF = validatedDF.filter(VALID_INVALID_COL+" = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").toDF();
+            DataFrame validDF = validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").toDF();
             writeToTargetTable(validDF, validTableName);
 
 
@@ -208,9 +210,9 @@ public class ValidateRecords implements Serializable {
             sbRejectReason = new StringBuffer("{Empty Row}");
         }
         // Record the results in our appended columns, move processing partition value last
-        newValues[schema.length + 1] = newValues[schema.length-1];
+        newValues[schema.length + 1] = newValues[schema.length - 1];
         newValues[schema.length] = sbRejectReason.toString();
-        newValues[schema.length-1] = (valid ? "1" : "0");
+        newValues[schema.length - 1] = (valid ? "1" : "0");
 
         return RowFactory.create(newValues);
     }
@@ -250,9 +252,9 @@ public class ValidateRecords implements Serializable {
             }
 
             // Validate type using provided validators
-            List<Validator> validators = fieldPolicy.getValidators();
+            List<com.thinkbiganalytics.spark.validation.Validator> validators = fieldPolicy.getValidators();
             if (validators != null) {
-                for (Validator validator : validators) {
+                for (com.thinkbiganalytics.spark.validation.Validator validator : validators) {
                     if (!validator.validate(fieldValue)) {
                         return ValidationResult.fail("{ Validation failure: field [" + fieldDataType.getName() + "] rule [" + validator.getClass().getSimpleName() + "]]}");
                     }
@@ -343,7 +345,7 @@ public class ValidateRecords implements Serializable {
             System.exit(1);
         }
         try {
-            ValidateRecords app = new ValidateRecords(args[0], args[1], args[2]);
+            Validator app = new Validator(args[0], args[1], args[2]);
             app.doValidate();
         } catch (Exception e) {
             System.out.println(e);

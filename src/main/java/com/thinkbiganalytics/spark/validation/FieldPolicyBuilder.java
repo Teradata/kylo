@@ -1,9 +1,8 @@
-package com.thinkbiganalytics.spark;
+package com.thinkbiganalytics.spark.validation;
 
 import com.thinkbiganalytics.spark.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.spark.standardization.impl.DateTimeStandardizer;
 import com.thinkbiganalytics.spark.standardization.impl.RemoveControlCharsStandardizer;
-import com.thinkbiganalytics.spark.validation.Validator;
 import com.thinkbiganalytics.spark.validation.impl.*;
 
 import java.util.HashMap;
@@ -28,17 +27,17 @@ public class FieldPolicyBuilder {
         return new FieldPolicyBuilder();
     }
 
-    FieldPolicyBuilder addValidator(Validator validator) {
+    public FieldPolicyBuilder addValidator(Validator validator) {
         validators.add(validator);
         return this;
     }
 
-    FieldPolicyBuilder addStandardizer(StandardizationPolicy policy) {
+    public FieldPolicyBuilder addStandardizer(StandardizationPolicy policy) {
         standardizationPolicies.add(policy);
         return this;
     }
 
-    FieldPolicyBuilder disallowNullOrEmpty() {
+    public FieldPolicyBuilder disallowNullOrEmpty() {
         policy.setNullable(false);
         return this;
     }
@@ -46,27 +45,27 @@ public class FieldPolicyBuilder {
     /**
      * Constrains value to one of the values provided in the list
      */
-    FieldPolicyBuilder constrainValues(String... values) {
+    public FieldPolicyBuilder constrainValues(String... values) {
         validators.add(new LookupValidator(values));
         return this;
     }
 
-    FieldPolicyBuilder constrainLength(int minlen, int maxlen) {
+    public FieldPolicyBuilder constrainLength(int minlen, int maxlen) {
         validators.add(new LengthValidator(minlen, maxlen));
         return this;
     }
 
-    FieldPolicyBuilder skipSchemaValidation() {
+    public FieldPolicyBuilder skipSchemaValidation() {
         policy.setSkipSchemaValidation(true);
         return this;
     }
 
-    FieldPolicyBuilder enableDiscoverTypes() {
+    public FieldPolicyBuilder enableDiscoverTypes() {
         policy.setTypeDiscovery(true);
         return this;
     }
 
-    FieldPolicy build() {
+    public FieldPolicy build() {
         FieldPolicy newPolicy = this.policy;
         newPolicy.setValidators(validators);
         newPolicy.setStandardizationPolicies(standardizationPolicies);

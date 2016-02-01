@@ -4,7 +4,7 @@
 
 package com.thinkbiganalytics.spark.util;
 
-import com.thinkbiganalytics.spark.HCatDataType;
+import com.thinkbiganalytics.spark.validation.HCatDataType;
 
 /**
  * Represents a string type that cannot be converted to its numerical corresponding type
