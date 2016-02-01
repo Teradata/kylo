@@ -1,25 +1,25 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.core.dataset;
+package com.thinkbiganalytics.metadata.core.op;
 
 import java.util.Set;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.ChangeSet;
-import com.thinkbiganalytics.metadata.api.dataset.ChangedContent;
-import com.thinkbiganalytics.metadata.api.dataset.DataOperation;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.op.ChangedContent;
+import com.thinkbiganalytics.metadata.api.op.DataOperation;
 
 /**
  *
  * @author Sean Felten
  */
-public abstract class CoreChangeSet<D extends Dataset, C extends ChangedContent> implements ChangeSet<D, C> {
+public abstract class BsseChangeSet<D extends Dataset, C extends ChangedContent> implements ChangeSet<D, C> {
 
     private DateTime time;
-    private Type type;
+    private ChangeType type;
     private DataOperation dataOperation;
     private D dataset;
     private Set<C> changes;
@@ -28,7 +28,7 @@ public abstract class CoreChangeSet<D extends Dataset, C extends ChangedContent>
         return time;
     }
 
-    public Type getType() {
+    public ChangeType getType() {
         return type;
     }
 

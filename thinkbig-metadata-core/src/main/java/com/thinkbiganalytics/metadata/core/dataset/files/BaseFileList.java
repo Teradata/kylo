@@ -12,7 +12,7 @@ import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
  *
  * @author Sean Felten
  */
-public class CoreFileList implements FileList {
+public class BaseFileList implements FileList {
 
     private List<Path> filePaths;
     

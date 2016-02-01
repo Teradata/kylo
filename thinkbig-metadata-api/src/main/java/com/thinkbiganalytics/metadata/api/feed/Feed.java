@@ -19,7 +19,7 @@ public interface Feed {
     
     String getDescription();
     
-    DataSource getSource();
+    FeedSource getSource();
     
-    DataDestination getDestination();
+    FeedDestination getDestination();
 }

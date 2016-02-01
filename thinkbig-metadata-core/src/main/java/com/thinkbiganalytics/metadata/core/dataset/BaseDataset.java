@@ -7,14 +7,14 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.ChangeSet;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 
 /**
  *
  * @author Sean Felten
  */
-public class CoreDataset implements Dataset {
+public class BaseDataset implements Dataset {
 
     private ID id;
     private String name;

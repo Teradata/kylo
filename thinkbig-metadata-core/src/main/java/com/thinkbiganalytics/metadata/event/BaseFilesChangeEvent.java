@@ -11,6 +11,6 @@ import com.thinkbiganalytics.metadata.api.event.FilesChangeEvent;
  *
  * @author Sean Felten
  */
-public class CoreFilesChangeEvent extends BaseChangeEvent<DirectoryDataset, FileList> implements FilesChangeEvent {
+public class BaseFilesChangeEvent extends BaseChangeEvent<DirectoryDataset, FileList> implements FilesChangeEvent {
 
 }

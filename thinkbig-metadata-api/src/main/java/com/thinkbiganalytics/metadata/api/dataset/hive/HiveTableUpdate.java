@@ -3,7 +3,9 @@
  */
 package com.thinkbiganalytics.metadata.api.dataset.hive;
 
-import com.thinkbiganalytics.metadata.api.dataset.ChangedContent;
+import java.util.List;
+
+import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 
 /**
  *
@@ -12,4 +14,6 @@ import com.thinkbiganalytics.metadata.api.dataset.ChangedContent;
 public interface HiveTableUpdate extends ChangedContent {
 
     int getRecordCount();
+    
+    List<HivePartitionUpdate> getPartitions();
 }

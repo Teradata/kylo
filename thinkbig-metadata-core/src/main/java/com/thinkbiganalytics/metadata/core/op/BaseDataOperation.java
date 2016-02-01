@@ -1,17 +1,17 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.core.dataset;
+package com.thinkbiganalytics.metadata.core.op;
 
-import com.thinkbiganalytics.metadata.api.dataset.ChangeSet;
-import com.thinkbiganalytics.metadata.api.dataset.DataOperation;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.op.DataOperation;
 
 /**
  *
  * @author Sean Felten
  */
-public class CoreDataOperation implements DataOperation {
+public class BaseDataOperation implements DataOperation {
 
     private ID id;
     private Result result;

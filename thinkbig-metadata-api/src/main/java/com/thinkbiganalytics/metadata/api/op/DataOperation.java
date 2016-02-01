@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.dataset;
+package com.thinkbiganalytics.metadata.api.op;
 
 import java.io.Serializable;
 

@@ -9,7 +9,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  *
  * @author Sean Felten
  */
-public interface DataSource extends FeedData {
+public interface FeedSource extends FeedData {
 
     ServiceLevelAgreement.ID getAgreementId();
 }

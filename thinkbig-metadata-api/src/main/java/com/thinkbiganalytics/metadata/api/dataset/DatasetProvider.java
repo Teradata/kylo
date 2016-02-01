@@ -4,20 +4,17 @@ import java.nio.file.Path;
 import java.util.List;
 
 import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
-import com.thinkbiganalytics.metadata.api.event.ChangeEventListener;
-import com.thinkbiganalytics.metadata.api.feed.DataDestination;
+import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
 
 public interface DatasetProvider {
-    
-    Dataset createDataset(String name, String descr);
 
-    List<ChangeSet<?, ?>> getChangeSets(Dataset.ID dsId);  // Add criteria filtering
+    DatasetCriteria datasetCriteria();
+
+    DirectoryDataset createDirectoryDataset(String name, String descr, Path dir);
+    HiveTableDataset createHiveTableDataset(String name, String database, String table);
     
-    
-    DataOperation createOperation(DirectoryDataset ds, DataDestination dest, List<Path> paths);
-    
-    
-    void addListener(DirectoryDataset ds, ChangeEventListener<DirectoryDataset, FileList> listener);
+    Dataset getDataset(Dataset.ID id);
+    List<Dataset> getDatasets();
+    List<Dataset> getDatasets(DatasetCriteria criteria);
 
 }

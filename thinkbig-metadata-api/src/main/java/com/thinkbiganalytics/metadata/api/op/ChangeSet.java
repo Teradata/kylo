@@ -1,11 +1,13 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.dataset;
+package com.thinkbiganalytics.metadata.api.op;
 
 import java.util.Set;
 
 import org.joda.time.DateTime;
+
+import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 
 /**
  *
@@ -13,11 +15,11 @@ import org.joda.time.DateTime;
  */
 public interface ChangeSet<D extends Dataset, C extends ChangedContent> {
     
-    enum Type { UPDATE, DELETE }
+    enum ChangeType { UPDATE, DELETE }
 
     DateTime getTime();
     
-    Type getType();
+    ChangeType getType();
     
     DataOperation getDataOperation();
     
