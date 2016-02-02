@@ -87,7 +87,7 @@ public class BigDecimalColumnStatistics extends ColumnStatistics {
 			max = vBigDecimal_columnStatistics.max;
 		}
 		
-		if (min.compareTo(vBigDecimal_columnStatistics.max) > 0) {
+		if (min.compareTo(vBigDecimal_columnStatistics.min) > 0) {
 			min = vBigDecimal_columnStatistics.min;
 		}
 		

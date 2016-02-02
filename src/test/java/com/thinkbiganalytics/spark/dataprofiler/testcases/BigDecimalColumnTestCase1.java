@@ -33,6 +33,8 @@ public class BigDecimalColumnTestCase1 {
 	static BigDecimal max;
 	static BigDecimal min;
 	static BigDecimal sum;
+	static BigDecimal topFirstValue;
+	static BigDecimal topSecondValue;
 
 	@BeforeClass 
 	public static void setUpClass() {      
@@ -46,9 +48,11 @@ public class BigDecimalColumnTestCase1 {
 		percUniqueValues = 40.0d;
 		percDuplicateValues = 60.0d;
 		topNValues = columnStats.getTopNValues();
-		max = new BigDecimal(String.valueOf(8.223));
-		min = new BigDecimal(String.valueOf(1.567));
-		sum = new BigDecimal(String.valueOf(30.296));
+		max = new BigDecimal(String.valueOf(8.223)).setScale(5, BigDecimal.ROUND_HALF_UP);
+		min = new BigDecimal(String.valueOf(1.567)).setScale(5, BigDecimal.ROUND_HALF_UP);
+		sum = new BigDecimal(String.valueOf(30.296)).setScale(5, BigDecimal.ROUND_HALF_UP);
+		topFirstValue = new BigDecimal(String.valueOf(4.343)).setScale(5, BigDecimal.ROUND_HALF_UP);
+		topSecondValue = new BigDecimal(String.valueOf(1.567)).setScale(5, BigDecimal.ROUND_HALF_UP);
 
 	}
 
@@ -96,9 +100,9 @@ public class BigDecimalColumnTestCase1 {
 		Arrays.sort(topNDataItems);
 		int itemCount = topNDataItems.length;
 		
-		assertEquals(new BigDecimal(String.valueOf(4.343)), ((TopNDataItem)topNDataItems[itemCount-1]).getValue());
+		assertEquals(topFirstValue, new BigDecimal(String.valueOf(((TopNDataItem)topNDataItems[itemCount-1]).getValue())).setScale(5, BigDecimal.ROUND_HALF_UP));
 		assertEquals(Long.valueOf(4l), ((TopNDataItem)topNDataItems[itemCount-1]).getCount());
-		assertEquals(new BigDecimal(String.valueOf(1.567)), ((TopNDataItem)topNDataItems[itemCount-2]).getValue());
+		assertEquals(topSecondValue, new BigDecimal(String.valueOf(((TopNDataItem)topNDataItems[itemCount-2]).getValue())).setScale(5, BigDecimal.ROUND_HALF_UP));
 		assertEquals(Long.valueOf(3l), ((TopNDataItem)topNDataItems[itemCount-2]).getCount());
 		assertEquals(null, ((TopNDataItem)topNDataItems[itemCount-3]).getValue());
 		assertEquals(Long.valueOf(2l), ((TopNDataItem)topNDataItems[itemCount-3]).getCount());
@@ -111,19 +115,19 @@ public class BigDecimalColumnTestCase1 {
 	
 	@Test
     public void testBigDecimalMax() {
-    	assertEquals(max, ((BigDecimalColumnStatistics)columnStats).getMax());
+    	assertEquals(max, ((BigDecimalColumnStatistics)columnStats).getMax().setScale(5, BigDecimal.ROUND_HALF_UP));
     }
     
     
     @Test
     public void testBigDecimalMin() {
-    	assertEquals(min, ((BigDecimalColumnStatistics)columnStats).getMin());
+    	assertEquals(min, ((BigDecimalColumnStatistics)columnStats).getMin().setScale(5, BigDecimal.ROUND_HALF_UP));
     }
     
     
     @Test
     public void testBigDecimalSum() {
-    	assertEquals(sum, ((BigDecimalColumnStatistics)columnStats).getSum());
+    	assertEquals(sum, ((BigDecimalColumnStatistics)columnStats).getSum().setScale(5, BigDecimal.ROUND_HALF_UP));
     }
     
     @AfterClass

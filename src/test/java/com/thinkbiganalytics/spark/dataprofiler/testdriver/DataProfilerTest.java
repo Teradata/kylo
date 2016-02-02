@@ -102,7 +102,7 @@ public class DataProfilerTest {
 		schemaFields[10] = DataTypes.createStructField("weight", DataTypes.FloatType, true);
 		schemaFields[11] = DataTypes.createStructField("credits", DataTypes.ShortType, true);
 		schemaFields[12] = DataTypes.createStructField("ccode", DataTypes.ByteType, true);
-		schemaFields[13] = DataTypes.createStructField("score", DataTypes.createDecimalType(), true);
+		schemaFields[13] = DataTypes.createStructField("score", DataTypes.createDecimalType(7, 5), true);
 		
 		schema = DataTypes.createStructType(schemaFields);
 
