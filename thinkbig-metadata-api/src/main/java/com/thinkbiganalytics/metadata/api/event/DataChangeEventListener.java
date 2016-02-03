@@ -10,7 +10,7 @@ import com.thinkbiganalytics.metadata.api.op.ChangedContent;
  *
  * @author Sean Felten
  */
-public interface ChangeEventListener<D extends Dataset, C extends ChangedContent> {
+public interface DataChangeEventListener<D extends Dataset, C extends ChangedContent> {
 
-    void handleEvent(ChangeEvent<D, C> event);
+    void handleEvent(DataChangeEvent<D, C> event);
 }

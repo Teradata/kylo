@@ -6,11 +6,12 @@ package com.thinkbiganalytics.metadata.core.op;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.joda.time.DateTime;
+
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
-import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
 
 /**
  *
@@ -19,6 +20,8 @@ import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
 public class BaseDataOperation implements DataOperation {
 
     private ID id;
+    private DateTime startTime;
+    private DateTime stopTime;
     private State state;
     private String status = "";
     private Feed source;
@@ -50,6 +53,16 @@ public class BaseDataOperation implements DataOperation {
     @Override
     public ID getId() {
         return id;
+    }
+
+    @Override
+    public DateTime getStartTime() {
+        return this.startTime;
+    }
+
+    @Override
+    public DateTime getStopTime() {
+        return this.stopTime;
     }
 
     @Override

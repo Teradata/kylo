@@ -11,7 +11,7 @@ import com.thinkbiganalytics.metadata.api.op.ChangedContent;
  *
  * @author Sean Felten
  */
-public interface ChangeEvent<D extends Dataset, C extends ChangedContent> {
+public interface DataChangeEvent<D extends Dataset, C extends ChangedContent> {
 
     ChangeSet<D, C> getChangeSet();
 }

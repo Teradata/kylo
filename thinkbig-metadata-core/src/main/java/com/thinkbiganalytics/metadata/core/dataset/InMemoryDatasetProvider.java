@@ -34,13 +34,41 @@ public class InMemoryDatasetProvider implements DatasetProvider {
         return new DatasetCriteriaImpl();
     }
 
-    public DirectoryDataset createDirectoryDataset(String name, String descr, Path dir) {
-        return new BaseDirectoryDataset(name, descr, dir);
+    public DirectoryDataset ensureDirectoryDataset(String name, String descr, Path dir) {
+        synchronized (this.datasets) {
+            for (BaseDataset ds : this.datasets.values()) {
+                if (ds.getName().equals(name)) {
+                    if (ds.getClass().isAssignableFrom(BaseDirectoryDataset.class)) {
+                        return (BaseDirectoryDataset) ds;
+                    } else {
+                        throw new DatasetException("A non-directory dataset already exists with the given name:" + name);
+                    }
+                }
+            }
+            
+            BaseDirectoryDataset ds = new BaseDirectoryDataset(name, descr, dir);
+            this.datasets.put(ds.getId(), ds);
+            return ds;
+        }
     }
 
     @Override
-    public HiveTableDataset createHiveTableDataset(String name, String descr, String database, String table) {
-        return new BaseHiveTableDataset(name, descr, database, table);
+    public HiveTableDataset ensureHiveTableDataset(String name, String descr, String database, String table) {
+        synchronized (this.datasets) {
+            for (BaseDataset ds : this.datasets.values()) {
+                if (ds.getName().equals(name)) {
+                    if (ds.getClass().isAssignableFrom(BaseHiveTableDataset.class)) {
+                        return (BaseHiveTableDataset) ds;
+                    } else {
+                        throw new DatasetException("A non-hive dataset already exists with the given name:" + name);
+                    }
+                }
+            }
+            
+            BaseHiveTableDataset ds = new BaseHiveTableDataset(name, descr, database, table);
+            this.datasets.put(ds.getId(), ds);
+            return ds;
+        }
     }
 
     @Override

@@ -10,8 +10,8 @@ import java.util.Map.Entry;
 import org.springframework.core.ResolvableType;
 
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.event.ChangeEvent;
-import com.thinkbiganalytics.metadata.api.event.ChangeEventListener;
+import com.thinkbiganalytics.metadata.api.event.DataChangeEvent;
+import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 
@@ -21,19 +21,19 @@ import com.thinkbiganalytics.metadata.api.op.ChangedContent;
  */
 public class SimpleChangeEventDispatcher implements ChangeEventDispatcher {
 
-    private Map<ChangeEventListener<? extends Dataset, ? extends ChangedContent>, ListenerMatcher> listeners = new HashMap<>();
+    private Map<DataChangeEventListener<? extends Dataset, ? extends ChangedContent>, ListenerMatcher> listeners = new HashMap<>();
     
     /*
      * (non-Javadoc)
      * 
      * @see
      * com.thinkbiganalytics.metadata.event.ChangeEventDispatcher#addListener(
-     * com.thinkbiganalytics.metadata.api.event.ChangeEventListener)
+     * com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
      */
     @Override
     @SuppressWarnings("unchecked")
-    public <D extends Dataset, C extends ChangedContent> void addListener(ChangeEventListener<D, C> listener) {
-        ResolvableType type = ResolvableType.forClass(ChangeEventListener.class, listener.getClass());
+    public <D extends Dataset, C extends ChangedContent> void addListener(DataChangeEventListener<D, C> listener) {
+        ResolvableType type = ResolvableType.forClass(DataChangeEventListener.class, listener.getClass());
         Class<? extends Dataset> datasetType = (Class<? extends Dataset>) type.resolveGeneric(0);
         Class<? extends ChangedContent> contentType = (Class<? extends ChangedContent>) type.resolveGeneric(1);
         ListenerMatcher m = new ListenerMatcher(datasetType, contentType);
@@ -51,12 +51,12 @@ public class SimpleChangeEventDispatcher implements ChangeEventDispatcher {
     @Override
     @SuppressWarnings("unchecked")
     public <D extends Dataset, C extends ChangedContent> void nofifyChange(ChangeSet<D, C> change) {
-        for (Entry<ChangeEventListener<? extends Dataset, ? extends ChangedContent>, 
+        for (Entry<DataChangeEventListener<? extends Dataset, ? extends ChangedContent>, 
                 ListenerMatcher> entry : this.listeners.entrySet()) {
             for (C content : change.getChanges()) {
                 if (entry.getValue().matches(change.getDataset(), content)) {
-                    ChangeEvent<D, C> event = new BaseChangeEvent<>(change);
-                    ChangeEventListener<D, C> listener = (ChangeEventListener<D, C>) entry.getKey();
+                    DataChangeEvent<D, C> event = new BaseDataChangeEvent<>(change);
+                    DataChangeEventListener<D, C> listener = (DataChangeEventListener<D, C>) entry.getKey();
                     listener.handleEvent(event);
                 }
             }

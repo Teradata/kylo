@@ -13,8 +13,8 @@ import org.omg.CosNaming.IstringHelper;
 
 import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
-import com.thinkbiganalytics.metadata.api.event.ChangeEvent;
-import com.thinkbiganalytics.metadata.api.event.ChangeEventListener;
+import com.thinkbiganalytics.metadata.api.event.DataChangeEvent;
+import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.core.dataset.files.BaseDirectoryDataset;
 import com.thinkbiganalytics.metadata.core.dataset.files.BaseFileList;
 import com.thinkbiganalytics.metadata.core.op.BaseChangeSet;
@@ -31,9 +31,9 @@ public class SimpleChangeEventDispatcherTest {
     public void test() throws Exception {
         final AtomicBoolean bool = new AtomicBoolean(false);
         
-        this.dispatcher.addListener(new ChangeEventListener<DirectoryDataset, FileList>() {
+        this.dispatcher.addListener(new DataChangeEventListener<DirectoryDataset, FileList>() {
             @Override
-            public void handleEvent(ChangeEvent<DirectoryDataset, FileList> event) {
+            public void handleEvent(DataChangeEvent<DirectoryDataset, FileList> event) {
                 bool.set(true);
             }
         });

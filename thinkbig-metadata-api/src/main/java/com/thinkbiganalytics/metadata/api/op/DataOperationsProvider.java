@@ -12,7 +12,7 @@ import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
 import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
 import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
-import com.thinkbiganalytics.metadata.api.event.ChangeEventListener;
+import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
 
@@ -41,6 +41,6 @@ public interface DataOperationsProvider {
     Collection<ChangeSet<?, ?>> getChangeSets(Dataset.ID dsId);
     Collection<ChangeSet<?, ?>> getChangeSets(Dataset.ID dsId, ChangeSetCriteria criteria);
 
-    void addListener(DirectoryDataset ds, ChangeEventListener<DirectoryDataset, FileList> listener);
-    void addListener(HiveTableDataset ds, ChangeEventListener<HiveTableDataset, HiveTableUpdate> listener);
+    void addListener(DirectoryDataset ds, DataChangeEventListener<DirectoryDataset, FileList> listener);
+    void addListener(HiveTableDataset ds, DataChangeEventListener<HiveTableDataset, HiveTableUpdate> listener);
 }

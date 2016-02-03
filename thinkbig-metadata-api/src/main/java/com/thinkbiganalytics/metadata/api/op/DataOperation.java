@@ -5,6 +5,8 @@ package com.thinkbiganalytics.metadata.api.op;
 
 import java.io.Serializable;
 
+import org.joda.time.DateTime;
+
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 
 /**
@@ -18,6 +20,10 @@ public interface DataOperation {
     enum State { IN_PROGRESS, SUCCESS, FAILURE, CANCELED }
     
     ID getId();
+    
+    DateTime getStartTime();
+    
+    DateTime getStopTime();
     
     State getState();
     

@@ -17,6 +17,12 @@
             <groupId>com.thinkbiganalytics.bdp</groupId>
             <artifactId>tba-sla-api</artifactId>
             <version>1.2.1</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>slf4j-log4j12</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>

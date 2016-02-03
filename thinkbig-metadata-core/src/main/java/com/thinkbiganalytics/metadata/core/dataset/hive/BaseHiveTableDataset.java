@@ -25,7 +25,7 @@ public class BaseHiveTableDataset extends BaseDataset implements HiveTableDatase
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset#getDatabase()
      */
-    public String getDatabase() {
+    public String getDatabaseName() {
         return database;
     }
 

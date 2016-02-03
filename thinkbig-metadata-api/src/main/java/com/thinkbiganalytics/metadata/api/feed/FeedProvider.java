@@ -7,11 +7,12 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 public interface FeedProvider {
 
-    FeedSource createFeedSource(Feed.ID feedId, Dataset.ID dsId);
-    FeedSource createFeedSource(Feed.ID feedId, Dataset.ID id, ServiceLevelAgreement.ID slaId);
-    FeedDestination createFeedDestination(Feed.ID feedId, Dataset.ID dsId);
-    Feed createFeed(String name, String descr);
-    Feed createFeed(String name, String descr, Dataset.ID srcId, Dataset.ID destId);
+    FeedSource ensureFeedSource(Feed.ID feedId, Dataset.ID dsId);
+    FeedSource ensureFeedSource(Feed.ID feedId, Dataset.ID id, ServiceLevelAgreement.ID slaId);
+    FeedDestination ensureFeedDestination(Feed.ID feedId, Dataset.ID dsId);
+    
+    Feed ensureFeed(String name, String descr);
+    Feed ensureFeed(String name, String descr, Dataset.ID srcId, Dataset.ID destId);
     
     FeedCriteria feedCriteria();
     

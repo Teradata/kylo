@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.core.feed;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -33,12 +34,12 @@ public class InMemoryFeedProvider implements FeedProvider {
     private Map<Feed.ID, BaseFeed> feeds;
 
     @Override
-    public FeedSource createFeedSource(Feed.ID feedId, ID dsId) {
-        return createFeedSource(feedId, dsId, null);
+    public FeedSource ensureFeedSource(Feed.ID feedId, ID dsId) {
+        return ensureFeedSource(feedId, dsId, null);
     }
 
     @Override
-    public FeedSource createFeedSource(Feed.ID feedId, Dataset.ID dsId, ServiceLevelAgreement.ID slaId) {
+    public FeedSource ensureFeedSource(Feed.ID feedId, Dataset.ID dsId, ServiceLevelAgreement.ID slaId) {
         BaseFeed feed = this.feeds.get(feedId);
         Dataset ds = this.datasetProvider.getDataset(dsId);
         
@@ -50,11 +51,11 @@ public class InMemoryFeedProvider implements FeedProvider {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + dsId);
         }
         
-        return feed.addSource(ds, slaId);
+        return ensureFeedSource(feed, ds, slaId);
     }
-
+    
     @Override
-    public FeedDestination createFeedDestination(Feed.ID feedId, Dataset.ID dsId) {
+    public FeedDestination ensureFeedDestination(Feed.ID feedId, Dataset.ID dsId) {
         BaseFeed feed = this.feeds.get(feedId);
         Dataset ds = this.datasetProvider.getDataset(dsId);
         
@@ -66,11 +67,11 @@ public class InMemoryFeedProvider implements FeedProvider {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + dsId);
         }
         
-        return feed.addDestination(ds);
+        return ensureFeedDestination(feed, ds);
     }
-
+    
     @Override
-    public Feed createFeed(String name, String descr, ID srcId, ID destId) {
+    public Feed ensureFeed(String name, String descr, ID srcId, ID destId) {
         Dataset sds = this.datasetProvider.getDataset(srcId);
         Dataset dds = this.datasetProvider.getDataset(destId);
 
@@ -82,18 +83,27 @@ public class InMemoryFeedProvider implements FeedProvider {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + destId);
         }
         
-        BaseFeed feed = new BaseFeed(name, descr);
-        feed.addSource(sds);
-        feed.addDestination(dds);
-        this.feeds.put(feed.getId(), feed);
+        BaseFeed feed = (BaseFeed) ensureFeed(name, descr);
+        
+        ensureFeedSource(feed, sds, null);
+        ensureFeedDestination(feed, dds);
+        
         return feed;
     }
 
     @Override
-    public Feed createFeed(String name, String descr) {
-        BaseFeed feed = new BaseFeed(name, descr);
-        this.feeds.put(feed.getId(), feed);
-        return feed;
+    public Feed ensureFeed(String name, String descr) {
+        synchronized (this.feeds) {
+            for (BaseFeed feed : this.feeds.values()) {
+                if (feed.getName().equals(name)) {
+                    return feed;
+                }
+            }
+        }
+            
+        BaseFeed newFeed = new BaseFeed(name, descr);
+        this.feeds.put(newFeed.getId(), newFeed);
+        return newFeed;
     }
 
     @Override
@@ -118,6 +128,28 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     
+    private FeedSource ensureFeedSource(BaseFeed feed, Dataset ds, ServiceLevelAgreement.ID slaId) {
+        Map<Dataset.ID, FeedSource> srcIds = new HashMap<>();
+        for (FeedSource src : feed.getSources()) {
+            srcIds.put(src.getDataset().getId(), src);
+        }
+        
+        if (srcIds.containsKey(ds.getId())) {
+            return srcIds.get(ds.getId());
+        } else {
+            return feed.addSource(ds, slaId);
+        }
+    }
+
+    private FeedDestination ensureFeedDestination(BaseFeed feed, Dataset ds) {
+        if (feed.getDestination().getDataset().getId().equals(ds.getId())) {
+            return feed.getDestination();
+        } else {
+            return feed.addDestination(ds);
+        }
+    }
+
+
     private static class Criteria implements FeedCriteria, Predicate<BaseFeed> {
         
         private String name;

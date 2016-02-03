@@ -11,7 +11,7 @@ import com.thinkbiganalytics.metadata.api.dataset.Dataset;
  */
 public interface HiveTableDataset extends Dataset {
 
-    String getDatabase();
+    String getDatabaseName();
     
     String getTableName();
 }

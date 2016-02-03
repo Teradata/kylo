@@ -10,8 +10,8 @@ public interface DatasetProvider {
 
     DatasetCriteria datasetCriteria();
 
-    DirectoryDataset createDirectoryDataset(String name, String descr, Path dir);
-    HiveTableDataset createHiveTableDataset(String name, String descr, String database, String table);
+    DirectoryDataset ensureDirectoryDataset(String name, String descr, Path dir);
+    HiveTableDataset ensureHiveTableDataset(String name, String descr, String database, String table);
     
     Dataset getDataset(Dataset.ID id);
     Set<Dataset> getDatasets();

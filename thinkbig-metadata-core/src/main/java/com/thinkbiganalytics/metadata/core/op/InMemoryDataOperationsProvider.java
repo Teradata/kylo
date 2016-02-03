@@ -26,7 +26,7 @@ import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
 import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
 import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
-import com.thinkbiganalytics.metadata.api.event.ChangeEventListener;
+import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -90,6 +90,8 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         op = new BaseDataOperation(op, state, status);
         
         this.operations.put(id, op);
+        // TODO What do we do if the state was changed to COMPLETE and there is no change set?
+        
         return op;
     }
 
@@ -120,6 +122,8 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         op = new BaseDataOperation(op, status, changes);
         
         this.operations.put(id, op);
+        this.dispatcher.nofifyChange(changes);
+        
         return op;
     }
 
@@ -191,17 +195,17 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset, com.thinkbiganalytics.metadata.api.event.ChangeEventListener)
+     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
      */
-    public void addListener(DirectoryDataset ds, ChangeEventListener<DirectoryDataset, FileList> listener) {
+    public void addListener(DirectoryDataset ds, DataChangeEventListener<DirectoryDataset, FileList> listener) {
         // TODO Auto-generated method stub
 
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset, com.thinkbiganalytics.metadata.api.event.ChangeEventListener)
+     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
      */
-    public void addListener(HiveTableDataset ds, ChangeEventListener<HiveTableDataset, HiveTableUpdate> listener) {
+    public void addListener(HiveTableDataset ds, DataChangeEventListener<HiveTableDataset, HiveTableUpdate> listener) {
         // TODO Auto-generated method stub
 
     }
