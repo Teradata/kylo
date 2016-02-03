@@ -89,7 +89,7 @@ public class Profiler {
 
 		
 		/* Get profile statistics and write to table */
-		profileStatistics(resultDF).writeModel(sc, hiveContext, ProfilerConfiguration.OUTPUT_TABLE_NAME, ProfilerConfiguration.PARTITION_KEY);
+		profileStatistics(resultDF).writeModel(sc, hiveContext);
 		
 		
 		/* Wrap up */
@@ -146,27 +146,28 @@ public class Profiler {
 		String profileObjectDesc = args[1];	
 		Integer n = Integer.valueOf(args[2]);
 		String profileOutputTable = args[3];
-		String partitionKey = "ALL";
+		
+		String inputAndOutputTablePartitionKey = "ALL";
+		
 		if (args.length == 5) {
-			partitionKey = args[4];
+			inputAndOutputTablePartitionKey = args[4];
 		}
 
 		if (profileObjectType.equals("table")) {
 			retVal = "select * from " + profileObjectDesc;
-			if (partitionKey != null && !"ALL".equalsIgnoreCase(partitionKey)) {
-				retVal += " where processing_dttm = '"+partitionKey+"'";
+			if (inputAndOutputTablePartitionKey != null && !"ALL".equalsIgnoreCase(inputAndOutputTablePartitionKey)) {
+				retVal += " where " + ProfilerConfiguration.INPUT_TABLE_PARTITION_COLUMN_NAME + " = '" + inputAndOutputTablePartitionKey + "'";
 			}
 		}
 		else if (profileObjectType.equals("query")) {
 			retVal = profileObjectDesc;
 		}
-
-
 		else {
 			System.out.println("Illegal command line argument for object type (" + profileObjectType + ")");
 			showCommandLineArgs();
 			return null;
 		}
+		
 		
 		if (n <= 0) {
 			System.out.println("Illegal command line argument for n for top_n values (" + n + ")");
@@ -177,12 +178,41 @@ public class Profiler {
 			ProfilerConfiguration.NUMBER_OF_TOP_N_VALUES = n;
 		}
 		
-		ProfilerConfiguration.OUTPUT_TABLE_NAME = profileOutputTable;
-		ProfilerConfiguration.PARTITION_KEY = partitionKey;
+		
+		if (!setOutputTableDBAndName(profileOutputTable)) {
+			System.out.println("Illegal command line argument for output table (" + profileOutputTable + ")");
+			showCommandLineArgs();
+			return null;
+		}
+		
+		ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY = inputAndOutputTablePartitionKey;
 
 		return retVal;
 	}
 	
+	
+	/*
+	 * Set output database and table
+	 */
+	private static boolean setOutputTableDBAndName(String profileOutputTable) {
+		
+		Boolean retVal = true;
+		String[] tableNameParts = profileOutputTable.split("\\.");
+		
+		if (tableNameParts.length == 1) {
+			//output db remains as 'default'
+			ProfilerConfiguration.OUTPUT_TABLE_NAME = tableNameParts[0];
+		}
+		else if (tableNameParts.length == 2){
+			ProfilerConfiguration.OUTPUT_DB_NAME = tableNameParts[0];
+			ProfilerConfiguration.OUTPUT_TABLE_NAME = tableNameParts[1];
+		}
+		else {
+			retVal = false;
+		}
+		
+		return retVal;
+	}
 
 
 	/*
@@ -277,9 +307,13 @@ public class Profiler {
 		
 		System.out.println("*** \nInfo: Required command line arguments:\n"
 				+ "1. object type: valid values are {table, query}\n"
-				+ "2. object description: valid values are {<table name>, <query>}\n"
+				+ "2. object description: valid values are {<database.table>, <query>}\n"
 				+ "3. n for top_n values: valid value is {<integer>}\n"
-				+ "4. output table: valid value is {<string>}"
+				+ "4. output table: valid values are {<table>, <database.table>}"
+				+ "\n"
+				+ "Info: Optional command line argument:\n"
+				+ "5. partition_key: valid value is {<string>}\n\n"
+				+ "(Note: Only alphanumeric and underscore characters for table names and partition key)"
 				+ "\n***");
 	}
 }

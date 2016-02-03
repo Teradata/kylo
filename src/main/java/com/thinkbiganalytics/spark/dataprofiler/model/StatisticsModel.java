@@ -228,16 +228,15 @@ public class StatisticsModel implements Serializable {
 	 * Write the profile statistics to Hive
 	 * @param sc JavaSparkContext
 	 * @param hiveContext HiveContext
-	 * @param outputTableName name of table to write result to (in Hive)
 	 */
-	public void writeModel(JavaSparkContext sc, HiveContext hiveContext, String outputTableName, String partitionKey) {
+	public void writeModel(JavaSparkContext sc, HiveContext hiveContext) {
 
 		for (Integer columnIndex: columnStatisticsMap.keySet()) {
 			columnStatisticsMap.get(columnIndex).writeStatistics();
 		}
 
 		outputWriter = OutputWriter.getInstance();
-		outputWriter.writeResultToTable(sc, hiveContext, outputTableName, partitionKey);
+		outputWriter.writeResultToTable(sc, hiveContext);
 	}
 
 	

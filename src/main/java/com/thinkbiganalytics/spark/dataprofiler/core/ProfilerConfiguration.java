@@ -55,16 +55,53 @@ public class ProfilerConfiguration {
 	
 	
 	/**
+	 * Name of database to write result to
+	 */
+	public static String OUTPUT_DB_NAME = "default";
+	
+	
+	/**
 	 * Name of table to write result to<br>
 	 * A required command line parameter 
 	 */
 	public static String OUTPUT_TABLE_NAME = "profilestats";
 
+	
 	/**
 	 * Partition key to read and write to
 	 */
-	public static String PARTITION_KEY = "partitionKey";
+	public static String INPUT_AND_OUTPUT_TABLE_PARTITION_KEY = "partitionKey";
 	
+	
+	/**
+	 * Partition column name for input table
+	 */
+	public static String INPUT_TABLE_PARTITION_COLUMN_NAME = "processing_dttm";
+	
+	
+	/**
+	 * Partition column name for output table
+	 */
+	public static String OUTPUT_TABLE_PARTITION_COLUMN_NAME = "processing_dttm";
+
+	
+	/**
+	 * Helper method for unit testing
+	 */
+	public static void initialize() {
+		APP_NAME = "Profiler";
+		SQL_DIALECT = "hiveql";
+		SERIALIZER = "kryo";
+		NUMBER_OF_TOP_N_VALUES = 3;
+		TOP_N_VALUES_INTERNAL_DELIMITER = "^A";
+		TOP_N_VALUES_RECORD_DELIMITER = "^B";
+		DECIMAL_DIGITS_TO_DISPLAY_CONSOLE_OUTPUT = 4;
+		OUTPUT_DB_NAME = "default";
+		OUTPUT_TABLE_NAME = "profilestats";
+		INPUT_AND_OUTPUT_TABLE_PARTITION_KEY = "partitionKey";
+		INPUT_TABLE_PARTITION_COLUMN_NAME = "processing_dttm";
+		OUTPUT_TABLE_PARTITION_COLUMN_NAME = "processing_dttm";
+	}
 	
 	/* no instantiation */
 	private ProfilerConfiguration() {

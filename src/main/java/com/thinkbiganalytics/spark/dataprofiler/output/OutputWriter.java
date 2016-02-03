@@ -3,8 +3,10 @@ package com.thinkbiganalytics.spark.dataprofiler.output;
 import org.apache.spark.api.java.JavaRDD;
 import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.sql.DataFrame;
-import org.apache.spark.sql.Row;
+//import org.apache.spark.sql.Row;
 import org.apache.spark.sql.hive.HiveContext;
+
+import com.thinkbiganalytics.spark.dataprofiler.core.ProfilerConfiguration;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -21,8 +23,6 @@ public class OutputWriter implements Serializable {
 
     private JavaSparkContext sc = null;
     private HiveContext hiveContext = null;
-    private String outputTable = null;
-    private String partitionKey = null;
     private JavaRDD<OutputRow> outputRowsRDD = null;
 
     private static List<OutputRow> outputRows = new ArrayList<OutputRow>();
@@ -69,33 +69,17 @@ public class OutputWriter implements Serializable {
     }
 
 
-    /**
-     * Set table name for writing result
-     *
-     * @param p_outputTable table name
-     */
-    public void setOutputTable(String p_outputTable) {
-        outputTable = p_outputTable;
-    }
-
-
-    /**
-     * Get table name where result will be written to
-     *
-     * @return table name
-     */
-    public String getOutputTable() {
-        return outputTable;
-    }
-
-
     /*
      * Helper method:
-     * Check if output table has been set
+     * Check if output configuration (db, table, partition column, partition key) has been set
      */
-    private boolean checkOutputTableSetting() {
+    private boolean checkOutputConfigSettings() {
 
-        if (outputTable == null) {
+        if ((ProfilerConfiguration.OUTPUT_DB_NAME == null) 
+        		|| (ProfilerConfiguration.OUTPUT_TABLE_NAME == null)
+        		|| (ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME == null)
+        		|| (ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY == null)
+        		){
             return false;
         } else {
             return true;
@@ -148,46 +132,68 @@ public class OutputWriter implements Serializable {
      *
      * @param p_sc          JavaSparkContext
      * @param p_hiveContext HiveContext
-     * @param p_outputTable output table name
      * @return boolean indicating result of write
      */
-    public boolean writeResultToTable(JavaSparkContext p_sc, HiveContext p_hiveContext, String p_outputTable, String p_partitionKey) {
-        sc = p_sc;
+    public boolean writeResultToTable(JavaSparkContext p_sc, HiveContext p_hiveContext) {
+        
+    	sc = p_sc;
         hiveContext = p_hiveContext;
-        outputTable = p_outputTable;
-        partitionKey = p_partitionKey;
-        return writeResultToTable();
-    }
-
-
-    /*
-     * Write result to Hive table after verifying checks
-     */
-    private boolean writeResultToTable() {
-
         boolean retVal = false;
 
-        if (!checkOutputTableSetting()) {
-            System.out.println("Error writing result: Output table not set.");
-        } else if (sc == null) {
+        if (!checkOutputConfigSettings()) {
+            System.out.println("Error writing result: Output database/table/partition column/partition key not set.");
+        } 
+        else if (sc == null) {
             System.out.println("Error writing result: Spark context is not available.");
-        } else if (hiveContext == null) {
+        } 
+        else if (hiveContext == null) {
             System.out.println("Error writing result: Hive context is not available.");
-        } else {
+        } 
+        else {
+        	
             outputRowsRDD = sc.parallelize(outputRows);
             DataFrame outputRowsDF = hiveContext.createDataFrame(outputRowsRDD, OutputRow.class);
             //outputRowsDF.write().mode(SaveMode.Overwrite).saveAsTable(outputTable);
 
-            // Since SPark doesn't support partitions write to temp table then write to partitioned table
-            String tempTable = outputTable.split("\\.")[1] + "_" + partitionKey;
+            // Since Spark doesn't support partitions, write to temp table, then write to partitioned table
+            String tempTable = ProfilerConfiguration.OUTPUT_TABLE_NAME + "_" + ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY;
             outputRowsDF.registerTempTable(tempTable);
-
-            hiveContext.sql("INSERT INTO " + outputTable + " PARTITION (processing_dttm='" + partitionKey + "') SELECT columnname,metrictype,metricvalue FROM " + tempTable);
-
-            System.out.println("[PROFILER-INFO] Metrics written to Hive table: " + outputTable + " [" + outputRows.size() + " rows]");
+                      
+            createOutputTableIfNotExists();
+            writeResultToOutputTable(tempTable);          
             retVal = true;
         }
 
         return retVal;
     }
+    
+    
+    /* Create output table if does not exist */
+    private void createOutputTableIfNotExists() {
+        String createTableSQL = "CREATE TABLE IF NOT EXISTS " + ProfilerConfiguration.OUTPUT_DB_NAME + "." + ProfilerConfiguration.OUTPUT_TABLE_NAME + "\n"
+        		+ "(columnname STRING, metricname STRING, metricvalue STRING)\n"
+        		+ "PARTITIONED BY (" + ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME + " STRING)\n"
+        		+ "ROW FORMAT DELIMITED\n"
+        		+ "FIELDS TERMINATED BY ','\n"
+        		+ "STORED AS TEXTFILE";
+
+        hiveContext.sql(createTableSQL);
+    }
+    
+    
+    /* Write to output table */
+    private void writeResultToOutputTable(String tempTable) {
+    	String insertTableSQL = "INSERT INTO TABLE " 
+				+ ProfilerConfiguration.OUTPUT_DB_NAME + "." + ProfilerConfiguration.OUTPUT_TABLE_NAME 
+				+ " PARTITION (" + ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME + "='" + ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY + "') "
+				+ "SELECT columnname,metrictype,metricvalue FROM " + tempTable;
+    	
+    	hiveContext.sql(insertTableSQL);
+    	
+    	System.out.println("[PROFILER-INFO] Metrics written to Hive table: " 
+				+ ProfilerConfiguration.OUTPUT_DB_NAME + "." + ProfilerConfiguration.OUTPUT_TABLE_NAME 
+				+ " Partition: (" + ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME + "='" + ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY + "')"
+				+ " [" + outputRows.size() + " rows]");
+    }
+    
 }
