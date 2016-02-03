@@ -8,7 +8,7 @@
     <parent>
         <artifactId>data-lake-starter</artifactId>
         <groupId>com.thinkbiganalytics.bdp</groupId>
-        <version>1.2.2</version>
+        <version>1.2.3-SNAPSHOT</version>
     </parent>
 
     <dependencies>
@@ -50,12 +50,12 @@
         <dependency>
             <groupId>com.thinkbiganalytics.bdp</groupId>
             <artifactId>pipeline-components</artifactId>
-            <version>1.2.2</version>
+            <version>1.2.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.bdp</groupId>
             <artifactId>tba-rest-client</artifactId>
-            <version>1.2.2</version>
+            <version>1.2.3-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
