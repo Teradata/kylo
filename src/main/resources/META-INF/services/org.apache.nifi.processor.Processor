@@ -24,3 +24,5 @@ com.thinkbiganalytics.nifi.IngestHDFS
 com.thinkbiganalytics.nifi.TableRegister
 com.thinkbiganalytics.nifi.CreateHDFSFolder
 com.thinkbiganalytics.nifi.GetTableData
+com.thinkbiganalytics.nifi.SetRegistration
+com.thinkbiganalytics.nifi.RouteOnRegistration

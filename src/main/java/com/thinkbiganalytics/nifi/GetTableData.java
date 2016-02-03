@@ -95,8 +95,16 @@ public class GetTableData extends AbstractProcessor {
             .identifiesControllerService(MetadataService.class)
             .build();
 
+    public static final PropertyDescriptor FEED_CATEGORY = new PropertyDescriptor.Builder()
+            .name("System feed category")
+            .description("System category of feed this processor supports")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
+
     public static final PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
-            .name("Name of the feed")
+            .name("System feed name")
             .description("Name of feed this processor supports")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
@@ -160,6 +168,7 @@ public class GetTableData extends AbstractProcessor {
         ArrayList pds = new ArrayList();
         pds.add(JDBC_SERVICE);
         pds.add(METADATA_SERVICE);
+        pds.add(FEED_CATEGORY);
         pds.add(FEED_NAME);
         pds.add(TABLE_NAME);
         pds.add(TABLE_SPECS);
@@ -209,6 +218,7 @@ public class GetTableData extends AbstractProcessor {
         final DBCPService dbcpService = context.getProperty(JDBC_SERVICE).asControllerService(DBCPService.class);
         final MetadataService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataService.class);
         final String loadStrategy = context.getProperty(LOAD_STRATEGY).evaluateAttributeExpressions(incoming).getValue();
+        final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(incoming).getValue();
         final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(incoming).getValue();
         final String tableName = context.getProperty(TABLE_NAME).evaluateAttributeExpressions(incoming).getValue();
         final String fieldSpecs = context.getProperty(TABLE_SPECS).evaluateAttributeExpressions(incoming).getValue();
@@ -237,7 +247,7 @@ public class GetTableData extends AbstractProcessor {
                         if (strategy == LoadStrategy.FULL_LOAD) {
                             rs = support.selectFullLoad(tableName, selectFields);
                         } else if (strategy == LoadStrategy.INCREMENTAL) {
-                            BatchLoadStatus status = client.getLastLoad(feedName);
+                            BatchLoadStatus status = client.getLastLoad(categoryName, feedName);
                             lastLoadDate = (status != null ? status.getLastLoadDate() : null);
                             visitor = new LastFieldVisitor(dateField, lastLoadDate);
                             rs = support.selectIncremental(tableName, selectFields, dateField, overlapTime, lastLoadDate);
@@ -275,7 +285,7 @@ public class GetTableData extends AbstractProcessor {
                 if (strategy == LoadStrategy.INCREMENTAL) {
                     BatchLoadStatusImpl newStatus = new BatchLoadStatusImpl();
                     newStatus.setLastLoadDate(lastLoad);
-                    client.recordLastSuccessfulLoad(feedName, newStatus);
+                    client.recordLastSuccessfulLoad(categoryName, feedName, newStatus);
                     logger.info("Recorded load status feed {} date {}", new Object[]{feedName, lastLoad});
                 }
                 session.transfer(outgoing, REL_SUCCESS);

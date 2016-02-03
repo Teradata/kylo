@@ -10,9 +10,13 @@ package com.thinkbiganalytics.metadata;
 public interface MetadataClient {
 
     // incremental/batch/latest
-    BatchLoadStatus getLastLoad(String feed);
+    BatchLoadStatus getLastLoad(String category, String feed);
 
-    void recordLastSuccessfulLoad(String feed, BatchLoadStatus loadStatus);
+    void recordLastSuccessfulLoad(String category, String feed, BatchLoadStatus loadStatus);
+
+    boolean isRegistrationRequired(String category, String feed);
+
+    void recordRegistration(String category, String feed, boolean result);
 
 }
 
