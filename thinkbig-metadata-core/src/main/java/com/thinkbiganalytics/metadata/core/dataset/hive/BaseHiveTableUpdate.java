@@ -3,20 +3,26 @@
  */
 package com.thinkbiganalytics.metadata.core.dataset.hive;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.thinkbiganalytics.metadata.api.dataset.hive.HivePartitionUpdate;
 import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
+import com.thinkbiganalytics.metadata.core.op.BaseChangedContent;
 
 /**
  *
  * @author Sean Felten
  */
-public class BaseHiveTableUpdate implements HiveTableUpdate {
+public class BaseHiveTableUpdate extends BaseChangedContent implements HiveTableUpdate {
 
     private int recourdCount;
-    private List<HivePartitionUpdate> partitions;
+    private List<HivePartitionUpdate> partitions = new ArrayList<>();
     
+    public BaseHiveTableUpdate(int count) {
+        this.recourdCount = count;
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate#getRecordCount()
      */

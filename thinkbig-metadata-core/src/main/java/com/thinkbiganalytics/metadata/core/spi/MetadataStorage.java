@@ -19,7 +19,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
 import com.thinkbiganalytics.metadata.api.op.DataOperationCriteria;
-import com.thinkbiganalytics.metadata.api.op.DataOperation.Result;
+import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
 
 /**
  *
@@ -31,7 +31,7 @@ public interface MetadataStorage {
 //    HiveTableDataset createHiveTableDataset(String name, String database, String table);
     
 //    DataOperation beginOperation(Feed.ID feedId, Dataset.ID dsId);
-//    DataOperation updateOperation(DataOperation.ID id, String status, Result result);
+//    DataOperation updateOperation(DataOperation.ID id, String status, State result);
 //    DataOperation updateOperation(DataOperation.ID id, String status, Exception ex);
 //    DataOperation updateOperation(DataOperation.ID id, String status, ChangeSet<?, ?> changes);
 //    

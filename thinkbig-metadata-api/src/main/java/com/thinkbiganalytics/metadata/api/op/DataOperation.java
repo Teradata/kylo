@@ -15,11 +15,11 @@ public interface DataOperation {
     
     interface ID extends Serializable {};
     
-    enum Result { IN_PROGRESS, SUCCESS, FAILURE, CANCELED }
+    enum State { IN_PROGRESS, SUCCESS, FAILURE, CANCELED }
     
     ID getId();
     
-    Result getResult();
+    State getState();
     
     String getStatus();
     

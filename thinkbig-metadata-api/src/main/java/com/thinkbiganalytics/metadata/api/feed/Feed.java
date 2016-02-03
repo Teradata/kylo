@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.api.feed;
 
 import java.io.Serializable;
+import java.util.Set;
 
 /**
  *
@@ -19,7 +20,7 @@ public interface Feed {
     
     String getDescription();
     
-    FeedSource getSource();
+    Set<FeedSource> getSources();
     
     FeedDestination getDestination();
 }

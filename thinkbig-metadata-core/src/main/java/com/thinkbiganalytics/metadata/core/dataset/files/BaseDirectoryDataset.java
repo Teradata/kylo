@@ -16,6 +16,12 @@ public class BaseDirectoryDataset extends BaseDataset implements DirectoryDatase
     
     private Path directory;
 
+    public BaseDirectoryDataset(String name, String descr, Path dir) {
+        super(name, descr);
+        
+        this.directory = dir;
+    }
+
     public Path getDirectory() {
         return this.directory;
     }

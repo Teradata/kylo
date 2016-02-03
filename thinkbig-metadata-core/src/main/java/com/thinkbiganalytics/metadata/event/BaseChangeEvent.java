@@ -12,9 +12,13 @@ import com.thinkbiganalytics.metadata.api.op.ChangedContent;
  *
  * @author Sean Felten
  */
-public abstract class BaseChangeEvent<D extends Dataset, C extends ChangedContent> implements ChangeEvent<D, C> {
+public class BaseChangeEvent<D extends Dataset, C extends ChangedContent> implements ChangeEvent<D, C> {
     
     private ChangeSet<D, C> changeSet;
+    
+    public BaseChangeEvent(ChangeSet<D, C> changeSet) {
+        this.changeSet = changeSet;
+    }
 
     public ChangeSet<D, C> getChangeSet() {
         return this.changeSet;
