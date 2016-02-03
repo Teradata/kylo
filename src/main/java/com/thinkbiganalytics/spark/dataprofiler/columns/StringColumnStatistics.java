@@ -27,6 +27,8 @@ public class StringColumnStatistics extends ColumnStatistics {
 	/* Other variables */
 	private String columnStringValue;
 	private int columnStringLength;
+	
+	private final String EMPTY_STRING = "";
 
 
 	/**
@@ -38,12 +40,12 @@ public class StringColumnStatistics extends ColumnStatistics {
 
 		maxLength = Integer.MIN_VALUE;
 		minLength = Integer.MAX_VALUE;
-		longestString = null;
-		shortestString = null;
+		longestString = EMPTY_STRING;
+		shortestString = EMPTY_STRING;
 		emptyCount = 0;
 		percEmptyValues = 0.0d;
 
-		columnStringValue = null;
+		columnStringValue = EMPTY_STRING;
 		columnStringLength = 0;
 	}
 
@@ -65,10 +67,13 @@ public class StringColumnStatistics extends ColumnStatistics {
 				maxLength = columnStringLength;
 				longestString = columnStringValue;
 			}
-
-			if (minLength > columnStringLength) {
-				minLength = columnStringLength;
-				shortestString = columnStringValue;
+				
+			/* Empty strings not considered for minLength and shortestString metrics */
+			if (!columnStringValue.isEmpty()) {
+				if (minLength > columnStringLength) {
+					minLength = columnStringLength;
+					shortestString = columnStringValue;
+				}
 			}
 
 			if (columnStringValue.isEmpty()) {
@@ -92,14 +97,30 @@ public class StringColumnStatistics extends ColumnStatistics {
 		StringColumnStatistics vString_columnStatistics = (StringColumnStatistics) v_columnStatistics;
 
 		maxLength = Math.max(maxLength, vString_columnStatistics.maxLength);
-		minLength = Math.min(minLength, vString_columnStatistics.minLength);
+		
+		/* Empty strings not considered for minLength and shortestString metrics */
+		if ((minLength != Integer.MAX_VALUE) && (vString_columnStatistics.minLength != Integer.MAX_VALUE)) {
+			
+			if (minLength > vString_columnStatistics.minLength) {
+				minLength = vString_columnStatistics.minLength;
+				shortestString = vString_columnStatistics.shortestString;
+			}
+		}
+		else if (minLength == Integer.MAX_VALUE) {
+			minLength = vString_columnStatistics.minLength;
+			shortestString = vString_columnStatistics.shortestString;
+		}
+		else if (vString_columnStatistics.minLength == Integer.MAX_VALUE) {
+			//no operation
+		}
+		else {
+			minLength = 0;
+		}
+
+		
 
 		if (longestString.length() < vString_columnStatistics.longestString.length()) {
 			longestString = vString_columnStatistics.longestString;
-		}
-
-		if (shortestString.length() > vString_columnStatistics.shortestString.length()) {
-			shortestString = vString_columnStatistics.shortestString;
 		}
 
 		emptyCount += vString_columnStatistics.emptyCount;

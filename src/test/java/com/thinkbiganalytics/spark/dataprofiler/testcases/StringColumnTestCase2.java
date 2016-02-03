@@ -49,9 +49,9 @@ public class StringColumnTestCase2 {
         percDuplicateValues = 40.0d;
         topNValues = columnStats.getTopNValues();
         maxLength = 12;
-        minLength = 0;
+        minLength = 2;
         longestString = "Edmundson Jr";
-        shortestString = DataProfilerTest.EMPTY_STRING;
+        shortestString = "Hu";
         emptyCount = 4;
         percEmptyValues = 40.0d;
     }
