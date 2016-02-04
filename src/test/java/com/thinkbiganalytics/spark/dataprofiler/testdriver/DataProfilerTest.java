@@ -87,8 +87,7 @@ public class DataProfilerTest {
 	public static void setUpClass() {
 		System.out.println("||=== Starting run for DataProfilerTest ===||");
 		
-		//TODO: Add more fields. Remember to update the array size.
-		schemaFields = new StructField[14];
+		schemaFields = new StructField[15];
 		schemaFields[0] = DataTypes.createStructField("id", DataTypes.IntegerType, true);
 		schemaFields[1] = DataTypes.createStructField("firstname", DataTypes.StringType, true);
 		schemaFields[2] = DataTypes.createStructField("lastname", DataTypes.StringType, true);
@@ -103,10 +102,10 @@ public class DataProfilerTest {
 		schemaFields[11] = DataTypes.createStructField("credits", DataTypes.ShortType, true);
 		schemaFields[12] = DataTypes.createStructField("ccode", DataTypes.ByteType, true);
 		schemaFields[13] = DataTypes.createStructField("score", DataTypes.createDecimalType(7, 5), true);
+		schemaFields[14] = DataTypes.createStructField("favoritepet", DataTypes.StringType, true);
 		
 		schema = DataTypes.createStructType(schemaFields);
 
-		//TODO: Add additional columns corresponding to the fields you add above
 		rows = new ArrayList<Row>();
 		
 		rows.add(RowFactory.create(
@@ -123,7 +122,8 @@ public class DataProfilerTest {
 				new Float(40.2f),
 				new Short((short)100),
 				new Byte((byte)99),
-				new BigDecimal(String.valueOf(1.567))));
+				new BigDecimal(String.valueOf(1.567)),
+				new String("Cat")));
 		
 		rows.add(RowFactory.create(
 				new Integer(2), 
@@ -139,7 +139,8 @@ public class DataProfilerTest {
 				new Float(110.5f),
 				new Short((short)100),
 				new Byte((byte)99),
-				new BigDecimal(String.valueOf(8.223))));
+				new BigDecimal(String.valueOf(8.223)),
+				new String("alligator")));
 		
 		rows.add(RowFactory.create(
 				new Integer(3), 
@@ -155,7 +156,8 @@ public class DataProfilerTest {
 				new Float(160.7f),
 				new Short((short)1400),
 				new Byte((byte)99),
-				new BigDecimal(String.valueOf(1.567))));
+				new BigDecimal(String.valueOf(1.567)),
+				new String("Alpaca")));
 		
 		rows.add(RowFactory.create(
 				new Integer(4), 
@@ -171,7 +173,8 @@ public class DataProfilerTest {
 				null,
 				null,
 				new Byte((byte)99),
-				null));
+				null,
+				new String("Cat")));
 		
 		rows.add(RowFactory.create(
 				new Integer(5), 
@@ -187,7 +190,8 @@ public class DataProfilerTest {
 				new Float(160.7f),
 				new Short((short)100),
 				null,
-				new BigDecimal(String.valueOf(4.343))));
+				new BigDecimal(String.valueOf(4.343)),
+				new String("Zebra")));
 		
 		rows.add(RowFactory.create(
 				new Integer(6), 
@@ -203,7 +207,8 @@ public class DataProfilerTest {
 				null,
 				new Short((short)1400),
 				null,
-				new BigDecimal(String.valueOf(4.343))));
+				new BigDecimal(String.valueOf(4.343)),
+				new String("ZEBRA")));
 		
 		rows.add(RowFactory.create(
 				new Integer(7), 
@@ -219,7 +224,8 @@ public class DataProfilerTest {
 				new Float(110.5f),
 				new Short((short)500),
 				new Byte((byte)40),
-				new BigDecimal(String.valueOf(4.343))));
+				new BigDecimal(String.valueOf(4.343)),
+				null));
 		
 		rows.add(RowFactory.create(
 				new Integer(8), 
@@ -235,7 +241,8 @@ public class DataProfilerTest {
 				null,
 				null,
 				null,
-				null));
+				null,
+				new String("albatross")));
 		
 		rows.add(RowFactory.create(
 				new Integer(9), 
@@ -251,7 +258,8 @@ public class DataProfilerTest {
 				new Float(155.3f),
 				new Short((short)0),
 				new Byte((byte)99),
-				new BigDecimal(String.valueOf(1.567))));
+				new BigDecimal(String.valueOf(1.567)),
+				EMPTY_STRING));
 		
 		rows.add(RowFactory.create(
 				new Integer(10), 
@@ -267,7 +275,8 @@ public class DataProfilerTest {
 				new Float(180.6f),
 				new Short((short)5000),
 				new Byte((byte)2),
-				new BigDecimal(String.valueOf(4.343))));
+				new BigDecimal(String.valueOf(4.343)),
+				new String("Cat")));
 		
 		
 		conf = new SparkConf().setMaster(SPARK_MASTER).setAppName(APP_NAME);

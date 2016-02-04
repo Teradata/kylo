@@ -1,8 +1,13 @@
 package com.thinkbiganalytics.spark.dataprofiler.testcases;
 
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -14,14 +19,13 @@ import com.thinkbiganalytics.spark.dataprofiler.testdriver.DataProfilerTest;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
 
-
 /**
  * String Column Statistics Test Case
  * @author jagrut sharma
  *
  */
-public class StringColumnTestCase1 {
-	
+public class StringColumnTestCase4 {
+
 	static ColumnStatistics columnStats;
 	static long nullCount;
 	static long totalCount;
@@ -32,39 +36,48 @@ public class StringColumnTestCase1 {
 	static TopNDataList topNValues;
 	static int maxLength;
 	static int minLength;
-	static String longestString;
+	static List<String> longestStrings;
 	static String shortestString;
 	static long emptyCount;
 	static double percEmptyValues;
 	static String minStringCase;
 	static String maxStringCase;
 	static String minStringICase;
-	static String maxStringICase;
-
+	static List<String> maxStringICaseList;
+	
 	@BeforeClass 
     public static void setUpClass() {      
-        System.out.println("\t*** Starting run for StringColumnTestCase1 ***");
-        columnStats = DataProfilerTest.columnStatsMap.get(1);	//firstname
-        nullCount = 0l;
+        System.out.println("\t*** Starting run for StringColumnTestCase4 ***");
+        columnStats = DataProfilerTest.columnStatsMap.get(14);	//favoritepet
+        nullCount = 1l;
         totalCount = 10l;
-        uniqueCount = 4l;
-        percNullValues = 0.0d;
-        percUniqueValues = 40.0d;
-        percDuplicateValues = 60.0d;
+        uniqueCount = 8l;
+        percNullValues = 10.0d;
+        percUniqueValues = 80.0d;
+        percDuplicateValues = 20.0d;
         topNValues = columnStats.getTopNValues();
         maxLength = 9;
         minLength = 3;
-        longestString = "Elizabeth";
-        shortestString = "Jon";
-        emptyCount = 2;
-        percEmptyValues = 20.0d;
-        minStringCase = "Elizabeth";
-        maxStringCase = "Rachael";
-        minStringICase = "Elizabeth";
-        maxStringICase = "Rachael";
+        
+        //two longest strings with same length
+        longestStrings = new ArrayList<String>();
+        longestStrings.add("alligator");
+        longestStrings.add("albatross");
+        
+        shortestString = "Cat";
+        emptyCount = 1;
+        percEmptyValues = 10.0d;
+        minStringCase = "Alpaca";
+        maxStringCase = "alligator";
+        minStringICase = "albatross";
+        
+        //same word when considered without case
+        maxStringICaseList = new ArrayList<String>();
+        maxStringICaseList.add("Zebra");
+        maxStringICaseList.add("ZEBRA");
         
     }
-
+	
 	
 	@Test
 	public void testStringNullCount() {
@@ -104,24 +117,20 @@ public class StringColumnTestCase1 {
 	
 	@Test
 	public void testStringTopNValues() {
-		
 		Object[] topNDataItems;
 		topNDataItems = topNValues.getTopNDataItemsForColumnInReverse().toArray();
 		Arrays.sort(topNDataItems);
 		int itemCount = topNDataItems.length;
 		
-		assertEquals("Jon", ((TopNDataItem)topNDataItems[itemCount-1]).getValue());
-		assertEquals(Long.valueOf(4l), ((TopNDataItem)topNDataItems[itemCount-1]).getCount());
-		assertEquals("Rachael", ((TopNDataItem)topNDataItems[itemCount-2]).getValue());
-		assertEquals(Long.valueOf(3l), ((TopNDataItem)topNDataItems[itemCount-2]).getCount());
-		assertEquals(DataProfilerTest.EMPTY_STRING, ((TopNDataItem)topNDataItems[itemCount-3]).getValue());
-		assertEquals(Long.valueOf(2l), ((TopNDataItem)topNDataItems[itemCount-3]).getCount());
+		assertEquals("Cat", ((TopNDataItem)topNDataItems[itemCount-1]).getValue());
+		assertEquals(Long.valueOf(3l), ((TopNDataItem)topNDataItems[itemCount-1]).getCount());
 		
-		for (int i = 0; i < (topNDataItems.length - 3); i++) {
+		for (int i = 0; i < (topNDataItems.length - 1); i++) {
 			assertEquals(Long.valueOf(1l),((TopNDataItem)(topNDataItems[i])).getCount());
 		}
+
+
 	}
-	
 	
 	@Test
 	public void testStringMaxLength() {
@@ -137,7 +146,8 @@ public class StringColumnTestCase1 {
 	
 	@Test
 	public void testStringLongestString() {
-		assertEquals(longestString, ((StringColumnStatistics) columnStats).getLongestString());
+		assertThat(((StringColumnStatistics) columnStats).getLongestString(), 
+				anyOf(is(longestStrings.get(0)), is(longestStrings.get(1))));
 	}
 	
 	
@@ -179,12 +189,14 @@ public class StringColumnTestCase1 {
 	
 	@Test
 	public void testStringMaxStringCaseInsensitive() {
-		assertEquals(maxStringICase, ((StringColumnStatistics) columnStats).getMaxStringICase());
+		assertThat(((StringColumnStatistics) columnStats).getMaxStringICase(), 
+				anyOf(is(maxStringICaseList.get(0)), is(maxStringICaseList.get(1))));
 	}
 	
 	
 	@AfterClass
 	public static void tearDownClass() {
-		System.out.println("\t*** Completed run for StringColumnTestCase1 ***");
+		System.out.println("\t*** Completed run for StringColumnTestCase4 ***");
 	}
-}    
+}
+

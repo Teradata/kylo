@@ -23,10 +23,15 @@ public class StringColumnStatistics extends ColumnStatistics {
 	private String shortestString;
 	private long emptyCount;
 	private double percEmptyValues;
+	private String minStringCase;
+	private String maxStringCase;
+	private String minStringICase;
+	private String maxStringICase;
 
 	/* Other variables */
 	private String columnStringValue;
 	private int columnStringLength;
+	private boolean initializationFlag;
 	
 	private final String EMPTY_STRING = "";
 
@@ -44,12 +49,18 @@ public class StringColumnStatistics extends ColumnStatistics {
 		shortestString = EMPTY_STRING;
 		emptyCount = 0;
 		percEmptyValues = 0.0d;
+		
+		initializationFlag = false;
+		minStringCase = EMPTY_STRING;
+		maxStringCase = EMPTY_STRING;
+		minStringICase = EMPTY_STRING;
+		maxStringICase = EMPTY_STRING;
 
 		columnStringValue = EMPTY_STRING;
 		columnStringLength = 0;
 	}
 
-
+	
 	/**
 	 * Calculate string-specific statistics by accommodating the value and frequency/count
 	 */
@@ -68,12 +79,44 @@ public class StringColumnStatistics extends ColumnStatistics {
 				longestString = columnStringValue;
 			}
 				
-			/* Empty strings not considered for minLength and shortestString metrics */
+			/* Empty strings not considered for:
+			 * - minLength, shortestString metrics
+			 * - minStringCase, maxStringCase, minStringICase, maxStringICase metrics
+			 */
 			if (!columnStringValue.isEmpty()) {
+				
 				if (minLength > columnStringLength) {
 					minLength = columnStringLength;
 					shortestString = columnStringValue;
 				}
+				
+				
+				if (!initializationFlag) {
+					minStringCase = columnStringValue;
+					maxStringCase = columnStringValue;
+					minStringICase = columnStringValue;
+					maxStringICase = columnStringValue;
+					initializationFlag = true;
+				}
+				else {
+					
+					if (minStringCase.compareTo(columnStringValue) > 0) {
+						minStringCase = columnStringValue;
+					}
+					
+					if (maxStringCase.compareTo(columnStringValue) < 0) {
+						maxStringCase = columnStringValue;
+					}
+					
+					if (minStringICase.compareToIgnoreCase(columnStringValue) > 0) {
+						minStringICase = columnStringValue;
+					}
+					
+					if (maxStringICase.compareToIgnoreCase(columnStringValue) < 0) {
+						maxStringICase = columnStringValue;
+					}
+				}
+				
 			}
 
 			if (columnStringValue.isEmpty()) {
@@ -98,7 +141,10 @@ public class StringColumnStatistics extends ColumnStatistics {
 
 		maxLength = Math.max(maxLength, vString_columnStatistics.maxLength);
 		
-		/* Empty strings not considered for minLength and shortestString metrics */
+		/* Empty strings not considered for:
+		 * - minLength, shortestString metrics
+		 * - minStringCase, maxStringCase, minStringICase, maxStringICase metrics
+		 */
 		if ((minLength != Integer.MAX_VALUE) && (vString_columnStatistics.minLength != Integer.MAX_VALUE)) {
 			
 			if (minLength > vString_columnStatistics.minLength) {
@@ -116,8 +162,40 @@ public class StringColumnStatistics extends ColumnStatistics {
 		else {
 			minLength = 0;
 		}
-
 		
+		
+		if ((initializationFlag) && (vString_columnStatistics.initializationFlag)) {
+			if (minStringCase.compareTo(vString_columnStatistics.minStringCase) > 0) {
+				minStringCase = vString_columnStatistics.minStringCase;
+			}
+			
+			if (maxStringCase.compareTo(vString_columnStatistics.maxStringCase) < 0) {
+				maxStringCase = vString_columnStatistics.maxStringCase;
+			}
+			
+			if (minStringICase.compareToIgnoreCase(vString_columnStatistics.minStringICase) > 0) {
+				minStringICase = vString_columnStatistics.minStringICase;
+			}
+			
+			if (maxStringICase.compareToIgnoreCase(vString_columnStatistics.maxStringICase) < 0) {
+				maxStringICase = vString_columnStatistics.maxStringICase;
+			}
+			
+		}
+		else if (!initializationFlag) {
+			minStringCase = vString_columnStatistics.minStringCase;
+			maxStringCase = vString_columnStatistics.maxStringCase;
+			minStringICase = vString_columnStatistics.minStringICase;
+			maxStringICase = vString_columnStatistics.maxStringICase;
+		}
+		else if (!vString_columnStatistics.initializationFlag) {
+			//no operation. kept for readability.
+		}
+		else {
+			//no operation. kept for readability.
+		}
+		
+
 
 		if (longestString.length() < vString_columnStatistics.longestString.length()) {
 			longestString = vString_columnStatistics.longestString;
@@ -152,6 +230,10 @@ public class StringColumnStatistics extends ColumnStatistics {
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SHORTEST_STRING), String.valueOf(shortestString)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.EMPTY_COUNT), String.valueOf(emptyCount)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.PERC_EMPTY_VALUES), df.format(percEmptyValues)));
+		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN_STRING_CASE), String.valueOf(minStringCase)));
+		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX_STRING_CASE), String.valueOf(maxStringCase)));
+		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN_STRING_ICASE), String.valueOf(minStringICase)));
+		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX_STRING_ICASE), String.valueOf(maxStringICase)));
 		outputWriter.addRows(rows);
 	}
 
@@ -170,6 +252,10 @@ public class StringColumnStatistics extends ColumnStatistics {
 		+ ", shortestString=" + shortestString
 		+ ", emptyCount=" + emptyCount
 		+ ", percEmptyValues=" + df.format(percEmptyValues)
+		+ ", minStringCaseSensitive=" + minStringCase
+		+ ", maxStringCaseSensitive=" + maxStringCase
+		+ ", minStringCaseInsensitive=" + minStringICase
+		+ ", maxStringCaseInsensitive=" + maxStringICase
 		+ "]\n}";
 
 		return retVal;
@@ -229,4 +315,40 @@ public class StringColumnStatistics extends ColumnStatistics {
 		return percEmptyValues;
 	}
 
+	
+	/**
+	 * Get min string (lexical) (case-sensitive)
+	 * @return min string
+	 */
+	public String getMinStringCase() {
+		return minStringCase;
+	}
+
+	
+	/**
+	 * Get max string (lexical) (case-sensitive)
+	 * @return max string
+	 */
+	public String getMaxStringCase() {
+		return maxStringCase;
+	}
+
+	
+	/**
+	 * Get min string (lexical) (case-insensitive)
+	 * @return min string
+	 */
+	public String getMinStringICase() {
+		return minStringICase;
+	}
+
+	
+	/**
+	 * Get max string (lexical) (case-insensitive)
+	 * @return max string
+	 */
+	public String getMaxStringICase() {
+		return maxStringICase;
+	}
+	
 }

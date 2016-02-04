@@ -16,6 +16,7 @@
         <junit.version>4.10</junit.version>
         <sparkcore.version>1.5.2</sparkcore.version>
         <apachecommons.version>3.0</apachecommons.version>
+        <hamcrest.version>1.3</hamcrest.version>
         <mvncompilerplugin.version>3.1</mvncompilerplugin.version>
         <mvnassemblyplugin.version>2.4.1</mvnassemblyplugin.version>
         <mvnjavadocplugin.version>2.10.3</mvnjavadocplugin.version>
@@ -24,6 +25,12 @@
     </properties>
 
     <dependencies>
+        <dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-all</artifactId>
+			<version>${hamcrest.version}</version>
+		</dependency>
+		
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
@@ -42,17 +49,20 @@
             <artifactId>spark-core_2.10</artifactId>
             <version>${sparkcore.version}</version>
         </dependency>
+        
         <dependency> <!-- Spark dependency -->
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_2.10</artifactId>
             <version>${sparkcore.version}</version>
         </dependency>
+        
         <dependency> <!-- Spark dependency -->
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-hive_2.10</artifactId>
             <version>${sparkcore.version}</version>
         </dependency>
-        <dependency>
+        
+        <dependency> <!-- Spark dependency -->
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-mllib_2.10</artifactId>
             <version>${sparkcore.version}</version>
@@ -63,7 +73,6 @@
             <artifactId>commons-lang3</artifactId>
             <version>${apachecommons.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>

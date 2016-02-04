@@ -36,6 +36,11 @@ public class StringColumnTestCase3 {
 	static String shortestString;
 	static long emptyCount;
 	static double percEmptyValues;
+	static String minStringCase;
+	static String maxStringCase;
+	static String minStringICase;
+	static String maxStringICase;
+	
 	
 	
 	@BeforeClass 
@@ -55,8 +60,14 @@ public class StringColumnTestCase3 {
         shortestString = "Jon::";
         emptyCount = 0;
         percEmptyValues = 0.0d;
+        minStringCase = "::Edmundson Jr";
+        maxStringCase = "Rachael::Hu";
+        minStringICase = "::Edmundson Jr";
+        maxStringICase = "Rachael::Hu";
         
     }
+	
+	
 	@Test
 	public void testStringNullCount() {
 		assertEquals(nullCount, columnStats.getNullCount());
@@ -145,6 +156,29 @@ public class StringColumnTestCase3 {
 		assertEquals(percEmptyValues, ((StringColumnStatistics) columnStats).getPercEmptyValues(), DataProfilerTest.epsilon);
 	}
 	
+	
+	@Test
+	public void testStringMinStringCaseSensitive() {
+		assertEquals(minStringCase, ((StringColumnStatistics) columnStats).getMinStringCase());
+	}
+	
+	
+	@Test
+	public void testStringMaxStringCaseSensitive() {
+		assertEquals(maxStringCase, ((StringColumnStatistics) columnStats).getMaxStringCase());
+	}
+	
+	
+	@Test
+	public void testStringMinStringCaseInsensitive() {
+		assertEquals(minStringICase, ((StringColumnStatistics) columnStats).getMinStringICase());
+	}
+	
+	
+	@Test
+	public void testStringMaxStringCaseInsensitive() {
+		assertEquals(maxStringICase, ((StringColumnStatistics) columnStats).getMaxStringICase());
+	}
 	
 	@AfterClass
 	public static void tearDownClass() {

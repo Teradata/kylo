@@ -10,7 +10,7 @@
 | id           | PERC_NULL_VALUES       | 0                                                                                        |
 | id           | PERC_UNIQUE_VALUES     | 100                                                                                      |
 | id           | PERC_DUPLICATE_VALUES  | 0                                                                                        |
-| id           | TOP_N_VALUES           | 1^A2^A1^B2^A7^A1^B3^A6^A1^B                                                              |
+| id           | TOP_N_VALUES           | 1^A2^A1^B2^A4^A1^B3^A3^A1^B                                                              |
 | id           | MAX                    | 10                                                                                       |
 | id           | MIN                    | 1                                                                                        |
 | id           | SUM                    | 55                                                                                       |
@@ -33,6 +33,10 @@
 | firstname    | SHORTEST_STRING        | Jon                                                                                      |
 | firstname    | EMPTY_COUNT            | 2                                                                                        |
 | firstname    | PERC_EMPTY_VALUES      | 20                                                                                       |
+| firstname    | MIN_STRING_CASE        | Elizabeth                                                                                |
+| firstname    | MAX_STRING_CASE        | Rachael                                                                                  |
+| firstname    | MIN_STRING_ICASE       | Elizabeth                                                                                |
+| firstname    | MAX_STRING_ICASE       | Rachael                                                                                  |
 | lastname     | COLUMN_DATATYPE        | StringType                                                                               |
 | lastname     | COLUMN_NULLABLE        | true                                                                                     |
 | lastname     | COLUMN_METADATA        | {}                                                                                       |
@@ -42,13 +46,17 @@
 | lastname     | PERC_NULL_VALUES       | 0                                                                                        |
 | lastname     | PERC_UNIQUE_VALUES     | 60                                                                                       |
 | lastname     | PERC_DUPLICATE_VALUES  | 40                                                                                       |
-| lastname     | TOP_N_VALUES           | 1^A^A4^B2^ATaylor^A2^B3^AHu^A1^B                                                         |
+| lastname     | TOP_N_VALUES           | 1^A^A4^B2^ATaylor^A2^B3^AHudson^A1^B                                                     |
 | lastname     | MAX_LENGTH             | 12                                                                                       |
 | lastname     | MIN_LENGTH             | 2                                                                                        |
 | lastname     | LONGEST_STRING         | Edmundson Jr                                                                             |
 | lastname     | SHORTEST_STRING        | Hu                                                                                       |
 | lastname     | EMPTY_COUNT            | 4                                                                                        |
 | lastname     | PERC_EMPTY_VALUES      | 40                                                                                       |
+| lastname     | MIN_STRING_CASE        | Edmundson Jr                                                                             |
+| lastname     | MAX_STRING_CASE        | Wright                                                                                   |
+| lastname     | MIN_STRING_ICASE       | Edmundson Jr                                                                             |
+| lastname     | MAX_STRING_ICASE       | Wright                                                                                   |
 | age          | COLUMN_DATATYPE        | IntegerType                                                                              |
 | age          | COLUMN_NULLABLE        | true                                                                                     |
 | age          | COLUMN_METADATA        | {}                                                                                       |
@@ -58,7 +66,7 @@
 | age          | PERC_NULL_VALUES       | 10                                                                                       |
 | age          | PERC_UNIQUE_VALUES     | 70                                                                                       |
 | age          | PERC_DUPLICATE_VALUES  | 30                                                                                       |
-| age          | TOP_N_VALUES           | 1^A40^A3^B2^A22^A2^B3^A11^A1^B                                                           |
+| age          | TOP_N_VALUES           | 1^A40^A3^B2^A22^A2^B3^A14^A1^B                                                           |
 | age          | MAX                    | 65                                                                                       |
 | age          | MIN                    | 11                                                                                       |
 | age          | SUM                    | 272                                                                                      |
@@ -68,19 +76,23 @@
 | description  | COLUMN_DATATYPE        | StringType                                                                               |
 | description  | COLUMN_NULLABLE        | true                                                                                     |
 | description  | COLUMN_METADATA        | {}                                                                                       |
-| description  | NULL_COUNT             | 0                                                                                        |
+| description  | NULL_COUNT             | 1                                                                                        |
 | description  | TOTAL_COUNT            | 10                                                                                       |
 | description  | UNIQUE_COUNT           | 9                                                                                        |
-| description  | PERC_NULL_VALUES       | 0                                                                                        |
+| description  | PERC_NULL_VALUES       | 10                                                                                       |
 | description  | PERC_UNIQUE_VALUES     | 90                                                                                       |
 | description  | PERC_DUPLICATE_VALUES  | 10                                                                                       |
-| description  | TOP_N_VALUES           | 1^ARachael::^A2^B2^AJon::Wright^A1^B3^A::Edmundson Jr^A1^B                               |
+| description  | TOP_N_VALUES           | 1^ARachael::^A2^B2^ARachael::Hu^A1^B3^A::Edmundson Jr^A1^B                               |
 | description  | MAX_LENGTH             | 17                                                                                       |
 | description  | MIN_LENGTH             | 5                                                                                        |
 | description  | LONGEST_STRING         | Elizabeth::Taylor                                                                        |
 | description  | SHORTEST_STRING        | Jon::                                                                                    |
-| description  | EMPTY_COUNT            | 1                                                                                        |
-| description  | PERC_EMPTY_VALUES      | 10                                                                                       |
+| description  | EMPTY_COUNT            | 0                                                                                        |
+| description  | PERC_EMPTY_VALUES      | 0                                                                                        |
+| description  | MIN_STRING_CASE        | ::Edmundson Jr                                                                           |
+| description  | MAX_STRING_CASE        | Rachael::Hu                                                                              |
+| description  | MIN_STRING_ICASE       | ::Edmundson Jr                                                                           |
+| description  | MAX_STRING_ICASE       | Rachael::Hu                                                                              |
 | height       | COLUMN_DATATYPE        | DoubleType                                                                               |
 | height       | COLUMN_NULLABLE        | true                                                                                     |
 | height       | COLUMN_METADATA        | {}                                                                                       |
@@ -94,9 +106,9 @@
 | height       | MAX                    | 6.22                                                                                     |
 | height       | MIN                    | 4.37                                                                                     |
 | height       | SUM                    | 38.87                                                                                    |
-| height       | MEAN                   | 5.552857142857143                                                                        |
-| height       | STDDEV                 | 0.6152981689674475                                                                       |
-| height       | VARIANCE               | 0.37859183673469354                                                                      |
+| height       | MEAN                   | 5.5528571428571425                                                                       |
+| height       | STDDEV                 | 0.6152981689674476                                                                       |
+| height       | VARIANCE               | 0.37859183673469365                                                                      |
 | joindate     | COLUMN_DATATYPE        | DateType                                                                                 |
 | joindate     | COLUMN_NULLABLE        | true                                                                                     |
 | joindate     | COLUMN_METADATA        | {}                                                                                       |
@@ -106,7 +118,7 @@
 | joindate     | PERC_NULL_VALUES       | 0                                                                                        |
 | joindate     | PERC_UNIQUE_VALUES     | 70                                                                                       |
 | joindate     | PERC_DUPLICATE_VALUES  | 30                                                                                       |
-| joindate     | TOP_N_VALUES           | 1^A2011-08-08^A3^B2^A1990-10-25^A2^B3^A2007-06-07^A1^B                                   |
+| joindate     | TOP_N_VALUES           | 1^A2011-08-08^A3^B2^A1990-10-25^A2^B3^A2005-12-24^A1^B                                   |
 | joindate     | MAX_DATE               | 2011-08-08                                                                               |
 | joindate     | MIN_DATE               | 1956-11-12                                                                               |
 | lifemember   | COLUMN_DATATYPE        | BooleanType                                                                              |
@@ -130,7 +142,7 @@
 | lastlogin    | PERC_NULL_VALUES       | 0                                                                                        |
 | lastlogin    | PERC_UNIQUE_VALUES     | 50                                                                                       |
 | lastlogin    | PERC_DUPLICATE_VALUES  | 50                                                                                       |
-| lastlogin    | TOP_N_VALUES           | 1^A2008-05-06 23:10:10.0^A4^B2^A2011-01-08 11:25:45.0^A3^B3^A2007-03-16 08:24:37.0^A1^B  |
+| lastlogin    | TOP_N_VALUES           | 1^A2008-05-06 23:10:10.0^A4^B2^A2011-01-08 11:25:45.0^A3^B3^A2007-03-16 08:24:31.0^A1^B  |
 | lastlogin    | MAX_TIMESTAMP          | 2016-01-14 14:20:20.0                                                                    |
 | lastlogin    | MIN_TIMESTAMP          | 2007-03-16 08:24:31.0                                                                    |
 | phash        | COLUMN_DATATYPE        | LongType                                                                                 |
@@ -158,13 +170,13 @@
 | weight       | PERC_NULL_VALUES       | 30                                                                                       |
 | weight       | PERC_UNIQUE_VALUES     | 60                                                                                       |
 | weight       | PERC_DUPLICATE_VALUES  | 40                                                                                       |
-| weight       | TOP_N_VALUES           | 1^Anull^A3^B2^A160.7^A2^B3^A110.5^A2^B                                                   |
+| weight       | TOP_N_VALUES           | 1^Anull^A3^B2^A110.5^A2^B3^A160.7^A2^B                                                   |
 | weight       | MAX                    | 180.6                                                                                    |
 | weight       | MIN                    | 40.2                                                                                     |
 | weight       | SUM                    | 918.5000038146973                                                                        |
 | weight       | MEAN                   | 131.21428625924247                                                                       |
-| weight       | STDDEV                 | 44.560791257528685                                                                       |
-| weight       | VARIANCE               | 1985.6641174970446                                                                       |
+| weight       | STDDEV                 | 44.56079125752868                                                                        |
+| weight       | VARIANCE               | 1985.6641174970443                                                                       |
 | credits      | COLUMN_DATATYPE        | ShortType                                                                                |
 | credits      | COLUMN_NULLABLE        | true                                                                                     |
 | credits      | COLUMN_METADATA        | {}                                                                                       |
@@ -174,7 +186,7 @@
 | credits      | PERC_NULL_VALUES       | 20                                                                                       |
 | credits      | PERC_UNIQUE_VALUES     | 60                                                                                       |
 | credits      | PERC_DUPLICATE_VALUES  | 40                                                                                       |
-| credits      | TOP_N_VALUES           | 1^A100^A3^B2^A1400^A2^B3^Anull^A2^B                                                      |
+| credits      | TOP_N_VALUES           | 1^A100^A3^B2^Anull^A2^B3^A1400^A2^B                                                      |
 | credits      | MAX                    | 5000                                                                                     |
 | credits      | MIN                    | 0                                                                                        |
 | credits      | SUM                    | 8600                                                                                     |
@@ -210,4 +222,24 @@
 | score        | MAX                    | 8.22300                                                                                  |
 | score        | MIN                    | 1.56700                                                                                  |
 | score        | SUM                    | 30.29600                                                                                 |
+| favoritepet  | COLUMN_DATATYPE        | StringType                                                                               |
+| favoritepet  | COLUMN_NULLABLE        | true                                                                                     |
+| favoritepet  | COLUMN_METADATA        | {}                                                                                       |
+| favoritepet  | NULL_COUNT             | 1                                                                                        |
+| favoritepet  | TOTAL_COUNT            | 10                                                                                       |
+| favoritepet  | UNIQUE_COUNT           | 8                                                                                        |
+| favoritepet  | PERC_NULL_VALUES       | 10                                                                                       |
+| favoritepet  | PERC_UNIQUE_VALUES     | 80                                                                                       |
+| favoritepet  | PERC_DUPLICATE_VALUES  | 20                                                                                       |
+| favoritepet  | TOP_N_VALUES           | 1^ACat^A3^B2^AZEBRA^A1^B3^Aalbatross^A1^B                                                |
+| favoritepet  | MAX_LENGTH             | 9                                                                                        |
+| favoritepet  | MIN_LENGTH             | 3                                                                                        |
+| favoritepet  | LONGEST_STRING         | albatross                                                                                |
+| favoritepet  | SHORTEST_STRING        | Cat                                                                                      |
+| favoritepet  | EMPTY_COUNT            | 1                                                                                        |
+| favoritepet  | PERC_EMPTY_VALUES      | 10                                                                                       |
+| favoritepet  | MIN_STRING_CASE        | Alpaca                                                                                   |
+| favoritepet  | MAX_STRING_CASE        | alligator                                                                                |
+| favoritepet  | MIN_STRING_ICASE       | albatross                                                                                |
+| favoritepet  | MAX_STRING_ICASE       | Zebra                                                                                    |
 +--------------+------------------------+------------------------------------------------------------------------------------------+

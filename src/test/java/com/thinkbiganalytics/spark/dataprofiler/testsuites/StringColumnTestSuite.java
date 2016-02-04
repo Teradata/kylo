@@ -9,10 +9,14 @@ import org.junit.runners.Suite.SuiteClasses;
 import com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnTestCase1;
 import com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnTestCase2;
 import com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnTestCase3;
+import com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnTestCase4;
 
 
 @RunWith(value = Suite.class)
-@SuiteClasses(value = { StringColumnTestCase1.class, StringColumnTestCase2.class, StringColumnTestCase3.class })
+@SuiteClasses(value = { StringColumnTestCase1.class, 
+						StringColumnTestCase2.class, 
+						StringColumnTestCase3.class,
+						StringColumnTestCase4.class})
 
 /**
  * String Column Statistics Test Suite

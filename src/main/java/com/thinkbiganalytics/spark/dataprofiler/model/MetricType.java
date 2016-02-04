@@ -76,7 +76,7 @@ public enum MetricType {
 	
 	
 	/**
-	 * Minimum length of string
+	 * Minimum length of string (empty strings ignored)
 	 */
 	MIN_LENGTH,
 	
@@ -88,7 +88,7 @@ public enum MetricType {
 	
 	
 	/**
-	 * Shortest string value
+	 * Shortest string value (empty strings ignored)
 	 */
 	SHORTEST_STRING,
 	
@@ -174,5 +174,31 @@ public enum MetricType {
 	/**
 	 * Earliest timestamp value
 	 */
-	MIN_TIMESTAMP
+	MIN_TIMESTAMP,
+	
+	
+	/**
+	 * Min string (Lexical ordering) (Case-sensitive)
+	 */
+	MIN_STRING_CASE,
+	
+	
+	/**
+	 * Max string (Lexical ordering) (Case-sensitive)
+	 */
+	MAX_STRING_CASE,
+	
+	
+	/**
+	 * Min string (Lexical ordering) (Case-insensitive)
+	 */
+	MIN_STRING_ICASE,
+	
+	
+	/**
+	 * Max string (Lexical ordering) (Case-insensitive)
+	 */
+	MAX_STRING_ICASE
+	
+
 }
