@@ -17,4 +17,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 com.thinkbiganalytics.controller.ThriftConnectionPool
+com.thinkbiganalytics.controller.MetadataProviderSelectorService
+
+# TODO: Remove usage of MetadataConnectionService
 com.thinkbiganalytics.controller.MetadataConnectionService

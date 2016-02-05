@@ -7,6 +7,7 @@ package com.thinkbiganalytics.metadata;
 /**
  * Temporary
  */
+@Deprecated
 public interface MetadataClient {
 
     // incremental/batch/latest

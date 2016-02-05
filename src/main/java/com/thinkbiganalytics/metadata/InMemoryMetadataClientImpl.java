@@ -10,6 +10,7 @@ import java.util.Map;
 /**
  * Mock
  */
+@Deprecated
 public class InMemoryMetadataClientImpl implements MetadataClient {
 
     private Map<String, BatchLoadStatus> batchLoadStatusMap = new HashMap<>();
