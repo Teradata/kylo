@@ -29,8 +29,8 @@ import java.util.concurrent.TimeUnit;
 
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
-@Tags({"hive", "ddl", "jdbc", "thinkbig"})
-@CapabilityDescription("Execute provided HIVE or Spark statement. This can be any HQL statement that results in no results."
+@Tags({"hive", "ddl", "dml", "jdbc", "thinkbig"})
+@CapabilityDescription("Execute provided HIVE or Spark statement. This can be any HQL DML or DDL statement that results in no results."
 )
 public class ExecuteHQLStatement extends AbstractProcessor {
 
@@ -53,8 +53,8 @@ public class ExecuteHQLStatement extends AbstractProcessor {
             .build();
 
     public static final PropertyDescriptor SQL_DDL_STATEMENT = new PropertyDescriptor.Builder()
-            .name("DDL Statement")
-            .description("DDL statement")
+            .name("Statement")
+            .description("Provide the DDL or DML statement. Return values will be ignored.")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .expressionLanguageSupported(true)

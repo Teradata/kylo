@@ -15,7 +15,7 @@ public enum TableType {
 
     FEED("/model.db/", "/etl/", "feed", true, false, true,false),
     VALID("/model.db/", "/etl/", "valid", true, false, false,false),
-    INVALID("/model.db/", "/etl", "invalid", true, false, true,true),
+    INVALID("/model.db/", "/etl", "invalid", true, true, true,true),
     MASTER("/app/warehouse/", "/app/warehouse/", "", false, true, false,false),
     PROFILE("/model.db/", "/etl/", "profile", true, true, true,false);
 
