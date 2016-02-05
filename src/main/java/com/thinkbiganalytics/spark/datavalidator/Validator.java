@@ -1,13 +1,13 @@
 package com.thinkbiganalytics.spark.datavalidator;
 
 
-import com.thinkbiganalytics.spark.validation.FieldPolicy;
-import com.thinkbiganalytics.spark.validation.FieldPolicyBuilder;
-import com.thinkbiganalytics.spark.validation.HCatDataType;
 import com.thinkbiganalytics.spark.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.spark.standardization.impl.AcceptsEmptyValues;
 import com.thinkbiganalytics.spark.standardization.impl.DateTimeStandardizer;
 import com.thinkbiganalytics.spark.standardization.impl.RemoveControlCharsStandardizer;
+import com.thinkbiganalytics.spark.validation.FieldPolicy;
+import com.thinkbiganalytics.spark.validation.FieldPolicyBuilder;
+import com.thinkbiganalytics.spark.validation.HCatDataType;
 import com.thinkbiganalytics.spark.validation.impl.CreditCardValidator;
 import com.thinkbiganalytics.spark.validation.impl.EmailValidator;
 import com.thinkbiganalytics.spark.validation.impl.IPAddressValidator;
@@ -51,7 +51,6 @@ public class Validator implements Serializable {
 
     /* Initialize Spark */
     private HiveContext hiveContext;
-    //private SparkContext sparkContext;
     private SQLContext sqlContext;
 
     /*
@@ -63,7 +62,6 @@ public class Validator implements Serializable {
     private String refTablename;
     private String targetDatabase;
     private String partition;
-    private String entity;
 
     private FieldPolicy[] policies;
     private HCatDataType[] schema;
@@ -75,7 +73,6 @@ public class Validator implements Serializable {
         hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
         sqlContext = new SQLContext(sparkContext);
 
-        this.entity = entity;
         this.validTableName = entity + "_valid";
         this.invalidTableName = entity + "_invalid";
         ;
@@ -86,6 +83,7 @@ public class Validator implements Serializable {
         loadPolicies();
     }
 
+    // Hardcode for now until we can fetch from metadata
     private void loadPolicies() {
 
         policyMap.put("registration_dttm", FieldPolicyBuilder.newBuilder().addValidator(TimestampValidator.instance()).build());
@@ -183,9 +181,11 @@ public class Validator implements Serializable {
         // Create placeholder for our new values plus two columns for validation and reject_reason
         String[] newValues = new String[schema.length + 2];
         boolean valid = true;
-        StringBuffer sbRejectReason = new StringBuffer();
+        String sbRejectReason = null;
+        List<ValidationResult> results = null;
         // Iterate through columns to cleanse and validate
         for (int idx = 0; idx < schema.length; idx++) {
+            ValidationResult result = VALID_RESULT;
             FieldPolicy fieldPolicy = policies[idx];
             HCatDataType dataType = schema[idx];
 
@@ -198,38 +198,47 @@ public class Validator implements Serializable {
             newValues[idx] = fieldValue;
 
             // Record results in our appended columns
-            ValidationResult result = validateField(fieldPolicy, dataType, fieldValue);
+            result = validateField(fieldPolicy, dataType, fieldValue);
             if (!result.isValid()) {
                 valid = false;
-                sbRejectReason.append(result.rejectReason);
+                results = (results == null ? new Vector<ValidationResult>() : results);
+                results.add(result);
             }
         }
         // Return success unless all values were null.  That would indicate a blank line in the file
         if (nulls >= schema.length) {
             valid = false;
-            sbRejectReason = new StringBuffer("{Empty Row}");
+            results = (results == null ? new Vector<ValidationResult>() : results);
+            results.add(ValidationResult.failRow("empty", "Row is empty"));
         }
+
+        // Convert to reject reasons to JSON
+        sbRejectReason = toJSONArray(results);
+
         // Record the results in our appended columns, move processing partition value last
         newValues[schema.length + 1] = newValues[schema.length - 1];
-        newValues[schema.length] = sbRejectReason.toString();
+        newValues[schema.length] = sbRejectReason;
         newValues[schema.length - 1] = (valid ? "1" : "0");
 
         return RowFactory.create(newValues);
     }
 
-    // Spark function that performs standardization of the values based on the cleansing policy
-    public Row cleanseRow(Row row) {
-        String[] newValues = new String[schema.length];
-        for (int idx = 0; idx < schema.length; idx++) {
-
-            FieldPolicy fieldPolicy = policies[idx];
-            newValues[idx] = null;
-            if (idx < row.length()) {
-                newValues[idx] = (row.isNullAt(idx) ? null : row.getString(idx));
-                newValues[idx] = standardizeField(fieldPolicy, newValues[idx]);
+    private String toJSONArray(List<ValidationResult> results) {
+        // Convert to reject reasons to JSON
+        StringBuffer sb = null;
+        if (results != null) {
+            sb = new StringBuffer();
+            for (ValidationResult result : results) {
+                if (sb.length() > 0) {
+                    sb.append(",");
+                } else {
+                    sb.append("[");
+                }
+                sb.append(result.toJSON());
             }
+            sb.append("]");
         }
-        return RowFactory.create(newValues);
+        return (sb == null ? "" : sb.toString());
     }
 
     /**
@@ -240,14 +249,14 @@ public class Validator implements Serializable {
         boolean isEmpty = (StringUtils.isEmpty(fieldValue));
         if (isEmpty) {
             if (!fieldPolicy.isNullable()) {
-                return ValidationResult.fail("{Null violation: field [" + fieldDataType.getName() + "] cannot be null" + "]}");
+                return ValidationResult.failField("null", fieldDataType.getName(), "Cannot be null");
             }
         } else {
 
             // Verify new value is compatible with the target Hive schema e.g. integer, double (unless checking is disabled)
             if (!fieldPolicy.shouldSkipSchemaValidation()) {
                 if (!fieldDataType.isValueConvertibleToType(fieldValue)) {
-                    return ValidationResult.fail("{Invalid data type: field [" + fieldDataType.getName() + "] cannot be converted to type [" + fieldDataType.getNativeType() + "]}");
+                    return ValidationResult.failField("incompatible", fieldDataType.getName(), "Not convertible to " + fieldDataType.getNativeType());
                 }
             }
 
@@ -256,7 +265,7 @@ public class Validator implements Serializable {
             if (validators != null) {
                 for (com.thinkbiganalytics.spark.validation.Validator validator : validators) {
                     if (!validator.validate(fieldValue)) {
-                        return ValidationResult.fail("{ Validation failure: field [" + fieldDataType.getName() + "] rule [" + validator.getClass().getSimpleName() + "]]}");
+                        return ValidationResult.failFieldRule("rule", fieldDataType.getName(), validator.getClass().getSimpleName(), "Rule violation");
                     }
                 }
             }
@@ -289,7 +298,7 @@ public class Validator implements Serializable {
         for (StructField field : fields) {
             String colName = field.name();
             String dataType = field.dataType().simpleString();
-            System.out.println("Table [" + refTablename + "] Field [" + colName + "] dataType [" + dataType + "]");
+            // System.out.println("Table [" + refTablename + "] Field [" + colName + "] dataType [" + dataType + "]");
             cols.add(HCatDataType.createFromDataType(colName, dataType));
         }
         return cols.toArray(new HCatDataType[0]);
@@ -322,13 +331,48 @@ public class Validator implements Serializable {
      */
     static class ValidationResult implements Serializable {
         boolean result = true;
+        String scope;
+        String fieldName;
+        String failType;
+        String rule;
         String rejectReason;
 
-        static ValidationResult fail(String rejectReason) {
-            ValidationResult o = new ValidationResult();
-            o.rejectReason = rejectReason;
-            o.result = false;
-            return o;
+        ValidationResult() {
+            result = true;
+        }
+        ValidationResult(String scope, String fieldName, String failType, String rule, String rejectReason) {
+            this.result = false;
+            this.scope = scope;
+            this.fieldName = fieldName;
+            this.failType = failType;
+            this.rule = rule;
+            this.rejectReason = rejectReason;
+        }
+
+        static ValidationResult failRow(String failType, String rejectReason) {
+            return new ValidationResult("row", null, failType, null, rejectReason);
+        }
+
+        static ValidationResult failField(String failType, String fieldName, String rejectReason) {
+            return new ValidationResult("field", fieldName, failType, null, rejectReason);
+        }
+
+        static ValidationResult failFieldRule(String failType, String fieldName, String rule, String rejectReason) {
+            return new ValidationResult("field", fieldName, failType, rule, rejectReason);
+        }
+
+        public String toJSON() {
+            StringBuffer sb = new StringBuffer();
+            sb.append("{\"scope\":\"").append(scope).append("\",");
+            if (fieldName != null) {
+                sb.append("\"field\":\"").append(fieldName).append("\",");
+            }
+            sb.append("\"type\":\"").append(failType).append("\",");
+            if (rule != null) {
+                sb.append("\"rule\":\"").append(rule).append("\",");
+            }
+            sb.append("\"reason\":\"").append(rejectReason).append("\"}");
+            return sb.toString();
         }
 
         boolean isValid() {
@@ -336,6 +380,23 @@ public class Validator implements Serializable {
         }
 
     }
+
+    // Spark function that performs standardization of the values based on the cleansing policy
+/*
+    public Row cleanseRow(Row row) {
+        String[] newValues = new String[schema.length];
+        for (int idx = 0; idx < schema.length; idx++) {
+
+            FieldPolicy fieldPolicy = policies[idx];
+            newValues[idx] = null;
+            if (idx < row.length()) {
+                newValues[idx] = (row.isNullAt(idx) ? null : row.getString(idx));
+                newValues[idx] = standardizeField(fieldPolicy, newValues[idx]);
+            }
+        }
+        return RowFactory.create(newValues);
+    }
+*/
 
     public static void main(String[] args) {
 
