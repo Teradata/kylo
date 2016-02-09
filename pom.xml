@@ -12,10 +12,11 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <nifi.version>0.4.1</nifi.version>
+        <nifi.version>0.4.2-SNAPSHOT</nifi.version>
         <sparkcore.version>1.4.1</sparkcore.version>
         <hadoop.version>2.7.1</hadoop.version>
         <hive.version>0.14.0</hive.version>
+        <elasticsearch.version>2.2.0</elasticsearch.version>
     </properties>
 
     <dependencies>
@@ -125,6 +126,12 @@
             <groupId>org.apache.hive</groupId>
             <artifactId>hive-metastore</artifactId>
             <version>${hive.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.google.guava</groupId>
+                    <artifactId>guava</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 <!--
         <dependency>
@@ -185,6 +192,17 @@
             <artifactId>thinkbig-metadata-core</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
+        <dependency>
+            <groupId>org.elasticsearch</groupId>
+            <artifactId>elasticsearch</artifactId>
+            <version>${elasticsearch.version}</version>
+        </dependency>
+        <!-- Had to add newer version of guava for elasticsearch to work. Added exlcude for hive metastore -->
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>18.0</version>
+        </dependency>
         
         <!-- Development -->
         <dependency>
@@ -193,6 +211,7 @@
             <version>0.4.2-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
+        
     </dependencies>
 
     <build>
