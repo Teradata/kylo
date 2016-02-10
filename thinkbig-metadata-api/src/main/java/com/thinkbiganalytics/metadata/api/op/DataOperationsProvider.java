@@ -14,6 +14,7 @@ import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
 import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.op.DataOperation.ID;
 import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
 
 /**
@@ -21,6 +22,8 @@ import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
  * @author Sean Felten
  */
 public interface DataOperationsProvider {
+    
+    ID asOperationId(String opIdStr);
 
     DataOperation beginOperation(Feed.ID feedId, Dataset.ID dsId);
     DataOperation updateOperation(DataOperation.ID id, String status, State result);

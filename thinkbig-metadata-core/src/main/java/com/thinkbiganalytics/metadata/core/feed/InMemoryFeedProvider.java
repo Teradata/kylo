@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
 
@@ -20,6 +21,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.core.feed.BaseFeed.FeedId;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
@@ -28,10 +30,28 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 public class InMemoryFeedProvider implements FeedProvider {
     
-    @Inject
     private DatasetProvider datasetProvider;
+    private Map<Feed.ID, BaseFeed> feeds = new ConcurrentHashMap<>();
     
-    private Map<Feed.ID, BaseFeed> feeds;
+    public InMemoryFeedProvider() {
+        super();
+    }
+    
+    public InMemoryFeedProvider(DatasetProvider datasetProvider) {
+        super();
+        this.datasetProvider = datasetProvider;
+    }
+
+
+    @Inject
+    public void setDatasetProvider(DatasetProvider datasetProvider) {
+        this.datasetProvider = datasetProvider;
+    }
+    
+    @Override
+    public Feed.ID asFeedId(String feedIdStr) {
+        return new FeedId(feedIdStr);
+    }
 
     @Override
     public FeedSource ensureFeedSource(Feed.ID feedId, ID dsId) {
@@ -70,6 +90,20 @@ public class InMemoryFeedProvider implements FeedProvider {
         return ensureFeedDestination(feed, ds);
     }
     
+    @Override
+    public Feed ensureFeed(String name, String descr, ID destId) {
+        Dataset dds = this.datasetProvider.getDataset(destId);
+    
+        if (dds == null) {
+            throw new FeedCreateException("A dataset with the given ID does not exists: " + destId);
+        }
+        
+        BaseFeed feed = (BaseFeed) ensureFeed(name, descr);
+        
+        ensureFeedDestination(feed, dds);
+        return feed;
+    }
+
     @Override
     public Feed ensureFeed(String name, String descr, ID srcId, ID destId) {
         Dataset sds = this.datasetProvider.getDataset(srcId);
@@ -142,7 +176,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     private FeedDestination ensureFeedDestination(BaseFeed feed, Dataset ds) {
-        if (feed.getDestination().getDataset().getId().equals(ds.getId())) {
+        if (feed.getDestination() != null && feed.getDestination().getDataset().getId().equals(ds.getId())) {
             return feed.getDestination();
         } else {
             return feed.addDestination(ds);

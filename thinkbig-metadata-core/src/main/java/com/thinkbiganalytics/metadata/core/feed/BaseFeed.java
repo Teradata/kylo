@@ -70,8 +70,16 @@ public class BaseFeed implements Feed {
         return destination;
     }
     
-    private static class FeedId implements ID {
-        private UUID uuid = UUID.randomUUID();
+    protected static class FeedId implements ID {
+        private final UUID uuid;
+        
+        public FeedId() {
+            this.uuid =UUID.randomUUID();
+        }
+        
+        public FeedId(String uuidStr) {
+            this.uuid = UUID.fromString(uuidStr);
+        }
         
         @Override
         public boolean equals(Object obj) {

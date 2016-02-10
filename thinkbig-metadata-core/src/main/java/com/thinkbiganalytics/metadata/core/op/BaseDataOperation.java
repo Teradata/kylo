@@ -28,26 +28,38 @@ public class BaseDataOperation implements DataOperation {
     private ChangeSet<?, ?> changeSet;
 
     public BaseDataOperation(Dataset ds, Feed feed) {
-        this(ds, feed, "");
+        this(ds, feed, "Operation in progress");
     }
     
     public BaseDataOperation(Dataset ds, Feed feed, String status) {
         this.id = new OpId();
         this.state = State.IN_PROGRESS;
+        this.source = feed;
+        this.status = status;
+        this.startTime = new DateTime();
         // TODO change relationship to direct ref to op from dataset
     }
 
     public BaseDataOperation(BaseDataOperation op, State state, String status) {
         this.id = op.id;
+        this.startTime = op.startTime;
+        this.source = op.source;
+        
         this.state = state;
-        this.status = status;
+        this.status = (status == null || status.length() == 0) && state != State.IN_PROGRESS 
+                ? "Operation completed with result: " + state.toString() 
+                : op.getStatus();
+        this.stopTime = state != State.IN_PROGRESS ? new DateTime() : op.stopTime;
     }
 
     public BaseDataOperation(BaseDataOperation op, String status, ChangeSet<?, ?> changes) {
-        this.id = op.id;
-        this.state = State.SUCCESS;
-        this.status = status;
+        this(op, State.SUCCESS, "Operation completed successfully");
+
         this.changeSet = changes;
+    }
+    
+    public BaseDataOperation(BaseDataOperation op, String status, Throwable t) {
+        this(op, State.FAILURE, "Operation failed: " + t.getMessage());
     }
 
     @Override
@@ -86,8 +98,16 @@ public class BaseDataOperation implements DataOperation {
     }
     
     
-    private static class OpId implements ID {
-        private UUID uuid = UUID.randomUUID();
+    protected static class OpId implements ID {
+        private final UUID uuid;
+        
+        public OpId() {
+            this.uuid = UUID.randomUUID();
+        }
+        
+        public OpId(String idStr) {
+            this.uuid = UUID.fromString(idStr);
+        }
         
         @Override
         public boolean equals(Object obj) {

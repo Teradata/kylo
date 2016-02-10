@@ -47,17 +47,47 @@ import com.thinkbiganalytics.metadata.event.ChangeEventDispatcher;
  */
 public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     
-    @Inject
     private DatasetProvider datasetProvider;
-    
-    @Inject 
     private FeedProvider feedProvider;
-    
-    @Inject
     private ChangeEventDispatcher dispatcher;
     
     private Map<DataOperation.ID, BaseDataOperation> operations = new ConcurrentHashMap<>();
     private Map<Dataset.ID, Collection<BaseChangeSet<?, ?>>> changeSets = new ConcurrentHashMap<>();
+    
+    @Inject
+    public void setDatasetProvider(DatasetProvider datasetProvider) {
+        this.datasetProvider = datasetProvider;
+    }
+    
+    @Inject
+    public void setFeedProvider(FeedProvider feedProvider) {
+        this.feedProvider = feedProvider;
+    }
+    
+    @Inject
+    public void setDispatcher(ChangeEventDispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+    }
+    
+    public InMemoryDataOperationsProvider() {
+        super();
+    }
+    
+    public InMemoryDataOperationsProvider(DatasetProvider datasetProvider, FeedProvider feedProvider,
+            ChangeEventDispatcher dispatcher) {
+        super();
+        this.datasetProvider = datasetProvider;
+        this.feedProvider = feedProvider;
+        this.dispatcher = dispatcher;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#asOperationId(java.lang.String)
+     */
+    @Override
+    public DataOperation.ID asOperationId(String opIdStr) {
+        return new BaseDataOperation.OpId(opIdStr);
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#beginOperation(com.thinkbiganalytics.metadata.api.feed.Feed.ID, Dataset.ID)
@@ -74,7 +104,9 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
             throw new DataOperationException("No dataset with the given ID exists: " + feedId);
         }
         
-        return new BaseDataOperation(ds, feed);
+        BaseDataOperation op = new BaseDataOperation(ds, feed);
+        this.operations.put(op.getId(), op);
+        return op;
     }
 
     /* (non-Javadoc)
