@@ -69,9 +69,9 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         PropertyValue impl = context.getProperty(IMPLEMENTATION);
         
         if (impl.getValue().equalsIgnoreCase("MEMORY")) {
-            this.feedProvider = new InMemoryFeedProvider();
             this.datasetProvider = new InMemoryDatasetProvider();
-            this.operationsProvider = new InMemoryDataOperationsProvider();
+            this.feedProvider = new InMemoryFeedProvider(this.datasetProvider);
+            this.operationsProvider = new InMemoryDataOperationsProvider(this.datasetProvider, this.feedProvider, null);
         } else {
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
         }
