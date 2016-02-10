@@ -98,6 +98,7 @@ public class RouteOnRegistration extends AbstractProcessor {
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
         FlowFile incoming = session.get();
         FlowFile outgoing = (incoming == null ? session.create() : incoming);
+
         ProcessorLog logger = getLogger();
 
         final MetadataService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataService.class);
