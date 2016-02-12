@@ -29,3 +29,4 @@ com.thinkbiganalytics.nifi.RouteOnRegistration
 com.thinkbiganalytics.nifi.IndexElasticSearch
 com.thinkbiganalytics.nifi.processors.metadata.FeedComplete
 com.thinkbiganalytics.nifi.processors.metadata.DirectoryFeedStart
+com.thinkbiganalytics.nifi.processors.metadata.HiveTableFeedStart

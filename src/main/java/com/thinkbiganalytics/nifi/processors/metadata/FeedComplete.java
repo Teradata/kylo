@@ -4,11 +4,13 @@
 package com.thinkbiganalytics.nifi.processors.metadata;
 
 import java.util.List;
+import java.util.Set;
 
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
+import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
@@ -28,6 +30,10 @@ public class FeedComplete extends FeedProcessor {
             .allowableValues("SUCCESS", "FAILURE")
             .required(true)
             .build();
+    public static final Relationship PROCEED = new Relationship.Builder()
+            .name("Proceed")
+            .description("Proceed with flow processing after metadata capture.")
+            .build();
 
     /* (non-Javadoc)
      * @see org.apache.nifi.processor.AbstractProcessor#onTrigger(org.apache.nifi.processor.ProcessContext, org.apache.nifi.processor.ProcessSession)
@@ -45,7 +51,7 @@ public class FeedComplete extends FeedProcessor {
                 operationProvider.updateOperation(opId, "", getOperationState(context));
             }
             
-            session.remove(flowFile);
+            session.transfer(flowFile, PROCEED);
         } catch (Exception e) {
             context.yield();
             session.rollback();
@@ -59,7 +65,13 @@ public class FeedComplete extends FeedProcessor {
         super.addProperties(props);
         props.add(COMPLETION_RESULT);
     }
-
+    
+    @Override
+    protected void addRelationships(Set<Relationship> rels) {
+        super.addRelationships(rels);
+        rels.add(PROCEED);
+    }
+    
     private State getOperationState(ProcessContext context) {
         String result = context.getProperty(COMPLETION_RESULT).getValue();
         

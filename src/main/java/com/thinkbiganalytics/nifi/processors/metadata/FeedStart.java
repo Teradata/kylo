@@ -53,9 +53,9 @@ public abstract class FeedStart extends FeedProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
-    public static final Relationship SUCCESS = new Relationship.Builder()
-            .name("Success")
-            .description("FlowFiles are rounted to this relationship on successful metadata capture.")
+    public static final Relationship PROCEED = new Relationship.Builder()
+            .name("Proceed")
+            .description("Proceed with flow processing after metadata capture.")
             .build();
 
     
@@ -86,7 +86,7 @@ public abstract class FeedStart extends FeedProcessor {
             flowFile = session.putAttribute(flowFile, OPERATON_ID_PROP, op.getId().toString());
             flowFile = session.putAttribute(flowFile, DATASET_TYPE_PROP, getClass().getSimpleName());
             
-            session.transfer(flowFile, SUCCESS);
+            session.transfer(flowFile, PROCEED);
         } catch (Exception e) {
             context.yield();
             session.rollback();
@@ -108,7 +108,7 @@ public abstract class FeedStart extends FeedProcessor {
     @Override
     protected void addRelationships(Set<Relationship> rels) {
         super.addRelationships(rels);
-        rels.add(SUCCESS);
+        rels.add(PROCEED);
     }
     
     protected Dataset ensureDestinationDataset(ProcessContext context) {
