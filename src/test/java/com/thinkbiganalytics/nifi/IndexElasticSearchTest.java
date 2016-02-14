@@ -3,14 +3,14 @@ package com.thinkbiganalytics.nifi;
 import org.apache.nifi.util.MockFlowFile;
 import org.apache.nifi.util.TestRunner;
 import org.apache.nifi.util.TestRunners;
+import org.elasticsearch.action.delete.DeleteResponse;
 import org.elasticsearch.action.get.GetRequest;
 import org.elasticsearch.action.get.GetResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,19 +29,30 @@ import static org.junit.Assert.fail;
  * Integration test so we can validate the processor sends data to elasticsearch without having to deploy it
  */
 public class IndexElasticSearchTest {
-
-    private InputStream insertDocument;
-    private InputStream updateDocument;
-    private TestRunner nifiTestRunner;
     private static final String TEST_HOST = "ec2-54-152-98-43.compute-1.amazonaws.com";
     private static final String TEST_INDEX = "integration-test";
     private static final String TEST_TYPE = "userdatatest";
+    private InputStream insertDocument;
+    private InputStream updateDocument;
+    private TestRunner nifiTestRunner;
+    private Client esClient = null;
 
     @Before
     public void setUp() throws IOException {
         ClassLoader classloader = Thread.currentThread().getContextClassLoader();
         insertDocument = classloader.getResourceAsStream("elasticsearch/insert.json");
         updateDocument = classloader.getResourceAsStream("elasticsearch/update.json");
+
+        Settings settings = Settings.settingsBuilder()
+                .put("cluster.name", "demo-cluster").build();
+        esClient = TransportClient.builder().settings(settings).build()
+                .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(TEST_HOST), 9300));
+    }
+
+    @After
+    public void cleanUp() {
+        DeleteResponse response = esClient.prepareDelete().setIndex(TEST_INDEX).setType(TEST_TYPE).setId("*").get();
+        esClient.close();
     }
 
     @Test
@@ -79,18 +90,10 @@ public class IndexElasticSearchTest {
 
     private Map queryElasticSearch(String id) {
         Map result = null;
-        try {
-            Settings settings = Settings.settingsBuilder()
-                    .put("cluster.name", "demo-cluster").build();
-            Client client = TransportClient.builder().settings(settings).build()
-                    .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(TEST_HOST), 9300));
-            GetResponse response = client.prepareGet(TEST_INDEX, TEST_TYPE, id)
-                    .execute()
-                    .actionGet();
-            result = response.getSource();
-        } catch(UnknownHostException uh) {
-            fail("badness happened");
-        }
+        GetResponse response = esClient.prepareGet(TEST_INDEX, TEST_TYPE, id)
+                .execute()
+                .actionGet();
+        result = response.getSource();
         return result;
     }
 }

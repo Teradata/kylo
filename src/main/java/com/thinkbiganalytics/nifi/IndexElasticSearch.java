@@ -16,6 +16,8 @@ import org.apache.nifi.processor.io.InputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.codehaus.jettison.json.JSONArray;
 import org.codehaus.jettison.json.JSONObject;
+import org.elasticsearch.action.bulk.BulkRequestBuilder;
+import org.elasticsearch.action.bulk.BulkResponse;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.update.UpdateRequest;
 import org.elasticsearch.action.update.UpdateResponse;
@@ -150,49 +152,25 @@ public class IndexElasticSearch extends AbstractProcessor {
                 .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(hostName), 9300));
 
         JSONArray array = new JSONArray(json);
+        BulkRequestBuilder bulkRequest = client.prepareBulk();
 
         for (int i = 0; i < array.length(); i++) {
             JSONObject jsonObj = array.getJSONObject(i);
-            //System.out.println(jsonObj.getString("id"));
-            //System.out.println(jsonObj.getString("first_name"));
-            //BulkRequestBuilder bulkRequest = client.prepareBulk();
-                /*IndexResponse response = client.prepareIndex("mysource", "myentity", jsonObj.getString("id"))
-                        .setSource(jsonBuilder()
-                                        .startObject()
-                                        .field("id", jsonObj.getString("id"))
-                                        .field("first_ame", jsonObj.getString("first_name"))
-                                        .field("last_name", jsonObj.getString("last_name"))
-                                        .endObject()
-                        )
-                        .get();*/
-            IndexRequest indexRequest = new IndexRequest(index, type, jsonObj.getString("id"))
-                    .source(jsonBuilder()
-                            .startObject()
-                            .field("id", jsonObj.getString("id"))
-                            .field("first_name", jsonObj.getString("first_name"))
-                            .field("last_name", jsonObj.getString("last_name"))
-                            .field("post_date", new Date())
-                            .endObject());
-            UpdateRequest updateRequest = new UpdateRequest(index, type, jsonObj.getString("id"))
-                    .doc(jsonBuilder()
-                                    .startObject()
-                                    .field("id", jsonObj.getString("id"))
-                                    .field("first_name", jsonObj.getString("first_name"))
-                                    .field("last_name", jsonObj.getString("last_name"))
-                                    .field("post_date", new Date())
-                                    .endObject()
-                    )
-                    .upsert(indexRequest);
-            UpdateResponse response = client.update(updateRequest).get();
-            //System.out.println("Total: " + response.getShardInfo().getTotal() + " Successful: " + response.getShardInfo().getSuccessful() + " failed: " + response.getShardInfo().getFailed());
-            if (response.isCreated()) {
-                logger.debug("Created new doc");
-            }
-            if (response.getShardInfo().getFailed() > 0) {
-                logger.error("Error occurred for id: " + jsonObj.getString("id"));
-                return false;
-            }
-
+            bulkRequest.add(client.prepareIndex(index, type, jsonObj.getString("id"))
+                            .setSource(jsonBuilder()
+                                            .startObject()
+                                            .field("id", jsonObj.getString("id"))
+                                            .field("first_name", jsonObj.getString("first_name"))
+                                            .field("last_name", jsonObj.getString("last_name"))
+                                            .field("post_date", new Date())
+                                            .endObject()
+                            )
+            );
+        }
+        BulkResponse bulkResponse = bulkRequest.get();
+        if (bulkResponse.hasFailures()) {
+            logger.error("Error occurred while batch updating" + bulkResponse.buildFailureMessage());
+            return false;
         }
         return true;
     }
