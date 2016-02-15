@@ -103,7 +103,12 @@ public class ResultSetMetaAdapter implements ResultSetMetaData {
     }
 
     public boolean isSigned(int column) throws SQLException {
-        return meta.isSigned(column);
+        // Currently an unsupported method should just return true
+        try {
+            return meta.isSigned(column);
+        } catch (SQLException e) {
+            return true;
+        }
     }
 
     public boolean isWritable(int column) throws SQLException {
