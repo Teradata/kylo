@@ -14,6 +14,8 @@ import com.thinkbiganalytics.metadata.api.op.ChangedContent;
  */
 public interface ChangeEventDispatcher {
 
+    <D extends Dataset, C extends ChangedContent> void addListener(D dataset, DataChangeEventListener<D, C> listener);
+    
     <D extends Dataset, C extends ChangedContent> void addListener(DataChangeEventListener<D, C> listener);
     
     <D extends Dataset, C extends ChangedContent> void nofifyChange(ChangeSet<D, C> change);

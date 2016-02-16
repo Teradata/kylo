@@ -57,7 +57,7 @@ public class BaseFeed implements Feed {
     @Override
     public FeedDestination getDestination(Dataset.ID id) {
         for (FeedDestination dest : this.destinations) {
-            if (dest.getDataset().equals(id)) {
+            if (dest.getDataset().getId().equals(id)) {
                 return dest;
             }
         }
