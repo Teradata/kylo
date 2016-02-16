@@ -4,28 +4,46 @@
 package com.thinkbiganalytics.nifi.processors.metadata;
 
 import java.util.List;
+import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
+import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
 
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
+import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
+import com.thinkbiganalytics.metadata.api.event.DataChangeEvent;
+import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.DataOperation;
+import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.op.ChangedContent;
+import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 
 /**
  *
  * @author Sean Felten
  */
 public class FeedBegin extends FeedProcessor {
+    
+    private Queue<ChangeSet<? extends Dataset, ? extends ChangedContent>> pendingChanges = new LinkedBlockingQueue<>();
+    private DataChangeEventListener<? extends Dataset, ? extends ChangedContent> changeListener;
+    private AtomicReference<Dataset.ID> sourceDatasetId = new AtomicReference<Dataset.ID>();
+    private AtomicReference<Feed.ID> feedId = new AtomicReference<>();
     
     public static final PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
             .name(FEED_ID_PROP)
@@ -45,29 +63,112 @@ public class FeedBegin extends FeedProcessor {
 
     public static final Relationship SUCCESS = new Relationship.Builder()
             .name("Success")
-            .description("FlowFiles are rounted to this relationship on successful metadata capture.")
+            .description("Relationship followed on successful metadata capture.")
+            .build();
+    public static final Relationship FAILURE = new Relationship.Builder()
+            .name("Failure")
+            .description("Relationship followdd on failed metadata capture.")
             .build();
 
+    @Override
+    protected void init(ProcessorInitializationContext context) {
+        super.init(context);
+    }
+    
+    @OnScheduled
+    public void setupFeedMetadata(ProcessContext context) {
+        FeedProvider feedProvider = getProviderService(context).getFeedProvider();
+        String feedName = context.getProperty(FEED_NAME).getValue();
+        Feed feed = feedProvider.ensureFeed(feedName, "");
+        this.feedId.set(feed.getId());
+        
+        String datasetName = context.getProperty(SRC_DATASET_NAME).getValue();
+        
+        if (datasetName != null && this.sourceDatasetId.get() == null) {
+            Dataset srcDataset = getSourceDataset(context);            
+            
+            if (srcDataset != null) {
+                feedProvider.ensureFeedSource(this.feedId.get(), srcDataset.getId());
+                ensureChangeListener(context, srcDataset);
+                this.sourceDatasetId.set(srcDataset.getId());
+            } else {
+                throw new ProcessException("Source dataset does not exist: " + datasetName);
+            }
+        }
+    }
+    
     /* (non-Javadoc)
      * @see org.apache.nifi.processor.AbstractProcessor#onTrigger(org.apache.nifi.processor.ProcessContext, org.apache.nifi.processor.ProcessSession)
      */
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
-        FlowFile flowFile = session.get();
-        FeedProvider feedProvider = getProviderService(context).getFeedProvider();
-        String feedName = context.getProperty(FEED_NAME).getValue();
-        Feed feed = feedProvider.ensureFeed(feedName, "");
-        Dataset srcDataset = getSourceDataset(context);            
+        FlowFile flowFile = produceFlowFile(session);
         
-        if (srcDataset != null) {
-            feedProvider.ensureFeedSource(feed.getId(), srcDataset.getId());
-            // TODO Register interest in metadata events for this source
+        if (flowFile != null) {
+            flowFile = session.putAttribute(flowFile, FEED_ID_PROP, this.feedId.get().toString());
+            flowFile = session.putAttribute(flowFile, OPERATON_START_PROP, TIME_FORMATTER.print(new DateTime()));
+            
+            session.transfer(flowFile, SUCCESS);
+        } else {
+            context.yield();
         }
+    }
+
+    protected FlowFile produceFlowFile(ProcessSession session) {
+        ChangeSet<? extends Dataset, ? extends ChangedContent> changeSet = this.pendingChanges.poll();
+        if (changeSet != null) {
+            return createFlowFile(session, changeSet);
+        } else {
+            return session.get();
+        }
+    }
+
+    private FlowFile createFlowFile(ProcessSession session, 
+                                    ChangeSet<? extends Dataset, ? extends ChangedContent> changeSet) {
+        return session.create();
+    }
+
+    private void ensureChangeListener(ProcessContext context, Dataset srcDataset) {
+        DataOperationsProvider operationProvider = getProviderService(context).getDataOperationsProvider();
         
-        flowFile = session.putAttribute(flowFile, FEED_ID_PROP, feed.getId().toString());
-        flowFile = session.putAttribute(flowFile, OPERATON_START_PROP, TIME_FORMATTER.print(new DateTime()));
-        
-        session.transfer(flowFile, SUCCESS);
+        if (this.changeListener == null) {
+            // TODO Hmmmm....
+            if (srcDataset instanceof DirectoryDataset) {
+                DataChangeEventListener<DirectoryDataset, FileList> listener = new DataChangeEventListener<DirectoryDataset, FileList>() {
+                    @Override
+                    public void handleEvent(DataChangeEvent<DirectoryDataset, FileList> event) {
+                        getLogger().debug("Dependent dataset changed: {} - {}",
+                                new Object[] { event.getChangeSet().getDataset(), event.getChangeSet().getChanges() });
+                        recordDirectoryChange(event.getChangeSet());
+                    }
+                };
+
+                operationProvider.addListener((DirectoryDataset) srcDataset, listener);
+                this.changeListener = listener;
+            } else if (srcDataset instanceof HiveTableDataset) {
+                DataChangeEventListener<HiveTableDataset, HiveTableUpdate> listener = new DataChangeEventListener<HiveTableDataset, HiveTableUpdate>() {
+                    @Override
+                    public void handleEvent(DataChangeEvent<HiveTableDataset, HiveTableUpdate> event) {
+                        getLogger().debug("Dependent dataset changed: {} - {}",
+                                new Object[] { event.getChangeSet().getDataset(), event.getChangeSet().getChanges() });
+                        recordTableChange(event.getChangeSet());
+                    }
+                };
+
+                operationProvider.addListener((HiveTableDataset) srcDataset, listener);
+                this.changeListener = listener;
+            } else {
+                throw new ProcessException("Unsupported dataset type: " + srcDataset.getClass());
+            } 
+        }
+    }
+
+    protected void recordDirectoryChange(ChangeSet<DirectoryDataset, FileList> changeSet) {
+        this.pendingChanges.add(changeSet);
+    }
+
+    protected void recordTableChange(ChangeSet<HiveTableDataset, HiveTableUpdate> changeSet) {
+        this.pendingChanges.add(changeSet);
     }
 
     @Override
@@ -81,6 +182,7 @@ public class FeedBegin extends FeedProcessor {
     protected void addRelationships(Set<Relationship> rels) {
         super.addRelationships(rels);
         rels.add(SUCCESS);
+        rels.add(FAILURE);
     }
     
     protected Dataset getSourceDataset(ProcessContext context) {
@@ -92,8 +194,7 @@ public class FeedBegin extends FeedProcessor {
             if (dataset != null) {
                 return dataset;
             } else {
-                getLogger().error("No source dataset exists with the givn name: " + datasetName);
-                throw new ProcessException("The source dataset does not exist: " + datasetName);
+                return null;
             } 
         } else {
             return null;
