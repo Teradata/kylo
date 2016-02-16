@@ -29,6 +29,7 @@ import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet.ChangeType;
@@ -54,21 +55,6 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     private Map<DataOperation.ID, BaseDataOperation> operations = new ConcurrentHashMap<>();
     private Map<Dataset.ID, Collection<BaseChangeSet<?, ?>>> changeSets = new ConcurrentHashMap<>();
     
-    @Inject
-    public void setDatasetProvider(DatasetProvider datasetProvider) {
-        this.datasetProvider = datasetProvider;
-    }
-    
-    @Inject
-    public void setFeedProvider(FeedProvider feedProvider) {
-        this.feedProvider = feedProvider;
-    }
-    
-    @Inject
-    public void setDispatcher(ChangeEventDispatcher dispatcher) {
-        this.dispatcher = dispatcher;
-    }
-    
     public InMemoryDataOperationsProvider() {
         super();
     }
@@ -81,6 +67,21 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         this.dispatcher = dispatcher;
     }
 
+    @Inject
+    public void setDatasetProvider(DatasetProvider datasetProvider) {
+        this.datasetProvider = datasetProvider;
+    }
+
+    @Inject
+    public void setFeedProvider(FeedProvider feedProvider) {
+        this.feedProvider = feedProvider;
+    }
+
+    @Inject
+    public void setDispatcher(ChangeEventDispatcher dispatcher) {
+        this.dispatcher = dispatcher;
+    }
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#asOperationId(java.lang.String)
      */
@@ -88,13 +89,19 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     public DataOperation.ID asOperationId(String opIdStr) {
         return new BaseDataOperation.OpId(opIdStr);
     }
+    
+    
+    @Override
+    public DataOperation beginOperation(FeedDestination dest, DateTime start) {
+        return beginOperation(dest.getFeed().getId(), dest.getDataset().getId(), new DateTime());
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#beginOperation(com.thinkbiganalytics.metadata.api.feed.Feed.ID, Dataset.ID)
      */
-    public DataOperation beginOperation(ID feedId, Dataset.ID dsId) {
-        Feed feed = this.feedProvider.getFeed(feedId);
+    public DataOperation beginOperation(Feed.ID feedId, Dataset.ID dsId, DateTime start) {
         Dataset ds = this.datasetProvider.getDataset(dsId);
+        Feed feed = this.feedProvider.getFeed(feedId);
         
         if (feed == null) {
             throw new DataOperationException("No feed with the given ID exists: " + feedId);
@@ -104,7 +111,8 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
             throw new DataOperationException("No dataset with the given ID exists: " + feedId);
         }
         
-        BaseDataOperation op = new BaseDataOperation(ds, feed);
+        FeedDestination feedDest = this.feedProvider.ensureFeedDestination(feed.getId(), ds.getId());
+        BaseDataOperation op = new BaseDataOperation(ds, feedDest, start);
         this.operations.put(op.getId(), op);
         return op;
     }
@@ -252,7 +260,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         
         @Override
         public boolean apply(BaseDataOperation input) {
-            if (this.sourceId != null && ! this.sourceId.equals(input.getSource().getId())) return false;
+            if (this.sourceId != null && ! this.sourceId.equals(input.getProducer().getId())) return false;
             if (this.databaseId != null && ! this.databaseId.equals(input.getChangeSet().getDataset().getId())) return false;
             if (this.states.size() > 0 && ! this.states.contains(input.getState())) return false;
             if (this.types.size() > 0) {

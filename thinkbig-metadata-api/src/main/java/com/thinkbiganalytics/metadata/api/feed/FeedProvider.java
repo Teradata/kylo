@@ -24,6 +24,7 @@ public interface FeedProvider {
     Collection<Feed> getFeeds();
     Collection<Feed> getFeeds(FeedCriteria criteria);
     
- 
+//    FeedDestination getFeedDestination(FeedDestination.ID id);
+    
     // TODO Methods to add policy info to source
 }

@@ -11,5 +11,7 @@ import com.thinkbiganalytics.metadata.api.dataset.Dataset;
  */
 public interface FeedData {
 
+    Feed getFeed();
+    
     Dataset getDataset();
 }

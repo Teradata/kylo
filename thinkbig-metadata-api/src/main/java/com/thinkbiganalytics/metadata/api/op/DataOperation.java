@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 
 /**
  *
@@ -29,7 +29,7 @@ public interface DataOperation {
     
     String getStatus();
     
-    Feed getSource();
+    FeedDestination getProducer();
     
     ChangeSet<?, ?> getChangeSet();
 

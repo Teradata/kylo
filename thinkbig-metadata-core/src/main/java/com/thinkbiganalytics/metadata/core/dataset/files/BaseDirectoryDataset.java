@@ -22,6 +22,10 @@ public class BaseDirectoryDataset extends BaseDataset implements DirectoryDatase
         this.directory = dir;
     }
 
+    public BaseDirectoryDataset(BaseDataset ds, Path dir) {
+        this(ds.getName(), ds.getDescription(), dir);
+    }
+
     public Path getDirectory() {
         return this.directory;
     }

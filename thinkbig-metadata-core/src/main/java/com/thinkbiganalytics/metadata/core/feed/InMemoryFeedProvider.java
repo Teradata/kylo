@@ -176,8 +176,10 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     private FeedDestination ensureFeedDestination(BaseFeed feed, Dataset ds) {
-        if (feed.getDestination() != null && feed.getDestination().getDataset().getId().equals(ds.getId())) {
-            return feed.getDestination();
+        FeedDestination dest = feed.getDestination(ds.getId());
+        
+        if (dest != null) {
+            return dest;
         } else {
             return feed.addDestination(ds);
         }
@@ -194,8 +196,10 @@ public class InMemoryFeedProvider implements FeedProvider {
         public boolean apply(BaseFeed input) {
             if (this.name != null && ! name.equals(input.getName())) return false;
             if (this.destId != null) {
-                if (! this.destId.equals(input.getDestination().getDataset().getId())) {
-                    return false;
+                for (FeedDestination dest : input.getDestinations()) {
+                    if (this.destId.equals(dest.getDataset().getId())) {
+                        return true;
+                    }
                 }
             }
             

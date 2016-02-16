@@ -6,6 +6,8 @@ package com.thinkbiganalytics.metadata.api.feed;
 import java.io.Serializable;
 import java.util.Set;
 
+import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+
 /**
  *
  * @author Sean Felten
@@ -22,5 +24,7 @@ public interface Feed {
     
     Set<FeedSource> getSources();
     
-    FeedDestination getDestination();
+    Set<FeedDestination> getDestinations();
+
+    FeedDestination getDestination(Dataset.ID id);
 }

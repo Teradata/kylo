@@ -9,7 +9,7 @@ import java.util.UUID;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
 
@@ -24,26 +24,30 @@ public class BaseDataOperation implements DataOperation {
     private DateTime stopTime;
     private State state;
     private String status = "";
-    private Feed source;
+    private FeedDestination producer;
     private ChangeSet<?, ?> changeSet;
 
-    public BaseDataOperation(Dataset ds, Feed feed) {
-        this(ds, feed, "Operation in progress");
+    public BaseDataOperation(Dataset ds, FeedDestination feedDest) {
+        this(ds, feedDest, "Operation in progress", new DateTime());
     }
     
-    public BaseDataOperation(Dataset ds, Feed feed, String status) {
+    public BaseDataOperation(Dataset ds, FeedDestination feedDest, DateTime time) {
+        this(ds, feedDest, "Operation in progress", time);
+    }
+    
+    public BaseDataOperation(Dataset ds, FeedDestination feedDest, String status, DateTime time) {
         this.id = new OpId();
         this.state = State.IN_PROGRESS;
-        this.source = feed;
+        this.producer = feedDest;
         this.status = status;
-        this.startTime = new DateTime();
+        this.startTime = time;
         // TODO change relationship to direct ref to op from dataset
     }
 
     public BaseDataOperation(BaseDataOperation op, State state, String status) {
         this.id = op.id;
         this.startTime = op.startTime;
-        this.source = op.source;
+        this.producer = op.producer;
         
         this.state = state;
         this.status = (status == null || status.length() == 0) && state != State.IN_PROGRESS 
@@ -88,8 +92,8 @@ public class BaseDataOperation implements DataOperation {
     }
 
     @Override
-    public Feed getSource() {
-        return source;
+    public FeedDestination getProducer() {
+        return producer;
     }
 
     @Override

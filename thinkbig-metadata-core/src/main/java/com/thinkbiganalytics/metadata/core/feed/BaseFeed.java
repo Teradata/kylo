@@ -25,8 +25,7 @@ public class BaseFeed implements Feed {
     private String Name;
     private String Description;
     private Set<FeedSource> sources = new HashSet<>();
-    private FeedDestination destination;
-    
+    private Set<FeedDestination> destinations = new HashSet<>();
     
 
     public BaseFeed(String name, String description) {
@@ -51,10 +50,21 @@ public class BaseFeed implements Feed {
         return this.sources;
     }
 
-    public FeedDestination getDestination() {
-        return destination;
+    public Set<FeedDestination> getDestinations() {
+        return destinations;
     }
     
+    @Override
+    public FeedDestination getDestination(Dataset.ID id) {
+        for (FeedDestination dest : this.destinations) {
+            if (dest.getDataset().equals(id)) {
+                return dest;
+            }
+        }
+        
+        return null;
+    }
+
     public FeedSource addSource(Dataset ds) {
         return addSource(ds, null);
     }
@@ -66,25 +76,26 @@ public class BaseFeed implements Feed {
     }
 
     public FeedDestination addDestination(Dataset ds) {
-        this.destination = new Destination(ds);
-        return destination;
+        FeedDestination dest = new Destination(ds);
+        this.destinations.add(dest);
+        return dest;
     }
     
-    protected static class FeedId implements ID {
+    private static class BaseId {
         private final UUID uuid;
         
-        public FeedId() {
-            this.uuid =UUID.randomUUID();
+        public BaseId() {
+            this.uuid = UUID.randomUUID();
         }
         
-        public FeedId(String uuidStr) {
+        public BaseId(String uuidStr) {
             this.uuid = UUID.fromString(uuidStr);
         }
         
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof FeedId) {
-                FeedId that = (FeedId) obj;
+            if (getClass().isAssignableFrom(obj.getClass())) {
+                BaseId that = (BaseId) obj;
                 return Objects.equals(this.uuid, that.uuid);
             } else {
                 return false;
@@ -101,6 +112,38 @@ public class BaseFeed implements Feed {
             return this.uuid.toString();
         }
     }
+    
+    
+    protected static class FeedId extends BaseId implements Feed.ID {
+        public FeedId() {
+            super();
+        }
+
+        public FeedId(String uuidStr) {
+            super(uuidStr);
+        }
+    }
+    
+    protected static class SourceId extends BaseId  implements FeedSource.ID {
+        public SourceId() {
+            super();
+        }
+
+        public SourceId(String uuidStr) {
+            super(uuidStr);
+        } 
+    }
+    
+    protected static class DestinationId extends BaseId implements FeedDestination.ID {
+        public DestinationId() {
+            super();
+        }
+
+        public DestinationId(String uuidStr) {
+            super(uuidStr);
+        }
+    }
+    
 
     private abstract class Data implements FeedData {
         
@@ -108,6 +151,11 @@ public class BaseFeed implements Feed {
         
         public Data(Dataset ds) {
             this.dataset = ds;
+        }
+        
+        @Override
+        public Feed getFeed() {
+            return BaseFeed.this;
         }
 
         @Override
@@ -118,13 +166,20 @@ public class BaseFeed implements Feed {
     
     private class Source extends Data implements FeedSource {
 
+        private SourceId id;
         private ServiceLevelAgreement.ID agreemenetId;
         
         public Source(Dataset ds, ServiceLevelAgreement.ID agreementId) {
             super(ds);
+            this.id = new SourceId();
             this.agreemenetId = agreementId;
         }
-
+ 
+        @Override
+        public ID getId() {
+            return this.id;
+        }
+        
         @Override
         public ServiceLevelAgreement.ID getAgreementId() {
             return this.agreemenetId;
@@ -133,8 +188,16 @@ public class BaseFeed implements Feed {
     
     private class Destination extends Data implements FeedDestination {
 
+        private DestinationId id;
+        
         public Destination(Dataset ds) {
             super(ds);
+            this.id = new DestinationId();
+        }
+        
+        @Override
+        public ID getId() {
+            return this.id;
         }
     }
 

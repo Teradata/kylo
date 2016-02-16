@@ -34,40 +34,85 @@ public class InMemoryDatasetProvider implements DatasetProvider {
         return new DatasetCriteriaImpl();
     }
 
+    @Override
+    public Dataset ensureDataset(String name, String descr) {
+        synchronized (this.datasets) {
+            BaseDataset ds = getExistingDataset(name);
+            
+            if (ds == null) {
+                ds = new BaseDataset(name, descr);
+                this.datasets.put(ds.getId(), ds);
+            }
+            
+            return ds;
+        }
+    }
+
     public DirectoryDataset ensureDirectoryDataset(String name, String descr, Path dir) {
         synchronized (this.datasets) {
-            for (BaseDataset ds : this.datasets.values()) {
-                if (ds.getName().equals(name)) {
-                    if (ds.getClass().isAssignableFrom(BaseDirectoryDataset.class)) {
-                        return (BaseDirectoryDataset) ds;
-                    } else {
-                        throw new DatasetException("A non-directory dataset already exists with the given name:" + name);
-                    }
+            Dataset ds = getExistingDataset(name);
+            
+            if (ds != null) {
+                if (ds.getClass().isAssignableFrom(BaseDirectoryDataset.class)) {
+                    return (BaseDirectoryDataset) ds;
+                } else {
+                    throw new DatasetException("A non-directory dataset already exists with the given name:" + name);
                 }
             }
             
-            BaseDirectoryDataset ds = new BaseDirectoryDataset(name, descr, dir);
-            this.datasets.put(ds.getId(), ds);
-            return ds;
+            BaseDirectoryDataset dds = new BaseDirectoryDataset(name, descr, dir);
+            this.datasets.put(dds.getId(), dds);
+            return dds;
         }
     }
 
     @Override
     public HiveTableDataset ensureHiveTableDataset(String name, String descr, String database, String table) {
         synchronized (this.datasets) {
-            for (BaseDataset ds : this.datasets.values()) {
-                if (ds.getName().equals(name)) {
-                    if (ds.getClass().isAssignableFrom(BaseHiveTableDataset.class)) {
-                        return (BaseHiveTableDataset) ds;
-                    } else {
-                        throw new DatasetException("A non-hive dataset already exists with the given name:" + name);
-                    }
+            Dataset ds = getExistingDataset(name);
+            
+            if (ds != null) {
+                if (ds.getClass().isAssignableFrom(BaseHiveTableDataset.class)) {
+                    return (BaseHiveTableDataset) ds;
+                } else {
+                    throw new DatasetException("A non-hive dataset already exists with the given name:" + name);
                 }
             }
             
-            BaseHiveTableDataset ds = new BaseHiveTableDataset(name, descr, database, table);
-            this.datasets.put(ds.getId(), ds);
-            return ds;
+            BaseHiveTableDataset hds = new BaseHiveTableDataset(name, descr, database, table);
+            this.datasets.put(ds.getId(), hds);
+            return hds;
+        }
+    }
+    
+    
+    @Override
+    public DirectoryDataset asDirectoryDataset(ID dsId, Path dir) {
+        synchronized (this.datasets) {
+            BaseDataset ds = this.datasets.get(dsId);
+            
+            if (ds != null) {
+                BaseDirectoryDataset dds = new BaseDirectoryDataset(ds, dir);
+                this.datasets.put(dds.getId(), dds);
+                return dds;
+            } else {
+                throw new DatasetException("A no dataset exists with the given ID: " + dsId);
+            }
+        }
+    }
+
+    @Override
+    public HiveTableDataset asHiveTableDataset(ID dsId, String database, String table) {
+        synchronized (this.datasets) {
+            BaseDataset ds = this.datasets.get(dsId);
+            
+            if (ds != null) {
+                BaseHiveTableDataset hds = new BaseHiveTableDataset(ds, database, table);
+                this.datasets.put(hds.getId(), hds);
+                return hds;
+            } else {
+                throw new DatasetException("A no dataset exists with the given ID: " + dsId);
+            }
         }
     }
 
@@ -89,6 +134,18 @@ public class InMemoryDatasetProvider implements DatasetProvider {
     }
 
     
+    private BaseDataset getExistingDataset(String name) {
+        synchronized (this.datasets) {
+            for (BaseDataset ds : this.datasets.values()) {
+                if (ds.getName().equals(name)) {
+                    return ds;
+                }
+            }
+            return null;
+        }
+    }
+
+
     private static class DatasetCriteriaImpl implements DatasetCriteria, Predicate<BaseDataset> {
         
         private String name;
