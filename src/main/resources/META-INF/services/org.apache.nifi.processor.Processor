@@ -27,6 +27,6 @@ com.thinkbiganalytics.nifi.GetTableData
 com.thinkbiganalytics.nifi.SetRegistration
 com.thinkbiganalytics.nifi.RouteOnRegistration
 com.thinkbiganalytics.nifi.IndexElasticSearch
-com.thinkbiganalytics.nifi.processors.metadata.FeedComplete
+com.thinkbiganalytics.nifi.processors.metadata.FeedTermination
 com.thinkbiganalytics.nifi.processors.metadata.DirectoryFeedStart
 com.thinkbiganalytics.nifi.processors.metadata.HiveTableFeedStart
