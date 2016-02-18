@@ -12,10 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
 import org.mortbay.log.Log;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -38,7 +35,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
 
     private Set<ObligationAssessor<? extends Obligation>> obligationAssessors;
-    private Set<MetricAssessor<? extends Metric>> metricAssessors;
+    private Set<MetricAssessor<? extends Metric, ? extends Serializable>> metricAssessors;
     private ObligationAssessor<? extends Obligation> defaultObligationAssessor;
 
     /**
@@ -46,7 +43,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
      */
     public SimpleServiceLevelAssessor() {
         this.obligationAssessors = Collections.synchronizedSet(new HashSet<ObligationAssessor<? extends Obligation>>());
-        this.metricAssessors = Collections.synchronizedSet(new HashSet<MetricAssessor<? extends Metric>>());
+        this.metricAssessors = Collections.synchronizedSet(new HashSet<MetricAssessor<? extends Metric, ? extends Serializable>>());
         this.defaultObligationAssessor = createDefaultObligationAssessor();
     }
 
@@ -109,7 +106,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
      * MetricAssessor)
      */
     @Override
-    public MetricAssessor<? extends Metric> registerMetricAssessor(MetricAssessor<? extends Metric> assessor) {
+    public MetricAssessor<? extends Metric, ? extends Serializable> registerMetricAssessor(MetricAssessor<? extends Metric, ? extends Serializable> assessor) {
         this.metricAssessors.add(assessor);
         return assessor;
     }
@@ -132,11 +129,11 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
     }
     
     @SuppressWarnings("unchecked")
-    protected <M extends Metric> MetricAssessor<M> findAssessor(M metric) {
+    protected <M extends Metric> MetricAssessor<M, ?> findAssessor(M metric) {
         synchronized (this.metricAssessors) {
-            for (MetricAssessor<? extends Metric> accessor : this.metricAssessors) {
+            for (MetricAssessor<? extends Metric, ? extends Serializable> accessor : this.metricAssessors) {
                 if (accessor.accepts(metric)) {
-                    return (MetricAssessor<M>) accessor;
+                    return (MetricAssessor<M, ?>) accessor;
                 }
             }
         }
@@ -195,12 +192,12 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         }
 
         @Override
-        public <M extends Metric> MetricAssessment assess(M metric) {
-            MetricAssessor<M> assessor = findAssessor(metric);
+        public <M extends Metric> MetricAssessment<?> assess(M metric) {
+            MetricAssessor<M, ?> assessor = findAssessor(metric);
             MetricAssessmentBuilderImpl builder = new MetricAssessmentBuilderImpl(metric);
 
             assessor.assess(metric, builder);
-            MetricAssessment metricAssmt = builder.build();
+            MetricAssessment<?> metricAssmt = builder.build();
             this.assessment.add(metricAssmt);
             return metricAssmt;
         }
@@ -222,12 +219,13 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         }
     }
     
-    private class MetricAssessmentBuilderImpl implements MetricAssessmentBuilder {
+    private class MetricAssessmentBuilderImpl<D extends Serializable> implements MetricAssessmentBuilder<D> {
         
         private Metric metric;
         private String message = "";
         private AssessmentResult result = AssessmentResult.SUCCESS;
-        private Comparator<MetricAssessment> comparator;
+        private D data;
+        private Comparator<MetricAssessment<D>> comparator;
         private List<Comparable<? extends Serializable>> comparables;
         
         public MetricAssessmentBuilderImpl(Metric metric) {
@@ -235,32 +233,38 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         }
 
         @Override
-        public MetricAssessmentBuilder metric(Metric metric) {
+        public MetricAssessmentBuilder<D> metric(Metric metric) {
             this.metric = metric;
             return this;
         }
 
         @Override
-        public MetricAssessmentBuilder message(String descr) {
+        public MetricAssessmentBuilder<D> message(String descr) {
             this.message = descr;
             return this;
         }
 
         @Override
-        public MetricAssessmentBuilder result(AssessmentResult result) {
+        public MetricAssessmentBuilder<D> result(AssessmentResult result) {
             this.result = result;
+            return this;
+        }
+
+        @Override
+        public MetricAssessmentBuilder<D> data(D data) {
+            this.data = data;
             return this;
         }
         
         @Override
-        public MetricAssessmentBuilder comparitor(Comparator<MetricAssessment> comp) {
+        public MetricAssessmentBuilder<D> comparitor(Comparator<MetricAssessment<D>> comp) {
             this.comparator = comp;
             return this;
         }
 
         @Override
         @SuppressWarnings("unchecked")
-        public MetricAssessmentBuilder compareWith(Comparable<? extends Serializable> value, 
+        public MetricAssessmentBuilder<D> compareWith(Comparable<? extends Serializable> value, 
                                                    Comparable<? extends Serializable>... otherValues) {
             this.comparables = new ArrayList<Comparable<? extends Serializable>>(Arrays.asList(value));
             this.comparables.addAll(Arrays.asList(value));
@@ -268,9 +272,10 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
         }
 
         protected MetricAssessment build() {
-            SimpleMetricAssessment assessment = new SimpleMetricAssessment(this.metric);
+            SimpleMetricAssessment<D> assessment = new SimpleMetricAssessment<D>(this.metric);
             assessment.setMessage(this.message);
             assessment.setResult(this.result);
+            assessment.setData(this.data);
             
             if (this.comparator != null) {
                 assessment.setComparator(this.comparator);

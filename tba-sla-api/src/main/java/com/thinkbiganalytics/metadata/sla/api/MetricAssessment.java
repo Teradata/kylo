@@ -10,7 +10,7 @@ import java.io.Serializable;
  * 
  * @author Sean Felten
  */
-public interface MetricAssessment extends Comparable<MetricAssessment>, Serializable {
+public interface MetricAssessment<D extends Serializable> extends Comparable<MetricAssessment<D>>, Serializable {
     
     /**
      * @return the metric that was assessed
@@ -26,5 +26,12 @@ public interface MetricAssessment extends Comparable<MetricAssessment>, Serializ
      * @return the result status of the assessment
      */
     AssessmentResult getResult();
+    
+    /**
+     * Gets some arbitrary data that was attached to this assessment.  The type of data is
+     * undefined and must be known by the consumer of this assessment.
+     * @return the data attached to this assessment
+     */
+    D getData();
 
 }

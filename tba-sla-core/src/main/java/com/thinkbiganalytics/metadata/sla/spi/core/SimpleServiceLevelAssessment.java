@@ -6,7 +6,6 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -15,7 +14,6 @@ import org.joda.time.DateTime;
 
 import com.google.common.collect.ComparisonChain;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
-import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;

@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
+import java.io.Serializable;
+
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
@@ -12,7 +14,7 @@ import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
  *
  * @author Sean Felten
  */
-public class TestMetricAssessor implements MetricAssessor<TestMetric> {
+public class TestMetricAssessor implements MetricAssessor<TestMetric, Serializable> {
 
     private int expectedIntValue;
     private String expectedStringValue;

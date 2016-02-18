@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.sla.spi;
 
+import java.io.Serializable;
+
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -35,5 +37,5 @@ public interface ServiceLevelAssessor {
      * @param assessor the assessor
      * @return the same assessor (aids registration of new assessor beans in spring by providing this method as a factory method)
      */
-    MetricAssessor<? extends Metric> registerMetricAssessor(MetricAssessor<? extends Metric> assessor);
+    MetricAssessor<? extends Metric, ? extends Serializable> registerMetricAssessor(MetricAssessor<? extends Metric, ? extends Serializable> assessor);
 }

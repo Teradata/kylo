@@ -12,8 +12,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.xml.resolver.apps.resolver;
-
 import com.google.common.collect.ComparisonChain;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;

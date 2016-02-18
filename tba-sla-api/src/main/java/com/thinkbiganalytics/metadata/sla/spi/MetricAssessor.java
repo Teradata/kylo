@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.sla.spi;
 
+import java.io.Serializable;
+
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**
@@ -10,7 +12,7 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  * @author Sean Felten
  * @param <M>
  */
-public interface MetricAssessor<M extends Metric> {
+public interface MetricAssessor<M extends Metric, D extends Serializable> {
 
     /**
      * Indicates whether this assessor accepts a particular kind of metric
@@ -24,5 +26,5 @@ public interface MetricAssessor<M extends Metric> {
      * @param metric the metric to assess
      * @param builder the builder that this assessor should use to generate the assessment
      */
-    void assess(M metric, MetricAssessmentBuilder builder);
+    void assess(M metric, MetricAssessmentBuilder<D> builder);
 }

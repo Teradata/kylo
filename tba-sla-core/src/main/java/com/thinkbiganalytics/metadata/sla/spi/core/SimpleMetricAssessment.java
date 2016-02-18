@@ -12,23 +12,20 @@ import com.google.common.collect.ComparisonChain;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
-import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
-import com.thinkbiganalytics.metadata.sla.spi.core.SimpleObligationAssessment.DefaultComparator;
 
 /**
  *
  * @author Sean Felten
  */
-public class SimpleMetricAssessment implements MetricAssessment {
+public class SimpleMetricAssessment<D extends Serializable> implements MetricAssessment<D> {
     
     private static final long serialVersionUID = -209788646749034842L;
-    
-    public static final Comparator<MetricAssessment> DEF_COMPARATOR = new DefaultComparator();
     
     private Metric metric;
     private String message = "";
     private AssessmentResult result = AssessmentResult.SUCCESS;
-    private Comparator<MetricAssessment> comparator = DEF_COMPARATOR;
+    private D data;
+    private Comparator<MetricAssessment<D>> comparator = new DefaultComparator();
     private List<Comparable<? extends Serializable>> comparables = Collections.emptyList();
     
     /**
@@ -64,9 +61,14 @@ public class SimpleMetricAssessment implements MetricAssessment {
     public AssessmentResult getResult() {
         return this.result;
     }
+    
+    @Override
+    public D getData() {
+        return this.data;
+    }
 
     @Override
-    public int compareTo(MetricAssessment metric) {
+    public int compareTo(MetricAssessment<D> metric) {
         return this.comparator.compare(this, metric);
     }
 
@@ -82,7 +84,11 @@ public class SimpleMetricAssessment implements MetricAssessment {
         this.result = result;
     }
     
-    protected void setComparator(Comparator<MetricAssessment> comparator) {
+    public void setData(D data) {
+        this.data = data;
+    }
+    
+    protected void setComparator(Comparator<MetricAssessment<D>> comparator) {
         this.comparator = comparator;
     }
     
@@ -90,16 +96,16 @@ public class SimpleMetricAssessment implements MetricAssessment {
         this.comparables = comparables;
     }
 
-    protected static class DefaultComparator implements Comparator<MetricAssessment> {
+    protected class DefaultComparator implements Comparator<MetricAssessment<D>> {
         @Override
-        public int compare(MetricAssessment o1, MetricAssessment o2) {
+        public int compare(MetricAssessment<D> o1, MetricAssessment<D> o2) {
             ComparisonChain chain = ComparisonChain
                     .start()
                     .compare(o1.getResult(), o2.getResult());
 
-            if (o1 instanceof SimpleMetricAssessment && o2 instanceof SimpleMetricAssessment) {
-                SimpleMetricAssessment s1 = (SimpleMetricAssessment) o1;
-                SimpleMetricAssessment s2 = (SimpleMetricAssessment) o2;
+            if (o1 instanceof SimpleMetricAssessment<?> && o2 instanceof SimpleMetricAssessment<?>) {
+                SimpleMetricAssessment<?> s1 = (SimpleMetricAssessment<?>) o1;
+                SimpleMetricAssessment<?> s2 = (SimpleMetricAssessment<?>) o2;
                 
                 for (int idx = 0; idx < s1.comparables.size(); idx++) {
                     chain = chain.compare(s1.comparables.get(idx), s2.comparables.get(idx));

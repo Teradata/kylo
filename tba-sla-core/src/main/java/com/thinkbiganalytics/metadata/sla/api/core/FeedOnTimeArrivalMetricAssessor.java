@@ -3,6 +3,16 @@
  */
 package com.thinkbiganalytics.metadata.sla.api.core;
 
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.inject.Inject;
+
+import org.joda.time.DateTime;
+import org.quartz.Calendar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.thinkbiganalytics.calendar.HolidayCalendarService;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -11,18 +21,11 @@ import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.pipelinecontroller.repositories.FeedRepository;
 import com.thinkbiganalytics.pipelinecontroller.rest.dataobjects.ExecutedFeed;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
-import org.joda.time.DateTime;
-import org.quartz.Calendar;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.inject.Inject;
-import java.util.Date;
 
 /**
  * @author Sean Felten
  */
-public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTimeArrivalMetric> {
+public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTimeArrivalMetric, Serializable> {
     private static final Logger LOG = LoggerFactory.getLogger(FeedOnTimeArrivalMetricAssessor.class);
 
     @Inject

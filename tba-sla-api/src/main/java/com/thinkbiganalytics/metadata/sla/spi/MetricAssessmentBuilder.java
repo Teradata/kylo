@@ -14,25 +14,25 @@ import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
  * An assessor responsible for generating assessments of the types of metrics that it accepts.
  * @author Sean Felten
  */
-public interface MetricAssessmentBuilder {
+public interface MetricAssessmentBuilder<D extends Serializable> {
 
     /**
      * @param metric the metric being assessed
      * @return this builder
      */
-    MetricAssessmentBuilder metric(Metric metric);
+    MetricAssessmentBuilder<D> metric(Metric metric);
 
     /**
      * @param descr the message describing the result of the assessment
      * @return this builder
      */
-    MetricAssessmentBuilder message(String descr);
+    MetricAssessmentBuilder<D> message(String descr);
     
     /**
      * @param comp the comparator for this assessment
      * @return this builder
      */
-    MetricAssessmentBuilder comparitor(Comparator<MetricAssessment> comp);
+    MetricAssessmentBuilder<D> comparitor(Comparator<MetricAssessment<D>> comp);
     
     /**
      * Generates a comparator for this assessment that uses each comparable in its comparison.
@@ -41,12 +41,20 @@ public interface MetricAssessmentBuilder {
      * @return this builder
      */
     @SuppressWarnings("unchecked")
-    MetricAssessmentBuilder compareWith(Comparable<? extends Serializable> value, Comparable<? extends Serializable>... otherValues);
+    MetricAssessmentBuilder<D> compareWith(Comparable<? extends Serializable> value, Comparable<? extends Serializable>... otherValues);
+    
+    /**
+     * Allows attaching arbitrary, undefined data to this assessment.  The consumer of the assessment must
+     * know what kind of data is expected.
+     * @param data arbitrary data associated with this assessment.
+     * @return
+     */
+    MetricAssessmentBuilder<D> data(D data);
 
     /**
      * @param result the result status of this assessment
      * @return this builder
      */
-    MetricAssessmentBuilder result(AssessmentResult result);
+    MetricAssessmentBuilder<D> result(AssessmentResult result);
 
 }

@@ -3,9 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.sla.alerts;
 
-import java.util.EnumSet;
-
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import com.thinkbiganalytics.alerts.api.Alert;
