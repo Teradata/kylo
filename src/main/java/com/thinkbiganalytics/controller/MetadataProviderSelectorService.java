@@ -22,6 +22,7 @@ import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasetProvider;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
 import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
+import com.thinkbiganalytics.metadata.event.SimpleChangeEventDispatcher;
 
 /**
  *
@@ -71,7 +72,9 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         if (impl.getValue().equalsIgnoreCase("MEMORY")) {
             this.datasetProvider = new InMemoryDatasetProvider();
             this.feedProvider = new InMemoryFeedProvider(this.datasetProvider);
-            this.operationsProvider = new InMemoryDataOperationsProvider(this.datasetProvider, this.feedProvider, null);
+            this.operationsProvider = new InMemoryDataOperationsProvider(this.datasetProvider, 
+                                                                         this.feedProvider, 
+                                                                         new SimpleChangeEventDispatcher());
         } else {
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
         }

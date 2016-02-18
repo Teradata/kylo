@@ -14,8 +14,13 @@ import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 
 import com.thinkbiganalytics.controller.MetadataProviderService;
+import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.dataset.DatasetCriteria;
+import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
 
 /**
  *
@@ -23,11 +28,13 @@ import com.thinkbiganalytics.controller.MetadataProviderService;
  */
 public abstract class FeedProcessor extends AbstractProcessor {
     
+    public static final DateTimeFormatter TIME_FORMATTER = ISODateTimeFormat.dateTime();
+    
     public static final String FEED_ID_PROP = "feed.id";
-    public static final String DATASET_TYPE_PROP = "dataset.type";
     public static final String SRC_DATASET_ID_PROP = "src.dataset.id";
     public static final String DEST_DATASET_ID_PROP = "dest.dataset.id";
-    public static final String OPERATON_ID_PROP = "operation.id";
+    public static final String OPERATON_START_PROP = "operation.start.time";
+    public static final String OPERATON_STOP_PROP = "operation.start.time";
     
     public static final PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
             .name("Metadata Provider Service")
@@ -70,5 +77,17 @@ public abstract class FeedProcessor extends AbstractProcessor {
     }
     
     protected void addRelationships(Set<Relationship> relationships2) {
+    }
+    
+    protected Dataset findDataset(ProcessContext context, String datasetName) {
+        DatasetProvider datasetProvider = getProviderService(context).getDatasetProvider();
+        DatasetCriteria crit = datasetProvider.datasetCriteria().name(datasetName);
+        Set<Dataset> datasets = datasetProvider.getDatasets(crit);
+        
+        if (datasets.size() > 0) {
+            return datasets.iterator().next();
+        } else {
+            return null;
+        }
     }
 }

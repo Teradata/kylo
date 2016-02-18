@@ -14,7 +14,7 @@ Specifications for managed Hive tables
 public enum TableType {
 
     FEED("/model.db/", "/etl/", "feed", true, false, true,false),
-    VALID("/model.db/", "/etl/", "valid", true, false, false,false),
+    VALID("/model.db/", "/etl/", "valid", true, true, false,false),
     INVALID("/model.db/", "/etl", "invalid", true, true, true,true),
     MASTER("/app/warehouse/", "/app/warehouse/", "", false, true, false,false),
     PROFILE("/model.db/", "/etl/", "profile", true, true, true,false);
