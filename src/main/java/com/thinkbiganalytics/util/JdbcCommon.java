@@ -115,7 +115,7 @@ public class JdbcCommon {
                 // TODO: Support escaping commas, XML, CLOB, JSON, ARRAYS, etc.
 
                 int colType = meta.getColumnType(i);
-                if (colType == Types.DATE || colType == Types.TIMESTAMP || colType == Types.TIME_WITH_TIMEZONE || colType == Types.TIMESTAMP_WITH_TIMEZONE) {
+                if (colType == Types.DATE || colType == Types.TIMESTAMP) {
                     Timestamp sqlDate = rs.getTimestamp(i);
                     if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, sqlDate);
                     if (sqlDate != null) {
