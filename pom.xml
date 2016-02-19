@@ -17,14 +17,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.7</maven.compiler.source>
         <maven.compiler.target>1.7</maven.compiler.target>
-        <nifi.version>0.5.0-SNAPSHOT</nifi.version>
         <sparkcore.version>1.4.1</sparkcore.version>
         <hadoop.version>2.7.1</hadoop.version>
         <hive.version>0.14.0</hive.version>
     </properties>
 
     <dependencies>
-
         <dependency>
             <groupId>org.apache.nifi</groupId>
             <artifactId>nifi-api</artifactId>
