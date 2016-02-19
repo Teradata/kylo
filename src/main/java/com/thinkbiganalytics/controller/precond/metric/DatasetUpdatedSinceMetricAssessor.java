@@ -64,7 +64,7 @@ public class DatasetUpdatedSinceMetricAssessor extends MetadataMetricAssessor<Da
             }
         }
         
-        builder .metric(metric);
+        builder.metric(metric);
 
         if (result.size() > 0) {
             builder

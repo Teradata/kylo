@@ -5,6 +5,7 @@ package com.thinkbiganalytics.controller.precond;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -31,11 +32,13 @@ public interface FeedPreconditionService extends ControllerService {
     
     FeedPrecondition createPrecondition(String name, Collection<Metric> metrics);
     
-    public FeedPrecondition getPrecondition(ID id);
+    FeedPrecondition getPrecondition(ID id);
 
-    public FeedPrecondition getPrecondition(String name);
+    FeedPrecondition getPrecondition(String name);
     
-    Set<ChangeSet<? extends Dataset, ? extends ChangedContent>> checkPreconditions(ID id);
+    Set<FeedPrecondition> getPreconditions();
+    
+    List<ChangeSet<? extends Dataset, ? extends ChangedContent>> checkPreconditions(ID id);
     
     void addListener(ID id, PreconditionListener listener);
     

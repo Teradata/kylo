@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.controller.precond;
 
-import static org.junit.Assert.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.text.ParseException;
 
@@ -9,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.thinkbiganalytics.controller.precond.metric.DatasetUpdatedSinceMetric;
-import com.thinkbiganalytics.controller.precond.metric.FeedExecutedSinceMetric;
+import com.thinkbiganalytics.controller.precond.metric.FeedExecutedSinceScheduleMetric;
 import com.thinkbiganalytics.controller.precond.metric.WithinSchedule;
 import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 
@@ -24,9 +23,9 @@ public class InMemoryFeedPreconditionServiceTest {
 
     @Test
     public void testCreatePrecondition() throws ParseException {
-        FeedExecutedSinceMetric metric1 = new FeedExecutedSinceMetric("x", "0 0 6 * * ? *");
+        FeedExecutedSinceScheduleMetric metric1 = new FeedExecutedSinceScheduleMetric("x", "0 0 6 * * ? *");
         DatasetUpdatedSinceMetric metric2 = new DatasetUpdatedSinceMetric("datasetX", "0 0 6 * * ? *");
-        WithinSchedule metric3 = new WithinSchedule("0 0 6 * * ? *");
+        WithinSchedule metric3 = new WithinSchedule("0 0 6 * * ? *", "2h");
         
         FeedPrecondition pre = this.service.createPrecondition("test", metric1, metric2, metric3);
         
