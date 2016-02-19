@@ -104,13 +104,16 @@ public class FeedBegin extends FeedProcessor {
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
         FlowFile flowFile = produceFlowFile(session);
         
-        if (flowFile != null) {
+        while (flowFile != null) {
             flowFile = session.putAttribute(flowFile, FEED_ID_PROP, this.feedId.get().toString());
             flowFile = session.putAttribute(flowFile, OPERATON_START_PROP, TIME_FORMATTER.print(new DateTime()));
             
             session.transfer(flowFile, SUCCESS);
-        } else {
-            context.yield();
+                
+            flowFile = produceFlowFile(session);
+            if (flowFile == null) {
+                context.yield();
+            }
         }
     }
 

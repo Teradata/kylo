@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.controller;
+package com.thinkbiganalytics.controller.metadata;
 
 import java.util.ArrayList;
 import java.util.Collections;
