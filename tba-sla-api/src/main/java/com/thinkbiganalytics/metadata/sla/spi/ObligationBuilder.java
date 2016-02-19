@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.sla.spi;
 
+import java.util.Collection;
+
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 
@@ -20,9 +22,16 @@ public interface ObligationBuilder {
     
     /**
      * @param metric a metric to add to this obligation
+     * @param more optional additional metrics to add
      * @return this builder
      */
-    ObligationBuilder metric(Metric metric);
+    ObligationBuilder metric(Metric metric, Metric... more);
+
+    /**
+     * @param metrics metrics to add to this obligation
+     * @return this builder
+     */
+    ObligationBuilder metric(Collection<Metric> metrics);
     
     /**
      * Builds the obligation but does not add it yet to the SLA

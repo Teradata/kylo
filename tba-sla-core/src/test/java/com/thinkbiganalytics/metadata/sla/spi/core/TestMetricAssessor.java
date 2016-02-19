@@ -32,7 +32,7 @@ public class TestMetricAssessor implements MetricAssessor<TestMetric, Serializab
     }
 
     @Override
-    public <M extends Metric> boolean accepts(M metric) {
+    public boolean accepts(Metric metric) {
         return metric instanceof TestMetric;
     }
 

@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.sla.spi.core;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -208,8 +209,17 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         }
 
         @Override
-        public ObligationBuilder metric(Metric metric) {
+        public ObligationBuilder metric(Metric metric, Metric... more) {
             this.metrics.add(metric);
+            for (Metric another : more) {
+                this.metrics.add(another);
+            }
+            return this;
+        }
+        
+        @Override
+        public ObligationBuilder metric(Collection<Metric> metrics) {
+            this.metrics.addAll(metrics);
             return this;
         }
         
