@@ -154,14 +154,15 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#updateOperation(com.thinkbiganalytics.metadata.api.op.DataOperation.ID, java.lang.String, com.thinkbiganalytics.metadata.api.op.ChangeSet)
      */
-    public DataOperation updateOperation(DataOperation.ID id, String status, ChangeSet<?, ?> changes) {
+    @SuppressWarnings("unchecked")
+    public <D extends Dataset, C extends ChangedContent> DataOperation updateOperation(DataOperation.ID id, String status, ChangeSet<D, C> changes) {
         BaseDataOperation op = this.operations.get(id);
         
         if (op == null) {
             throw new DataOperationException("No operation with the given ID exists: " + id);
         }
         
-        op = new BaseDataOperation(op, status, changes);
+        op = new BaseDataOperation(op, status, (ChangeSet<Dataset, ChangedContent>) changes);
         
         this.operations.put(id, op);
         this.dispatcher.nofifyChange(changes);
@@ -243,6 +244,14 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     }
 
     /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.dataset.Dataset, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
+     */
+    @Override
+    public void addListener(Dataset ds, DataChangeEventListener<Dataset, ChangedContent> listener) {
+        this.dispatcher.addListener(ds, listener);
+    }
+    
+    /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
      */
     public void addListener(DirectoryDataset ds, DataChangeEventListener<DirectoryDataset, FileList> listener) {
@@ -260,14 +269,14 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     private static class OpCriteria implements DataOperationCriteria, Predicate<BaseDataOperation> {
 
         private Feed.ID sourceId;
-        private Dataset.ID databaseId;
+        private Dataset.ID datasetId;
         private Set<State> states = new HashSet<>();
         private Set<Class<? extends Dataset>> types = new HashSet<>();
         
         @Override
         public boolean apply(BaseDataOperation input) {
             if (this.sourceId != null && ! this.sourceId.equals(input.getProducer().getId())) return false;
-            if (this.databaseId != null && ! this.databaseId.equals(input.getChangeSet().getDataset().getId())) return false;
+            if (this.datasetId != null && ! this.datasetId.equals(input.getChangeSet().getDataset().getId())) return false;
             if (this.states.size() > 0 && ! this.states.contains(input.getState())) return false;
             if (this.types.size() > 0) {
                 for (Class<? extends Dataset> type : types) {
@@ -295,7 +304,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
 
         @Override
         public DataOperationCriteria dataset(Dataset.ID dsId) {
-            this.databaseId = dsId;
+            this.datasetId = dsId;
             return this;
         }
 

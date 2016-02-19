@@ -32,7 +32,8 @@ public interface DataOperationsProvider {
     DataOperation beginOperation(Feed.ID feedId, Dataset.ID dsId, DateTime start);
     DataOperation updateOperation(DataOperation.ID id, String status, State result);
     DataOperation updateOperation(DataOperation.ID id, String status, Exception ex);
-    DataOperation updateOperation(DataOperation.ID id, String status, ChangeSet<?, ?> changes);
+    <D extends Dataset, C extends ChangedContent> DataOperation updateOperation(DataOperation.ID id, String status, ChangeSet<D, C> changes);
+//    DataOperation updateOperation(DataOperation.ID id, String status, ChangeSet<Dataset, ChangedContent> changes);
     
     ChangeSet<DirectoryDataset, FileList> createChangeSet(DirectoryDataset ds, List<Path> paths);
     ChangeSet<HiveTableDataset, HiveTableUpdate> createChangeSet(HiveTableDataset ds, int count);
@@ -48,6 +49,7 @@ public interface DataOperationsProvider {
     <D extends Dataset, C extends ChangedContent> Collection<ChangeSet<D, C>> getChangeSets(Dataset.ID dsId);
     <D extends Dataset, C extends ChangedContent> Collection<ChangeSet<D, C>> getChangeSets(Dataset.ID dsId, ChangeSetCriteria criteria);
 
+    void addListener(Dataset ds, DataChangeEventListener<Dataset, ChangedContent> listener);
     void addListener(DirectoryDataset ds, DataChangeEventListener<DirectoryDataset, FileList> listener);
     void addListener(HiveTableDataset ds, DataChangeEventListener<HiveTableDataset, HiveTableUpdate> listener);
 }
