@@ -13,7 +13,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
  *
  * @author Sean Felten
  */
-public interface DataOperation {
+public interface DataOperation extends Serializable {
     
     interface ID extends Serializable {};
     

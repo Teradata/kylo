@@ -12,7 +12,7 @@ import com.thinkbiganalytics.metadata.api.dataset.Dataset;
  *
  * @author Sean Felten
  */
-public interface Feed {
+public interface Feed extends Serializable {
 
     interface ID extends Serializable { }
     

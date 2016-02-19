@@ -11,7 +11,7 @@ import org.joda.time.DateTime;
  *
  * @author Sean Felten
  */
-public interface Dataset {
+public interface Dataset extends Serializable {
     
     interface ID extends Serializable {};
     

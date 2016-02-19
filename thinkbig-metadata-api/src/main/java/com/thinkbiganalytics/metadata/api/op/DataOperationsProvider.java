@@ -40,13 +40,13 @@ public interface DataOperationsProvider {
     DataOperationCriteria dataOperationCriteria();
 
     DataOperation getDataOperation(DataOperation.ID id);
-    Collection<DataOperation> getDataOperations();
-    Collection<DataOperation> getDataOperations(DataOperationCriteria criteria);
+    List<DataOperation> getDataOperations();
+    List<DataOperation> getDataOperations(DataOperationCriteria criteria);
     
     ChangeSetCriteria changeSetCriteria();
     
-    Collection<ChangeSet<?, ?>> getChangeSets(Dataset.ID dsId);
-    Collection<ChangeSet<?, ?>> getChangeSets(Dataset.ID dsId, ChangeSetCriteria criteria);
+    <D extends Dataset, C extends ChangedContent> Collection<ChangeSet<D, C>> getChangeSets(Dataset.ID dsId);
+    <D extends Dataset, C extends ChangedContent> Collection<ChangeSet<D, C>> getChangeSets(Dataset.ID dsId, ChangeSetCriteria criteria);
 
     void addListener(DirectoryDataset ds, DataChangeEventListener<DirectoryDataset, FileList> listener);
     void addListener(HiveTableDataset ds, DataChangeEventListener<HiveTableDataset, HiveTableUpdate> listener);
