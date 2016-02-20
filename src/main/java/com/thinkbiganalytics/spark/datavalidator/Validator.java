@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.spark.datavalidator;
 
 
+import com.thinkbiganalytics.spark.dataprofiler.functions.FrequencyCSVToRow;
 import com.thinkbiganalytics.spark.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.spark.standardization.impl.AcceptsEmptyValues;
 import com.thinkbiganalytics.spark.standardization.impl.DateTimeStandardizer;
@@ -8,12 +9,11 @@ import com.thinkbiganalytics.spark.standardization.impl.RemoveControlCharsStanda
 import com.thinkbiganalytics.spark.validation.FieldPolicy;
 import com.thinkbiganalytics.spark.validation.FieldPolicyBuilder;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
-import com.thinkbiganalytics.spark.validation.impl.CreditCardValidator;
-import com.thinkbiganalytics.spark.validation.impl.EmailValidator;
-import com.thinkbiganalytics.spark.validation.impl.IPAddressValidator;
-import com.thinkbiganalytics.spark.validation.impl.TimestampValidator;
+import com.thinkbiganalytics.spark.validation.impl.*;
+import org.apache.spark.Accumulator;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
+import org.apache.spark.api.java.JavaSparkContext;
 import org.apache.spark.api.java.function.Function;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
@@ -27,10 +27,7 @@ import org.apache.spark.sql.types.StructType;
 import org.datanucleus.util.StringUtils;
 
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * Cleanses and validates a table of strings according to defined field-level policies. Records are split
@@ -60,12 +57,16 @@ public class Validator implements Serializable {
     private String invalidTableName;
     private String feedTablename;
     private String refTablename;
+    private String profileTableName;
+    private String qualifiedProfileName;
     private String targetDatabase;
     private String partition;
 
     private FieldPolicy[] policies;
     private HCatDataType[] schema;
-    private Map<String, FieldPolicy> policyMap = new HashMap<String, FieldPolicy>();
+    private Map<String, FieldPolicy> policyMap = new HashMap<>();
+
+    private final Vector<Accumulator<Integer>> accumList = new Vector<>();
 
     public Validator(String targetDatabase, String entity, String partition) {
         super();
@@ -75,9 +76,11 @@ public class Validator implements Serializable {
 
         this.validTableName = entity + "_valid";
         this.invalidTableName = entity + "_invalid";
+        this.profileTableName = entity + "_profile";
         ;
         this.feedTablename = targetDatabase + "." + entity + "_feed";
         this.refTablename = targetDatabase + "." + validTableName;
+        this.qualifiedProfileName = targetDatabase + "." + profileTableName;
         this.partition = partition;
         this.targetDatabase = targetDatabase;
         loadPolicies();
@@ -113,7 +116,13 @@ public class Validator implements Serializable {
             JavaRDD<Row> rddData = dataFrame.javaRDD().cache();
 
             // Extract schema from the source table
-            StructType schema = createModifiedSchema(feedTablename);
+            StructType sourceSchema = createModifiedSchema(feedTablename);
+
+            // Initialize accumulators to track error statistics on each column
+            JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate());
+            for (int i = 0; i < this.schema.length; i++) {
+                this.accumList.add(sparkContext.accumulator(0));
+            }
 
             // Return a new dataframe based on whether values are valid or invalid
             JavaRDD<Row> newResults = (rddData.map(new Function<Row, Row>() {
@@ -123,7 +132,7 @@ public class Validator implements Serializable {
                 }
             }));
 
-            final DataFrame validatedDF = hiveContext.createDataFrame(newResults, schema).toDF();
+            final DataFrame validatedDF = hiveContext.createDataFrame(newResults, sourceSchema).toDF();
 
             // Pull out just the valid or invalid records
             DataFrame invalidDF = validatedDF.filter(VALID_INVALID_COL + " = '0'").drop(VALID_INVALID_COL).toDF();
@@ -133,10 +142,68 @@ public class Validator implements Serializable {
             DataFrame validDF = validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").toDF();
             writeToTargetTable(validDF, validTableName);
 
+            long invalidCount = invalidDF.count();
+            long validCount = validDF.count();
+
+            // Record the validation stats
+            writeStatsToProfileTable(validCount, invalidCount);
+
 
         } catch (Exception e) {
             e.printStackTrace();
             System.exit(1);
+        }
+    }
+
+    private void writeStatsToProfileTable(long validCount, long invalidCount) {
+
+        try {
+
+            System.out.println("VALIDATION STATS");
+            // Create a temporary table we can use to copy data from. Writing directly to our partition from a spark dataframe doesn't work.
+            String tempTable = profileTableName + "_" + System.currentTimeMillis();
+
+
+            // Refactor this into something common with profile table
+            List<StructField> fields = new ArrayList<>();
+            fields.add(DataTypes.createStructField("columnname", DataTypes.StringType, true));
+            fields.add(DataTypes.createStructField("metrictype", DataTypes.StringType, true));
+            fields.add(DataTypes.createStructField("metricvalue", DataTypes.StringType, true));
+            //fields.add(DataTypes.createStructField("processing_dttm", DataTypes.StringType, true));
+            StructType statsSchema = DataTypes.createStructType(fields);
+
+            final ArrayList<String> csvRows = new ArrayList<>();
+            csvRows.add("(ALL),TOTAL_COUNT," + Long.toString(validCount + invalidCount));
+            csvRows.add("(ALL),VALID_COUNT," + Long.toString(validCount));
+            csvRows.add("(ALL),INVALID_COUNT," + Long.toString(invalidCount));
+
+            // Write csv row for each columns
+            for (int i = 0; i < accumList.size(); i++) {
+                String csvRow = schema[i].getName() + ",INVALID_COUNT," + Long.toString(accumList.get(i).value());
+                csvRows.add(csvRow);
+            }
+
+            JavaSparkContext jsc = new JavaSparkContext(SparkContext.getOrCreate());
+            JavaRDD<Row> statsRDD = jsc.parallelize(csvRows)
+                    .map(new Function<String, Row>() {
+                        @Override
+                        public Row call(String s) throws Exception {
+                            return RowFactory.create(s.split("\\,"));
+                        }
+                    });
+
+            DataFrame df = hiveContext.createDataFrame(statsRDD, statsSchema);
+            df.registerTempTable(tempTable);
+
+            String insertSQL = "INSERT OVERWRITE TABLE " + qualifiedProfileName
+                    + " PARTITION (processing_dttm='" + partition + "')"
+                    + " SELECT columnname, metrictype, metricvalue FROM " + tempTable;
+
+            hiveContext.sql(insertSQL);
+        } catch (Exception e) {
+            System.out.println("FAILED TO ADD VALIDATION STATS");
+            e.printStackTrace();
+            ;
         }
     }
 
@@ -203,6 +270,8 @@ public class Validator implements Serializable {
                 valid = false;
                 results = (results == null ? new Vector<ValidationResult>() : results);
                 results.add(result);
+                // Record fact that we had an invalid column
+                accumList.get(idx).add(1);
             }
         }
         // Return success unless all values were null.  That would indicate a blank line in the file
@@ -324,61 +393,6 @@ public class Validator implements Serializable {
             pols.add(policy);
         }
         return pols.toArray(new FieldPolicy[0]);
-    }
-
-    /**
-     * Represents the result of a single validation of a field
-     */
-    static class ValidationResult implements Serializable {
-        boolean result = true;
-        String scope;
-        String fieldName;
-        String failType;
-        String rule;
-        String rejectReason;
-
-        ValidationResult() {
-            result = true;
-        }
-        ValidationResult(String scope, String fieldName, String failType, String rule, String rejectReason) {
-            this.result = false;
-            this.scope = scope;
-            this.fieldName = fieldName;
-            this.failType = failType;
-            this.rule = rule;
-            this.rejectReason = rejectReason;
-        }
-
-        static ValidationResult failRow(String failType, String rejectReason) {
-            return new ValidationResult("row", null, failType, null, rejectReason);
-        }
-
-        static ValidationResult failField(String failType, String fieldName, String rejectReason) {
-            return new ValidationResult("field", fieldName, failType, null, rejectReason);
-        }
-
-        static ValidationResult failFieldRule(String failType, String fieldName, String rule, String rejectReason) {
-            return new ValidationResult("field", fieldName, failType, rule, rejectReason);
-        }
-
-        public String toJSON() {
-            StringBuffer sb = new StringBuffer();
-            sb.append("{\"scope\":\"").append(scope).append("\",");
-            if (fieldName != null) {
-                sb.append("\"field\":\"").append(fieldName).append("\",");
-            }
-            sb.append("\"type\":\"").append(failType).append("\",");
-            if (rule != null) {
-                sb.append("\"rule\":\"").append(rule).append("\",");
-            }
-            sb.append("\"reason\":\"").append(rejectReason).append("\"}");
-            return sb.toString();
-        }
-
-        boolean isValid() {
-            return result;
-        }
-
     }
 
     // Spark function that performs standardization of the values based on the cleansing policy
