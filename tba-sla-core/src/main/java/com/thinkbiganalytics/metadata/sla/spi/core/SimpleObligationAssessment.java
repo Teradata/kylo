@@ -143,8 +143,8 @@ public class SimpleObligationAssessment implements ObligationAssessment {
                 return chain.result();
             }
             
-            List<MetricAssessment> list1 = new ArrayList<>(o1.getMetricAssessments());
-            List<MetricAssessment> list2 = new ArrayList<>(o2.getMetricAssessments());
+            List<MetricAssessment<Serializable>> list1 = new ArrayList<>(o1.getMetricAssessments());
+            List<MetricAssessment<Serializable>> list2 = new ArrayList<>(o2.getMetricAssessments());
             
             chain = chain.compare(list1.size(), list2.size());
         
