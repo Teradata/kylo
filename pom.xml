@@ -19,7 +19,6 @@
         <hadoop.version>2.7.1</hadoop.version>
         <hive.version>0.14.0</hive.version>
         <quartz.version>2.2.1</quartz.version>
-        <tba.version>1.3.0-SNAPSHOT</tba.version>
     </properties>
 
     <dependencies>
@@ -244,12 +243,12 @@
         <dependency>
             <groupId>com.thinkbiganalytics.bdp</groupId>
             <artifactId>tba-sla-api</artifactId>
-            <version>${tba.version}</version>
+            <version>${pipeline.controller.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.bdp</groupId>
             <artifactId>tba-sla-core</artifactId>
-            <version>${tba.version}</version>
+            <version>${pipeline.controller.version}</version>
         </dependency>
 
         <!-- Testing -->
