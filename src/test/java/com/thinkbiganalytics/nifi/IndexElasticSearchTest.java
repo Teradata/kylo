@@ -32,6 +32,9 @@ public class IndexElasticSearchTest {
     private static final String TEST_HOST = "ec2-54-152-98-43.compute-1.amazonaws.com";
     private static final String TEST_INDEX = "integration-test";
     private static final String TEST_TYPE = "userdatatest";
+    private static final String TEST_CLUSTER = "demo-cluster";
+    private static final String TEST_ID = "id";
+
     private InputStream insertDocument;
     private InputStream updateDocument;
     private TestRunner nifiTestRunner;
@@ -44,7 +47,7 @@ public class IndexElasticSearchTest {
         updateDocument = classloader.getResourceAsStream("elasticsearch/update.json");
 
         Settings settings = Settings.settingsBuilder()
-                .put("cluster.name", "demo-cluster").build();
+                .put("cluster.name", TEST_CLUSTER).build();
         esClient = TransportClient.builder().settings(settings).build()
                 .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(TEST_HOST), 9300));
     }
@@ -75,6 +78,8 @@ public class IndexElasticSearchTest {
         nifiTestRunner.setProperty(IndexElasticSearch.HOST_NAME, TEST_HOST);
         nifiTestRunner.setProperty(IndexElasticSearch.INDEX_NAME, TEST_INDEX);
         nifiTestRunner.setProperty(IndexElasticSearch.TYPE, TEST_TYPE);
+        nifiTestRunner.setProperty(IndexElasticSearch.CLUSTER_NAME, TEST_CLUSTER);
+        nifiTestRunner.setProperty(IndexElasticSearch.ID_FIELD, TEST_ID);
         nifiTestRunner.assertValid();
 
         nifiTestRunner.enqueue(testDocument, new HashMap<String, String>() {{

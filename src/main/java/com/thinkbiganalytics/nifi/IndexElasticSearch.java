@@ -25,6 +25,7 @@ import org.elasticsearch.client.Client;
 import org.elasticsearch.client.transport.TransportClient;
 import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import org.elasticsearch.common.xcontent.XContentBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -76,6 +77,20 @@ public class IndexElasticSearch extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .expressionLanguageSupported(true)
             .build();
+    public static final PropertyDescriptor CLUSTER_NAME = new PropertyDescriptor.Builder()
+            .name("ClusterName")
+            .description("Elasticsearch cluster")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
+    public static final PropertyDescriptor ID_FIELD = new PropertyDescriptor.Builder()
+            .name("IdField")
+            .description("Id that you want to use for indexing into elasticsearch. If it is empty then a uuid will be generated")
+            .required(false)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
 
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -89,6 +104,8 @@ public class IndexElasticSearch extends AbstractProcessor {
         pds.add(INDEX_NAME);
         pds.add(TYPE);
         pds.add(HOST_NAME);
+        pds.add(CLUSTER_NAME);
+        pds.add(ID_FIELD);
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -112,6 +129,8 @@ public class IndexElasticSearch extends AbstractProcessor {
             String indexName = context.getProperty(INDEX_NAME).evaluateAttributeExpressions(outgoing).getValue();
             String type = context.getProperty(TYPE).evaluateAttributeExpressions(outgoing).getValue();
             String hostName = context.getProperty(HOST_NAME).evaluateAttributeExpressions(outgoing).getValue();
+            String clusterName = context.getProperty(CLUSTER_NAME).evaluateAttributeExpressions(outgoing).getValue();
+            String idField = context.getProperty(ID_FIELD).evaluateAttributeExpressions(outgoing).getValue();
 
             final StringBuffer sb = new StringBuffer();
             session.read(incoming, new InputStreamCallback() {
@@ -125,10 +144,9 @@ public class IndexElasticSearch extends AbstractProcessor {
 
             logger.info("The json that was received is: " + sb.toString());
 
-            sendToElasticSearch(sb.toString(), hostName, indexName, type);
+            boolean success = sendToElasticSearch(sb.toString(), hostName, indexName, type, clusterName, idField);
 
              /* Wait for job completion */
-            boolean success = true;
             if (!success) {
                 logger.info("*** Completed with failed status ");
                 session.transfer(outgoing, REL_FAILURE);
@@ -144,10 +162,10 @@ public class IndexElasticSearch extends AbstractProcessor {
 
     }
 
-    private boolean sendToElasticSearch(String json, String hostName, String index, String type) throws Exception {
+    private boolean sendToElasticSearch(String json, String hostName, String index, String type, String clusterName, String idField) throws Exception {
         final ProcessorLog logger = getLogger();
         Settings settings = Settings.settingsBuilder()
-                .put("cluster.name", "demo-cluster").build();
+                .put("cluster.name", clusterName).build();
         Client client = TransportClient.builder().settings(settings).build()
                 .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(hostName), 9300));
 
@@ -156,15 +174,23 @@ public class IndexElasticSearch extends AbstractProcessor {
 
         for (int i = 0; i < array.length(); i++) {
             JSONObject jsonObj = array.getJSONObject(i);
-            bulkRequest.add(client.prepareIndex(index, type, jsonObj.getString("id"))
-                            .setSource(jsonBuilder()
-                                            .startObject()
-                                            .field("id", jsonObj.getString("id"))
-                                            .field("first_name", jsonObj.getString("first_name"))
-                                            .field("last_name", jsonObj.getString("last_name"))
-                                            .field("post_date", new Date())
-                                            .endObject()
-                            )
+            String id = null;
+            if(idField != null && idField.length() > 0) {
+                id = jsonObj.getString(idField);
+            }
+            else {
+                id = UUID.randomUUID().toString();
+            }
+            XContentBuilder builder = jsonBuilder().startObject();
+            Iterator iter = jsonObj.keys();
+            while(iter.hasNext()) {
+                String key = (String)iter.next();
+                builder.field(key, jsonObj.getString(key));
+            }
+            builder.field("post_date", new Date());
+            builder.endObject();
+            bulkRequest.add(client.prepareIndex(index, type, id)
+                            .setSource(builder)
             );
         }
         BulkResponse bulkResponse = bulkRequest.get();
