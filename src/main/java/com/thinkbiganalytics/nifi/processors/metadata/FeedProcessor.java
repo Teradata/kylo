@@ -44,10 +44,6 @@ public abstract class FeedProcessor extends AbstractProcessor {
             .build();
 
 
-    protected MetadataProviderService getProviderService(ProcessContext context) {
-        return context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
-    }
-
     private Set<Relationship> relationships;
     private List<PropertyDescriptor> properties;
 
@@ -77,6 +73,10 @@ public abstract class FeedProcessor extends AbstractProcessor {
     }
     
     protected void addRelationships(Set<Relationship> relationships2) {
+    }
+
+    protected MetadataProviderService getProviderService(ProcessContext context) {
+        return context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
     }
     
     protected Dataset findDataset(ProcessContext context, String datasetName) {

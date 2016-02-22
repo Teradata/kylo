@@ -3,18 +3,12 @@
  */
 package com.thinkbiganalytics.nifi.processors.metadata;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
-import com.thinkbiganalytics.metadata.api.event.DataChangeEvent;
-import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
-import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -30,11 +24,21 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicReference;
+import com.thinkbiganalytics.controller.precond.FeedPreconditionService;
+import com.thinkbiganalytics.controller.precond.PreconditionEvent;
+import com.thinkbiganalytics.controller.precond.PreconditionListener;
+import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
+import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
+import com.thinkbiganalytics.metadata.api.event.DataChangeEvent;
+import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.op.ChangedContent;
+import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 
 /**
  * @author Sean Felten
@@ -44,11 +48,22 @@ import java.util.concurrent.atomic.AtomicReference;
 @Tags({"feed", "begin", "thinkbig"})
 @CapabilityDescription("Records the start of a feed to be tracked and listens to events which may trigger a flow. This processor should be either the first processor or immediately follow the first processor in a flow.")
 public class FeedBegin extends FeedProcessor {
-
-    private Queue<ChangeSet<? extends Dataset, ? extends ChangedContent>> pendingChanges = new LinkedBlockingQueue<>();
+    
+    private Queue<List<ChangeSet<? extends Dataset, ? extends ChangedContent>>> pendingChanges = new LinkedBlockingQueue<>();
+    private PreconditionListener preconditionListener;
+    // TODO remove this
     private DataChangeEventListener<? extends Dataset, ? extends ChangedContent> changeListener;
+    // TODO remove this
+    private Queue<ChangeSet<? extends Dataset, ? extends ChangedContent>> pendingChange = new LinkedBlockingQueue<>();
     private AtomicReference<Dataset.ID> sourceDatasetId = new AtomicReference<Dataset.ID>();
     private AtomicReference<Feed.ID> feedId = new AtomicReference<>();
+    
+    public static final PropertyDescriptor PRECONDITION_SERVICE = new PropertyDescriptor.Builder()
+            .name("Feed Preconditon Service")
+            .description("Service that manages preconditions that trigger feed execution")
+            .required(true)
+            .identifiesControllerService(FeedPreconditionService.class)
+            .build();
 
     public static final PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
             .name(FEED_ID_PROP)
@@ -57,7 +72,15 @@ public class FeedBegin extends FeedProcessor {
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
-
+    
+    public static final PropertyDescriptor PRECONDITION_NAME = new PropertyDescriptor.Builder()
+            .name("PRECONDITION")
+            .displayName("Precondition name")
+            .description("The unique name of the precondition that will trigger this feed's execution")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .build();
+    
     public static final PropertyDescriptor SRC_DATASET_NAME = new PropertyDescriptor.Builder()
             .name(SRC_DATASET_ID_PROP)
             .displayName("Source dataset name")
@@ -74,6 +97,7 @@ public class FeedBegin extends FeedProcessor {
             .name("Failure")
             .description("Relationship followdd on failed metadata capture.")
             .build();
+    
 
     @Override
     protected void init(ProcessorInitializationContext context) {
@@ -94,7 +118,7 @@ public class FeedBegin extends FeedProcessor {
 
             if (srcDataset != null) {
                 feedProvider.ensureFeedSource(this.feedId.get(), srcDataset.getId());
-                ensureChangeListener(context, srcDataset);
+                ensurePreconditonListener(context);
                 this.sourceDatasetId.set(srcDataset.getId());
             } else {
                 throw new ProcessException("Source dataset does not exist: " + datasetName);
@@ -122,18 +146,40 @@ public class FeedBegin extends FeedProcessor {
         }
     }
 
+    protected FeedPreconditionService getPreconditionService(ProcessContext context) {
+        return context.getProperty(PRECONDITION_SERVICE).asControllerService(FeedPreconditionService.class);
+    }
+
     protected FlowFile produceFlowFile(ProcessSession session) {
-        ChangeSet<? extends Dataset, ? extends ChangedContent> changeSet = this.pendingChanges.poll();
-        if (changeSet != null) {
-            return createFlowFile(session, changeSet);
+        List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes = this.pendingChanges.poll();
+        if (changes != null) {
+            return createFlowFile(session, changes);
         } else {
             return session.get();
         }
     }
 
-    private FlowFile createFlowFile(ProcessSession session,
-                                    ChangeSet<? extends Dataset, ? extends ChangedContent> changeSet) {
+    private FlowFile createFlowFile(ProcessSession session, 
+                                    List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes) {
         return session.create();
+    }
+    
+    private void ensurePreconditonListener(ProcessContext context) {
+        FeedPreconditionService precondService = getPreconditionService(context);
+        String precondName = context.getProperty(PRECONDITION_NAME).getValue();
+        
+        if (this.preconditionListener == null) {
+            PreconditionListener listener = new PreconditionListener() {
+                @Override
+                public void triggered(PreconditionEvent event) {
+                    List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes = event.getChanges();
+                    FeedBegin.this.pendingChanges.add(changes);
+                }
+            };
+            
+            this.preconditionListener = listener;
+            precondService.addListener(precondName, listener);
+        }
     }
 
     private void ensureChangeListener(ProcessContext context, Dataset srcDataset) {
@@ -172,17 +218,18 @@ public class FeedBegin extends FeedProcessor {
     }
 
     protected void recordDirectoryChange(ChangeSet<DirectoryDataset, FileList> changeSet) {
-        this.pendingChanges.add(changeSet);
+        this.pendingChange.add(changeSet);
     }
 
     protected void recordTableChange(ChangeSet<HiveTableDataset, HiveTableUpdate> changeSet) {
-        this.pendingChanges.add(changeSet);
+        this.pendingChange.add(changeSet);
     }
 
     @Override
     protected void addProperties(List<PropertyDescriptor> props) {
         super.addProperties(props);
         props.add(FEED_NAME);
+        props.add(PRECONDITION_NAME);
         props.add(SRC_DATASET_NAME);
     }
 

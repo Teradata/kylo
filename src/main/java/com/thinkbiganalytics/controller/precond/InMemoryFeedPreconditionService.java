@@ -6,7 +6,6 @@ package com.thinkbiganalytics.controller.precond;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -14,13 +13,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
-import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.components.PropertyValue;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
 
 import com.google.common.base.Function;
@@ -66,21 +62,6 @@ public class InMemoryFeedPreconditionService extends AbstractControllerService i
             .identifiesControllerService(MetadataProviderService.class)
             .build();
     
-    private static final AllowableValue[] ALLOWABLE_IMPLEMENATIONS = {
-            new AllowableValue("MEMORY", "In-memory storage", "An implemenation that managers preconditions in memory (for development-only)"),
-            new AllowableValue("SERVICE", "Client", "An implemenation that accesses metadata via the precondition service client")
-    };
-    
-    public static final PropertyDescriptor IMPLEMENTATION = new PropertyDescriptor.Builder()
-            .name("Implementation")
-            .description("Specifies which client should be used to manage preconditions")
-            .allowableValues(ALLOWABLE_IMPLEMENATIONS)
-            .defaultValue("MEMORY")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
-    
-    private static final List<PropertyDescriptor> properties = Collections.singletonList(IMPLEMENTATION);
-    
     private MetadataProviderService metadataService;
     private ServiceLevelAgreementProvider slaProvider;
     private ServiceLevelAssessor assessor;
@@ -88,20 +69,13 @@ public class InMemoryFeedPreconditionService extends AbstractControllerService i
     
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return properties;
+        return new ArrayList<>();
     }
 
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) throws InitializationException {
         this.metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
-        PropertyValue impl = context.getProperty(IMPLEMENTATION);
-
-        if (impl.getValue().equalsIgnoreCase("MEMORY")) {
-            this.slaProvider = new InMemorySLAProvider();
-        } else {
-            throw new UnsupportedOperationException("Provider implementations currently not supported: " + impl.getValue());
-        }
-        
+        this.slaProvider = new InMemorySLAProvider();
         this.assessor = new SimpleServiceLevelAssessor();
         addAssessors(this.assessor, context);
     }
