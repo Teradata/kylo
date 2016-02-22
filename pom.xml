@@ -19,7 +19,7 @@
         <hadoop.version>2.7.1</hadoop.version>
         <hive.version>0.14.0</hive.version>
         <quartz.version>2.2.1</quartz.version>
-        <tba.version>1.3.0-SNAPSHOT</tba.version>
+        <pipeline.controller.version>1.3.0-SNAPSHOT</pipeline.controller.version>
     </properties>
 
     <dependencies>
