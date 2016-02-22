@@ -5,6 +5,10 @@ package com.thinkbiganalytics.nifi.processors.metadata;
 
 import java.util.List;
 
+import org.apache.nifi.annotation.behavior.EventDriven;
+import org.apache.nifi.annotation.behavior.InputRequirement;
+import org.apache.nifi.annotation.documentation.CapabilityDescription;
+import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
@@ -23,6 +27,10 @@ import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
  *
  * @author Sean Felten
  */
+@EventDriven
+@InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
+@Tags({"feed", "termination", "thinkbig"})
+@CapabilityDescription("Records the termination of a feed including the result of the process and table and partitions updated.")
 public class HiveTableFeedTermination extends FeedTermination {
 
     @Override
