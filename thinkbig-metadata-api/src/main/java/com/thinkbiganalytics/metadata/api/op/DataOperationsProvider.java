@@ -49,7 +49,7 @@ public interface DataOperationsProvider {
     <D extends Dataset, C extends ChangedContent> Collection<ChangeSet<D, C>> getChangeSets(Dataset.ID dsId);
     <D extends Dataset, C extends ChangedContent> Collection<ChangeSet<D, C>> getChangeSets(Dataset.ID dsId, ChangeSetCriteria criteria);
 
-    void addListener(Dataset ds, DataChangeEventListener<Dataset, ChangedContent> listener);
+    void addListener(DataChangeEventListener<Dataset, ChangedContent> listener);
     void addListener(DirectoryDataset ds, DataChangeEventListener<DirectoryDataset, FileList> listener);
     void addListener(HiveTableDataset ds, DataChangeEventListener<HiveTableDataset, HiveTableUpdate> listener);
 }

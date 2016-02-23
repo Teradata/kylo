@@ -12,7 +12,6 @@ import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
-import com.thinkbiganalytics.metadata.core.dataset.files.BaseFileList;
 
 /**
  *

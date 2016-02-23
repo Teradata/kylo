@@ -195,12 +195,14 @@ public class InMemoryFeedProvider implements FeedProvider {
         @Override
         public boolean apply(BaseFeed input) {
             if (this.name != null && ! name.equals(input.getName())) return false;
+            
             if (this.destId != null) {
                 for (FeedDestination dest : input.getDestinations()) {
                     if (this.destId.equals(dest.getDataset().getId())) {
                         return true;
                     }
                 }
+                return false;
             }
             
             if (this.sourceId != null) {
@@ -209,9 +211,10 @@ public class InMemoryFeedProvider implements FeedProvider {
                         return true;
                     }
                 }
+                return false;
             }
             
-            return false;
+            return true;
         }
 
         @Override

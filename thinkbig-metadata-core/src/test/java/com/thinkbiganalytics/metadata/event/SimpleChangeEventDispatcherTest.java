@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.metadata.event;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -9,7 +9,6 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.omg.CosNaming.IstringHelper;
 
 import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;

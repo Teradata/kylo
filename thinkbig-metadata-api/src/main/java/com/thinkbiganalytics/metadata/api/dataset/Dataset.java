@@ -23,8 +23,6 @@ public interface Dataset extends Serializable {
     
     DateTime getCreationTime();
     
-//    List<ChangeSet<?>> getChangeSets();
-    
     // TODO add type/schema/format related properties
 
 }
