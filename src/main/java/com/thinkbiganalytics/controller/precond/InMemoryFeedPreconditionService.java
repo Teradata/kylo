@@ -4,8 +4,10 @@
 package com.thinkbiganalytics.controller.precond;
 
 import java.io.Serializable;
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -22,10 +24,11 @@ import org.apache.nifi.reporting.InitializationException;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.thinkbiganalytics.controller.metadata.MetadataProviderService;
+import com.thinkbiganalytics.controller.MetadataProviderService;
 import com.thinkbiganalytics.controller.precond.FeedPrecondition.ID;
 import com.thinkbiganalytics.controller.precond.metric.DatasetUpdatedSinceMetricAssessor;
 import com.thinkbiganalytics.controller.precond.metric.DependentFeedMetric;
+import com.thinkbiganalytics.controller.precond.metric.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.controller.precond.metric.FeedExecutedSinceFeedMetricAssessor;
 import com.thinkbiganalytics.controller.precond.metric.WithinScheduleAssessor;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
@@ -69,7 +72,7 @@ public class InMemoryFeedPreconditionService extends AbstractControllerService i
     
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
-        return new ArrayList<>();
+        return Collections.singletonList(METADATA_SERVICE);
     }
 
     @OnEnabled
@@ -78,8 +81,19 @@ public class InMemoryFeedPreconditionService extends AbstractControllerService i
         this.slaProvider = new InMemorySLAProvider();
         this.assessor = new SimpleServiceLevelAssessor();
         addAssessors(this.assessor, context);
+        
+        loadTestData();
     }
     
+    private void loadTestData() {
+        try {
+            this.createPrecondition("dropzone-processed", new FeedExecutedSinceFeedMetric("source-dropzone", "dropzone-processed"));
+        } catch (ParseException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     @Override
     public ID resolve(Serializable ser) {
         ServiceLevelAgreement.ID slaId = this.slaProvider.resolve(ser);
@@ -184,22 +198,30 @@ public class InMemoryFeedPreconditionService extends AbstractControllerService i
         this.slaProvider = privider;
     }
     
+//    
+//    private void listenFeed(String feedName) {
+//        FeedProvider fPvdr = this.metadataService.getFeedProvider();
+//        DataOperationsProvider dPvdr = this.metadataService.getDataOperationsProvider();
+//        Collection<Feed> feeds = fPvdr.getFeeds(fPvdr.feedCriteria().name(feedName));
+//        
+//        if (! feeds.isEmpty()) {
+//            Feed feed = feeds.iterator().next();
+//            for (FeedDestination dest : feed.getDestinations()) {
+//                Dataset ds = dest.getDataset();
+//                dPvdr.addListener(ds, createDataChangeListener());
+//            }
+//        }
+//    }
     
     private void listenFeed(String feedName) {
-        FeedProvider fPvdr = this.metadataService.getFeedProvider();
         DataOperationsProvider dPvdr = this.metadataService.getDataOperationsProvider();
-        Collection<Feed> feeds = fPvdr.getFeeds(fPvdr.feedCriteria().name(feedName));
         
-        if (! feeds.isEmpty()) {
-            Feed feed = feeds.iterator().next();
-            for (FeedDestination dest : feed.getDestinations()) {
-                Dataset ds = dest.getDataset();
-                dPvdr.addListener(ds, createDataChangeListener());
-            }
+        if (dPvdr != null) {
+            dPvdr.addListener(createDataChangeListener(feedName));
         }
     }
 
-    private DataChangeEventListener<Dataset, ChangedContent> createDataChangeListener() {
+    private DataChangeEventListener<Dataset, ChangedContent> createDataChangeListener(final String feedName) {
         return new DataChangeEventListener<Dataset, ChangedContent>() {
             @Override
             public void handleEvent(DataChangeEvent<Dataset, ChangedContent> event) {

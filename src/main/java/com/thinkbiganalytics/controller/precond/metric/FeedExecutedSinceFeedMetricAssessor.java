@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.controller.metadata.MetadataProviderService;
+import com.thinkbiganalytics.controller.MetadataProviderService;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -51,34 +51,44 @@ public class FeedExecutedSinceFeedMetricAssessor extends MetadataMetricAssessor<
             Feed testedFeed = tested.iterator().next();
             Feed sinceFeed = since.iterator().next();
             List<DataOperation> testedOps = opPvdr.getDataOperations(opPvdr.dataOperationCriteria()
-                    .source(testedFeed.getId())
+                    .feed(testedFeed.getId())
                     .state(State.SUCCESS));
             List<DataOperation> sinceOps = opPvdr.getDataOperations(opPvdr.dataOperationCriteria()
-                    .source(sinceFeed.getId())
+                    .feed(sinceFeed.getId())
                     .state(State.SUCCESS));
             ArrayList<ChangeSet<Dataset, ChangedContent>> result = new ArrayList<>();
         
-            
-            if (sinceOps.isEmpty()) {
+            // If the feed we are checking has never run then it can't have run before the "since" feed.
+            if (testedOps.isEmpty()) {
                 builder
                     .result(AssessmentResult.FAILURE)
                     .message("The dependent feed has never executed: " + sinceFeed.getName());
             } else {
                 DateTime sinceTime;
                 
-                if (testedOps.isEmpty()) {
+                // If the "since" feed has never run set its run time to the lowest value so 
+                // all tested feed changes are collected
+                if (sinceOps.isEmpty()) {
                     sinceTime = new DateTime(1);
                 } else {
-                    DataOperation op = testedOps.iterator().next();
+                    // Get the time of the latest op (ops come in descending order by time)
+                    DataOperation op = sinceOps.iterator().next();
                     sinceTime = op.getChangeSet().getTime();
                 }
                 
-                int incompleteness = collectChangeSetsSince(result, sinceOps, sinceTime);
+                // Collects any tested feed ops that have run since the "since" time (may be none)
+                int incompleteness = collectChangeSetsSince(result, testedOps, sinceTime);
                 
-                builder
+                if (result.isEmpty()) {
+                    builder
+                    .result(AssessmentResult.FAILURE)
+                    .message("There have been no change sets produced since " + sinceTime);
+                } else {
+                    builder
                     .result(incompleteness > 0 ? AssessmentResult.WARNING : AssessmentResult.SUCCESS)
                     .message("There have been " + result.size() + " change sets produced since " + sinceTime)
                     .data(result);
+                }
             }
         }
     }

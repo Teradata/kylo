@@ -16,7 +16,6 @@ import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
 
-import com.thinkbiganalytics.controller.metadata.MetadataProviderService;
 import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;

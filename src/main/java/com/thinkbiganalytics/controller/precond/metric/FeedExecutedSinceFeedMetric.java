@@ -9,7 +9,7 @@ import java.text.ParseException;
  *
  * @author Sean Felten
  */
-public class FeedExecutedSinceFeedMetric extends DependentDatasetMetric {
+public class FeedExecutedSinceFeedMetric extends DependentFeedMetric {
 
     private String sinceName;
 
@@ -24,6 +24,6 @@ public class FeedExecutedSinceFeedMetric extends DependentDatasetMetric {
     
     @Override
     public String getDescription() {
-        return "dataset " + getDatasetName() + " has executed successfully since feed " + getSinceName();
+        return "Check if feed " + getFeedName() + " has executed successfully since feed " + getSinceName();
     }
 }

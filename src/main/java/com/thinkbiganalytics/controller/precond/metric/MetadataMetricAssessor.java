@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.controller.metadata.MetadataProviderService;
+import com.thinkbiganalytics.controller.MetadataProviderService;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -45,11 +45,11 @@ public abstract class MetadataMetricAssessor<M extends Metric>
     }
    
     protected int collectChangeSetsSince(ArrayList<ChangeSet<Dataset, ChangedContent>> result,
-                                         List<DataOperation> sinceOps,
+                                         List<DataOperation> testedOps,
                                          DateTime sinceTime) {
         int maxCompleteness = 0;
         
-        for (DataOperation op : sinceOps) {
+        for (DataOperation op : testedOps) {
             ChangeSet<Dataset, ChangedContent> cs = op.getChangeSet();
             
             if (cs.getTime().isBefore(sinceTime)) {

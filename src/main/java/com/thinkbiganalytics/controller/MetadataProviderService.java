@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.controller.metadata;
+package com.thinkbiganalytics.controller;
 
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;

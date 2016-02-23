@@ -17,7 +17,7 @@ import org.apache.nifi.processor.Relationship;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
-import com.thinkbiganalytics.controller.metadata.MetadataProviderService;
+import com.thinkbiganalytics.controller.MetadataProviderService;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.DatasetCriteria;
 import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;

@@ -61,7 +61,7 @@ public class FeedBegin extends FeedProcessor {
     public static final PropertyDescriptor PRECONDITION_SERVICE = new PropertyDescriptor.Builder()
             .name("Feed Preconditon Service")
             .description("Service that manages preconditions that trigger feed execution")
-            .required(true)
+            .required(false)
             .identifiesControllerService(FeedPreconditionService.class)
             .build();
 
@@ -77,7 +77,7 @@ public class FeedBegin extends FeedProcessor {
             .name("PRECONDITION")
             .displayName("Precondition name")
             .description("The unique name of the precondition that will trigger this feed's execution")
-            .required(true)
+            .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
     
@@ -95,7 +95,7 @@ public class FeedBegin extends FeedProcessor {
             .build();
     public static final Relationship FAILURE = new Relationship.Builder()
             .name("Failure")
-            .description("Relationship followdd on failed metadata capture.")
+            .description("Relationship followed on failed metadata capture.")
             .build();
     
 
@@ -144,6 +144,22 @@ public class FeedBegin extends FeedProcessor {
                 context.yield();
             }
         }
+    }
+
+    @Override
+    protected void addProperties(List<PropertyDescriptor> props) {
+        super.addProperties(props);
+        props.add(PRECONDITION_SERVICE);
+        props.add(FEED_NAME);
+        props.add(PRECONDITION_NAME);
+        props.add(SRC_DATASET_NAME);
+    }
+
+    @Override
+    protected void addRelationships(Set<Relationship> rels) {
+        super.addRelationships(rels);
+        rels.add(SUCCESS);
+        rels.add(FAILURE);
     }
 
     protected FeedPreconditionService getPreconditionService(ProcessContext context) {
@@ -223,21 +239,6 @@ public class FeedBegin extends FeedProcessor {
 
     protected void recordTableChange(ChangeSet<HiveTableDataset, HiveTableUpdate> changeSet) {
         this.pendingChange.add(changeSet);
-    }
-
-    @Override
-    protected void addProperties(List<PropertyDescriptor> props) {
-        super.addProperties(props);
-        props.add(FEED_NAME);
-        props.add(PRECONDITION_NAME);
-        props.add(SRC_DATASET_NAME);
-    }
-
-    @Override
-    protected void addRelationships(Set<Relationship> rels) {
-        super.addRelationships(rels);
-        rels.add(SUCCESS);
-        rels.add(FAILURE);
     }
 
     protected Dataset getSourceDataset(ProcessContext context) {
