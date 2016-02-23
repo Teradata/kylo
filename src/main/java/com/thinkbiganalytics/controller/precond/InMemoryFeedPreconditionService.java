@@ -138,7 +138,7 @@ public class InMemoryFeedPreconditionService extends AbstractControllerService i
         Set<PreconditionListener> set = this.listeners.get(id);
         if (set == null) {
             set = new HashSet<>();
-            set = this.listeners.putIfAbsent(id, set) == null ? set : this.listeners.get(id);
+            this.listeners.put(id, set);
         }
         set.add(listener);
     }
