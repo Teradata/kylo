@@ -24,7 +24,7 @@ import org.apache.nifi.reporting.InitializationException;
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.thinkbiganalytics.controller.MetadataProviderService;
+import com.thinkbiganalytics.controller.metadata.MetadataProviderService;
 import com.thinkbiganalytics.controller.precond.FeedPrecondition.ID;
 import com.thinkbiganalytics.controller.precond.metric.DatasetUpdatedSinceMetricAssessor;
 import com.thinkbiganalytics.controller.precond.metric.DependentFeedMetric;

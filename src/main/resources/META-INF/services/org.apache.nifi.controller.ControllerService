@@ -18,7 +18,7 @@
 # limitations under the License.
 
 com.thinkbiganalytics.controller.ThriftConnectionPool
-com.thinkbiganalytics.controller.MetadataProviderSelectorService
+com.thinkbiganalytics.controller.metadata.MetadataProviderSelectorService
 com.thinkbiganalytics.controller.precond.InMemoryFeedPreconditionService
 
 # TODO: Remove usage of MetadataConnectionService

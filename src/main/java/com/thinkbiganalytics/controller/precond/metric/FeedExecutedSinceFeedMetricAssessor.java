@@ -9,7 +9,7 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.controller.MetadataProviderService;
+import com.thinkbiganalytics.controller.metadata.MetadataProviderService;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
