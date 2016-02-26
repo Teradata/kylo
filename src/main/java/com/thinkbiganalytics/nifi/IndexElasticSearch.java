@@ -35,7 +35,7 @@ import java.util.*;
 import static org.elasticsearch.common.xcontent.XContentFactory.jsonBuilder;
 
 /**
- * This processor copies FlowFiles to HDFS.
+ * This processor indexes json data in elasticsearch
  */
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"elasticsearch", "thinkbig"})
@@ -51,7 +51,7 @@ public class IndexElasticSearch extends AbstractProcessor {
     public static final Relationship REL_FAILURE = new Relationship.Builder()
             .name("failure")
             .description(
-                    "Json objects that are successfully indexed in elasticsearch are transferred to this relationship")
+                    "Json objects that are un-successfully indexed in elasticsearch are transferred to this relationship")
             .build();
     private final Set<Relationship> relationships;
 
@@ -142,7 +142,7 @@ public class IndexElasticSearch extends AbstractProcessor {
 
             });
 
-            logger.info("The json that was received is: " + sb.toString());
+            logger.debug("The json that was received is: " + sb.toString());
 
             boolean success = sendToElasticSearch(sb.toString(), hostName, indexName, type, clusterName, idField);
 
@@ -175,22 +175,14 @@ public class IndexElasticSearch extends AbstractProcessor {
         for (int i = 0; i < array.length(); i++) {
             JSONObject jsonObj = array.getJSONObject(i);
             String id = null;
-            if(idField != null && idField.length() > 0) {
+            if (idField != null && idField.length() > 0) {
                 id = jsonObj.getString(idField);
-            }
-            else {
+            } else {
                 id = UUID.randomUUID().toString();
             }
-            XContentBuilder builder = jsonBuilder().startObject();
-            Iterator iter = jsonObj.keys();
-            while(iter.hasNext()) {
-                String key = (String)iter.next();
-                builder.field(key, jsonObj.getString(key));
-            }
-            builder.field("post_date", new Date());
-            builder.endObject();
+            jsonObj.put("post_date", System.currentTimeMillis());
             bulkRequest.add(client.prepareIndex(index, type, id)
-                            .setSource(builder)
+                            .setSource(jsonObj.toString())
             );
         }
         BulkResponse bulkResponse = bulkRequest.get();
