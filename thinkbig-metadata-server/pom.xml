@@ -8,11 +8,13 @@
     </parent>
     <artifactId>thinkbig-metadata-server</artifactId>
     <dependencies>
+    <!-- 
         <dependency>
             <groupId>com.thinkbiganalytics.nifi</groupId>
             <artifactId>thinkbig-nifi-rest</artifactId>
             <version>0.5.0-SNAPSHOT</version>
         </dependency>
+     -->
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
@@ -21,7 +23,8 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-            <version>1.3.2.RELEASE</version>
+            <version>1.3.3.RELEASE</version>
+            <!-- 
             <exclusions>
                 <exclusion>
                     <artifactId>logback-classic</artifactId>
@@ -40,11 +43,12 @@
                     <groupId>org.slf4j</groupId>
                 </exclusion>
             </exclusions>
+             -->
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jersey</artifactId>
-            <version>1.3.2.RELEASE</version>
+            <version>1.3.3.RELEASE</version>
         </dependency>
         <dependency>
             <groupId>io.projectreactor</groupId>
@@ -52,37 +56,10 @@
             <version>2.0.7.RELEASE</version>
         </dependency>
 
-        <!-- NiFi -->
         <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-api</artifactId>
-            <version>${nifi.version}</version>
+            <groupId>org.glassfish.jersey.core</groupId>
+            <artifactId>jersey-server</artifactId>
+            <version>2.22.2</version>
         </dependency>
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-utils</artifactId>
-            <version>${nifi.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-expression-language</artifactId>
-            <version>${nifi.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-security-utils</artifactId>
-            <version>${nifi.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-processor-utils</artifactId>
-            <version>${nifi.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.nifi</groupId>
-            <artifactId>nifi-bootstrap</artifactId>
-            <version>${nifi.version}</version>
-        </dependency>
-
     </dependencies>
 </project>
