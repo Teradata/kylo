@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.rest.api.feed;
+package com.thinkbiganalytics.metadata.rest.api;
 
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +19,10 @@ import org.springframework.stereotype.Component;
 @Component
 @Path("/metadata/feed")
 public class FeedsResource {
+    
+    public FeedsResource() {
+        super();
+    }
 
     @GET
     @Path("/names")
