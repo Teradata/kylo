@@ -227,7 +227,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
      */
     public List<DataOperation> getDataOperations() {
         ArrayList<BaseDataOperation> list = new ArrayList<>(this.operations.values());
-        list.sort(OP_COMP);
+        Collections.sort(list, OP_COMP);
         return Collections.<DataOperation>unmodifiableList(list);
     }
 
@@ -237,7 +237,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     public List<DataOperation> getDataOperations(DataOperationCriteria criteria) {
         OpCriteria critImpl = (OpCriteria) criteria;
         ArrayList<BaseDataOperation> list = new ArrayList<>(Collections2.filter(this.operations.values(), critImpl));
-        list.sort(OP_COMP);
+        Collections.sort(list, OP_COMP);
         return Collections.<DataOperation>unmodifiableList(list);
     }
 
@@ -254,7 +254,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     @SuppressWarnings("unchecked")
     public List<ChangeSet<? extends Dataset, ? extends ChangedContent>> getChangeSets(Dataset.ID dsId) {
         ArrayList<ChangeSet<? extends Dataset, ? extends ChangedContent>> list = new ArrayList<>(this.changeSets.get(dsId));
-        list.sort(CHANGE_SET_COMP);
+        Collections.sort(list, CHANGE_SET_COMP);
         return list;
     }
 
@@ -268,7 +268,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         Collection<ChangeSet<? extends Dataset, ? extends ChangedContent>> result 
             = Collections2.filter(this.changeSets.get(dsId), critImpl);
         ArrayList<ChangeSet<? extends Dataset, ? extends ChangedContent>> list = new ArrayList<>(result);
-        list.sort(CHANGE_SET_COMP);
+        Collections.sort(list, CHANGE_SET_COMP);
         return list;
     }
 
