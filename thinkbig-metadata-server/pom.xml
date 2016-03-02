@@ -8,6 +8,13 @@
     </parent>
     <artifactId>thinkbig-metadata-server</artifactId>
     <packaging>pom</packaging>
+    <properties>
+        <projectreactor.version>2.0.7.RELEASE</projectreactor.version>
+        <jersey.version>2.22.2</jersey.version>
+        <guava.version>19.0</guava.version>
+        <netty.version>4.0.31.Final</netty.version>
+        <projectreactor.version>2.0.7.RELEASE</projectreactor.version>
+    </properties>
     <modules>
         <module>thinkbig-metadata-rest-service</module>
         <module>thinkbig-metadata-rest-model</module>
