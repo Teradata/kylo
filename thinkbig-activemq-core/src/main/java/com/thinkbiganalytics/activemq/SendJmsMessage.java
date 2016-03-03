@@ -36,17 +36,21 @@ public class SendJmsMessage {
 
 
 
-    public void sendObject(Topic topic, final Object obj){
+    public void sendObject(Topic topic, final Object obj,final String objectClassType){
         MessageCreator creator = new MessageCreator() {
             TextMessage message = null;
             @Override
             public javax.jms.Message createMessage(Session session) throws JMSException {
                 message = session.createTextMessage();
-                message.setStringProperty("jms_javatype", obj.getClass().getName());
+                message.setStringProperty("jms_javatype", objectClassType);
                 message.setText(objectMapperSerializer.serialize(obj));
                 return message;
             }
         };
-        this.jmsMessagingTemplate.getJmsTemplate().send(topic,creator);
+        this.jmsMessagingTemplate.getJmsTemplate().send(topic, creator);
+    }
+
+    public void sendObject(Topic topic, final Object obj){
+        sendObject(topic, obj, obj.getClass().getName());
     }
 }
