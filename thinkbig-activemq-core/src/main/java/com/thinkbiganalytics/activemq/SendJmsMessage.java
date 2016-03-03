@@ -31,7 +31,7 @@ public class SendJmsMessage {
 
 
     public void sendMessage(Topic topic, String msg) {
-        this.jmsMessagingTemplate.convertAndSend(topic, msg);
+        this.sendObject(topic,msg);
     }
 
 
