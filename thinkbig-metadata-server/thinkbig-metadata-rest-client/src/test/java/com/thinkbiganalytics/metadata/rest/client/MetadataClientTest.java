@@ -1,8 +1,9 @@
 package com.thinkbiganalytics.metadata.rest.client;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
+import java.text.ParseException;
 import java.util.List;
 
 import org.junit.Before;
@@ -13,7 +14,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
 
 public class MetadataClientTest {
     
@@ -29,28 +30,30 @@ public class MetadataClientTest {
     }
 
 //    @Test
-    public void testBuildFeed() {
-        Feed feed = client.buildFeed("Feed 1")
-                .description("Test feed 1")
-                .systemName("feed1")
-                .owner("owner")
-                .post();
+    public void testBuildFeed() throws ParseException {
+        Feed feed = buildFeed("feed1").post();
         
         assertThat(feed).isNotNull();
     }
     
-    @Test 
-    public void testAddFeedDestination() {
-        Feed feed = client.buildFeed("Feed 1")
-                .description("Test feed 1")
-                .systemName("feed1")
-                .owner("owner")
-                .post();
+//    @Test
+    public void testAddFeedSource() throws ParseException {
+        Feed feed = buildFeed("feed1").post();
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
         
-        FeedDestination dest = client.addDestination(feed.getId(), ds.getId());
+        Feed result = client.addSource(feed.getId(), ds.getId());
         
-        assertThat(dest).isNotNull();
+        assertThat(result).isNotNull();
+    }
+    
+//    @Test 
+    public void testAddFeedDestination() throws ParseException {
+        Feed feed = buildFeed("feed1").post();
+        HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
+        
+        Feed result = client.addDestination(feed.getId(), ds.getId());
+        
+        assertThat(result).isNotNull();
     }
 
 //    @Test 
@@ -78,6 +81,14 @@ public class MetadataClientTest {
         assertThat(list)
             .isNotNull()
             .hasSize(3);
+    }
+    
+    private FeedBuilder buildFeed(String name) throws ParseException {
+        return client.buildFeed(name)
+                .description(name + " feed")
+                .owner("ownder")
+                .systemName(name)
+                .preconditionMetric(new FeedExecutedSinceScheduleMetric(name, "0 0 6 * * ? *"));
     }
     
     private DirectoryDatasourceBuilder buildDirectoryDatasource(String name) {

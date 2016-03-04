@@ -13,7 +13,7 @@ public class FeedExecutedSinceFeedMetric extends DependentFeedMetric {
 
     private String sinceFeedName;
 
-    public FeedExecutedSinceFeedMetric(String hasRunFeed, String sinceFeed) throws ParseException {
+    public FeedExecutedSinceFeedMetric(String hasRunFeed, String sinceFeed) {
         super(hasRunFeed);
         this.sinceFeedName = sinceFeed;
     }

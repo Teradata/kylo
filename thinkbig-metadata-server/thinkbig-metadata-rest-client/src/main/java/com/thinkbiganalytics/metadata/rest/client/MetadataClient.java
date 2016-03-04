@@ -57,22 +57,18 @@ public class MetadataClient extends JerseyClient {
         return new FeedBuilderImpl(name);
     }
     
-    public FeedDestination addDestination(String feedId, String datasourceId) {
+    public Feed addSource(String feedId, String datasourceId) {
         Form form = new Form();
         form.param("datasourceId", datasourceId);
         
-        return this.baseTarget
-                .path("feed").path(feedId).path("destination")
-                .queryParam("dsId", datasourceId)
-                .request()
-                .accept(MediaType.APPLICATION_JSON_TYPE)
-                .post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE), FeedDestination.class);
-
+        return post(Paths.get("feed", feedId, "source"), form, Feed.class);
+    }
+    
+    public Feed addDestination(String feedId, String datasourceId) {
+        Form form = new Form();
+        form.param("datasourceId", datasourceId);
         
-//        Form form = new Form();
-//        form.param("datasourceId", datasourceId);
-//        
-//        return post(Paths.get("feed", feedId, "destination"), form, FeedDestination.class);
+        return post(Paths.get("feed", feedId, "destination"), form, Feed.class);
     }
 
     public FeedCriteria feedCriteria() {

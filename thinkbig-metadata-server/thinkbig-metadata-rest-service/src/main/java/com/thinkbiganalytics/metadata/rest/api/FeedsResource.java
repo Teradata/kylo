@@ -83,31 +83,32 @@ public class FeedsResource {
     }
     
     @POST
-    @Path("{feedId}/destination")
+    @Path("{feedId}/source")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public Feed addFeedDestinationForm(@PathParam("feedId") String feedId, 
-                                       @FormParam("datasourceId") String datasourceId,  // TODO always null
-                                       @QueryParam("dsId") String dsIdParam) {
+    public Feed addFeedSource(@PathParam("feedId") String feedId, 
+                              @FormParam("datasourceId") String datasourceId) {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = this.feedProvider.resolveFeed(feedId);
-        Dataset.ID domainDsId = this.datasetProvider.resolve(dsIdParam);
-//        Dataset.ID domainDsId = this.datasetProvider.resolve(datasourceId);
+        Dataset.ID domainDsId = this.datasetProvider.resolve(datasourceId);
         
-        com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest 
-            = this.feedProvider.ensureFeedDestination(domainFeedId, domainDsId);
+        com.thinkbiganalytics.metadata.api.feed.FeedSource domainDest 
+            = this.feedProvider.ensureFeedSource(domainFeedId, domainDsId);
         
         return Model.DOMAIN_TO_FEED.apply(domainDest.getFeed());
     }
     
     @POST
-    @Path("{fid}/source")
+    @Path("{feedId}/destination")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public Feed addFeedSource(@PathParam("fid") String feedId, @QueryParam("dsid") String datasourceId) {
+    public Feed addFeedDestination(@PathParam("feedId") String feedId, 
+                                   @FormParam("datasourceId") String datasourceId) {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = this.feedProvider.resolveFeed(feedId);
         Dataset.ID domainDsId = this.datasetProvider.resolve(datasourceId);
-        com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc 
-            = this.feedProvider.ensureFeedSource(domainFeedId, domainDsId);
         
-        return Model.DOMAIN_TO_FEED.apply(domainSrc.getFeed());
+        com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest 
+            = this.feedProvider.ensureFeedDestination(domainFeedId, domainDsId);
+        
+        return Model.DOMAIN_TO_FEED.apply(domainDest.getFeed());
     }
 }

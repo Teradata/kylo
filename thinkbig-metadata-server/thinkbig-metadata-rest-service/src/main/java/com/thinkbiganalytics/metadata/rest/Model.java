@@ -49,7 +49,8 @@ public class Model {
                 FeedSource src = new FeedSource();
                 src.setId(domain.getId().toString());
 //                src.setLastLoadTime();
-                src.setDatasourceId(domain.getDataset().getId().toString());
+//                src.setDatasourceId(domain.getDataset().getId().toString());
+                src.setDatasource(DOMAIN_TO_DS.apply(domain.getDataset()));
                 return src;
             }
         };
@@ -58,11 +59,12 @@ public class Model {
         = new Function<com.thinkbiganalytics.metadata.api.feed.FeedDestination, FeedDestination>() {
             @Override
             public FeedDestination apply(com.thinkbiganalytics.metadata.api.feed.FeedDestination domain) {
-                FeedDestination src = new FeedDestination();
-                src.setId(domain.getId().toString());
+                FeedDestination dest = new FeedDestination();
+                dest.setId(domain.getId().toString());
 //                dest.setFieldsPolicy();
-                src.setDatasourceId(domain.getDataset().getId().toString());
-                return src;
+//                dest.setDatasourceId(domain.getDataset().getId().toString());
+                dest.setDatasource(DOMAIN_TO_DS.apply(domain.getDataset()));
+                return dest;
             }
         };
     
@@ -92,12 +94,13 @@ public class Model {
             @Override
             public HiveTableDatasource apply(HiveTableDataset domain) {
                 HiveTableDatasource table = new HiveTableDatasource();
+                table.setId(domain.getId().toString());
                 table.setName(domain.getName());
                 table.setDescription(domain.getDescription());
 //                table.setOwnder();
 //                table.setEncrypted();
 //                table.setCompressed();
-                table.setDatabase(domain.getTableName());
+                table.setDatabase(domain.getDatabaseName());
                 table.setTableName(domain.getTableName());
 //                table.setFields();
 //                table.setPartitions();
@@ -111,6 +114,7 @@ public class Model {
             @Override
             public DirectoryDatasource apply(DirectoryDataset domain) {
                 DirectoryDatasource dir = new DirectoryDatasource();
+                dir.setId(domain.getId().toString());
                 dir.setName(domain.getName());
                 dir.setDescription(domain.getDescription());
 //                dir.setOwnder();
@@ -121,6 +125,9 @@ public class Model {
                 return dir;
             }
         };
+        
+//        public static Function<DirectoryDataset, DirectoryDatasource> DOMAIN_TO_DIR_DS
+
         
     public static void validateCreate(Feed feed) {
         // TODO Auto-generated method stub
