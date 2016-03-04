@@ -1,16 +1,22 @@
 package com.thinkbiganalytics.nifi.provenance;
 
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.nifi.provenance.writer.ProvenanceEventActiveMqWriter;
+import com.thinkbiganalytics.util.SpringInitializer;
 import org.apache.nifi.events.EventReporter;
-import org.apache.nifi.provenance.*;
+import org.apache.nifi.provenance.PersistentProvenanceRepository;
+import org.apache.nifi.provenance.ProvenanceEventBuilder;
+import org.apache.nifi.provenance.ProvenanceEventRecord;
+import org.apache.nifi.provenance.ProvenanceEventRepository;
 import org.apache.nifi.provenance.lineage.ComputeLineageSubmission;
 import org.apache.nifi.provenance.search.Query;
 import org.apache.nifi.provenance.search.QuerySubmission;
 import org.apache.nifi.provenance.search.SearchableField;
 
 import java.io.IOException;
-import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.List;
+import java.util.Timer;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Custom Event Repository that will take the PovenanceEvents and write them to some output.
@@ -19,17 +25,24 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
 
     private PersistentProvenanceRepository repository;
 
-    private ProvenanceEventRecordWriter provenanceEventRecordWriter;
+
+    private ProvenanceEventActiveMqWriter provenanceEventRecordWriter;
 
     private Timer timer;
-    private AtomicInteger eventCounter = new AtomicInteger(0);
+    private AtomicLong eventCounter = new AtomicLong(0);
 
     public ThinkbigProvenanceEventRepository(){
         try {
-            provenanceEventRecordWriter = new ProvenanceEventRecordDatabaseWriter();
+
             repository = new PersistentProvenanceRepository();
-            timer = new Timer();
-            timer.schedule(new ProvenanceEventRecordTimer(),0, 1 * 1000);
+            provenanceEventRecordWriter = new ProvenanceEventActiveMqWriter();
+            System.out.println(" new event recorder "+provenanceEventRecordWriter);
+          //  provenanceEventRecordWriter.setEventId(repository.getMaxEventId());
+            SpringInitializer.getInstance().initializeSpring();
+            SpringApplicationListener listener = new SpringApplicationListener();
+            listener.addObjectToAutowire("provenanceEventRecordWriter",provenanceEventRecordWriter);
+            listener.autowire("provenanceEventRecordWriter",provenanceEventRecordWriter);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -49,16 +62,23 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
 
     @Override
     public void registerEvent(ProvenanceEventRecord provenanceEventRecord) {
+        System.out.println("REGISTER SINGLE EVENT : "+ provenanceEventRecord.getComponentId()+", "+ provenanceEventRecord.getComponentType());
         repository.registerEvent(provenanceEventRecord);
+        provenanceEventRecordWriter.checkAndSetMaxEventId(getMaxEventId());
+        provenanceEventRecordWriter.writeEvent(provenanceEventRecord);
     }
 
     @Override
     public void registerEvents(Iterable<ProvenanceEventRecord> iterable) {
         List<ProvenanceEventRecord> events = Lists.newArrayList(iterable);
-        //Event registration is captured in the Timer thread below.
-        //a timer is needed because the EventId is not set on the incoming iterable.  it is set later in a different thread
-       repository.registerEvents(events);
-
+        System.out.println("REGISTER Multiple EVENTs : " + events.size());
+        provenanceEventRecordWriter.checkAndSetMaxEventId(getMaxEventId());
+        repository.registerEvents(events);
+        if(events != null) {
+            for (ProvenanceEventRecord event : events) {
+                provenanceEventRecordWriter.writeEvent(event);
+            }
+        }
     }
 
 
@@ -124,81 +144,6 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
     public List<SearchableField> getSearchableAttributes() {
         return repository.getSearchableAttributes();
     }
-
-    private void logEvent(String msg){
-        System.out.println("****-----**********-----******  " + msg);
-    }
-
-
-    /**
-     * Timer to run every second to check and see if there are any new Events to store
-     * This is needed because the eventId is assigned to the ProvenanceEventRecord in a different thread.
-     *
-     */
-    private class ProvenanceEventRecordTimer extends TimerTask {
-        private Long lastEventId = null;
-        private UUID id;
-        private boolean running;
-
-        public ProvenanceEventRecordTimer() {
-            init();
-        }
-
-        public ProvenanceEventRecordTimer(Long startingEventId) {
-            lastEventId = startingEventId;
-            init();
-        }
-
-        private void init(){
-            this.id =UUID.randomUUID();
-            running = false;
-        }
-
-        @Override
-        public void run() {
-            if(!running) {
-                running = true;
-                if(lastEventId == null){
-                    lastEventId = provenanceEventRecordWriter.getLastRecordedEventId();
-                }
-                Long maxId = getMaxEventId();
-                System.out.println("TIMER ID CHECK = last: "+lastEventId+" MAX: " + maxId);
-                try {
-
-                    if (lastEventId == null && maxId != null) {
-                        lastEventId = maxId;
-                        System.out.println("NEW TIMER WITH START ID OF " + lastEventId);
-                    }
-                    if (lastEventId != null && maxId != null && maxId > lastEventId) {
-                        int records = new Long(maxId - lastEventId).intValue();
-                        List<ProvenanceEventRecord> events = null;
-                        try {
-                            events = getEvents((lastEventId + 1), records);
-                            if (events != null) {
-                                for (ProvenanceEventRecord event : events) {
-                                    logEvent("About to persist event "+event.getEventId());
-                                    provenanceEventRecordWriter.persistProvenanceEventRecord(event);
-                                    lastEventId = event.getEventId();
-                                }
-                            }
-                            lastEventId = maxId;
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                running = false;
-            }
-
-
-        }
-    }
-
-
-
-
 
 
 

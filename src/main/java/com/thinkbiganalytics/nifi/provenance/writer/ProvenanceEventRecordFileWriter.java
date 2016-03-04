@@ -1,9 +1,10 @@
-package com.thinkbiganalytics.nifi.provenance;
+package com.thinkbiganalytics.nifi.provenance.writer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.io.Files;
+import com.thinkbiganalytics.nifi.provenance.writer.ProvenanceEventWriter;
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 
 import java.io.*;
@@ -12,7 +13,7 @@ import java.nio.charset.StandardCharsets;
 /**
  * Write events to a file
  */
-public class ProvenanceEventRecordFileWriter implements ProvenanceEventRecordWriter {
+public class ProvenanceEventRecordFileWriter extends AbstractProvenanceEventWriter{
 
 
     public static final String filePath = "/tmp/provenance-events.json";
@@ -26,7 +27,7 @@ public class ProvenanceEventRecordFileWriter implements ProvenanceEventRecordWri
     }
 
     @Override
-    public Long getLastRecordedEventId(){
+    public Long getMaxEventId(){
        return getFileId();
     }
 
@@ -52,7 +53,12 @@ public class ProvenanceEventRecordFileWriter implements ProvenanceEventRecordWri
     }
 
     @Override
-    public  Long persistProvenanceEventRecord(ProvenanceEventRecord event) {
+    public void setMaxEventId(Long eventId) {
+
+    }
+
+    @Override
+    public  Long writeEvent(ProvenanceEventRecord event) {
         String json = null;
         try {
             json = mapper.writeValueAsString(event);
