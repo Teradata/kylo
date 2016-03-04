@@ -14,6 +14,11 @@
             <version>${joda.time.version}</version>
         </dependency>
         <dependency>
+            <groupId>org.quartz-scheduler</groupId>
+            <artifactId>quartz</artifactId>
+            <version>${quartz.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.thinkbiganalytics.bdp</groupId>
             <artifactId>tba-sla-api</artifactId>
             <version>${pipeline.controller.version}</version>

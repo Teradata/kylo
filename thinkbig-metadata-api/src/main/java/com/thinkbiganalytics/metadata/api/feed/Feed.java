@@ -22,6 +22,8 @@ public interface Feed extends Serializable {
     
     String getDescription();
     
+    FeedPrecondition getPrecondition();
+    
     Set<FeedSource> getSources();
     
     Set<FeedDestination> getDestinations();

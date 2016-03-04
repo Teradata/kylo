@@ -7,7 +7,7 @@ package com.thinkbiganalytics.metadata.rest.model.feed.transform;
  *
  * @author Sean Felten
  */
-public class FieldPolicy {
+public class FieldCleansor {
 
     private String name;
     private String description;

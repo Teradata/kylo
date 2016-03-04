@@ -8,14 +8,16 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import org.springframework.stereotype.Component;
@@ -46,7 +48,7 @@ public class FeedsResource {
     
 
     @GET
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public List<Feed> getFeeds() {
         Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainFeeds = this.feedProvider.getFeeds();
         
@@ -54,7 +56,7 @@ public class FeedsResource {
     }
     
     @POST
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public Feed createFeed(Feed feed) {
         Model.validateCreate(feed);
         
@@ -81,11 +83,16 @@ public class FeedsResource {
     }
     
     @POST
-    @Path("{fid}/destination")
-    @Produces("application/json")
-    public Feed addFeedDestination(@PathParam("fid") String feedId, @QueryParam("dsid") String datasourceId) {
+    @Path("{feedId}/destination")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Feed addFeedDestinationForm(@PathParam("feedId") String feedId, 
+                                       @FormParam("datasourceId") String datasourceId,  // TODO always null
+                                       @QueryParam("dsId") String dsIdParam) {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = this.feedProvider.resolveFeed(feedId);
-        Dataset.ID domainDsId = this.datasetProvider.resolve(datasourceId);
+        Dataset.ID domainDsId = this.datasetProvider.resolve(dsIdParam);
+//        Dataset.ID domainDsId = this.datasetProvider.resolve(datasourceId);
+        
         com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest 
             = this.feedProvider.ensureFeedDestination(domainFeedId, domainDsId);
         
@@ -94,7 +101,7 @@ public class FeedsResource {
     
     @POST
     @Path("{fid}/source")
-    @Produces("application/json")
+    @Produces(MediaType.APPLICATION_JSON)
     public Feed addFeedSource(@PathParam("fid") String feedId, @QueryParam("dsid") String datasourceId) {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = this.feedProvider.resolveFeed(feedId);
         Dataset.ID domainDsId = this.datasetProvider.resolve(datasourceId);

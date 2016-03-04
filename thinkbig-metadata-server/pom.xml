@@ -19,6 +19,7 @@
         <module>thinkbig-metadata-rest-service</module>
         <module>thinkbig-metadata-rest-model</module>
         <module>thinkbig-metadata-rest-client</module>
+        <module>thinkbig-metadata-jms</module>
     </modules>
 
     <dependencies>

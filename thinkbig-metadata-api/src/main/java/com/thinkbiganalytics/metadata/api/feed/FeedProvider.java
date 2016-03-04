@@ -2,9 +2,11 @@ package com.thinkbiganalytics.metadata.api.feed;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Set;
 
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 public interface FeedProvider {
@@ -18,6 +20,8 @@ public interface FeedProvider {
     Feed ensureFeed(String name, String descr);
     Feed ensureFeed(String name, String descr, Dataset.ID destId);
     Feed ensureFeed(String name, String descr, Dataset.ID srcId, Dataset.ID destId);
+    
+    Feed ensurePrecondition(Feed.ID feedId, String name, String descr, Set<Metric> metrics);
     
     FeedCriteria feedCriteria();
     

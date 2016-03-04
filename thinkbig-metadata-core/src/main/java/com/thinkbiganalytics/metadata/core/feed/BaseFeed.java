@@ -13,7 +13,10 @@ import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedData;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
@@ -27,6 +30,7 @@ public class BaseFeed implements Feed {
     private String Description;
     private Set<FeedSource> sources = new HashSet<>();
     private Set<FeedDestination> destinations = new HashSet<>();
+    private FeedPreconditionImpl precondition;
     
 
     public BaseFeed(String name, String description) {
@@ -65,6 +69,11 @@ public class BaseFeed implements Feed {
         
         return null;
     }
+    
+    @Override
+    public FeedPrecondition getPrecondition() {
+        return this.precondition;
+    }
 
     public FeedSource addSource(Dataset ds) {
         return addSource(ds, null);
@@ -80,6 +89,11 @@ public class BaseFeed implements Feed {
         FeedDestination dest = new Destination(ds);
         this.destinations.add(dest);
         return dest;
+    }
+    
+    public FeedPrecondition setPrecondition(ServiceLevelAgreement sla) {
+        this.precondition = new FeedPreconditionImpl(sla);
+        return this.precondition;
     }
     
     private static class BaseId {
@@ -205,6 +219,37 @@ public class BaseFeed implements Feed {
         @Override
         public ID getId() {
             return this.id;
+        }
+    }
+    
+    protected static class FeedPreconditionImpl implements FeedPrecondition {
+        private ServiceLevelAgreement sla;
+        
+        public FeedPreconditionImpl(ServiceLevelAgreement sla) {
+            this.sla = sla;
+        }
+
+        @Override
+        public String getName() {
+            return this.sla.getName();
+        }
+        
+        @Override
+        public String getDescription() {
+            return this.sla.getDescription();
+        }
+
+        @Override
+        public Set<Metric> getMetrics() {
+            Set<Metric> set = new HashSet<>();
+            for (Obligation ob : this.sla.getObligations()) {
+                set.addAll(ob.getMetrics());
+            }
+            return set;
+        }
+        
+        protected ServiceLevelAgreement getAgreement() {
+            return sla;
         }
     }
 

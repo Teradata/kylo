@@ -15,7 +15,7 @@ import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasetProvider;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
 import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.event.ChangeEventDispatcher;
-import com.thinkbiganalytics.metadata.event.EventsContiguration;
+import com.thinkbiganalytics.metadata.event.ReactorContiguration;
 import com.thinkbiganalytics.metadata.event.SimpleChangeEventDispatcher;
 import com.thinkbiganalytics.metadata.rest.RestConfiguration;
 
@@ -25,7 +25,7 @@ import com.thinkbiganalytics.metadata.rest.RestConfiguration;
  */
 @Configuration
 @EnableAutoConfiguration
-@Import({ RestConfiguration.class, EventsContiguration.class })
+@Import({ RestConfiguration.class, ReactorContiguration.class })
 public class ServerConfiguration {
 
     @Bean

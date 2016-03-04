@@ -13,6 +13,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 
 public class MetadataClientTest {
     
@@ -37,6 +38,20 @@ public class MetadataClientTest {
         
         assertThat(feed).isNotNull();
     }
+    
+    @Test 
+    public void testAddFeedDestination() {
+        Feed feed = client.buildFeed("Feed 1")
+                .description("Test feed 1")
+                .systemName("feed1")
+                .owner("owner")
+                .post();
+        HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
+        
+        FeedDestination dest = client.addDestination(feed.getId(), ds.getId());
+        
+        assertThat(dest).isNotNull();
+    }
 
 //    @Test 
     public void testBuildHiveTableDatasource() {
@@ -52,7 +67,7 @@ public class MetadataClientTest {
         assertThat(ds).isNotNull();
     }
     
-    @Test
+//    @Test
     public void testListDatasources() {
         buildDirectoryDatasource("ds1").post();
         buildHiveTableDatasource("ds2").post();

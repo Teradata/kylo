@@ -17,7 +17,7 @@ import reactor.io.net.tcp.TcpServer;
  * @author Sean Felten
  */
 @Configuration
-public class EventsContiguration {
+public class ReactorContiguration {
     
     @Bean(name="reactorEnvironment")
     public Environment reactorEnvironment() {

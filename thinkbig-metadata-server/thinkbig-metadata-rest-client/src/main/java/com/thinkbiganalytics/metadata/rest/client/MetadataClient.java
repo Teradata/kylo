@@ -4,6 +4,8 @@
 package com.thinkbiganalytics.metadata.rest.client;
 
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -11,6 +13,7 @@ import java.util.Set;
 
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Form;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 
@@ -54,8 +57,22 @@ public class MetadataClient extends JerseyClient {
         return new FeedBuilderImpl(name);
     }
     
-    public FeedDestination addDestination(Feed feed, String datasourceId) {
+    public FeedDestination addDestination(String feedId, String datasourceId) {
+        Form form = new Form();
+        form.param("datasourceId", datasourceId);
         
+        return this.baseTarget
+                .path("feed").path(feedId).path("destination")
+                .queryParam("dsId", datasourceId)
+                .request()
+                .accept(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE), FeedDestination.class);
+
+        
+//        Form form = new Form();
+//        form.param("datasourceId", datasourceId);
+//        
+//        return post(Paths.get("feed", feedId, "destination"), form, FeedDestination.class);
     }
 
     public FeedCriteria feedCriteria() {
@@ -132,13 +149,28 @@ public class MetadataClient extends JerseyClient {
                 .get(resultType);
     }
     
+    private <R> R post(String path, Form form, Class<R> resultType) {
+        return post(Paths.get(path), form, resultType);
+    }
+    
     private <R> R post(String path, Object body, Class<R> resultType) {
+        return post(Paths.get(path), body, resultType);
+    }
+    
+    private <R> R post(Path path, Form form, Class<R> resultType) {
         return this.baseTarget
-                .path(path)
+                .path(path.toString())
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)
-                .buildPost(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE))
-                .invoke(resultType);
+                .post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE), resultType);
+    }
+    
+    private <R> R post(Path path, Object body, Class<R> resultType) {
+        return this.baseTarget
+                .path(path.toString())
+                .request()
+                .accept(MediaType.APPLICATION_JSON_TYPE)
+                .post(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE), resultType);
     }
 
     private class FeedBuilderImpl implements FeedBuilder {
