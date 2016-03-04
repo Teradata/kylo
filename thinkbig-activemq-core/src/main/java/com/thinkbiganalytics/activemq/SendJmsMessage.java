@@ -6,6 +6,7 @@ package com.thinkbiganalytics.activemq;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.jms.JmsException;
 import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.jms.core.MessageCreator;
 import org.springframework.stereotype.Component;
@@ -36,7 +37,7 @@ public class SendJmsMessage {
 
 
 
-    public void sendObject(Topic topic, final Object obj,final String objectClassType){
+    public void sendObject(Topic topic, final Object obj,final String objectClassType) throws JmsException{
         MessageCreator creator = new MessageCreator() {
             TextMessage message = null;
             @Override
