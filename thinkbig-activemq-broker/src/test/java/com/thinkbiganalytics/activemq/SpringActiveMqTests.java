@@ -42,8 +42,8 @@ public class SpringActiveMqTests {
     @Test
     public void sendSimpleMessage() throws InterruptedException, JMSException {
 
-        Thread runner = new Thread(new TestProducer());
-        runner.start();
+        //Thread runner = new Thread(new TestProducer());
+      //  runner.start();
         while(true) {
             //block
         }
@@ -58,7 +58,7 @@ public class SpringActiveMqTests {
         public void run() {
             while(true){
                 counter++;
-                producer.sendObject("A Person " + counter);
+                producer.send("A Person " + counter);
                 try {
                     Thread.sleep(2000L);
                 } catch (InterruptedException e) {

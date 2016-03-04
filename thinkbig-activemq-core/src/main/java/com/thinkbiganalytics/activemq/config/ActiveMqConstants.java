@@ -7,7 +7,8 @@ package com.thinkbiganalytics.activemq.config;
 /**
  * Created by sr186054 on 3/3/16.
  */
-public interface Topics {
+public interface ActiveMqConstants {
 
-   String  THINKBIG_NIFI_EVENT_TOPIC = "thinkbig.nifi.event.topic";
+    String JMS_CONTAINER_FACTORY = "jmsContainerFactory";
+
 }

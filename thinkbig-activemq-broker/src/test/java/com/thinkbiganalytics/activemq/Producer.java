@@ -15,7 +15,7 @@ public class Producer {
 
 
     @Autowired
-    @Qualifier("thinkbigNifiEventTopic")
+    @Qualifier("sampleTopic")
     private Topic topic;
 
     @Autowired

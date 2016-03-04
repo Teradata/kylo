@@ -18,6 +18,7 @@
     <properties>
       <!-- ActiveMQ version -->
         <activemq.version>5.13.1</activemq.version>
+        <nifi.version>0.5.0</nifi.version>
     </properties>
 
     <dependencies>
@@ -91,6 +92,13 @@
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
             <version>${jackson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.nifi</groupId>
+            <artifactId>nifi-client-dto</artifactId>
+            <version>${nifi.version}</version>
+            <scope>provided</scope>
         </dependency>
 
 

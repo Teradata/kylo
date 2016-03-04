@@ -5,15 +5,14 @@
 package com.thinkbiganalytics.activemq;
 
 
-import com.thinkbiganalytics.activemq.config.Topics;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
-@Component
+//@Component
 public class Consumer {
 
-    @JmsListener(destination = Topics.THINKBIG_NIFI_EVENT_TOPIC, containerFactory = "jmsContainerFactory")
-    public void receiveQueue(com.thinkbiganalytics.activemq.TestObject text) {
+    @JmsListener(destination = "sample.topic", containerFactory = "jmsContainerFactory")
+    public void receiveTopic(Object text) {
         System.out.println(text);
     }
 

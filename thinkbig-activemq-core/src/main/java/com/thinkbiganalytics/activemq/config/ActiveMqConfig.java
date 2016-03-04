@@ -37,12 +37,9 @@ public class ActiveMqConfig {
     @Value("${spring.activemq.broker-url}")
     private String activeMqBrokerUrl;
 
-    @Bean
-    @Qualifier("thinkbigNifiEventTopic")
-    public Topic topic(){
-        ActiveMQTopic topic = new ActiveMQTopic(Topics.THINKBIG_NIFI_EVENT_TOPIC);
-        return topic;
-    }
+
+
+
 
     @Bean
     public ConnectionFactory connectionFactory() {
