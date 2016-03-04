@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.core.feed;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,7 +22,9 @@ import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.core.feed.BaseFeed.DestinationId;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.FeedId;
+import com.thinkbiganalytics.metadata.core.feed.BaseFeed.SourceId;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
@@ -30,7 +33,9 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 public class InMemoryFeedProvider implements FeedProvider {
     
+    @Inject
     private DatasetProvider datasetProvider;
+    
     private Map<Feed.ID, BaseFeed> feeds = new ConcurrentHashMap<>();
     
     public InMemoryFeedProvider() {
@@ -51,6 +56,33 @@ public class InMemoryFeedProvider implements FeedProvider {
     @Override
     public Feed.ID asFeedId(String feedIdStr) {
         return new FeedId(feedIdStr);
+    }
+
+    @Override
+    public Feed.ID resolveFeed(Serializable fid) {
+        if (fid instanceof FeedId) {
+            return (FeedId) fid;
+        } else {
+            return new FeedId(fid);
+        }
+    }
+
+    @Override
+    public FeedSource.ID resolveSource(Serializable sid) {
+        if (sid instanceof SourceId) {
+            return (SourceId) sid;
+        } else {
+            return new SourceId(sid);
+        }
+    }
+
+    @Override
+    public FeedDestination.ID resolveDestination(Serializable did) {
+        if (did instanceof DestinationId) {
+            return (DestinationId) did;
+        } else {
+            return new DestinationId(did);
+        }
     }
 
     @Override

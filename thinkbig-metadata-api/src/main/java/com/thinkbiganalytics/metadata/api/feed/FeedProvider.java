@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.api.feed;
 
+import java.io.Serializable;
 import java.util.Collection;
 
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
@@ -23,6 +24,10 @@ public interface FeedProvider {
     Feed getFeed(Feed.ID id);
     Collection<Feed> getFeeds();
     Collection<Feed> getFeeds(FeedCriteria criteria);
+
+    Feed.ID resolveFeed(Serializable fid);
+    FeedSource.ID resolveSource(Serializable sid);
+    FeedDestination.ID resolveDestination(Serializable sid);
     
 //    FeedDestination getFeedDestination(FeedDestination.ID id);
     

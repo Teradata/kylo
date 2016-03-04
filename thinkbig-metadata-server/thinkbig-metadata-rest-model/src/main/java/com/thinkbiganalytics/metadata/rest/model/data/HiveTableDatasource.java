@@ -3,19 +3,20 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
  *
  * @author Sean Felten
  */
-public class HiveTableDatasource {
+public class HiveTableDatasource extends Datasource {
 
     private String database;
     private String tableName;
     private String modifiers;
-    private List<HiveTableField> fields;
-    private List<HiveTablePartition> partitions;
+    private List<HiveTableField> fields = new ArrayList<>();
+    private List<HiveTablePartition> partitions = new ArrayList<>();
 
     public String getDatabase() {
         return database;

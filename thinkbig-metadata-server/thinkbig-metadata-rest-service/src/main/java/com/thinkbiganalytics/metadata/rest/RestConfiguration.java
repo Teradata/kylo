@@ -27,6 +27,6 @@ public class RestConfiguration {
     }
 
     
-    @ApplicationPath("/api") // TODO Must be a better way
+    @ApplicationPath("/api/metadata") // TODO Must be a better way
     private static class JerseyConfig extends ResourceConfig { }
 }

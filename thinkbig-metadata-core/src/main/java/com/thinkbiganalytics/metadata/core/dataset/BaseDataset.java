@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.core.dataset;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -54,8 +55,21 @@ public class BaseDataset implements Dataset {
     }
 
     
-    private static class DatasetId implements ID {
+    protected static class DatasetId implements ID {
         private UUID uuid = UUID.randomUUID();
+        
+        public DatasetId() {
+        }
+        
+        public DatasetId(Serializable ser) {
+            if (ser instanceof String) {
+                this.uuid = UUID.fromString((String) ser);
+            } else if (ser instanceof UUID) {
+                this.uuid = (UUID) ser;
+            } else {
+                throw new IllegalArgumentException("Unknown ID value: " + ser);
+            }
+        }
         
         @Override
         public boolean equals(Object obj) {

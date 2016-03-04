@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.core.dataset;
 
+import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.HashSet;
 import java.util.Map;
@@ -32,6 +33,15 @@ public class InMemoryDatasetProvider implements DatasetProvider {
 
     public DatasetCriteria datasetCriteria() {
         return new DatasetCriteriaImpl();
+    }
+    
+    @Override
+    public ID resolve(Serializable id) {
+        if (id instanceof BaseDataset.DatasetId) {
+            return (BaseDataset.DatasetId) id;
+        } else {
+            return new BaseDataset.DatasetId(id);
+        }
     }
 
     @Override
@@ -80,7 +90,7 @@ public class InMemoryDatasetProvider implements DatasetProvider {
             }
             
             BaseHiveTableDataset hds = new BaseHiveTableDataset(name, descr, database, table);
-            this.datasets.put(ds.getId(), hds);
+            this.datasets.put(hds.getId(), hds);
             return hds;
         }
     }

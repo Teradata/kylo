@@ -3,6 +3,9 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -26,6 +29,8 @@ public class Feed {
     private boolean initialized;
     // TODO versions
     private PreconditonTrigger trigger;
+    private Set<FeedSource> sources = new HashSet<>();
+    private Set<FeedDestination> destinations = new HashSet<>();
 
     public Feed() {
         super();
@@ -94,5 +99,22 @@ public class Feed {
     public void setTrigger(PreconditonTrigger trigger) {
         this.trigger = trigger;
     }
+
+    public Set<FeedSource> getSources() {
+        return sources;
+    }
+
+    public void setSources(Set<FeedSource> sources) {
+        this.sources = sources;
+    }
+
+    public Set<FeedDestination> getDestinations() {
+        return destinations;
+    }
+
+    public void setDestinations(Set<FeedDestination> destinations) {
+        this.destinations = destinations;
+    }
+
 
 }

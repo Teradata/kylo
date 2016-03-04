@@ -72,8 +72,11 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
             }
         };
     
+    @Inject
     private DatasetProvider datasetProvider;
+    @Inject
     private FeedProvider feedProvider;
+    @Inject
     private ChangeEventDispatcher dispatcher;
     
     private Map<DataOperation.ID, BaseDataOperation> operations = new ConcurrentHashMap<>();

@@ -11,6 +11,14 @@ public class HiveTableField {
 
     private String name;
     private String type;
+    
+    public HiveTableField() {
+    }
+
+    public HiveTableField(String name, String type) {
+        this.name = name;
+        this.type = type;
+    }
 
     public String getName() {
         return name;

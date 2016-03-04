@@ -20,4 +20,12 @@
         <module>thinkbig-metadata-rest-model</module>
         <module>thinkbig-metadata-rest-client</module>
     </modules>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>${jersey.version}</version>
+        </dependency>
+    </dependencies>
 </project>

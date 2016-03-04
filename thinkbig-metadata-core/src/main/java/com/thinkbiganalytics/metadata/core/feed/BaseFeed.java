@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.core.feed;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -88,8 +89,14 @@ public class BaseFeed implements Feed {
             this.uuid = UUID.randomUUID();
         }
         
-        public BaseId(String uuidStr) {
-            this.uuid = UUID.fromString(uuidStr);
+        public BaseId(Serializable ser) {
+            if (ser instanceof String) {
+                this.uuid = UUID.fromString((String) ser);
+            } else if (ser instanceof UUID) {
+                this.uuid = (UUID) ser;
+            } else {
+                throw new IllegalArgumentException("Unknown ID value: " + ser);
+            }
         }
         
         @Override
@@ -119,18 +126,18 @@ public class BaseFeed implements Feed {
             super();
         }
 
-        public FeedId(String uuidStr) {
-            super(uuidStr);
+        public FeedId(Serializable ser) {
+            super(ser);
         }
     }
     
-    protected static class SourceId extends BaseId  implements FeedSource.ID {
+    protected static class SourceId extends BaseId implements FeedSource.ID {
         public SourceId() {
             super();
         }
 
-        public SourceId(String uuidStr) {
-            super(uuidStr);
+        public SourceId(Serializable ser) {
+            super(ser);
         } 
     }
     
@@ -139,9 +146,9 @@ public class BaseFeed implements Feed {
             super();
         }
 
-        public DestinationId(String uuidStr) {
-            super(uuidStr);
-        }
+        public DestinationId(Serializable ser) {
+            super(ser);
+        } 
     }
     
 

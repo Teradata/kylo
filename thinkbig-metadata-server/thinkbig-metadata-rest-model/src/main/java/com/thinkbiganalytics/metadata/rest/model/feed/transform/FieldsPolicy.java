@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.rest.model.feed;
+package com.thinkbiganalytics.metadata.rest.model.feed.transform;
 
 /**
  *
