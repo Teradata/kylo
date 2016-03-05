@@ -71,10 +71,10 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
     @Override
     public void registerEvents(Iterable<ProvenanceEventRecord> iterable) {
         List<ProvenanceEventRecord> events = Lists.newArrayList(iterable);
-        System.out.println("REGISTER Multiple EVENTs : " + events.size());
         provenanceEventRecordWriter.checkAndSetMaxEventId(getMaxEventId());
         repository.registerEvents(events);
         if(events != null) {
+            System.out.println("REGISTER Multiple EVENTs : " + events.size());
             for (ProvenanceEventRecord event : events) {
                 provenanceEventRecordWriter.writeEvent(event);
             }
