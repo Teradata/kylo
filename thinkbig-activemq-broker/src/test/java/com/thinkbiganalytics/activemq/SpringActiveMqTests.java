@@ -42,8 +42,8 @@ public class SpringActiveMqTests {
     @Test
     public void sendSimpleMessage() throws InterruptedException, JMSException {
 
-        //Thread runner = new Thread(new TestProducer());
-      //  runner.start();
+    //    Thread runner = new Thread(new TestProducer());
+     //   runner.start();
         while(true) {
             //block
         }

@@ -4,6 +4,9 @@
 
 package com.thinkbiganalytics.activemq;
 
+import com.thinkbiganalytics.activemq.config.ActiveMqConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jms.JmsException;
@@ -21,6 +24,7 @@ import javax.jms.Topic;
  */
 @Component
 public class SendJmsMessage {
+    private static final Logger LOG = LoggerFactory.getLogger(SendJmsMessage.class);
 
     @Autowired
     ObjectMapperSerializer objectMapperSerializer;
@@ -38,6 +42,7 @@ public class SendJmsMessage {
 
 
     public void sendObject(Topic topic, final Object obj,final String objectClassType) throws JmsException{
+        LOG.info("Sending ActiveMQ message ["+obj+"] to topic ["+topic+"]");
         MessageCreator creator = new MessageCreator() {
             TextMessage message = null;
             @Override

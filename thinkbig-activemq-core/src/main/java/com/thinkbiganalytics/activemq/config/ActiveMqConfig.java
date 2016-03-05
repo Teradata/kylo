@@ -10,6 +10,8 @@ import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQQueue;
 import org.apache.activemq.command.ActiveMQTopic;
 import org.apache.activemq.pool.PooledConnectionFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -34,6 +36,8 @@ import javax.jms.Topic;
 @EnableJms
 public class ActiveMqConfig {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ActiveMqConfig.class);
+
     @Value("${spring.activemq.broker-url}")
     private String activeMqBrokerUrl;
 
@@ -48,6 +52,7 @@ public class ActiveMqConfig {
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(activeMqBrokerUrl);
         factory.setTrustAllPackages(true);
         pool.setConnectionFactory(factory);
+        LOG.info("Setup ActiveMQ ConnectionFactory for "+activeMqBrokerUrl);
         return pool;
     }
 
