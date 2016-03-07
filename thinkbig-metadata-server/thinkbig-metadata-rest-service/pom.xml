@@ -8,7 +8,7 @@
     </parent>
     <artifactId>thinkbig-metadata-rest-service</artifactId>
     <properties>
-        <spring.boot.version>1.3.3.RELEASE</spring.boot.version>
+        <spring.boot.version>1.2.8.RELEASE</spring.boot.version>
     </properties>
     <dependencies>
         <dependency>
@@ -26,6 +26,7 @@
             <artifactId>spring-boot-starter-jersey</artifactId>
             <version>${spring.boot.version}</version>
         </dependency>
+        <!-- 
         <dependency>
             <groupId>io.projectreactor</groupId>
             <artifactId>reactor-bus</artifactId>
@@ -41,6 +42,7 @@
             <artifactId>netty-all</artifactId>
             <version>${netty.version}</version>
         </dependency>
+         -->
 
         <dependency>
             <groupId>org.glassfish.jersey.core</groupId>
@@ -66,11 +68,6 @@
             <groupId>com.thinkbiganalytics.bdp</groupId>
             <artifactId>tba-sla-core</artifactId>
             <version>1.3.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>org.neo4j</groupId>
-            <artifactId>neo4j-cypher-compiler-2.2</artifactId>
-            <version>2.2.5</version>
         </dependency>
     </dependencies>
 </project>

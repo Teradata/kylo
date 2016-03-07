@@ -21,6 +21,7 @@
         <guava.version>18.0</guava.version>
         <joda.time.version>2.9.1</joda.time.version>
         <quartz.version>2.2.1</quartz.version>
+	<spring.version>4.2.1.RELEASE</spring.version>
     </properties>
     <dependencies>
         <dependency>
