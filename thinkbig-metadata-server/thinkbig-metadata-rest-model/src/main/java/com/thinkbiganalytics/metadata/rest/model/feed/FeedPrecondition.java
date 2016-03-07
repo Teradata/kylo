@@ -17,7 +17,7 @@ import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class PreconditonTrigger {
+public class FeedPrecondition {
 
     private List<Metric> metrics;
 

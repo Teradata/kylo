@@ -19,6 +19,7 @@ public class FeedDestination {
 
     private String id;
     private FieldsPolicy fieldsPolicy;
+    private String feedId;
     private String datasourceId;
     private Datasource datasource;
 
@@ -28,6 +29,14 @@ public class FeedDestination {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getFeedId() {
+        return feedId;
+    }
+
+    public void setFeedId(String feedId) {
+        this.feedId = feedId;
     }
 
     public FieldsPolicy getFieldsPolicy() {

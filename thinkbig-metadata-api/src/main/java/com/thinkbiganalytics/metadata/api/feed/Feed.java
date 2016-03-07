@@ -26,7 +26,12 @@ public interface Feed extends Serializable {
     
     Set<FeedSource> getSources();
     
+    FeedSource getSource(FeedSource.ID id);
+
     Set<FeedDestination> getDestinations();
 
     FeedDestination getDestination(Dataset.ID id);
+
+    FeedDestination getDestination(FeedDestination.ID id);
+
 }

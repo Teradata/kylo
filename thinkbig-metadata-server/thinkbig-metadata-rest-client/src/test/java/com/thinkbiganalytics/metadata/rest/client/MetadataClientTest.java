@@ -14,6 +14,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
 
 public class MetadataClientTest {
@@ -29,7 +30,7 @@ public class MetadataClientTest {
     public void setUp() throws Exception {
     }
 
-//    @Test
+    @Test
     public void testBuildFeed() throws ParseException {
         Feed feed = buildFeed("feed1").post();
         
@@ -88,7 +89,7 @@ public class MetadataClientTest {
                 .description(name + " feed")
                 .owner("ownder")
                 .systemName(name)
-                .preconditionMetric(new FeedExecutedSinceScheduleMetric(name, "0 0 6 * * ? *"));
+                .preconditionMetric(FeedExecutedSinceScheduleMetric.named(name, "0 0 6 * * ? *"));
     }
     
     private DirectoryDatasourceBuilder buildDirectoryDatasource(String name) {

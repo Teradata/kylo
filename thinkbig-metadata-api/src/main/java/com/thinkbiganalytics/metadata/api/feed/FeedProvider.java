@@ -28,12 +28,13 @@ public interface FeedProvider {
     Feed getFeed(Feed.ID id);
     Collection<Feed> getFeeds();
     Collection<Feed> getFeeds(FeedCriteria criteria);
+    
+    FeedSource getFeedSource(FeedSource.ID id);
+    FeedDestination getFeedDestination(FeedDestination.ID id);
 
     Feed.ID resolveFeed(Serializable fid);
     FeedSource.ID resolveSource(Serializable sid);
     FeedDestination.ID resolveDestination(Serializable sid);
-    
-//    FeedDestination getFeedDestination(FeedDestination.ID id);
     
     // TODO Methods to add policy info to source
 }

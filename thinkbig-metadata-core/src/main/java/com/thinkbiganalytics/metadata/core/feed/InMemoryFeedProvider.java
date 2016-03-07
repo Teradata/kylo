@@ -48,6 +48,8 @@ public class InMemoryFeedProvider implements FeedProvider {
 
     
     private Map<Feed.ID, BaseFeed> feeds = new ConcurrentHashMap<>();
+    private Map<FeedSource.ID, BaseFeed> sources = new ConcurrentHashMap<>();
+    private Map<FeedDestination.ID, BaseFeed> destinations = new ConcurrentHashMap<>();
     
     
     public InMemoryFeedProvider() {
@@ -210,19 +212,6 @@ public class InMemoryFeedProvider implements FeedProvider {
         }
     }
     
-    private FeedPreconditionImpl createPrecondition(String name, String descr, Set<Metric> metrics) {
-        ServiceLevelAgreement sla = this.slaProvider.builder()
-                .name(name)
-                .description(descr)
-                .obligationBuilder()
-                .metric(metrics)
-                .add()
-                .build();
-        
-        this.preconditionService.listenFeeds(metrics);
-        return new FeedPreconditionImpl(sla);
-    }
-
     @Override
     public FeedCriteria feedCriteria() {
         return new Criteria();
@@ -243,8 +232,43 @@ public class InMemoryFeedProvider implements FeedProvider {
         Criteria critImpl = (Criteria) criteria;
         return new ArrayList<Feed>(Collections2.filter(this.feeds.values(), critImpl));
     }
+    
+    @Override
+    public FeedSource getFeedSource(FeedSource.ID id) {
+        Feed feed = this.sources.get(id);
+        
+        if (feed != null) {
+            return feed.getSource(id);
+        } else {
+            return null;
+        }
+    }
+    
+    @Override
+    public FeedDestination getFeedDestination(FeedDestination.ID id) {
+        Feed feed = this.destinations.get(id);
+        
+        if (feed != null) {
+            return feed.getDestination(id);
+        } else {
+            return null;
+        }
+    }
 
     
+    private FeedPreconditionImpl createPrecondition(String name, String descr, Set<Metric> metrics) {
+        ServiceLevelAgreement sla = this.slaProvider.builder()
+                .name(name)
+                .description(descr)
+                .obligationBuilder()
+                .metric(metrics)
+                .add()
+                .build();
+        
+        this.preconditionService.listenFeeds(metrics);
+        return new FeedPreconditionImpl(sla);
+    }
+
     private FeedSource ensureFeedSource(BaseFeed feed, Dataset ds, ServiceLevelAgreement.ID slaId) {
         Map<Dataset.ID, FeedSource> srcIds = new HashMap<>();
         for (FeedSource src : feed.getSources()) {
@@ -254,7 +278,9 @@ public class InMemoryFeedProvider implements FeedProvider {
         if (srcIds.containsKey(ds.getId())) {
             return srcIds.get(ds.getId());
         } else {
-            return feed.addSource(ds, slaId);
+            FeedSource src = feed.addSource(ds, slaId);
+            this.sources.put(src.getId(), feed);
+            return src;
         }
     }
 
@@ -264,7 +290,9 @@ public class InMemoryFeedProvider implements FeedProvider {
         if (dest != null) {
             return dest;
         } else {
-            return feed.addDestination(ds);
+            dest = feed.addDestination(ds);
+            this.destinations.put(dest.getId(), feed);
+            return dest;
         }
     }
 

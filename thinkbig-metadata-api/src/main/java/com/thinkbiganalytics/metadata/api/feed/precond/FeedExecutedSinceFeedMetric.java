@@ -3,8 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.api.feed.precond;
 
-import java.text.ParseException;
-
 /**
  *
  * @author Sean Felten
@@ -13,7 +11,7 @@ public class FeedExecutedSinceFeedMetric extends DependentFeedMetric {
 
     private String sinceName;
 
-    public FeedExecutedSinceFeedMetric(String hasRunFeed, String sinceFeed) throws ParseException {
+    public FeedExecutedSinceFeedMetric(String hasRunFeed, String sinceFeed) {
         super(hasRunFeed);
         this.sinceName = sinceFeed;
     }

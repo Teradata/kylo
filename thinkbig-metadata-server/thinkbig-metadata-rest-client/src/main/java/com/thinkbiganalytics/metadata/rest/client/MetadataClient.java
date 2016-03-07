@@ -29,8 +29,8 @@ import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableField;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.rest.model.feed.PreconditonTrigger;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 
 /**
@@ -76,12 +76,12 @@ public class MetadataClient extends JerseyClient {
     }
     
     public List<Feed> getFeeds() {
-        return get("feed", EVERYTHING, FEED_LIST);
+        return get(Paths.get("feed"), EVERYTHING, FEED_LIST);
     }
     
     public List<Feed> getFeeds(FeedCriteria criteria) {
         try {
-            return get("feed", (TargetFeedCriteria) criteria, FEED_LIST);
+            return get(Paths.get("feed"), (TargetFeedCriteria) criteria, FEED_LIST);
         } catch (ClassCastException e) {
             throw new IllegalThreadStateException("Unknown criteria type: " + criteria.getClass());
         }
@@ -100,58 +100,70 @@ public class MetadataClient extends JerseyClient {
     }
 
     public List<Datasource> getDatasources() {
-        return get("datasource", EVERYTHING, DATASOURCE_LIST);
+        return get(Paths.get("datasource"), EVERYTHING, DATASOURCE_LIST);
     }
     
     public List<Datasource> getDatasources(DatasourceCriteria criteria) {
         try {
-            return get("datasource", (TargetDatasourceCriteria) criteria, DATASOURCE_LIST);
+            return get(Paths.get("datasource"), (TargetDatasourceCriteria) criteria, DATASOURCE_LIST);
         } catch (ClassCastException e) {
             throw new IllegalThreadStateException("Unknown criteria type: " + criteria.getClass());
         }
     }
 
-    private PreconditonTrigger createTrigger(List<Metric> metrics) {
-        PreconditonTrigger trigger = new PreconditonTrigger();
+    public DataOperation beginOperation(String feedDestinationId, String status) {
+        Form form = new Form();
+        form.param("feedDestinationId", feedDestinationId);
+        form.param("status", status);
+        
+        return post(Paths.get("dataop"), form, DataOperation.class);
+    }
+    
+    public DataOperation update(DataOperation op) {
+        return put(Paths.get("dataop", op.getId()), op, DataOperation.class);
+    }
+    
+    private FeedPrecondition createTrigger(List<Metric> metrics) {
+        FeedPrecondition trigger = new FeedPrecondition();
         trigger.setMetrics(metrics);
-        return null;
+        return trigger;
     }
 
     private Feed postFeed(Feed feed) {
-        return post("feed", feed, Feed.class);
+        return post(Paths.get("feed"), feed, Feed.class);
     }
     
     private HiveTableDatasource postDatasource(HiveTableDatasource ds) {
-        return post("datasource/hivetable", ds, HiveTableDatasource.class);
+        return post(Paths.get("datasource", "hivetable"), ds, HiveTableDatasource.class);
     }
     
     private DirectoryDatasource postDatasource(DirectoryDatasource ds) {
-        return post("datasource/directory", ds, DirectoryDatasource.class);
+        return post(Paths.get("datasource", "directory"), ds, DirectoryDatasource.class);
     }
     
-    private <R> R get(String path, Function<WebTarget, WebTarget> funct, Class<R> resultType) {
+    private <R> R get(Path path, Function<WebTarget, WebTarget> funct, Class<R> resultType) {
         return funct.apply(this.baseTarget)
-                .path(path)
+                .path(path.toString())
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)
                 .get(resultType);
     }
     
-    private <R> R get(String path, Function<WebTarget, WebTarget> funct, GenericType<R> resultType) {
+    private <R> R get(Path path, Function<WebTarget, WebTarget> funct, GenericType<R> resultType) {
         return funct.apply(this.baseTarget)
-                .path(path)
+                .path(path.toString())
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)
                 .get(resultType);
     }
-    
-    private <R> R post(String path, Form form, Class<R> resultType) {
-        return post(Paths.get(path), form, resultType);
-    }
-    
-    private <R> R post(String path, Object body, Class<R> resultType) {
-        return post(Paths.get(path), body, resultType);
-    }
+//    
+//    private <R> R post(String path, Form form, Class<R> resultType) {
+//        return post(Paths.get(path), form, resultType);
+//    }
+//    
+//    private <R> R post(String path, Object body, Class<R> resultType) {
+//        return post(Paths.get(path), body, resultType);
+//    }
     
     private <R> R post(Path path, Form form, Class<R> resultType) {
         return this.baseTarget
@@ -168,13 +180,21 @@ public class MetadataClient extends JerseyClient {
                 .accept(MediaType.APPLICATION_JSON_TYPE)
                 .post(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE), resultType);
     }
+    
+    private <R> R put(Path path, Object body, Class<R> resultType) {
+        return this.baseTarget
+                .path(path.toString())
+                .request()
+                .accept(MediaType.APPLICATION_JSON_TYPE)
+                .put(Entity.entity(body, MediaType.APPLICATION_JSON_TYPE), resultType);
+    }
 
     private class FeedBuilderImpl implements FeedBuilder {
         private String feedName;
         private String systemName;
         private String description;
         private String owner;
-        private List<Metric> preconditionMetrics = new ArrayList<Metric>();
+        private List<Metric> preconditionMetrics = new ArrayList<>();
     
         public FeedBuilderImpl(String name) {
             this.feedName = name;
@@ -213,7 +233,7 @@ public class MetadataClient extends JerseyClient {
             feed.setSystemName(this.systemName);
             feed.setDescription(this.description);
             feed.setOwner(this.owner);
-            feed.setTrigger(createTrigger(this.preconditionMetrics));
+            feed.setPrecondition(createTrigger(this.preconditionMetrics));
             
             return feed;
         }

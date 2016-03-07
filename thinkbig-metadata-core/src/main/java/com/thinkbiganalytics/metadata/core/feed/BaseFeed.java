@@ -4,7 +4,9 @@
 package com.thinkbiganalytics.metadata.core.feed;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -28,8 +30,8 @@ public class BaseFeed implements Feed {
     private ID Id;
     private String Name;
     private String Description;
-    private Set<FeedSource> sources = new HashSet<>();
-    private Set<FeedDestination> destinations = new HashSet<>();
+    private Map<FeedSource.ID, FeedSource> sources = new HashMap<>();
+    private Map<FeedDestination.ID, FeedDestination> destinations = new HashMap<>();
     private FeedPreconditionImpl precondition;
     
 
@@ -52,16 +54,16 @@ public class BaseFeed implements Feed {
     }
 
     public Set<FeedSource> getSources() {
-        return this.sources;
+        return new HashSet<>(this.sources.values());
     }
 
     public Set<FeedDestination> getDestinations() {
-        return destinations;
+        return new HashSet<>(destinations.values());
     }
     
     @Override
     public FeedDestination getDestination(Dataset.ID id) {
-        for (FeedDestination dest : this.destinations) {
+        for (FeedDestination dest : this.destinations.values()) {
             if (dest.getDataset().getId().equals(id)) {
                 return dest;
             }
@@ -81,14 +83,24 @@ public class BaseFeed implements Feed {
 
     public FeedSource addSource(Dataset ds, ServiceLevelAgreement.ID agreemenetId) {
         Source src = new Source(ds, agreemenetId);
-        this.sources.add(src);
+        this.sources.put(src.getId(), src);
         return src;
+    }
+    
+    @Override
+    public FeedSource getSource(FeedSource.ID id) {
+        return this.sources.get(id);
     }
 
     public FeedDestination addDestination(Dataset ds) {
         FeedDestination dest = new Destination(ds);
-        this.destinations.add(dest);
+        this.destinations.put(dest.getId(), dest);
         return dest;
+    }
+    
+    @Override
+    public FeedDestination getDestination(FeedDestination.ID id) {
+        return this.destinations.get(id);
     }
     
     public FeedPrecondition setPrecondition(ServiceLevelAgreement sla) {

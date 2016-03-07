@@ -5,7 +5,9 @@ package com.thinkbiganalytics.metadata.rest.api;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -15,7 +17,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
@@ -30,7 +31,9 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
+import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 
 /**
  *
@@ -66,19 +69,33 @@ public class FeedsResource {
         if (existing.isEmpty()) {
             com.thinkbiganalytics.metadata.api.feed.Feed domainFeed = this.feedProvider.ensureFeed(feed.getSystemName(), feed.getDescription());
             
-            for (FeedSource src : feed.getSources()) {
-                Dataset.ID dsId = this.datasetProvider.resolve(src.getId());
-                this.feedProvider.ensureFeedSource(domainFeed.getId(), dsId);
-            }
-            
-            for (FeedDestination src : feed.getDestinations()) {
-                Dataset.ID dsId = this.datasetProvider.resolve(src.getId());
-                this.feedProvider.ensureFeedDestination(domainFeed.getId(), dsId);
-            }
+            ensureDependentDatasources(feed, domainFeed);
+            ensurePrecondition(feed, domainFeed);
             
             return Model.DOMAIN_TO_FEED.apply(this.feedProvider.getFeed(domainFeed.getId()));
         } else {
             throw new WebApplicationException("A feed with the given name already exists: " + feed.getSystemName(), Status.BAD_REQUEST);
+        }
+    }
+
+    private void ensurePrecondition(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
+        FeedPrecondition precond = feed.getPrecondition();
+        Set<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics 
+            = new HashSet<>(Collections2.transform(precond.getMetrics(), Model.METRIC_TO_DOMAIN));
+        
+        this.feedProvider.ensurePrecondition(domainFeed.getId(), "", "", domainMetrics);
+        
+    }
+
+    private void ensureDependentDatasources(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
+        for (FeedSource src : feed.getSources()) {
+            Dataset.ID dsId = this.datasetProvider.resolve(src.getId());
+            this.feedProvider.ensureFeedSource(domainFeed.getId(), dsId);
+        }
+        
+        for (FeedDestination src : feed.getDestinations()) {
+            Dataset.ID dsId = this.datasetProvider.resolve(src.getId());
+            this.feedProvider.ensureFeedDestination(domainFeed.getId(), dsId);
         }
     }
     

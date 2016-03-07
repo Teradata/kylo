@@ -28,7 +28,7 @@ public class Feed {
     private State state;
     private boolean initialized;
     // TODO versions
-    private PreconditonTrigger trigger;
+    private FeedPrecondition precondition;
     private Set<FeedSource> sources = new HashSet<>();
     private Set<FeedDestination> destinations = new HashSet<>();
 
@@ -92,12 +92,12 @@ public class Feed {
         this.initialized = initialized;
     }
 
-    public PreconditonTrigger getTrigger() {
-        return trigger;
+    public FeedPrecondition getPrecondition() {
+        return precondition;
     }
 
-    public void setTrigger(PreconditonTrigger trigger) {
-        this.trigger = trigger;
+    public void setPrecondition(FeedPrecondition trigger) {
+        this.precondition = trigger;
     }
 
     public Set<FeedSource> getSources() {

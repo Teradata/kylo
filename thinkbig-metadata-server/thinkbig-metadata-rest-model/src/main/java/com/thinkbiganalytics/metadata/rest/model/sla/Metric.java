@@ -14,7 +14,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
  */
 @JsonTypeInfo(use = Id.NAME, include = As.PROPERTY)
 @JsonSubTypes({
-    @JsonSubTypes.Type(value = DependentDatasetMetric.class),
+    @JsonSubTypes.Type(value = DatasourceUpdatedSinceMetric.class),
     @JsonSubTypes.Type(value = DependentFeedMetric.class),
     }
 )

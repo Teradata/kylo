@@ -3,19 +3,41 @@
  */
 package com.thinkbiganalytics.metadata.rest;
 
+import java.text.ParseException;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
+
+import org.joda.time.Period;
+import org.joda.time.format.PeriodFormat;
+import org.joda.time.format.PeriodFormatter;
+import org.quartz.CronExpression;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
 import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.feed.precond.DatasetUpdatedSinceMetric;
+import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
+import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule;
 
 /**
  *
@@ -25,7 +47,84 @@ public class Model {
 
     private Model() { }
     
-    public static Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed> DOMAIN_TO_FEED 
+    public static final PeriodFormatter PERIOD_FORMATTER = PeriodFormat.getDefault();
+    
+    /*
+    com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceMetric
+    com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric
+    com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric
+    com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule
+    
+    com.thinkbiganalytics.metadata.api.feed.precond.DatasetUpdatedSinceMetric
+    com.thinkbiganalytics.metadata.api.feed.precond.FeedExecutedSinceFeedMetric
+    com.thinkbiganalytics.metadata.api.feed.precond.FeedExecutedSinceScheduleMetric
+    com.thinkbiganalytics.metadata.api.feed.precond.WithinSchedule
+     */
+    public static final Map<Class<? extends Metric>, Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>> METRIC_TO_DOMAIN_MAP;
+    static {
+        Map<Class<? extends Metric>, Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>> map = new HashMap<>();
+        map.put(WithinSchedule.class, new Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>() {
+            @Override
+            public com.thinkbiganalytics.metadata.sla.api.Metric apply(Metric model) {
+                WithinSchedule cast = (WithinSchedule) model;
+                try {
+                    CronExpression cronExpression = new CronExpression(cast.getCronSchedule());
+                    Period period = PERIOD_FORMATTER.parsePeriod(cast.getPeriod()); 
+                    
+                    return new com.thinkbiganalytics.metadata.api.feed.precond.WithinSchedule(cronExpression, period);
+                } catch (ParseException e) {
+                    throw new WebApplicationException("Invalid cron and/or period expression provided for schedule: " + 
+                            cast.getCronSchedule() + " / " + cast.getPeriod(), Status.BAD_REQUEST);
+            }
+            }
+        });
+        map.put(FeedExecutedSinceFeedMetric.class, new Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>() {
+            @Override
+            public com.thinkbiganalytics.metadata.sla.api.Metric apply(Metric model) {
+                FeedExecutedSinceFeedMetric cast = (FeedExecutedSinceFeedMetric) model;
+                return new com.thinkbiganalytics.metadata.api.feed.precond.FeedExecutedSinceFeedMetric(cast.getDependentFeedName(), 
+                                                                                                       cast.getSinceFeedName());
+            }
+        });
+        map.put(FeedExecutedSinceScheduleMetric.class, new Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>() {
+            @Override
+            public com.thinkbiganalytics.metadata.sla.api.Metric apply(Metric model) {
+                FeedExecutedSinceScheduleMetric cast = (FeedExecutedSinceScheduleMetric) model;
+                try {
+                    return new com.thinkbiganalytics.metadata.api.feed.precond.FeedExecutedSinceScheduleMetric(cast.getDependentFeedName(), 
+                                                                                                               cast.getCronSchedule());
+                } catch (ParseException e) {
+                    throw new WebApplicationException("Invalid cron expression provided for feed execution schedule: " + 
+                            cast.getCronSchedule(), Status.BAD_REQUEST);
+            }
+            }
+        });
+        map.put(DatasourceUpdatedSinceMetric.class, new Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>() {
+            @Override
+            public com.thinkbiganalytics.metadata.sla.api.Metric apply(Metric model) {
+                DatasourceUpdatedSinceMetric cast = (DatasourceUpdatedSinceMetric) model;
+                try {
+                    return new DatasetUpdatedSinceMetric(cast.getDatasourceName(), cast.getCronSchedule());
+                } catch (ParseException e) {
+                    throw new WebApplicationException("Invalid cron expression provided for datasource update schedule: " + 
+                                cast.getCronSchedule(), Status.BAD_REQUEST);
+                }
+            }
+        });
+        
+        METRIC_TO_DOMAIN_MAP = map;
+    }
+    
+    public static final Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric> METRIC_TO_DOMAIN
+        =  new Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>() {
+            @Override
+            public com.thinkbiganalytics.metadata.sla.api.Metric apply(Metric model) {
+                Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric> func = METRIC_TO_DOMAIN_MAP.get(model.getClass());
+                return func.apply(model);
+            }
+        };
+    
+    public static final Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed> DOMAIN_TO_FEED 
         = new Function<com.thinkbiganalytics.metadata.api.feed.Feed, Feed>() {
             @Override
             public Feed apply(com.thinkbiganalytics.metadata.api.feed.Feed domain) {
@@ -42,7 +141,7 @@ public class Model {
             }
         };
         
-    public static Function<com.thinkbiganalytics.metadata.api.feed.FeedSource, FeedSource> DOMAIN_TO_FEED_SOURCE
+    public static final Function<com.thinkbiganalytics.metadata.api.feed.FeedSource, FeedSource> DOMAIN_TO_FEED_SOURCE
         = new Function<com.thinkbiganalytics.metadata.api.feed.FeedSource, FeedSource>() {
             @Override
             public FeedSource apply(com.thinkbiganalytics.metadata.api.feed.FeedSource domain) {
@@ -55,7 +154,7 @@ public class Model {
             }
         };
     
-    public static Function<com.thinkbiganalytics.metadata.api.feed.FeedDestination, FeedDestination> DOMAIN_TO_FEED_DESTINATION
+    public static final Function<com.thinkbiganalytics.metadata.api.feed.FeedDestination, FeedDestination> DOMAIN_TO_FEED_DESTINATION
         = new Function<com.thinkbiganalytics.metadata.api.feed.FeedDestination, FeedDestination>() {
             @Override
             public FeedDestination apply(com.thinkbiganalytics.metadata.api.feed.FeedDestination domain) {
@@ -68,7 +167,7 @@ public class Model {
             }
         };
     
-    public static Function<Dataset, Datasource> DOMAIN_TO_DS
+    public static final Function<Dataset, Datasource> DOMAIN_TO_DS
         = new Function<Dataset, Datasource>() {
             @Override
             public Datasource apply(Dataset domain) {
@@ -89,7 +188,7 @@ public class Model {
             }
         };
 
-    public static Function<HiveTableDataset, HiveTableDatasource> DOMAIN_TO_TABLE_DS
+    public static final Function<HiveTableDataset, HiveTableDatasource> DOMAIN_TO_TABLE_DS
         = new Function<HiveTableDataset, HiveTableDatasource>() {
             @Override
             public HiveTableDatasource apply(HiveTableDataset domain) {
@@ -109,7 +208,7 @@ public class Model {
             }
         };
     
-    public static Function<DirectoryDataset, DirectoryDatasource> DOMAIN_TO_DIR_DS
+    public static final Function<DirectoryDataset, DirectoryDatasource> DOMAIN_TO_DIR_DS
         = new Function<DirectoryDataset, DirectoryDatasource>() {
             @Override
             public DirectoryDatasource apply(DirectoryDataset domain) {
@@ -125,8 +224,45 @@ public class Model {
                 return dir;
             }
         };
-        
-//        public static Function<DirectoryDataset, DirectoryDatasource> DOMAIN_TO_DIR_DS
+
+    public static final Function<com.thinkbiganalytics.metadata.api.op.DataOperation, DataOperation> DOMAIN_TO_OP
+        = new Function<com.thinkbiganalytics.metadata.api.op.DataOperation, DataOperation>() {
+            @Override
+            public DataOperation apply(com.thinkbiganalytics.metadata.api.op.DataOperation domain) {
+                DataOperation op = new DataOperation();
+                op.setId(domain.getId().toString());
+                op.setFeedDestinationId(domain.getProducer().toString());
+                op.setStartTime(domain.getStartTime());
+                op.setStopTiime(domain.getStopTime());
+                op.setState(DataOperation.State.valueOf(domain.getState().name()));
+                op.setStatus(domain.getStatus());
+                if (domain.getChangeSet() != null) op.setDataset(DOMAIN_TO_DATASET.apply(domain.getChangeSet()));
+                
+                return op;
+            }
+        };
+    
+
+    public static final Function<ChangeSet<Dataset, ChangedContent>, com.thinkbiganalytics.metadata.rest.model.op.Dataset> DOMAIN_TO_DATASET
+        = new Function<ChangeSet<Dataset, ChangedContent>, com.thinkbiganalytics.metadata.rest.model.op.Dataset>() {
+            @Override
+            public com.thinkbiganalytics.metadata.rest.model.op.Dataset apply(ChangeSet<Dataset, ChangedContent> domain) {
+                com.thinkbiganalytics.metadata.rest.model.op.Dataset ds = new com.thinkbiganalytics.metadata.rest.model.op.Dataset();
+//                domain.getChanges();
+//                ds.setChangeSets(changeSets);
+                return ds;
+            }
+        };
+ 
+    public static Set<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics(List<Metric> metrics) {
+        return new HashSet<>(Collections2.transform(metrics, METRIC_TO_DOMAIN));
+    }
+    
+    public static <D extends com.thinkbiganalytics.metadata.sla.api.Metric> D deriveDomain(Metric model) {
+        @SuppressWarnings("unchecked")
+        D result = (D) METRIC_TO_DOMAIN.apply(model);
+        return result;
+    }
 
         
     public static void validateCreate(Feed feed) {
@@ -151,4 +287,5 @@ public class Model {
         // TODO Auto-generated method stub
         
     }
+
 }
