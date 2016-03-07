@@ -65,4 +65,8 @@ public class HiveTablePartition {
         this.formula = formula;
     }
 
+    public void addValue(String value) {
+        this.values.add(value);
+    }
+
 }

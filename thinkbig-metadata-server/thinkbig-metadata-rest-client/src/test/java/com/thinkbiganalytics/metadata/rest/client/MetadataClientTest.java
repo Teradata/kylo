@@ -4,8 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.net.URI;
 import java.text.ParseException;
+import java.util.Arrays;
 import java.util.List;
 
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -13,8 +15,14 @@ import org.junit.Test;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
+import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
+import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
+import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ChangeType;
+import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ContentType;
+import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
 
 public class MetadataClientTest {
@@ -30,7 +38,7 @@ public class MetadataClientTest {
     public void setUp() throws Exception {
     }
 
-    @Test
+//    @Test
     public void testBuildFeed() throws ParseException {
         Feed feed = buildFeed("feed1").post();
         
@@ -82,6 +90,38 @@ public class MetadataClientTest {
         assertThat(list)
             .isNotNull()
             .hasSize(3);
+    }
+    
+//    @Test
+    public void testBeginOperation() throws ParseException {
+        Feed feed = buildFeed("feed1").post();
+        HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
+        feed = client.addDestination(feed.getId(), ds.getId());
+        String destId = feed.getDestinations().iterator().next().getId();
+
+        DataOperation op = client.beginOperation(destId, "");
+        
+        assertThat(op).isNotNull();
+    }
+    
+//    @Test
+    public void testCompleteOperation() throws ParseException {
+        Feed feed = buildFeed("feed1").post();
+        HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
+        feed = client.addDestination(feed.getId(), ds.getId());
+        String destId = feed.getDestinations().iterator().next().getId();
+        DataOperation op = client.beginOperation(destId, "");
+        
+        HiveTablePartitions changeSet = new HiveTablePartitions();
+        changeSet.setPartions(Arrays.asList(new HiveTablePartition("month", null, "Jan", "Feb"),
+                                           new HiveTablePartition("year", null, "2015", "2016")));
+        Dataset dataset = new Dataset(new DateTime(), ChangeType.UPDATE, ContentType.PARTITIONS, changeSet);
+        op.setState(State.SUCCESS);
+        op.setDataset(dataset);
+
+        op = client.update(op);
+        
+        assertThat(op).isNotNull();
     }
     
     private FeedBuilder buildFeed(String name) throws ParseException {

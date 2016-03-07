@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.op;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -17,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FileList extends ChangeSet {
 
-    private List<String> paths;
+    private List<String> paths = new ArrayList<>();
 
     public List<String> getPaths() {
         return paths;
@@ -25,6 +26,10 @@ public class FileList extends ChangeSet {
 
     public void setPaths(List<String> paths) {
         this.paths = paths;
+    }
+
+    public void addPath(String path) {
+        this.paths.add(path);
     }
     
     

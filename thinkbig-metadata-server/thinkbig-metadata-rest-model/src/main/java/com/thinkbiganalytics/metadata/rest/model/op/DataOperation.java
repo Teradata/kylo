@@ -5,9 +5,11 @@ package com.thinkbiganalytics.metadata.rest.model.op;
 
 import org.joda.time.DateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.thinkbiganalytics.metadata.rest.model.Formatters;
 
 /**
  *
@@ -24,8 +26,8 @@ public class DataOperation {
     private String id;
     private State state;
     private String status;
-    private DateTime startTime;
-    private DateTime stopTiime;
+    private String startTime;
+    private String stopTiime;
     private Dataset dataset;
     private String feedDestinationId;
 
@@ -69,20 +71,30 @@ public class DataOperation {
         this.status = status;
     }
 
-    public DateTime getStartTime() {
+    public String getStartTime() {
         return startTime;
     }
 
-    public void setStartTime(DateTime startTime) {
+    public void setStartTime(String startTime) {
         this.startTime = startTime;
     }
+    
+    @JsonIgnore
+    public void setStartTime(DateTime startTime) {
+        this.startTime = Formatters.TIME_FORMATTER.print(startTime);
+    }
 
-    public DateTime getStopTiime() {
+    public String getStopTiime() {
         return stopTiime;
     }
 
-    public void setStopTiime(DateTime stopTiime) {
+    public void setStopTiime(String stopTiime) {
         this.stopTiime = stopTiime;
+    }
+    
+    @JsonIgnore
+    public void setStopTiime(DateTime stopTime) {
+        this.stopTiime = Formatters.TIME_FORMATTER.print(stopTime);
     }
 
 }

@@ -3,10 +3,14 @@
  */
 package com.thinkbiganalytics.metadata.rest.api;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -17,11 +21,21 @@ import javax.ws.rs.core.Response.Status;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Component;
 
+import com.amazonaws.services.cloudfront.model.Paths;
+import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
+import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
+import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ContentType;
 
 /**
  *
@@ -40,7 +54,7 @@ public class DataOperationsResource {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public DataOperation beginOperation(@PathParam("feedDestinationId") String destIdStr, 
+    public DataOperation beginOperation(@FormParam("feedDestinationId") String destIdStr, 
                                         @FormParam("status") String status) {
         
         FeedDestination d;
@@ -54,5 +68,43 @@ public class DataOperationsResource {
             throw new WebApplicationException("A feed destination with the given ID does not exist: " + destIdStr, 
                                               Status.BAD_REQUEST);
         }
+    }
+    
+    @PUT
+    @Path("{opid}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public DataOperation updateOperation(@PathParam("opid") String opid,
+                                         DataOperation op) {
+        com.thinkbiganalytics.metadata.api.op.DataOperation.ID domainId = this.operationsProvider.asOperationId(opid);
+        com.thinkbiganalytics.metadata.api.op.DataOperation domainOp = this.operationsProvider.getDataOperation(domainId);
+        Dataset domainDs = domainOp.getProducer().getDataset();
+        com.thinkbiganalytics.metadata.api.op.DataOperation resultOp;
+        
+        if (op.getState() == State.SUCCESS) {
+            if (domainDs instanceof HiveTableDataset && op.getDataset().getContentType() == ContentType.PARTITIONS) {
+                // TODO Handle partitions
+                ChangeSet<HiveTableDataset, HiveTableUpdate> change = this.operationsProvider.createChangeSet((HiveTableDataset) domainDs, 0);
+                resultOp = this.operationsProvider.updateOperation(domainId, "", change);
+            } else if (domainDs instanceof DirectoryDataset && op.getDataset().getContentType() == ContentType.FILES) {
+                List<java.nio.file.Path> paths = new ArrayList<>();
+                
+                for (com.thinkbiganalytics.metadata.rest.model.op.ChangeSet cs : op.getDataset().getChangeSets()) {
+                    com.thinkbiganalytics.metadata.rest.model.op.FileList fl = (com.thinkbiganalytics.metadata.rest.model.op.FileList) cs;
+                    for (String pathStr : fl.getPaths()) {
+                        paths.add(java.nio.file.Paths.get(pathStr));
+                    }
+                }
+                
+                ChangeSet<DirectoryDataset, FileList> change = this.operationsProvider.createChangeSet((DirectoryDataset) domainDs, paths);
+                resultOp = this.operationsProvider.updateOperation(domainId, "", change);
+            } else {
+                resultOp = this.operationsProvider.updateOperation(domainId, op.getStatus(), Model.OP_STATE_TO_DOMAIN.apply(op.getState()));
+            }
+        } else {
+            resultOp = this.operationsProvider.updateOperation(domainId, op.getStatus(), Model.OP_STATE_TO_DOMAIN.apply(op.getState()));
+        }
+
+        return Model.DOMAIN_TO_OP.apply(resultOp);
     }
 }

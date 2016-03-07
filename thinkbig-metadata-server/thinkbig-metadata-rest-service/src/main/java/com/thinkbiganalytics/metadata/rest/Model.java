@@ -3,7 +3,10 @@
  */
 package com.thinkbiganalytics.metadata.rest;
 
+import java.io.Serializable;
+import java.nio.file.Path;
 import java.text.ParseException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,25 +17,30 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import org.joda.time.Period;
-import org.joda.time.format.PeriodFormat;
-import org.joda.time.format.PeriodFormatter;
 import org.quartz.CronExpression;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
+import com.thinkbiganalytics.metadata.api.dataset.hive.HivePartitionUpdate;
 import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.feed.precond.DatasetUpdatedSinceMetric;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.ChangedContent;
+import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
+import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
+import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
+import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
 import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
@@ -40,14 +48,12 @@ import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 import com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule;
 
 /**
- *
+ * Convenience functions and methods to transform between the metadata domain model and the REST model. 
  * @author Sean Felten
  */
 public class Model {
 
     private Model() { }
-    
-    public static final PeriodFormatter PERIOD_FORMATTER = PeriodFormat.getDefault();
     
     /*
     com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceMetric
@@ -69,7 +75,7 @@ public class Model {
                 WithinSchedule cast = (WithinSchedule) model;
                 try {
                     CronExpression cronExpression = new CronExpression(cast.getCronSchedule());
-                    Period period = PERIOD_FORMATTER.parsePeriod(cast.getPeriod()); 
+                    Period period = Formatters.PERIOD_FORMATTER.parsePeriod(cast.getPeriod()); 
                     
                     return new com.thinkbiganalytics.metadata.api.feed.precond.WithinSchedule(cronExpression, period);
                 } catch (ParseException e) {
@@ -232,8 +238,8 @@ public class Model {
                 DataOperation op = new DataOperation();
                 op.setId(domain.getId().toString());
                 op.setFeedDestinationId(domain.getProducer().toString());
-                op.setStartTime(domain.getStartTime());
-                op.setStopTiime(domain.getStopTime());
+                op.setStartTime(Formatters.TIME_FORMATTER.print(domain.getStartTime()));
+                op.setStopTiime(Formatters.TIME_FORMATTER.print(domain.getStopTime()));
                 op.setState(DataOperation.State.valueOf(domain.getState().name()));
                 op.setStatus(domain.getStatus());
                 if (domain.getChangeSet() != null) op.setDataset(DOMAIN_TO_DATASET.apply(domain.getChangeSet()));
@@ -248,12 +254,70 @@ public class Model {
             @Override
             public com.thinkbiganalytics.metadata.rest.model.op.Dataset apply(ChangeSet<Dataset, ChangedContent> domain) {
                 com.thinkbiganalytics.metadata.rest.model.op.Dataset ds = new com.thinkbiganalytics.metadata.rest.model.op.Dataset();
-//                domain.getChanges();
-//                ds.setChangeSets(changeSets);
+                List<com.thinkbiganalytics.metadata.rest.model.op.ChangeSet> changeSets 
+                    = new ArrayList<>(Collections2.transform(domain.getChanges(), DOMAIN_TO_CHANGESET));
+                ds.setChangeSets(changeSets); 
                 return ds;
             }
         };
+        
+    public static final Function<ChangedContent, com.thinkbiganalytics.metadata.rest.model.op.ChangeSet> DOMAIN_TO_CHANGESET
+        = new Function<ChangedContent, com.thinkbiganalytics.metadata.rest.model.op.ChangeSet>() {
+            @Override
+            public com.thinkbiganalytics.metadata.rest.model.op.ChangeSet apply(ChangedContent domain) {
+                com.thinkbiganalytics.metadata.rest.model.op.ChangeSet cs;// = new com.thinkbiganalytics.metadata.rest.model.op.ChangeSet();
+                
+                if (domain instanceof FileList) {
+                    FileList domainFl = (FileList) domain;
+                    com.thinkbiganalytics.metadata.rest.model.op.FileList fl = new com.thinkbiganalytics.metadata.rest.model.op.FileList();
+                    for (Path path : domainFl.getFilePaths()) {
+                        fl.addPath(path.toString());
+                    }
+                    cs = fl;
+                } else if (domain instanceof HiveTableUpdate) {
+                    HiveTableUpdate domainHt = (HiveTableUpdate) domain;
+                    HiveTablePartitions parts = new HiveTablePartitions();
+                    List<HiveTablePartition> partList = new ArrayList<>(Collections2.transform(domainHt.getPartitions(), DOMAIN_TO_PARTITION));
+                    parts.setPartions(partList);
+                    cs = parts;
+                } else {
+                    cs = new com.thinkbiganalytics.metadata.rest.model.op.ChangeSet();
+                }
+                
+                cs.setIncompletenessFactor(domain.getCompletenessFactor());
+                cs.setIntrinsicTime(domain.getIntrinsicTime());
+                
+                if (domain.getIntrinsicPeriod() != null) {
+                    cs.setIntrinsicPeriod(Formatters.PERIOD_FORMATTER.print(domain.getIntrinsicPeriod()));
+                }
+                
+                return cs;
+            }
+        };
+        
+    public static final Function<HivePartitionUpdate, HiveTablePartition> DOMAIN_TO_PARTITION
+        = new Function<HivePartitionUpdate, HiveTablePartition>() {
+            @Override
+            public HiveTablePartition apply(HivePartitionUpdate domain) {
+                HiveTablePartition part = new HiveTablePartition();
+                part.setName(domain.getColumnName());
+                for (Serializable ser : domain.getValues()) {
+                    part.addValue(ser.toString());
+                }
+                return part;
+            }
+        };
  
+    public static final Function<DataOperation.State, com.thinkbiganalytics.metadata.api.op.DataOperation.State> OP_STATE_TO_DOMAIN
+        = new Function<DataOperation.State, com.thinkbiganalytics.metadata.api.op.DataOperation.State>() {
+            @Override
+            public com.thinkbiganalytics.metadata.api.op.DataOperation.State apply(DataOperation.State input) {
+                return com.thinkbiganalytics.metadata.api.op.DataOperation.State.valueOf(input.name());
+            }
+        };
+
+    
+    
     public static Set<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics(List<Metric> metrics) {
         return new HashSet<>(Collections2.transform(metrics, METRIC_TO_DOMAIN));
     }
@@ -263,7 +327,6 @@ public class Model {
         D result = (D) METRIC_TO_DOMAIN.apply(model);
         return result;
     }
-
         
     public static void validateCreate(Feed feed) {
         // TODO Auto-generated method stub
