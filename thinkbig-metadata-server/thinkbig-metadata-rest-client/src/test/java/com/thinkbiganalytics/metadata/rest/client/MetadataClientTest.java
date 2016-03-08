@@ -23,6 +23,7 @@ import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ChangeType;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ContentType;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
 
 public class MetadataClientTest {
@@ -104,9 +105,11 @@ public class MetadataClientTest {
         assertThat(op).isNotNull();
     }
     
-//    @Test
+    @Test
     public void testCompleteOperation() throws ParseException {
-        Feed feed = buildFeed("feed1").post();
+        buildFeed("dependentFeed").post();
+        
+        Feed feed = buildFeed("feed", "dependentFeed").post();
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
         feed = client.addDestination(feed.getId(), ds.getId());
         String destId = feed.getDestinations().iterator().next().getId();
@@ -128,8 +131,16 @@ public class MetadataClientTest {
         return client.buildFeed(name)
                 .description(name + " feed")
                 .owner("ownder")
+                .systemName(name);
+//                .preconditionMetric(FeedExecutedSinceScheduleMetric.named(name, "0 0 6 * * ? *"));
+    }
+    
+    private FeedBuilder buildFeed(String name, String sinceFeedName) throws ParseException {
+        return client.buildFeed(name)
+                .description(name + " feed")
+                .owner("ownder")
                 .systemName(name)
-                .preconditionMetric(FeedExecutedSinceScheduleMetric.named(name, "0 0 6 * * ? *"));
+                .preconditionMetric(FeedExecutedSinceFeedMetric.named(name, sinceFeedName));
     }
     
     private DirectoryDatasourceBuilder buildDirectoryDatasource(String name) {

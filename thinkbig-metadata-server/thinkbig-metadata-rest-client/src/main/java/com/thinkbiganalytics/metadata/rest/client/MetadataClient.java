@@ -124,9 +124,13 @@ public class MetadataClient extends JerseyClient {
     }
     
     private FeedPrecondition createTrigger(List<Metric> metrics) {
-        FeedPrecondition trigger = new FeedPrecondition();
-        trigger.setMetrics(metrics);
-        return trigger;
+        if (! metrics.isEmpty()) {
+            FeedPrecondition trigger = new FeedPrecondition();
+            trigger.setMetrics(metrics);
+            return trigger;
+        } else {
+            return null;
+        }
     }
 
     private Feed postFeed(Feed feed) {

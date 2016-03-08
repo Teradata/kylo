@@ -79,10 +79,13 @@ public class FeedsResource {
 
     private void ensurePrecondition(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
         FeedPrecondition precond = feed.getPrecondition();
-        Set<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics 
-            = new HashSet<>(Collections2.transform(precond.getMetrics(), Model.METRIC_TO_DOMAIN));
         
-        this.feedProvider.ensurePrecondition(domainFeed.getId(), "", "", domainMetrics);
+        if (precond != null) {
+            Set<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics 
+            = new HashSet<>(Collections2.transform(precond.getMetrics(), Model.METRIC_TO_DOMAIN));
+            
+            this.feedProvider.ensurePrecondition(domainFeed.getId(), "", "", domainMetrics);
+        }
         
     }
 

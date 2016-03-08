@@ -7,17 +7,15 @@ import javax.jms.Topic;
 
 import org.apache.activemq.command.ActiveMQTopic;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-
-import com.thinkbiganalytics.activemq.config.ActiveMqConfig;
 
 /**
  *
  * @author Sean Felten
  */
 @Configuration
-@Import(ActiveMqConfig.class)
+@ComponentScan({ "com.thinkbiganalytics.activemq" })
 public class MetadataJmsConfig {
 
     @Bean(name="datasourceChangeTopic")

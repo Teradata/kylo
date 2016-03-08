@@ -11,7 +11,7 @@ import org.quartz.CronExpression;
  *
  * @author Sean Felten
  */
-public class FeedExecutedSinceScheduleMetric extends DependentDatasetMetric {
+public class FeedExecutedSinceScheduleMetric extends DependentFeedMetric {
 
     private CronExpression cronExpression;
 
@@ -26,6 +26,6 @@ public class FeedExecutedSinceScheduleMetric extends DependentDatasetMetric {
     
     @Override
     public String getDescription() {
-        return "dataset " + getDatasetName() + " has been updated since " + getCronExpression();
+        return "feed " + getFeedName() + " has executed since " + getCronExpression();
     }
 }

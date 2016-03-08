@@ -205,6 +205,8 @@ public class InMemoryFeedProvider implements FeedProvider {
                         .add()
                     .build();
             
+            this.preconditionService.listenFeeds(metrics);
+            
             feed.setPrecondition(sla);
             return feed;
         } else {
@@ -255,20 +257,8 @@ public class InMemoryFeedProvider implements FeedProvider {
         }
     }
 
-    
-    private FeedPreconditionImpl createPrecondition(String name, String descr, Set<Metric> metrics) {
-        ServiceLevelAgreement sla = this.slaProvider.builder()
-                .name(name)
-                .description(descr)
-                .obligationBuilder()
-                .metric(metrics)
-                .add()
-                .build();
-        
-        this.preconditionService.listenFeeds(metrics);
-        return new FeedPreconditionImpl(sla);
-    }
 
+    
     private FeedSource ensureFeedSource(BaseFeed feed, Dataset ds, ServiceLevelAgreement.ID slaId) {
         Map<Dataset.ID, FeedSource> srcIds = new HashMap<>();
         for (FeedSource src : feed.getSources()) {

@@ -35,8 +35,8 @@ public class JmsChangeEventDispatcher extends SimpleChangeEventDispatcher implem
     @Inject
     private FeedPreconditionService preconditionService;
     
-//    @Inject
-//    private SendJmsMessage jmsSender;
+    @Inject
+    private SendJmsMessage jmsSender;
     
     @PostConstruct
     public void listenForPreconditions() {
@@ -53,6 +53,6 @@ public class JmsChangeEventDispatcher extends SimpleChangeEventDispatcher implem
             dsEvent.addDataset(dset);
         }
         
-//        this.jmsSender.sendObject(preconditionTriggerTopic, dsEvent);
+        this.jmsSender.sendObject(preconditionTriggerTopic, dsEvent);
     }
 }
