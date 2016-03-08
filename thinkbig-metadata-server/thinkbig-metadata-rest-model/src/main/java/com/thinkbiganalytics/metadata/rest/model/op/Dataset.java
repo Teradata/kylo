@@ -13,6 +13,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 
 /**
  *
@@ -31,6 +32,7 @@ public class Dataset {
     }
 
     private String time;
+    private Datasource datasource;
     private ChangeType changeType;
     private ContentType contentType;
     private List<ChangeSet> changeSets;
@@ -39,17 +41,19 @@ public class Dataset {
         super();
     }
     
-    public Dataset(DateTime time, ChangeType change, ContentType content, ChangeSet... changeSets) {
+    public Dataset(DateTime time, Datasource src, ChangeType change, ContentType content, ChangeSet... changeSets) {
         super();
         this.time = Formatters.TIME_FORMATTER.print(time);
+        this.datasource = src;
         this.changeType = change;
         this.contentType = content;
         this.changeSets = Arrays.asList(changeSets);
     }
     
-    public Dataset(DateTime time, ChangeType change, ContentType content, List<ChangeSet> changeSets) {
+    public Dataset(DateTime time, Datasource src, ChangeType change, ContentType content, List<ChangeSet> changeSets) {
         super();
         this.time = Formatters.TIME_FORMATTER.print(time);
+        this.datasource = src;
         this.changeType = change;
         this.contentType = content;
         this.changeSets = changeSets;
@@ -66,6 +70,14 @@ public class Dataset {
     @JsonIgnore
     public void setTime(DateTime dateTime) {
         this.time = Formatters.TIME_FORMATTER.print(dateTime);
+    }
+    
+    public Datasource getDatasource() {
+        return datasource;
+    }
+
+    public void setDatasource(Datasource datasource) {
+        this.datasource = datasource;
     }
 
     public ChangeType getChangeType() {

@@ -4,11 +4,13 @@
 package com.thinkbiganalytics.metadata.core.feed;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 
 import javax.inject.Inject;
 
@@ -45,7 +47,21 @@ public class FeedPreconditionService {
     @Inject
     private DataOperationsProvider operationsProvider;
     
-    private Map<Feed.ID, Set<PreconditionListener>> listeners = new ConcurrentHashMap<>();
+    private Map<Feed.ID, Set<PreconditionListener>> feedListeners = new ConcurrentHashMap<>();
+    private Set<PreconditionListener> generalListeners = new ConcurrentSkipListSet<>();
+    
+    public void addListener(Feed.ID id, PreconditionListener listener) {
+        Set<PreconditionListener> set = this.feedListeners.get(id);
+        if (set == null) {
+            set = new HashSet<>();
+            this.feedListeners.put(id, set);
+        }
+        set.add(listener);
+    }
+    
+    public void addListener(PreconditionListener listener) {
+        this.generalListeners.add(listener);
+    }
     
     public void listenFeeds(Set<Metric> metrics) {
         for (Metric metric : metrics) {
@@ -63,16 +79,21 @@ public class FeedPreconditionService {
         return new DataChangeEventListener<Dataset, ChangedContent>() {
             @Override
             public void handleEvent(DataChangeEvent<Dataset, ChangedContent> event) {
-                for (Entry<Feed.ID, Set<PreconditionListener>> feedEntry : listeners.entrySet()) {
+                for (Entry<Feed.ID, Set<PreconditionListener>> feedEntry : feedListeners.entrySet()) {
                     Feed feed = feedProvider.getFeed(feedEntry.getKey());
                     
                     if (feed != null) {
                         ServiceLevelAgreement sla = asAgreement(feed.getPrecondition());
-                        List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes = checkPrecondition(sla);
+                        List<ChangeSet<Dataset, ChangedContent>> changes = checkPrecondition(sla);
                         
                         if (changes != null) {
                             for (PreconditionListener listener : feedEntry.getValue()) {
-                                PreconditionEvent preEv = new PreconditionEventImpl(changes);
+                                PreconditionEvent preEv = new PreconditionEventImpl(feed, changes);
+                                listener.triggered(preEv);
+                            }
+                            
+                            for (PreconditionListener listener : generalListeners) {
+                                PreconditionEvent preEv = new PreconditionEventImpl(feed, changes);
                                 listener.triggered(preEv);
                             }
                         }
@@ -87,7 +108,7 @@ public class FeedPreconditionService {
         return ((BaseFeed.FeedPreconditionImpl) precondition).getAgreement();
     }
 
-    private List<ChangeSet<? extends Dataset, ? extends ChangedContent>> checkPrecondition(ServiceLevelAgreement sla) {
+    private List<ChangeSet<Dataset, ChangedContent>> checkPrecondition(ServiceLevelAgreement sla) {
         ServiceLevelAssessment assmt = this.assessor.assess(sla);
         
         if (assmt.getResult() != AssessmentResult.FAILURE) {
@@ -97,8 +118,8 @@ public class FeedPreconditionService {
         }
     }
 
-    private List<ChangeSet<? extends Dataset, ? extends ChangedContent>> collectResults(ServiceLevelAssessment assmt) {
-        List<ChangeSet<? extends Dataset, ? extends ChangedContent>> result = new ArrayList<>();
+    private List<ChangeSet<Dataset, ChangedContent>> collectResults(ServiceLevelAssessment assmt) {
+        List<ChangeSet<Dataset, ChangedContent>> result = new ArrayList<>();
         
         for (ObligationAssessment obAssmt : assmt.getObligationAssessments()) {
             for (MetricAssessment<ArrayList<ChangeSet<Dataset, ChangedContent>>> mAssmt 
@@ -112,15 +133,22 @@ public class FeedPreconditionService {
     
     private static class PreconditionEventImpl implements PreconditionEvent {
         
-        private List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes;
+        private Feed feed;
+        private List<ChangeSet<Dataset, ChangedContent>> changes;
 
-        public PreconditionEventImpl(List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes) {
+        public PreconditionEventImpl(Feed feed, List<ChangeSet<Dataset, ChangedContent>> changes) {
+            this.feed = feed;
             this.changes = changes;
         }
 
         @Override
-        public List<ChangeSet<? extends Dataset, ? extends ChangedContent>> getChanges() {
+        public List<ChangeSet<Dataset, ChangedContent>> getChanges() {
             return this.changes;
+        }
+        
+        @Override
+        public Feed getFeed() {
+            return this.feed;
         }
     }
 

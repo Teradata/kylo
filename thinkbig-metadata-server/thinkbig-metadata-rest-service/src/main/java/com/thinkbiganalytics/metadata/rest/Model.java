@@ -30,7 +30,6 @@ import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.feed.precond.DatasetUpdatedSinceMetric;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.ChangedContent;
-import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
@@ -253,10 +252,12 @@ public class Model {
         = new Function<ChangeSet<Dataset, ChangedContent>, com.thinkbiganalytics.metadata.rest.model.op.Dataset>() {
             @Override
             public com.thinkbiganalytics.metadata.rest.model.op.Dataset apply(ChangeSet<Dataset, ChangedContent> domain) {
+                Datasource src = DOMAIN_TO_DS.apply(domain.getDataset());
                 com.thinkbiganalytics.metadata.rest.model.op.Dataset ds = new com.thinkbiganalytics.metadata.rest.model.op.Dataset();
                 List<com.thinkbiganalytics.metadata.rest.model.op.ChangeSet> changeSets 
                     = new ArrayList<>(Collections2.transform(domain.getChanges(), DOMAIN_TO_CHANGESET));
                 ds.setChangeSets(changeSets); 
+                ds.setDatasource(src);
                 return ds;
             }
         };

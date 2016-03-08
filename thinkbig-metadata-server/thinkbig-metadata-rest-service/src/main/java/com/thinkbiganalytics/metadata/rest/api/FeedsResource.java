@@ -33,7 +33,6 @@ import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
-import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 
 /**
  *

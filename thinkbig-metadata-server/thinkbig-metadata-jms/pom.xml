@@ -1,16 +1,37 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.thinkbiganalytics.metadata</groupId>
-    <artifactId>thinkbig-metadata-server</artifactId>
-    <version>0.5.0-SNAPSHOT</version>
-  </parent>
-  <artifactId>thinkbig-metadata-jms</artifactId>
-  <dependencies>
-      <dependency>
-          <groupId>com.thinkbiganalytics.metadata</groupId>
-          <artifactId>thinkbig-metadata-core</artifactId>
-          <version>0.5.0-SNAPSHOT</version>
-      </dependency>
-  </dependencies>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.thinkbiganalytics.metadata</groupId>
+        <artifactId>thinkbig-metadata-server</artifactId>
+        <version>0.5.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>thinkbig-metadata-jms</artifactId>
+    <dependencies>
+        <dependency>
+            <groupId>com.thinkbiganalytics.metadata</groupId>
+            <artifactId>thinkbig-metadata-core</artifactId>
+            <version>0.5.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.bdp</groupId>
+            <artifactId>thinkbig-activemq-core</artifactId>
+            <version>1.3.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jms</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.metadata</groupId>
+            <artifactId>thinkbig-metadata-rest-model</artifactId>
+            <version>0.5.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.metadata</groupId>
+            <artifactId>thinkbig-metadata-rest-service</artifactId>
+            <version>0.5.0-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
 </project>

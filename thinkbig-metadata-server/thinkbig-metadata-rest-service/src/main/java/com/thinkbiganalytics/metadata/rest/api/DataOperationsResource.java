@@ -21,7 +21,6 @@ import javax.ws.rs.core.Response.Status;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Component;
 
-import com.amazonaws.services.cloudfront.model.Paths;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
@@ -29,7 +28,6 @@ import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
 import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;

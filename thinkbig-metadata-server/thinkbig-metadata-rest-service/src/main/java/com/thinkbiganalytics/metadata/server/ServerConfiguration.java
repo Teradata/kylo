@@ -20,7 +20,7 @@ import com.thinkbiganalytics.metadata.core.feed.precond.WithinScheduleAssessor;
 import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.event.ChangeEventDispatcher;
 import com.thinkbiganalytics.metadata.event.ReactorContiguration;
-import com.thinkbiganalytics.metadata.event.SimpleChangeEventDispatcher;
+import com.thinkbiganalytics.metadata.event.jms.JmsChangeEventDispatcher;
 import com.thinkbiganalytics.metadata.rest.RestConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
@@ -54,7 +54,8 @@ public class ServerConfiguration {
     
     @Bean
     public ChangeEventDispatcher changeEventDispatcher() {
-        return new SimpleChangeEventDispatcher();
+        return new JmsChangeEventDispatcher();
+//        return new SimpleChangeEventDispatcher();
     }
     
     @Bean
