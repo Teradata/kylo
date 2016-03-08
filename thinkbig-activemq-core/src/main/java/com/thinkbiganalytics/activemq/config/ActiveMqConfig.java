@@ -38,7 +38,7 @@ public class ActiveMqConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(ActiveMqConfig.class);
 
-    @Value("${spring.activemq.broker-url}")
+    @Value("${jms.activemq.broker.url:tcp://localhost:61616}")
     private String activeMqBrokerUrl;
 
 

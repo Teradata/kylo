@@ -8,10 +8,11 @@ import org.apache.activemq.broker.BrokerService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.jms.annotation.EnableJms;
-
-import javax.annotation.PostConstruct;
 
 
 /**
@@ -19,24 +20,25 @@ import javax.annotation.PostConstruct;
  */
 @Configuration
 @EnableJms
+@PropertySource(value="classpath:activemq.properties", ignoreResourceNotFound=true)
 public class ActiveMqBrokerConfig {
 
     private static final Logger LOG = LoggerFactory.getLogger(ActiveMqBrokerConfig.class);
 
-    @Value("${spring.activemq.broker-url}")
+    @Value("${jms.activemq.broker.url:tcp://localhost:61616}")
     private String activeMqBrokerUrl;
 
-
-    @PostConstruct
-    public void startActiveMq() throws  Exception{
+    @Bean
+    @ConfigurationProperties(prefix="jms.activemq.broker")
+    public BrokerService brokerService() throws Exception {
         BrokerService broker = new BrokerService();
         // configure the broker
         broker.setBrokerName("thinkbig-amq-broker");
         broker.setPersistent(false);
         broker.setUseJmx(false);
         broker.addConnector(activeMqBrokerUrl);
-        broker.start();
-        LOG.info("STARTED ActiveMQ Broker at "+activeMqBrokerUrl);
+        LOG.info("CREATED ActiveMQ Broker at " + broker.getTransportConnectors());
+        return broker;
     }
 
 }
