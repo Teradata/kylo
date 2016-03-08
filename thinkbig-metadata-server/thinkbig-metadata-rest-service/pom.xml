@@ -8,6 +8,10 @@
     </parent>
     <artifactId>thinkbig-metadata-rest-service</artifactId>
     <properties>
+        <!-- 
+        <spring.boot.version>1.2.8.RELEASE</spring.boot.version>
+        <spring.boot.version>1.3.3.RELEASE</spring.boot.version>
+         -->
         <spring.boot.version>1.2.8.RELEASE</spring.boot.version>
     </properties>
     <dependencies>

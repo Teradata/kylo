@@ -11,18 +11,20 @@
     </parent>
     <packaging>pom</packaging>
     <name>thinkbig-metadata</name>
+    
+    <properties>
+        <guava.version>18.0</guava.version>
+        <joda.time.version>2.9.1</joda.time.version>
+        <quartz.version>2.2.1</quartz.version>
+    </properties>
+    
     <modules>
         <module>thinkbig-metadata-orientdb</module>
         <module>thinkbig-metadata-api</module>
         <module>thinkbig-metadata-core</module>
         <module>thinkbig-metadata-server</module>
     </modules>
-    <properties>
-        <guava.version>18.0</guava.version>
-        <joda.time.version>2.9.1</joda.time.version>
-        <quartz.version>2.2.1</quartz.version>
-        <spring.version>4.2.1.RELEASE</spring.version>
-    </properties>
+    
     <dependencies>
         <dependency>
             <groupId>com.google.guava</groupId>
