@@ -21,6 +21,7 @@ import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.event.ChangeEventDispatcher;
 import com.thinkbiganalytics.metadata.event.ReactorContiguration;
 import com.thinkbiganalytics.metadata.event.jms.JmsChangeEventDispatcher;
+import com.thinkbiganalytics.metadata.event.jms.MetadataJmsConfig;
 import com.thinkbiganalytics.metadata.rest.RestConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
@@ -34,7 +35,7 @@ import com.thinkbiganalytics.metadata.sla.spi.core.SimpleServiceLevelAssessor;
  */
 @Configuration
 @EnableAutoConfiguration
-@Import({ RestConfiguration.class, ReactorContiguration.class })
+@Import({ RestConfiguration.class, ReactorContiguration.class, MetadataJmsConfig.class })
 public class ServerConfiguration {
     
     @Bean

@@ -8,11 +8,9 @@
     </parent>
     <artifactId>thinkbig-metadata-rest-service</artifactId>
     <properties>
-        <!-- 
-        <spring.boot.version>1.2.8.RELEASE</spring.boot.version>
+        <!-- <spring.boot.version>1.2.8.RELEASE</spring.boot.version> <spring.boot.version>1.2.8.RELEASE</spring.boot.version> -->
         <spring.boot.version>1.3.3.RELEASE</spring.boot.version>
-         -->
-        <spring.boot.version>1.2.8.RELEASE</spring.boot.version>
+        <jackson.version>2.6.5</jackson.version>
     </properties>
     <dependencies>
         <dependency>
@@ -24,29 +22,33 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
             <version>${spring.boot.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jackson-core</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-databind</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-jersey</artifactId>
             <version>${spring.boot.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jackson-databind</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
-        <!-- 
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-bus</artifactId>
-            <version>${projectreactor.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.projectreactor</groupId>
-            <artifactId>reactor-net</artifactId>
-            <version>${projectreactor.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>io.netty</groupId>
-            <artifactId>netty-all</artifactId>
-            <version>${netty.version}</version>
-        </dependency>
-         -->
+        <!-- <dependency> <groupId>io.projectreactor</groupId> <artifactId>reactor-bus</artifactId> 
+            <version>${projectreactor.version}</version> </dependency> <dependency> <groupId>io.projectreactor</groupId> 
+            <artifactId>reactor-net</artifactId> <version>${projectreactor.version}</version> 
+            </dependency> <dependency> <groupId>io.netty</groupId> <artifactId>netty-all</artifactId> 
+            <version>${netty.version}</version> </dependency> -->
 
         <dependency>
             <groupId>org.springframework</groupId>
@@ -57,6 +59,20 @@
             <groupId>com.thinkbiganalytics.bdp</groupId>
             <artifactId>thinkbig-activemq-core</artifactId>
             <version>1.3.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jackson-core</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-databind</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-dataformat-xml</artifactId>
+                    <groupId>com.fasterxml.jackson.dataformat</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
@@ -68,6 +84,20 @@
             <groupId>com.thinkbiganalytics.metadata</groupId>
             <artifactId>thinkbig-metadata-rest-model</artifactId>
             <version>0.5.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jackson-core</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-databind</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-dataformat-xml</artifactId>
+                    <groupId>com.fasterxml.jackson.dataformat</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
@@ -78,11 +108,101 @@
             <groupId>com.thinkbiganalytics.metadata</groupId>
             <artifactId>thinkbig-metadata-core</artifactId>
             <version>0.5.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>spring-context-support</artifactId>
+                    <groupId>org.springframework</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-databind</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.bdp</groupId>
             <artifactId>tba-sla-core</artifactId>
             <version>1.3.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>
+                        spring-boot-starter-data-jpa
+                    </artifactId>
+                    <groupId>org.springframework.boot</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>
+                        spring-boot-starter-social-linkedin
+                    </artifactId>
+                    <groupId>org.springframework.boot</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spring-boot-starter-batch</artifactId>
+                    <groupId>org.springframework.boot</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spring-boot-starter-jdbc</artifactId>
+                    <groupId>org.springframework.boot</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>
+                        spring-boot-starter-data-solr
+                    </artifactId>
+                    <groupId>org.springframework.boot</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spring-boot-starter-aop</artifactId>
+                    <groupId>org.springframework.boot</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>spring-context-support</artifactId>
+                    <groupId>org.springframework</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-core</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-databind</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>${jersey.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jackson-core</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>jackson-databind</artifactId>
+                    <groupId>com.fasterxml.jackson.core</groupId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-core</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-databind</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>${jackson.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.metadata</groupId>
+            <artifactId>thinkbig-metadata-jms</artifactId>
+            <version>0.5.0-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
