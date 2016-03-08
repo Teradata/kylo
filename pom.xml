@@ -20,7 +20,6 @@
         <guava.version>18.0</guava.version>
         <commons.dbcp2>2.1.1</commons.dbcp2>
         <commons.pool2>2.4.2</commons.pool2>
-        <spring.version>4.2.1.RELEASE</spring.version>
         <activemq.version>5.13.1</activemq.version>
     </properties>
 
