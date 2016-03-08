@@ -25,9 +25,7 @@ import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.controller.precond.FeedPreconditionService;
-import com.thinkbiganalytics.controller.precond.PreconditionEvent;
 import com.thinkbiganalytics.controller.precond.PreconditionListener;
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
 import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
@@ -39,6 +37,8 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import com.thinkbiganalytics.metadata.rest.model.event.DatasourceChangeEvent;
+import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 
 /**
  * @author Sean Felten
@@ -49,14 +49,14 @@ import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 @CapabilityDescription("Records the start of a feed to be tracked and listens to events which may trigger a flow. This processor should be either the first processor or immediately follow the first processor in a flow.")
 public class FeedBegin extends FeedProcessor {
     
-    private Queue<List<ChangeSet<? extends Dataset, ? extends ChangedContent>>> pendingChanges = new LinkedBlockingQueue<>();
+    private Queue<List<Dataset>> pendingChanges = new LinkedBlockingQueue<>();
     private PreconditionListener preconditionListener;
-    // TODO remove this
-    private DataChangeEventListener<? extends Dataset, ? extends ChangedContent> changeListener;
-    // TODO remove this
-    private Queue<ChangeSet<? extends Dataset, ? extends ChangedContent>> pendingChange = new LinkedBlockingQueue<>();
-    private AtomicReference<Dataset.ID> sourceDatasetId = new AtomicReference<Dataset.ID>();
-    private AtomicReference<Feed.ID> feedId = new AtomicReference<>();
+//    // TODO remove this
+//    private DataChangeEventListener<? extends Dataset, ? extends ChangedContent> changeListener;
+//    // TODO remove this
+//    private Queue<ChangeSet<? extends Dataset, ? extends ChangedContent>> pendingChange = new LinkedBlockingQueue<>();
+//    private AtomicReference<Dataset.ID> sourceDatasetId = new AtomicReference<Dataset.ID>();
+//    private AtomicReference<Feed.ID> feedId = new AtomicReference<>();
     
     public static final PropertyDescriptor PRECONDITION_SERVICE = new PropertyDescriptor.Builder()
             .name("Feed Preconditon Service")
@@ -167,7 +167,7 @@ public class FeedBegin extends FeedProcessor {
     }
 
     protected FlowFile produceFlowFile(ProcessSession session) {
-        List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes = this.pendingChanges.poll();
+        List<Dataset> changes = this.pendingChanges.poll();
         if (changes != null) {
             return createFlowFile(session, changes);
         } else {
@@ -176,7 +176,8 @@ public class FeedBegin extends FeedProcessor {
     }
 
     private FlowFile createFlowFile(ProcessSession session, 
-                                    List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes) {
+                                    List<Dataset> changes) {
+        // TODO add changes to flow file
         return session.create();
     }
     
@@ -187,8 +188,8 @@ public class FeedBegin extends FeedProcessor {
         if (this.preconditionListener == null) {
             PreconditionListener listener = new PreconditionListener() {
                 @Override
-                public void triggered(PreconditionEvent event) {
-                    List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes = event.getChanges();
+                public void triggered(DatasourceChangeEvent event) {
+                    List<Dataset> datasets = event.getDatasets();
                     FeedBegin.this.pendingChanges.add(changes);
                 }
             };
