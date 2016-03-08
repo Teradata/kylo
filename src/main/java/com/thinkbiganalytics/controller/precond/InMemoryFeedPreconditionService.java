@@ -230,8 +230,9 @@ public class InMemoryFeedPreconditionService extends AbstractControllerService i
                     
                     if (changes != null) {
                         for (PreconditionListener listener : getPreconditionListeners().get(sla.getId())) {
-                            PreconditionEvent preEv = new PreconditionEventImpl(new PrecondId(sla.getId()), changes);
-                            listener.triggered(preEv);
+//                            PreconditionEvent preEv = new PreconditionEventImpl(new PrecondId(sla.getId()), changes);
+// TODO! remove
+//                            listener.triggered(preEv);
                         }
                     }
                 }
@@ -353,25 +354,25 @@ public class InMemoryFeedPreconditionService extends AbstractControllerService i
         }
     }
     
-    private static class PreconditionEventImpl implements PreconditionEvent {
-        
-        private FeedPrecondition.ID id;
-        private List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes;
-
-        public PreconditionEventImpl(PrecondId precondId,
-                                     List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes) {
-            this.id = precondId;
-            this.changes = changes;
-        }
-
-        @Override
-        public ID getPreconditonId() {
-            return this.id;
-        }
-
-        @Override
-        public List<ChangeSet<? extends Dataset, ? extends ChangedContent>> getChanges() {
-            return this.changes;
-        }
-    }
+//    private static class PreconditionEventImpl implements PreconditionEvent {
+//        
+//        private FeedPrecondition.ID id;
+//        private List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes;
+//
+//        public PreconditionEventImpl(PrecondId precondId,
+//                                     List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changes) {
+//            this.id = precondId;
+//            this.changes = changes;
+//        }
+//
+//        @Override
+//        public ID getPreconditonId() {
+//            return this.id;
+//        }
+//
+//        @Override
+//        public List<ChangeSet<? extends Dataset, ? extends ChangedContent>> getChanges() {
+//            return this.changes;
+//        }
+//    }
 }
