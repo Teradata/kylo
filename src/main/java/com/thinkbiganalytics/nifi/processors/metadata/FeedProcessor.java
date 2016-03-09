@@ -17,10 +17,9 @@ import org.apache.nifi.processor.Relationship;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import com.thinkbiganalytics.controller.metadata.MetadataProvider;
 import com.thinkbiganalytics.controller.metadata.MetadataProviderService;
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetCriteria;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 
 /**
  *
@@ -79,15 +78,8 @@ public abstract class FeedProcessor extends AbstractProcessor {
         return context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
     }
     
-    protected Dataset findDataset(ProcessContext context, String datasetName) {
-        DatasetProvider datasetProvider = getProviderService(context).getDatasetProvider();
-        DatasetCriteria crit = datasetProvider.datasetCriteria().name(datasetName);
-        Set<Dataset> datasets = datasetProvider.getDatasets(crit);
-        
-        if (datasets.size() > 0) {
-            return datasets.iterator().next();
-        } else {
-            return null;
-        }
+    protected Datasource findDatasource(ProcessContext context, String dsName) {
+        MetadataProvider datasetProvider = getProviderService(context).getProvider();
+        return datasetProvider.getDatasourceByName(dsName);
     }
 }

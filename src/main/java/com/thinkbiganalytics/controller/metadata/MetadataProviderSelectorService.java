@@ -16,14 +16,6 @@ import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
 
-import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
-import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasetProvider;
-import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
-import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
-import com.thinkbiganalytics.metadata.event.SimpleChangeEventDispatcher;
-
 /**
  *
  * @author Sean Felten
@@ -31,15 +23,15 @@ import com.thinkbiganalytics.metadata.event.SimpleChangeEventDispatcher;
 public class MetadataProviderSelectorService extends AbstractControllerService implements MetadataProviderService {
 
     private static final AllowableValue[] ALLOWABLE_IMPLEMENATIONS = {
-            new AllowableValue("MEMORY", "In-memory storage", "An implemenation that stores metadata locally in memory (for development-only)"),
-            new AllowableValue("SERVICE", "REST API", "An implemenation that accesses metadata via the metadata service REST API")
+            new AllowableValue("LOCAL", "Local, In-memory storage", "An implemenation that stores metadata locally in memory (for development-only)"),
+            new AllowableValue("REMOTE", "REST API", "An implemenation that accesses metadata via the metadata service REST API")
     };
 
     public static final PropertyDescriptor IMPLEMENTATION = new PropertyDescriptor.Builder()
             .name("Implementation")
             .description("Specifies which implementation of the metadata providers should be used")
             .allowableValues(ALLOWABLE_IMPLEMENATIONS)
-            .defaultValue("MEMORY")
+            .defaultValue("REMOTE")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
     
@@ -56,9 +48,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     }
 
 
-    private volatile FeedProvider feedProvider;
-    private volatile DatasetProvider datasetProvider;
-    private volatile DataOperationsProvider operationsProvider;
+    private volatile MetadataProvider provider;
     
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -69,32 +59,17 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     public void onConfigured(final ConfigurationContext context) throws InitializationException {
         PropertyValue impl = context.getProperty(IMPLEMENTATION);
         
-        if (impl.getValue().equalsIgnoreCase("MEMORY")) {
-            this.datasetProvider = new InMemoryDatasetProvider();
-            this.feedProvider = new InMemoryFeedProvider(this.datasetProvider);
-            this.operationsProvider = new InMemoryDataOperationsProvider(this.datasetProvider, 
-                                                                         this.feedProvider, 
-                                                                         new SimpleChangeEventDispatcher());
+        if (impl.getValue().equalsIgnoreCase("REMOTE")) {
+            this.provider = new MetadataClientProvider();
         } else {
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
         }
     }
 
     @Override
-    public FeedProvider getFeedProvider() {
-        return this.feedProvider;
+    public MetadataProvider getProvider() {
+        return this.provider;
     }
-
-    @Override
-    public DatasetProvider getDatasetProvider() {
-        return this.datasetProvider;
-    }
-
-    @Override
-    public DataOperationsProvider getDataOperationsProvider() {
-        return this.operationsProvider;
-    }
-    
 
 
 }

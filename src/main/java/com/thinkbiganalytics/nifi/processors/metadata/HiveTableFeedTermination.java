@@ -13,15 +13,12 @@ import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
-import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.DataOperation;
-import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import com.thinkbiganalytics.controller.metadata.MetadataProvider;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
+import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
+
 
 /**
  *
@@ -42,23 +39,23 @@ public class HiveTableFeedTermination extends FeedTermination {
     }
     
     @Override
-    protected Dataset createDestinationDataset(ProcessContext context, String datasetName, String descr) {
-        DatasetProvider datasetProvider = getProviderService(context).getDatasetProvider();
+    protected Datasource createDestinationDatasource(ProcessContext context, String datasetName, String descr) {
+        MetadataProvider provider = getProviderService(context).getProvider();
         String databaseName = context.getProperty(HiveTableProperties.DATABASE_NAME).getValue();
         String tableName = context.getProperty(HiveTableProperties.TABLE_NAME).getValue();
         
-        return datasetProvider.ensureHiveTableDataset(datasetName, "", databaseName, tableName);
+        return provider.ensureHiveTableDatasource(datasetName, "", databaseName, tableName);
     }
     
     @Override
     protected DataOperation completeOperation(ProcessContext context, 
                                               FlowFile flowFile, 
-                                              Dataset dataset, 
+                                              Datasource dataset, 
                                               DataOperation op) {
-        DataOperationsProvider opProvider = getProviderService(context).getDataOperationsProvider();
-        HiveTableDataset hds = (HiveTableDataset) dataset;
-        ChangeSet<HiveTableDataset, HiveTableUpdate> changeSet = opProvider.createChangeSet(hds, 0);
+        MetadataProvider provider = getProviderService(context).getProvider();
+        HiveTableDatasource hds = (HiveTableDatasource) dataset;
+        Dataset changeSet = provider.createChangeSet(hds, 0);
         
-        return opProvider.updateOperation(op.getId(), "", changeSet);
+        return provider.completeOperation(op.getId(), "", changeSet);
     }
 }

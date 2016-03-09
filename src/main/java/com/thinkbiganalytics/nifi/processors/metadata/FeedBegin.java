@@ -24,20 +24,12 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.controller.precond.FeedPreconditionService;
+import com.thinkbiganalytics.controller.metadata.MetadataProvider;
+import com.thinkbiganalytics.controller.precond.FeedPreconditionEventService;
 import com.thinkbiganalytics.controller.precond.PreconditionListener;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
-import com.thinkbiganalytics.metadata.api.event.DataChangeEvent;
-import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
-import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.event.DatasourceChangeEvent;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 
 /**
@@ -55,14 +47,14 @@ public class FeedBegin extends FeedProcessor {
 //    private DataChangeEventListener<? extends Dataset, ? extends ChangedContent> changeListener;
 //    // TODO remove this
 //    private Queue<ChangeSet<? extends Dataset, ? extends ChangedContent>> pendingChange = new LinkedBlockingQueue<>();
-//    private AtomicReference<Dataset.ID> sourceDatasetId = new AtomicReference<Dataset.ID>();
-//    private AtomicReference<Feed.ID> feedId = new AtomicReference<>();
+    private AtomicReference<String> sourceDatasetId = new AtomicReference<>();
+    private AtomicReference<String> feedId = new AtomicReference<>();
     
     public static final PropertyDescriptor PRECONDITION_SERVICE = new PropertyDescriptor.Builder()
-            .name("Feed Preconditon Service")
+            .name("Feed Precondition Event Service")
             .description("Service that manages preconditions that trigger feed execution")
             .required(false)
-            .identifiesControllerService(FeedPreconditionService.class)
+            .identifiesControllerService(FeedPreconditionEventService.class)
             .build();
 
     public static final PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
@@ -81,7 +73,7 @@ public class FeedBegin extends FeedProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
     
-    public static final PropertyDescriptor SRC_DATASET_NAME = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor SRC_DATASOURCE_NAME = new PropertyDescriptor.Builder()
             .name(SRC_DATASET_ID_PROP)
             .displayName("Source dataset name")
             .description("The unique name of the dataset that the feed will read from (optional)")
@@ -106,20 +98,20 @@ public class FeedBegin extends FeedProcessor {
 
     @OnScheduled
     public void setupFeedMetadata(ProcessContext context) {
-        FeedProvider feedProvider = getProviderService(context).getFeedProvider();
+        MetadataProvider provider = getProviderService(context).getProvider();
         String feedName = context.getProperty(FEED_NAME).getValue();
-        Feed feed = feedProvider.ensureFeed(feedName, "");
+        Feed feed = provider.ensureFeed(feedName, "");
         this.feedId.set(feed.getId());
 
-        String datasetName = context.getProperty(SRC_DATASET_NAME).getValue();
+        String datasetName = context.getProperty(SRC_DATASOURCE_NAME).getValue();
 
         if (datasetName != null && this.sourceDatasetId.get() == null) {
-            Dataset srcDataset = getSourceDataset(context);
+            Datasource srcDatasource = getSourceDatasource(context);
 
-            if (srcDataset != null) {
-                feedProvider.ensureFeedSource(this.feedId.get(), srcDataset.getId());
+            if (srcDatasource != null) {
+                provider.ensureFeedSource(this.feedId.get(), srcDatasource.getId());
                 ensurePreconditonListener(context);
-                this.sourceDatasetId.set(srcDataset.getId());
+                this.sourceDatasetId.set(srcDatasource.getId());
             } else {
                 throw new ProcessException("Source dataset does not exist: " + datasetName);
             }
@@ -152,7 +144,7 @@ public class FeedBegin extends FeedProcessor {
         props.add(PRECONDITION_SERVICE);
         props.add(FEED_NAME);
         props.add(PRECONDITION_NAME);
-        props.add(SRC_DATASET_NAME);
+        props.add(SRC_DATASOURCE_NAME);
     }
 
     @Override
@@ -162,8 +154,8 @@ public class FeedBegin extends FeedProcessor {
         rels.add(FAILURE);
     }
 
-    protected FeedPreconditionService getPreconditionService(ProcessContext context) {
-        return context.getProperty(PRECONDITION_SERVICE).asControllerService(FeedPreconditionService.class);
+    protected FeedPreconditionEventService getPreconditionService(ProcessContext context) {
+        return context.getProperty(PRECONDITION_SERVICE).asControllerService(FeedPreconditionEventService.class);
     }
 
     protected FlowFile produceFlowFile(ProcessSession session) {
@@ -182,7 +174,7 @@ public class FeedBegin extends FeedProcessor {
     }
     
     private void ensurePreconditonListener(ProcessContext context) {
-        FeedPreconditionService precondService = getPreconditionService(context);
+        FeedPreconditionEventService precondService = getPreconditionService(context);
         String precondName = context.getProperty(PRECONDITION_NAME).getValue();
         
         if (this.preconditionListener == null) {
@@ -190,7 +182,7 @@ public class FeedBegin extends FeedProcessor {
                 @Override
                 public void triggered(DatasourceChangeEvent event) {
                     List<Dataset> datasets = event.getDatasets();
-                    FeedBegin.this.pendingChanges.add(changes);
+                    FeedBegin.this.pendingChanges.add(datasets);
                 }
             };
             
@@ -198,55 +190,55 @@ public class FeedBegin extends FeedProcessor {
             precondService.addListener(precondName, listener);
         }
     }
+//
+//    private void ensureChangeListener(ProcessContext context, Dataset srcDataset) {
+//        DataOperationsProvider operationProvider = getProviderService(context).getDataOperationsProvider();
+//
+//        if (this.changeListener == null) {
+//            // TODO Hmmmm....
+//            if (srcDataset instanceof DirectoryDataset) {
+//                DataChangeEventListener<DirectoryDataset, FileList> listener = new DataChangeEventListener<DirectoryDataset, FileList>() {
+//                    @Override
+//                    public void handleEvent(DataChangeEvent<DirectoryDataset, FileList> event) {
+//                        getLogger().debug("Dependent dataset changed: {} - {}",
+//                                new Object[]{event.getChangeSet().getDataset(), event.getChangeSet().getChanges()});
+//                        recordDirectoryChange(event.getChangeSet());
+//                    }
+//                };
+//
+//                operationProvider.addListener((DirectoryDataset) srcDataset, listener);
+//                this.changeListener = listener;
+//            } else if (srcDataset instanceof HiveTableDataset) {
+//                DataChangeEventListener<HiveTableDataset, HiveTableUpdate> listener = new DataChangeEventListener<HiveTableDataset, HiveTableUpdate>() {
+//                    @Override
+//                    public void handleEvent(DataChangeEvent<HiveTableDataset, HiveTableUpdate> event) {
+//                        getLogger().debug("Dependent dataset changed: {} - {}",
+//                                new Object[]{event.getChangeSet().getDataset(), event.getChangeSet().getChanges()});
+//                        recordTableChange(event.getChangeSet());
+//                    }
+//                };
+//
+//                operationProvider.addListener((HiveTableDataset) srcDataset, listener);
+//                this.changeListener = listener;
+//            } else {
+//                throw new ProcessException("Unsupported dataset type: " + srcDataset.getClass());
+//            }
+//        }
+//    }
+//
+//    protected void recordDirectoryChange(ChangeSet<DirectoryDataset, FileList> changeSet) {
+//        this.pendingChange.add(changeSet);
+//    }
+//
+//    protected void recordTableChange(ChangeSet<HiveTableDataset, HiveTableUpdate> changeSet) {
+//        this.pendingChange.add(changeSet);
+//    }
 
-    private void ensureChangeListener(ProcessContext context, Dataset srcDataset) {
-        DataOperationsProvider operationProvider = getProviderService(context).getDataOperationsProvider();
+    protected Datasource getSourceDatasource(ProcessContext context) {
+        String datasourceName = context.getProperty(SRC_DATASOURCE_NAME).getValue();
 
-        if (this.changeListener == null) {
-            // TODO Hmmmm....
-            if (srcDataset instanceof DirectoryDataset) {
-                DataChangeEventListener<DirectoryDataset, FileList> listener = new DataChangeEventListener<DirectoryDataset, FileList>() {
-                    @Override
-                    public void handleEvent(DataChangeEvent<DirectoryDataset, FileList> event) {
-                        getLogger().debug("Dependent dataset changed: {} - {}",
-                                new Object[]{event.getChangeSet().getDataset(), event.getChangeSet().getChanges()});
-                        recordDirectoryChange(event.getChangeSet());
-                    }
-                };
-
-                operationProvider.addListener((DirectoryDataset) srcDataset, listener);
-                this.changeListener = listener;
-            } else if (srcDataset instanceof HiveTableDataset) {
-                DataChangeEventListener<HiveTableDataset, HiveTableUpdate> listener = new DataChangeEventListener<HiveTableDataset, HiveTableUpdate>() {
-                    @Override
-                    public void handleEvent(DataChangeEvent<HiveTableDataset, HiveTableUpdate> event) {
-                        getLogger().debug("Dependent dataset changed: {} - {}",
-                                new Object[]{event.getChangeSet().getDataset(), event.getChangeSet().getChanges()});
-                        recordTableChange(event.getChangeSet());
-                    }
-                };
-
-                operationProvider.addListener((HiveTableDataset) srcDataset, listener);
-                this.changeListener = listener;
-            } else {
-                throw new ProcessException("Unsupported dataset type: " + srcDataset.getClass());
-            }
-        }
-    }
-
-    protected void recordDirectoryChange(ChangeSet<DirectoryDataset, FileList> changeSet) {
-        this.pendingChange.add(changeSet);
-    }
-
-    protected void recordTableChange(ChangeSet<HiveTableDataset, HiveTableUpdate> changeSet) {
-        this.pendingChange.add(changeSet);
-    }
-
-    protected Dataset getSourceDataset(ProcessContext context) {
-        String datasetName = context.getProperty(SRC_DATASET_NAME).getValue();
-
-        if (datasetName != null) {
-            Dataset dataset = findDataset(context, datasetName);
+        if (datasourceName != null) {
+            Datasource dataset = findDatasource(context, datasourceName);
 
             if (dataset != null) {
                 return dataset;

@@ -5,13 +5,8 @@ package com.thinkbiganalytics.nifi.processors.metadata;
 
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.nifi.annotation.behavior.EventDriven;
-import org.apache.nifi.annotation.behavior.InputRequirement;
-import org.apache.nifi.annotation.documentation.CapabilityDescription;
-import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
@@ -22,15 +17,12 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetCriteria;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.DataOperation;
-import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
-import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import com.thinkbiganalytics.controller.metadata.MetadataProvider;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
 
 /**
  *
@@ -38,13 +30,13 @@ import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
  */
 public abstract class FeedTermination extends FeedProcessor {
     
-    private AtomicReference<Dataset> destinationDataset = new AtomicReference<>();
+    private AtomicReference<Datasource> destinationDatasource = new AtomicReference<>();
     private AtomicReference<FeedDestination> feedDestination = new AtomicReference<>();
     
     public static final PropertyDescriptor DEST_DATASET_NAME = new PropertyDescriptor.Builder()
             .name(DEST_DATASET_ID_PROP)
-            .displayName("Destination destinationDataset name")
-            .description("The unique name of the destinationDataset that the feed will update")
+            .displayName("Destination destinationDatasource name")
+            .description("The unique name of the destinationDatasource that the feed will update")
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
@@ -67,9 +59,9 @@ public abstract class FeedTermination extends FeedProcessor {
 //            .build();
 
     @OnScheduled
-    public void setupDatasetdMetadata(ProcessContext context) {
-        if (this.destinationDataset.get() == null) {
-            this.destinationDataset.compareAndSet(null, ensureDestinationDataset(context));    
+    public void setupDatasourcedMetadata(ProcessContext context) {
+        if (this.destinationDatasource.get() == null) {
+            this.destinationDatasource.compareAndSet(null, ensureDestinationDatasource(context));    
         }
     }
 
@@ -82,18 +74,18 @@ public abstract class FeedTermination extends FeedProcessor {
             FlowFile flowFile = session.get();
             
             if (flowFile != null) {
-                DataOperationsProvider operationProvider = getProviderService(context).getDataOperationsProvider();
+                MetadataProvider provider = getProviderService(context).getProvider();
                                 
                 if (this.feedDestination.get() == null) {
-                    Dataset ds = this.destinationDataset.get();
+                    Datasource ds = this.destinationDatasource.get();
                     this.feedDestination.compareAndSet(null, ensureFeedDestination(context, flowFile, ds));
                 }
                 
                 String timeStr = flowFile.getAttribute(OPERATON_START_PROP);
                 DateTime opStart = timeStr != null ? TIME_FORMATTER.parseDateTime(timeStr) : new DateTime();
                 
-                DataOperation op = operationProvider.beginOperation(this.feedDestination.get(), opStart);
-                op = completeOperation(context, flowFile, this.destinationDataset.get(), op);
+                DataOperation op = provider.beginOperation(this.feedDestination.get(), opStart);
+                op = completeOperation(context, flowFile, this.destinationDatasource.get(), op);
                 
                 flowFile = session.putAttribute(flowFile, OPERATON_STOP_PROP, TIME_FORMATTER.print(new DateTime()));
                 
@@ -110,14 +102,14 @@ public abstract class FeedTermination extends FeedProcessor {
         }
     }
     
-    protected abstract Dataset createDestinationDataset(ProcessContext context, String name, String descr);
+    protected abstract Datasource createDestinationDatasource(ProcessContext context, String name, String descr);
 
     protected abstract DataOperation completeOperation(ProcessContext context, 
                                                        FlowFile flowFile, 
-                                                       Dataset destDataset, 
+                                                       Datasource destDatasource, 
                                                        DataOperation op);
 
-//    protected abstract ChangeSet<DirectoryDataset, FileList> createChangeSet(ProcessContext context, FlowFile flowFile, Dataset destDataset);
+//    protected abstract ChangeSet<DirectoryDatasource, FileList> createChangeSet(ProcessContext context, FlowFile flowFile, Datasource destDatasource);
     
     @Override
     protected void addProperties(List<PropertyDescriptor> props) {
@@ -133,7 +125,7 @@ public abstract class FeedTermination extends FeedProcessor {
 //        rels.add(FAILURE);
     }
 
-    private State getOperationState(ProcessContext context) {
+    protected State getOperationState(ProcessContext context) {
         String result = context.getProperty(COMPLETION_RESULT).getValue();
         
         if (result.equals("FAILURE")) {
@@ -143,26 +135,31 @@ public abstract class FeedTermination extends FeedProcessor {
         }
     }
     
-    protected Dataset ensureDestinationDataset(ProcessContext context) {
+    protected Datasource ensureDestinationDatasource(ProcessContext context) {
         String datasetName = context.getProperty(DEST_DATASET_NAME).getValue();
-        Dataset dataset = findDataset(context, datasetName);
+        Datasource dataset = findDatasource(context, datasetName);
         
         if (dataset != null) {
             return dataset;
         } else {
-            getLogger().info("No destinationDataset exists with the givn name, creating: " + datasetName);
+            getLogger().info("No destinationDatasource exists with the givn name, creating: " + datasetName);
             
-            return createDestinationDataset(context, datasetName, "");
+            return createDestinationDatasource(context, datasetName, "");
         }
     }
     
-    protected FeedDestination ensureFeedDestination(ProcessContext context, FlowFile flowFile, Dataset destDataset) {
-        FeedProvider feedProvider = getProviderService(context).getFeedProvider();
-        String feedIdStr = flowFile.getAttribute(FEED_ID_PROP);
+    protected FeedDestination ensureFeedDestination(ProcessContext context, FlowFile flowFile, Datasource destDatasource) {
+        MetadataProvider provider = getProviderService(context).getProvider();
+        String feedId = flowFile.getAttribute(FEED_ID_PROP);
         
-        if (feedIdStr != null) {
-            Feed.ID feedId = feedProvider.asFeedId(feedIdStr);
-            return feedProvider.ensureFeedDestination(feedId, destDataset.getId());
+        if (feedId != null) {
+            Feed feed =  provider.ensureFeedDestination(feedId, destDatasource.getId());
+            for (FeedDestination dest : feed.getDestinations()) {
+                if (dest.getDatasource().getId().equals(destDatasource.getId())) {
+                    return dest;
+                }
+            }
+            return null;
         } else {
             throw new ProcessException("Feed ID property missing from flow file (" + FEED_ID_PROP + ")");
         }
