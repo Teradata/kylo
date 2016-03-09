@@ -7,6 +7,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -41,6 +42,7 @@ public class MetadataClient extends JerseyClient {
     
     public static final GenericType<List<Feed>> FEED_LIST = new GenericType<List<Feed>>() { };
     public static final GenericType<List<Datasource>> DATASOURCE_LIST = new GenericType<List<Datasource>>() { };
+    public static final GenericType<List<Metric>> METRIC_LIST = new GenericType<List<Metric>>() { };
     
     private static final Function<WebTarget, WebTarget> ALL_DATASOURCES = new TargetDatasourceCriteria();
     private static final Function<WebTarget, WebTarget> ALL_FEEDS = new TargetFeedCriteria();
@@ -70,6 +72,15 @@ public class MetadataClient extends JerseyClient {
         form.param("datasourceId", datasourceId);
         
         return post(Paths.get("feed", feedId, "destination"), form, Feed.class);
+    }
+
+    public Feed setPrecondition(String feedId, Metric... metrics) {
+        return setPrecondition(feedId, Arrays.asList(metrics));
+    }
+    
+    public Feed setPrecondition(String feedId, List<Metric> metrics) {
+        FeedPrecondition precond = new FeedPrecondition(metrics);
+        return post(Paths.get("feed", feedId, "precondition"), precond, Feed.class);
     }
 
     public FeedCriteria feedCriteria() {

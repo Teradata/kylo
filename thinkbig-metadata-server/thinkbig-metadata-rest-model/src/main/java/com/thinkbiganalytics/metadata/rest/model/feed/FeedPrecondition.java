@@ -19,7 +19,15 @@ import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedPrecondition {
 
-    private List<Metric> metrics;
+    private List<Metric> metrics = new ArrayList<>();
+
+    public FeedPrecondition() {
+        super();
+    }
+    
+    public FeedPrecondition(List<Metric> metrics) {
+        this.metrics.addAll(metrics);
+    }
 
     public List<Metric> getMetrics() {
         return metrics;

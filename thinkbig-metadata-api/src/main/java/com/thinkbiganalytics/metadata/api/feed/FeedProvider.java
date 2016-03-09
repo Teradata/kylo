@@ -22,6 +22,7 @@ public interface FeedProvider {
     Feed ensureFeed(String name, String descr, Dataset.ID srcId, Dataset.ID destId);
     
     Feed ensurePrecondition(Feed.ID feedId, String name, String descr, Set<Metric> metrics);
+    Feed updatePrecondition(Feed.ID feedId, Set<Metric> metrics);
     
     FeedCriteria feedCriteria();
     
@@ -35,6 +36,8 @@ public interface FeedProvider {
     Feed.ID resolveFeed(Serializable fid);
     FeedSource.ID resolveSource(Serializable sid);
     FeedDestination.ID resolveDestination(Serializable sid);
+
+
     
     // TODO Methods to add policy info to source
 }

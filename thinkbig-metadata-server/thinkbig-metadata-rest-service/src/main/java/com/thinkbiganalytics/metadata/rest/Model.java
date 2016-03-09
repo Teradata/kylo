@@ -40,6 +40,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
+import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
@@ -102,6 +103,14 @@ public class Model {
                     throw new WebApplicationException("Invalid cron expression provided for feed execution schedule: " + 
                             cast.getCronSchedule(), Status.BAD_REQUEST);
             }
+            }
+        });
+        map.put(DatasourceUpdatedSinceFeedExecutedMetric.class, new Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>() {
+            @Override
+            public com.thinkbiganalytics.metadata.sla.api.Metric apply(Metric model) {
+                DatasourceUpdatedSinceFeedExecutedMetric cast = (DatasourceUpdatedSinceFeedExecutedMetric) model;
+                return new com.thinkbiganalytics.metadata.api.feed.precond.DatasourceUpdatedSinceFeedExecutedMetric(cast.getDatasourceName(),
+                        cast.getFeedName());
             }
         });
         map.put(DatasourceUpdatedSinceMetric.class, new Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>() {

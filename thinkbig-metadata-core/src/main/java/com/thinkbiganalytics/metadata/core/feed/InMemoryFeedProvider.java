@@ -215,6 +215,17 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
     
     @Override
+    public Feed updatePrecondition(Feed.ID feedId, Set<Metric> metrics) {
+        String name = "Feed " + feedId + " Precondtion";
+        StringBuilder descr = new StringBuilder();
+        for (Metric metric : metrics) {
+            descr.append(metric.getClass().getSimpleName()).append(", ");
+        }
+        
+        return ensurePrecondition(feedId, name, descr.toString(), metrics);
+   }
+    
+    @Override
     public FeedCriteria feedCriteria() {
         return new Criteria();
     }

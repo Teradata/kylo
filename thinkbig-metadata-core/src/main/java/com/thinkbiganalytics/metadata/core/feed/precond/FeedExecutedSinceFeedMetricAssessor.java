@@ -58,32 +58,30 @@ public class FeedExecutedSinceFeedMetricAssessor extends MetadataMetricAssessor<
             if (testedOps.isEmpty()) {
                 builder
                     .result(AssessmentResult.FAILURE)
-                    .message("The dependent feed has never executed: " + sinceFeed.getName());
+                    .message("Feed " + testedFeed.getName() + " has never executed: " + sinceFeed.getName());
             } else {
-                DateTime sinceTime;
-                
-                // If the "since" feed has never run set its run time to the lowest value so 
-                // all tested feed changes are collected
                 if (sinceOps.isEmpty()) {
-                    sinceTime = new DateTime(1);
-                } else {
-                    // Get the time of the latest op (ops come in descending order by time)
-                    DataOperation op = sinceOps.iterator().next();
-                    sinceTime = op.getChangeSet().getTime();
-                }
-                
-                // Collects any tested feed ops that have run since the "since" time (may be none)
-                int incompleteness = collectChangeSetsSince(result, testedOps, sinceTime);
-                
-                if (result.isEmpty()) {
                     builder
-                    .result(AssessmentResult.FAILURE)
-                    .message("There have been no change sets produced since " + sinceTime);
-                } else {
-                    builder
-                    .result(incompleteness > 0 ? AssessmentResult.WARNING : AssessmentResult.SUCCESS)
-                    .message("There have been " + result.size() + " change sets produced since " + sinceTime)
-                    .data(result);
+                        .result(AssessmentResult.FAILURE)
+                        .message("Feed " + sinceFeed.getName() + " has never been executed");
+            } else {
+                    DateTime testedTime = testedOps.iterator().next().getStopTime();
+                    DateTime sinceTime = sinceOps.iterator().next().getStopTime();
+                   
+                    if (testedTime.isBefore(sinceTime)) {
+                        builder
+                            .result(AssessmentResult.FAILURE)
+                            .message("Feed " + testedFeed.getName() + " has not executed since feed " 
+                                    + sinceFeed.getName() + ": " + sinceTime);
+                    } else {
+                        // Collects any tested feed ops that have run since the "since" time (may be none)
+                        int incompleteness = collectChangeSetsSince(result, testedOps, sinceTime);
+                        
+                        builder
+                            .result(incompleteness > 0 ? AssessmentResult.WARNING : AssessmentResult.SUCCESS)
+                            .message("There have been " + result.size() + " change sets produced since " + sinceTime)
+                            .data(result);
+                    }
                 }
             }
         }

@@ -33,6 +33,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**
  *
@@ -77,30 +78,6 @@ public class FeedsResource {
         }
     }
 
-    private void ensurePrecondition(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
-        FeedPrecondition precond = feed.getPrecondition();
-        
-        if (precond != null) {
-            Set<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics 
-            = new HashSet<>(Collections2.transform(precond.getMetrics(), Model.METRIC_TO_DOMAIN));
-            
-            this.feedProvider.ensurePrecondition(domainFeed.getId(), "", "", domainMetrics);
-        }
-        
-    }
-
-    private void ensureDependentDatasources(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
-        for (FeedSource src : feed.getSources()) {
-            Dataset.ID dsId = this.datasetProvider.resolve(src.getId());
-            this.feedProvider.ensureFeedSource(domainFeed.getId(), dsId);
-        }
-        
-        for (FeedDestination src : feed.getDestinations()) {
-            Dataset.ID dsId = this.datasetProvider.resolve(src.getId());
-            this.feedProvider.ensureFeedDestination(domainFeed.getId(), dsId);
-        }
-    }
-    
     @POST
     @Path("{feedId}/source")
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
@@ -129,5 +106,43 @@ public class FeedsResource {
             = this.feedProvider.ensureFeedDestination(domainFeedId, domainDsId);
         
         return Model.DOMAIN_TO_FEED.apply(domainDest.getFeed());
+    }
+    
+    @POST
+    @Path("{feedId}/precondition")
+    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Produces(MediaType.APPLICATION_JSON)
+    public Feed setPrecondition(@PathParam("feedId") String feedId, FeedPrecondition precond) {
+        com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = this.feedProvider.resolveFeed(feedId);
+        com.thinkbiganalytics.metadata.api.feed.Feed domainFeed = this.feedProvider.getFeed(domainFeedId);
+        Set<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics 
+            = new HashSet<>(Collections2.transform(precond.getMetrics(), Model.METRIC_TO_DOMAIN));
+        domainFeed = this.feedProvider.updatePrecondition(domainFeedId, domainMetrics);
+        
+        return Model.DOMAIN_TO_FEED.apply(domainFeed);
+    }
+
+    private void ensurePrecondition(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
+        FeedPrecondition precond = feed.getPrecondition();
+        
+        if (precond != null) {
+            Set<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics 
+            = new HashSet<>(Collections2.transform(precond.getMetrics(), Model.METRIC_TO_DOMAIN));
+            
+            this.feedProvider.ensurePrecondition(domainFeed.getId(), "", "", domainMetrics);
+        }
+        
+    }
+
+    private void ensureDependentDatasources(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
+        for (FeedSource src : feed.getSources()) {
+            Dataset.ID dsId = this.datasetProvider.resolve(src.getId());
+            this.feedProvider.ensureFeedSource(domainFeed.getId(), dsId);
+        }
+        
+        for (FeedDestination src : feed.getDestinations()) {
+            Dataset.ID dsId = this.datasetProvider.resolve(src.getId());
+            this.feedProvider.ensureFeedDestination(domainFeed.getId(), dsId);
+        }
     }
 }
