@@ -31,6 +31,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.event.DatasourceChangeEvent;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
+import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
 
 /**
  * @author Sean Felten
@@ -65,18 +66,18 @@ public class FeedBegin extends FeedProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
     
-    public static final PropertyDescriptor PRECONDITION_NAME = new PropertyDescriptor.Builder()
-            .name("PRECONDITION")
-            .displayName("Precondition name")
-            .description("The unique name of the precondition that will trigger this feed's execution")
-            .required(false)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
+//    public static final PropertyDescriptor PRECONDITION_NAME = new PropertyDescriptor.Builder()
+//            .name("PRECONDITION")
+//            .displayName("Dependent datasource name")
+//            .description("The name of a precondition that will trigger this feed's execution")
+//            .required(false)
+//            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+//            .build();
     
     public static final PropertyDescriptor SRC_DATASOURCE_NAME = new PropertyDescriptor.Builder()
             .name(SRC_DATASET_ID_PROP)
-            .displayName("Source dataset name")
-            .description("The unique name of the dataset that the feed will read from (optional)")
+            .displayName("Source datasource name")
+            .description("The name of the datasource that this feed will read from (optional)")
             .required(false)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
@@ -110,7 +111,7 @@ public class FeedBegin extends FeedProcessor {
 
             if (srcDatasource != null) {
                 provider.ensureFeedSource(this.feedId.get(), srcDatasource.getId());
-                ensurePreconditonListener(context);
+                ensurePreconditonListener(context, feed, srcDatasource);
                 this.sourceDatasetId.set(srcDatasource.getId());
             } else {
                 throw new ProcessException("Source dataset does not exist: " + datasetName);
@@ -143,7 +144,7 @@ public class FeedBegin extends FeedProcessor {
         super.addProperties(props);
         props.add(PRECONDITION_SERVICE);
         props.add(FEED_NAME);
-        props.add(PRECONDITION_NAME);
+//        props.add(PRECONDITION_NAME);
         props.add(SRC_DATASOURCE_NAME);
     }
 
@@ -173,11 +174,21 @@ public class FeedBegin extends FeedProcessor {
         return session.create();
     }
     
-    private void ensurePreconditonListener(ProcessContext context) {
+    private void ensurePreconditonListener(ProcessContext context, Feed feed, Datasource srcDatasource) {
+        MetadataProvider provider = getProviderService(context).getProvider();
         FeedPreconditionEventService precondService = getPreconditionService(context);
-        String precondName = context.getProperty(PRECONDITION_NAME).getValue();
+        String sourceName = srcDatasource.getName();
         
         if (this.preconditionListener == null) {
+            // If no precondition exits yet install one that depends on the dependent datasource.
+            if (feed.getPrecondition() == null) {
+                DatasourceUpdatedSinceFeedExecutedMetric metric = new DatasourceUpdatedSinceFeedExecutedMetric();
+                metric.setFeedName(feed.getSystemName());
+                metric.setDatasourceName(srcDatasource.getName());
+                
+                provider.ensurePrecondition(feed.getId(), metric);
+            }
+            
             PreconditionListener listener = new PreconditionListener() {
                 @Override
                 public void triggered(DatasourceChangeEvent event) {
@@ -187,7 +198,7 @@ public class FeedBegin extends FeedProcessor {
             };
             
             this.preconditionListener = listener;
-            precondService.addListener(precondName, listener);
+            precondService.addListener(sourceName, listener);
         }
     }
 //

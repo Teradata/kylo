@@ -19,7 +19,7 @@
 
 com.thinkbiganalytics.controller.ThriftConnectionPool
 com.thinkbiganalytics.controller.metadata.MetadataProviderSelectorService
-com.thinkbiganalytics.controller.precond.InMemoryFeedPreconditionService
+com.thinkbiganalytics.controller.precond.JmsFeedPreconditionEventService
 
 # TODO: Remove usage of MetadataConnectionService
 com.thinkbiganalytics.controller.MetadataConnectionService

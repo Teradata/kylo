@@ -15,6 +15,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
+import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 
 /**
  *
@@ -29,6 +30,8 @@ public interface MetadataProvider {
     Feed ensureFeedSource(String feedId, String datasourceId);
 
     Feed ensureFeedDestination(String feedId, String id);
+    
+    Feed ensurePrecondition(String feedId, Metric... metrics);
 
     DataOperation beginOperation(FeedDestination feedDestination, DateTime opStart);
 

@@ -22,6 +22,7 @@ import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ChangeType;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ContentType;
+import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 import com.thinkbiganalytics.metadata.rest.model.op.FileList;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
 
@@ -82,6 +83,11 @@ public class MetadataClientProvider implements MetadataProvider {
     @Override
     public Feed ensureFeedDestination(String feedId, String datasourceId) {
         return this.client.addDestination(feedId, datasourceId);
+    }
+    
+    @Override
+    public Feed ensurePrecondition(String feedId, Metric... metrics) {
+        return this.client.setPrecondition(feedId, metrics);
     }
 
     /* (non-Javadoc)
