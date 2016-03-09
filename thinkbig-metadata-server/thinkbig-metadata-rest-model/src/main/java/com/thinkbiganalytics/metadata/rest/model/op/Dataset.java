@@ -35,22 +35,25 @@ public class Dataset {
     private Datasource datasource;
     private ChangeType changeType;
     private ContentType contentType;
-    private List<ChangeSet> changeSets;
+    private List<? extends ChangeSet> changeSets;
     
     public Dataset() {
         super();
     }
     
-    public Dataset(DateTime time, Datasource src, ChangeType change, ContentType content, ChangeSet... changeSets) {
-        super();
-        this.time = Formatters.TIME_FORMATTER.print(time);
-        this.datasource = src;
-        this.changeType = change;
-        this.contentType = content;
-        this.changeSets = Arrays.asList(changeSets);
+    public Dataset(Datasource src, ChangeType change, ContentType content, ChangeSet... changeSets) {
+        this(new DateTime(), src, change, content, Arrays.asList(changeSets));
     }
     
-    public Dataset(DateTime time, Datasource src, ChangeType change, ContentType content, List<ChangeSet> changeSets) {
+    public Dataset(Datasource src, ChangeType change, ContentType content, List<? extends ChangeSet> changeSets) {
+        this(new DateTime(), src, change, content, changeSets);
+    }
+    
+    public Dataset(DateTime time, Datasource src, ChangeType change, ContentType content, ChangeSet... changeSets) {
+        this(time, src, change, content, Arrays.asList(changeSets));
+    }
+    
+    public Dataset(DateTime time, Datasource src, ChangeType change, ContentType content, List<? extends ChangeSet> changeSets) {
         super();
         this.time = Formatters.TIME_FORMATTER.print(time);
         this.datasource = src;
@@ -96,11 +99,11 @@ public class Dataset {
         this.contentType = contentType;
     }
 
-    public List<ChangeSet> getChangeSets() {
+    public List<? extends ChangeSet> getChangeSets() {
         return changeSets;
     }
 
-    public void setChangeSets(List<ChangeSet> changeSets) {
+    public void setChangeSets(List<? extends ChangeSet> changeSets) {
         this.changeSets = changeSets;
     }
 

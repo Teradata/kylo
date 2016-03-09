@@ -9,6 +9,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
@@ -48,6 +49,21 @@ public class DataOperationsResource {
     
     @Inject
     private DataOperationsProvider operationsProvider;
+
+    @GET
+    @Path("{opid}")
+    @Consumes(MediaType.APPLICATION_JSON)
+    @Produces(MediaType.APPLICATION_JSON)
+    public DataOperation updateOperation(@PathParam("opid") String opid) {
+        com.thinkbiganalytics.metadata.api.op.DataOperation.ID domainId = this.operationsProvider.asOperationId(opid);
+        com.thinkbiganalytics.metadata.api.op.DataOperation domainOp = this.operationsProvider.getDataOperation(domainId);
+        
+        if (domainOp != null) {
+            return Model.DOMAIN_TO_OP.apply(domainOp);
+        } else {
+            throw new WebApplicationException("No data operation exitst with the given ID: " + opid, Status.NOT_FOUND);
+        }
+    }
 
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)

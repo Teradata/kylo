@@ -42,7 +42,8 @@ public class MetadataClient extends JerseyClient {
     public static final GenericType<List<Feed>> FEED_LIST = new GenericType<List<Feed>>() { };
     public static final GenericType<List<Datasource>> DATASOURCE_LIST = new GenericType<List<Datasource>>() { };
     
-    private static final Function<WebTarget, WebTarget> EVERYTHING = new TargetDatasourceCriteria();
+    private static final Function<WebTarget, WebTarget> ALL_DATASOURCES = new TargetDatasourceCriteria();
+    private static final Function<WebTarget, WebTarget> ALL_FEEDS = new TargetFeedCriteria();
     
     private WebTarget baseTarget;
     
@@ -76,7 +77,7 @@ public class MetadataClient extends JerseyClient {
     }
     
     public List<Feed> getFeeds() {
-        return get(Paths.get("feed"), EVERYTHING, FEED_LIST);
+        return get(Paths.get("feed"), ALL_FEEDS, FEED_LIST);
     }
     
     public List<Feed> getFeeds(FeedCriteria criteria) {
@@ -100,7 +101,7 @@ public class MetadataClient extends JerseyClient {
     }
 
     public List<Datasource> getDatasources() {
-        return get(Paths.get("datasource"), EVERYTHING, DATASOURCE_LIST);
+        return get(Paths.get("datasource"), ALL_DATASOURCES, DATASOURCE_LIST);
     }
     
     public List<Datasource> getDatasources(DatasourceCriteria criteria) {
@@ -119,10 +120,14 @@ public class MetadataClient extends JerseyClient {
         return post(Paths.get("dataop"), form, DataOperation.class);
     }
     
-    public DataOperation update(DataOperation op) {
+    public DataOperation updateDataOperation(DataOperation op) {
         return put(Paths.get("dataop", op.getId()), op, DataOperation.class);
     }
     
+    public DataOperation getDataOperation(String id) {
+        return get(Paths.get("dataop", id), DataOperation.class);
+    }
+
     private FeedPrecondition createTrigger(List<Metric> metrics) {
         if (! metrics.isEmpty()) {
             FeedPrecondition trigger = new FeedPrecondition();
@@ -145,16 +150,24 @@ public class MetadataClient extends JerseyClient {
         return post(Paths.get("datasource", "directory"), ds, DirectoryDatasource.class);
     }
     
-    private <R> R get(Path path, Function<WebTarget, WebTarget> funct, Class<R> resultType) {
-        return funct.apply(this.baseTarget)
+    private <R> R get(Path path, Class<R> resultType) {
+        return this.baseTarget
                 .path(path.toString())
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)
                 .get(resultType);
     }
     
-    private <R> R get(Path path, Function<WebTarget, WebTarget> funct, GenericType<R> resultType) {
-        return funct.apply(this.baseTarget)
+    private <R> R get(Path path, Function<WebTarget, WebTarget> filterFunct, Class<R> resultType) {
+        return filterFunct.apply(this.baseTarget)
+                .path(path.toString())
+                .request()
+                .accept(MediaType.APPLICATION_JSON_TYPE)
+                .get(resultType);
+    }
+    
+    private <R> R get(Path path, Function<WebTarget, WebTarget> filterFunct, GenericType<R> resultType) {
+        return filterFunct.apply(this.baseTarget)
                 .path(path.toString())
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)

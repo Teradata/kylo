@@ -122,7 +122,7 @@ public class MetadataClientTest {
         op.setState(State.SUCCESS);
         op.setDataset(dataset);
 
-        op = client.update(op);
+        op = client.updateDataOperation(op);
         
         assertThat(op).isNotNull();
     }

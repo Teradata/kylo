@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.op;
 
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,6 +20,15 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public class FileList extends ChangeSet {
 
     private List<String> paths = new ArrayList<>();
+    
+    public FileList() {
+    }
+    
+    public FileList(ArrayList<Path> paths) {
+        for (Path path : paths) {
+            this.paths.add(path.toString());
+        }
+    }
 
     public List<String> getPaths() {
         return paths;
