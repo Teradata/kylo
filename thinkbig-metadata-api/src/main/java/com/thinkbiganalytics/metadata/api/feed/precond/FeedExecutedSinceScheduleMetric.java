@@ -13,7 +13,7 @@ import org.quartz.CronExpression;
  */
 public class FeedExecutedSinceScheduleMetric extends DependentFeedMetric {
 
-    private CronExpression cronExpression;
+    private final CronExpression cronExpression;
 
     public FeedExecutedSinceScheduleMetric(String feedName, String cronExpression) throws ParseException {
         super(feedName);

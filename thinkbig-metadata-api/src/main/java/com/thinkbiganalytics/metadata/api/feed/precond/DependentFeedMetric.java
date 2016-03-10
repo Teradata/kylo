@@ -11,7 +11,7 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  */
 public abstract class DependentFeedMetric implements Metric {
 
-    private String feedName;
+    private final String feedName;
 
     public DependentFeedMetric(String feedName) {
         super();

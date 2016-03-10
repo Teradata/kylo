@@ -9,7 +9,7 @@ package com.thinkbiganalytics.metadata.api.feed.precond;
  */
 public class DatasourceUpdatedSinceFeedExecutedMetric extends DependentDatasetMetric {
 
-    private String feedName;
+    private final String feedName;
     
     public DatasourceUpdatedSinceFeedExecutedMetric(String datasetName, String feedName) {
         super(datasetName);

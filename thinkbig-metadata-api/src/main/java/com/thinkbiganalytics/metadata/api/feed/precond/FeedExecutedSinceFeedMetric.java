@@ -9,7 +9,7 @@ package com.thinkbiganalytics.metadata.api.feed.precond;
  */
 public class FeedExecutedSinceFeedMetric extends DependentFeedMetric {
 
-    private String sinceName;
+    private final String sinceName;
 
     public FeedExecutedSinceFeedMetric(String hasRunFeed, String sinceFeed) {
         super(hasRunFeed);

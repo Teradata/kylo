@@ -16,8 +16,8 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  */
 public class WithinSchedule implements Metric {
 
-    private CronExpression cronExpression;
-    private Period period;
+    private final CronExpression cronExpression;
+    private final Period period;
 
     public WithinSchedule(String cronExpression, String period) throws ParseException {
         this.cronExpression = new CronExpression(cronExpression);

@@ -13,7 +13,7 @@ import org.quartz.CronExpression;
  */
 public class DatasetUpdatedSinceMetric extends DependentDatasetMetric {
 
-    private CronExpression cronExpression;
+    private final CronExpression cronExpression;
 
     public DatasetUpdatedSinceMetric(String datasetName, String cronExpression) throws ParseException {
         super(datasetName);

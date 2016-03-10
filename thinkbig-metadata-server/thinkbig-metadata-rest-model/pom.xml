@@ -9,7 +9,6 @@
     <artifactId>thinkbig-metadata-rest-model</artifactId>
     
     <properties>
-        <jackson.version>2.6.0</jackson.version>
     </properties>
     
     <dependencies>

@@ -11,12 +11,11 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  */
 public abstract class DependentDatasetMetric implements Metric {
     
-    private String datasetName;
-    private String feedName;
+    private final String datasetName;
+    private final String feedName;
 
     public DependentDatasetMetric(String datasetName) {
-        super();
-        this.datasetName = datasetName;
+        this(null, datasetName);
     }
     
     public DependentDatasetMetric(String feedName, String datasetName) {

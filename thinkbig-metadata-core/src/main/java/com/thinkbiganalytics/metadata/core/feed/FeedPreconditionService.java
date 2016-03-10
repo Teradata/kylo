@@ -4,12 +4,10 @@
 package com.thinkbiganalytics.metadata.core.feed;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,14 +18,13 @@ import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feed.precond.DependentFeedMetric;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -71,24 +68,13 @@ public class FeedPreconditionService {
         this.generalListeners.add(listener);
     }
     
-    public void listenFeeds(Set<Metric> metrics) {
-        for (Metric metric : metrics) {
-            if (metric instanceof DependentFeedMetric) {
-                String feedName = ((DependentFeedMetric) metric).getFeedName();
-                watchFeed(feedName);
-            }
-        }
-    }
-    
-    private void watchFeed(String feedName) {
-        Collection<Feed> feeds = feedProvider.getFeeds(feedProvider.feedCriteria().name(feedName));
-        if (! feeds.isEmpty()) {
-            this.watchedFeeds.add(feeds.iterator().next().getId());
-        }
+    public void watchFeed(ID id) {
+        this.watchedFeeds.add(id);
     }
     
     /**
-     * Creates a listener that will check feed preconditions whenever there is a successful data change.
+     * Creates a listener that will check feed preconditions whenever there is a successful 
+     * data change is recorded.
      */
     private DataChangeEventListener<Dataset, ChangedContent> createDataChangeListener() {
         return new DataChangeEventListener<Dataset, ChangedContent>() {
@@ -97,10 +83,11 @@ public class FeedPreconditionService {
                 for (Feed.ID feedId : watchedFeeds) {
                     Feed feed = feedProvider.getFeed(feedId);
                     
-                    if (feed != null) {
+                    if (feed != null && feed.getPrecondition() != null) {
                         ServiceLevelAgreement sla = asAgreement(feed.getPrecondition());
                         List<ChangeSet<Dataset, ChangedContent>> changes = checkPrecondition(sla);
                         
+                        // No changes means precondition not met.
                         if (changes != null) {
                             PreconditionEvent preEv = new PreconditionEventImpl(feed, changes);
                             Set<PreconditionListener> listenerSet = feedListeners.get(feedId);
@@ -120,11 +107,6 @@ public class FeedPreconditionService {
                     }
                     
                 }
-//                
-//                for (Entry<Feed.ID, Set<PreconditionListener>> feedEntry : feedListeners.entrySet()) {
-//                    Feed feed = feedProvider.getFeed(feedEntry.getKey());
-//                    
-//                }
             }
         };
     }

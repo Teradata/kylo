@@ -205,7 +205,7 @@ public class InMemoryFeedProvider implements FeedProvider {
                         .add()
                     .build();
             
-            this.preconditionService.listenFeeds(metrics);
+            this.preconditionService.watchFeed(feed.getId());
             
             feed.setPrecondition(sla);
             return feed;
