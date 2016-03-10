@@ -1,24 +1,50 @@
 package com.thinkbiganalytics.scheduler.quartz;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.scheduler.*;
-import com.thinkbiganalytics.scheduler.impl.JobInfoImpl;
-import com.thinkbiganalytics.scheduler.impl.TriggerInfoImpl;
-import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
-import org.quartz.*;
-import org.quartz.impl.matchers.GroupMatcher;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.scheduling.quartz.*;
-import org.springframework.stereotype.Service;
-
-import java.lang.reflect.InvocationTargetException;
-import java.text.ParseException;
-import java.util.*;
-
 import static org.quartz.CronScheduleBuilder.cronSchedule;
 import static org.quartz.JobBuilder.newJob;
 import static org.quartz.TriggerBuilder.newTrigger;
+
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TimeZone;
+
+import org.quartz.CronScheduleBuilder;
+import org.quartz.CronTrigger;
+import org.quartz.JobDataMap;
+import org.quartz.JobDetail;
+import org.quartz.JobKey;
+import org.quartz.Scheduler;
+import org.quartz.SchedulerException;
+import org.quartz.SchedulerMetaData;
+import org.quartz.SimpleScheduleBuilder;
+import org.quartz.Trigger;
+import org.quartz.TriggerBuilder;
+import org.quartz.TriggerKey;
+import org.quartz.impl.matchers.GroupMatcher;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.scheduling.quartz.CronTriggerFactoryBean;
+import org.springframework.scheduling.quartz.JobDetailFactoryBean;
+import org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean;
+import org.springframework.scheduling.quartz.QuartzJobBean;
+import org.springframework.scheduling.quartz.SchedulerFactoryBean;
+import org.springframework.stereotype.Service;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.scheduler.JobIdentifier;
+import com.thinkbiganalytics.scheduler.JobInfo;
+import com.thinkbiganalytics.scheduler.JobScheduler;
+import com.thinkbiganalytics.scheduler.JobSchedulerException;
+import com.thinkbiganalytics.scheduler.TriggerIdentifier;
+import com.thinkbiganalytics.scheduler.TriggerInfo;
+import com.thinkbiganalytics.scheduler.impl.JobInfoImpl;
+import com.thinkbiganalytics.scheduler.impl.TriggerInfoImpl;
+import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
 /**
  * Created by sr186054 on 9/23/15.
@@ -28,14 +54,14 @@ public class QuartzScheduler implements JobScheduler {
 
     @Autowired
     @Qualifier("schedulerFactoryBean")
-    private SchedulerFactoryBean schedulerFactoryBean;
+    SchedulerFactoryBean schedulerFactoryBean;
 
     public Scheduler getScheduler() {
         return schedulerFactoryBean.getScheduler();
     }
 
     private JobDetail getJobDetail(JobIdentifier jobIdentifier, Object task, String runMethod) throws NoSuchMethodException, ClassNotFoundException {
-        MethodInvokingJobDetailFactoryBean bean = new MethodInvokingJobDetailFactoryBean();
+        final MethodInvokingJobDetailFactoryBean bean = new MethodInvokingJobDetailFactoryBean();
         bean.setTargetObject(task);
         bean.setTargetMethod(runMethod);
         bean.setName(jobIdentifier.getName());
@@ -56,19 +82,19 @@ public class QuartzScheduler implements JobScheduler {
 
     public void scheduleWithCronExpressionInTimeZone(JobIdentifier jobIdentifier, Object task, String runMethod, String cronExpression, TimeZone timeZone) throws JobSchedulerException {
         try {
-            JobDetail jobDetail = getJobDetail(jobIdentifier, task, runMethod);
+            final JobDetail jobDetail = getJobDetail(jobIdentifier, task, runMethod);
             if (timeZone == null) {
                 timeZone = TimeZone.getDefault();
             }
 
-            Trigger trigger = TriggerBuilder.newTrigger()
+            final Trigger trigger = TriggerBuilder.newTrigger()
                     .withIdentity(new TriggerKey("trigger_" + jobIdentifier.getUniqueName(), jobIdentifier.getGroup()))
                     .forJob(jobDetail)
                     .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)
                             .inTimeZone(timeZone)
                             .withMisfireHandlingInstructionFireAndProceed()).build();
             // scheduleJob(jobDetail,trigger);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new JobSchedulerException();
         }
     }
@@ -96,14 +122,14 @@ public class QuartzScheduler implements JobScheduler {
 
     public void scheduleWithFixedDelay(JobIdentifier jobIdentifier, Object task, String runMethod, Date startTime, long startDelay) throws JobSchedulerException {
         try {
-            JobDetail jobDetail = getJobDetail(jobIdentifier, task, runMethod);
+            final JobDetail jobDetail = getJobDetail(jobIdentifier, task, runMethod);
             Date triggerStartTime = startTime;
             if (startDelay > 0L || startTime == null) {
                 triggerStartTime = new Date(System.currentTimeMillis() + startDelay);
             }
-            Trigger trigger = newTrigger().withIdentity(new TriggerKey(jobIdentifier.getName(), jobIdentifier.getGroup())).forJob(jobDetail).startAt(triggerStartTime).build();
+            final Trigger trigger = newTrigger().withIdentity(new TriggerKey(jobIdentifier.getName(), jobIdentifier.getGroup())).forJob(jobDetail).startAt(triggerStartTime).build();
             getScheduler().scheduleJob(jobDetail, trigger);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new JobSchedulerException();
         }
     }
@@ -133,7 +159,7 @@ public class QuartzScheduler implements JobScheduler {
             if (startDelay > 0L || startTime == null) {
                 triggerStartTime = new Date(System.currentTimeMillis() + startDelay);
             }
-            Trigger trigger = TriggerBuilder.newTrigger().withIdentity(new TriggerKey(jobIdentifier.getName(), jobIdentifier.getGroup())).forJob(jobDetail).startAt(triggerStartTime).withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInMilliseconds(period).repeatForever()).build();
+            final Trigger trigger = TriggerBuilder.newTrigger().withIdentity(new TriggerKey(jobIdentifier.getName(), jobIdentifier.getGroup())).forJob(jobDetail).startAt(triggerStartTime).withSchedule(SimpleScheduleBuilder.simpleSchedule().withIntervalInMilliseconds(period).repeatForever()).build();
             getScheduler().scheduleJob(jobDetail, trigger);
         } catch (NoSuchMethodException | ClassNotFoundException | SchedulerException e) {
             throw new JobSchedulerException("Error calling scheduleAtFixedRateWithDelay", e);
@@ -177,7 +203,7 @@ public class QuartzScheduler implements JobScheduler {
     public void startScheduler() throws JobSchedulerException {
         try {
             getScheduler().start();
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             throw new JobSchedulerException("Unable to Start the Scheduler", e);
         }
     }
@@ -186,7 +212,7 @@ public class QuartzScheduler implements JobScheduler {
     public void pauseScheduler() throws JobSchedulerException {
         try {
             getScheduler().standby();
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             throw new JobSchedulerException("Unable to Pause the Scheduler", e);
         }
     }
@@ -195,47 +221,49 @@ public class QuartzScheduler implements JobScheduler {
     public void triggerJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
         try {
             getScheduler().triggerJob(jobKeyForJobIdentifier(jobIdentifier));
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             throw new JobSchedulerException("Unable to Trigger the Job " + jobIdentifier, e);
         }
     }
 
+    @Override
     public void pauseTriggersOnJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
         try {
-            JobKey jobKey = jobKeyForJobIdentifier(jobIdentifier);
-            List<? extends Trigger> jobTriggers = getScheduler().getTriggersOfJob(jobKey);
-            List<TriggerInfo> triggerInfoList = new ArrayList<TriggerInfo>();
+            final JobKey jobKey = jobKeyForJobIdentifier(jobIdentifier);
+            final List<? extends Trigger> jobTriggers = getScheduler().getTriggersOfJob(jobKey);
+            final List<TriggerInfo> triggerInfoList = new ArrayList<TriggerInfo>();
             if (jobTriggers != null) {
-                for (Trigger trigger : jobTriggers) {
-                   TriggerIdentifier triggerIdentifier = triggerIdentifierForTriggerKey(trigger.getKey());
+                for (final Trigger trigger : jobTriggers) {
+                   final TriggerIdentifier triggerIdentifier = triggerIdentifierForTriggerKey(trigger.getKey());
                     try {
                         pauseTrigger(triggerIdentifier);
-                    }catch (JobSchedulerException e){
+                    }catch (final JobSchedulerException e){
 
                     }
                 }
             }
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             throw new JobSchedulerException("Unable to pause Active Triggers the Job " + jobIdentifier, e);
         }
     }
 
+    @Override
     public void resumeTriggersOnJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
         try {
-            JobKey jobKey = jobKeyForJobIdentifier(jobIdentifier);
-            List<? extends Trigger> jobTriggers = getScheduler().getTriggersOfJob(jobKey);
-            List<TriggerInfo> triggerInfoList = new ArrayList<TriggerInfo>();
+            final JobKey jobKey = jobKeyForJobIdentifier(jobIdentifier);
+            final List<? extends Trigger> jobTriggers = getScheduler().getTriggersOfJob(jobKey);
+            final List<TriggerInfo> triggerInfoList = new ArrayList<TriggerInfo>();
             if (jobTriggers != null) {
-                for (Trigger trigger : jobTriggers) {
-                    TriggerIdentifier triggerIdentifier = triggerIdentifierForTriggerKey(trigger.getKey());
+                for (final Trigger trigger : jobTriggers) {
+                    final TriggerIdentifier triggerIdentifier = triggerIdentifierForTriggerKey(trigger.getKey());
                     try {
                         resumeTrigger(triggerIdentifier);
-                    }catch (JobSchedulerException e){
+                    }catch (final JobSchedulerException e){
 
                     }
                 }
             }
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             throw new JobSchedulerException("Unable to resume paused Triggers the Job " + jobIdentifier, e);
         }
     }
@@ -244,7 +272,7 @@ public class QuartzScheduler implements JobScheduler {
     public void resumeTrigger(TriggerIdentifier triggerIdentifier) throws JobSchedulerException {
         try {
             getScheduler().resumeTrigger(triggerKeyForTriggerIdentifier(triggerIdentifier));
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             throw new JobSchedulerException("Unable to Resume the Trigger " + triggerIdentifier, e);
         }
     }
@@ -253,17 +281,18 @@ public class QuartzScheduler implements JobScheduler {
     public void pauseTrigger(TriggerIdentifier triggerIdentifier) throws JobSchedulerException {
         try {
             getScheduler().pauseTrigger(triggerKeyForTriggerIdentifier(triggerIdentifier));
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             throw new JobSchedulerException("Unable to Pause the Trigger " + triggerIdentifier, e);
         }
     }
 
+    @Override
     public void updateTrigger(TriggerIdentifier triggerIdentifier, String cronExpression) throws  JobSchedulerException {
 
-        CronTrigger trigger = newTrigger().withIdentity(triggerIdentifier.getName(), triggerIdentifier.getGroup()).withSchedule(cronSchedule(cronExpression)).build();
+        final CronTrigger trigger = newTrigger().withIdentity(triggerIdentifier.getName(), triggerIdentifier.getGroup()).withSchedule(cronSchedule(cronExpression)).build();
         try {
             updateTrigger(triggerIdentifier, trigger);
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             throw new JobSchedulerException(e);
         }
     }
@@ -272,7 +301,7 @@ public class QuartzScheduler implements JobScheduler {
     public void deleteJob(JobIdentifier jobIdentifier) throws JobSchedulerException {
         try {
             getScheduler().deleteJob(jobKeyForJobIdentifier(jobIdentifier));
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             throw new JobSchedulerException("Unable to Delete the Job " + jobIdentifier, e);
         }
     }
@@ -296,7 +325,7 @@ public class QuartzScheduler implements JobScheduler {
     }
 
     public JobInfo buildJobInfo(JobDetail jobDetail){
-        JobInfo detail = new JobInfoImpl(jobIdentifierForJobKey(jobDetail.getKey()));
+        final JobInfo detail = new JobInfoImpl(jobIdentifierForJobKey(jobDetail.getKey()));
 
         detail.setDescription(jobDetail.getDescription());
         detail.setJobClass(jobDetail.getJobClass());
@@ -312,13 +341,13 @@ public class QuartzScheduler implements JobScheduler {
     }
 
     private TriggerInfo buildTriggerInfo(JobIdentifier jobIdentifier,Trigger trigger){
-        TriggerInfo triggerInfo = new TriggerInfoImpl(jobIdentifier,triggerIdentifierForTriggerKey(trigger.getKey()));
+        final TriggerInfo triggerInfo = new TriggerInfoImpl(jobIdentifier,triggerIdentifierForTriggerKey(trigger.getKey()));
         triggerInfo.setDescription(trigger.getDescription());
 
         String cronExpression = null;
         triggerInfo.setCronExpressionSummary("");
         if (trigger instanceof CronTrigger) {
-            CronTrigger ct = (CronTrigger) trigger;
+            final CronTrigger ct = (CronTrigger) trigger;
             cronExpression = ct.getCronExpression();
             triggerInfo.setCronExpressionSummary(ct.getExpressionSummary());
         }
@@ -335,23 +364,23 @@ public class QuartzScheduler implements JobScheduler {
 
     @Override
     public List<JobInfo> getJobs() throws JobSchedulerException {
-        List<JobInfo> list = new ArrayList<JobInfo>();
-        Scheduler sched = getScheduler();
+        final List<JobInfo> list = new ArrayList<JobInfo>();
+        final Scheduler sched = getScheduler();
         try {
             // enumerate each job group
-            for (String group : sched.getJobGroupNames()) {
+            for (final String group : sched.getJobGroupNames()) {
                 // enumerate each job in group
-                for (JobKey jobKey : sched.getJobKeys(GroupMatcher.jobGroupEquals(group))) {
-                    JobDetail jobDetail = sched.getJobDetail(jobKey);
-                    JobInfo detail =buildJobInfo(jobDetail);
+                for (final JobKey jobKey : sched.getJobKeys(GroupMatcher.jobGroupEquals(group))) {
+                    final JobDetail jobDetail = sched.getJobDetail(jobKey);
+                    final JobInfo detail =buildJobInfo(jobDetail);
                     list.add(detail);
-                    List<? extends Trigger> jobTriggers = sched.getTriggersOfJob(jobKey);
+                    final List<? extends Trigger> jobTriggers = sched.getTriggersOfJob(jobKey);
 
-                    List<TriggerInfo> triggerInfoList = new ArrayList<TriggerInfo>();
+                    final List<TriggerInfo> triggerInfoList = new ArrayList<TriggerInfo>();
                     if (jobTriggers != null) {
-                        for (Trigger trigger : jobTriggers) {
-                            TriggerInfo triggerInfo = buildTriggerInfo(detail.getJobIdentifier(), trigger);
-                            Trigger.TriggerState state = sched.getTriggerState(trigger.getKey());
+                        for (final Trigger trigger : jobTriggers) {
+                            final TriggerInfo triggerInfo = buildTriggerInfo(detail.getJobIdentifier(), trigger);
+                            final Trigger.TriggerState state = sched.getTriggerState(trigger.getKey());
                             triggerInfo.setState(TriggerInfo.TriggerState.valueOf(state.name()));
                             triggerInfoList.add(triggerInfo);
                         }
@@ -360,7 +389,7 @@ public class QuartzScheduler implements JobScheduler {
                 }
 
             }
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
 
         }
         return list;
@@ -370,7 +399,7 @@ public class QuartzScheduler implements JobScheduler {
     public void pauseAll() throws JobSchedulerException {
         try {
             getScheduler().pauseAll();
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             throw new JobSchedulerException(e);
         }
     }
@@ -379,18 +408,19 @@ public class QuartzScheduler implements JobScheduler {
     public void resumeAll() throws JobSchedulerException {
         try {
             getScheduler().resumeAll();
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             throw new JobSchedulerException(e);
         }
     }
 
+    @Override
     public Map<String,Object> getMetaData()  throws JobSchedulerException {
         Map<String,Object> map = new HashMap<String,Object>();
        try {
-        SchedulerMetaData metaData =  getScheduler().getMetaData();
+        final SchedulerMetaData metaData =  getScheduler().getMetaData();
         if(metaData != null) {
 
-            ObjectMapper objectMapper = new ObjectMapper();
+            final ObjectMapper objectMapper = new ObjectMapper();
             map = objectMapper.convertValue(metaData,Map.class);
 
         }
@@ -406,13 +436,13 @@ public class QuartzScheduler implements JobScheduler {
         try {
             jobKeys = getScheduler().getJobKeys(GroupMatcher.jobGroupEquals(jobIdentifier.getGroup()));
          if(jobKeys != null && !jobKeys.isEmpty()){
-            for(JobKey key : jobKeys){
+            for(final JobKey key : jobKeys){
                 if(jobIdentifierForJobKey(key).equals(jobIdentifier)){
                     return true;
                 }
             }
         }
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             e.printStackTrace();
         }
         return false;
@@ -425,7 +455,7 @@ public class QuartzScheduler implements JobScheduler {
             if(trigger != null){
                 return true;
             }
-        } catch (SchedulerException e) {
+        } catch (final SchedulerException e) {
             e.printStackTrace();
         }
         return false;
@@ -445,28 +475,28 @@ public class QuartzScheduler implements JobScheduler {
     }
 
     public void scheduleJob(MethodInvokingJobDetailFactoryBean methodInvokingJobDetailFactoryBean, CronTriggerFactoryBean cronTriggerFactoryBean)  throws SchedulerException{
-        JobDetail job = methodInvokingJobDetailFactoryBean.getObject();
-        CronTrigger trigger = cronTriggerFactoryBean.getObject();
+        final JobDetail job = methodInvokingJobDetailFactoryBean.getObject();
+        final CronTrigger trigger = cronTriggerFactoryBean.getObject();
         scheduleJob(job, trigger);
     }
 
     public void scheduleJob(JobDetail job, CronTriggerFactoryBean cronTriggerFactoryBean)  throws SchedulerException{
-        CronTrigger trigger = cronTriggerFactoryBean.getObject();
+        final CronTrigger trigger = cronTriggerFactoryBean.getObject();
         scheduleJob(job, trigger);
     }
 
     public void scheduleJob(JobIdentifier jobIdentifier, TriggerIdentifier triggerIdentifier,Object obj, String targetMethod, String cronExpression,Map<String,Object> jobData)  throws SchedulerException{
-        MethodInvokingJobDetailFactoryBean jobDetailFactory = new MethodInvokingJobDetailFactoryBean();
+        final MethodInvokingJobDetailFactoryBean jobDetailFactory = new MethodInvokingJobDetailFactoryBean();
         jobDetailFactory.setTargetObject(obj);
         jobDetailFactory.setTargetMethod(targetMethod);
         jobDetailFactory.setName(jobIdentifier.getName());
         jobDetailFactory.setGroup(jobIdentifier.getGroup());
 
-        JobDetailFactoryBean jobDetailFactoryBean2 = new JobDetailFactoryBean();
+        final JobDetailFactoryBean jobDetailFactoryBean2 = new JobDetailFactoryBean();
 
        // applicationContext.getAutowireCapableBeanFactory().initializeBean(jobDetailFactory, UUID.randomUUID().toString());
 
-        CronTriggerFactoryBean triggerFactoryBean = new CronTriggerFactoryBean();
+        final CronTriggerFactoryBean triggerFactoryBean = new CronTriggerFactoryBean();
         triggerFactoryBean.setCronExpression(cronExpression);
         triggerFactoryBean.setJobDetail(jobDetailFactory.getObject());
         triggerFactoryBean.setGroup(triggerIdentifier.getGroup());
@@ -483,13 +513,13 @@ public class QuartzScheduler implements JobScheduler {
             jobData = new HashMap<>();
         }
 
-        JobDataMap jobDataMap = new JobDataMap(jobData);
-        JobDetail job = newJob(clazz)
+        final JobDataMap jobDataMap = new JobDataMap(jobData);
+        final JobDetail job = newJob(clazz)
                 .withIdentity(jobIdentifier.getName(), jobIdentifier.getGroup())
                 .requestRecovery(false)
                 .setJobData(jobDataMap)
                 .build();
-       TriggerBuilder triggerBuilder = newTrigger()
+       final TriggerBuilder triggerBuilder = newTrigger()
                 .withIdentity(triggerIdentifier.getName(),triggerIdentifier.getGroup())
                 .withSchedule(cronSchedule(cronExpression).inTimeZone(TimeZone.getTimeZone("UTC"))
                         .withMisfireHandlingInstructionFireAndProceed())
@@ -503,11 +533,11 @@ public class QuartzScheduler implements JobScheduler {
                     triggerBuilder.startAt(previousTriggerTime);
                 }
             }
-            catch (ParseException e) {
+            catch (final ParseException e) {
 
             }
         }
-        Trigger trigger = triggerBuilder.build();
+        final Trigger trigger = triggerBuilder.build();
         scheduleJob(job, trigger);
 
     }
