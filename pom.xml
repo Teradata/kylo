@@ -43,6 +43,10 @@
                     <artifactId>httpclient</artifactId>
                     <groupId>org.apache.httpcomponents</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>jersey-core</artifactId>
+                    <groupId>com.sun.jersey</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
 
@@ -77,6 +81,12 @@
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
             <version>${sparkcore.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jersey-core</artifactId>
+                    <groupId>com.sun.jersey</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>
@@ -197,12 +207,22 @@
                     <artifactId>httpclient</artifactId>
                     <groupId>org.apache.httpcomponents</groupId>
                 </exclusion>
+                <exclusion>
+                    <artifactId>jersey-core</artifactId>
+                    <groupId>com.sun.jersey</groupId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-hdfs</artifactId>
             <version>${hadoop.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jersey-core</artifactId>
+                    <groupId>com.sun.jersey</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.hadoop</groupId>
@@ -213,6 +233,12 @@
             <groupId>org.apache.hadoop</groupId>
             <artifactId>hadoop-client</artifactId>
             <version>${hadoop.version}</version>
+            <exclusions>
+                <exclusion>
+                    <artifactId>jersey-core</artifactId>
+                    <groupId>com.sun.jersey</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.jayway.jsonpath</groupId>
@@ -256,17 +282,6 @@
             <scope>provided</scope>
         </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.bdp</groupId>
-            <artifactId>tba-sla-api</artifactId>
-            <version>${pipeline.controller.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.bdp</groupId>
-            <artifactId>tba-sla-core</artifactId>
-            <version>${pipeline.controller.version}</version>
-        </dependency>
-
         <!-- Testing -->
         <dependency>
             <groupId>org.assertj</groupId>
@@ -307,6 +322,14 @@
             <groupId>com.thinkbiganalytics.metadata</groupId>
             <artifactId>thinkbig-metadata-rest-client1</artifactId>
             <version>0.5.0-SNAPSHOT</version>
+            <!-- 
+            <exclusions>
+                <exclusion>
+                    <artifactId>jsr311-api</artifactId>
+                    <groupId>javax.ws.rs</groupId>
+                </exclusion>
+            </exclusions>
+             -->
         </dependency>
     </dependencies>
 
