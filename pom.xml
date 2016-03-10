@@ -34,11 +34,13 @@
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest-all</artifactId>
 			<version>${hamcrest.version}</version>
+            <scope>provided</scope>
 		</dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
             <version>2.4.6</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -52,36 +54,42 @@
             <groupId>joda-time</groupId>
             <artifactId>joda-time</artifactId>
             <version>${joda.time.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency> <!-- Spark dependency -->
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-core_2.10</artifactId>
             <version>${sparkcore.version}</version>
+            <scope>provided</scope>
         </dependency>
         
         <dependency> <!-- Spark dependency -->
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-sql_2.10</artifactId>
             <version>${sparkcore.version}</version>
+            <scope>provided</scope>
         </dependency>
         
         <dependency> <!-- Spark dependency -->
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-hive_2.10</artifactId>
             <version>${sparkcore.version}</version>
+            <scope>provided</scope>
         </dependency>
         
         <dependency> <!-- Spark dependency -->
             <groupId>org.apache.spark</groupId>
             <artifactId>spark-mllib_2.10</artifactId>
             <version>${sparkcore.version}</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <version>${apachecommons.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
