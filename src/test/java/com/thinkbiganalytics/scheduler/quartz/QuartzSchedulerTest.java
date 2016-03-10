@@ -208,10 +208,6 @@ public class QuartzSchedulerTest {
         fail();
     }
 
-    /*
-     *
-     */
-
     private void mockJobIdentifier(String jobName, String groupName) {
         when(jobIdentifier.getName()).thenReturn(jobName);
         when(jobIdentifier.getGroup()).thenReturn(groupName);
