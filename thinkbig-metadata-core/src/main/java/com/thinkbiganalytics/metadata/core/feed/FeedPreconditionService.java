@@ -104,6 +104,8 @@ public class FeedPreconditionService {
                                 }
                             }
                         }
+                    } else {
+                        watchedFeeds.remove(feedId);
                     }
                     
                 }

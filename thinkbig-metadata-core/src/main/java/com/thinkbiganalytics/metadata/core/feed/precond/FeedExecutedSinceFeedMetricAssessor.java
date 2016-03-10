@@ -58,13 +58,13 @@ public class FeedExecutedSinceFeedMetricAssessor extends MetadataMetricAssessor<
             if (testedOps.isEmpty()) {
                 builder
                     .result(AssessmentResult.FAILURE)
-                    .message("Feed " + testedFeed.getName() + " has never executed: " + sinceFeed.getName());
+                    .message("Feed " + testedFeed.getName() + " has executed");
             } else {
                 if (sinceOps.isEmpty()) {
                     builder
                         .result(AssessmentResult.FAILURE)
-                        .message("Feed " + sinceFeed.getName() + " has never been executed");
-            } else {
+                        .message("Feed " + sinceFeed.getName() + " has never executed");
+                } else {
                     DateTime testedTime = testedOps.iterator().next().getStopTime();
                     DateTime sinceTime = sinceOps.iterator().next().getStopTime();
                    
@@ -74,7 +74,7 @@ public class FeedExecutedSinceFeedMetricAssessor extends MetadataMetricAssessor<
                             .message("Feed " + testedFeed.getName() + " has not executed since feed " 
                                     + sinceFeed.getName() + ": " + sinceTime);
                     } else {
-                        // Collects any tested feed ops that have run since the "since" time (may be none)
+                        // Collects any feed ops that have run since the "since" time (may be none)
                         int incompleteness = collectChangeSetsSince(result, testedOps, sinceTime);
                         
                         builder
