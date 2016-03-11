@@ -147,6 +147,7 @@ public class Validator implements Serializable {
 
             // Record the validation stats
             writeStatsToProfileTable(validCount, invalidCount);
+            sparkContext.close();
 
 
         } catch (Exception e) {
