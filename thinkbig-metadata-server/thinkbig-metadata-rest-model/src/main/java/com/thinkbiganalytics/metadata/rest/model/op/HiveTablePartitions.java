@@ -19,14 +19,18 @@ import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class HiveTablePartitions extends ChangeSet {
 
-    List<HiveTablePartition> partions = new ArrayList<>();
+    List<HiveTablePartition> partitions = new ArrayList<>();
 
-    public List<HiveTablePartition> getPartions() {
-        return partions;
+    public List<HiveTablePartition> getPartitions() {
+        return partitions;
     }
 
-    public void setPartions(List<HiveTablePartition> partions) {
-        this.partions = partions;
+    public void setPartitions(List<HiveTablePartition> partitions) {
+        this.partitions = partitions;
+    }
+
+    public void addPartition(HiveTablePartition hiveTablePartition) {
+        this.partitions.add(hiveTablePartition);
     }
     
     

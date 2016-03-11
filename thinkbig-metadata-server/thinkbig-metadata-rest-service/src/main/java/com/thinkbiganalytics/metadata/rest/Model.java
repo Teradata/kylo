@@ -144,6 +144,8 @@ public class Model {
             public Feed apply(com.thinkbiganalytics.metadata.api.feed.Feed domain) {
                 Feed feed = new Feed();
                 feed.setId(domain.getId().toString());
+                feed.setSystemName(domain.getName());
+                feed.setDisplayName(domain.getName());
                 feed.setDescription(domain.getDescription());
                 feed.setDisplayName(domain.getName());
 //                feed.setOwner();
@@ -288,7 +290,7 @@ public class Model {
                     HiveTableUpdate domainHt = (HiveTableUpdate) domain;
                     HiveTablePartitions parts = new HiveTablePartitions();
                     List<HiveTablePartition> partList = new ArrayList<>(Collections2.transform(domainHt.getPartitions(), DOMAIN_TO_PARTITION));
-                    parts.setPartions(partList);
+                    parts.setPartitions(partList);
                     cs = parts;
                 } else {
                     cs = new com.thinkbiganalytics.metadata.rest.model.op.ChangeSet();

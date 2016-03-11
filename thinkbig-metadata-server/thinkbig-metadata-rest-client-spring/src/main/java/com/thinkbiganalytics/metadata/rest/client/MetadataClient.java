@@ -28,11 +28,13 @@ import org.springframework.web.util.UriComponentsBuilder;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableField;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
@@ -180,10 +182,7 @@ public class MetadataClient {
     
     private <R> R get(Path path, Function<UriComponentsBuilder, UriComponentsBuilder> filterFunct, Class<R> resultType) {
         return this.template.getForObject(
-                (filterFunct != null ? filterFunct.apply(base(path)) : base(path))
-                    .path(path.toString())
-                    .build()
-                    .toUri(), 
+                (filterFunct != null ? filterFunct.apply(base(path)) : base(path)).build().toUri(),
                 resultType);
     }
     
@@ -192,10 +191,7 @@ public class MetadataClient {
         headers.setAccept(ACCEPT_TYPES);
         
         ResponseEntity<R> resp = this.template.exchange(
-                (filterFunct != null ? filterFunct.apply(base(path)) : base(path))
-                    .path(path.toString())
-                    .build()
-                    .toUri(), 
+                (filterFunct != null ? filterFunct.apply(base(path)) : base(path)).build().toUri(),
                 HttpMethod.GET,
                 new HttpEntity<Object>(headers),
                 responseEntity);
@@ -246,19 +242,19 @@ public class MetadataClient {
 
 
     private class FeedBuilderImpl implements FeedBuilder {
-        private String feedName;
+        private String displayName;
         private String systemName;
         private String description;
         private String owner;
         private List<Metric> preconditionMetrics = new ArrayList<>();
     
         public FeedBuilderImpl(String name) {
-            this.feedName = name;
+            this.systemName = name;
         }
     
         @Override
-        public FeedBuilder systemName(String name) {
-            this.systemName = name;
+        public FeedBuilder displayName(String name) {
+            this.displayName = name;
             return this;
         }
     
@@ -285,8 +281,8 @@ public class MetadataClient {
         @Override
         public Feed build() {
             Feed feed = new Feed();
-            feed.setDisplayName(this.feedName);
             feed.setSystemName(this.systemName);
+            feed.setDisplayName(this.displayName != null ? this.displayName : this.systemName);
             feed.setDescription(this.description);
             feed.setOwner(this.owner);
             feed.setPrecondition(createTrigger(this.preconditionMetrics));
@@ -472,13 +468,6 @@ public class MetadataClient {
 
     private static class TargetDatasourceCriteria implements DatasourceCriteria, Function<UriComponentsBuilder, UriComponentsBuilder> {
         
-        public static final String NAME = "name";
-        public static final String OWNER = "owner";
-        public static final String ON = "on";
-        public static final String AFTER = "after";
-        public static final String BEFORE = "before";
-        public static final String TYPE = "type";
-
         private String name;
         private String owner;
         private DateTime createdOn;
@@ -560,10 +549,6 @@ public class MetadataClient {
 
     private static class TargetFeedCriteria implements FeedCriteria, Function<UriComponentsBuilder, UriComponentsBuilder> {
         
-        public static final String NAME = "name";
-        public static final String SRC_ID = "srcid";
-        public static final String DEST_ID = "destid";
-
         private String name;
         private String sourceId;
         private String destinationId;

@@ -12,7 +12,7 @@ import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
  */
 public interface FeedBuilder {
 
-    FeedBuilder systemName(String name);
+    FeedBuilder displayName(String name);
     FeedBuilder description(String descr);
     FeedBuilder owner(String owner);
     FeedBuilder preconditionMetric(Metric... metrics);

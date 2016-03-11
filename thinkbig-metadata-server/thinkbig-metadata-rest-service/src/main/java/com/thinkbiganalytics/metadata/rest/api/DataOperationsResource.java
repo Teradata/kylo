@@ -54,7 +54,7 @@ public class DataOperationsResource {
     @Path("{opid}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public DataOperation updateOperation(@PathParam("opid") String opid) {
+    public DataOperation getOperation(@PathParam("opid") String opid) {
         com.thinkbiganalytics.metadata.api.op.DataOperation.ID domainId = this.operationsProvider.asOperationId(opid);
         com.thinkbiganalytics.metadata.api.op.DataOperation domainOp = this.operationsProvider.getDataOperation(domainId);
         

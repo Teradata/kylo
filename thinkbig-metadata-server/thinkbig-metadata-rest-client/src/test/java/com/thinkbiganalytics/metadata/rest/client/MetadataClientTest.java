@@ -116,7 +116,7 @@ public class MetadataClientTest {
         DataOperation op = client.beginOperation(destId, "");
         
         HiveTablePartitions changeSet = new HiveTablePartitions();
-        changeSet.setPartions(Arrays.asList(new HiveTablePartition("month", null, "Jan", "Feb"),
+        changeSet.setPartitions(Arrays.asList(new HiveTablePartition("month", null, "Jan", "Feb"),
                                            new HiveTablePartition("year", null, "2015", "2016")));
         Dataset dataset = new Dataset(new DateTime(), ds, ChangeType.UPDATE, ContentType.PARTITIONS, changeSet);
         op.setState(State.SUCCESS);

@@ -116,5 +116,16 @@ public class Feed {
         this.destinations = destinations;
     }
 
+    public FeedDestination getDestination(String datasourceId) {
+        for (FeedDestination dest : this.destinations) {
+            if (datasourceId.equals(dest.getDatasourceId()) || 
+                    dest.getDatasource() != null && datasourceId.equals(dest.getDatasource().getId())) {
+                return dest;
+            }
+        }
+        
+        return null;
+    }
+
 
 }

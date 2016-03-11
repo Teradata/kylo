@@ -11,25 +11,28 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
-import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
@@ -49,10 +52,21 @@ public class FeedsResource {
     private DatasetProvider datasetProvider;
     
 
+//    @GET
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public List<Feed> getAllFeeds() {
+//        Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainFeeds = this.feedProvider.getFeeds();
+//        
+//        return new ArrayList<>(Collections2.transform(domainFeeds, Model.DOMAIN_TO_FEED));
+//    }
+    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Feed> getFeeds() {
-        Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainFeeds = this.feedProvider.getFeeds();
+    public List<Feed> getFeeds(@QueryParam(FeedCriteria.NAME) String name,
+                               @QueryParam(FeedCriteria.SRC_ID) String srcId,
+                               @QueryParam(FeedCriteria.DEST_ID) String destId) {
+        com.thinkbiganalytics.metadata.api.feed.FeedCriteria criteria = createFeedCriteria(name, srcId, destId);
+        Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainFeeds = this.feedProvider.getFeeds(criteria);
         
         return new ArrayList<>(Collections2.transform(domainFeeds, Model.DOMAIN_TO_FEED));
     }
@@ -70,10 +84,11 @@ public class FeedsResource {
     
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Feed createFeed(Feed feed) {
+    public Feed createFeed(Feed feed,
+                           @QueryParam("ensure") @DefaultValue("true") boolean ensure) {
         Model.validateCreate(feed);
         
-        FeedCriteria crit = this.feedProvider.feedCriteria().name(feed.getSystemName());
+        com.thinkbiganalytics.metadata.api.feed.FeedCriteria crit = this.feedProvider.feedCriteria().name(feed.getSystemName());
         Collection<com.thinkbiganalytics.metadata.api.feed.Feed> existing = this.feedProvider.getFeeds(crit);
         
         if (existing.isEmpty()) {
@@ -83,6 +98,8 @@ public class FeedsResource {
             ensurePrecondition(feed, domainFeed);
             
             return Model.DOMAIN_TO_FEED.apply(this.feedProvider.getFeed(domainFeed.getId()));
+        } else if (ensure) {
+            return Model.DOMAIN_TO_FEED.apply(existing.iterator().next());
         } else {
             throw new WebApplicationException("A feed with the given name already exists: " + feed.getSystemName(), Status.BAD_REQUEST);
         }
@@ -155,4 +172,23 @@ public class FeedsResource {
             this.feedProvider.ensureFeedDestination(domainFeed.getId(), dsId);
         }
     }
+    
+    private com.thinkbiganalytics.metadata.api.feed.FeedCriteria createFeedCriteria(String name,
+                                            String srcId,
+                                            String destId) {
+        com.thinkbiganalytics.metadata.api.feed.FeedCriteria criteria = this.feedProvider.feedCriteria();
+        
+        if (StringUtils.isNotEmpty(name)) criteria.name(name);
+        if (StringUtils.isNotEmpty(srcId)) {
+            Dataset.ID dsId = this.datasetProvider.resolve(srcId);
+            criteria.sourceDataset(dsId);
+        }
+        if (StringUtils.isNotEmpty(destId)) {
+            Dataset.ID dsId = this.datasetProvider.resolve(destId);
+            criteria.destinationDataset(dsId);
+        }
+        
+        return criteria;
+    }
+
 }
