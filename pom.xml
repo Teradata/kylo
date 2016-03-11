@@ -320,7 +320,7 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-rest-client1</artifactId>
+            <artifactId>thinkbig-metadata-rest-client-spring</artifactId>
             <version>0.5.0-SNAPSHOT</version>
             <!-- 
             <exclusions>

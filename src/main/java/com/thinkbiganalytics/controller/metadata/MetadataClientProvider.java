@@ -58,8 +58,7 @@ public class MetadataClientProvider implements MetadataProvider {
      */
     @Override
     public Datasource getDatasourceByName(String dsName) {
-        DatasourceCriteria criteria = this.client.datasourceCriteria()
-                .name(dsName);
+        DatasourceCriteria criteria = this.client.datasourceCriteria().name(dsName);
         List<Datasource> list = this.client.getDatasources(criteria);
         
         if (list.isEmpty()) {
