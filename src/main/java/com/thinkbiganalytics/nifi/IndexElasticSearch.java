@@ -180,7 +180,7 @@ public class IndexElasticSearch extends AbstractProcessor {
             } else {
                 id = UUID.randomUUID().toString();
             }
-            jsonObj.put("post_date", System.currentTimeMillis());
+            jsonObj.put("post_date", String.valueOf(System.currentTimeMillis()));
             bulkRequest.add(client.prepareIndex(index, type, id)
                             .setSource(jsonObj.toString())
             );
