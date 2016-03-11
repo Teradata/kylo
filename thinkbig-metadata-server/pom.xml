@@ -21,5 +21,6 @@
         <module>thinkbig-metadata-rest-client</module>
         <module>thinkbig-metadata-rest-client1</module>
         <module>thinkbig-metadata-jms</module>
+        <module>thinkbig-metadata-rest-client-spring</module>
     </modules>
 </project>

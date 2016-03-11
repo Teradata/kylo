@@ -33,7 +33,6 @@ import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**
  *
@@ -57,6 +56,17 @@ public class FeedsResource {
         
         return new ArrayList<>(Collections2.transform(domainFeeds, Model.DOMAIN_TO_FEED));
     }
+    
+    @GET
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Feed getFeed(@PathParam("id") String feedId) {
+        com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = this.feedProvider.asFeedId(feedId);
+        com.thinkbiganalytics.metadata.api.feed.Feed domain = this.feedProvider.getFeed(domainId);
+        
+        return Model.DOMAIN_TO_FEED.apply(domain);
+    }
+    
     
     @POST
     @Produces(MediaType.APPLICATION_JSON)

@@ -60,10 +60,15 @@ public class FeedExecutedSinceFeedMetricAssessor extends MetadataMetricAssessor<
                     .result(AssessmentResult.FAILURE)
                     .message("Feed " + testedFeed.getName() + " has executed");
             } else {
+                // If the "since" feed has never run then the tested feed has run before it.
                 if (sinceOps.isEmpty()) {
+                    // Collects all ops that have the tested feed generated.
+                    int incompleteness = collectChangeSetsSince(result, testedOps, new DateTime(1));
+                    
                     builder
-                        .result(AssessmentResult.FAILURE)
-                        .message("Feed " + sinceFeed.getName() + " has never executed");
+                        .result(incompleteness > 0 ? AssessmentResult.WARNING : AssessmentResult.SUCCESS)
+                        .message("There have been a total of " + result.size() + " change sets produced")
+                        .data(result);
                 } else {
                     DateTime testedTime = testedOps.iterator().next().getStopTime();
                     DateTime sinceTime = sinceOps.iterator().next().getStopTime();
