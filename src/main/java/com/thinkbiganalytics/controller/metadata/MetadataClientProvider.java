@@ -6,14 +6,15 @@ package com.thinkbiganalytics.controller.metadata;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.rest.client.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
@@ -25,6 +26,7 @@ import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ContentType;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 import com.thinkbiganalytics.metadata.rest.model.op.FileList;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
 
 /**
  *
@@ -93,7 +95,7 @@ public class MetadataClientProvider implements MetadataProvider {
      * @see com.thinkbiganalytics.controller.metadata.MetadataProvider#ensureDirectoryDatasource(java.lang.String, java.lang.String, java.nio.file.Path)
      */
     @Override
-    public Datasource ensureDirectoryDatasource(String datasetName, String descr, Path path) {
+    public DirectoryDatasource ensureDirectoryDatasource(String datasetName, String descr, Path path) {
         return this.client.buildDirectoryDatasource(datasetName)
                 .description(descr)
                 .path(path.toString())
@@ -104,12 +106,17 @@ public class MetadataClientProvider implements MetadataProvider {
      * @see com.thinkbiganalytics.controller.metadata.MetadataProvider#ensureHiveTableDatasource(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
-    public Datasource ensureHiveTableDatasource(String dsName, String descr, String databaseName, String tableName) {
+    public HiveTableDatasource ensureHiveTableDatasource(String dsName, String descr, String databaseName, String tableName) {
         return this.client.buildHiveTableDatasource(dsName)
                 .description(descr)
                 .database(databaseName)
                 .tableName(tableName)
                 .post();
+    }
+    
+    @Override
+    public Dataset createDataset(DirectoryDatasource dds, Path... paths) {
+        return createDataset(dds, new ArrayList<>(Arrays.asList(paths)));
     }
 
     /* (non-Javadoc)
@@ -125,9 +132,8 @@ public class MetadataClientProvider implements MetadataProvider {
      * @see com.thinkbiganalytics.controller.metadata.MetadataProvider#createChangeSet(com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource, int)
      */
     @Override
-    public Dataset createChangeSet(HiveTableDatasource hds, int i) {
-        HiveTablePartitions parts = new HiveTablePartitions();
-        return new Dataset(hds, ChangeType.UPDATE, ContentType.PARTITIONS, parts);
+    public Dataset createDataset(HiveTableDatasource hds, HiveTablePartitions partitions) {
+        return new Dataset(hds, ChangeType.UPDATE, ContentType.PARTITIONS, partitions);
     }
 
     /* (non-Javadoc)
@@ -146,6 +152,7 @@ public class MetadataClientProvider implements MetadataProvider {
         DataOperation op = this.client.getDataOperation(id);
         op.setStatus(status);
         op.setDataset(dataset);
+        op.setState(State.SUCCESS);
         
         return this.client.updateDataOperation(op);
     }

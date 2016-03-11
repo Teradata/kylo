@@ -54,7 +54,7 @@ public class HiveTableFeedTermination extends FeedTermination {
                                               DataOperation op) {
         MetadataProvider provider = getProviderService(context).getProvider();
         HiveTableDatasource hds = (HiveTableDatasource) dataset;
-        Dataset changeSet = provider.createChangeSet(hds, 0);
+        Dataset changeSet = provider.createDataset(hds, null);
         
         return provider.completeOperation(op.getId(), "", changeSet);
     }
