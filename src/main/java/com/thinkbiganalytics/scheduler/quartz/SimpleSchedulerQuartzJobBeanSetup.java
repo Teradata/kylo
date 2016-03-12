@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.scheduler.quartz;
 
-import com.thinkbiganalytics.scheduler.JobIdentifier;
 import org.quartz.SchedulerException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -75,6 +75,14 @@ public class SimpleSchedulerSetup implements InitializingBean {
         quartzScheduler.scheduleJob(jobDetailFactory, triggerFactoryBean);
     }
 
+    public void setQuartzScheduler(QuartzScheduler quartzScheduler) {
+        this.quartzScheduler = quartzScheduler;
+    }
+
+    public void setApplicationContext(ApplicationContext applicationContext) {
+        this.applicationContext = applicationContext;
+    }
+
     public void setJobName(String jobName) {
         this.jobName = jobName;
     }

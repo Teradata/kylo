@@ -13,7 +13,7 @@ import javax.inject.Inject;
 @Configuration
 public class QuartzSpringConfiguration {
 
- @Inject
+    @Inject
     private ApplicationContext applicationContext;
 
     @Bean(name="schedulerFactoryBean")

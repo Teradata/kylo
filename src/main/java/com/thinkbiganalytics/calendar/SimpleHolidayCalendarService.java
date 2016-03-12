@@ -1,25 +1,18 @@
 package com.thinkbiganalytics.calendar;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import javax.annotation.PostConstruct;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.joda.time.LocalDate;
 import org.quartz.impl.calendar.HolidayCalendar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
+import javax.annotation.PostConstruct;
+import java.io.File;
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
 public class SimpleHolidayCalendarService implements HolidayCalendarService {
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleHolidayCalendarService.class);
