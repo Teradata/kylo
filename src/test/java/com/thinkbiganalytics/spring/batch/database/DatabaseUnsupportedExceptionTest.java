@@ -21,7 +21,10 @@ public class DatabaseUnsupportedExceptionTest {
 
     @Test
     public void testDB() throws Exception {
-        assertEquals(ex2.getMessage(), "test");
-        assertEquals(ex2.getLocalizedMessage(), "test");
+        assertTrue(ex.getCause() == null);
+        assertEquals(ex2.getMessage(), "Your database is not supported by Pipeline Controller");
+        assertEquals(ex2.getLocalizedMessage(), "Your database is not supported by Pipeline Controller");
+        assertTrue(ex2.getCause() != null);
+
     }
 }
