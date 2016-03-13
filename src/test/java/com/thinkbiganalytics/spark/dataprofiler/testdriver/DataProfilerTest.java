@@ -293,6 +293,8 @@ public class DataProfilerTest {
 		}
 		*/
 		
+		
+		Profiler.populateAndBroadcastSchemaMap(dataDF, sc);
 		statsModel = Profiler.profileStatistics(dataDF);
 		columnStatsMap = statsModel.getColumnStatisticsMap();		
 	}

@@ -2,14 +2,15 @@ package com.thinkbiganalytics.spark.dataprofiler.core;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaPairRDD;
 import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.broadcast.Broadcast;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.hive.HiveContext;
 import org.apache.spark.sql.types.StructField;
-import org.apache.spark.sql.types.StructType;
 
 import com.thinkbiganalytics.spark.dataprofiler.columns.BigDecimalColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.columns.BooleanColumnStatistics;
@@ -45,7 +46,9 @@ import scala.Tuple2;
  */
 public class Profiler {
 	
-	@SuppressWarnings("unused")
+	/* Schema lookup table */
+	private static Broadcast<Map<Integer, StructField>> bSchemaMap;
+	
 	/**
 	 * Main entry point into program
 	 * @param list of args
@@ -58,11 +61,7 @@ public class Profiler {
 		HiveContext hiveContext;
 		DataFrame resultDF;
 		String queryString;
-		StructType resultSchema;
-		StructField[] resultSchemaFields;
-		String outputTableName;
-		StatisticsModel statisticsModel;
-		String partitionKey;
+		
 
 		
 		/* Check command line arguments and get query to run. */
@@ -86,7 +85,11 @@ public class Profiler {
 		/* Run query and get result */
 		System.out.println("[PROFILER-INFO] Analyzing profile statistics for: [" + queryString + "]");
 		resultDF = hiveContext.sql(queryString);
-
+		
+		
+		/* Update schema map and broadcast it*/
+		populateAndBroadcastSchemaMap(resultDF, sc);
+		
 		
 		/* Get profile statistics and write to table */
 		profileStatistics(resultDF).writeModel(sc, hiveContext);
@@ -108,9 +111,6 @@ public class Profiler {
 		
 		JavaPairRDD<Tuple2<Integer, Object>, Integer> columnValueCounts;
 		StatisticsModel profileStatisticsModel;
-		
-		/* Update schema map */
-		populateSchemaMap(resultDF);
 
 		/* Get ((column index, column value), count) */
 		columnValueCounts = resultDF
@@ -120,7 +120,7 @@ public class Profiler {
 				
 		/* Generate the profile model */
 		profileStatisticsModel = columnValueCounts
-				.mapPartitions(new PartitionLevelModels())
+				.mapPartitions(new PartitionLevelModels(bSchemaMap))
 				.reduce(new CombineModels());
 
 		return profileStatisticsModel;	
@@ -272,11 +272,13 @@ public class Profiler {
 
 	
 	/* Populate schema map */
-	private static void populateSchemaMap(DataFrame df) {
+	public static void populateAndBroadcastSchemaMap(DataFrame df, JavaSparkContext sc) {
 		
 		for (int i=0; i < df.schema().fields().length; i++) {
 			SchemaInfo.schemaMap.put(i, df.schema().fields()[i]);
 		}
+		
+		bSchemaMap = sc.broadcast(SchemaInfo.schemaMap);
 	}
 
 
