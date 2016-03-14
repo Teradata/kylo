@@ -10,6 +10,7 @@ import com.thinkbiganalytics.spark.validation.FieldPolicy;
 import com.thinkbiganalytics.spark.validation.FieldPolicyBuilder;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 import com.thinkbiganalytics.spark.validation.impl.*;
+import org.apache.commons.lang.StringUtils;
 import org.apache.spark.Accumulator;
 import org.apache.spark.SparkContext;
 import org.apache.spark.api.java.JavaRDD;
@@ -24,7 +25,6 @@ import org.apache.spark.sql.types.DataTypes;
 import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
-import org.datanucleus.util.StringUtils;
 
 import java.io.Serializable;
 import java.util.*;
