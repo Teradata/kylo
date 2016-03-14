@@ -41,7 +41,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
 import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
-import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceScheduleMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
@@ -56,7 +56,7 @@ public class Model {
     private Model() { }
     
     /*
-    com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceMetric
+    com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceScheduleMetric
     com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric
     com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric
     com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule
@@ -113,10 +113,10 @@ public class Model {
                         cast.getFeedName());
             }
         });
-        map.put(DatasourceUpdatedSinceMetric.class, new Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>() {
+        map.put(DatasourceUpdatedSinceScheduleMetric.class, new Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>() {
             @Override
             public com.thinkbiganalytics.metadata.sla.api.Metric apply(Metric model) {
-                DatasourceUpdatedSinceMetric cast = (DatasourceUpdatedSinceMetric) model;
+                DatasourceUpdatedSinceScheduleMetric cast = (DatasourceUpdatedSinceScheduleMetric) model;
                 try {
                     return new DatasetUpdatedSinceMetric(cast.getDatasourceName(), cast.getCronSchedule());
                 } catch (ParseException e) {

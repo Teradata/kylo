@@ -22,6 +22,7 @@ import javax.ws.rs.core.Response.Status;
 import org.joda.time.DateTime;
 import org.springframework.stereotype.Component;
 
+import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
@@ -49,6 +50,18 @@ public class DataOperationsResource {
     
     @Inject
     private DataOperationsProvider operationsProvider;
+    
+    /**
+     * @return
+     */
+    @GET
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<DataOperation> getOperations() {
+        // TODO add criteria filtering
+        List<com.thinkbiganalytics.metadata.api.op.DataOperation> domainOps = this.operationsProvider.getDataOperations();
+        
+        return new ArrayList<>(Collections2.transform(domainOps, Model.DOMAIN_TO_OP));
+    }
 
     @GET
     @Path("{opid}")

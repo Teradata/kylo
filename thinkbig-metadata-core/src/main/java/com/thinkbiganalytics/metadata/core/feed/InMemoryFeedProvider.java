@@ -23,6 +23,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.DestinationId;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.FeedId;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.FeedPreconditionImpl;
@@ -36,6 +37,12 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
  * @author Sean Felten
  */
 public class InMemoryFeedProvider implements FeedProvider {
+    
+    private static final Criteria ALL = new Criteria() {
+        public boolean apply(BaseFeed input) {
+            return true;
+        };
+    };
     
     @Inject
     private DatasetProvider datasetProvider;
@@ -237,13 +244,19 @@ public class InMemoryFeedProvider implements FeedProvider {
 
     @Override
     public Collection<Feed> getFeeds() {
-        return new ArrayList<Feed>(this.feeds.values());
+        return getFeeds(ALL);
     }
 
     @Override
     public Collection<Feed> getFeeds(FeedCriteria criteria) {
         Criteria critImpl = (Criteria) criteria;
-        return new ArrayList<Feed>(Collections2.filter(this.feeds.values(), critImpl));
+        ArrayList<Feed> list = new ArrayList<Feed>(Collections2.filter(this.feeds.values(), critImpl));
+        
+        if (critImpl.getLimit() >= 0) {
+            return list.subList(0, Math.min(critImpl.getLimit(), list.size()));
+        } else {
+            return list;
+        }
     }
     
     @Override
@@ -298,7 +311,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
 
-    private static class Criteria implements FeedCriteria, Predicate<BaseFeed> {
+    private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<BaseFeed> {
         
         private String name;
         private Dataset.ID sourceId;

@@ -13,22 +13,26 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DatasourceUpdatedSinceMetric extends DependentDatasourceMetric {
+public class DatasourceUpdatedSinceScheduleMetric extends DependentDatasourceMetric {
 
     private String cronSchedule;
-    
-    public static DependentDatasourceMetric named(String feedName, String schedule) {
-        DatasourceUpdatedSinceMetric m = new DatasourceUpdatedSinceMetric();
-        m.setDatasourceName(feedName);
+
+    public static DependentDatasourceMetric named(String datasourceName, String schedule) {
+        DatasourceUpdatedSinceScheduleMetric m = new DatasourceUpdatedSinceScheduleMetric();
+        m.setDatasourceName(datasourceName);
         m.setCronSchedule(schedule);
         return m;
     }
-    
+
     public static DependentDatasourceMetric id(String id, String schedule) {
-        DatasourceUpdatedSinceMetric m = new DatasourceUpdatedSinceMetric();
+        DatasourceUpdatedSinceScheduleMetric m = new DatasourceUpdatedSinceScheduleMetric();
         m.setDatasourceId(id);
         m.setCronSchedule(schedule);
         return m;
+    }
+
+    public DatasourceUpdatedSinceScheduleMetric() {
+        super();
     }
 
     public String getCronSchedule() {

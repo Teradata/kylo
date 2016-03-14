@@ -6,7 +6,6 @@ package com.thinkbiganalytics.metadata.core.feed.precond;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import org.joda.time.DateTime;
 
@@ -42,13 +41,13 @@ public class DatasourceUpdatedSinceFeedExecutedAssessor extends MetadataMetricAs
         DatasetProvider dsPvdr = getDatasetProvider();
         DataOperationsProvider opPvdr = getDataOperationsProvider();
         Collection<Feed> feeds = fPvdr.getFeeds(fPvdr.feedCriteria().name(metric.getFeedName()));
-        Set<Dataset> datasources = dsPvdr.getDatasets(dsPvdr.datasetCriteria().name(metric.getDatasetName()));
+        List<Dataset> datasources = dsPvdr.getDatasets(dsPvdr.datasetCriteria().name(metric.getDatasetName()).limit(1));
         
         builder.metric(metric);
         
         if (! feeds.isEmpty() && ! datasources.isEmpty()) {
             Feed feed = feeds.iterator().next();
-            Dataset datasource = datasources.iterator().next();
+            Dataset datasource = datasources.get(0);
             List<DataOperation> feedOps = opPvdr.getDataOperations(opPvdr.dataOperationCriteria()
                     .feed(feed.getId())
                     .state(State.SUCCESS));

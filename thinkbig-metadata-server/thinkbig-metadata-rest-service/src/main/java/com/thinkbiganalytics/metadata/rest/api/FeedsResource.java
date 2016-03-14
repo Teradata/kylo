@@ -52,14 +52,6 @@ public class FeedsResource {
     private DatasetProvider datasetProvider;
     
 
-//    @GET
-//    @Produces(MediaType.APPLICATION_JSON)
-//    public List<Feed> getAllFeeds() {
-//        Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainFeeds = this.feedProvider.getFeeds();
-//        
-//        return new ArrayList<>(Collections2.transform(domainFeeds, Model.DOMAIN_TO_FEED));
-//    }
-    
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<Feed> getFeeds(@QueryParam(FeedCriteria.NAME) String name,
@@ -137,7 +129,7 @@ public class FeedsResource {
     
     @POST
     @Path("{feedId}/precondition")
-    @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Feed setPrecondition(@PathParam("feedId") String feedId, FeedPrecondition precond) {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = this.feedProvider.resolveFeed(feedId);

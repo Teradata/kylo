@@ -43,6 +43,7 @@ import com.thinkbiganalytics.metadata.api.op.DataOperation;
 import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
 import com.thinkbiganalytics.metadata.api.op.DataOperationCriteria;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.core.dataset.files.BaseFileList;
 import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableUpdate;
 import com.thinkbiganalytics.metadata.event.ChangeEventDispatcher;
@@ -53,24 +54,17 @@ import com.thinkbiganalytics.metadata.event.ChangeEventDispatcher;
  */
 public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     
-    private static final Comparator<BaseDataOperation> OP_COMP = new Comparator<BaseDataOperation>() {
-        @Override
-        public int compare(BaseDataOperation o1, BaseDataOperation o2) {
-            return ComparisonChain.start()
-                    .compare(o2.getStopTime(), o1.getStopTime(), Ordering.natural().nullsFirst())
-                    .compare(o2.getStartTime(), o1.getStartTime(), Ordering.natural().nullsLast())
-                    .result();
+    private static final OpCriteria All_OPS = new OpCriteria() {
+        public boolean apply(BaseDataOperation input) {
+            return true;
         }
     };
     
-    private static final Comparator<ChangeSet<? extends Dataset, ? extends ChangedContent>> CHANGE_SET_COMP
-        = new Comparator<ChangeSet<? extends Dataset,? extends ChangedContent>>() {
-            @Override
-            public int compare(ChangeSet<? extends Dataset, ? extends ChangedContent> o1,
-                               ChangeSet<? extends Dataset, ? extends ChangedContent> o2) {
-                return o2.getTime().compareTo(o1.getTime());
-            }
-        };
+    private static final ChangeCriteria ALL_CHANGES = new ChangeCriteria() {
+        public boolean apply(com.thinkbiganalytics.metadata.api.op.ChangeSet<?,?> input) {
+            return true;
+        }
+    };
     
     @Inject
     private DatasetProvider datasetProvider;
@@ -229,9 +223,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#getDataOperations()
      */
     public List<DataOperation> getDataOperations() {
-        ArrayList<BaseDataOperation> list = new ArrayList<>(this.operations.values());
-        Collections.sort(list, OP_COMP);
-        return Collections.<DataOperation>unmodifiableList(list);
+        return getDataOperations(All_OPS);
     }
 
     /* (non-Javadoc)
@@ -240,7 +232,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     public List<DataOperation> getDataOperations(DataOperationCriteria criteria) {
         OpCriteria critImpl = (OpCriteria) criteria;
         ArrayList<BaseDataOperation> list = new ArrayList<>(Collections2.filter(this.operations.values(), critImpl));
-        Collections.sort(list, OP_COMP);
+        Collections.sort(list, critImpl);
         return Collections.<DataOperation>unmodifiableList(list);
     }
 
@@ -256,23 +248,25 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
      */
     @SuppressWarnings("unchecked")
     public List<ChangeSet<? extends Dataset, ? extends ChangedContent>> getChangeSets(Dataset.ID dsId) {
-        ArrayList<ChangeSet<? extends Dataset, ? extends ChangedContent>> list = new ArrayList<>(this.changeSets.get(dsId));
-        Collections.sort(list, CHANGE_SET_COMP);
-        return list;
+        return getChangeSets(dsId, ALL_CHANGES);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#getChangeSets(Dataset.ID, com.thinkbiganalytics.metadata.api.op.ChangeSetCriteria)
      */
     @SuppressWarnings("unchecked")
-//    public <D extends Dataset, C extends ChangedContent> List<ChangeSet<D, C>> getChangeSets(Dataset.ID dsId, ChangeSetCriteria criteria) {
     public List<ChangeSet<? extends Dataset, ? extends ChangedContent>> getChangeSets(Dataset.ID dsId, ChangeSetCriteria criteria) {
         ChangeCriteria critImpl = (ChangeCriteria) criteria;
         Collection<ChangeSet<? extends Dataset, ? extends ChangedContent>> result 
             = Collections2.filter(this.changeSets.get(dsId), critImpl);
         ArrayList<ChangeSet<? extends Dataset, ? extends ChangedContent>> list = new ArrayList<>(result);
-        Collections.sort(list, CHANGE_SET_COMP);
-        return list;
+        Collections.sort(list, critImpl);
+        
+        if (critImpl.getLimit() >= 0) {
+            return list.subList(0, Math.min(critImpl.getLimit(), list.size()));
+        } else {
+            return list;
+        }
     }
 
     /* (non-Javadoc)
@@ -298,7 +292,8 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     }
 
     
-    private static class OpCriteria implements DataOperationCriteria, Predicate<BaseDataOperation> {
+    private static class OpCriteria extends AbstractMetadataCriteria<DataOperationCriteria> 
+        implements DataOperationCriteria, Predicate<BaseDataOperation>, Comparator<BaseDataOperation> {
 
         private Feed.ID feedId;
         private Dataset.ID datasetId;
@@ -319,6 +314,14 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
                 return false;
             }
             return true;
+        }
+        
+        @Override
+        public int compare(BaseDataOperation o1, BaseDataOperation o2) {
+            return ComparisonChain.start()
+                    .compare(o2.getStopTime(), o1.getStopTime(), Ordering.natural().nullsFirst())
+                    .compare(o2.getStartTime(), o1.getStartTime(), Ordering.natural().nullsLast())
+                    .result();
         }
         
         @Override
@@ -350,7 +353,9 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         }
     }
     
-    private static class ChangeCriteria implements ChangeSetCriteria, Predicate<ChangeSet<? extends Dataset, ? extends ChangedContent>> {
+    private static class ChangeCriteria extends AbstractMetadataCriteria<ChangeSetCriteria> 
+        implements ChangeSetCriteria, Predicate<ChangeSet<? extends Dataset, ? extends ChangedContent>>,
+                   Comparator<ChangeSet<? extends Dataset,? extends ChangedContent>> {
 
         private Set<ChangeType> types = new HashSet<>();
         private DateTime changedOn;
@@ -364,6 +369,12 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
             if (this.changedBefore != null && ! this.changedBefore.isBefore(input.getTime())) return false;
             if (this.types.size() > 0 && ! this.types.contains(input.getType())) return false;
             return true;
+        }
+        
+        @Override
+        public int compare(ChangeSet<? extends Dataset, ? extends ChangedContent> o1,
+                           ChangeSet<? extends Dataset, ? extends ChangedContent> o2) {
+            return o2.getTime().compareTo(o1.getTime());
         }
 
         @Override

@@ -3,10 +3,16 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.sla;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+
 /**
  *
  * @author Sean Felten
  */
+@JsonInclude(Include.NON_EMPTY)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class DatasourceUpdatedSinceFeedExecutedMetric extends DependentDatasourceMetric {
     
     private String feedId;
@@ -24,6 +30,10 @@ public class DatasourceUpdatedSinceFeedExecutedMetric extends DependentDatasourc
         m.setDatasourceId(datasourceId);
         m.setFeedId(feedId);
         return m;
+    }
+    
+    public DatasourceUpdatedSinceFeedExecutedMetric() {
+        super();
     }
 
     public String getFeedId() {

@@ -32,6 +32,10 @@ public class FeedExecutedSinceScheduleMetric extends DependentFeedMetric {
         return m;
     }
 
+    public FeedExecutedSinceScheduleMetric() {
+        super();
+    }
+    
     public String getCronSchedule() {
         return cronSchedule;
     }

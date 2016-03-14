@@ -95,7 +95,7 @@ public class MetadataClient {
     }
     
     public List<Feed> getFeeds() {
-        return get(Paths.get("feed"), ALL_FEEDS, FEED_LIST);
+        return getFeeds((FeedCriteria) ALL_FEEDS);
     }
     
     public List<Feed> getFeeds(FeedCriteria criteria) {

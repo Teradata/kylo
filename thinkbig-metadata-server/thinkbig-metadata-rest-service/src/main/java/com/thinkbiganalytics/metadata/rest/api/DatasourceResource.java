@@ -3,7 +3,6 @@ package com.thinkbiganalytics.metadata.rest.api;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -49,7 +48,7 @@ public class DatasourceResource {
                                            @QueryParam(DatasourceCriteria.BEFORE) String before,
                                            @QueryParam(DatasourceCriteria.TYPE) String type ) {
         DatasetCriteria criteria = createDatasourceCriteria(name, owner, on, after, before, type);
-        Set<Dataset> existing = this.datasetProvider.getDatasets(criteria);
+        List<Dataset> existing = this.datasetProvider.getDatasets(criteria);
         
         List<Datasource> list = new ArrayList<>(Collections2.transform(existing, Model.DOMAIN_TO_DS));
         return list;
@@ -66,7 +65,7 @@ public class DatasourceResource {
         DatasetCriteria crit = this.datasetProvider.datasetCriteria()
                 .name(ds.getName())
                 .type(HiveTableDataset.class);
-        Set<Dataset> existing = this.datasetProvider.getDatasets(crit);
+        List<Dataset> existing = this.datasetProvider.getDatasets(crit);
         
         if (existing.isEmpty()) {
             HiveTableDataset table = this.datasetProvider.ensureHiveTableDataset(ds.getName(), 
@@ -92,7 +91,7 @@ public class DatasourceResource {
         DatasetCriteria crit = this.datasetProvider.datasetCriteria()
                 .name(ds.getName())
                 .type(DirectoryDataset.class);
-        Set<Dataset> existing = this.datasetProvider.getDatasets(crit);
+        List<Dataset> existing = this.datasetProvider.getDatasets(crit);
         
         if (existing.isEmpty()) {
             DirectoryDataset dir = this.datasetProvider.ensureDirectoryDataset(ds.getName(), ds.getDescription(), Paths.get(ds.getPath()));

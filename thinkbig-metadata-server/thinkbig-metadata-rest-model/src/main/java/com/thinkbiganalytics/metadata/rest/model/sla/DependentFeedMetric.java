@@ -18,8 +18,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = Id.NAME, include = As.PROPERTY)
-@JsonSubTypes({ @JsonSubTypes.Type(value = FeedExecutedSinceFeedMetric.class),
-                @JsonSubTypes.Type(value = FeedExecutedSinceScheduleMetric.class), })
+@JsonSubTypes({ 
+    @JsonSubTypes.Type(value = FeedExecutedSinceFeedMetric.class),
+    @JsonSubTypes.Type(value = FeedExecutedSinceScheduleMetric.class), 
+})
 public abstract class DependentFeedMetric extends Metric {
 
     private String dependentFeedId;

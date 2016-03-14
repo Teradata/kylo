@@ -12,6 +12,16 @@ public class WithinSchedule extends Metric {
     private String cronSchedule;
     private String period;
 
+    public WithinSchedule() {
+        super();
+    }
+    
+    public WithinSchedule(String cronSchedule, String period) {
+        super();
+        this.cronSchedule = cronSchedule;
+        this.period = period;
+    }
+
     public String getCronSchedule() {
         return cronSchedule;
     }

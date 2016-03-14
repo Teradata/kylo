@@ -18,7 +18,10 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = Id.NAME, include = As.PROPERTY)
-@JsonSubTypes({ @JsonSubTypes.Type(value = DatasourceUpdatedSinceMetric.class)})
+@JsonSubTypes({ 
+    @JsonSubTypes.Type(value = DatasourceUpdatedSinceFeedExecutedMetric.class),
+    @JsonSubTypes.Type(value = DatasourceUpdatedSinceScheduleMetric.class),
+})
 public abstract class DependentDatasourceMetric extends Metric {
 
     private String datasourceId;

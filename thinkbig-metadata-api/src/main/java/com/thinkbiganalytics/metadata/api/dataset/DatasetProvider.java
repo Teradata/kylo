@@ -2,6 +2,7 @@ package com.thinkbiganalytics.metadata.api.dataset;
 
 import java.io.Serializable;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Set;
 
 import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
@@ -19,7 +20,7 @@ public interface DatasetProvider {
     
     Dataset getDataset(Dataset.ID id);
     Set<Dataset> getDatasets();
-    Set<Dataset> getDatasets(DatasetCriteria criteria);
+    List<Dataset> getDatasets(DatasetCriteria criteria);
 
     Dataset.ID resolve(Serializable id);
 

@@ -5,7 +5,11 @@ package com.thinkbiganalytics.metadata.core.dataset;
 
 import java.io.Serializable;
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -13,13 +17,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.joda.time.DateTime;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset.ID;
 import com.thinkbiganalytics.metadata.api.dataset.DatasetCriteria;
 import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
 import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
 import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.core.dataset.files.BaseDirectoryDataset;
 import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableDataset;
 
@@ -137,10 +142,18 @@ public class InMemoryDatasetProvider implements DatasetProvider {
     }
 
     @Override
-    public Set<Dataset> getDatasets(DatasetCriteria criteria) {
+    public List<Dataset> getDatasets(DatasetCriteria criteria) {
         // TODO replace cast with copy method
         DatasetCriteriaImpl critImpl = (DatasetCriteriaImpl) criteria;
-        return new HashSet<Dataset>(Sets.filter(new HashSet<>(this.datasets.values()), critImpl));
+        List<Dataset> list = new ArrayList<Dataset>(Collections2.filter(this.datasets.values(), critImpl));
+        
+        Collections.sort(list, critImpl);
+        
+        if (critImpl.getLimit() >= 0) {
+            return list.subList(0, Math.min(critImpl.getLimit(), list.size()));
+        } else {
+            return list;
+        }
     }
 
     
@@ -156,7 +169,8 @@ public class InMemoryDatasetProvider implements DatasetProvider {
     }
 
 
-    private static class DatasetCriteriaImpl implements DatasetCriteria, Predicate<BaseDataset> {
+    private static class DatasetCriteriaImpl extends AbstractMetadataCriteria<DatasetCriteria> 
+        implements DatasetCriteria, Predicate<BaseDataset>, Comparator<Dataset> {
         
         private String name;
         private DateTime createdOn;
@@ -172,6 +186,11 @@ public class InMemoryDatasetProvider implements DatasetProvider {
             if (this.createdAfter != null && ! this.createdAfter.isBefore(input.getCreationTime())) return false;
             if (this.createdBefore != null && ! this.createdBefore.isBefore(input.getCreationTime())) return false;
             return true;
+        }
+        
+        @Override
+        public int compare(Dataset o1, Dataset o2) {
+            return o2.getCreationTime().compareTo(o1.getCreationTime());
         }
 
         @Override

@@ -17,6 +17,7 @@ import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
 import com.thinkbiganalytics.metadata.core.feed.precond.DatasetUpdatedSinceMetricAssessor;
 import com.thinkbiganalytics.metadata.core.feed.precond.DatasourceUpdatedSinceFeedExecutedAssessor;
 import com.thinkbiganalytics.metadata.core.feed.precond.FeedExecutedSinceFeedMetricAssessor;
+import com.thinkbiganalytics.metadata.core.feed.precond.FeedExecutedSinceScheduleMetricAssessor;
 import com.thinkbiganalytics.metadata.core.feed.precond.WithinScheduleAssessor;
 import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.event.ChangeEventDispatcher;
@@ -76,6 +77,7 @@ public class ServerConfiguration {
         SimpleServiceLevelAssessor assr = new SimpleServiceLevelAssessor();
         assr.registerMetricAssessor(datasetUpdatedSinceMetricAssessor());
         assr.registerMetricAssessor(feedExecutedSinceFeedMetricAssessor());
+        assr.registerMetricAssessor(feedExecutedSinceScheduleMetricAssessor());
         assr.registerMetricAssessor(datasourceUpdatedSinceFeedExecutedAssessor());
         assr.registerMetricAssessor(withinScheduleAssessor());
         
@@ -95,6 +97,11 @@ public class ServerConfiguration {
     @Bean
     public MetricAssessor<?, ?> datasourceUpdatedSinceFeedExecutedAssessor() {
         return new DatasourceUpdatedSinceFeedExecutedAssessor();
+    }
+    
+    @Bean
+    public MetricAssessor<?, ?> feedExecutedSinceScheduleMetricAssessor() {
+        return new FeedExecutedSinceScheduleMetricAssessor();
     }
     
     @Bean

@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.api.op;
 
+import com.thinkbiganalytics.metadata.api.MetadataCriteria;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 
@@ -10,7 +11,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
  *
  * @author Sean Felten
  */
-public interface DataOperationCriteria {
+public interface DataOperationCriteria extends MetadataCriteria<DataOperationCriteria> {
 
     DataOperationCriteria state(DataOperation.State... result);
     DataOperationCriteria feed(Feed.ID srcId);

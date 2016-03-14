@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 
 import org.joda.time.DateTime;
 
@@ -38,13 +37,13 @@ public class DatasetUpdatedSinceMetricAssessor extends MetadataMetricAssessor<Da
         DateTime schedTime = new DateTime(dates.get(0));
 //        DateTime prevSchedTime = new DateTime(dates.get(1));
         String name = metric.getDatasetName();
-        DatasetCriteria crit = getDatasetProvider().datasetCriteria().name(name);
-        Set<Dataset> set = getDatasetProvider().getDatasets(crit);
+        DatasetCriteria crit = getDatasetProvider().datasetCriteria().name(name).limit(1);
+        List<Dataset> list = getDatasetProvider().getDatasets(crit);
         ArrayList<ChangeSet<Dataset, ChangedContent>> result = new ArrayList<>();
         boolean incomplete = false;
         
-        if (set.size() > 0) {
-            Dataset ds = set.iterator().next();
+        if (list.size() > 0) {
+            Dataset ds = list.get(0);
             Collection<ChangeSet<Dataset, ChangedContent>> changes = getDataOperationsProvider().getChangeSets(ds.getId());
             
             for (ChangeSet<Dataset, ChangedContent> cs : changes) {
