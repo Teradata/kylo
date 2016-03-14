@@ -20,13 +20,13 @@ public class MetadataJmsConfig {
 
     @Bean(name="datasourceChangeTopic")
     public Topic datasourceChangeTopic(){
-        ActiveMQTopic topic = new ActiveMQTopic("datasourceChange");
+        ActiveMQTopic topic = new ActiveMQTopic(MetadataTopics.DATASOURCE_CHANGE);
         return topic;
     }
     
     @Bean(name="preconditionTriggerTopic")
     public Topic preconditionTriggerTopic(){
-        ActiveMQTopic topic = new ActiveMQTopic("preconditionTrigger");
+        ActiveMQTopic topic = new ActiveMQTopic(MetadataTopics.PRECONDITION_TRIGGER);
         return topic;
     }
 

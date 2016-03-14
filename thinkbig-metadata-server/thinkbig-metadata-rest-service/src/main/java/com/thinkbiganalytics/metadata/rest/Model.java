@@ -247,7 +247,7 @@ public class Model {
             public DataOperation apply(com.thinkbiganalytics.metadata.api.op.DataOperation domain) {
                 DataOperation op = new DataOperation();
                 op.setId(domain.getId().toString());
-                op.setFeedDestinationId(domain.getProducer().toString());
+                op.setFeedDestinationId(domain.getProducer().getId().toString());
                 op.setStartTime(Formatters.TIME_FORMATTER.print(domain.getStartTime()));
                 op.setStopTiime(Formatters.TIME_FORMATTER.print(domain.getStopTime()));
                 op.setState(DataOperation.State.valueOf(domain.getState().name()));

@@ -10,6 +10,7 @@ import java.util.List;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
@@ -25,6 +26,7 @@ import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ContentType;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 
+@Ignore  // Requires a running metadata server
 public class MetadataClientTest {
     
     private static MetadataClient client;
@@ -38,14 +40,14 @@ public class MetadataClientTest {
     public void setUp() throws Exception {
     }
 
-//    @Test
+    @Test
     public void testBuildFeed() throws ParseException {
         Feed feed = buildFeed("feed1").post();
         
         assertThat(feed).isNotNull();
     }
     
-//    @Test
+    @Test
     public void testAddFeedSource() throws ParseException {
         Feed feed = buildFeed("feed1").post();
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
@@ -55,7 +57,7 @@ public class MetadataClientTest {
         assertThat(result).isNotNull();
     }
     
-//    @Test 
+    @Test 
     public void testAddFeedDestination() throws ParseException {
         Feed feed = buildFeed("feed1").post();
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
@@ -65,21 +67,21 @@ public class MetadataClientTest {
         assertThat(result).isNotNull();
     }
 
-//    @Test 
+    @Test 
     public void testBuildHiveTableDatasource() {
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
         
         assertThat(ds).isNotNull();
     }
     
-//    @Test
+    @Test
     public void testBuildDirectoryDatasource() {
         DirectoryDatasource ds = buildDirectoryDatasource("test-dir").post();
         
         assertThat(ds).isNotNull();
     }
     
-//    @Test
+    @Test
     public void testListDatasources() {
         buildDirectoryDatasource("ds1").post();
         buildHiveTableDatasource("ds2").post();
@@ -92,7 +94,7 @@ public class MetadataClientTest {
             .hasSize(3);
     }
     
-//    @Test
+    @Test
     public void testBeginOperation() throws ParseException {
         Feed feed = buildFeed("feed1").post();
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();

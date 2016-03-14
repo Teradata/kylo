@@ -19,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Inject;
 
 import org.joda.time.DateTime;
+import org.springframework.util.StringUtils;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
@@ -148,7 +149,8 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
             throw new DataOperationException("No operation with the given ID exists: " + id);
         }
         
-        op = new BaseDataOperation(op, state, status);
+        String msg = StringUtils.isEmpty(status) ? "Operation in " + state.name().toLowerCase() + " state" : status;
+        op = new BaseDataOperation(op, state, msg);
         
         this.operations.put(id, op);
         // TODO What do we do if the state was changed to COMPLETE and there is no change set?
@@ -181,7 +183,8 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
             throw new DataOperationException("No operation with the given ID exists: " + id);
         }
         
-        op = new BaseDataOperation(op, status, (ChangeSet<Dataset, ChangedContent>) changes);
+        String msg = StringUtils.isEmpty(status) ? "Operation completed successfully" : status;
+        op = new BaseDataOperation(op, msg, (ChangeSet<Dataset, ChangedContent>) changes);
         
         this.operations.put(id, op);
         this.dispatcher.nofifyChange(changes);

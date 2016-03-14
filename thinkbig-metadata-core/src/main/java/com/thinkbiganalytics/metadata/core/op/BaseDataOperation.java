@@ -7,6 +7,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.joda.time.DateTime;
+import org.springframework.util.StringUtils;
 
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
@@ -51,9 +52,9 @@ public class BaseDataOperation implements DataOperation {
         this.producer = op.producer;
         
         this.state = state;
-        this.status = (status == null || status.length() == 0) && state != State.IN_PROGRESS 
+        this.status = StringUtils.isEmpty(status) && state != State.IN_PROGRESS 
                 ? "Operation completed with result: " + state.toString() 
-                : op.getStatus();
+                : status;
         this.stopTime = state != State.IN_PROGRESS ? new DateTime() : op.stopTime;
     }
 

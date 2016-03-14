@@ -62,13 +62,20 @@ public class DatasourceUpdatedSinceFeedExecutedAssessor extends MetadataMetricAs
                     .result(AssessmentResult.FAILURE)
                     .message("The dependent datasource has never been updated: " + datasource.getName());
             } else {
+                DateTime datasourceTime = datasourceOps.iterator().next().getStopTime();
+
                 if (feedOps.isEmpty()) {
+                    // If the datasource has been updated at least once and feed has never executed then this condition is true.
+                    // Collects any datasource changes that have occurred since the feed last ran.
+                    // Returns the highest found incompleteness factor.
+                    int incompleteness = collectChangeSetsSince(result, datasourceOps, new DateTime(1));
+                    
                     builder
-                        .result(AssessmentResult.FAILURE)
-                        .message("The feed has never been executed");
+                        .result(incompleteness > 0 ? AssessmentResult.WARNING : AssessmentResult.SUCCESS)
+                        .message("The datasource has updated yet the feed has never been executed")
+                        .data(result);
                 } else {
                     DateTime feedTime = feedOps.iterator().next().getStopTime();
-                    DateTime datasourceTime = datasourceOps.iterator().next().getStopTime();
                     
                     if (datasourceTime.isBefore(feedTime)) {
                         builder
