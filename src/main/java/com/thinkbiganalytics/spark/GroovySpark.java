@@ -4,17 +4,21 @@
 
 package com.thinkbiganalytics.spark;
 
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import javax.script.Bindings;
+import javax.script.ScriptException;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.spark.SparkContext;
 import org.apache.spark.sql.hive.HiveContext;
 import org.codehaus.groovy.jsr223.GroovyScriptEngineFactory;
-
-import javax.script.Bindings;
-import javax.script.ScriptException;
-import java.io.*;
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 public class GroovySpark implements Serializable {
 
