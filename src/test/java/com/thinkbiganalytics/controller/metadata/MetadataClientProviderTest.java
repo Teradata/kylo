@@ -23,7 +23,7 @@ import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule;
 
-//@Ignore  // TODO Requires the metadata server running.  Add support for embedded test server.
+@Ignore  // TODO Requires the metadata server running.  Add support for embedded test server.
 public class MetadataClientProviderTest {
 
     private MetadataClientProvider provider;
