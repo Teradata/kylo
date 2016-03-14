@@ -17,8 +17,13 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
+import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceScheduleMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule;
 
-@Ignore  // TODO Requires the metadata server running.  Add support for embedded test server.
+//@Ignore  // TODO Requires the metadata server running.  Add support for embedded test server.
 public class MetadataClientProviderTest {
 
     private MetadataClientProvider provider;
@@ -75,9 +80,17 @@ public class MetadataClientProviderTest {
         assertThat(feed.getDestinations()).hasSize(1);
     }
 
-//    @Test
+    @Test
     public void testEnsurePrecondition() {
-
+        Feed feed = this.provider.ensureFeed("test5", "");
+        feed = this.provider.ensurePrecondition(feed.getId(), 
+                                                DatasourceUpdatedSinceFeedExecutedMetric.named("ds5", "test5"),
+                                                DatasourceUpdatedSinceScheduleMetric.named("ds5", "0 0 6 * * ? *"),
+                                                FeedExecutedSinceFeedMetric.named("dep5", "test5"),
+                                                FeedExecutedSinceScheduleMetric.named("test5", "0 0 6 * * ? *"),
+                                                new WithinSchedule("0 0 6 * * ? *", "2 hours"));
+        
+        assertThat(feed).isNotNull();
     }
 
     @Test

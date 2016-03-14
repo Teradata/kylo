@@ -154,12 +154,7 @@ public abstract class FeedTermination extends FeedProcessor {
         
         if (feedId != null) {
             Feed feed =  provider.ensureFeedDestination(feedId, destDatasource.getId());
-            for (FeedDestination dest : feed.getDestinations()) {
-                if (dest.getDatasource().getId().equals(destDatasource.getId())) {
-                    return dest;
-                }
-            }
-            return null;
+            return feed.getDestination(destDatasource.getId());
         } else {
             throw new ProcessException("Feed ID property missing from flow file (" + FEED_ID_PROP + ")");
         }

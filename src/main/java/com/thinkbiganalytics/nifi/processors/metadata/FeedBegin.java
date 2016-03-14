@@ -44,10 +44,6 @@ public class FeedBegin extends FeedProcessor {
     
     private Queue<List<Dataset>> pendingChanges = new LinkedBlockingQueue<>();
     private PreconditionListener preconditionListener;
-//    // TODO remove this
-//    private DataChangeEventListener<? extends Dataset, ? extends ChangedContent> changeListener;
-//    // TODO remove this
-//    private Queue<ChangeSet<? extends Dataset, ? extends ChangedContent>> pendingChange = new LinkedBlockingQueue<>();
     private AtomicReference<String> sourceDatasetId = new AtomicReference<>();
     private AtomicReference<String> feedId = new AtomicReference<>();
     
@@ -65,14 +61,6 @@ public class FeedBegin extends FeedProcessor {
             .required(true)
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
-    
-//    public static final PropertyDescriptor PRECONDITION_NAME = new PropertyDescriptor.Builder()
-//            .name("PRECONDITION")
-//            .displayName("Dependent datasource name")
-//            .description("The name of a precondition that will trigger this feed's execution")
-//            .required(false)
-//            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-//            .build();
     
     public static final PropertyDescriptor SRC_DATASOURCE_NAME = new PropertyDescriptor.Builder()
             .name(SRC_DATASET_ID_PROP)
@@ -104,9 +92,9 @@ public class FeedBegin extends FeedProcessor {
         Feed feed = provider.ensureFeed(feedName, "");
         this.feedId.set(feed.getId());
 
-        String datasetName = context.getProperty(SRC_DATASOURCE_NAME).getValue();
+        String datasourceName = context.getProperty(SRC_DATASOURCE_NAME).getValue();
 
-        if (datasetName != null && this.sourceDatasetId.get() == null) {
+        if (datasourceName != null && this.sourceDatasetId.get() == null) {
             Datasource srcDatasource = getSourceDatasource(context);
 
             if (srcDatasource != null) {
@@ -114,8 +102,10 @@ public class FeedBegin extends FeedProcessor {
                 ensurePreconditonListener(context, feed, srcDatasource);
                 this.sourceDatasetId.set(srcDatasource.getId());
             } else {
-                throw new ProcessException("Source dataset does not exist: " + datasetName);
+                throw new ProcessException("Source datasource does not exist: " + datasourceName);
             }
+            
+            this.sourceDatasetId.set(srcDatasource.getId());
         }
     }
 
@@ -197,8 +187,8 @@ public class FeedBegin extends FeedProcessor {
                 }
             };
             
-            this.preconditionListener = listener;
             precondService.addListener(sourceName, listener);
+            this.preconditionListener = listener;
         }
     }
 //

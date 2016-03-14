@@ -7,8 +7,6 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.controller.ControllerService;
 
-import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
-
 /**
  *
  * @author Sean Felten
@@ -17,12 +15,6 @@ import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 @CapabilityDescription("Exposes the metadata providers to access and manipulate metadata related to "
         + "feeds, datasets, and data operations.")
 public interface MetadataProviderService extends ControllerService {
-
-//    FeedProvider getFeedProvider();
-//    
-//    DatasetProvider getDatasetProvider();
-//    
-//    DataOperationsProvider getDataOperationsProvider();
     
     MetadataProvider getProvider();
 }
