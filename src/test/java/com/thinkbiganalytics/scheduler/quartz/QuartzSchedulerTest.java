@@ -1,22 +1,23 @@
 package com.thinkbiganalytics.scheduler.quartz;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
+import static junit.framework.TestCase.assertNotNull;
 import static org.junit.Assert.fail;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.*;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.TimeZone;
+import java.util.*;
 
+import com.thinkbiganalytics.scheduler.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.quartz.JobDetail;
 import org.quartz.JobKey;
@@ -24,29 +25,27 @@ import org.quartz.Scheduler;
 import org.quartz.SchedulerException;
 import org.quartz.Trigger;
 import org.quartz.TriggerKey;
+import org.quartz.impl.JobDetailImpl;
+import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.scheduling.quartz.SchedulerFactoryBean;
-
-import com.thinkbiganalytics.scheduler.JobIdentifier;
-import com.thinkbiganalytics.scheduler.JobSchedulerException;
-import com.thinkbiganalytics.scheduler.TriggerIdentifier;
 
 public class QuartzSchedulerTest {
 
     QuartzScheduler toTest;
 
     @Mock
-    JobIdentifier   jobIdentifier;
+    JobIdentifier jobIdentifier;
     @Mock
     SchedulerFactoryBean schedulerFactoryBean;
     @Mock
-    Scheduler            scheduler;
+    Scheduler scheduler;
 
-    Runnable        task = new Runnable() {
-                             @Override
-                             public void run() {
-                                 // TODO Auto-generated method stub
-                             }
-                         };
+    Runnable task = new Runnable() {
+        @Override
+        public void run() {
+            // TODO Auto-generated method stub
+        }
+    };
 
     @Before
     public void before() {
@@ -56,6 +55,7 @@ public class QuartzSchedulerTest {
 
         toTest = new QuartzScheduler();
         toTest.schedulerFactoryBean = schedulerFactoryBean;
+        mockJobIdentifier("job-name","group");
     }
 
     @Test
@@ -82,10 +82,20 @@ public class QuartzSchedulerTest {
     public void scheduleAtFixedRateTest() throws Exception {
         mockJobIdentifier("job-name", "group");
 
-        toTest.scheduleAtFixedRate(jobIdentifier, task, 0l);
+        toTest.scheduleAtFixedRate(jobIdentifier, task, 1l);
 
         verify(scheduler).scheduleJob((JobDetail) any(), (Trigger) any());
     }
+
+    @Test
+    public void scheduleAtFixedRateTest2() throws Exception {
+        mockJobIdentifier("job-name", "group");
+
+        toTest.scheduleAtFixedRate(jobIdentifier, task, new Date(), 1l);
+
+        verify(scheduler).scheduleJob((JobDetail) any(), (Trigger) any());
+    }
+
 
     @Test
     public void startSchedulerTest() throws Exception {
@@ -133,7 +143,7 @@ public class QuartzSchedulerTest {
         fail();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
     public void pauseTriggersOnJobTest() throws Exception {
         mockJobIdentifier("job-name", "group");
@@ -153,7 +163,7 @@ public class QuartzSchedulerTest {
         fail();
     }
 
-    @SuppressWarnings({ "rawtypes", "unchecked" })
+    @SuppressWarnings({"rawtypes", "unchecked"})
     @Test
     public void resumeTriggersOnJobTest() throws Exception {
         mockJobIdentifier("job-name", "group");
@@ -208,12 +218,114 @@ public class QuartzSchedulerTest {
         fail();
     }
 
+    @Test
+    public void scheduleWithCronExpression() throws Exception {
+        mockJobIdentifier("job-name", "group");
+
+        toTest.scheduleWithCronExpression(jobIdentifier, task, "0 0 12 * * ?");
+
+        verify(jobIdentifier).getName();
+        verify(jobIdentifier, times(2)).getGroup();
+    }
+
+    @Test
+    public void testGetJobs() throws Exception {
+        Vector<String> jobGroupNames = new Vector<>();
+        jobGroupNames.add("group");
+        Mockito.when(scheduler.getJobGroupNames()).thenReturn(jobGroupNames);
+        Set<JobKey> set = new HashSet<>();
+        set.add(new JobKey("name", "group"));
+        Mockito.when(scheduler.getJobKeys((GroupMatcher) anyObject())).thenReturn(set);
+        Mockito.when(scheduler.getJobDetail((JobKey)anyObject())).thenReturn(new JobDetailImpl("name", "group", MockJob.class));
+        List v = new Vector<>();
+        addMockTrigger(v, "name", "group");
+
+        Mockito.when(scheduler.getTriggerState((TriggerKey)Mockito.anyObject())).thenReturn(Trigger.TriggerState.BLOCKED);
+        Mockito.when(scheduler.getTriggersOfJob((JobKey) anyObject())).thenReturn(v);
+        assertTrue(toTest.getJobs().size() == 1);
+    }
+
+    @Test
+    public void scheduleAtFixedDelayTest1() throws Exception {
+        mockJobIdentifier("job-name", "group");
+
+        toTest.scheduleWithFixedDelay(jobIdentifier, task, 0l);
+        verify(scheduler).scheduleJob((JobDetail) any(), (Trigger) any());
+    }
+
+    @Test
+    public void scheduleAtFixedRateWithDelayTest() throws Exception {
+        mockJobIdentifier("job-name", "group");
+
+        toTest.scheduleAtFixedRateWithDelay(jobIdentifier, task, "run", new Date(), 1l, 1L);
+        verify(scheduler).scheduleJob((JobDetail) any(), (Trigger) any());
+    }
+
+
+    @Test
+    public void scheduleAtFixedDelayTest2() throws Exception {
+        mockJobIdentifier("job-name", "group");
+
+        toTest.scheduleWithFixedDelay(jobIdentifier, task, new Date(), 0l);
+        verify(scheduler).scheduleJob((JobDetail) any(), (Trigger) any());
+    }
+
+    @Test
+    public void staticHelperTest() throws Exception {
+        JobIdentifier identifier = QuartzScheduler.jobIdentifierForJobKey(new JobKey("job-name", "group"));
+        JobKey jobKey = QuartzScheduler.jobKeyForJobIdentifier(identifier);
+
+        assertEquals(jobKey.getName(), identifier.getName());
+
+        TriggerKey triggerKey = new TriggerKey("trigger-key-name", "trigger-key-name");
+        TriggerIdentifier triggerIdentifier = QuartzScheduler.triggerIdentifierForTriggerKey(triggerKey);
+        triggerKey = QuartzScheduler.triggerKeyForTriggerIdentifier(triggerIdentifier);
+
+        assertEquals(triggerKey.getName(), triggerIdentifier.getName());
+    }
+
+    @Test
+    public void buildTriggerInfo() throws Exception {
+        JobDetailImpl detail = new JobDetailImpl();
+        detail.setName("job-name");
+        JobInfo info = toTest.buildJobInfo(detail);
+        assertNotNull(info);
+    }
+
+    @Test
+    public void scheduleAtFixedDelayTest3() throws Exception {
+        mockJobIdentifier("job-name", "group");
+
+        toTest.scheduleWithFixedDelay(jobIdentifier, task, "run", new Date(), 0l);
+        verify(scheduler).scheduleJob((JobDetail) any(), (Trigger) any());
+    }
+
+    @Test
+    public void controlTests() throws Exception {
+        toTest.pauseAll();
+        toTest.resumeAll();
+        toTest.getMetaData();
+    }
+
+    @Test
+    public void existsTests() throws Exception {
+        Set<JobKey> set = new HashSet<>();
+        set.add(new JobKey("name", "group"));
+        Mockito.when(scheduler.getJobKeys((GroupMatcher) anyObject())).thenReturn(set);
+
+        toTest.jobExists(jobIdentifier);
+        TriggerIdentifier triggerIdentifer = new TriggerIdentifier("trigger-key-name", "trigger-key-name");
+        toTest.triggerExists(triggerIdentifer);
+        toTest.resumeAll();
+        toTest.getMetaData();
+    }
+
     private void mockJobIdentifier(String jobName, String groupName) {
         when(jobIdentifier.getName()).thenReturn(jobName);
         when(jobIdentifier.getGroup()).thenReturn(groupName);
     }
 
-    @SuppressWarnings({ "unchecked", "rawtypes" })
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void addMockTrigger(final List list, String triggerKeyName, String triggerKeyGroup) {
         final Trigger trigger = mock(Trigger.class);
         final TriggerKey triggerKey = new TriggerKey(triggerKeyName, triggerKeyGroup);

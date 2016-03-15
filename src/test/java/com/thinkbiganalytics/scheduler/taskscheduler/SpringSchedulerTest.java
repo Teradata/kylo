@@ -67,6 +67,9 @@ public class SpringSchedulerTest {
         nextFire = scheduler.getNextFireTime("0 0 12 * * ?");
         assertTrue(nextFire != null && nextFire.getTime() > baseDate.getTime());
 
+        List<Date> nextDates = scheduler.getNextFireTimes("0 0 12 * * ?", 10);
+        assertTrue(nextDates.size() == 10);
+
         Date prevFire = scheduler.getPreviousFireTime(baseDate, "0 0 12 * * ?");
         assertTrue(prevFire != null && prevFire.getTime() < baseDate.getTime());
 
@@ -75,6 +78,30 @@ public class SpringSchedulerTest {
 
         List dates = scheduler.getPreviousFireTimes("0 0 12 * * ?", 10);
         assertTrue(dates.size() == 10);
+
+        assertNull(scheduler.getJobs());
+
+
+    }
+
+    public void testUnsupported() throws Exception {
+
+
+        try {
+            scheduler.resumeAll();
+            fail();
+        } catch (UnsupportedOperationException e) {
+
+        }
+
+        try {
+            scheduler.pauseTrigger(null);
+            fail();
+        } catch (UnsupportedOperationException e) {
+
+        }
+
+
         try {
             scheduler.deleteJob(new JobIdentifier());
             fail();

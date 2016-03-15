@@ -15,6 +15,7 @@ public class ScheduleIdentifierTest {
     ScheduleIdentifier identifier3;
     @Before
     public void setUp() throws Exception {
+        identifier = new ScheduleIdentifier();
         identifier = new ScheduleIdentifier("name1", "group");
         identifier2 = new ScheduleIdentifier("name1", "group");
         identifier3 = new ScheduleIdentifier("name3", "group");
@@ -22,6 +23,7 @@ public class ScheduleIdentifierTest {
 
     @Test
     public void testIdentifier() throws Exception {
+
         assertTrue(identifier.compareTo(identifier)==0);
         assertTrue(identifier.compareTo(identifier2)==0);
         assertTrue(identifier.compareTo(identifier3)==-2);
@@ -31,5 +33,6 @@ public class ScheduleIdentifierTest {
         assertTrue(identifier.getGroup().equals("group"));
         assertTrue(identifier.getName().equals("name1"));
         assertTrue(identifier.getUniqueName() != null);
+
     }
 }
