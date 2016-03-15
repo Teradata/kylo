@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,9 +15,10 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
  *
  * @author Sean Felten
  */
+@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Feed {
+public class Feed implements Serializable {
 
     public enum State { ENABLED, DISABLED, DELETED }
 

@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.data;
 
+import java.io.Serializable;
+
 import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -17,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
  *
  * @author Sean Felten
  */
+@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = Id.NAME, include = As.PROPERTY)
@@ -25,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
     @JsonSubTypes.Type(value = HiveTableDatasource.class),
     }
 )
-public class Datasource {
+public class Datasource implements Serializable {
 
     private String id;
     private String name;

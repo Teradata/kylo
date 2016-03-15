@@ -8,7 +8,8 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.jms.Topic;
 
-import com.thinkbiganalytics.activemq.SendJmsMessage;
+import org.springframework.jms.core.JmsMessagingTemplate;
+
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.ChangedContent;
@@ -33,11 +34,12 @@ public class JmsChangeEventDispatcher extends SimpleChangeEventDispatcher implem
     private Topic preconditionTriggerTopic;
     
     @Inject
-    private FeedPreconditionService preconditionService;
+    @Named("metadataMessagingTemplate")
+    private JmsMessagingTemplate jmsMessagingTemplate;
     
     @Inject
-    private SendJmsMessage jmsSender;
-    
+    private FeedPreconditionService preconditionService;
+
     @PostConstruct
     public void listenForPreconditions() {
         this.preconditionService.addListener(this);
@@ -53,6 +55,9 @@ public class JmsChangeEventDispatcher extends SimpleChangeEventDispatcher implem
             dsEvent.addDataset(dset);
         }
         
-        this.jmsSender.sendObject(preconditionTriggerTopic, dsEvent);
+        this.jmsMessagingTemplate.convertAndSend(preconditionTriggerTopic, dsEvent);
+//        this.jmsMessagingTemplate.send(this.preconditionTriggerTopic, null);
+//        this.jmsSender.sendObject(preconditionTriggerTopic, dsEvent);
+//        this.jmsSender.sendMessage(preconditionTriggerTopic, "test message");
     }
 }

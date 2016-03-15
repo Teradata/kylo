@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
+import java.io.Serializable;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
@@ -13,9 +15,10 @@ import com.thinkbiganalytics.metadata.rest.model.feed.transform.FieldsPolicy;
  *
  * @author Sean Felten
  */
+@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FeedDestination {
+public class FeedDestination implements Serializable {
 
     private String id;
     private FieldsPolicy fieldsPolicy;

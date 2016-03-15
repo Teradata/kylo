@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.op;
 
+import java.io.Serializable;
+
 import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -17,6 +19,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
  *
  * @author Sean Felten
  */
+@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonTypeInfo(use = Id.NAME, include = As.PROPERTY)
@@ -25,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
     @JsonSubTypes.Type(value = FileList.class),
     }
 )
-public class ChangeSet {
+public class ChangeSet implements Serializable {
 
     private DateTime intrinsicTime;
     private String intrinsicPeriod;

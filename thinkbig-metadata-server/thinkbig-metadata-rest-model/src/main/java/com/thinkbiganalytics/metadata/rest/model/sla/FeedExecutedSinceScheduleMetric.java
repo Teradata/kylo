@@ -6,12 +6,12 @@ package com.thinkbiganalytics.metadata.rest.model.sla;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.core.io.SegmentedStringWriter;
 
 /**
  *
  * @author Sean Felten
  */
+@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedExecutedSinceScheduleMetric extends DependentFeedMetric {

@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.op;
 
+import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
 
@@ -19,9 +20,10 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
  *
  * @author Sean Felten
  */
+@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class Dataset {
+public class Dataset implements Serializable {
 
     public enum ChangeType {
         UPDATE, DELETE

@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.event;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,9 +17,10 @@ import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
  *
  * @author Sean Felten
  */
+@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class DatasourceChangeEvent {
+public class DatasourceChangeEvent implements Serializable {
 
     private Feed feed;
     private List<Dataset> datasets = new ArrayList<>();

@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,9 +16,10 @@ import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
  *
  * @author Sean Felten
  */
+@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FeedPrecondition {
+public class FeedPrecondition implements Serializable {
 
     private List<Metric> metrics = new ArrayList<>();
 

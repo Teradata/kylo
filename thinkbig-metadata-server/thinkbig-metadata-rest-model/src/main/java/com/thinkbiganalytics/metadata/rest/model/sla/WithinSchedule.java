@@ -7,6 +7,7 @@ package com.thinkbiganalytics.metadata.rest.model.sla;
  *
  * @author Sean Felten
  */
+@SuppressWarnings("serial")
 public class WithinSchedule extends Metric {
 
     private String cronSchedule;

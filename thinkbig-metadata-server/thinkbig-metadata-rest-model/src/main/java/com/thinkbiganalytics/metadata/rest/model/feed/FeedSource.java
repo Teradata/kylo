@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
+import java.io.Serializable;
+
 import org.joda.time.DateTime;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -11,9 +13,10 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
  *
  * @author Sean Felten
  */
+@SuppressWarnings("serial")
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FeedSource {
+public class FeedSource implements Serializable {
 
     private String id;
     private DateTime lastLoadTime;
