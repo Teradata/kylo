@@ -22,7 +22,13 @@ public class JmsPreconditionEventConsumer implements PreconditionEventConsumer {
 
     private ConcurrentMap<String, Set<PreconditionListener>> listeners = new ConcurrentHashMap<>();
     
-    @JmsListener(destination = MetadataTopics.PRECONDITION_TRIGGER, containerFactory="jmsContainerFactory")
+//    @JmsListener(destination = MetadataTopics.PRECONDITION_TRIGGER, containerFactory="jmsContainerFactory" )
+//    public void receiveMetadataChange(String event) {
+//
+//        System.out.println("MEssage: " + event);
+//    }
+    
+    @JmsListener(destination = MetadataTopics.PRECONDITION_TRIGGER, containerFactory="metadataListenerContainerFactory")
     public void receiveMetadataChange(DatasourceChangeEvent event) {
         for (Dataset ds : event.getDatasets()) {
             Set<PreconditionListener> listeners = this.listeners.get(ds.getDatasource().getName());
