@@ -235,9 +235,6 @@ public class MetadataClient {
 
     
     private static class Form extends LinkedMultiValueMap<String, String> {
-        public HttpEntity<MultiValueMap<String, String>> asEntity() {
-            return new HttpEntity<>(this);
-        }
     }
 
 
