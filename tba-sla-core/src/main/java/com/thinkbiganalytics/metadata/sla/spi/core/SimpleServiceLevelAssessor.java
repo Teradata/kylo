@@ -19,6 +19,7 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.AssessorNotFoundException;
@@ -58,31 +59,45 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
     public ServiceLevelAssessment assess(ServiceLevelAgreement sla) {
         Log.info("Assessing SLA: {}", sla.getName());
         
-        SimpleServiceLevelAssessment slaAssessment = new SimpleServiceLevelAssessment(sla);
-        AssessmentResult result = AssessmentResult.SUCCESS;
-        
-        for (Obligation ob : sla.getObligations()) {
-            ObligationAssessmentBuilderImpl builder = new ObligationAssessmentBuilderImpl(ob);
-            ObligationAssessor<Obligation> assessor = (ObligationAssessor<Obligation>) findAssessor(ob);
+        AssessmentResult combinedResult = AssessmentResult.SUCCESS;
+       
+        try {
+            SimpleServiceLevelAssessment slaAssessment = new SimpleServiceLevelAssessment(sla);
+            List<ObligationGroup> groups = sla.getObligationGroups();
             
-            Log.debug("Assessing obligation \"{}\" with assessor: {}", assessor);
+            for (ObligationGroup group : groups) {
+                ObligationGroup.Condition condition = group.getCondition();
+                AssessmentResult groupResult = AssessmentResult.SUCCESS;
+                
+                for (Obligation ob : group.getObligations()) {
+                    ObligationAssessment obAssessment = assess(ob);
+                    slaAssessment.add(obAssessment);
+                    groupResult = groupResult.max(obAssessment.getResult());
+                }
+                
+                // Short-circuit required or sufficient if necessary.
+                switch (condition) {
+                case REQUIRED:
+                    if (groupResult == AssessmentResult.FAILURE) {
+                        return completeAssessment(slaAssessment, groupResult);
+                    }
+                    break;
+                case SUFFICIENT:
+                    if (groupResult != AssessmentResult.FAILURE) {
+                        return completeAssessment(slaAssessment, groupResult);
+                    }
+                    break;
+                default:
+                    // Optional condition, continue assessing groups
+                }
+                
+                combinedResult = combinedResult.max(groupResult);
+            }
             
-            assessor.assess(ob, builder);
-            
-            ObligationAssessment obAssessment = builder.build();
-            slaAssessment.add(obAssessment);
-            result = result.max(obAssessment.getResult());
+            return completeAssessment(slaAssessment, combinedResult);
+        } finally {
+            Log.debug("Completed assessment of SLA {}: {}", sla.getName(), combinedResult);
         }
-        
-        slaAssessment.setResult(result);
-        if (result == AssessmentResult.SUCCESS) {
-            slaAssessment.setMessage("SLA assessment requirements were met");
-        } else {
-            slaAssessment.setMessage("At least one of the SLA obligations resulted in the status: " + result);
-        }
-        
-        Log.debug("Completed assessment of SLA {}: {}", sla.getName(), slaAssessment.getResult());
-        return slaAssessment;
     }
 
     /*
@@ -141,6 +156,30 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
     }
 
     
+    private ServiceLevelAssessment completeAssessment(SimpleServiceLevelAssessment slaAssessment, AssessmentResult result) {
+        slaAssessment.setResult(result);
+        if (result == AssessmentResult.SUCCESS) {
+            slaAssessment.setMessage("SLA assessment requirements were met");
+        } else {
+            slaAssessment.setMessage("At least one of the SLA obligations resulted in the status: " + result);
+        }
+        
+        return slaAssessment;
+    }
+
+    private ObligationAssessment assess(Obligation ob) {
+        ObligationAssessmentBuilderImpl builder = new ObligationAssessmentBuilderImpl(ob);
+        @SuppressWarnings("unchecked")
+        ObligationAssessor<Obligation> assessor = (ObligationAssessor<Obligation>) findAssessor(ob);
+        
+        Log.debug("Assessing obligation \"{}\" with assessor: {}", assessor);
+        
+        assessor.assess(ob, builder);
+        
+        return builder.build();
+    }
+
+
     private class ObligationAssessmentBuilderImpl implements ObligationAssessmentBuilder {
 
         private Obligation obligation;

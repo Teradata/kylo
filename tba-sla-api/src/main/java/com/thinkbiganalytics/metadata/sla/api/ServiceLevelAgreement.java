@@ -4,7 +4,7 @@
 package com.thinkbiganalytics.metadata.sla.api;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.List;
 
 import org.joda.time.DateTime;
 
@@ -37,8 +37,18 @@ public interface ServiceLevelAgreement {
     String getDescription();
     
     /**
+     * Gets all of the obligation groups of this SLA in assessment order.  The list
+     * returned will always have at least 1 group (the default group) of none of the
+     * obligations of this SLA have been explicitly grouped.
+     * @return all the obligation groups
+     */
+    List<ObligationGroup> getObligationGroups();
+    
+    /**
+     * Gets all obligations from that exist in this SLA, in assessment order, regardless 
+     * of how they are grouped.
      * @return all obligations that make up this SLA
      */
-    Set<Obligation> getObligations();
+    List<Obligation> getObligations();
 
 }
