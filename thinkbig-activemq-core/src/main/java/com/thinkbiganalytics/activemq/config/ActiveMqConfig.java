@@ -4,11 +4,9 @@
 
 package com.thinkbiganalytics.activemq.config;
 
-import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
+import javax.jms.ConnectionFactory;
+
 import org.apache.activemq.ActiveMQConnectionFactory;
-import org.apache.activemq.broker.BrokerService;
-import org.apache.activemq.command.ActiveMQQueue;
-import org.apache.activemq.command.ActiveMQTopic;
 import org.apache.activemq.pool.PooledConnectionFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,10 +21,7 @@ import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 
-import javax.annotation.PostConstruct;
-import javax.jms.ConnectionFactory;
-import javax.jms.Queue;
-import javax.jms.Topic;
+import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
 
 
 /**
@@ -40,10 +35,6 @@ public class ActiveMqConfig {
 
     @Value("${jms.activemq.broker.url:tcp://localhost:61616}")
     private String activeMqBrokerUrl;
-
-
-
-
 
     @Bean
     public ConnectionFactory connectionFactory() {
