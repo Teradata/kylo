@@ -3,6 +3,8 @@ package com.thinkbiganalytics.nifi.provenance;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.provenance.writer.ProvenanceEventActiveMqWriter;
 import com.thinkbiganalytics.util.SpringInitializer;
+import org.apache.nifi.controller.repository.StandardProcessSession;
+import org.apache.nifi.controller.repository.StandardProvenanceReporter;
 import org.apache.nifi.events.EventReporter;
 import org.apache.nifi.provenance.PersistentProvenanceRepository;
 import org.apache.nifi.provenance.ProvenanceEventBuilder;
@@ -24,6 +26,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class ThinkbigProvenanceEventRepository implements ProvenanceEventRepository {
 
     private PersistentProvenanceRepository repository;
+
 
 
     private ProvenanceEventActiveMqWriter provenanceEventRecordWriter;
@@ -51,7 +54,7 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
 
     @Override
     public void initialize(EventReporter eventReporter) throws IOException {
-        repository.initialize(eventReporter);
+         repository.initialize(eventReporter);
     }
 
     @Override

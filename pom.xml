@@ -45,6 +45,12 @@
 
         <dependency>
             <groupId>org.apache.nifi</groupId>
+            <artifactId>nifi-write-ahead-log</artifactId>
+            <version>${nifi.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.nifi</groupId>
             <artifactId>nifi-utils</artifactId>
             <version>${nifi.version}</version>
         </dependency>
