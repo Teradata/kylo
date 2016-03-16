@@ -106,6 +106,46 @@ public class ExecuteSparkJob extends AbstractProcessor {
             .sensitive(false)
             .build();
 
+    public static final PropertyDescriptor DRIVER_MEMORY = new PropertyDescriptor.Builder()
+            .name("Driver Memory")
+            .description("How much RAM to allocate to the driver")
+            .required(true)
+            .defaultValue("512m")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
+    public static final PropertyDescriptor EXECUTOR_MEMORY = new PropertyDescriptor.Builder()
+            .name("Executor Memory")
+            .description("How much RAM to allocate to the executor")
+            .required(true)
+            .defaultValue("512m")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
+    public static final PropertyDescriptor NUMBER_EXECUTORS = new PropertyDescriptor.Builder()
+            .name("Number of Executors")
+            .description("The number of exectors to be used")
+            .required(true)
+            .defaultValue("1")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
+    public static final PropertyDescriptor EXECUTOR_CORES = new PropertyDescriptor.Builder()
+            .name("Executor Cores")
+            .description("The number of executor cores to be used")
+            .required(true)
+            .defaultValue("1")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
+    public static final PropertyDescriptor SPARK_APPLICATION_NAME = new PropertyDescriptor.Builder()
+            .name("Spark Application Name")
+            .description("The name of the spark application")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
+
 
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -122,6 +162,11 @@ public class ExecuteSparkJob extends AbstractProcessor {
         pds.add(SPARK_MASTER);
         pds.add(SPARK_HOME);
         pds.add(QUERY_TIMEOUT);
+        pds.add(DRIVER_MEMORY);
+        pds.add(EXECUTOR_MEMORY);
+        pds.add(NUMBER_EXECUTORS);
+        pds.add(SPARK_APPLICATION_NAME);
+        pds.add(EXECUTOR_CORES);
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -156,15 +201,17 @@ public class ExecuteSparkJob extends AbstractProcessor {
             String mainClass = context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(outgoing).getValue();
             String sparkMaster = context.getProperty(SPARK_MASTER).evaluateAttributeExpressions(outgoing).getValue();
             String appArgs = context.getProperty(MAIN_ARGS).evaluateAttributeExpressions(outgoing).getValue();
+            String driverMemory = context.getProperty(DRIVER_MEMORY).evaluateAttributeExpressions(outgoing).getValue();
+            String executorMemory = context.getProperty(EXECUTOR_MEMORY).evaluateAttributeExpressions(outgoing).getValue();
+            String numberOfExecutors = context.getProperty(NUMBER_EXECUTORS).evaluateAttributeExpressions(outgoing).getValue();
+            String sparkApplicationName = context.getProperty(SPARK_APPLICATION_NAME).evaluateAttributeExpressions(outgoing).getValue();
+            String executorCores = context.getProperty(EXECUTOR_CORES).evaluateAttributeExpressions(outgoing).getValue();
             String[] args = null;
             if (!StringUtils.isEmpty(appArgs)) {
                 args = appArgs.split(",");
             }
-            String driverMemory = "512m";
-            String numExecutors = "1";
-            String execMemory = "256m";
+
             String sparkHome = context.getProperty(SPARK_HOME).getValue();
-            String appName = "Simple Spark App Launcher Demo";
 
              /* Launch the spark job as a child process */
             SparkLauncher launcher = new SparkLauncher()
@@ -172,10 +219,11 @@ public class ExecuteSparkJob extends AbstractProcessor {
                     .setMainClass(mainClass)
                     .setMaster(sparkMaster)
                     .setConf(SparkLauncher.DRIVER_MEMORY, driverMemory)
-                    .setConf(SparkLauncher.EXECUTOR_CORES, numExecutors)
-                    .setConf(SparkLauncher.EXECUTOR_MEMORY, execMemory)
+                    .setConf(SparkLauncher.EXECUTOR_CORES, numberOfExecutors)
+                    .setConf(SparkLauncher.EXECUTOR_MEMORY, executorMemory)
+                    .setConf(SparkLauncher.EXECUTOR_CORES, executorCores)
                     .setSparkHome(sparkHome)
-                    .setAppName(appName);
+                    .setAppName(sparkApplicationName);
             if (args != null) {
                 launcher.addAppArgs(args);
             }
