@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.nifi.processors.metadata;
 
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -18,6 +20,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
 
 
 /**
@@ -51,11 +54,18 @@ public class HiveTableFeedTermination extends FeedTermination {
     protected DataOperation completeOperation(ProcessContext context, 
                                               FlowFile flowFile, 
                                               Datasource dataset, 
-                                              DataOperation op) {
+                                              DataOperation op,
+                                              DataOperation.State state) {
         MetadataProvider provider = getProviderService(context).getProvider();
-        HiveTableDatasource hds = (HiveTableDatasource) dataset;
-        Dataset changeSet = provider.createDataset(hds, null);
         
-        return provider.completeOperation(op.getId(), "", changeSet);
+        if (state == State.SUCCESS) {
+            HiveTableDatasource hds = (HiveTableDatasource) dataset;
+            Dataset changeSet = provider.createDataset(hds, null);
+            
+            return provider.completeOperation(op.getId(), "", changeSet);
+        } else {
+            return provider.completeOperation(op.getId(), "", state);
+        }
+        
     }
 }

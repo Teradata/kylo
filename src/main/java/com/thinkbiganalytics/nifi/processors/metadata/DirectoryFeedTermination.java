@@ -17,6 +17,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
 
 
 /**
@@ -43,13 +44,20 @@ public class DirectoryFeedTermination extends FeedTermination {
     protected DataOperation completeOperation(ProcessContext context, 
                                               FlowFile flowFile, 
                                               Datasource datasource, 
-                                              DataOperation op) {
+                                              DataOperation op,
+                                              DataOperation.State state) {
         MetadataProvider provider = getProviderService(context).getProvider();
         DirectoryDatasource dds = (DirectoryDatasource) datasource;
-        ArrayList<Path> paths = new ArrayList<>();
-        // TODO Extract file paths from flow file
-        Dataset dataset = provider.createDataset(dds, paths);
         
-        return provider.completeOperation(op.getId(), "", dataset);
+        if (state == State.SUCCESS) {
+            ArrayList<Path> paths = new ArrayList<>();
+            // TODO Extract file paths from flow file
+            Dataset dataset = provider.createDataset(dds, paths);
+            
+            return provider.completeOperation(op.getId(), "", dataset);
+        } else {
+            return provider.completeOperation(op.getId(), "", state);
+        }
+        
     }
 }

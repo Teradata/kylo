@@ -85,7 +85,7 @@ public abstract class FeedTermination extends FeedProcessor {
                 DateTime opStart = timeStr != null ? TIME_FORMATTER.parseDateTime(timeStr) : new DateTime();
                 
                 DataOperation op = provider.beginOperation(this.feedDestination.get(), opStart);
-                op = completeOperation(context, flowFile, this.destinationDatasource.get(), op);
+                op = completeOperation(context, flowFile, this.destinationDatasource.get(), op, getState(context, op));
                 
                 flowFile = session.putAttribute(flowFile, OPERATON_STOP_PROP, TIME_FORMATTER.print(new DateTime()));
                 
@@ -101,13 +101,19 @@ public abstract class FeedTermination extends FeedProcessor {
             throw new ProcessException(e);
         }
     }
-    
+
+    protected State getState(ProcessContext context, DataOperation op) {
+        String result = context.getProperty(COMPLETION_RESULT).getValue();
+        return State.valueOf(result.toUpperCase());
+    }
+
     protected abstract Datasource createDestinationDatasource(ProcessContext context, String name, String descr);
 
     protected abstract DataOperation completeOperation(ProcessContext context, 
                                                        FlowFile flowFile, 
                                                        Datasource destDatasource, 
-                                                       DataOperation op);
+                                                       DataOperation op,
+                                                       DataOperation.State state);
 
 //    protected abstract ChangeSet<DirectoryDatasource, FileList> createChangeSet(ProcessContext context, FlowFile flowFile, Datasource destDatasource);
     

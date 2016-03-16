@@ -14,6 +14,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
@@ -47,5 +48,7 @@ public interface MetadataProvider {
     DataOperation beginOperation(FeedDestination feedDestination, DateTime opStart);
 
     DataOperation completeOperation(String id, String string, Dataset changeSet);
+
+    DataOperation completeOperation(String id, String string, State state);
 
 }

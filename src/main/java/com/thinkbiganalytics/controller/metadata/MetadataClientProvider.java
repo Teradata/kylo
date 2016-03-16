@@ -156,5 +156,13 @@ public class MetadataClientProvider implements MetadataProvider {
         
         return this.client.updateDataOperation(op);
     }
+    
+    @Override
+    public DataOperation completeOperation(String id, String string, State state) {
+        DataOperation op = this.client.getDataOperation(id);
+        op.setState(state);
+        
+        return this.client.updateDataOperation(op);
+    }
 
 }

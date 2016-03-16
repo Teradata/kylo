@@ -3,12 +3,15 @@
  */
 package com.thinkbiganalytics.nifi.processors.metadata;
 
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -32,6 +35,7 @@ import com.thinkbiganalytics.metadata.rest.model.event.DatasourceChangeEvent;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 
 /**
  * @author Sean Felten
@@ -44,8 +48,8 @@ public class FeedBegin extends FeedProcessor {
     
     private Queue<List<Dataset>> pendingChanges = new LinkedBlockingQueue<>();
     private PreconditionListener preconditionListener;
-    private AtomicReference<String> sourceDatasetId = new AtomicReference<>();
     private AtomicReference<String> feedId = new AtomicReference<>();
+    private Set<Datasource> sourceDatasources = Collections.synchronizedSet(new HashSet<Datasource>());
     
     public static final PropertyDescriptor PRECONDITION_SERVICE = new PropertyDescriptor.Builder()
             .name("Feed Precondition Event Service")
@@ -62,7 +66,7 @@ public class FeedBegin extends FeedProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
     
-    public static final PropertyDescriptor SRC_DATASOURCE_NAME = new PropertyDescriptor.Builder()
+    public static final PropertyDescriptor SRC_DATASOURCES_NAME = new PropertyDescriptor.Builder()
             .name(SRC_DATASET_ID_PROP)
             .displayName("Source datasource name")
             .description("The name of the datasource that this feed will read from (optional)")
@@ -92,21 +96,29 @@ public class FeedBegin extends FeedProcessor {
         Feed feed = provider.ensureFeed(feedName, "");
         this.feedId.set(feed.getId());
 
-        String datasourceName = context.getProperty(SRC_DATASOURCE_NAME).getValue();
+        String datasourcesName = context.getProperty(SRC_DATASOURCES_NAME).getValue();
 
-        if (datasourceName != null && this.sourceDatasetId.get() == null) {
-            Datasource srcDatasource = getSourceDatasource(context);
-
-            if (srcDatasource != null) {
-                provider.ensureFeedSource(this.feedId.get(), srcDatasource.getId());
-                ensurePreconditonListener(context, feed, srcDatasource);
-                this.sourceDatasetId.set(srcDatasource.getId());
-            } else {
-                throw new ProcessException("Source datasource does not exist: " + datasourceName);
+        if (! StringUtils.isEmpty(datasourcesName)) {
+            String[] dsNameArr = datasourcesName.split("\\s*,\\s*");
+            
+            for (String dsName : dsNameArr) {
+                setupSource(context, feed, dsName.trim());
             }
             
-            this.sourceDatasetId.set(srcDatasource.getId());
+            ensurePreconditonListener(context, feed, dsNameArr);
         }
+    }
+    
+    protected void setupSource(ProcessContext context, Feed feed, String datasourceName) {
+        MetadataProvider provider = getProviderService(context).getProvider();
+        Datasource datasource = getSourceDatasource(context, datasourceName);
+
+        if (datasource != null) {
+            provider.ensureFeedSource(this.feedId.get(), datasource.getId());
+            this.sourceDatasources.add(datasource);
+        } else {
+            throw new ProcessException("Source datasource does not exist: " + datasourceName);
+        }       
     }
 
     /* (non-Javadoc)
@@ -135,7 +147,7 @@ public class FeedBegin extends FeedProcessor {
         props.add(PRECONDITION_SERVICE);
         props.add(FEED_NAME);
 //        props.add(PRECONDITION_NAME);
-        props.add(SRC_DATASOURCE_NAME);
+        props.add(SRC_DATASOURCES_NAME);
     }
 
     @Override
@@ -164,20 +176,10 @@ public class FeedBegin extends FeedProcessor {
         return session.create();
     }
     
-    private void ensurePreconditonListener(ProcessContext context, Feed feed, Datasource srcDatasource) {
-        MetadataProvider provider = getProviderService(context).getProvider();
-        FeedPreconditionEventService precondService = getPreconditionService(context);
-        String sourceName = srcDatasource.getName();
-        
+    private void ensurePreconditonListener(ProcessContext context, Feed feed, String[] dsNames) {
         if (this.preconditionListener == null) {
-            // If no precondition exits yet install one that depends on the dependent datasource.
-            if (feed.getPrecondition() == null) {
-                DatasourceUpdatedSinceFeedExecutedMetric metric = new DatasourceUpdatedSinceFeedExecutedMetric();
-                metric.setFeedName(feed.getSystemName());
-                metric.setDatasourceName(srcDatasource.getName());
-                
-                provider.ensurePrecondition(feed.getId(), metric);
-            }
+            MetadataProvider provider = getProviderService(context).getProvider();
+            FeedPreconditionEventService precondService = getPreconditionService(context);
             
             PreconditionListener listener = new PreconditionListener() {
                 @Override
@@ -186,58 +188,30 @@ public class FeedBegin extends FeedProcessor {
                     FeedBegin.this.pendingChanges.add(datasets);
                 }
             };
+        
+            // If no precondition exits yet install one that depends on the datasources.
+            if (feed.getPrecondition() == null) {
+                Metric[] metrics = new Metric[dsNames.length];
+                
+                for (int idx = 0; idx < metrics.length; idx++) {
+                    DatasourceUpdatedSinceFeedExecutedMetric metric = new DatasourceUpdatedSinceFeedExecutedMetric();
+                    metric.setFeedName(feed.getSystemName());
+                    metric.setDatasourceName(dsNames[idx]);
+                    metrics[idx] = metric;
+                }
+                
+                provider.ensurePrecondition(feed.getId(), metrics);
+            }
             
-            precondService.addListener(sourceName, listener);
+            for (String dsName : dsNames) {
+                precondService.addListener(dsName, listener);
+            }
+            
             this.preconditionListener = listener;
         }
     }
-//
-//    private void ensureChangeListener(ProcessContext context, Dataset srcDataset) {
-//        DataOperationsProvider operationProvider = getProviderService(context).getDataOperationsProvider();
-//
-//        if (this.changeListener == null) {
-//            // TODO Hmmmm....
-//            if (srcDataset instanceof DirectoryDataset) {
-//                DataChangeEventListener<DirectoryDataset, FileList> listener = new DataChangeEventListener<DirectoryDataset, FileList>() {
-//                    @Override
-//                    public void handleEvent(DataChangeEvent<DirectoryDataset, FileList> event) {
-//                        getLogger().debug("Dependent dataset changed: {} - {}",
-//                                new Object[]{event.getChangeSet().getDataset(), event.getChangeSet().getChanges()});
-//                        recordDirectoryChange(event.getChangeSet());
-//                    }
-//                };
-//
-//                operationProvider.addListener((DirectoryDataset) srcDataset, listener);
-//                this.changeListener = listener;
-//            } else if (srcDataset instanceof HiveTableDataset) {
-//                DataChangeEventListener<HiveTableDataset, HiveTableUpdate> listener = new DataChangeEventListener<HiveTableDataset, HiveTableUpdate>() {
-//                    @Override
-//                    public void handleEvent(DataChangeEvent<HiveTableDataset, HiveTableUpdate> event) {
-//                        getLogger().debug("Dependent dataset changed: {} - {}",
-//                                new Object[]{event.getChangeSet().getDataset(), event.getChangeSet().getChanges()});
-//                        recordTableChange(event.getChangeSet());
-//                    }
-//                };
-//
-//                operationProvider.addListener((HiveTableDataset) srcDataset, listener);
-//                this.changeListener = listener;
-//            } else {
-//                throw new ProcessException("Unsupported dataset type: " + srcDataset.getClass());
-//            }
-//        }
-//    }
-//
-//    protected void recordDirectoryChange(ChangeSet<DirectoryDataset, FileList> changeSet) {
-//        this.pendingChange.add(changeSet);
-//    }
-//
-//    protected void recordTableChange(ChangeSet<HiveTableDataset, HiveTableUpdate> changeSet) {
-//        this.pendingChange.add(changeSet);
-//    }
 
-    protected Datasource getSourceDatasource(ProcessContext context) {
-        String datasourceName = context.getProperty(SRC_DATASOURCE_NAME).getValue();
-
+    protected Datasource getSourceDatasource(ProcessContext context, String datasourceName) {
         if (datasourceName != null) {
             Datasource dataset = findDatasource(context, datasourceName);
 
