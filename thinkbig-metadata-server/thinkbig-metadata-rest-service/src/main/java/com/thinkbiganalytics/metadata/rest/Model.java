@@ -37,6 +37,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
@@ -180,6 +181,16 @@ public class Model {
 //                dest.setDatasourceId(domain.getDataset().getId().toString());
                 dest.setDatasource(DOMAIN_TO_DS.apply(domain.getDataset()));
                 return dest;
+            }
+        };
+        
+        public static final Function<com.thinkbiganalytics.metadata.api.feed.FeedPrecondition, FeedPrecondition> DOMAIN_TO_FEED_PRECOND
+        = new Function<com.thinkbiganalytics.metadata.api.feed.FeedPrecondition, FeedPrecondition>() {
+            @Override
+            public FeedPrecondition apply(com.thinkbiganalytics.metadata.api.feed.FeedPrecondition domain) {
+                FeedPrecondition precond = new FeedPrecondition();
+//                precond.setMetrics(DOMAIN_TO_METRICS.apply(domain.getMetrics()));
+                return precond;
             }
         };
     

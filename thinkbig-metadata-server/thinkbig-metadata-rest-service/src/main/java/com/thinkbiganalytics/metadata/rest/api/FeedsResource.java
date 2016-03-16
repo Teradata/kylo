@@ -24,6 +24,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Collections2;
@@ -45,6 +47,8 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 @Path("/feed")
 public class FeedsResource {
     
+    private static final Logger LOG = LoggerFactory.getLogger(FeedsResource.class);
+    
     @Inject
     private FeedProvider feedProvider;
     
@@ -57,6 +61,8 @@ public class FeedsResource {
     public List<Feed> getFeeds(@QueryParam(FeedCriteria.NAME) String name,
                                @QueryParam(FeedCriteria.SRC_ID) String srcId,
                                @QueryParam(FeedCriteria.DEST_ID) String destId) {
+        LOG.debug("Get feeds {}/{}/{}", name, srcId, destId);
+        
         com.thinkbiganalytics.metadata.api.feed.FeedCriteria criteria = createFeedCriteria(name, srcId, destId);
         Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainFeeds = this.feedProvider.getFeeds(criteria);
         
@@ -67,17 +73,105 @@ public class FeedsResource {
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Feed getFeed(@PathParam("id") String feedId) {
+        LOG.debug("Get feed {}", feedId);
+        
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = this.feedProvider.asFeedId(feedId);
         com.thinkbiganalytics.metadata.api.feed.Feed domain = this.feedProvider.getFeed(domainId);
         
         return Model.DOMAIN_TO_FEED.apply(domain);
     }
     
+    @GET
+    @Path("{id}/source")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<FeedSource> getFeedSources(@PathParam("id") String feedId) {
+        LOG.debug("Get feed {} sources", feedId);
+        
+        com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = this.feedProvider.asFeedId(feedId);
+        com.thinkbiganalytics.metadata.api.feed.Feed domain = this.feedProvider.getFeed(domainId);
+        
+        return new ArrayList<>(Collections2.transform(domain.getSources(), Model.DOMAIN_TO_FEED_SOURCE));
+    }
+    
+    @GET
+    @Path("{fid}/source/{sid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public FeedSource getFeedSource(@PathParam("fid") String feedId, @PathParam("sid") String srcId) {
+        LOG.debug("Get feed {} source {}", feedId, srcId);
+        
+        com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = this.feedProvider.asFeedId(feedId);
+        com.thinkbiganalytics.metadata.api.feed.FeedSource.ID domainSrcId = this.feedProvider.resolveSource(srcId);
+        com.thinkbiganalytics.metadata.api.feed.Feed domain = this.feedProvider.getFeed(domainId);
+        
+        if (domain != null) {
+            com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc = domain.getSource(domainSrcId);
+            
+            if (domainSrc != null) {
+                return Model.DOMAIN_TO_FEED_SOURCE.apply(domainSrc);
+            } else {
+                throw new WebApplicationException("A feed source with the given ID does not exist: " + srcId, Status.NOT_FOUND);
+            }
+        } else {
+            throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+        }
+    }
+    
+    @GET
+    @Path("{id}/destination")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<FeedDestination> getFeedDestinations(@PathParam("id") String feedId) {
+        LOG.debug("Get feed {} destinations", feedId);
+        
+        com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = this.feedProvider.asFeedId(feedId);
+        com.thinkbiganalytics.metadata.api.feed.Feed domain = this.feedProvider.getFeed(domainId);
+        
+        return new ArrayList<>(Collections2.transform(domain.getDestinations(), Model.DOMAIN_TO_FEED_DESTINATION));
+    }
+    
+    @GET
+    @Path("{fid}/destination/{sid}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public FeedDestination getFeedDestination(@PathParam("fid") String feedId, @PathParam("sid") String destId) {
+        LOG.debug("Get feed {} destination {}", feedId, destId);
+        
+        com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = this.feedProvider.asFeedId(feedId);
+        com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID domainDestId = this.feedProvider.resolveDestination(destId);
+        com.thinkbiganalytics.metadata.api.feed.Feed domain = this.feedProvider.getFeed(domainId);
+        
+        if (domain != null) {
+            com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest = domain.getDestination(domainDestId);
+            
+            if (domainDest != null) {
+                return Model.DOMAIN_TO_FEED_DESTINATION.apply(domainDest);
+            } else {
+                throw new WebApplicationException("A feed destination with the given ID does not exist: " + destId, Status.NOT_FOUND);
+            }
+        } else {
+            throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+        }
+    }
+    
+    @GET
+    @Path("{id}/precondition")
+    @Produces(MediaType.APPLICATION_JSON)
+    public FeedPrecondition getFeedPrecondition(@PathParam("id") String feedId) {
+        LOG.debug("Get feed {} precondition", feedId);
+        
+        com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = this.feedProvider.asFeedId(feedId);
+        com.thinkbiganalytics.metadata.api.feed.Feed domain = this.feedProvider.getFeed(domainId);
+        
+        if (domain != null) {
+            return Model.DOMAIN_TO_FEED_PRECOND.apply(domain.getPrecondition());
+        } else {
+            throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+        }
+    }
     
     @POST
     @Produces(MediaType.APPLICATION_JSON)
-    public Feed createFeed(Feed feed,
-                           @QueryParam("ensure") @DefaultValue("true") boolean ensure) {
+    public Feed createFeed(Feed feed, @QueryParam("ensure") @DefaultValue("true") boolean ensure) {
+        LOG.debug("Create feed (ensure={}) {}", ensure, feed);
+        
         Model.validateCreate(feed);
         
         com.thinkbiganalytics.metadata.api.feed.FeedCriteria crit = this.feedProvider.feedCriteria().name(feed.getSystemName());
@@ -103,6 +197,8 @@ public class FeedsResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Feed addFeedSource(@PathParam("feedId") String feedId, 
                               @FormParam("datasourceId") String datasourceId) {
+        LOG.debug("Add feed source, feed ID: {}, datasource ID: {}", feedId, datasourceId);
+        
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = this.feedProvider.resolveFeed(feedId);
         Dataset.ID domainDsId = this.datasetProvider.resolve(datasourceId);
         
@@ -118,6 +214,8 @@ public class FeedsResource {
     @Produces(MediaType.APPLICATION_JSON)
     public Feed addFeedDestination(@PathParam("feedId") String feedId, 
                                    @FormParam("datasourceId") String datasourceId) {
+        LOG.debug("Add feed destination, feed ID: {}, datasource ID: {}", feedId, datasourceId);
+        
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = this.feedProvider.resolveFeed(feedId);
         Dataset.ID domainDsId = this.datasetProvider.resolve(datasourceId);
         
@@ -132,6 +230,8 @@ public class FeedsResource {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Feed setPrecondition(@PathParam("feedId") String feedId, FeedPrecondition precond) {
+        LOG.debug("Add feed precondition, feed ID: {}, precondition: {}", feedId, precond);
+        
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = this.feedProvider.resolveFeed(feedId);
         com.thinkbiganalytics.metadata.api.feed.Feed domainFeed = this.feedProvider.getFeed(domainFeedId);
         Set<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics 
