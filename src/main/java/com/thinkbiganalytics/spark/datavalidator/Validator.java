@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.spark.datavalidator;
 
-
-import com.thinkbiganalytics.spark.dataprofiler.functions.FrequencyCSVToRow;
 import com.thinkbiganalytics.spark.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.spark.standardization.impl.AcceptsEmptyValues;
 import com.thinkbiganalytics.spark.standardization.impl.DateTimeStandardizer;
