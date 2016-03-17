@@ -19,16 +19,25 @@ public class TestMetricAssessor implements MetricAssessor<TestMetric, Serializab
     private int expectedIntValue;
     private String expectedStringValue;
     private AssessmentResult failResult;
+    private AssessmentResult successResult;
 
     public TestMetricAssessor(int expectedIntValue, String expectedStringValue) {
-        this(expectedIntValue, expectedStringValue, AssessmentResult.FAILURE);
+        this(expectedIntValue, expectedStringValue, AssessmentResult.FAILURE, AssessmentResult.SUCCESS);
     }
     
     public TestMetricAssessor(int expectedIntValue, String expectedStringValue, AssessmentResult failResult) {
+        this(expectedIntValue, expectedStringValue, failResult, AssessmentResult.SUCCESS);
+    }
+    
+    public TestMetricAssessor(int expectedIntValue, 
+                              String expectedStringValue, 
+                              AssessmentResult failResult, 
+                              AssessmentResult successResult) {
         super();
         this.expectedIntValue = expectedIntValue;
         this.expectedStringValue = expectedStringValue;
         this.failResult = failResult;
+        this.successResult = successResult;
     }
 
     @Override
@@ -46,7 +55,7 @@ public class TestMetricAssessor implements MetricAssessor<TestMetric, Serializab
         if (metric.getIntValue() == this.expectedIntValue && metric.getStringValue().equals(this.expectedStringValue)) {
             builder
                 .message("Found expected values: " + this.expectedIntValue + " \"" + this.expectedStringValue + "\"")
-                .result(AssessmentResult.SUCCESS);
+                .result(this.successResult);
         } else {
             builder
                 .message("Expected values not found: " + this.expectedIntValue + " \"" + this.expectedStringValue + "\"")

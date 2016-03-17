@@ -59,7 +59,7 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
     public ServiceLevelAssessment assess(ServiceLevelAgreement sla) {
         Log.info("Assessing SLA: {}", sla.getName());
         
-        AssessmentResult combinedResult = AssessmentResult.SUCCESS;
+        AssessmentResult combinedResult = AssessmentResult.FAILURE;
        
         try {
             SimpleServiceLevelAssessment slaAssessment = new SimpleServiceLevelAssessment(sla);
@@ -88,10 +88,11 @@ public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
                     }
                     break;
                 default:
-                    // Optional condition, continue assessing groups
                 }
                 
-                combinedResult = combinedResult.max(groupResult);
+                // Required condition but non-failure, sufficient condition but non-success, or optional condition:
+                // continue assessing groups and retain the best of the group results.
+                combinedResult = combinedResult.min(groupResult);
             }
             
             return completeAssessment(slaAssessment, combinedResult);
