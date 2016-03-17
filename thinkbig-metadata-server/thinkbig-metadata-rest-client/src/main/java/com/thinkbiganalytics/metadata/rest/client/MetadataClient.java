@@ -12,12 +12,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
 import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
 
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
 import org.glassfish.jersey.client.JerseyClient;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.joda.time.DateTime;
@@ -51,8 +56,14 @@ public class MetadataClient extends JerseyClient {
     
     public MetadataClient(URI base) {
         super();
+        init(base);
+    }
+    public MetadataClient(URI base,ClientConfig config){
+        super(config,(SSLContext)null,(HostnameVerifier)null);
+        init(base);
+    }
+    private void init(URI base){
         this.baseTarget = target(base);
-        
         register(JacksonFeature.class);
     }
     
