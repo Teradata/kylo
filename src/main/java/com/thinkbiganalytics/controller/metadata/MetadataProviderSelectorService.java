@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.controller.metadata;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -32,10 +33,17 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             .description("Specifies which implementation of the metadata providers should be used")
             .allowableValues(ALLOWABLE_IMPLEMENATIONS)
             .defaultValue("REMOTE")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(StandardValidators.URL_VALIDATOR)
+            .required(true)
             .build();
     
-    // TODO add properties for REST API
+    public static final PropertyDescriptor CLIENT_URL = new PropertyDescriptor.Builder()
+            .name("rest-client-url")
+            .displayName("REST Client URL")
+            .description("The base URL to the metadata server when the REST API client implementation is chosen.")
+            .defaultValue("http://localhost:8077/api/metadata")
+            .required(false)
+            .build();
     
 
     private static final List<PropertyDescriptor> properties;
@@ -43,6 +51,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     static {
         final List<PropertyDescriptor> props = new ArrayList<>();
         props.add(IMPLEMENTATION);
+        props.add(CLIENT_URL);
 
         properties = Collections.unmodifiableList(props);
     }
@@ -60,7 +69,8 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         PropertyValue impl = context.getProperty(IMPLEMENTATION);
         
         if (impl.getValue().equalsIgnoreCase("REMOTE")) {
-            this.provider = new MetadataClientProvider();
+            URI uri = URI.create(context.getProperty(IMPLEMENTATION).toString());
+            this.provider = new MetadataClientProvider(uri);
         } else {
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
         }
