@@ -1,4 +1,4 @@
-package scheduler;
+package com.thinkbiganalytics.scheduler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -20,17 +20,14 @@ public class SchedulerObjectSerializatoinTest {
 
         try {
             TriggerInfo info = new TriggerInfoImpl(new JobIdentifier(), new TriggerIdentifier());
-        ObjectMapper objectMapper = new ObjectMapper();
-        String json = null;
+            ObjectMapper objectMapper = new ObjectMapper();
+
+            String json = null;
             json = objectMapper.writeValueAsString(info);
             System.out.println(json);
 
             TriggerInfo info2 = objectMapper.readValue(json,TriggerInfo.class);
             System.out.println(info2);
-
-
-
-
 
         } catch (JsonProcessingException e) {
             e.printStackTrace();
