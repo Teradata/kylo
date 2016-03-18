@@ -4,6 +4,7 @@ import com.thinkbiganalytics.scheduler.JobIdentifier;
 import com.thinkbiganalytics.scheduler.JobSchedulerException;
 import com.thinkbiganalytics.scheduler.TriggerIdentifier;
 import org.joda.time.DateTime;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -84,21 +85,21 @@ public class SpringSchedulerTest {
 
     }
 
+    @Test
     public void testUnsupported() throws Exception {
-
 
         try {
             scheduler.resumeAll();
             fail();
         } catch (UnsupportedOperationException e) {
-
+            Assert.assertNotNull(e);
         }
 
         try {
             scheduler.pauseTrigger(null);
             fail();
         } catch (UnsupportedOperationException e) {
-
+            Assert.assertNotNull(e);
         }
 
 
@@ -106,53 +107,63 @@ public class SpringSchedulerTest {
             scheduler.deleteJob(new JobIdentifier());
             fail();
         } catch (UnsupportedOperationException e) {
-
+            Assert.assertNotNull(e);
         }
+
         try {
             scheduler.startScheduler();
             fail();
         } catch (UnsupportedOperationException e) {
-
+            Assert.assertNotNull(e);
         }
+
         try {
             scheduler.updateTrigger(new TriggerIdentifier(), "cron");
             fail();
         } catch (UnsupportedOperationException e) {
-
+            Assert.assertNotNull(e);
         }
+
+        try {
+            scheduler.triggerJob(new JobIdentifier());
+            fail();
+        } catch (UnsupportedOperationException e) {
+            Assert.assertNotNull(e);
+        }
+
         try {
             scheduler.resumeTrigger(new TriggerIdentifier());
             fail();
         } catch (UnsupportedOperationException e) {
-
+            Assert.assertNotNull(e);
         }
+
         try {
             scheduler.resumeTriggersOnJob(new JobIdentifier());
             fail();
         } catch (UnsupportedOperationException e) {
-
+            Assert.assertNotNull(e);
         }
 
         try {
-
             scheduler.pauseScheduler();
-            ;
             fail();
         } catch (UnsupportedOperationException e) {
-
+            Assert.assertNotNull(e);
         }
+
         try {
             scheduler.pauseAll();
             fail();
         } catch (UnsupportedOperationException e) {
-
+            Assert.assertNotNull(e);
         }
 
         try {
             scheduler.pauseTriggersOnJob(new JobIdentifier());
             fail();
         } catch (UnsupportedOperationException e) {
-
+            Assert.assertNotNull(e);
         }
 
     }
