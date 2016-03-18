@@ -2,7 +2,7 @@ package com.thinkbiganalytics.metadata.api.feed;
 
 import java.io.Serializable;
 import java.util.Collection;
-import java.util.Set;
+import java.util.List;
 
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
@@ -21,8 +21,8 @@ public interface FeedProvider {
     Feed ensureFeed(String name, String descr, Dataset.ID destId);
     Feed ensureFeed(String name, String descr, Dataset.ID srcId, Dataset.ID destId);
     
-    Feed ensurePrecondition(Feed.ID feedId, String name, String descr, Set<Metric> metrics);
-    Feed updatePrecondition(Feed.ID feedId, Set<Metric> metrics);
+    Feed ensurePrecondition(Feed.ID feedId, String name, String descr, List<List<Metric>> metrics);
+    Feed updatePrecondition(Feed.ID feedId, List<List<Metric>> metrics);
     
     FeedCriteria feedCriteria();
     

@@ -87,6 +87,10 @@ public class MetadataClient {
     
     public Feed setPrecondition(String feedId, List<Metric> metrics) {
         FeedPrecondition precond = new FeedPrecondition(metrics);
+        return setPrecondition(feedId, precond);
+    }
+    
+    public Feed setPrecondition(String feedId, FeedPrecondition precond) {
         return post(Paths.get("feed", feedId, "precondition"), precond, Feed.class);
     }
 
@@ -153,7 +157,7 @@ public class MetadataClient {
     private FeedPrecondition createTrigger(List<Metric> metrics) {
         if (! metrics.isEmpty()) {
             FeedPrecondition trigger = new FeedPrecondition();
-            trigger.setMetrics(metrics);
+            trigger.addMetrics(metrics);
             return trigger;
         } else {
             return null;

@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.rest.model.feed;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -21,21 +22,30 @@ import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedPrecondition implements Serializable {
 
-    private List<Metric> metrics = new ArrayList<>();
+    private List<List<Metric>> metricGroups = new ArrayList<>();
 
     public FeedPrecondition() {
         super();
     }
     
     public FeedPrecondition(List<Metric> metrics) {
-        this.metrics.addAll(metrics);
+        this.addMetrics(metrics);
+    }
+    
+    public void addMetrics(Metric... metrics) {
+        addMetrics(Arrays.asList(metrics));
+    }
+    
+    public void addMetrics(List<Metric> metrics) {
+        List<Metric> list = new ArrayList<Metric>(metrics);
+        this.metricGroups.add(list);
     }
 
-    public List<Metric> getMetrics() {
-        return metrics;
+    public List<List<Metric>> getMetricGroups() {
+        return metricGroups;
     }
 
-    public void setMetrics(List<Metric> metrics) {
-        this.metrics = new ArrayList<>(metrics);
+    public void setMetricGroups(List<List<Metric>> metrics) {
+        this.metricGroups = new ArrayList<>(metrics);
     }
 }

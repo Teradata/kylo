@@ -38,6 +38,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
+import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 
 /**
  *
@@ -233,11 +234,14 @@ public class FeedsResource {
         LOG.debug("Add feed precondition, feed ID: {}, precondition: {}", feedId, precond);
         
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = this.feedProvider.resolveFeed(feedId);
-        com.thinkbiganalytics.metadata.api.feed.Feed domainFeed = this.feedProvider.getFeed(domainFeedId);
-        Set<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics 
-            = new HashSet<>(Collections2.transform(precond.getMetrics(), Model.METRIC_TO_DOMAIN));
-        domainFeed = this.feedProvider.updatePrecondition(domainFeedId, domainMetrics);
+        List<List<com.thinkbiganalytics.metadata.sla.api.Metric>> domainMetrics = new ArrayList<>();
         
+        for (List<Metric> metrics : precond.getMetricGroups()) {
+            domainMetrics.add(new ArrayList<>(Collections2.transform(metrics, Model.METRIC_TO_DOMAIN)));
+        }
+        
+        com.thinkbiganalytics.metadata.api.feed.Feed domainFeed 
+            = this.feedProvider.updatePrecondition(domainFeedId, domainMetrics);
         return Model.DOMAIN_TO_FEED.apply(domainFeed);
     }
 
@@ -245,8 +249,11 @@ public class FeedsResource {
         FeedPrecondition precond = feed.getPrecondition();
         
         if (precond != null) {
-            Set<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics 
-            = new HashSet<>(Collections2.transform(precond.getMetrics(), Model.METRIC_TO_DOMAIN));
+            List<List<com.thinkbiganalytics.metadata.sla.api.Metric>> domainMetrics = new ArrayList<>();
+            
+            for (List<Metric> metrics : precond.getMetricGroups()) {
+                domainMetrics.add(new ArrayList<>(Collections2.transform(metrics, Model.METRIC_TO_DOMAIN)));
+            }
             
             this.feedProvider.ensurePrecondition(domainFeed.getId(), "", "", domainMetrics);
         }

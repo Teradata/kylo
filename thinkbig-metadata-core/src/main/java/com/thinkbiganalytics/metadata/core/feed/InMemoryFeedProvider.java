@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -30,6 +31,8 @@ import com.thinkbiganalytics.metadata.core.feed.BaseFeed.FeedPreconditionImpl;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.SourceId;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 /**
@@ -194,7 +197,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
     
     @Override
-    public Feed ensurePrecondition(Feed.ID feedId, String name, String descr, Set<Metric> metrics) {
+    public Feed ensurePrecondition(Feed.ID feedId, String name, String descr, List<List<Metric>> metrics) {
         BaseFeed feed = this.feeds.get(feedId);
         
         if (feed != null) {
@@ -204,17 +207,21 @@ public class InMemoryFeedProvider implements FeedProvider {
                 this.slaProvider.removeAgreement(precond.getAgreement().getId());
             }
             
-            ServiceLevelAgreement sla = this.slaProvider.builder()
+            ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder()
                     .name(name)
-                    .description(descr)
+                    .description(descr);
+            
+            for (List<Metric> list : metrics) {
+                slaBldr.obligationGroupBuilder(Condition.SUFFICIENT)
                     .obligationBuilder()
-                        .metric(metrics)
+                        .metric(list)
                         .add()
                     .build();
+            }
             
             this.preconditionService.watchFeed(feed.getId());
             
-            feed.setPrecondition(sla);
+            feed.setPrecondition(slaBldr.build());
             return feed;
         } else {
             throw new FeedCreateException("A feed with the given ID does not exists: " + feedId);
@@ -222,11 +229,14 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
     
     @Override
-    public Feed updatePrecondition(Feed.ID feedId, Set<Metric> metrics) {
+    public Feed updatePrecondition(Feed.ID feedId, List<List<Metric>> metrics) {
         String name = "Feed " + feedId + " Precondtion";
         StringBuilder descr = new StringBuilder();
-        for (Metric metric : metrics) {
-            descr.append(metric.getClass().getSimpleName()).append(", ");
+        for (List<Metric> list : metrics) {
+            for (Metric metric : list) {
+                descr.append(metric.getClass().getSimpleName()).append(", ");
+            }
+            descr.append(" | ");
         }
         
         return ensurePrecondition(feedId, name, descr.toString(), metrics);

@@ -151,7 +151,7 @@ public class MetadataClient {
     private FeedPrecondition createTrigger(List<Metric> metrics) {
         if (! metrics.isEmpty()) {
             FeedPrecondition trigger = new FeedPrecondition();
-            trigger.setMetrics(metrics);
+            trigger.addMetrics(metrics);
             return trigger;
         } else {
             return null;
