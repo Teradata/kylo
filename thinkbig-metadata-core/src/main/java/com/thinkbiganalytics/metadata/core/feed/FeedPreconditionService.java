@@ -72,6 +72,11 @@ public class FeedPreconditionService {
         this.watchedFeeds.add(id);
     }
     
+    public ServiceLevelAssessment assess(FeedPrecondition precond) {
+        ServiceLevelAgreement sla = asAgreement(precond);
+        return this.assessor.assess(sla);
+    }
+
     /**
      * Creates a listener that will check feed preconditions whenever there is a successful 
      * data change is recorded.

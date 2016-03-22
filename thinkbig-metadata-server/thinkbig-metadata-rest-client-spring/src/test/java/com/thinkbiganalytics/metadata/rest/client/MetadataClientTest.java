@@ -25,22 +25,23 @@ import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ChangeType;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ContentType;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 
-@Ignore  // Requires a running metadata server
+//@Ignore  // Requires a running metadata server
 public class MetadataClientTest {
     
     private static MetadataClient client;
 
     @BeforeClass
     public static void connect() {
-        client = new MetadataClient(URI.create("http://localhost:8080/api/metadata/"));
+        client = new MetadataClient(URI.create("http://localhost:8077/api/metadata/"));
     }
     
     @Before
     public void setUp() throws Exception {
     }
 
-    @Test
+//    @Test
     public void testBuildFeed() throws ParseException {
         Feed feed = buildFeed("feed1").post();
         
@@ -51,7 +52,7 @@ public class MetadataClientTest {
         assertThat(feed).isNotNull();
     }
     
-    @Test
+//    @Test
     public void testAddFeedSource() throws ParseException {
         Feed feed = buildFeed("feed1").post();
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
@@ -61,7 +62,7 @@ public class MetadataClientTest {
         assertThat(result).isNotNull();
     }
     
-    @Test 
+//    @Test 
     public void testAddFeedDestination() throws ParseException {
         Feed feed = buildFeed("feed1").post();
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
@@ -71,21 +72,21 @@ public class MetadataClientTest {
         assertThat(result).isNotNull();
     }
 
-    @Test 
+//    @Test 
     public void testBuildHiveTableDatasource() {
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
         
         assertThat(ds).isNotNull();
     }
     
-    @Test
+//    @Test
     public void testBuildDirectoryDatasource() {
         DirectoryDatasource ds = buildDirectoryDatasource("test-dir").post();
         
         assertThat(ds).isNotNull();
     }
     
-    @Test
+//    @Test
     public void testListDatasources() {
         buildDirectoryDatasource("ds1").post();
         buildHiveTableDatasource("ds2").post();
@@ -98,7 +99,7 @@ public class MetadataClientTest {
             .hasSize(3);
     }
     
-    @Test
+//    @Test
     public void testBeginOperation() throws ParseException {
         Feed feed = buildFeed("feed1").post();
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
@@ -110,7 +111,7 @@ public class MetadataClientTest {
         assertThat(op).isNotNull();
     }
     
-    @Test
+//    @Test
     public void testCompleteOperation() throws ParseException {
         Feed feedA = buildFeed("feedA").post();
         HiveTableDatasource dsA = buildHiveTableDatasource("test-table").post();
@@ -132,6 +133,25 @@ public class MetadataClientTest {
         op = client.updateDataOperation(op);
         
         assertThat(op).isNotNull();
+    }
+    
+    @Test
+    public void testCheckPrecondition() throws ParseException {
+        Feed feedA = buildFeed("feedA").post();
+        Feed feedB = buildFeed("feedB", "feedA").post();
+        
+        HiveTableDatasource dsA = buildHiveTableDatasource("test-table").post();
+        feedA = client.addDestination(feedA.getId(), dsA.getId());
+        String destIdA = feedA.getDestinations().iterator().next().getId();
+        
+        DataOperation op = client.beginOperation(destIdA, "");
+        op.setState(State.SUCCESS);
+        op.setDataset(new Dataset(new DateTime(), dsA, ChangeType.UPDATE, ContentType.PARTITIONS));
+        op = client.updateDataOperation(op);
+        
+        ServiceLevelAssessment assmt = client.assessPrecondition(feedB.getId());
+        
+        assertThat(assmt).isNotNull();
     }
     
     private FeedBuilder buildFeed(String name) throws ParseException {

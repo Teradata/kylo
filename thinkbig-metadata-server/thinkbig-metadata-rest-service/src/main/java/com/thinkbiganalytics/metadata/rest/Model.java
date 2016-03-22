@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.nio.file.Path;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.Set;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
+import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.quartz.CronExpression;
 
@@ -46,7 +48,15 @@ import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceSched
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment.Result;
 import com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule;
+import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
+import com.thinkbiganalytics.metadata.sla.api.Obligation;
+import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 /**
  * Convenience functions and methods to transform between the metadata domain model and the REST model. 
@@ -129,6 +139,60 @@ public class Model {
         
         METRIC_TO_DOMAIN_MAP = map;
     }
+    
+    public static final Map<Class<? extends com.thinkbiganalytics.metadata.sla.api.Metric>, Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric>> DOMAIN_TO_METRIC_MAP;
+    static {
+        Map<Class<? extends com.thinkbiganalytics.metadata.sla.api.Metric>, Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric>> map = new HashMap<>();
+        map.put(com.thinkbiganalytics.metadata.api.feed.precond.WithinSchedule.class, new Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric>() {
+            @Override
+            public Metric apply(com.thinkbiganalytics.metadata.sla.api.Metric domain) {
+                com.thinkbiganalytics.metadata.api.feed.precond.WithinSchedule cast = (com.thinkbiganalytics.metadata.api.feed.precond.WithinSchedule) domain;
+                return new WithinSchedule(cast.getCronExpression().toString(), Formatters.PERIOD_FORMATTER.print(cast.getPeriod()));
+            }
+        });
+        map.put(com.thinkbiganalytics.metadata.api.feed.precond.FeedExecutedSinceFeedMetric.class, new Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric>() {
+            @Override
+            public Metric apply(com.thinkbiganalytics.metadata.sla.api.Metric domain) {
+                com.thinkbiganalytics.metadata.api.feed.precond.FeedExecutedSinceFeedMetric cast 
+                    = (com.thinkbiganalytics.metadata.api.feed.precond.FeedExecutedSinceFeedMetric) domain;
+                return FeedExecutedSinceFeedMetric.named(cast.getFeedName(), cast.getSinceName());
+            }
+        });
+        map.put(com.thinkbiganalytics.metadata.api.feed.precond.FeedExecutedSinceScheduleMetric.class, new Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric>() {
+            @Override
+            public Metric apply(com.thinkbiganalytics.metadata.sla.api.Metric domain) {
+                com.thinkbiganalytics.metadata.api.feed.precond.FeedExecutedSinceScheduleMetric cast 
+                    = (com.thinkbiganalytics.metadata.api.feed.precond.FeedExecutedSinceScheduleMetric) domain;
+                return FeedExecutedSinceScheduleMetric.named(cast.getFeedName(), cast.getCronExpression().toString());
+            }
+        });
+        map.put(com.thinkbiganalytics.metadata.api.feed.precond.DatasourceUpdatedSinceFeedExecutedMetric.class, new Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric>() {
+            @Override
+            public Metric apply(com.thinkbiganalytics.metadata.sla.api.Metric domain) {
+                com.thinkbiganalytics.metadata.api.feed.precond.DatasourceUpdatedSinceFeedExecutedMetric cast 
+                    = (com.thinkbiganalytics.metadata.api.feed.precond.DatasourceUpdatedSinceFeedExecutedMetric) domain;
+                return DatasourceUpdatedSinceFeedExecutedMetric.named(cast.getDatasetName(), cast.getFeedName());
+            }
+        });
+        map.put(DatasetUpdatedSinceMetric.class, new Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric>() {
+            @Override
+            public Metric apply(com.thinkbiganalytics.metadata.sla.api.Metric domain) {
+                DatasetUpdatedSinceMetric cast = (DatasetUpdatedSinceMetric) domain;
+                return DatasourceUpdatedSinceScheduleMetric.named(cast.getDatasetName(), cast.getCronExpression().toString());
+            }
+        });
+        
+        DOMAIN_TO_METRIC_MAP = map;
+    }
+    
+    public static final Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric> DOMAIN_TO_METRIC
+        =  new Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric>() {
+            @Override
+            public Metric apply(com.thinkbiganalytics.metadata.sla.api.Metric domain) {
+                Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric> func = DOMAIN_TO_METRIC_MAP.get(domain.getClass());
+                return func.apply(domain);
+            }
+        };
     
     public static final Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric> METRIC_TO_DOMAIN
         =  new Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>() {
@@ -330,6 +394,47 @@ public class Model {
                 return part;
             }
         };
+        
+    public static final Function<ServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement> DOMAIN_TO_SLA
+        = new Function<ServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement>() {
+            @Override
+            public com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement apply(ServiceLevelAgreement domain) {
+                return toModel(domain, true);
+            }
+    };
+    
+    
+    
+    
+    public static final Function<ServiceLevelAssessment, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment> DOMAIN_TO_SLA_ASSMT
+        = new Function<ServiceLevelAssessment, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment>() {
+            @Override
+            public com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment apply(ServiceLevelAssessment domain) {
+                com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement sla = toModel(domain.getAgreement(), false);
+                
+                com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment slAssmt 
+                    = new com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment(sla,
+//                                                                                               domain.getTime(), 
+                                                                                               null,
+                                                                                               domain.getMessage(), 
+                                                                                               Result.valueOf(domain.getResult().name()));
+                for (ObligationAssessment domainObAssmt : domain.getObligationAssessments()) {
+                    com.thinkbiganalytics.metadata.rest.model.sla.ObligationAssessment obAssmt 
+                        = new com.thinkbiganalytics.metadata.rest.model.sla.ObligationAssessment(toModel(domainObAssmt.getObligation(), false), 
+                                                                                                 Result.valueOf(domain.getResult().name()), 
+                                                                                                 domainObAssmt.getMessage());
+                    for (MetricAssessment<?> domainMetAssmt : domainObAssmt.getMetricAssessments()) {
+                        com.thinkbiganalytics.metadata.rest.model.sla.MetricAssessment metricAssmnt
+                            = new com.thinkbiganalytics.metadata.rest.model.sla.MetricAssessment(DOMAIN_TO_METRIC.apply(domainMetAssmt.getMetric()), 
+                                                                                                 Result.valueOf(domain.getResult().name()), 
+                                                                                                 domainMetAssmt.getMessage());
+                        obAssmt.addMetricAssessment(metricAssmnt);
+                    }
+                }
+                
+                return slAssmt;
+            }
+    };
  
     public static final Function<DataOperation.State, com.thinkbiganalytics.metadata.api.op.DataOperation.State> OP_STATE_TO_DOMAIN
         = new Function<DataOperation.State, com.thinkbiganalytics.metadata.api.op.DataOperation.State>() {
@@ -340,15 +445,55 @@ public class Model {
         };
 
     
+        
+    public static List<Metric> toModelMetrics(Collection<com.thinkbiganalytics.metadata.sla.api.Metric> metrics) {
+        return new ArrayList<>(Collections2.transform(metrics, DOMAIN_TO_METRIC));
+    }
     
-    public static Set<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics(List<Metric> metrics) {
+    public static Set<com.thinkbiganalytics.metadata.sla.api.Metric> toDomainMetrics(List<Metric> metrics) {
         return new HashSet<>(Collections2.transform(metrics, METRIC_TO_DOMAIN));
     }
     
-    public static <D extends com.thinkbiganalytics.metadata.sla.api.Metric> D deriveDomain(Metric model) {
+    public static <D extends com.thinkbiganalytics.metadata.sla.api.Metric> D toDomain(Metric model) {
         @SuppressWarnings("unchecked")
         D result = (D) METRIC_TO_DOMAIN.apply(model);
         return result;
+    }
+    
+    public static com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement toModel(ServiceLevelAgreement domain, boolean deep) {
+        com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement sla 
+            = new com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement(domain.getId().toString(), 
+                                                                                      domain.getName(), 
+                                                                                      domain.getDescription());
+        if (deep) {
+            if (domain.getObligationGroups().size() == 1 && domain.getObligationGroups().get(0).getCondition() == Condition.REQUIRED) {
+                for (Obligation domainOb : domain.getObligations()) {
+                    com.thinkbiganalytics.metadata.rest.model.sla.Obligation ob = toModel(domainOb, true);
+                    sla.addObligation(ob);
+                }
+            } else {
+                for (ObligationGroup domainGroup : domain.getObligationGroups()) {
+                    com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup group 
+                        = new com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup(domainGroup.getCondition().toString());
+                    for (Obligation domainOb : domainGroup.getObligations()) {
+                        com.thinkbiganalytics.metadata.rest.model.sla.Obligation ob = toModel(domainOb, true);
+                        group.addObligation(ob);
+                    }
+                    
+                    sla.addGroup(group);
+                }
+            }
+        }
+        
+        return sla;
+    }
+
+    public static com.thinkbiganalytics.metadata.rest.model.sla.Obligation toModel(Obligation domainOb, boolean deep) {
+        com.thinkbiganalytics.metadata.rest.model.sla.Obligation ob 
+            = new com.thinkbiganalytics.metadata.rest.model.sla.Obligation();
+        ob.setDescription(domainOb.getDescription());
+        if (deep) ob.setMetrics(toModelMetrics(domainOb.getMetrics()));
+        return ob;
     }
         
     public static void validateCreate(Feed feed) {

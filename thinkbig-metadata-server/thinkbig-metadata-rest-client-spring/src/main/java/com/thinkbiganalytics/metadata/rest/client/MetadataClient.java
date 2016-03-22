@@ -38,6 +38,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 
 /**
  *
@@ -152,6 +153,14 @@ public class MetadataClient {
     
     public DataOperation getDataOperation(String id) {
         return get(Paths.get("dataop", id), DataOperation.class);
+    }
+
+    public ServiceLevelAssessment assessPrecondition(String id) {
+        return get(Paths.get("feed", id, "precondition", "assessment"), ServiceLevelAssessment.class);
+    }
+    
+    public String getPreconditionResult(String id) {
+        return get(Paths.get("feed", id, "precondition", "assessment", "result"), String.class);
     }
 
     private FeedPrecondition createTrigger(List<Metric> metrics) {

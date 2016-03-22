@@ -32,6 +32,7 @@ import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
@@ -39,6 +40,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 
 /**
  *
@@ -55,6 +57,9 @@ public class FeedsResource {
     
     @Inject
     private DatasetProvider datasetProvider;
+    
+    @Inject
+    private FeedPreconditionService preconditionService;
     
 
     @GET
@@ -163,6 +168,30 @@ public class FeedsResource {
         
         if (domain != null) {
             return Model.DOMAIN_TO_FEED_PRECOND.apply(domain.getPrecondition());
+        } else {
+            throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+        }
+    }
+    
+    @GET
+    @Path("{id}/precondition/assessment")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ServiceLevelAssessment getPreconditionAssessment(@PathParam("id") String feedId) {
+        LOG.debug("Assess feed {} precondition", feedId);
+        
+        com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = this.feedProvider.asFeedId(feedId);
+        com.thinkbiganalytics.metadata.api.feed.Feed domain = this.feedProvider.getFeed(domainId);
+        
+        if (domain != null) {
+            com.thinkbiganalytics.metadata.api.feed.FeedPrecondition precond = domain.getPrecondition();
+            
+            if (precond != null) {
+                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment assmt 
+                    = this.preconditionService.assess(precond);
+                return Model.DOMAIN_TO_SLA_ASSMT.apply(assmt);
+            } else {
+                throw new WebApplicationException("The feed with the given ID does not have a precondition: " + feedId, Status.BAD_REQUEST);
+            }
         } else {
             throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
         }
