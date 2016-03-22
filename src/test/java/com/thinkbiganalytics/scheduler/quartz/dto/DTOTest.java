@@ -13,7 +13,7 @@ import static org.junit.Assert.assertTrue;
 /**
  * Created by matthutton on 3/11/16.
  */
-public class DTOTests {
+public class DTOTest {
 
     private JobDetailDTO jobDetailDTO;
     private JobTriggerDetail detail;
