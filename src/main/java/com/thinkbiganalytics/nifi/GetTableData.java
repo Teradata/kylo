@@ -309,8 +309,8 @@ public class GetTableData extends AbstractProcessor {
         private Date lastModifyDate = new Date(0L);
 
         public LastFieldVisitor(String lastModifyColumnName, Date lastModifyDate) {
-            Validate.notEmpty(colName);
             this.colName = lastModifyColumnName;
+            Validate.notEmpty(colName);
             this.lastModifyDate = (lastModifyDate == null ? new Date(0L) : lastModifyDate);
         }
 
