@@ -22,44 +22,6 @@ package com.thinkbiganalytics.util;
  */
 
 
-import static java.sql.Types.ARRAY;
-import static java.sql.Types.BIGINT;
-import static java.sql.Types.BINARY;
-import static java.sql.Types.BIT;
-import static java.sql.Types.BLOB;
-import static java.sql.Types.BOOLEAN;
-import static java.sql.Types.CHAR;
-import static java.sql.Types.CLOB;
-import static java.sql.Types.DATE;
-import static java.sql.Types.DECIMAL;
-import static java.sql.Types.DOUBLE;
-import static java.sql.Types.FLOAT;
-import static java.sql.Types.INTEGER;
-import static java.sql.Types.LONGNVARCHAR;
-import static java.sql.Types.LONGVARBINARY;
-import static java.sql.Types.LONGVARCHAR;
-import static java.sql.Types.NCHAR;
-import static java.sql.Types.NUMERIC;
-import static java.sql.Types.NVARCHAR;
-import static java.sql.Types.REAL;
-import static java.sql.Types.ROWID;
-import static java.sql.Types.SMALLINT;
-import static java.sql.Types.TIME;
-import static java.sql.Types.TIMESTAMP;
-import static java.sql.Types.TINYINT;
-import static java.sql.Types.VARBINARY;
-import static java.sql.Types.VARCHAR;
-
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.nio.ByteBuffer;
-import java.sql.*;
-import java.util.List;
-
 import org.apache.avro.Schema;
 import org.apache.avro.SchemaBuilder;
 import org.apache.avro.SchemaBuilder.FieldAssembler;
@@ -71,11 +33,21 @@ import org.apache.avro.io.DatumWriter;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.nio.ByteBuffer;
+import java.sql.*;
+
+import static java.sql.Types.*;
 
 /**
  * JDBC / SQL common functions.
@@ -112,14 +84,13 @@ public class JdbcCommon {
             nrOfRows++;
             for (int i = 1; i <= nrOfColumns; i++) {
                 String val = null;
-                // TODO: Support escaping commas, XML, CLOB, JSON, ARRAYS, etc
 
                 int colType = meta.getColumnType(i);
                 if (colType == Types.DATE || colType == Types.TIMESTAMP) {
                     Timestamp sqlDate = rs.getTimestamp(i);
                     if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, sqlDate);
                     if (sqlDate != null) {
-                        DateTimeFormatter formatter = ISODateTimeFormat.basicDateTime().withZoneUTC();
+                        DateTimeFormatter formatter = ISODateTimeFormat.dateTime().withZoneUTC();
                         val = formatter.print(new DateTime(sqlDate.getTime()));
                     }
                 } else if (colType == Types.TIME) {
