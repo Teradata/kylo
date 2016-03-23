@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
 
 /**
  *
@@ -29,11 +31,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
     }
 )
 public class ChangeSet implements Serializable {
-
+    
+    @JsonSerialize(using=DateTimeSerializer.class)
     private DateTime intrinsicTime;
+    
     private String intrinsicPeriod;
     private double incompletenessFactor;
 
+    
     public DateTime getIntrinsicTime() {
         return intrinsicTime;
     }

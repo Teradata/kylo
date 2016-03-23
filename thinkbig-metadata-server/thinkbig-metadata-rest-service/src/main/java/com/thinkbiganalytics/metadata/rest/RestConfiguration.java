@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+
 /**
  *
  * @author Sean Felten
@@ -23,6 +25,7 @@ public class RestConfiguration {
         JerseyConfig conf = new JerseyConfig();
         conf.packages(true, "com.thinkbiganalytics.metadata.rest.api");
         conf.setApplicationName("ThinkBig Metadata Server");
+        conf.register(JodaModule.class);
         return conf;
     }
 

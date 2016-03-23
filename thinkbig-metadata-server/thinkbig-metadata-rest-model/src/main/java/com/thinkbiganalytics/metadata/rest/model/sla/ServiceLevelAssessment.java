@@ -11,6 +11,8 @@ import org.joda.time.DateTime;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
 
 /**
  *
@@ -22,8 +24,10 @@ public class ServiceLevelAssessment {
     
     public enum Result { SUCCESS, WARNING, FAILURE }
     
-    private ServiceLevelAgreement agreement;
+    @JsonSerialize(using=DateTimeSerializer.class)
     private DateTime time;
+    
+    private ServiceLevelAgreement agreement;
     private String message;
     private Result result;
     List<ObligationAssessment> obligationAssessments;

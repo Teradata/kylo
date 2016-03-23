@@ -20,11 +20,17 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
@@ -62,8 +68,18 @@ public class MetadataClient {
         super();
         this.base = base;
         this.template = new RestTemplate();
+        
+        ObjectMapper mapper = createObjectMapper();
+        this.template.getMessageConverters().add(new MappingJackson2HttpMessageConverter(mapper));
     }
     
+    private ObjectMapper createObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JodaModule());
+        mapper.setSerializationInclusion(Include.NON_NULL);
+        return mapper;
+    }
+
     public FeedBuilder buildFeed(String name) {
         return new FeedBuilderImpl(name);
     }

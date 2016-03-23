@@ -17,7 +17,6 @@ import java.util.Set;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
-import org.joda.time.DateTime;
 import org.joda.time.Period;
 import org.quartz.CronExpression;
 
@@ -414,8 +413,8 @@ public class Model {
                 
                 com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment slAssmt 
                     = new com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment(sla,
-//                                                                                               domain.getTime(), 
-                                                                                               null,
+                                                                                               domain.getTime(), 
+//                                                                                               null,
                                                                                                domain.getMessage(), 
                                                                                                Result.valueOf(domain.getResult().name()));
                 for (ObligationAssessment domainObAssmt : domain.getObligationAssessments()) {

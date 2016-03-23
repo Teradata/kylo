@@ -14,6 +14,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
 
 /**
  *
@@ -29,12 +31,14 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
     }
 )
 public class Datasource implements Serializable {
+    
+    @JsonSerialize(using=DateTimeSerializer.class)
+    private DateTime creationTime;
 
     private String id;
     private String name;
     private String description;
     private String ownder;
-    private DateTime creationTime;
     private boolean encrypted;
     private boolean compressed;
 

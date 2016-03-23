@@ -4,7 +4,6 @@
 package com.thinkbiganalytics.metadata.rest.model.data;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
