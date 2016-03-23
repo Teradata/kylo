@@ -68,6 +68,7 @@ import org.apache.avro.generic.GenericData;
 import org.apache.avro.generic.GenericDatumWriter;
 import org.apache.avro.generic.GenericRecord;
 import org.apache.avro.io.DatumWriter;
+import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
@@ -84,8 +85,7 @@ public class JdbcCommon {
     public static Logger logger = LoggerFactory.getLogger(JdbcCommon.class);
 
     public static long convertToCSVStream(final ResultSet rs, final OutputStream outStream, final RowVisitor visitor) throws SQLException, IOException {
-
-        if (rs == null || rs.getMetaData() == null) {
+         if (rs == null || rs.getMetaData() == null) {
             logger.warn("Received empty resultset or no metadata.");
             return 0;
         }
@@ -112,7 +112,7 @@ public class JdbcCommon {
             nrOfRows++;
             for (int i = 1; i <= nrOfColumns; i++) {
                 String val = null;
-                // TODO: Support escaping commas, XML, CLOB, JSON, ARRAYS, etc.
+                // TODO: Support escaping commas, XML, CLOB, JSON, ARRAYS, etc
 
                 int colType = meta.getColumnType(i);
                 if (colType == Types.DATE || colType == Types.TIMESTAMP) {
@@ -131,7 +131,7 @@ public class JdbcCommon {
                     val = rs.getString(i);
                     if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, val);
                 }
-                sb.append((val == null ? "" : val));
+                sb.append((val == null ? "" :  StringEscapeUtils.escapeCsv(val)));
                 if (i != nrOfColumns) {
                     sb.append(",");
                 } else {
@@ -317,5 +317,6 @@ public class JdbcCommon {
         OutputStream os = new ByteArrayOutputStream();
         JdbcCommon.convertToCSVStream(rs, os, null);
         System.out.println(os.toString());
+
     }
 }
