@@ -7,10 +7,10 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -22,8 +22,9 @@ import org.joda.time.DateTime;
 import org.springframework.util.StringUtils;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
@@ -74,7 +75,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     @Inject
     private ChangeEventDispatcher dispatcher;
     
-    private Map<DataOperation.ID, BaseDataOperation> operations = new ConcurrentHashMap<>();
+    private Map<DataOperation.ID, DataOperation> operations = new ConcurrentHashMap<>();
     private Map<Dataset.ID, List<ChangeSet<? extends Dataset, ? extends ChangedContent>>> changeSets = new ConcurrentHashMap<>();
     
     public InMemoryDataOperationsProvider() {
@@ -143,7 +144,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#updateOperation(com.thinkbiganalytics.metadata.api.op.DataOperation.ID, java.lang.String, com.thinkbiganalytics.metadata.api.op.DataOperation.State)
      */
     public DataOperation updateOperation(DataOperation.ID id, String status, State state) {
-        BaseDataOperation op = this.operations.get(id);
+        BaseDataOperation op = (BaseDataOperation) this.operations.get(id);
         
         if (op == null) {
             throw new DataOperationException("No operation with the given ID exists: " + id);
@@ -177,7 +178,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
      */
     @SuppressWarnings("unchecked")
     public <D extends Dataset, C extends ChangedContent> DataOperation updateOperation(DataOperation.ID id, String status, ChangeSet<D, C> changes) {
-        BaseDataOperation op = this.operations.get(id);
+        BaseDataOperation op = (BaseDataOperation) this.operations.get(id);
         
         if (op == null) {
             throw new DataOperationException("No operation with the given ID exists: " + id);
@@ -234,9 +235,12 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
      */
     public List<DataOperation> getDataOperations(DataOperationCriteria criteria) {
         OpCriteria critImpl = (OpCriteria) criteria;
-        ArrayList<BaseDataOperation> list = new ArrayList<>(Collections2.filter(this.operations.values(), critImpl));
+        Iterator<DataOperation> filtered = Iterators.filter(this.operations.values().iterator(), critImpl);
+        Iterator<DataOperation> limited = Iterators.limit(filtered, critImpl.getLimit());
+        ArrayList<DataOperation> list = Lists.newArrayList(limited);
+        
         Collections.sort(list, critImpl);
-        return Collections.<DataOperation>unmodifiableList(list);
+        return list;
     }
 
     /* (non-Javadoc)
@@ -260,16 +264,14 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     @SuppressWarnings("unchecked")
     public List<ChangeSet<? extends Dataset, ? extends ChangedContent>> getChangeSets(Dataset.ID dsId, ChangeSetCriteria criteria) {
         ChangeCriteria critImpl = (ChangeCriteria) criteria;
-        Collection<ChangeSet<? extends Dataset, ? extends ChangedContent>> result 
-            = Collections2.filter(this.changeSets.get(dsId), critImpl);
-        ArrayList<ChangeSet<? extends Dataset, ? extends ChangedContent>> list = new ArrayList<>(result);
+        Iterator<ChangeSet<? extends Dataset, ? extends ChangedContent>> filtered 
+            = Iterators.filter(this.changeSets.get(dsId).iterator(), critImpl);
+        Iterator<ChangeSet<? extends Dataset, ? extends ChangedContent>> limited 
+            = Iterators.limit(filtered, critImpl.getLimit());
+        ArrayList<ChangeSet<? extends Dataset, ? extends ChangedContent>> list = Lists.newArrayList(limited);
+
         Collections.sort(list, critImpl);
-        
-        if (critImpl.getLimit() >= 0) {
-            return list.subList(0, Math.min(critImpl.getLimit(), list.size()));
-        } else {
-            return list;
-        }
+        return list;
     }
 
     /* (non-Javadoc)
@@ -296,7 +298,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
 
     
     private static class OpCriteria extends AbstractMetadataCriteria<DataOperationCriteria> 
-        implements DataOperationCriteria, Predicate<BaseDataOperation>, Comparator<BaseDataOperation> {
+        implements DataOperationCriteria, Predicate<DataOperation>, Comparator<DataOperation> {
 
         private Feed.ID feedId;
         private Dataset.ID datasetId;
@@ -304,7 +306,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         private Set<Class<? extends Dataset>> types = new HashSet<>();
         
         @Override
-        public boolean apply(BaseDataOperation input) {
+        public boolean apply(DataOperation input) {
             if (this.feedId != null && ! this.feedId.equals(input.getProducer().getFeed().getId())) return false;
             if (this.datasetId != null && ! this.datasetId.equals(input.getChangeSet().getDataset().getId())) return false;
             if (this.states.size() > 0 && ! this.states.contains(input.getState())) return false;
@@ -320,7 +322,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         }
         
         @Override
-        public int compare(BaseDataOperation o1, BaseDataOperation o2) {
+        public int compare(DataOperation o1, DataOperation o2) {
             return ComparisonChain.start()
                     .compare(o2.getStopTime(), o1.getStopTime(), Ordering.natural().nullsFirst())
                     .compare(o2.getStartTime(), o1.getStartTime(), Ordering.natural().nullsLast())
@@ -358,7 +360,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     
     private static class ChangeCriteria extends AbstractMetadataCriteria<ChangeSetCriteria> 
         implements ChangeSetCriteria, Predicate<ChangeSet<? extends Dataset, ? extends ChangedContent>>,
-                   Comparator<ChangeSet<? extends Dataset,? extends ChangedContent>> {
+                   Comparator<ChangeSet<? extends Dataset, ? extends ChangedContent>> {
 
         private Set<ChangeType> types = new HashSet<>();
         private DateTime changedOn;

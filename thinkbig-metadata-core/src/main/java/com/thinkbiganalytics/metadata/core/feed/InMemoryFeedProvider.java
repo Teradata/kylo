@@ -4,9 +4,10 @@
 package com.thinkbiganalytics.metadata.core.feed;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -15,7 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Inject;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterators;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset.ID;
 import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
@@ -30,8 +32,8 @@ import com.thinkbiganalytics.metadata.core.feed.BaseFeed.FeedId;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.FeedPreconditionImpl;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.SourceId;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
@@ -57,7 +59,8 @@ public class InMemoryFeedProvider implements FeedProvider {
     private FeedPreconditionService preconditionService;
 
     
-    private Map<Feed.ID, BaseFeed> feeds = new ConcurrentHashMap<>();
+//    private Map<Feed.ID, BaseFeed> feeds = new ConcurrentHashMap<>();
+    private Map<Feed.ID, Feed> feeds = new ConcurrentHashMap<>();
     private Map<FeedSource.ID, BaseFeed> sources = new ConcurrentHashMap<>();
     private Map<FeedDestination.ID, BaseFeed> destinations = new ConcurrentHashMap<>();
     
@@ -116,7 +119,7 @@ public class InMemoryFeedProvider implements FeedProvider {
 
     @Override
     public FeedSource ensureFeedSource(Feed.ID feedId, Dataset.ID dsId, ServiceLevelAgreement.ID slaId) {
-        BaseFeed feed = this.feeds.get(feedId);
+        BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
         Dataset ds = this.datasetProvider.getDataset(dsId);
         
         if (feed == null) {
@@ -132,7 +135,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     
     @Override
     public FeedDestination ensureFeedDestination(Feed.ID feedId, Dataset.ID dsId) {
-        BaseFeed feed = this.feeds.get(feedId);
+        BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
         Dataset ds = this.datasetProvider.getDataset(dsId);
         
         if (feed == null) {
@@ -184,7 +187,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     @Override
     public Feed ensureFeed(String name, String descr) {
         synchronized (this.feeds) {
-            for (BaseFeed feed : this.feeds.values()) {
+            for (Feed feed : this.feeds.values()) {
                 if (feed.getName().equals(name)) {
                     return feed;
                 }
@@ -198,7 +201,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     
     @Override
     public Feed ensurePrecondition(Feed.ID feedId, String name, String descr, List<List<Metric>> metrics) {
-        BaseFeed feed = this.feeds.get(feedId);
+        BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
         
         if (feed != null) {
             // Remove the old one if any
@@ -258,15 +261,12 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Collection<Feed> getFeeds(FeedCriteria criteria) {
+    public List<Feed> getFeeds(FeedCriteria criteria) {
         Criteria critImpl = (Criteria) criteria;
-        ArrayList<Feed> list = new ArrayList<Feed>(Collections2.filter(this.feeds.values(), critImpl));
+        Iterator<Feed> filtered = Iterators.filter(this.feeds.values().iterator(), critImpl);
+        Iterator<Feed> limited = Iterators.limit(filtered, critImpl.getLimit());
         
-        if (critImpl.getLimit() >= 0) {
-            return list.subList(0, Math.min(critImpl.getLimit(), list.size()));
-        } else {
-            return list;
-        }
+        return ImmutableList.copyOf(limited);
     }
     
     @Override
@@ -321,28 +321,28 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
 
-    private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<BaseFeed> {
+    private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {
         
         private String name;
-        private Dataset.ID sourceId;
-        private Dataset.ID destId;
+        private Set<Dataset.ID> sourceIds = new HashSet<>();
+        private Set<Dataset.ID> destIds = new HashSet<>();
         
         @Override
-        public boolean apply(BaseFeed input) {
+        public boolean apply(Feed input) {
             if (this.name != null && ! name.equals(input.getName())) return false;
             
-            if (this.destId != null) {
+            if (! this.destIds.isEmpty()) {
                 for (FeedDestination dest : input.getDestinations()) {
-                    if (this.destId.equals(dest.getDataset().getId())) {
+                    if (this.destIds.contains(dest.getDataset().getId())) {
                         return true;
                     }
                 }
                 return false;
             }
             
-            if (this.sourceId != null) {
+            if (! this.sourceIds.isEmpty()) {
                 for (FeedSource src : input.getSources()) {
-                    if (this.sourceId.equals(src.getDataset().getId())) {
+                    if (this.sourceIds.contains(src.getDataset().getId())) {
                         return true;
                     }
                 }
@@ -353,14 +353,20 @@ public class InMemoryFeedProvider implements FeedProvider {
         }
 
         @Override
-        public FeedCriteria sourceDataset(ID id) {
-            this.sourceId = id;
+        public FeedCriteria sourceDataset(ID id, ID... others) {
+            this.sourceIds.add(id);
+            for (ID other : others) {
+                this.sourceIds.add(other);
+            }
             return this;
         }
 
         @Override
-        public FeedCriteria destinationDataset(ID id) {
-            this.destId = id;
+        public FeedCriteria destinationDataset(ID id, ID... others) {
+            this.destIds.add(id);
+            for (ID other : others) {
+                this.destIds.add(other);
+            }
             return this;
         }
 

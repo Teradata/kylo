@@ -6,6 +6,7 @@ package com.thinkbiganalytics.metadata.rest.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -34,6 +35,7 @@ import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependency;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
@@ -86,6 +88,23 @@ public class FeedsResource {
     }
     
     @GET
+    @Path("{id}/depfeeds")
+    @Produces(MediaType.APPLICATION_JSON)
+    public FeedDependency getFeedDependency(@PathParam("id") String feedId,
+                                            @QueryParam("preconds") @DefaultValue("true") boolean assessPrecond) {
+        LOG.debug("Get feed dependencies {}", feedId);
+        
+        com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = this.feedProvider.asFeedId(feedId);
+        com.thinkbiganalytics.metadata.api.feed.Feed startDomain = this.feedProvider.getFeed(domainId);
+        
+        if (startDomain != null) {
+            return collectFeedDependencies(startDomain, assessPrecond);
+        } else {
+            throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+        }
+    }
+
+    @GET
     @Path("{id}/source")
     @Produces(MediaType.APPLICATION_JSON)
     public List<FeedSource> getFeedSources(@PathParam("id") String feedId) {
@@ -94,7 +113,11 @@ public class FeedsResource {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = this.feedProvider.asFeedId(feedId);
         com.thinkbiganalytics.metadata.api.feed.Feed domain = this.feedProvider.getFeed(domainId);
         
-        return new ArrayList<>(Collections2.transform(domain.getSources(), Model.DOMAIN_TO_FEED_SOURCE));
+        if (domain != null) {
+            return new ArrayList<>(Collections2.transform(domain.getSources(), Model.DOMAIN_TO_FEED_SOURCE));
+        } else {
+            throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+        }
     }
     
     @GET
@@ -129,7 +152,11 @@ public class FeedsResource {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = this.feedProvider.asFeedId(feedId);
         com.thinkbiganalytics.metadata.api.feed.Feed domain = this.feedProvider.getFeed(domainId);
         
-        return new ArrayList<>(Collections2.transform(domain.getDestinations(), Model.DOMAIN_TO_FEED_DESTINATION));
+        if (domain != null) {
+            return new ArrayList<>(Collections2.transform(domain.getDestinations(), Model.DOMAIN_TO_FEED_DESTINATION));
+        } else {
+            throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+        }
     }
     
     @GET
@@ -184,9 +211,7 @@ public class FeedsResource {
             com.thinkbiganalytics.metadata.api.feed.FeedPrecondition precond = domain.getPrecondition();
             
             if (precond != null) {
-                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment assmt 
-                    = this.preconditionService.assess(precond);
-                return Model.DOMAIN_TO_SLA_ASSMT.apply(assmt);
+                return generateModelAssessment(precond);
             } else {
                 throw new WebApplicationException("The feed with the given ID does not have a precondition: " + feedId, Status.BAD_REQUEST);
             }
@@ -194,7 +219,7 @@ public class FeedsResource {
             throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
         }
     }
-    
+
     @POST
     @Produces(MediaType.APPLICATION_JSON)
     public Feed createFeed(Feed feed, @QueryParam("ensure") @DefaultValue("true") boolean ensure) {
@@ -229,7 +254,6 @@ public class FeedsResource {
         
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = this.feedProvider.resolveFeed(feedId);
         Dataset.ID domainDsId = this.datasetProvider.resolve(datasourceId);
-        
         com.thinkbiganalytics.metadata.api.feed.FeedSource domainDest 
             = this.feedProvider.ensureFeedSource(domainFeedId, domainDsId);
         
@@ -270,6 +294,11 @@ public class FeedsResource {
         com.thinkbiganalytics.metadata.api.feed.Feed domainFeed 
             = this.feedProvider.updatePrecondition(domainFeedId, domainMetrics);
         return Model.DOMAIN_TO_FEED.apply(domainFeed);
+    }
+
+    private ServiceLevelAssessment generateModelAssessment(com.thinkbiganalytics.metadata.api.feed.FeedPrecondition precond) {
+        com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment assmt = this.preconditionService.assess(precond);
+        return Model.DOMAIN_TO_SLA_ASSMT.apply(assmt);
     }
 
     private void ensurePrecondition(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
@@ -315,6 +344,31 @@ public class FeedsResource {
         }
         
         return criteria;
+    }
+
+    private FeedDependency collectFeedDependencies(com.thinkbiganalytics.metadata.api.feed.Feed currentFeed, boolean assessPrecond) {
+        Set<com.thinkbiganalytics.metadata.api.feed.FeedSource> domainSrcs = currentFeed.getSources();
+        com.thinkbiganalytics.metadata.api.feed.FeedCriteria domainCrit = this.feedProvider.feedCriteria();
+        FeedDependency feedDep = new FeedDependency(Model.DOMAIN_TO_FEED.apply(currentFeed), null, null);
+    
+        if (! domainSrcs.isEmpty()) {
+            for (com.thinkbiganalytics.metadata.api.feed.FeedSource src : domainSrcs) {
+                domainCrit.destinationDataset(src.getDataset().getId());
+            }
+            
+            Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainChildFeeds = this.feedProvider.getFeeds(domainCrit);
+            
+            for (com.thinkbiganalytics.metadata.api.feed.Feed childFeed : domainChildFeeds) {
+                FeedDependency childDep = collectFeedDependencies(childFeed, assessPrecond);
+                feedDep.addDependecy(childDep);
+            }
+        }
+        
+        if (assessPrecond && currentFeed.getPrecondition() != null) {
+            feedDep.setPreconditonResult(generateModelAssessment(currentFeed.getPrecondition()));
+        }
+        
+        return feedDep;
     }
 
 }

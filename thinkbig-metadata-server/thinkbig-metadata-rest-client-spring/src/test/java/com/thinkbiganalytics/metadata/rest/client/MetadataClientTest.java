@@ -96,7 +96,7 @@ public class MetadataClientTest {
         
         assertThat(list)
             .isNotNull()
-            .hasSize(3);
+            .isNotEmpty();
     }
     
 //    @Test
@@ -126,7 +126,7 @@ public class MetadataClientTest {
         
         HiveTablePartitions changeSet = new HiveTablePartitions();
         changeSet.setPartitions(Arrays.asList(new HiveTablePartition("month", null, "Jan", "Feb"),
-                                           new HiveTablePartition("year", null, "2015", "2016")));
+                                              new HiveTablePartition("year", null, "2015", "2016")));
         Dataset dataset = new Dataset(new DateTime(), dsA, ChangeType.UPDATE, ContentType.PARTITIONS, changeSet);
         op.setDataset(dataset);
 

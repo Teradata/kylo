@@ -429,6 +429,8 @@ public class Model {
                                                                                                  domainMetAssmt.getMessage());
                         obAssmt.addMetricAssessment(metricAssmnt);
                     }
+                    
+                    slAssmt.addObligationAssessment(obAssmt);
                 }
                 
                 return slAssmt;

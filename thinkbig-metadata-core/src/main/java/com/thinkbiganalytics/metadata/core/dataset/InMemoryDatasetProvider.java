@@ -5,10 +5,10 @@ package com.thinkbiganalytics.metadata.core.dataset;
 
 import java.io.Serializable;
 import java.nio.file.Path;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +17,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.joda.time.DateTime;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.Collections2;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset;
 import com.thinkbiganalytics.metadata.api.dataset.Dataset.ID;
 import com.thinkbiganalytics.metadata.api.dataset.DatasetCriteria;
@@ -34,7 +35,7 @@ import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableDataset;
  */
 public class InMemoryDatasetProvider implements DatasetProvider {
     
-    private Map<Dataset.ID, BaseDataset> datasets = new ConcurrentHashMap<>();
+    private Map<Dataset.ID, Dataset> datasets = new ConcurrentHashMap<>();
 
     public DatasetCriteria datasetCriteria() {
         return new DatasetCriteriaImpl();
@@ -104,7 +105,7 @@ public class InMemoryDatasetProvider implements DatasetProvider {
     @Override
     public DirectoryDataset asDirectoryDataset(ID dsId, Path dir) {
         synchronized (this.datasets) {
-            BaseDataset ds = this.datasets.get(dsId);
+            BaseDataset ds = (BaseDataset) this.datasets.get(dsId);
             
             if (ds != null) {
                 BaseDirectoryDataset dds = new BaseDirectoryDataset(ds, dir);
@@ -119,7 +120,7 @@ public class InMemoryDatasetProvider implements DatasetProvider {
     @Override
     public HiveTableDataset asHiveTableDataset(ID dsId, String database, String table) {
         synchronized (this.datasets) {
-            BaseDataset ds = this.datasets.get(dsId);
+            BaseDataset ds = (BaseDataset) this.datasets.get(dsId);
             
             if (ds != null) {
                 BaseHiveTableDataset hds = new BaseHiveTableDataset(ds, database, table);
@@ -145,23 +146,20 @@ public class InMemoryDatasetProvider implements DatasetProvider {
     public List<Dataset> getDatasets(DatasetCriteria criteria) {
         // TODO replace cast with copy method
         DatasetCriteriaImpl critImpl = (DatasetCriteriaImpl) criteria;
-        List<Dataset> list = new ArrayList<Dataset>(Collections2.filter(this.datasets.values(), critImpl));
+        Iterator<Dataset> filtered = Iterators.filter(this.datasets.values().iterator(), critImpl);
+        Iterator<Dataset> limited = Iterators.limit(filtered, critImpl.getLimit());
+        List<Dataset> list = Lists.newArrayList(limited);
         
         Collections.sort(list, critImpl);
-        
-        if (critImpl.getLimit() >= 0) {
-            return list.subList(0, Math.min(critImpl.getLimit(), list.size()));
-        } else {
-            return list;
-        }
+        return list;
     }
 
     
     private BaseDataset getExistingDataset(String name) {
         synchronized (this.datasets) {
-            for (BaseDataset ds : this.datasets.values()) {
+            for (Dataset ds : this.datasets.values()) {
                 if (ds.getName().equals(name)) {
-                    return ds;
+                    return (BaseDataset) ds;
                 }
             }
             return null;
@@ -170,7 +168,7 @@ public class InMemoryDatasetProvider implements DatasetProvider {
 
 
     private static class DatasetCriteriaImpl extends AbstractMetadataCriteria<DatasetCriteria> 
-        implements DatasetCriteria, Predicate<BaseDataset>, Comparator<Dataset> {
+        implements DatasetCriteria, Predicate<Dataset>, Comparator<Dataset> {
         
         private String name;
         private DateTime createdOn;
@@ -179,7 +177,7 @@ public class InMemoryDatasetProvider implements DatasetProvider {
         private Class<? extends Dataset> type;
 
         @Override
-        public boolean apply(BaseDataset input) {
+        public boolean apply(Dataset input) {
             if (this.type != null && ! this.type.isAssignableFrom(input.getClass())) return false;
             if (this.name != null && ! name.equals(input.getName())) return false;
             if (this.createdOn != null && ! this.createdOn.equals(input.getCreationTime())) return false;
