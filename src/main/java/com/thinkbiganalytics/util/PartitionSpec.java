@@ -97,7 +97,7 @@ public class PartitionSpec {
         for (int i = 0; i < keys.size(); i++) {
             parts[i] = keys.get(i).getFormula();
         }
-        return "select " + StringUtils.join(parts, ",") + " , count(0) as tb_cnt from " + sourceTable + " group by " + StringUtils.join(parts, ",") + " where processing_dttm = '" + feedPartitionValue + "'";
+        return "select " + StringUtils.join(parts, ",") + " , count(0) as tb_cnt from " + sourceTable + " where processing_dttm = '" + feedPartitionValue + "' group by " + StringUtils.join(parts, ",");
     }
 
 
