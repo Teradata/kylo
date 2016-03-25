@@ -201,7 +201,7 @@ public class FeedsResource {
     @GET
     @Path("{id}/precondition/assessment")
     @Produces(MediaType.APPLICATION_JSON)
-    public ServiceLevelAssessment getPreconditionAssessment(@PathParam("id") String feedId) {
+    public ServiceLevelAssessment assessPrecondition(@PathParam("id") String feedId) {
         LOG.debug("Assess feed {} precondition", feedId);
         
         com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = this.feedProvider.asFeedId(feedId);
@@ -218,6 +218,13 @@ public class FeedsResource {
         } else {
             throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
         }
+    }
+    
+    @GET
+    @Path("{id}/precondition/assessment/result")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String assessPreconditionResult(@PathParam("id") String feedId) {
+        return assessPrecondition(feedId).getResult().toString();
     }
 
     @POST

@@ -25,11 +25,8 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
@@ -41,6 +38,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.HiveTableField;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependency;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
@@ -129,6 +127,10 @@ public class MetadataClient {
 
     public Feed getFeed(String id) {
         return get(Paths.get("feed", id), Feed.class);
+    }
+    
+    public FeedDependency getFeedDependency(String id) {
+        return get(Paths.get("feed", id, "depfeeds"), FeedDependency.class);
     }
 
     public DirectoryDatasourceBuilder buildDirectoryDatasource(String name) {
