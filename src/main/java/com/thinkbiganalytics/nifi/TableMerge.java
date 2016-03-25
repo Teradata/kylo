@@ -7,6 +7,8 @@ package com.thinkbiganalytics.nifi;
 
 import com.thinkbiganalytics.components.TableMergeSupport;
 import com.thinkbiganalytics.controller.ThriftService;
+import com.thinkbiganalytics.util.ComponentAttributes;
+import com.thinkbiganalytics.util.PartitionBatch;
 import com.thinkbiganalytics.util.PartitionSpec;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -24,7 +26,6 @@ import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.StopWatch;
 
 import java.sql.Connection;
-import java.sql.SQLException;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
@@ -132,7 +133,17 @@ public class TableMerge extends AbstractProcessor {
 
             TableMergeSupport mergeSupport = new TableMergeSupport(conn);
             PartitionSpec partitionSpec = new PartitionSpec(partitionSpecString);
-            mergeSupport.doDedupe(sourceTable, targetTable, partitionSpec, feedPartitionValue);
+            List<PartitionBatch> batches = mergeSupport.doDedupe(sourceTable, targetTable, partitionSpec, feedPartitionValue);
+
+            // Record detail of each batch
+            if (batches != null) {
+                outgoing = session.putAttribute(outgoing, ComponentAttributes.NUM_MERGED_PARTITIONS.key(), String.valueOf(batches.size()));
+                int i = 1;
+                for (PartitionBatch batch : batches) {
+                    outgoing = session.putAttribute(outgoing, ComponentAttributes.MERGED_PARTITION.key() + "." + i, batch.getBatchDescription());
+                    outgoing = session.putAttribute(outgoing, ComponentAttributes.MERGED_PARTITION_ROWCOUNT.key() + "." + i, String.valueOf(batch.getRecordCount()));
+                }
+            }
 
             stopWatch.stop();
             session.getProvenanceReporter().modifyContent(outgoing, "Execution completed", stopWatch.getElapsed(TimeUnit.MILLISECONDS));

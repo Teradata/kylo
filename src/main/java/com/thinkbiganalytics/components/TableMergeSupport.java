@@ -5,6 +5,7 @@
 package com.thinkbiganalytics.components;
 
 
+import com.thinkbiganalytics.util.PartitionBatch;
 import com.thinkbiganalytics.util.PartitionSpec;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -44,7 +45,7 @@ public class TableMergeSupport implements Serializable {
      * @param targetTable   the target table
      * @param partitionSpec the partition specification
      */
-    public void doDedupe(String sourceTable, String targetTable, PartitionSpec partitionSpec, String feedPartionValue) {
+    public List<PartitionBatch> doDedupe(String sourceTable, String targetTable, PartitionSpec partitionSpec, String feedPartionValue) {
 
         Validate.notEmpty(sourceTable);
         Validate.notEmpty(targetTable);
@@ -57,17 +58,19 @@ public class TableMergeSupport implements Serializable {
             dedupe(sql);
         } else {
 
-            List<String[]> batches = createPartitionBatches(partitionSpec, sourceTable, feedPartionValue);
+            List<PartitionBatch> batches = createPartitionBatches(partitionSpec, sourceTable, feedPartionValue);
             if (batches.size() > 0) {
                 logger.info("{} batches will be executed", batches.size());
-                for (String[] partitionValues : batches) {
-                    String sql = generateDedupePartitionQuery(selectFields, partitionSpec, partitionValues, sourceTable, targetTable, feedPartionValue);
+                for (PartitionBatch batch : batches) {
+                    String sql = generateDedupePartitionQuery(selectFields, partitionSpec, batch.getPartionValues(), sourceTable, targetTable, feedPartionValue);
                     dedupe(sql);
                 }
+                return batches;
             } else {
                 logger.warn("No valid data found.");
             }
-        }
+       }
+       return null;
     }
 
     /**
@@ -223,8 +226,8 @@ public class TableMergeSupport implements Serializable {
     /*
     Generates batches of partitions in the source table
      */
-    protected List<String[]> createPartitionBatches(PartitionSpec spec, String sourceTable, String feedPartition) {
-        Vector<String[]> v = new Vector<>();
+    protected List<PartitionBatch> createPartitionBatches(PartitionSpec spec, String sourceTable, String feedPartition) {
+        Vector<PartitionBatch> v = new Vector<>();
         String sql = "";
         try (final Statement st = conn.createStatement()) {
             sql = spec.toDistinctSelectSQL(sourceTable, feedPartition);
@@ -237,8 +240,10 @@ public class TableMergeSupport implements Serializable {
                     Object oVal = rs.getObject(i);
                     values[i - 1] = StringUtils.defaultString(oVal.toString(), "");
                 }
-                v.add(values);
+                Long numRecords = rs.getLong(count);
+                v.add(new PartitionBatch(numRecords, spec, values));
             }
+            logger.info("Number of partitions [" + v.size()+"]");
         } catch (SQLException e) {
             logger.error("Failed to select partition batches SQL {} with error {}", sql, e);
             throw new RuntimeException("Failed to select partition batches", e);

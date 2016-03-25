@@ -5,6 +5,7 @@
 package com.thinkbiganalytics.nifi;
 
 
+import com.thinkbiganalytics.util.ComponentAttributes;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -311,6 +312,7 @@ public class IngestHDFS extends AbstractHadoopProcessor {
 
             final String outputPath = copyFile.toString();
             final String transitUri = (outputPath.startsWith("/")) ? "hdfs:/" + outputPath : "hdfs://" + outputPath;
+            flowFile = session.putAttribute(flowFile, ComponentAttributes.HDFS_FILE.key(), transitUri);
             session.getProvenanceReporter().send(flowFile, transitUri);
             session.transfer(flowFile, REL_SUCCESS);
 

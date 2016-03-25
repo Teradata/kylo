@@ -10,6 +10,7 @@ import com.thinkbiganalytics.metadata.BatchLoadStatus;
 import com.thinkbiganalytics.metadata.BatchLoadStatusImpl;
 import com.thinkbiganalytics.metadata.MetadataClient;
 import com.thinkbiganalytics.util.AbstractRowVisitor;
+import com.thinkbiganalytics.util.ComponentAttributes;
 import com.thinkbiganalytics.util.JdbcCommon;
 import org.apache.commons.lang.Validate;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -30,6 +31,7 @@ import org.apache.nifi.processor.io.OutputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.LongHolder;
 import org.apache.nifi.util.StopWatch;
+import org.joda.time.format.ISODateTimeFormat;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -140,10 +142,10 @@ public class GetTableData extends AbstractProcessor {
 
     public static final PropertyDescriptor OVERLAP_TIME = new PropertyDescriptor.Builder()
             .name("Overlap Period")
-            .description("Amount of time to overlap into the last load date to ensure long running transactions missed by previous load weren't missed. Recommended: >60s")
+            .description("Amount of time to overlap into the last load date to ensure long running transactions missed by previous load weren't missed. Recommended: >0s")
             .required(false)
             .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
-            .defaultValue("300 seconds")
+            .defaultValue("0 seconds")
             .expressionLanguageSupported(true)
             .build();
 
@@ -156,6 +158,21 @@ public class GetTableData extends AbstractProcessor {
             .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
             .sensitive(false)
             .build();
+
+    public static final PropertyDescriptor BACKOFF_PERIOD = new PropertyDescriptor.Builder()
+            .name("Backoff Period")
+            .description("Only records older than the backoff period will be eligible for pickup. This can be used in the ILM use case to define a retention period. Recommended: >5m")
+            .defaultValue("300 seconds")
+            .required(true)
+            .addValidator(StandardValidators.TIME_PERIOD_VALIDATOR)
+            .sensitive(false)
+            .build();
+
+    public static final PropertyDescriptor UNIT_SIZE = new PropertyDescriptor.Builder()
+            .name("Minimum Time Unit")
+            .description("The minimum unit of data eligible to load. For the ILM case, this would be DAY, WEEK, MONTH, YEAR"
+                    + " , zero means there is no limit. Max time less than 1 second will be equal to zero.")
+            .allowableValues(GetTableDataSupport.UnitSizes.values()).required(true).defaultValue(GetTableDataSupport.UnitSizes.NONE.toString()).build();
 
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -176,10 +193,13 @@ public class GetTableData extends AbstractProcessor {
         pds.add(DATE_FIELD);
         pds.add(OVERLAP_TIME);
         pds.add(QUERY_TIMEOUT);
+        pds.add(BACKOFF_PERIOD);
+        pds.add(UNIT_SIZE);
         this.propDescriptors = Collections.unmodifiableList(pds);
     }
 
     private String[] parseFields(String selectFields) {
+
         Validate.notEmpty(selectFields);
         Vector<String> fields = new Vector<>();
         String[] values = selectFields.split("\n");
@@ -225,14 +245,18 @@ public class GetTableData extends AbstractProcessor {
         final String dateField = context.getProperty(DATE_FIELD).evaluateAttributeExpressions(incoming).getValue();
         final Integer queryTimeout = context.getProperty(QUERY_TIMEOUT).asTimePeriod(TimeUnit.SECONDS).intValue();
         final Integer overlapTime = context.getProperty(OVERLAP_TIME).asTimePeriod(TimeUnit.SECONDS).intValue();
+        final Integer backoffTime = context.getProperty(BACKOFF_PERIOD).asTimePeriod(TimeUnit.SECONDS).intValue();
+        final String unitSize = context.getProperty(UNIT_SIZE).evaluateAttributeExpressions(incoming).getValue();
+
         final String[] selectFields = parseFields(fieldSpecs);
         final MetadataClient client = metadataService.getClient();
 
         final LoadStrategy strategy = LoadStrategy.valueOf(loadStrategy);
         final StopWatch stopWatch = new StopWatch(true);
+        final Map<String,Object> metadata = new HashMap();
 
         try (final Connection conn = dbcpService.getConnection()) {
-            final Date lastLoad = new Date();
+
             final LongHolder nrOfRows = new LongHolder(0L);
             FlowFile outgoing = (incoming == null ? session.create() : incoming);
 
@@ -247,14 +271,19 @@ public class GetTableData extends AbstractProcessor {
                         if (strategy == LoadStrategy.FULL_LOAD) {
                             rs = support.selectFullLoad(tableName, selectFields);
                         } else if (strategy == LoadStrategy.INCREMENTAL) {
+
                             BatchLoadStatus status = client.getLastLoad(categoryName, feedName);
                             lastLoadDate = (status != null ? status.getLastLoadDate() : null);
                             visitor = new LastFieldVisitor(dateField, lastLoadDate);
-                            rs = support.selectIncremental(tableName, selectFields, dateField, overlapTime, lastLoadDate);
+                            rs = support.selectIncremental(tableName, selectFields, dateField, overlapTime, lastLoadDate, backoffTime, GetTableDataSupport.UnitSizes.valueOf(unitSize));
                         } else {
                             throw new RuntimeException("Unsupported loadStrategy [" + loadStrategy + "]");
                         }
                         nrOfRows.set(JdbcCommon.convertToCSVStream(rs, out, visitor));
+                        if (strategy == LoadStrategy.INCREMENTAL) {
+                            metadata.put(ComponentAttributes.PREVIOUS_HIGHWATER_DATE.key(), lastLoadDate);
+                            metadata.put(ComponentAttributes.NEW_HIGHWATER_DATE.key(), visitor.getLastModifyDate());
+                        }
 
                     } catch (final SQLException e) {
                         throw new IOException("SQL execution failure", e);
@@ -277,16 +306,26 @@ public class GetTableData extends AbstractProcessor {
             session.getProvenanceReporter().modifyContent(outgoing, "Retrieved " + nrOfRows.get() + " rows", stopWatch.getElapsed(TimeUnit.MILLISECONDS));
 
             // Terminate flow file if no work
+            Long rowcount = nrOfRows.get();
+            outgoing = session.putAttribute(outgoing, ComponentAttributes.NUM_SOURCE_RECORDS.key(), String.valueOf(rowcount));
+
             if (nrOfRows.get() == 0L) {
                 logger.info("{} contains no data; transferring to 'nodata'", new Object[]{outgoing});
                 session.transfer(outgoing, REL_NODATA);
             } else {
+
                 logger.info("{} contains {} records; transferring to 'success'", new Object[]{outgoing, nrOfRows.get()});
+
                 if (strategy == LoadStrategy.INCREMENTAL) {
+                    Date previousHighwater = (Date)metadata.get(ComponentAttributes.PREVIOUS_HIGHWATER_DATE.key());
+                    Date newHighwater = (Date)metadata.get(ComponentAttributes.NEW_HIGHWATER_DATE.key());
+                    outgoing = session.putAttribute(outgoing, ComponentAttributes.PREVIOUS_HIGHWATER_DATE.key(), prettyDate(previousHighwater));
+                    outgoing = session.putAttribute(outgoing, ComponentAttributes.NEW_HIGHWATER_DATE.key(),prettyDate(newHighwater));
                     BatchLoadStatusImpl newStatus = new BatchLoadStatusImpl();
-                    newStatus.setLastLoadDate(lastLoad);
+                    newStatus.setLastLoadDate(newHighwater);
                     client.recordLastSuccessfulLoad(categoryName, feedName, newStatus);
-                    logger.info("Recorded load status feed {} date {}", new Object[]{feedName, lastLoad});
+
+                    logger.info("Recorded load status feed {} date {}", new Object[]{feedName, newHighwater});
                 }
                 session.transfer(outgoing, REL_SUCCESS);
             }
@@ -298,6 +337,10 @@ public class GetTableData extends AbstractProcessor {
                 session.transfer(incoming, REL_FAILURE);
             }
         }
+    }
+
+    private static String prettyDate(Date date) {
+        return (date == null ? "" : ISODateTimeFormat.dateTime().print(date.getTime()));
     }
 
     /**

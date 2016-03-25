@@ -6,6 +6,7 @@ package com.thinkbiganalytics.components;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +23,33 @@ public class GetTableDataSupport {
     private Connection conn;
 
     private int timeout;
+
+    public enum UnitSizes {
+        NONE,
+        HOUR,
+        DAY,
+        WEEK,
+        MONTH,
+        YEAR;
+    }
+
+    protected static Date maxAllowableDateFromUnit(Date fromDate, UnitSizes unit) {
+        DateTime jodaDate = new DateTime(fromDate);
+        switch (unit) {
+            case HOUR:
+                return jodaDate.hourOfDay().roundFloorCopy().toDate();
+            case DAY:
+                return jodaDate.withHourOfDay(0).hourOfDay().roundFloorCopy().toDate();
+            case WEEK:
+                return jodaDate.weekOfWeekyear().roundFloorCopy().toDate();
+            case MONTH:
+                return jodaDate.monthOfYear().roundFloorCopy().toDate();
+            case YEAR:
+                return jodaDate.withMonthOfYear(1).withDayOfMonth(1).withHourOfDay(0).hourOfDay().roundFloorCopy().toDate();
+        }
+        return fromDate;
+    }
+
 
     public GetTableDataSupport(Connection conn, int timeout) {
         Validate.notNull(conn);
@@ -54,39 +82,67 @@ public class GetTableDataSupport {
      * the last load date. This will cause duplicate records but also pickup records that were missed on the last scan
      * due to long-running transactions.
      *
-     * @param tableName   the table
-     * @param dateField   the name of the field containing last modified date used to perform the incremental load
-     * @param overlapTime the number of seconds to overlap with the last load status
-     * @param lastLoadDate  the last batch load date
+     * @param tableName    the table
+     * @param dateField    the name of the field containing last modified date used to perform the incremental load
+     * @param overlapTime  the number of seconds to overlap with the last load status
+     * @param lastLoadDate the last batch load date
      */
-    public ResultSet selectIncremental(String tableName, String[] selectFields, String dateField, int overlapTime, Date lastLoadDate) throws SQLException {
+    public ResultSet selectIncremental(String tableName, String[] selectFields, String dateField, int overlapTime, Date lastLoadDate, int backoffTime, UnitSizes unit) throws SQLException {
         ResultSet rs;
 
-        logger.info("selectIncremental tableName {} dateField {} overlapTime {} lastLoadDate {}", tableName, dateField, overlapTime, lastLoadDate);
+        logger.info("selectIncremental tableName {} dateField {} overlapTime {} lastLoadDate {} backoffTime {} unit {}", tableName, dateField, overlapTime, lastLoadDate, backoffTime, unit.toString());
 
         if (lastLoadDate == null) {
             logger.info("LastLoadDate is empty, returning full data");
             return selectFullLoad(tableName, selectFields);
         }
 
-        Validate.notEmpty(dateField, "Expecting a date field");
-        overlapTime = Math.abs(overlapTime);
+        DateRange range = new DateRange(lastLoadDate, new Date(), overlapTime, backoffTime, unit);
 
-        Date nextLoadStart = new Date(lastLoadDate.getTime() - (overlapTime * 1000));
-        logger.info("Load time with overlap {}", nextLoadStart);
+        logger.info("Load range with min {} max {}", range.getMinDate(), range.getMaxDate());
 
         StringBuffer sb = new StringBuffer();
         String select = selectStatement(selectFields);
-        sb.append("select ").append(select).append(" from ").append(tableName).append(" WHERE " + dateField + " > ?");
+        sb.append("select ").append(select).append(" from ").append(tableName).append(" WHERE " + dateField + " > ? and " + dateField + " < ?");
 
         PreparedStatement ps = conn.prepareStatement(sb.toString());
         ps.setQueryTimeout(timeout);
-        ps.setTimestamp(1, new java.sql.Timestamp(nextLoadStart.getTime()));
+        ps.setTimestamp(1, new java.sql.Timestamp(range.getMinDate().getTime()));
+        ps.setTimestamp(2, new java.sql.Timestamp(range.getMaxDate().getTime()));
 
         logger.info("Executing incremental GetTableData query {}", ps);
         rs = ps.executeQuery();
         return rs;
+    }
+
+    protected static class DateRange {
+        private Date minDate;
+        private Date maxDate;
+
+        public DateRange(Date lastLoadDate, Date currentDate, int overlapTime, int backoffTime, UnitSizes unit) {
+
+            lastLoadDate = (lastLoadDate == null ? new Date(0L) : lastLoadDate);
+            this.minDate = new Date(lastLoadDate.getTime() - (Math.abs(overlapTime) * 1000L));
+
+            // Calculate the max date
+            Date maxLoadDate = (currentDate == null ? new Date() : currentDate);
+            maxLoadDate = new Date(maxLoadDate.getTime() - Math.abs(backoffTime) * 1000L);
+            this.maxDate = maxAllowableDateFromUnit(maxLoadDate, unit);
+        }
+
+        public Date getMaxDate() {
+            return maxDate;
+        }
+
+        public Date getMinDate() {
+            return minDate;
+        }
+
+        public String toString() {
+            return "min (" + minDate + ") max(" + maxDate + ")";
+        }
 
     }
+
 
 }

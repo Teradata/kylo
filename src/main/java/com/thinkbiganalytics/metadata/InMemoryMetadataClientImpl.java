@@ -31,8 +31,8 @@ public class InMemoryMetadataClientImpl implements MetadataClient {
     @Override
     public void recordLastSuccessfulLoad(String category, String feed, BatchLoadStatus loadStatus) {
 
-        BatchLoadStatus status = getLastLoad(category,feed);
-        batchLoadStatusMap.put(feed, loadStatus);
+        String uniqueName = uniqueName(category, feed);
+        batchLoadStatusMap.put(uniqueName, loadStatus);
     }
 
     @Override
