@@ -88,14 +88,9 @@ public class GetTableDataSupport {
      * @param lastLoadDate the last batch load date
      */
     public ResultSet selectIncremental(String tableName, String[] selectFields, String dateField, int overlapTime, Date lastLoadDate, int backoffTime, UnitSizes unit) throws SQLException {
-        ResultSet rs;
+        ResultSet rs = null;
 
         logger.info("selectIncremental tableName {} dateField {} overlapTime {} lastLoadDate {} backoffTime {} unit {}", tableName, dateField, overlapTime, lastLoadDate, backoffTime, unit.toString());
-
-        if (lastLoadDate == null) {
-            logger.info("LastLoadDate is empty, returning full data");
-            return selectFullLoad(tableName, selectFields);
-        }
 
         DateRange range = new DateRange(lastLoadDate, new Date(), overlapTime, backoffTime, unit);
 
@@ -105,13 +100,15 @@ public class GetTableDataSupport {
         String select = selectStatement(selectFields);
         sb.append("select ").append(select).append(" from ").append(tableName).append(" WHERE " + dateField + " > ? and " + dateField + " < ?");
 
-        PreparedStatement ps = conn.prepareStatement(sb.toString());
-        ps.setQueryTimeout(timeout);
-        ps.setTimestamp(1, new java.sql.Timestamp(range.getMinDate().getTime()));
-        ps.setTimestamp(2, new java.sql.Timestamp(range.getMaxDate().getTime()));
+        if (range.getMinDate().before(range.getMaxDate())) {
+            PreparedStatement ps = conn.prepareStatement(sb.toString());
+            ps.setQueryTimeout(timeout);
+            ps.setTimestamp(1, new java.sql.Timestamp(range.getMinDate().getTime()));
+            ps.setTimestamp(2, new java.sql.Timestamp(range.getMaxDate().getTime()));
 
-        logger.info("Executing incremental GetTableData query {}", ps);
-        rs = ps.executeQuery();
+            logger.info("Executing incremental GetTableData query {}", ps);
+            rs = ps.executeQuery();
+        }
         return rs;
     }
 
