@@ -33,7 +33,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             .description("Specifies which implementation of the metadata providers should be used")
             .allowableValues(ALLOWABLE_IMPLEMENATIONS)
             .defaultValue("REMOTE")
-            .addValidator(StandardValidators.URL_VALIDATOR)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .required(true)
             .build();
     
@@ -42,6 +42,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             .displayName("REST Client URL")
             .description("The base URL to the metadata server when the REST API client implementation is chosen.")
             .defaultValue("http://localhost:8077/api/metadata")
+            .addValidator(StandardValidators.URL_VALIDATOR)
             .required(false)
             .build();
     
