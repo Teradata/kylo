@@ -33,6 +33,7 @@ import java.util.*;
 @CapabilityDescription("Execute a Spark job. "
 )
 public class ExecuteSparkJob extends AbstractProcessor {
+    public static final String SPARK_NETWORK_TIMEOUT_CONFIG_NAME = "spark.network.timeout";
 
     // Relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -145,6 +146,14 @@ public class ExecuteSparkJob extends AbstractProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .expressionLanguageSupported(true)
             .build();
+    public static final PropertyDescriptor NETWORK_TIMEOUT = new PropertyDescriptor.Builder()
+            .name("Network Timeout")
+            .description("Default timeout for all network interactions. This config will be used in place of spark.core.connection.ack.wait.timeout, spark.akka.timeout, spark.storage.blockManagerSlaveTimeoutMs, spark.shuffle.io.connectionTimeout, spark.rpc.askTimeout or spark.rpc.lookupTimeout if they are not configured.")
+            .required(true)
+            .defaultValue("120s")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
 
 
     private final List<PropertyDescriptor> propDescriptors;
@@ -167,6 +176,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
         pds.add(NUMBER_EXECUTORS);
         pds.add(SPARK_APPLICATION_NAME);
         pds.add(EXECUTOR_CORES);
+        pds.add(NETWORK_TIMEOUT);
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -206,6 +216,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
             String numberOfExecutors = context.getProperty(NUMBER_EXECUTORS).evaluateAttributeExpressions(outgoing).getValue();
             String sparkApplicationName = context.getProperty(SPARK_APPLICATION_NAME).evaluateAttributeExpressions(outgoing).getValue();
             String executorCores = context.getProperty(EXECUTOR_CORES).evaluateAttributeExpressions(outgoing).getValue();
+            String networkTimeout = context.getProperty(NETWORK_TIMEOUT).evaluateAttributeExpressions(outgoing).getValue();
             String[] args = null;
             if (!StringUtils.isEmpty(appArgs)) {
                 args = appArgs.split(",");
@@ -222,6 +233,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
                     .setConf(SparkLauncher.EXECUTOR_CORES, numberOfExecutors)
                     .setConf(SparkLauncher.EXECUTOR_MEMORY, executorMemory)
                     .setConf(SparkLauncher.EXECUTOR_CORES, executorCores)
+                    .setConf(SPARK_NETWORK_TIMEOUT_CONFIG_NAME, networkTimeout)
                     .setSparkHome(sparkHome)
                     .setAppName(sparkApplicationName);
             if (args != null) {
