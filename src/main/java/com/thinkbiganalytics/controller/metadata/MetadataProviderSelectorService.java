@@ -70,7 +70,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         PropertyValue impl = context.getProperty(IMPLEMENTATION);
         
         if (impl.getValue().equalsIgnoreCase("REMOTE")) {
-            URI uri = URI.create(context.getProperty(IMPLEMENTATION).toString());
+            URI uri = URI.create(context.getProperty(CLIENT_URL).toString());
             this.provider = new MetadataClientProvider(uri);
         } else {
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
