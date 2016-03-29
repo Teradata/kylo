@@ -9,7 +9,7 @@
   <properties>
     <java.version>1.7</java.version>
     <jersey.version>2.22.2</jersey.version>
-    <scala.version>2.10</scala.version>
+    <scala.version>2.10.4</scala.version>  <!-- Require 2.10.4+ for Java 8 -->
     <spark.version>1.4.0</spark.version>
   </properties>
 
@@ -39,22 +39,34 @@
       <version>${jersey.version}</version>
     </dependency>
 
+    <!-- Scala dependencies -->
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-compiler</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-reflect</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+
     <!-- Spark dependencies -->
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-core_${scala.version}</artifactId>
+      <artifactId>spark-core_2.10</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-hive_${scala.version}</artifactId>
+      <artifactId>spark-hive_2.10</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
-      <artifactId>spark-repl_${scala.version}</artifactId>
+      <artifactId>spark-repl_2.10</artifactId>
       <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
@@ -80,6 +92,9 @@
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
         <version>2.15.2</version>
+        <configuration>
+          <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
+        </configuration>
         <executions>
           <execution>
             <id>scala-compile-first</id>
