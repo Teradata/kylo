@@ -6,6 +6,7 @@ package com.thinkbiganalytics.metadata.rest.model.op;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 
 import org.joda.time.DateTime;
 
@@ -41,6 +42,12 @@ public class Dataset implements Serializable {
     
     public Dataset() {
         super();
+    }
+    
+    @Override
+    public String toString() {
+        return "Dataset - datasource: " + Objects.toString(this.datasource.getName()) + ", content type: " 
+                + Objects.toString(this.contentType) + ", changes set: " + Objects.toString(this.changeSets);
     }
     
     public Dataset(Datasource src, ChangeType change, ContentType content, ChangeSet... changeSets) {
