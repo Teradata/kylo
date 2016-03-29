@@ -114,6 +114,7 @@ public class FeedBegin extends FeedProcessor {
         Datasource datasource = getSourceDatasource(context, datasourceName);
 
         if (datasource != null) {
+            getLogger().debug("ensuring feed source - feed: {} datasource: {}", new Object[] { this.feedId.get(), datasource.getId() });
             provider.ensureFeedSource(this.feedId.get(), datasource.getId());
             this.sourceDatasources.add(datasource);
         } else {
@@ -184,6 +185,8 @@ public class FeedBegin extends FeedProcessor {
             PreconditionListener listener = new PreconditionListener() {
                 @Override
                 public void triggered(DatasourceChangeEvent event) {
+                    getLogger().debug("Precondition event triggered - feed: {}, datasets: {}", 
+                            new Object[] { event.getFeed().getSystemName(), event.getDatasets() });
                     List<Dataset> datasets = event.getDatasets();
                     FeedBegin.this.pendingChanges.add(datasets);
                 }
@@ -191,6 +194,8 @@ public class FeedBegin extends FeedProcessor {
         
             // If no precondition exits yet install one that depends on the datasources.
             if (feed.getPrecondition() == null) {
+                getLogger().debug("Setting default feed preconditions for: " + dsNames);
+                
                 Metric[] metrics = new Metric[dsNames.length];
                 
                 for (int idx = 0; idx < metrics.length; idx++) {
@@ -204,6 +209,7 @@ public class FeedBegin extends FeedProcessor {
             }
             
             for (String dsName : dsNames) {
+                getLogger().debug("Adding precondition listener for datasoure name: " + dsName);
                 precondService.addListener(dsName, listener);
             }
             

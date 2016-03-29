@@ -8,6 +8,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jms.annotation.JmsListener;
 
 import com.thinkbiganalytics.metadata.event.jms.MetadataTopics;
@@ -20,6 +22,8 @@ import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
  */
 public class JmsPreconditionEventConsumer implements PreconditionEventConsumer {
 
+    private static final Logger LOG = LoggerFactory.getLogger(JmsPreconditionEventConsumer.class);
+
     private ConcurrentMap<String, Set<PreconditionListener>> listeners = new ConcurrentHashMap<>();
     
 //    @JmsListener(destination = MetadataTopics.PRECONDITION_TRIGGER, containerFactory="jmsContainerFactory" )
@@ -30,11 +34,16 @@ public class JmsPreconditionEventConsumer implements PreconditionEventConsumer {
     
     @JmsListener(destination = MetadataTopics.PRECONDITION_TRIGGER, containerFactory="metadataListenerContainerFactory")
     public void receiveMetadataChange(DatasourceChangeEvent event) {
+        LOG.debug("Received JMS message - topic: {}, message: {}", MetadataTopics.PRECONDITION_TRIGGER, event);
+        LOG.info("Received datasource change event - feed: {}, dataset count: {}", 
+                event.getFeed().getSystemName(), event.getDatasets().size());
+        
         for (Dataset ds : event.getDatasets()) {
             Set<PreconditionListener> listeners = this.listeners.get(ds.getDatasource().getName());
             
             if (listeners != null) {
                 for (PreconditionListener listener : listeners) {
+                    LOG.debug("Notifying preconditon listener: {}", listener);
                     listener.triggered(event);
                 }
             }
