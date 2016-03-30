@@ -60,9 +60,11 @@ public abstract class FeedTermination extends FeedProcessor {
 
     @OnScheduled
     public void setupDatasourcedMetadata(ProcessContext context) {
-        if (this.destinationDatasource.get() == null) {
-            this.destinationDatasource.compareAndSet(null, ensureDestinationDatasource(context));    
-        }
+        this.destinationDatasource.set(ensureDestinationDatasource(context));    
+        
+//        if (this.destinationDatasource.get() == null) {
+//            this.destinationDatasource.compareAndSet(null, ensureDestinationDatasource(context));    
+//        }
     }
 
     /* (non-Javadoc)
@@ -75,16 +77,20 @@ public abstract class FeedTermination extends FeedProcessor {
             
             if (flowFile != null) {
                 MetadataProvider provider = getProviderService(context).getProvider();
+                FeedDestination destination = this.feedDestination.get();
                                 
-                if (this.feedDestination.get() == null) {
+                if (destination == null) {
                     Datasource ds = this.destinationDatasource.get();
-                    this.feedDestination.compareAndSet(null, ensureFeedDestination(context, flowFile, ds));
+                    destination = ensureFeedDestination(context, flowFile, ds);
+                    // TODO Begin re-caching this when the correct error can be surfaced from the client
+                    // when the destination no longer exists.
+//                    this.feedDestination.compareAndSet(null, destination);
                 }
                 
                 String timeStr = flowFile.getAttribute(OPERATON_START_PROP);
                 DateTime opStart = timeStr != null ? TIME_FORMATTER.parseDateTime(timeStr) : new DateTime();
                 
-                DataOperation op = provider.beginOperation(this.feedDestination.get(), opStart);
+                DataOperation op = provider.beginOperation(destination, opStart);
                 op = completeOperation(context, flowFile, this.destinationDatasource.get(), op, getState(context, op));
                 
                 flowFile = session.putAttribute(flowFile, OPERATON_STOP_PROP, TIME_FORMATTER.print(new DateTime()));
