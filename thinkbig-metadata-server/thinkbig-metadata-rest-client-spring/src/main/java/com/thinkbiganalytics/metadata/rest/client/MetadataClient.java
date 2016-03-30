@@ -20,6 +20,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -68,6 +69,7 @@ public class MetadataClient {
         this.template = new RestTemplate();
         
         ObjectMapper mapper = createObjectMapper();
+//        this.template.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
         this.template.getMessageConverters().add(new MappingJackson2HttpMessageConverter(mapper));
     }
     
