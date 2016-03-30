@@ -23,6 +23,7 @@
         <module>thinkbig-metadata-api</module>
         <module>thinkbig-metadata-core</module>
         <module>thinkbig-metadata-server</module>
+        <module>thinkbig-metadata-jpa</module>
     </modules>
     
     <dependencies>
