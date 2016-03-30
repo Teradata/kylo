@@ -39,6 +39,13 @@ public interface ServiceLevelAgreementBuilder {
      */
     ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder();
     
+    /**
+     * Convenience method that produces a builder for adding a new obligation within its own
+     * group governed by the specified condition.
+     * @return the obligation builder
+     */
+    ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder(ObligationGroup.Condition condition);
+    
     
     /**
      * Produces a builder for an obligation group to be added to this SLA under the given condition.

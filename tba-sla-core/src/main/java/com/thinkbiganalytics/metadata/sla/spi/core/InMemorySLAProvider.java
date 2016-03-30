@@ -178,6 +178,13 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder() {
             return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(this.sla.defaultGroup, this);
         }
+        
+        @Override
+        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder(Condition condition) {
+            ObligationGroupImpl group = new ObligationGroupImpl(this.sla, condition);
+            this.sla.obligationGroups.add(group);
+            return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(group, this);
+        }
 
         @Override
         public ObligationGroupBuilder obligationGroupBuilder(Condition condition) {
