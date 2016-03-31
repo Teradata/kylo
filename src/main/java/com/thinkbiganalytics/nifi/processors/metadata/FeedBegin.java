@@ -48,8 +48,10 @@ public class FeedBegin extends FeedProcessor {
     
     private Queue<List<Dataset>> pendingChanges = new LinkedBlockingQueue<>();
     private PreconditionListener preconditionListener;
-    private AtomicReference<String> feedId = new AtomicReference<>();
-    private Set<Datasource> sourceDatasources = Collections.synchronizedSet(new HashSet<Datasource>());
+    // TODO re-enable caching when we do more intelligent handling when the feed and datasource info has been
+    // removed from the metadata store.
+//    private AtomicReference<String> feedId = new AtomicReference<>();
+//    private Set<Datasource> sourceDatasources = Collections.synchronizedSet(new HashSet<Datasource>());
     
     public static final PropertyDescriptor PRECONDITION_SERVICE = new PropertyDescriptor.Builder()
             .name("Feed Precondition Event Service")
@@ -90,11 +92,11 @@ public class FeedBegin extends FeedProcessor {
     }
 
     @OnScheduled
-    public void setupFeedMetadata(ProcessContext context) {
+    public Feed ensureFeedMetadata(ProcessContext context) {
         MetadataProvider provider = getProviderService(context).getProvider();
         String feedName = context.getProperty(FEED_NAME).getValue();
         Feed feed = provider.ensureFeed(feedName, "");
-        this.feedId.set(feed.getId());
+//        this.feedId.set(feed.getId());
 
         String datasourcesName = context.getProperty(SRC_DATASOURCES_NAME).getValue();
 
@@ -105,8 +107,11 @@ public class FeedBegin extends FeedProcessor {
                 setupSource(context, feed, dsName.trim());
             }
             
+            ensurePreconditon(context, feed, dsNameArr);
             ensurePreconditonListener(context, feed, dsNameArr);
         }
+        
+        return feed;
     }
     
     protected void setupSource(ProcessContext context, Feed feed, String datasourceName) {
@@ -114,9 +119,9 @@ public class FeedBegin extends FeedProcessor {
         Datasource datasource = getSourceDatasource(context, datasourceName);
 
         if (datasource != null) {
-            getLogger().debug("ensuring feed source - feed: {} datasource: {}", new Object[] { this.feedId.get(), datasource.getId() });
-            provider.ensureFeedSource(this.feedId.get(), datasource.getId());
-            this.sourceDatasources.add(datasource);
+            getLogger().debug("ensuring feed source - feed: {} datasource: {}", new Object[] { feed.getId(), datasource.getId() });
+            provider.ensureFeedSource(feed.getId(), datasource.getId());
+//            this.sourceDatasources.add(datasource);
         } else {
             throw new ProcessException("Source datasource does not exist: " + datasourceName);
         }       
@@ -128,9 +133,13 @@ public class FeedBegin extends FeedProcessor {
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
         FlowFile flowFile = produceFlowFile(session);
-
+        
         while (flowFile != null) {
-            flowFile = session.putAttribute(flowFile, FEED_ID_PROP, this.feedId.get().toString());
+            // TODO Remove when we do more intelligent handling when the feed and datasource info has been
+            // removed from the metadata store.
+            Feed feed = ensureFeedMetadata(context);
+            
+            flowFile = session.putAttribute(flowFile, FEED_ID_PROP, feed.getId().toString());
             flowFile = session.putAttribute(flowFile, OPERATON_START_PROP, TIME_FORMATTER.print(new DateTime()));
 
             session.transfer(flowFile, SUCCESS);
@@ -177,6 +186,26 @@ public class FeedBegin extends FeedProcessor {
         return session.create();
     }
     
+    private void ensurePreconditon(ProcessContext context, Feed feed, String[] dsNames) {
+        MetadataProvider provider = getProviderService(context).getProvider();
+        
+        // If no precondition exits yet install one that depends on the datasources.
+        if (feed.getPrecondition() == null) {
+            getLogger().debug("Setting default feed preconditions for: " + dsNames);
+            
+            Metric[] metrics = new Metric[dsNames.length];
+            
+            for (int idx = 0; idx < metrics.length; idx++) {
+                DatasourceUpdatedSinceFeedExecutedMetric metric = new DatasourceUpdatedSinceFeedExecutedMetric();
+                metric.setFeedName(feed.getSystemName());
+                metric.setDatasourceName(dsNames[idx]);
+                metrics[idx] = metric;
+            }
+            
+            provider.ensurePrecondition(feed.getId(), metrics);
+        }
+    }
+    
     private void ensurePreconditonListener(ProcessContext context, Feed feed, String[] dsNames) {
         if (this.preconditionListener == null) {
             MetadataProvider provider = getProviderService(context).getProvider();
@@ -191,22 +220,6 @@ public class FeedBegin extends FeedProcessor {
                     FeedBegin.this.pendingChanges.add(datasets);
                 }
             };
-        
-            // If no precondition exits yet install one that depends on the datasources.
-            if (feed.getPrecondition() == null) {
-                getLogger().debug("Setting default feed preconditions for: " + dsNames);
-                
-                Metric[] metrics = new Metric[dsNames.length];
-                
-                for (int idx = 0; idx < metrics.length; idx++) {
-                    DatasourceUpdatedSinceFeedExecutedMetric metric = new DatasourceUpdatedSinceFeedExecutedMetric();
-                    metric.setFeedName(feed.getSystemName());
-                    metric.setDatasourceName(dsNames[idx]);
-                    metrics[idx] = metric;
-                }
-                
-                provider.ensurePrecondition(feed.getId(), metrics);
-            }
             
             for (String dsName : dsNames) {
                 getLogger().debug("Adding precondition listener for datasoure name: " + dsName);

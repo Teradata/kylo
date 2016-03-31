@@ -30,8 +30,10 @@ import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
  */
 public abstract class FeedTermination extends FeedProcessor {
     
-    private AtomicReference<Datasource> destinationDatasource = new AtomicReference<>();
-    private AtomicReference<FeedDestination> feedDestination = new AtomicReference<>();
+    // TODO re-enable caching when we do more intelligent handling when the feed and datasource info has been
+    // removed from the metadata store.
+//    private AtomicReference<Datasource> destinationDatasource = new AtomicReference<>();
+//    private AtomicReference<FeedDestination> feedDestination = new AtomicReference<>();
     
     public static final PropertyDescriptor DEST_DATASET_NAME = new PropertyDescriptor.Builder()
             .name(DEST_DATASET_ID_PROP)
@@ -59,8 +61,8 @@ public abstract class FeedTermination extends FeedProcessor {
 //            .build();
 
     @OnScheduled
-    public void setupDatasourcedMetadata(ProcessContext context) {
-        this.destinationDatasource.set(ensureDestinationDatasource(context));    
+    public Datasource ensureDatasourceMetadata(ProcessContext context) {
+        return ensureDestinationDatasource(context);    
         
 //        if (this.destinationDatasource.get() == null) {
 //            this.destinationDatasource.compareAndSet(null, ensureDestinationDatasource(context));    
@@ -77,21 +79,24 @@ public abstract class FeedTermination extends FeedProcessor {
             
             if (flowFile != null) {
                 MetadataProvider provider = getProviderService(context).getProvider();
-                FeedDestination destination = this.feedDestination.get();
+                // TODO Remove when we do more intelligent handling when the feed and datasource info has been
+                // removed from the metadata store.
+//                FeedDestination destination = this.feedDestination.get();
+                Datasource ds = ensureDatasourceMetadata(context);
+                FeedDestination destination = ensureFeedDestination(context, flowFile, ds);
                                 
-                if (destination == null) {
-                    Datasource ds = this.destinationDatasource.get();
-                    destination = ensureFeedDestination(context, flowFile, ds);
-                    // TODO Begin re-caching this when the correct error can be surfaced from the client
-                    // when the destination no longer exists.
+                // TODO Begin re-caching this when the correct error can be surfaced from the client
+                // when the destination no longer exists.
+//                if (destination == null) {
+//                    Datasource ds = this.destinationDatasource.get();
 //                    this.feedDestination.compareAndSet(null, destination);
-                }
+//                }
                 
                 String timeStr = flowFile.getAttribute(OPERATON_START_PROP);
                 DateTime opStart = timeStr != null ? TIME_FORMATTER.parseDateTime(timeStr) : new DateTime();
                 
                 DataOperation op = provider.beginOperation(destination, opStart);
-                op = completeOperation(context, flowFile, this.destinationDatasource.get(), op, getState(context, op));
+                op = completeOperation(context, flowFile, ds, op, getState(context, op));
                 
                 flowFile = session.putAttribute(flowFile, OPERATON_STOP_PROP, TIME_FORMATTER.print(new DateTime()));
                 
