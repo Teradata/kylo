@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import com.google.common.base.Predicate;
@@ -72,6 +73,15 @@ public class InMemoryFeedProvider implements FeedProvider {
     public InMemoryFeedProvider(DatasetProvider datasetProvider) {
         super();
         this.datasetProvider = datasetProvider;
+    }
+    
+    @PostConstruct
+    public void startup() {
+        for (Feed feed : getFeeds()) {
+            if (feed.getPrecondition() != null) {
+                this.preconditionService.watchFeed(feed);
+            }
+        }
     }
 
 
@@ -222,7 +232,7 @@ public class InMemoryFeedProvider implements FeedProvider {
                     .build();
             }
             
-            this.preconditionService.watchFeed(feed.getId());
+            this.preconditionService.watchFeed(feed);
             
             feed.setPrecondition(slaBldr.build());
             return feed;

@@ -68,8 +68,8 @@ public class FeedPreconditionService {
         this.generalListeners.add(listener);
     }
     
-    public void watchFeed(ID id) {
-        this.watchedFeeds.add(id);
+    public void watchFeed(Feed feed) {
+        this.watchedFeeds.add(feed.getId());
     }
     
     public ServiceLevelAssessment assess(FeedPrecondition precond) {
