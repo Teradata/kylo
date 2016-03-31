@@ -8,16 +8,16 @@ import java.util.Set;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
 
 /**
  *
  * @author Sean Felten
  */
-public class BaseChangeSet<D extends Dataset, C extends ChangedContent> implements ChangeSet<D, C> {
+public class BaseChangeSet<D extends Datasource, C extends ChangeSet> implements Dataset<D, C> {
 
     private DateTime time;
     private ChangeType type;

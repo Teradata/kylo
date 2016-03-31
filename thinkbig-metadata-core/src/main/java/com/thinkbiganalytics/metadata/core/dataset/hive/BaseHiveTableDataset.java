@@ -3,7 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.core.dataset.hive;
 
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset;
 import com.thinkbiganalytics.metadata.core.dataset.BaseDataset;
 
 /**
@@ -27,14 +27,14 @@ public class BaseHiveTableDataset extends BaseDataset implements HiveTableDatase
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset#getDatabase()
+     * @see com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset#getDatabase()
      */
     public String getDatabaseName() {
         return database;
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset#getTableName()
+     * @see com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset#getTableName()
      */
     public String getTableName() {
         return tableName;

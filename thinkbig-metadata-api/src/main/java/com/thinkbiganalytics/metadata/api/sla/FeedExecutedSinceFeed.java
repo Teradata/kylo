@@ -1,17 +1,17 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.feed.precond;
+package com.thinkbiganalytics.metadata.api.sla;
 
 /**
  *
  * @author Sean Felten
  */
-public class FeedExecutedSinceFeedMetric extends DependentFeedMetric {
+public class FeedExecutedSinceFeed extends DependentFeed {
 
     private final String sinceName;
 
-    public FeedExecutedSinceFeedMetric(String hasRunFeed, String sinceFeed) {
+    public FeedExecutedSinceFeed(String hasRunFeed, String sinceFeed) {
         super(hasRunFeed);
         this.sinceName = sinceFeed;
     }

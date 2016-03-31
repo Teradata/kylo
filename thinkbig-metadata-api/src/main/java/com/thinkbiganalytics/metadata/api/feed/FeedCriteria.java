@@ -4,7 +4,7 @@
 package com.thinkbiganalytics.metadata.api.feed;
 
 import com.thinkbiganalytics.metadata.api.MetadataCriteria;
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 
 /**
  *
@@ -12,7 +12,7 @@ import com.thinkbiganalytics.metadata.api.dataset.Dataset;
  */
 public interface FeedCriteria extends MetadataCriteria<FeedCriteria> {
 
-    FeedCriteria sourceDataset(Dataset.ID id, Dataset.ID... others);
-    FeedCriteria destinationDataset(Dataset.ID id, Dataset.ID... others);
+    FeedCriteria sourceDataset(Datasource.ID id, Datasource.ID... others);
+    FeedCriteria destinationDataset(Datasource.ID id, Datasource.ID... others);
     FeedCriteria name(String name);
 }

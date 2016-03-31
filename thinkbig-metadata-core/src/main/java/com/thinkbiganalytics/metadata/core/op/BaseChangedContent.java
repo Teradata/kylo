@@ -6,13 +6,13 @@ package com.thinkbiganalytics.metadata.core.op;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
+import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 
 /**
  *
  * @author Sean Felten
  */
-public class BaseChangedContent implements ChangedContent {
+public class BaseChangedContent implements ChangeSet {
 
     private DateTime intrinsicTime;
     private Period intrinsicPeriod;

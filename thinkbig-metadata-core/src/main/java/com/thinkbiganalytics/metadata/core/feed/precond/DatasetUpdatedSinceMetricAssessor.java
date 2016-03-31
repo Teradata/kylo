@@ -10,11 +10,11 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetCriteria;
-import com.thinkbiganalytics.metadata.api.feed.precond.DatasetUpdatedSinceMetric;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
+import com.thinkbiganalytics.metadata.api.sla.DatasetUpdatedSinceSchedule;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
@@ -24,34 +24,34 @@ import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
  *
  * @author Sean Felten
  */
-public class DatasetUpdatedSinceMetricAssessor extends MetadataMetricAssessor<DatasetUpdatedSinceMetric> {
+public class DatasetUpdatedSinceMetricAssessor extends MetadataMetricAssessor<DatasetUpdatedSinceSchedule> {
 
     @Override
     public boolean accepts(Metric metric) {
-        return metric instanceof DatasetUpdatedSinceMetric;
+        return metric instanceof DatasetUpdatedSinceSchedule;
     }
 
     @Override
-    public void assess(DatasetUpdatedSinceMetric metric, MetricAssessmentBuilder<ArrayList<ChangeSet<Dataset, ChangedContent>>> builder) {
+    public void assess(DatasetUpdatedSinceSchedule metric, MetricAssessmentBuilder<ArrayList<Dataset<Datasource, ChangeSet>>> builder) {
         List<Date> dates = CronExpressionUtil.getPreviousFireTimes(metric.getCronExpression(), 2);
         DateTime schedTime = new DateTime(dates.get(0));
 //        DateTime prevSchedTime = new DateTime(dates.get(1));
         String name = metric.getDatasetName();
-        DatasetCriteria crit = getDatasetProvider().datasetCriteria().name(name).limit(1);
-        List<Dataset> list = getDatasetProvider().getDatasets(crit);
-        ArrayList<ChangeSet<Dataset, ChangedContent>> result = new ArrayList<>();
+        DatasourceCriteria crit = getDatasetProvider().datasetCriteria().name(name).limit(1);
+        List<Datasource> list = getDatasetProvider().getDatasets(crit);
+        ArrayList<Dataset<Datasource, ChangeSet>> result = new ArrayList<>();
         boolean incomplete = false;
         
         if (list.size() > 0) {
-            Dataset ds = list.get(0);
-            Collection<ChangeSet<Dataset, ChangedContent>> changes = getDataOperationsProvider().getChangeSets(ds.getId());
+            Datasource ds = list.get(0);
+            Collection<Dataset<Datasource, ChangeSet>> changes = getDataOperationsProvider().getChangeSets(ds.getId());
             
-            for (ChangeSet<Dataset, ChangedContent> cs : changes) {
+            for (Dataset<Datasource, ChangeSet> cs : changes) {
                 if (cs.getTime().isBefore(schedTime)) {
                     break;
                 }
                 
-                for (ChangedContent content : cs.getChanges()) {
+                for (ChangeSet content : cs.getChanges()) {
                     incomplete |= content.getCompletenessFactor() > 0;
                 }
                 

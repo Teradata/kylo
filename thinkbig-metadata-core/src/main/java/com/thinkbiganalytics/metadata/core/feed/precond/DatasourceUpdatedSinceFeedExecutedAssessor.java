@@ -9,15 +9,15 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feed.precond.DatasourceUpdatedSinceFeedExecutedMetric;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
 import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
+import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceFeedExecuted;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -27,34 +27,34 @@ import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
  *
  * @author Sean Felten
  */
-public class DatasourceUpdatedSinceFeedExecutedAssessor extends MetadataMetricAssessor<DatasourceUpdatedSinceFeedExecutedMetric> {
+public class DatasourceUpdatedSinceFeedExecutedAssessor extends MetadataMetricAssessor<DatasourceUpdatedSinceFeedExecuted> {
 
     @Override
     public boolean accepts(Metric metric) {
-        return metric instanceof DatasourceUpdatedSinceFeedExecutedMetric;
+        return metric instanceof DatasourceUpdatedSinceFeedExecuted;
     }
 
     @Override
-    public void assess(DatasourceUpdatedSinceFeedExecutedMetric metric,
-                       MetricAssessmentBuilder<ArrayList<ChangeSet<Dataset, ChangedContent>>> builder) {
+    public void assess(DatasourceUpdatedSinceFeedExecuted metric,
+                       MetricAssessmentBuilder<ArrayList<Dataset<Datasource, ChangeSet>>> builder) {
         FeedProvider fPvdr = getFeedProvider();
-        DatasetProvider dsPvdr = getDatasetProvider();
+        DatasourceProvider dsPvdr = getDatasetProvider();
         DataOperationsProvider opPvdr = getDataOperationsProvider();
         Collection<Feed> feeds = fPvdr.getFeeds(fPvdr.feedCriteria().name(metric.getFeedName()));
-        List<Dataset> datasources = dsPvdr.getDatasets(dsPvdr.datasetCriteria().name(metric.getDatasetName()).limit(1));
+        List<Datasource> datasources = dsPvdr.getDatasets(dsPvdr.datasetCriteria().name(metric.getDatasetName()).limit(1));
         
         builder.metric(metric);
         
         if (! feeds.isEmpty() && ! datasources.isEmpty()) {
             Feed feed = feeds.iterator().next();
-            Dataset datasource = datasources.get(0);
+            Datasource datasource = datasources.get(0);
             List<DataOperation> feedOps = opPvdr.getDataOperations(opPvdr.dataOperationCriteria()
                     .feed(feed.getId())
                     .state(State.SUCCESS));
             List<DataOperation> datasourceOps = opPvdr.getDataOperations(opPvdr.dataOperationCriteria()
                     .dataset(datasource.getId())
                     .state(State.SUCCESS));
-            ArrayList<ChangeSet<Dataset, ChangedContent>> result = new ArrayList<>();
+            ArrayList<Dataset<Datasource, ChangeSet>> result = new ArrayList<>();
         
             // If the feed we are checking has never run then it can't have run before the "since" feed.
             if (datasourceOps.isEmpty()) {

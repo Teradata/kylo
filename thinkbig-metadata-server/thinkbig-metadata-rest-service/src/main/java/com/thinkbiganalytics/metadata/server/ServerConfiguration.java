@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasetProvider;
@@ -46,7 +46,7 @@ public class ServerConfiguration {
     }
 
     @Bean
-    public DatasetProvider datasetProvider() {
+    public DatasourceProvider datasetProvider() {
         return new InMemoryDatasetProvider();
     }
     

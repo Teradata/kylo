@@ -10,8 +10,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.core.dataset.files.BaseDirectoryDataset;

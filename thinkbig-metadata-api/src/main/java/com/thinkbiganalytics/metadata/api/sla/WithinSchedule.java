@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.feed.precond;
+package com.thinkbiganalytics.metadata.api.sla;
 
 import java.text.ParseException;
 

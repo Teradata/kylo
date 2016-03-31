@@ -19,12 +19,12 @@ import org.joda.time.DateTime;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.dataset.Dataset.ID;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetCriteria;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset;
 import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.core.dataset.files.BaseDirectoryDataset;
 import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableDataset;
@@ -33,11 +33,11 @@ import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableDataset;
  *
  * @author Sean Felten
  */
-public class InMemoryDatasetProvider implements DatasetProvider {
+public class InMemoryDatasetProvider implements DatasourceProvider {
     
-    private Map<Dataset.ID, Dataset> datasets = new ConcurrentHashMap<>();
+    private Map<Datasource.ID, Datasource> datasets = new ConcurrentHashMap<>();
 
-    public DatasetCriteria datasetCriteria() {
+    public DatasourceCriteria datasetCriteria() {
         return new DatasetCriteriaImpl();
     }
     
@@ -51,7 +51,7 @@ public class InMemoryDatasetProvider implements DatasetProvider {
     }
 
     @Override
-    public Dataset ensureDataset(String name, String descr) {
+    public Datasource ensureDataset(String name, String descr) {
         synchronized (this.datasets) {
             BaseDataset ds = getExistingDataset(name);
             
@@ -66,7 +66,7 @@ public class InMemoryDatasetProvider implements DatasetProvider {
 
     public DirectoryDataset ensureDirectoryDataset(String name, String descr, Path dir) {
         synchronized (this.datasets) {
-            Dataset ds = getExistingDataset(name);
+            Datasource ds = getExistingDataset(name);
             
             if (ds != null) {
                 if (ds.getClass().isAssignableFrom(BaseDirectoryDataset.class)) {
@@ -85,7 +85,7 @@ public class InMemoryDatasetProvider implements DatasetProvider {
     @Override
     public HiveTableDataset ensureHiveTableDataset(String name, String descr, String database, String table) {
         synchronized (this.datasets) {
-            Dataset ds = getExistingDataset(name);
+            Datasource ds = getExistingDataset(name);
             
             if (ds != null) {
                 if (ds.getClass().isAssignableFrom(BaseHiveTableDataset.class)) {
@@ -133,22 +133,22 @@ public class InMemoryDatasetProvider implements DatasetProvider {
     }
 
     @Override
-    public Dataset getDataset(ID id) {
+    public Datasource getDataset(ID id) {
         return this.datasets.get(id);
     }
 
     @Override
-    public Set<Dataset> getDatasets() {
-        return new HashSet<Dataset>(this.datasets.values());
+    public Set<Datasource> getDatasets() {
+        return new HashSet<Datasource>(this.datasets.values());
     }
 
     @Override
-    public List<Dataset> getDatasets(DatasetCriteria criteria) {
+    public List<Datasource> getDatasets(DatasourceCriteria criteria) {
         // TODO replace cast with copy method
         DatasetCriteriaImpl critImpl = (DatasetCriteriaImpl) criteria;
-        Iterator<Dataset> filtered = Iterators.filter(this.datasets.values().iterator(), critImpl);
-        Iterator<Dataset> limited = Iterators.limit(filtered, critImpl.getLimit());
-        List<Dataset> list = Lists.newArrayList(limited);
+        Iterator<Datasource> filtered = Iterators.filter(this.datasets.values().iterator(), critImpl);
+        Iterator<Datasource> limited = Iterators.limit(filtered, critImpl.getLimit());
+        List<Datasource> list = Lists.newArrayList(limited);
         
         Collections.sort(list, critImpl);
         return list;
@@ -157,7 +157,7 @@ public class InMemoryDatasetProvider implements DatasetProvider {
     
     private BaseDataset getExistingDataset(String name) {
         synchronized (this.datasets) {
-            for (Dataset ds : this.datasets.values()) {
+            for (Datasource ds : this.datasets.values()) {
                 if (ds.getName().equals(name)) {
                     return (BaseDataset) ds;
                 }
@@ -167,17 +167,17 @@ public class InMemoryDatasetProvider implements DatasetProvider {
     }
 
 
-    private static class DatasetCriteriaImpl extends AbstractMetadataCriteria<DatasetCriteria> 
-        implements DatasetCriteria, Predicate<Dataset>, Comparator<Dataset> {
+    private static class DatasetCriteriaImpl extends AbstractMetadataCriteria<DatasourceCriteria> 
+        implements DatasourceCriteria, Predicate<Datasource>, Comparator<Datasource> {
         
         private String name;
         private DateTime createdOn;
         private DateTime createdAfter;
         private DateTime createdBefore;
-        private Class<? extends Dataset> type;
+        private Class<? extends Datasource> type;
 
         @Override
-        public boolean apply(Dataset input) {
+        public boolean apply(Datasource input) {
             if (this.type != null && ! this.type.isAssignableFrom(input.getClass())) return false;
             if (this.name != null && ! name.equals(input.getName())) return false;
             if (this.createdOn != null && ! this.createdOn.equals(input.getCreationTime())) return false;
@@ -187,36 +187,36 @@ public class InMemoryDatasetProvider implements DatasetProvider {
         }
         
         @Override
-        public int compare(Dataset o1, Dataset o2) {
+        public int compare(Datasource o1, Datasource o2) {
             return o2.getCreationTime().compareTo(o1.getCreationTime());
         }
 
         @Override
-        public DatasetCriteria name(String name) {
+        public DatasourceCriteria name(String name) {
             this.name = name;
             return this;
         }
 
         @Override
-        public DatasetCriteria createdOn(DateTime time) {
+        public DatasourceCriteria createdOn(DateTime time) {
             this.createdOn = time;
             return this;
         }
 
         @Override
-        public DatasetCriteria createdAfter(DateTime time) {
+        public DatasourceCriteria createdAfter(DateTime time) {
             this.createdAfter = time;
             return this;
         }
 
         @Override
-        public DatasetCriteria createdBefore(DateTime time) {
+        public DatasourceCriteria createdBefore(DateTime time) {
             this.createdBefore = time;
             return this;
         }
 
         @Override
-        public DatasetCriteria type(Class<? extends Dataset> type) {
+        public DatasourceCriteria type(Class<? extends Datasource> type) {
             this.type = type;
             return this;
         }

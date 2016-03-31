@@ -23,13 +23,13 @@ import org.joda.time.DateTime;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
@@ -105,13 +105,13 @@ public class DataOperationsResource {
                                          DataOperation op) {
         com.thinkbiganalytics.metadata.api.op.DataOperation.ID domainId = this.operationsProvider.asOperationId(opid);
         com.thinkbiganalytics.metadata.api.op.DataOperation domainOp = this.operationsProvider.getDataOperation(domainId);
-        Dataset domainDs = domainOp.getProducer().getDataset();
+        Datasource domainDs = domainOp.getProducer().getDataset();
         com.thinkbiganalytics.metadata.api.op.DataOperation resultOp;
         
         if (op.getState() == State.SUCCESS) {
             if (domainDs instanceof HiveTableDataset && op.getDataset().getContentType() == ContentType.PARTITIONS) {
                 // TODO Handle partitions
-                ChangeSet<HiveTableDataset, HiveTableUpdate> change = this.operationsProvider.createChangeSet((HiveTableDataset) domainDs, 0);
+                Dataset<HiveTableDataset, HiveTableUpdate> change = this.operationsProvider.createChangeSet((HiveTableDataset) domainDs, 0);
                 resultOp = this.operationsProvider.updateOperation(domainId, "", change);
             } else if (domainDs instanceof DirectoryDataset && op.getDataset().getContentType() == ContentType.FILES) {
                 List<java.nio.file.Path> paths = new ArrayList<>();
@@ -123,7 +123,7 @@ public class DataOperationsResource {
                     }
                 }
                 
-                ChangeSet<DirectoryDataset, FileList> change = this.operationsProvider.createChangeSet((DirectoryDataset) domainDs, paths);
+                Dataset<DirectoryDataset, FileList> change = this.operationsProvider.createChangeSet((DirectoryDataset) domainDs, paths);
                 resultOp = this.operationsProvider.updateOperation(domainId, "", change);
             } else {
                 resultOp = this.operationsProvider.updateOperation(domainId, op.getStatus(), Model.OP_STATE_TO_DOMAIN.apply(op.getState()));

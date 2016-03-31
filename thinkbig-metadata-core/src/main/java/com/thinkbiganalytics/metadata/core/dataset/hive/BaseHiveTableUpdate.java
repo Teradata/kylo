@@ -6,8 +6,8 @@ package com.thinkbiganalytics.metadata.core.dataset.hive;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.thinkbiganalytics.metadata.api.dataset.hive.HivePartitionUpdate;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.core.op.BaseChangedContent;
 
 /**
@@ -24,14 +24,14 @@ public class BaseHiveTableUpdate extends BaseChangedContent implements HiveTable
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate#getRecordCount()
+     * @see com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate#getRecordCount()
      */
     public int getRecordCount() {
         return this.recourdCount;
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate#getPartitions()
+     * @see com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate#getPartitions()
      */
     public List<HivePartitionUpdate> getPartitions() {
         return this.partitions;

@@ -4,7 +4,7 @@
 package com.thinkbiganalytics.metadata.api.op;
 
 import com.thinkbiganalytics.metadata.api.MetadataCriteria;
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 
 /**
@@ -15,7 +15,7 @@ public interface DataOperationCriteria extends MetadataCriteria<DataOperationCri
 
     DataOperationCriteria state(DataOperation.State... result);
     DataOperationCriteria feed(Feed.ID srcId);
-    DataOperationCriteria dataset(Dataset.ID dsId);
-    DataOperationCriteria dataset(@SuppressWarnings("unchecked") Class<? extends Dataset>... dsType);
+    DataOperationCriteria dataset(Datasource.ID dsId);
+    DataOperationCriteria dataset(@SuppressWarnings("unchecked") Class<? extends Datasource>... dsType);
 
 }

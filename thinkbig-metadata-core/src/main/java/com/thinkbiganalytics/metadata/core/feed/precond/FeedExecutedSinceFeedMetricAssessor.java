@@ -9,14 +9,14 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feed.precond.FeedExecutedSinceFeedMetric;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
 import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
+import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -26,16 +26,16 @@ import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
  *
  * @author Sean Felten
  */
-public class FeedExecutedSinceFeedMetricAssessor extends MetadataMetricAssessor<FeedExecutedSinceFeedMetric> {
+public class FeedExecutedSinceFeedMetricAssessor extends MetadataMetricAssessor<FeedExecutedSinceFeed> {
 
     @Override
     public boolean accepts(Metric metric) {
-        return metric instanceof FeedExecutedSinceFeedMetric;
+        return metric instanceof FeedExecutedSinceFeed;
     }
 
     @Override
-    public void assess(FeedExecutedSinceFeedMetric metric,
-                       MetricAssessmentBuilder<ArrayList<ChangeSet<Dataset, ChangedContent>>> builder) {
+    public void assess(FeedExecutedSinceFeed metric,
+                       MetricAssessmentBuilder<ArrayList<Dataset<Datasource, ChangeSet>>> builder) {
         FeedProvider fPvdr = getFeedProvider();
         DataOperationsProvider opPvdr = getDataOperationsProvider();
         Collection<Feed> tested = fPvdr.getFeeds(fPvdr.feedCriteria().name(metric.getFeedName()));
@@ -52,7 +52,7 @@ public class FeedExecutedSinceFeedMetricAssessor extends MetadataMetricAssessor<
             List<DataOperation> sinceOps = opPvdr.getDataOperations(opPvdr.dataOperationCriteria()
                     .feed(sinceFeed.getId())
                     .state(State.SUCCESS));
-            ArrayList<ChangeSet<Dataset, ChangedContent>> result = new ArrayList<>();
+            ArrayList<Dataset<Datasource, ChangeSet>> result = new ArrayList<>();
         
             // If the feed we are checking has never run then it can't have run before the "since" feed.
             if (testedOps.isEmpty()) {

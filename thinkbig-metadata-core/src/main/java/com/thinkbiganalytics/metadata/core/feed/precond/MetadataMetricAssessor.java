@@ -10,11 +10,11 @@ import javax.inject.Inject;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -25,13 +25,13 @@ import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
  * @author Sean Felten
  */
 public abstract class MetadataMetricAssessor<M extends Metric> 
-        implements MetricAssessor<M, ArrayList<ChangeSet<Dataset, ChangedContent>>> {
+        implements MetricAssessor<M, ArrayList<Dataset<Datasource, ChangeSet>>> {
 
     @Inject
     private FeedProvider feedProvider;
     
     @Inject
-    private DatasetProvider datasetProvider;
+    private DatasourceProvider datasetProvider;
     
     @Inject
     private DataOperationsProvider dataOperationsProvider;
@@ -40,7 +40,7 @@ public abstract class MetadataMetricAssessor<M extends Metric>
         return this.feedProvider;
     }
     
-    protected DatasetProvider getDatasetProvider() {
+    protected DatasourceProvider getDatasetProvider() {
         return this.datasetProvider;
     }
     
@@ -48,19 +48,19 @@ public abstract class MetadataMetricAssessor<M extends Metric>
         return this.dataOperationsProvider;
     }
    
-    protected int collectChangeSetsSince(ArrayList<ChangeSet<Dataset, ChangedContent>> result,
+    protected int collectChangeSetsSince(ArrayList<Dataset<Datasource, ChangeSet>> result,
                                          List<DataOperation> testedOps,
                                          DateTime sinceTime) {
         int maxCompleteness = 0;
         
         for (DataOperation op : testedOps) {
-            ChangeSet<Dataset, ChangedContent> cs = op.getChangeSet();
+            Dataset<Datasource, ChangeSet> cs = op.getChangeSet();
             
             if (cs.getTime().isBefore(sinceTime)) {
                 break;
             }
             
-            for (ChangedContent content : cs.getChanges()) {
+            for (ChangeSet content : cs.getChanges()) {
                 maxCompleteness = Math.max(maxCompleteness, content.getCompletenessFactor());
             }
             

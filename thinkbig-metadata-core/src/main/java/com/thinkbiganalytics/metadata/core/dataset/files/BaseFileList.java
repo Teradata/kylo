@@ -6,7 +6,7 @@ package com.thinkbiganalytics.metadata.core.dataset.files;
 import java.nio.file.Path;
 import java.util.List;
 
-import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
 import com.thinkbiganalytics.metadata.core.op.BaseChangedContent;
 
 /**
@@ -22,7 +22,7 @@ public class BaseFileList extends BaseChangedContent implements FileList {
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.dataset.filesys.FileList#getFilePaths()
+     * @see com.thinkbiganalytics.metadata.api.datasource.filesys.FileList#getFilePaths()
      */
     public List<Path> getFilePaths() {
         return this.filePaths;

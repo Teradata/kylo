@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.dataset.hive;
+package com.thinkbiganalytics.metadata.api.datasource.hive;
 
 import java.io.Serializable;
 import java.util.List;

@@ -19,9 +19,9 @@ import javax.inject.Inject;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.dataset.Dataset.ID;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
@@ -51,7 +51,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     };
     
     @Inject
-    private DatasetProvider datasetProvider;
+    private DatasourceProvider datasetProvider;
     
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
@@ -70,7 +70,7 @@ public class InMemoryFeedProvider implements FeedProvider {
         super();
     }
     
-    public InMemoryFeedProvider(DatasetProvider datasetProvider) {
+    public InMemoryFeedProvider(DatasourceProvider datasetProvider) {
         super();
         this.datasetProvider = datasetProvider;
     }
@@ -86,7 +86,7 @@ public class InMemoryFeedProvider implements FeedProvider {
 
 
     @Inject
-    public void setDatasetProvider(DatasetProvider datasetProvider) {
+    public void setDatasetProvider(DatasourceProvider datasetProvider) {
         this.datasetProvider = datasetProvider;
     }
     
@@ -128,9 +128,9 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public FeedSource ensureFeedSource(Feed.ID feedId, Dataset.ID dsId, ServiceLevelAgreement.ID slaId) {
+    public FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId, ServiceLevelAgreement.ID slaId) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
-        Dataset ds = this.datasetProvider.getDataset(dsId);
+        Datasource ds = this.datasetProvider.getDataset(dsId);
         
         if (feed == null) {
             throw new FeedCreateException("A feed with the given ID does not exists: " + feedId);
@@ -144,9 +144,9 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
     
     @Override
-    public FeedDestination ensureFeedDestination(Feed.ID feedId, Dataset.ID dsId) {
+    public FeedDestination ensureFeedDestination(Feed.ID feedId, Datasource.ID dsId) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
-        Dataset ds = this.datasetProvider.getDataset(dsId);
+        Datasource ds = this.datasetProvider.getDataset(dsId);
         
         if (feed == null) {
             throw new FeedCreateException("A feed with the given ID does not exists: " + feedId);
@@ -161,7 +161,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     
     @Override
     public Feed ensureFeed(String name, String descr, ID destId) {
-        Dataset dds = this.datasetProvider.getDataset(destId);
+        Datasource dds = this.datasetProvider.getDataset(destId);
     
         if (dds == null) {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + destId);
@@ -175,8 +175,8 @@ public class InMemoryFeedProvider implements FeedProvider {
 
     @Override
     public Feed ensureFeed(String name, String descr, ID srcId, ID destId) {
-        Dataset sds = this.datasetProvider.getDataset(srcId);
-        Dataset dds = this.datasetProvider.getDataset(destId);
+        Datasource sds = this.datasetProvider.getDataset(srcId);
+        Datasource dds = this.datasetProvider.getDataset(destId);
 
         if (sds == null) {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + srcId);
@@ -303,8 +303,8 @@ public class InMemoryFeedProvider implements FeedProvider {
 
 
     
-    private FeedSource ensureFeedSource(BaseFeed feed, Dataset ds, ServiceLevelAgreement.ID slaId) {
-        Map<Dataset.ID, FeedSource> srcIds = new HashMap<>();
+    private FeedSource ensureFeedSource(BaseFeed feed, Datasource ds, ServiceLevelAgreement.ID slaId) {
+        Map<Datasource.ID, FeedSource> srcIds = new HashMap<>();
         for (FeedSource src : feed.getSources()) {
             srcIds.put(src.getDataset().getId(), src);
         }
@@ -318,7 +318,7 @@ public class InMemoryFeedProvider implements FeedProvider {
         }
     }
 
-    private FeedDestination ensureFeedDestination(BaseFeed feed, Dataset ds) {
+    private FeedDestination ensureFeedDestination(BaseFeed feed, Datasource ds) {
         FeedDestination dest = feed.getDestination(ds.getId());
         
         if (dest != null) {
@@ -334,8 +334,8 @@ public class InMemoryFeedProvider implements FeedProvider {
     private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {
         
         private String name;
-        private Set<Dataset.ID> sourceIds = new HashSet<>();
-        private Set<Dataset.ID> destIds = new HashSet<>();
+        private Set<Datasource.ID> sourceIds = new HashSet<>();
+        private Set<Datasource.ID> destIds = new HashSet<>();
         
         @Override
         public boolean apply(Feed input) {

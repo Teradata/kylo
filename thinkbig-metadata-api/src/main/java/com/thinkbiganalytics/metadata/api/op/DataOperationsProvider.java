@@ -9,11 +9,11 @@ import java.util.List;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.FileList;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableUpdate;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
@@ -29,14 +29,14 @@ public interface DataOperationsProvider {
     ID asOperationId(String opIdStr);
 
     DataOperation beginOperation(FeedDestination dest, DateTime start);
-    DataOperation beginOperation(Feed.ID feedId, Dataset.ID dsId, DateTime start);
+    DataOperation beginOperation(Feed.ID feedId, Datasource.ID dsId, DateTime start);
     DataOperation updateOperation(DataOperation.ID id, String status, State result);
     DataOperation updateOperation(DataOperation.ID id, String status, Exception ex);
-    <D extends Dataset, C extends ChangedContent> DataOperation updateOperation(DataOperation.ID id, String status, ChangeSet<D, C> changes);
-//    DataOperation updateOperation(DataOperation.ID id, String status, ChangeSet<Dataset, ChangedContent> changes);
+    <D extends Datasource, C extends ChangeSet> DataOperation updateOperation(DataOperation.ID id, String status, Dataset<D, C> changes);
+//    DataOperation updateOperation(DataOperation.ID id, String status, Dataset<Datasource, ChangeSet> changes);
     
-    ChangeSet<DirectoryDataset, FileList> createChangeSet(DirectoryDataset ds, List<Path> paths);
-    ChangeSet<HiveTableDataset, HiveTableUpdate> createChangeSet(HiveTableDataset ds, int count);
+    Dataset<DirectoryDataset, FileList> createChangeSet(DirectoryDataset ds, List<Path> paths);
+    Dataset<HiveTableDataset, HiveTableUpdate> createChangeSet(HiveTableDataset ds, int count);
     
     DataOperationCriteria dataOperationCriteria();
 
@@ -44,12 +44,12 @@ public interface DataOperationsProvider {
     List<DataOperation> getDataOperations();
     List<DataOperation> getDataOperations(DataOperationCriteria criteria);
     
-    ChangeSetCriteria changeSetCriteria();
+    DatasetCriteria changeSetCriteria();
     
-    <D extends Dataset, C extends ChangedContent> Collection<ChangeSet<D, C>> getChangeSets(Dataset.ID dsId);
-    <D extends Dataset, C extends ChangedContent> Collection<ChangeSet<D, C>> getChangeSets(Dataset.ID dsId, ChangeSetCriteria criteria);
+    <D extends Datasource, C extends ChangeSet> Collection<Dataset<D, C>> getChangeSets(Datasource.ID dsId);
+    <D extends Datasource, C extends ChangeSet> Collection<Dataset<D, C>> getChangeSets(Datasource.ID dsId, DatasetCriteria criteria);
 
-    void addListener(DataChangeEventListener<Dataset, ChangedContent> listener);
+    void addListener(DataChangeEventListener<Datasource, ChangeSet> listener);
     void addListener(DirectoryDataset ds, DataChangeEventListener<DirectoryDataset, FileList> listener);
     void addListener(HiveTableDataset ds, DataChangeEventListener<HiveTableDataset, HiveTableUpdate> listener);
 }

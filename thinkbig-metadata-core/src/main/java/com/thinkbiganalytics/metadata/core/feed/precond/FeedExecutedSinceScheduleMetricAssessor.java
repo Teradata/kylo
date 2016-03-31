@@ -11,15 +11,15 @@ import java.util.Set;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.precond.FeedExecutedSinceScheduleMetric;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
 import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
+import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceSchedule;
 import com.thinkbiganalytics.metadata.api.op.DataOperationCriteria;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -30,15 +30,15 @@ import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
  *
  * @author Sean Felten
  */
-public class FeedExecutedSinceScheduleMetricAssessor extends MetadataMetricAssessor<FeedExecutedSinceScheduleMetric> {
+public class FeedExecutedSinceScheduleMetricAssessor extends MetadataMetricAssessor<FeedExecutedSinceSchedule> {
 
     @Override
     public boolean accepts(Metric metric) {
-        return metric instanceof FeedExecutedSinceScheduleMetric;
+        return metric instanceof FeedExecutedSinceSchedule;
     }
 
     @Override
-    public void assess(FeedExecutedSinceScheduleMetric metric, MetricAssessmentBuilder<ArrayList<ChangeSet<Dataset, ChangedContent>>> builder) {
+    public void assess(FeedExecutedSinceSchedule metric, MetricAssessmentBuilder<ArrayList<Dataset<Datasource, ChangeSet>>> builder) {
         Date prev = CronExpressionUtil.getPreviousFireTime(metric.getCronExpression(), 2);
         DateTime schedTime = new DateTime(prev);
         String feedName = metric.getFeedName();
@@ -60,7 +60,7 @@ public class FeedExecutedSinceScheduleMetricAssessor extends MetadataMetricAsses
                     builder
                         .result(AssessmentResult.SUCCESS)
                         .message("Feed " + feed.getName() + " has executed at least 1 data operation since " + schedTime)
-                        .data(new ArrayList<ChangeSet<Dataset, ChangedContent>>());
+                        .data(new ArrayList<Dataset<Datasource, ChangeSet>>());
                 } else {
                     builder
                         .result(AssessmentResult.FAILURE)

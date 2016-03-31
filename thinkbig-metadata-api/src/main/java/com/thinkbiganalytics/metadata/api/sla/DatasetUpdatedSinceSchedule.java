@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.feed.precond;
+package com.thinkbiganalytics.metadata.api.sla;
 
 import java.text.ParseException;
 
@@ -11,11 +11,11 @@ import org.quartz.CronExpression;
  *
  * @author Sean Felten
  */
-public class DatasetUpdatedSinceMetric extends DependentDatasetMetric {
+public class DatasetUpdatedSinceSchedule extends DependentDataset {
 
     private final CronExpression cronExpression;
 
-    public DatasetUpdatedSinceMetric(String datasetName, String cronExpression) throws ParseException {
+    public DatasetUpdatedSinceSchedule(String datasetName, String cronExpression) throws ParseException {
         super(datasetName);
         this.cronExpression = new CronExpression(cronExpression);
     }

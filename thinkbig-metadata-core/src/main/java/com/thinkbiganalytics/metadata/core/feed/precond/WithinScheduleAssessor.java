@@ -7,10 +7,10 @@ import java.util.ArrayList;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.feed.precond.WithinSchedule;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
+import com.thinkbiganalytics.metadata.api.sla.WithinSchedule;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
@@ -29,7 +29,7 @@ public class WithinScheduleAssessor extends MetadataMetricAssessor<WithinSchedul
 
     @Override
     public void assess(WithinSchedule metric, 
-                       MetricAssessmentBuilder<ArrayList<ChangeSet<Dataset, ChangedContent>>> builder) {
+                       MetricAssessmentBuilder<ArrayList<Dataset<Datasource, ChangeSet>>> builder) {
         DateTime start = new DateTime(CronExpressionUtil.getPreviousFireTime(metric.getCronExpression()));
         DateTime end = start.withPeriodAdded(metric.getPeriod(), 1);
         
@@ -39,7 +39,7 @@ public class WithinScheduleAssessor extends MetadataMetricAssessor<WithinSchedul
             builder
                 .result(AssessmentResult.SUCCESS)
                 .message("Current time falls between the schedule " + start + " - " + end)
-                .data(new ArrayList<ChangeSet<Dataset, ChangedContent>>());
+                .data(new ArrayList<Dataset<Datasource, ChangeSet>>());
         } else {
             builder
                 .result(AssessmentResult.FAILURE)

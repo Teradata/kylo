@@ -9,10 +9,10 @@ import java.util.UUID;
 import org.joda.time.DateTime;
 import org.springframework.util.StringUtils;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
 
 /**
@@ -27,17 +27,17 @@ public class BaseDataOperation implements DataOperation {
     private State state;
     private String status = "";
     private FeedDestination producer;
-    private ChangeSet<Dataset, ChangedContent> changeSet;
+    private Dataset<Datasource, ChangeSet> changeSet;
 
-    public BaseDataOperation(Dataset ds, FeedDestination feedDest) {
+    public BaseDataOperation(Datasource ds, FeedDestination feedDest) {
         this(ds, feedDest, "Operation in progress", new DateTime());
     }
     
-    public BaseDataOperation(Dataset ds, FeedDestination feedDest, DateTime time) {
+    public BaseDataOperation(Datasource ds, FeedDestination feedDest, DateTime time) {
         this(ds, feedDest, "Operation in progress", time);
     }
     
-    public BaseDataOperation(Dataset ds, FeedDestination feedDest, String status, DateTime time) {
+    public BaseDataOperation(Datasource ds, FeedDestination feedDest, String status, DateTime time) {
         this.id = new OpId();
         this.state = State.IN_PROGRESS;
         this.producer = feedDest;
@@ -58,7 +58,7 @@ public class BaseDataOperation implements DataOperation {
         this.stopTime = state != State.IN_PROGRESS ? new DateTime() : op.stopTime;
     }
 
-    public BaseDataOperation(BaseDataOperation op, String status, ChangeSet<Dataset, ChangedContent> changes) {
+    public BaseDataOperation(BaseDataOperation op, String status, Dataset<Datasource, ChangeSet> changes) {
         this(op, State.SUCCESS, "Operation completed successfully");
 
         this.changeSet = changes;
@@ -99,7 +99,7 @@ public class BaseDataOperation implements DataOperation {
     }
 
     @Override
-    public ChangeSet<Dataset, ChangedContent> getChangeSet() {
+    public Dataset<Datasource, ChangeSet> getChangeSet() {
         return changeSet;
     }
     

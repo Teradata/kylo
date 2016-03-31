@@ -11,7 +11,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedData;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
@@ -62,7 +62,7 @@ public class BaseFeed implements Feed {
     }
     
     @Override
-    public FeedDestination getDestination(Dataset.ID id) {
+    public FeedDestination getDestination(Datasource.ID id) {
         for (FeedDestination dest : this.destinations.values()) {
             if (dest.getDataset().getId().equals(id)) {
                 return dest;
@@ -77,11 +77,11 @@ public class BaseFeed implements Feed {
         return this.precondition;
     }
 
-    public FeedSource addSource(Dataset ds) {
+    public FeedSource addSource(Datasource ds) {
         return addSource(ds, null);
     }
 
-    public FeedSource addSource(Dataset ds, ServiceLevelAgreement.ID agreemenetId) {
+    public FeedSource addSource(Datasource ds, ServiceLevelAgreement.ID agreemenetId) {
         Source src = new Source(ds, agreemenetId);
         this.sources.put(src.getId(), src);
         return src;
@@ -92,7 +92,7 @@ public class BaseFeed implements Feed {
         return this.sources.get(id);
     }
 
-    public FeedDestination addDestination(Dataset ds) {
+    public FeedDestination addDestination(Datasource ds) {
         FeedDestination dest = new Destination(ds);
         this.destinations.put(dest.getId(), dest);
         return dest;
@@ -180,9 +180,9 @@ public class BaseFeed implements Feed {
 
     private abstract class Data implements FeedData {
         
-        private Dataset dataset;
+        private Datasource dataset;
         
-        public Data(Dataset ds) {
+        public Data(Datasource ds) {
             this.dataset = ds;
         }
         
@@ -192,7 +192,7 @@ public class BaseFeed implements Feed {
         }
 
         @Override
-        public Dataset getDataset() {
+        public Datasource getDataset() {
             return this.dataset;
         }
     }
@@ -202,7 +202,7 @@ public class BaseFeed implements Feed {
         private SourceId id;
         private ServiceLevelAgreement.ID agreemenetId;
         
-        public Source(Dataset ds, ServiceLevelAgreement.ID agreementId) {
+        public Source(Datasource ds, ServiceLevelAgreement.ID agreementId) {
             super(ds);
             this.id = new SourceId();
             this.agreemenetId = agreementId;
@@ -223,7 +223,7 @@ public class BaseFeed implements Feed {
 
         private DestinationId id;
         
-        public Destination(Dataset ds) {
+        public Destination(Datasource ds) {
             super(ds);
             this.id = new DestinationId();
         }

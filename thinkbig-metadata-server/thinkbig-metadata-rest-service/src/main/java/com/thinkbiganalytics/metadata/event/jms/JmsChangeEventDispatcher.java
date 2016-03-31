@@ -10,9 +10,9 @@ import javax.jms.Topic;
 
 import org.springframework.jms.core.JmsMessagingTemplate;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.core.feed.PreconditionEvent;
 import com.thinkbiganalytics.metadata.core.feed.PreconditionListener;
@@ -50,7 +50,7 @@ public class JmsChangeEventDispatcher extends SimpleChangeEventDispatcher implem
         Feed feed = Model.DOMAIN_TO_FEED.apply(preEvent.getFeed());
         DatasourceChangeEvent dsEvent = new DatasourceChangeEvent(feed);
         
-        for (ChangeSet<Dataset, ChangedContent> cs : preEvent.getChanges()) {
+        for (Dataset<Datasource, ChangeSet> cs : preEvent.getChanges()) {
             com.thinkbiganalytics.metadata.rest.model.op.Dataset dset = Model.DOMAIN_TO_DATASET.apply(cs);
             dsEvent.addDataset(dset);
         }

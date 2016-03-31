@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.dataset;
+package com.thinkbiganalytics.metadata.api.datasource;
 
 import java.io.Serializable;
 
@@ -11,7 +11,7 @@ import org.joda.time.DateTime;
  *
  * @author Sean Felten
  */
-public interface Dataset extends Serializable {
+public interface Datasource extends Serializable {
     
     interface ID extends Serializable {};
     

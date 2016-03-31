@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 
 /**
@@ -32,6 +32,6 @@ public interface DataOperation extends Serializable {
     
     FeedDestination getProducer();
     
-    ChangeSet<Dataset, ChangedContent> getChangeSet();
+    Dataset<Datasource, ChangeSet> getChangeSet();
 
 }

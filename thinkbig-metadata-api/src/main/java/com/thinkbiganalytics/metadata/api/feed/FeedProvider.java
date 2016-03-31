@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -13,13 +13,13 @@ public interface FeedProvider {
 
     ID asFeedId(String feedIdStr);
 
-    FeedSource ensureFeedSource(Feed.ID feedId, Dataset.ID dsId);
-    FeedSource ensureFeedSource(Feed.ID feedId, Dataset.ID id, ServiceLevelAgreement.ID slaId);
-    FeedDestination ensureFeedDestination(Feed.ID feedId, Dataset.ID dsId);
+    FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId);
+    FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID id, ServiceLevelAgreement.ID slaId);
+    FeedDestination ensureFeedDestination(Feed.ID feedId, Datasource.ID dsId);
     
     Feed ensureFeed(String name, String descr);
-    Feed ensureFeed(String name, String descr, Dataset.ID destId);
-    Feed ensureFeed(String name, String descr, Dataset.ID srcId, Dataset.ID destId);
+    Feed ensureFeed(String name, String descr, Datasource.ID destId);
+    Feed ensureFeed(String name, String descr, Datasource.ID srcId, Datasource.ID destId);
     
     Feed ensurePrecondition(Feed.ID feedId, String name, String descr, List<List<Metric>> metrics);
     Feed updatePrecondition(Feed.ID feedId, List<List<Metric>> metrics);

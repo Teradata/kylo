@@ -14,15 +14,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
@@ -81,16 +81,16 @@ public class FeedPreconditionService {
      * Creates a listener that will check feed preconditions whenever there is a successful 
      * data change is recorded.
      */
-    private DataChangeEventListener<Dataset, ChangedContent> createDataChangeListener() {
-        return new DataChangeEventListener<Dataset, ChangedContent>() {
+    private DataChangeEventListener<Datasource, ChangeSet> createDataChangeListener() {
+        return new DataChangeEventListener<Datasource, ChangeSet>() {
             @Override
-            public void handleEvent(DataChangeEvent<Dataset, ChangedContent> event) {
+            public void handleEvent(DataChangeEvent<Datasource, ChangeSet> event) {
                 for (Feed.ID feedId : watchedFeeds) {
                     Feed feed = feedProvider.getFeed(feedId);
                     
                     if (feed != null && feed.getPrecondition() != null) {
                         ServiceLevelAgreement sla = asAgreement(feed.getPrecondition());
-                        List<ChangeSet<Dataset, ChangedContent>> changes = checkPrecondition(sla);
+                        List<Dataset<Datasource, ChangeSet>> changes = checkPrecondition(sla);
                         
                         // No changes means precondition not met.
                         if (changes != null) {
@@ -123,7 +123,7 @@ public class FeedPreconditionService {
         return ((BaseFeed.FeedPreconditionImpl) precondition).getAgreement();
     }
 
-    private List<ChangeSet<Dataset, ChangedContent>> checkPrecondition(ServiceLevelAgreement sla) {
+    private List<Dataset<Datasource, ChangeSet>> checkPrecondition(ServiceLevelAgreement sla) {
         ServiceLevelAssessment assmt = this.assessor.assess(sla);
         
         if (assmt.getResult() != AssessmentResult.FAILURE) {
@@ -133,12 +133,12 @@ public class FeedPreconditionService {
         }
     }
 
-    private List<ChangeSet<Dataset, ChangedContent>> collectResults(ServiceLevelAssessment assmt) {
-        List<ChangeSet<Dataset, ChangedContent>> result = new ArrayList<>();
+    private List<Dataset<Datasource, ChangeSet>> collectResults(ServiceLevelAssessment assmt) {
+        List<Dataset<Datasource, ChangeSet>> result = new ArrayList<>();
         
         for (ObligationAssessment obAssmt : assmt.getObligationAssessments()) {
-            for (MetricAssessment<ArrayList<ChangeSet<Dataset, ChangedContent>>> mAssmt 
-                    : obAssmt.<ArrayList<ChangeSet<Dataset, ChangedContent>>>getMetricAssessments()) {
+            for (MetricAssessment<ArrayList<Dataset<Datasource, ChangeSet>>> mAssmt 
+                    : obAssmt.<ArrayList<Dataset<Datasource, ChangeSet>>>getMetricAssessments()) {
                 result.addAll(mAssmt.getData());
             }
         }
@@ -149,15 +149,15 @@ public class FeedPreconditionService {
     private static class PreconditionEventImpl implements PreconditionEvent {
         
         private Feed feed;
-        private List<ChangeSet<Dataset, ChangedContent>> changes;
+        private List<Dataset<Datasource, ChangeSet>> changes;
 
-        public PreconditionEventImpl(Feed feed, List<ChangeSet<Dataset, ChangedContent>> changes) {
+        public PreconditionEventImpl(Feed feed, List<Dataset<Datasource, ChangeSet>> changes) {
             this.feed = feed;
             this.changes = changes;
         }
 
         @Override
-        public List<ChangeSet<Dataset, ChangedContent>> getChanges() {
+        public List<Dataset<Datasource, ChangeSet>> getChanges() {
             return this.changes;
         }
         

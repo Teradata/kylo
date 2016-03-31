@@ -3,10 +3,10 @@
  */
 package com.thinkbiganalytics.metadata.event;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 
 /**
  *
@@ -14,9 +14,9 @@ import com.thinkbiganalytics.metadata.api.op.ChangedContent;
  */
 public interface ChangeEventDispatcher {
 
-    <D extends Dataset, C extends ChangedContent> void addListener(D dataset, DataChangeEventListener<D, C> listener);
+    <D extends Datasource, C extends ChangeSet> void addListener(D dataset, DataChangeEventListener<D, C> listener);
     
-    <D extends Dataset, C extends ChangedContent> void addListener(DataChangeEventListener<D, C> listener);
+    <D extends Datasource, C extends ChangeSet> void addListener(DataChangeEventListener<D, C> listener);
     
-    <D extends Dataset, C extends ChangedContent> void nofifyChange(ChangeSet<D, C> change);
+    <D extends Datasource, C extends ChangeSet> void nofifyChange(Dataset<D, C> change);
 }

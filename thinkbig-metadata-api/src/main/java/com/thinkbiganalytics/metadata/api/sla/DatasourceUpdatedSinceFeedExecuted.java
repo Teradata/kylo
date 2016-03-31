@@ -1,17 +1,17 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.feed.precond;
+package com.thinkbiganalytics.metadata.api.sla;
 
 /**
  *
  * @author Sean Felten
  */
-public class DatasourceUpdatedSinceFeedExecutedMetric extends DependentDatasetMetric {
+public class DatasourceUpdatedSinceFeedExecuted extends DependentDataset {
 
     private final String feedName;
     
-    public DatasourceUpdatedSinceFeedExecutedMetric(String datasetName, String feedName) {
+    public DatasourceUpdatedSinceFeedExecuted(String datasetName, String feedName) {
         super(datasetName);
         this.feedName = feedName;
     }

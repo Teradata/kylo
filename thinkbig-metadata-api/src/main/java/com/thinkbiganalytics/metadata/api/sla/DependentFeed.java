@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.feed.precond;
+package com.thinkbiganalytics.metadata.api.sla;
 
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 
@@ -9,11 +9,11 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  *
  * @author Sean Felten
  */
-public abstract class DependentFeedMetric implements Metric {
+public abstract class DependentFeed implements Metric {
 
     private final String feedName;
 
-    public DependentFeedMetric(String feedName) {
+    public DependentFeed(String feedName) {
         super();
         this.feedName = feedName;
     }

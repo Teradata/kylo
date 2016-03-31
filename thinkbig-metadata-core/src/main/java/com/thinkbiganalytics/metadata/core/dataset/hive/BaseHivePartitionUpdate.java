@@ -6,7 +6,7 @@ package com.thinkbiganalytics.metadata.core.dataset.hive;
 import java.io.Serializable;
 import java.util.List;
 
-import com.thinkbiganalytics.metadata.api.dataset.hive.HivePartitionUpdate;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate;
 
 /**
  *
@@ -18,14 +18,14 @@ public class BaseHivePartitionUpdate implements HivePartitionUpdate {
     private List<Serializable> values;
     
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.dataset.hive.HivePartitionUpdate#getColumnName()
+     * @see com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate#getColumnName()
      */
     public String getColumnName() {
         return this.columnName;
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.dataset.hive.HivePartitionUpdate#getValuses()
+     * @see com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate#getValuses()
      */
     public List<Serializable> getValues() {
         return this.values;

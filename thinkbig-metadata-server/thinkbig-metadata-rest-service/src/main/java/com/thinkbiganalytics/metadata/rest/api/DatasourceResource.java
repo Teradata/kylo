@@ -20,11 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetCriteria;
-import com.thinkbiganalytics.metadata.api.dataset.DatasetProvider;
-import com.thinkbiganalytics.metadata.api.dataset.filesys.DirectoryDataset;
-import com.thinkbiganalytics.metadata.api.dataset.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
@@ -37,7 +35,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 public class DatasourceResource {
     
     @Inject
-    private DatasetProvider datasetProvider;
+    private DatasourceProvider datasetProvider;
     
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -47,8 +45,8 @@ public class DatasourceResource {
                                            @QueryParam(DatasourceCriteria.AFTER) String after,
                                            @QueryParam(DatasourceCriteria.BEFORE) String before,
                                            @QueryParam(DatasourceCriteria.TYPE) String type ) {
-        DatasetCriteria criteria = createDatasourceCriteria(name, owner, on, after, before, type);
-        List<Dataset> existing = this.datasetProvider.getDatasets(criteria);
+        DatasourceCriteria criteria = createDatasourceCriteria(name, owner, on, after, before, type);
+        List<Datasource> existing = this.datasetProvider.getDatasets(criteria);
         
         List<Datasource> list = new ArrayList<>(Collections2.transform(existing, Model.DOMAIN_TO_DS));
         return list;
@@ -62,10 +60,10 @@ public class DatasourceResource {
                                                @QueryParam("ensure") @DefaultValue("true") boolean ensure) {
         Model.validateCreate(ds);
         
-        DatasetCriteria crit = this.datasetProvider.datasetCriteria()
+        DatasourceCriteria crit = this.datasetProvider.datasetCriteria()
                 .name(ds.getName())
                 .type(HiveTableDataset.class);
-        List<Dataset> existing = this.datasetProvider.getDatasets(crit);
+        List<Datasource> existing = this.datasetProvider.getDatasets(crit);
         
         if (existing.isEmpty()) {
             HiveTableDataset table = this.datasetProvider.ensureHiveTableDataset(ds.getName(), 
@@ -88,10 +86,10 @@ public class DatasourceResource {
                                                @QueryParam("ensure") @DefaultValue("true") boolean ensure) {
         Model.validateCreate(ds);
         
-        DatasetCriteria crit = this.datasetProvider.datasetCriteria()
+        DatasourceCriteria crit = this.datasetProvider.datasetCriteria()
                 .name(ds.getName())
                 .type(DirectoryDataset.class);
-        List<Dataset> existing = this.datasetProvider.getDatasets(crit);
+        List<Datasource> existing = this.datasetProvider.getDatasets(crit);
         
         if (existing.isEmpty()) {
             DirectoryDataset dir = this.datasetProvider.ensureDirectoryDataset(ds.getName(), ds.getDescription(), Paths.get(ds.getPath()));
@@ -103,13 +101,13 @@ public class DatasourceResource {
         }
     }
 
-    private DatasetCriteria createDatasourceCriteria(String name, 
+    private DatasourceCriteria createDatasourceCriteria(String name, 
                                                      String owner, 
                                                      String on, 
                                                      String after, 
                                                      String before, 
                                                      String type) {
-            DatasetCriteria criteria = this.datasetProvider.datasetCriteria();
+            DatasourceCriteria criteria = this.datasetProvider.datasetCriteria();
             
             if (StringUtils.isNotEmpty(name)) criteria.name(name);
     //        if (StringUtils.isNotEmpty(owner)) criteria.owner(owner);  // TODO implement

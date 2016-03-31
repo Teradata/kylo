@@ -11,21 +11,21 @@ import java.util.UUID;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.dataset.Dataset;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.ChangedContent;
 
 /**
  *
  * @author Sean Felten
  */
-public class BaseDataset implements Dataset {
+public class BaseDataset implements Datasource {
 
     private ID id;
     private String name;
     private String description;
     private DateTime creationTime;
-    private List<ChangeSet<? extends Dataset, ? extends ChangedContent>> changeSets = new ArrayList<>();
+    private List<Dataset<? extends Datasource, ? extends ChangeSet>> changeSets = new ArrayList<>();
 
     public BaseDataset(String name, String descr) {
         this.id = new DatasetId();
@@ -50,7 +50,7 @@ public class BaseDataset implements Dataset {
         return creationTime;
     }
 
-    public List<ChangeSet<? extends Dataset, ? extends ChangedContent>> getChangeSets() {
+    public List<Dataset<? extends Datasource, ? extends ChangeSet>> getChangeSets() {
         return changeSets;
     }
 
