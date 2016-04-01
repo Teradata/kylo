@@ -9,23 +9,23 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  *
  * @author Sean Felten
  */
-public abstract class DependentDataset implements Metric {
+public abstract class DependentDatasource implements Metric {
     
-    private final String datasetName;
+    private final String datasourceName;
     private final String feedName;
 
-    public DependentDataset(String datasetName) {
+    public DependentDatasource(String datasetName) {
         this(null, datasetName);
     }
     
-    public DependentDataset(String feedName, String datasetName) {
+    public DependentDatasource(String feedName, String datasetName) {
         super();
         this.feedName = feedName;
-        this.datasetName = datasetName;
+        this.datasourceName = datasetName;
     }
 
-    public String getDatasetName() {
-        return datasetName;
+    public String getDatasourceName() {
+        return datasourceName;
     }
     
     public String getFeedName() {

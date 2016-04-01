@@ -3,54 +3,34 @@
  */
 package com.thinkbiganalytics.metadata.core.op;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.joda.time.DateTime;
+import org.joda.time.Period;
 
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.DataOperation;
 
 /**
  *
  * @author Sean Felten
  */
-public class BaseChangeSet<D extends Datasource, C extends ChangeSet> implements Dataset<D, C> {
+public class BaseChangeSet implements ChangeSet {
 
-    private DateTime time;
-    private ChangeType type;
-    private DataOperation dataOperation;
-    private D dataset;
-    private Set<C> changes = new HashSet<>();
+    private DateTime intrinsicTime;
+    private Period intrinsicPeriod;
+    private int completenessFactor;
 
-    public BaseChangeSet(D dataset, C content) {
-        this.time = new DateTime();
-        this.type = ChangeType.UPDATE;
-        this.dataOperation = null;  // TODO
-        this.dataset = dataset;
-        this.changes.add(content); 
+    @Override
+    public DateTime getIntrinsicTime() {
+        return this.intrinsicTime;
     }
 
-    public DateTime getTime() {
-        return time;
+    @Override
+    public Period getIntrinsicPeriod() {
+        return this.intrinsicPeriod;
     }
 
-    public ChangeType getType() {
-        return type;
-    }
-
-    public D getDataset() {
-        return dataset;
-    }
-
-    public DataOperation getDataOperation() {
-        return dataOperation;
-    }
-
-    public Set<C> getChanges() {
-        return changes;
+    @Override
+    public int getCompletenessFactor() {
+        return this.completenessFactor;
     }
 
 }

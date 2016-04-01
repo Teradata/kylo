@@ -11,7 +11,7 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
  *
  * @author Sean Felten
  */
-public interface DirectoryDataset extends Datasource {
+public interface DirectoryDatasource extends Datasource {
 
     Path getDirectory();
 }

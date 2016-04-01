@@ -24,7 +24,7 @@ public interface Dataset<D extends Datasource, C extends ChangeSet> extends Seri
     
     DataOperation getDataOperation();
     
-    D getDataset();
+    D getDatasource();
     
     Set<C> getChanges();
 }

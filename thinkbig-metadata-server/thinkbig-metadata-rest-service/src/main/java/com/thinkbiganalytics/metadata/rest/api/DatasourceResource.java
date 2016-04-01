@@ -21,8 +21,6 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset;
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
@@ -45,8 +43,8 @@ public class DatasourceResource {
                                            @QueryParam(DatasourceCriteria.AFTER) String after,
                                            @QueryParam(DatasourceCriteria.BEFORE) String before,
                                            @QueryParam(DatasourceCriteria.TYPE) String type ) {
-        DatasourceCriteria criteria = createDatasourceCriteria(name, owner, on, after, before, type);
-        List<Datasource> existing = this.datasetProvider.getDatasets(criteria);
+        com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = createDatasourceCriteria(name, owner, on, after, before, type);
+        List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = this.datasetProvider.getDatasources(criteria);
         
         List<Datasource> list = new ArrayList<>(Collections2.transform(existing, Model.DOMAIN_TO_DS));
         return list;
@@ -60,19 +58,20 @@ public class DatasourceResource {
                                                @QueryParam("ensure") @DefaultValue("true") boolean ensure) {
         Model.validateCreate(ds);
         
-        DatasourceCriteria crit = this.datasetProvider.datasetCriteria()
+        com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria crit = this.datasetProvider.datasetCriteria()
                 .name(ds.getName())
-                .type(HiveTableDataset.class);
-        List<Datasource> existing = this.datasetProvider.getDatasets(crit);
+                .type(com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource.class);
+        List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = this.datasetProvider.getDatasources(crit);
         
         if (existing.isEmpty()) {
-            HiveTableDataset table = this.datasetProvider.ensureHiveTableDataset(ds.getName(), 
-                                                                                 ds.getDescription(), 
-                                                                                 ds.getDatabase(), 
-                                                                                 ds.getTableName());
+            com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource table 
+                = this.datasetProvider.ensureHiveTableDatasource(ds.getName(), 
+                                                                 ds.getDescription(), 
+                                                                 ds.getDatabase(), 
+                                                                 ds.getTableName());
             return Model.DOMAIN_TO_TABLE_DS.apply(table);
         } else if (ensure) {
-            return Model.DOMAIN_TO_TABLE_DS.apply((HiveTableDataset) existing.iterator().next());
+            return Model.DOMAIN_TO_TABLE_DS.apply((com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource) existing.iterator().next());
         } else {
             throw new WebApplicationException("A hive table datasource with the given name already exists: " + ds.getName(), Status.BAD_REQUEST);
         }
@@ -86,28 +85,30 @@ public class DatasourceResource {
                                                @QueryParam("ensure") @DefaultValue("true") boolean ensure) {
         Model.validateCreate(ds);
         
-        DatasourceCriteria crit = this.datasetProvider.datasetCriteria()
+        com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria crit 
+            = this.datasetProvider.datasetCriteria()
                 .name(ds.getName())
-                .type(DirectoryDataset.class);
-        List<Datasource> existing = this.datasetProvider.getDatasets(crit);
+                .type(com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource.class);
+        List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = this.datasetProvider.getDatasources(crit);
         
         if (existing.isEmpty()) {
-            DirectoryDataset dir = this.datasetProvider.ensureDirectoryDataset(ds.getName(), ds.getDescription(), Paths.get(ds.getPath()));
+            com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource dir 
+                = this.datasetProvider.ensureDirectoryDatasource(ds.getName(), ds.getDescription(), Paths.get(ds.getPath()));
             return Model.DOMAIN_TO_DIR_DS.apply(dir);
         } else if (ensure) {
-            return Model.DOMAIN_TO_DIR_DS.apply((DirectoryDataset) existing.iterator().next());
+            return Model.DOMAIN_TO_DIR_DS.apply((com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource) existing.iterator().next());
         } else {
             throw new WebApplicationException("A directory datasource with the given name already exists: " + ds.getName(), Status.BAD_REQUEST);
         }
     }
 
-    private DatasourceCriteria createDatasourceCriteria(String name, 
-                                                     String owner, 
-                                                     String on, 
-                                                     String after, 
-                                                     String before, 
-                                                     String type) {
-            DatasourceCriteria criteria = this.datasetProvider.datasetCriteria();
+    private com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria createDatasourceCriteria(String name, 
+                                                                                                      String owner, 
+                                                                                                      String on, 
+                                                                                                      String after, 
+                                                                                                      String before, 
+                                                                                                      String type) {
+            com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = this.datasetProvider.datasetCriteria();
             
             if (StringUtils.isNotEmpty(name)) criteria.name(name);
     //        if (StringUtils.isNotEmpty(owner)) criteria.owner(owner);  // TODO implement

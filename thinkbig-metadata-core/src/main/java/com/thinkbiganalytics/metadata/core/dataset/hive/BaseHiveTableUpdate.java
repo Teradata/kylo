@@ -8,13 +8,13 @@ import java.util.List;
 
 import com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
-import com.thinkbiganalytics.metadata.core.op.BaseChangedContent;
+import com.thinkbiganalytics.metadata.core.op.BaseChangeSet;
 
 /**
  *
  * @author Sean Felten
  */
-public class BaseHiveTableUpdate extends BaseChangedContent implements HiveTableUpdate {
+public class BaseHiveTableUpdate extends BaseChangeSet implements HiveTableUpdate {
 
     private int recourdCount;
     private List<HivePartitionUpdate> partitions = new ArrayList<>();

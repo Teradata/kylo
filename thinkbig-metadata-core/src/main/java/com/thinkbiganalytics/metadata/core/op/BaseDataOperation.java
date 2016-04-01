@@ -27,7 +27,7 @@ public class BaseDataOperation implements DataOperation {
     private State state;
     private String status = "";
     private FeedDestination producer;
-    private Dataset<Datasource, ChangeSet> changeSet;
+    private Dataset<Datasource, ChangeSet> dataset;
 
     public BaseDataOperation(Datasource ds, FeedDestination feedDest) {
         this(ds, feedDest, "Operation in progress", new DateTime());
@@ -61,7 +61,7 @@ public class BaseDataOperation implements DataOperation {
     public BaseDataOperation(BaseDataOperation op, String status, Dataset<Datasource, ChangeSet> changes) {
         this(op, State.SUCCESS, "Operation completed successfully");
 
-        this.changeSet = changes;
+        this.dataset = changes;
     }
     
     public BaseDataOperation(BaseDataOperation op, String status, Throwable t) {
@@ -99,8 +99,8 @@ public class BaseDataOperation implements DataOperation {
     }
 
     @Override
-    public Dataset<Datasource, ChangeSet> getChangeSet() {
-        return changeSet;
+    public Dataset<Datasource, ChangeSet> getDataset() {
+        return dataset;
     }
     
     

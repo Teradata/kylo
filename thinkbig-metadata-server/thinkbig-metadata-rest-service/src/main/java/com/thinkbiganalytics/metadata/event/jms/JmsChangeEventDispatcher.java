@@ -50,7 +50,7 @@ public class JmsChangeEventDispatcher extends SimpleChangeEventDispatcher implem
         Feed feed = Model.DOMAIN_TO_FEED.apply(preEvent.getFeed());
         DatasourceChangeEvent dsEvent = new DatasourceChangeEvent(feed);
         
-        for (Dataset<Datasource, ChangeSet> cs : preEvent.getChanges()) {
+        for (Dataset<Datasource, ChangeSet> cs : preEvent.getDatasets()) {
             com.thinkbiganalytics.metadata.rest.model.op.Dataset dset = Model.DOMAIN_TO_DATASET.apply(cs);
             dsEvent.addDataset(dset);
         }

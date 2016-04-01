@@ -15,5 +15,5 @@ public interface FeedData extends Serializable {
 
     Feed getFeed();
     
-    Datasource getDataset();
+    Datasource getDatasource();
 }

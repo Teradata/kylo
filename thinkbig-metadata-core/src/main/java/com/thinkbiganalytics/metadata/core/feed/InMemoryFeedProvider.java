@@ -86,7 +86,7 @@ public class InMemoryFeedProvider implements FeedProvider {
 
 
     @Inject
-    public void setDatasetProvider(DatasourceProvider datasetProvider) {
+    public void setDatasourceProvider(DatasourceProvider datasetProvider) {
         this.datasetProvider = datasetProvider;
     }
     
@@ -130,7 +130,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     @Override
     public FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId, ServiceLevelAgreement.ID slaId) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
-        Datasource ds = this.datasetProvider.getDataset(dsId);
+        Datasource ds = this.datasetProvider.getDatasource(dsId);
         
         if (feed == null) {
             throw new FeedCreateException("A feed with the given ID does not exists: " + feedId);
@@ -146,7 +146,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     @Override
     public FeedDestination ensureFeedDestination(Feed.ID feedId, Datasource.ID dsId) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
-        Datasource ds = this.datasetProvider.getDataset(dsId);
+        Datasource ds = this.datasetProvider.getDatasource(dsId);
         
         if (feed == null) {
             throw new FeedCreateException("A feed with the given ID does not exists: " + feedId);
@@ -161,7 +161,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     
     @Override
     public Feed ensureFeed(String name, String descr, ID destId) {
-        Datasource dds = this.datasetProvider.getDataset(destId);
+        Datasource dds = this.datasetProvider.getDatasource(destId);
     
         if (dds == null) {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + destId);
@@ -175,8 +175,8 @@ public class InMemoryFeedProvider implements FeedProvider {
 
     @Override
     public Feed ensureFeed(String name, String descr, ID srcId, ID destId) {
-        Datasource sds = this.datasetProvider.getDataset(srcId);
-        Datasource dds = this.datasetProvider.getDataset(destId);
+        Datasource sds = this.datasetProvider.getDatasource(srcId);
+        Datasource dds = this.datasetProvider.getDatasource(destId);
 
         if (sds == null) {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + srcId);
@@ -306,7 +306,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     private FeedSource ensureFeedSource(BaseFeed feed, Datasource ds, ServiceLevelAgreement.ID slaId) {
         Map<Datasource.ID, FeedSource> srcIds = new HashMap<>();
         for (FeedSource src : feed.getSources()) {
-            srcIds.put(src.getDataset().getId(), src);
+            srcIds.put(src.getDatasource().getId(), src);
         }
         
         if (srcIds.containsKey(ds.getId())) {
@@ -343,7 +343,7 @@ public class InMemoryFeedProvider implements FeedProvider {
             
             if (! this.destIds.isEmpty()) {
                 for (FeedDestination dest : input.getDestinations()) {
-                    if (this.destIds.contains(dest.getDataset().getId())) {
+                    if (this.destIds.contains(dest.getDatasource().getId())) {
                         return true;
                     }
                 }
@@ -352,7 +352,7 @@ public class InMemoryFeedProvider implements FeedProvider {
             
             if (! this.sourceIds.isEmpty()) {
                 for (FeedSource src : input.getSources()) {
-                    if (this.sourceIds.contains(src.getDataset().getId())) {
+                    if (this.sourceIds.contains(src.getDatasource().getId())) {
                         return true;
                     }
                 }
@@ -363,7 +363,7 @@ public class InMemoryFeedProvider implements FeedProvider {
         }
 
         @Override
-        public FeedCriteria sourceDataset(ID id, ID... others) {
+        public FeedCriteria sourceDatasource(ID id, ID... others) {
             this.sourceIds.add(id);
             for (ID other : others) {
                 this.sourceIds.add(other);
@@ -372,7 +372,7 @@ public class InMemoryFeedProvider implements FeedProvider {
         }
 
         @Override
-        public FeedCriteria destinationDataset(ID id, ID... others) {
+        public FeedCriteria destinationDatasource(ID id, ID... others) {
             this.destIds.add(id);
             for (ID other : others) {
                 this.destIds.add(other);

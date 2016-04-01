@@ -7,12 +7,12 @@ package com.thinkbiganalytics.metadata.api.sla;
  *
  * @author Sean Felten
  */
-public class DatasourceUpdatedSinceFeedExecuted extends DependentDataset {
+public class DatasourceUpdatedSinceFeedExecuted extends DependentDatasource {
 
     private final String feedName;
     
-    public DatasourceUpdatedSinceFeedExecuted(String datasetName, String feedName) {
-        super(datasetName);
+    public DatasourceUpdatedSinceFeedExecuted(String datasourceName, String feedName) {
+        super(datasourceName);
         this.feedName = feedName;
     }
     
@@ -25,7 +25,7 @@ public class DatasourceUpdatedSinceFeedExecuted extends DependentDataset {
      */
     @Override
     public String getDescription() {
-        return "Datasource " + getDatasetName() + " has been updated since feed " + getFeedName() + " was last executed";
+        return "Datasource " + getDatasourceName() + " has been updated since feed " + getFeedName() + " was last executed";
     }
 
 }

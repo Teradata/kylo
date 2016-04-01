@@ -19,16 +19,16 @@ import com.thinkbiganalytics.metadata.api.op.ChangeSet;
  *
  * @author Sean Felten
  */
-public class BaseDataset implements Datasource {
+public class BaseDatasource implements Datasource {
 
     private ID id;
     private String name;
     private String description;
     private DateTime creationTime;
-    private List<Dataset<? extends Datasource, ? extends ChangeSet>> changeSets = new ArrayList<>();
+    private List<Dataset<? extends Datasource, ? extends ChangeSet>> datasets = new ArrayList<>();
 
-    public BaseDataset(String name, String descr) {
-        this.id = new DatasetId();
+    public BaseDatasource(String name, String descr) {
+        this.id = new DatasourceId();
         this.creationTime = new DateTime();
         this.name = name;
         this.description = descr;
@@ -50,18 +50,18 @@ public class BaseDataset implements Datasource {
         return creationTime;
     }
 
-    public List<Dataset<? extends Datasource, ? extends ChangeSet>> getChangeSets() {
-        return changeSets;
+    public List<Dataset<? extends Datasource, ? extends ChangeSet>> getDatasets() {
+        return datasets;
     }
 
     
-    protected static class DatasetId implements ID {
+    protected static class DatasourceId implements ID {
         private UUID uuid = UUID.randomUUID();
         
-        public DatasetId() {
+        public DatasourceId() {
         }
         
-        public DatasetId(Serializable ser) {
+        public DatasourceId(Serializable ser) {
             if (ser instanceof String) {
                 this.uuid = UUID.fromString((String) ser);
             } else if (ser instanceof UUID) {
@@ -73,8 +73,8 @@ public class BaseDataset implements Datasource {
         
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof DatasetId) {
-                DatasetId that = (DatasetId) obj;
+            if (obj instanceof DatasourceId) {
+                DatasourceId that = (DatasourceId) obj;
                 return Objects.equals(this.uuid, that.uuid);
             } else {
                 return false;

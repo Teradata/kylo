@@ -28,9 +28,9 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -91,7 +91,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     }
 
     @Inject
-    public void setDatasetProvider(DatasourceProvider datasetProvider) {
+    public void setDatasourceProvider(DatasourceProvider datasetProvider) {
         this.datasetProvider = datasetProvider;
     }
 
@@ -116,14 +116,14 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     
     @Override
     public DataOperation beginOperation(FeedDestination dest, DateTime start) {
-        return beginOperation(dest.getFeed().getId(), dest.getDataset().getId(), new DateTime());
+        return beginOperation(dest.getFeed().getId(), dest.getDatasource().getId(), new DateTime());
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#beginOperation(com.thinkbiganalytics.metadata.api.feed.Feed.ID, Datasource.ID)
      */
     public DataOperation beginOperation(Feed.ID feedId, Datasource.ID dsId, DateTime start) {
-        Datasource ds = this.datasetProvider.getDataset(dsId);
+        Datasource ds = this.datasetProvider.getDatasource(dsId);
         Feed feed = this.feedProvider.getFeed(feedId);
         
         if (feed == null) {
@@ -194,19 +194,19 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#createChangeSet(com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset, java.util.List)
+     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#createChangeSet(com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource, java.util.List)
      */
-    public Dataset<DirectoryDataset, FileList> createChangeSet(DirectoryDataset ds, List<Path> paths) {
+    public Dataset<DirectoryDatasource, FileList> createDataset(DirectoryDatasource ds, List<Path> paths) {
         BaseFileList content = new BaseFileList(paths);
-        return new BaseChangeSet<DirectoryDataset, FileList>(ds, content);
+        return new BaseDataset<DirectoryDatasource, FileList>(ds, content);
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#createChangeSet(com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset, int)
+     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#createChangeSet(com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource, int)
      */
-    public Dataset<HiveTableDataset, HiveTableUpdate> createChangeSet(HiveTableDataset ds, int count) {
+    public Dataset<HiveTableDatasource, HiveTableUpdate> createDataset(HiveTableDatasource ds, int count) {
         BaseHiveTableUpdate content = new BaseHiveTableUpdate(count);
-        return new BaseChangeSet<HiveTableDataset, HiveTableUpdate>(ds, content);
+        return new BaseDataset<HiveTableDatasource, HiveTableUpdate>(ds, content);
     }
 
     /* (non-Javadoc)
@@ -246,7 +246,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#changeSetCriteria()
      */
-    public DatasetCriteria changeSetCriteria() {
+    public DatasetCriteria DatasetCriteria() {
         return new ChangeCriteria();
     }
 
@@ -254,15 +254,15 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#getChangeSets(Datasource.ID)
      */
     @SuppressWarnings("unchecked")
-    public List<Dataset<? extends Datasource, ? extends ChangeSet>> getChangeSets(Datasource.ID dsId) {
-        return getChangeSets(dsId, ALL_CHANGES);
+    public List<Dataset<? extends Datasource, ? extends ChangeSet>> getDatasets(Datasource.ID dsId) {
+        return getDatasets(dsId, ALL_CHANGES);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#getChangeSets(Datasource.ID, com.thinkbiganalytics.metadata.api.op.DatasetCriteria)
      */
     @SuppressWarnings("unchecked")
-    public List<Dataset<? extends Datasource, ? extends ChangeSet>> getChangeSets(Datasource.ID dsId, DatasetCriteria criteria) {
+    public List<Dataset<? extends Datasource, ? extends ChangeSet>> getDatasets(Datasource.ID dsId, DatasetCriteria criteria) {
         ChangeCriteria critImpl = (ChangeCriteria) criteria;
         Iterator<Dataset<? extends Datasource, ? extends ChangeSet>> filtered 
             = Iterators.filter(this.changeSets.get(dsId).iterator(), critImpl);
@@ -283,16 +283,16 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     }
     
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
+     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
      */
-    public void addListener(DirectoryDataset ds, DataChangeEventListener<DirectoryDataset, FileList> listener) {
+    public void addListener(DirectoryDatasource ds, DataChangeEventListener<DirectoryDatasource, FileList> listener) {
         this.dispatcher.addListener(ds, listener);
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
+     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
      */
-    public void addListener(HiveTableDataset ds, DataChangeEventListener<HiveTableDataset, HiveTableUpdate> listener) {
+    public void addListener(HiveTableDatasource ds, DataChangeEventListener<HiveTableDatasource, HiveTableUpdate> listener) {
         this.dispatcher.addListener(ds, listener);
     }
 
@@ -308,7 +308,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         @Override
         public boolean apply(DataOperation input) {
             if (this.feedId != null && ! this.feedId.equals(input.getProducer().getFeed().getId())) return false;
-            if (this.datasetId != null && ! this.datasetId.equals(input.getChangeSet().getDataset().getId())) return false;
+            if (this.datasetId != null && ! this.datasetId.equals(input.getDataset().getDatasource().getId())) return false;
             if (this.states.size() > 0 && ! this.states.contains(input.getState())) return false;
             if (this.types.size() > 0) {
                 for (Class<? extends Datasource> type : types) {

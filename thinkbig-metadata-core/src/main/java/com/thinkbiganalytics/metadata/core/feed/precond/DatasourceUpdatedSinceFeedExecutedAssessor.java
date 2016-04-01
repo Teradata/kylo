@@ -41,7 +41,7 @@ public class DatasourceUpdatedSinceFeedExecutedAssessor extends MetadataMetricAs
         DatasourceProvider dsPvdr = getDatasetProvider();
         DataOperationsProvider opPvdr = getDataOperationsProvider();
         Collection<Feed> feeds = fPvdr.getFeeds(fPvdr.feedCriteria().name(metric.getFeedName()));
-        List<Datasource> datasources = dsPvdr.getDatasets(dsPvdr.datasetCriteria().name(metric.getDatasetName()).limit(1));
+        List<Datasource> datasources = dsPvdr.getDatasources(dsPvdr.datasetCriteria().name(metric.getDatasourceName()).limit(1));
         
         builder.metric(metric);
         

@@ -18,5 +18,5 @@ public interface PreconditionEvent {
     
     Feed getFeed();
     
-    List<Dataset<Datasource, ChangeSet>> getChanges();
+    List<Dataset<Datasource, ChangeSet>> getDatasets();
 }

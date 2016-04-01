@@ -7,13 +7,13 @@ import java.nio.file.Path;
 import java.util.List;
 
 import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
-import com.thinkbiganalytics.metadata.core.op.BaseChangedContent;
+import com.thinkbiganalytics.metadata.core.op.BaseChangeSet;
 
 /**
  *
  * @author Sean Felten
  */
-public class BaseFileList extends BaseChangedContent implements FileList {
+public class BaseFileList extends BaseChangeSet implements FileList {
 
     private List<Path> filePaths;
     

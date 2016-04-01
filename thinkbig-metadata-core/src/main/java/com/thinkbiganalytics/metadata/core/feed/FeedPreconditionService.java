@@ -157,7 +157,7 @@ public class FeedPreconditionService {
         }
 
         @Override
-        public List<Dataset<Datasource, ChangeSet>> getChanges() {
+        public List<Dataset<Datasource, ChangeSet>> getDatasets() {
             return this.changes;
         }
         

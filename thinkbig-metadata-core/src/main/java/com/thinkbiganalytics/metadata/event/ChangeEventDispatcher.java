@@ -18,5 +18,5 @@ public interface ChangeEventDispatcher {
     
     <D extends Datasource, C extends ChangeSet> void addListener(DataChangeEventListener<D, C> listener);
     
-    <D extends Datasource, C extends ChangeSet> void nofifyChange(Dataset<D, C> change);
+    <D extends Datasource, C extends ChangeSet> void nofifyChange(Dataset<D, C> dataset);
 }

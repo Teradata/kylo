@@ -10,9 +10,9 @@ import java.util.List;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -35,8 +35,8 @@ public interface DataOperationsProvider {
     <D extends Datasource, C extends ChangeSet> DataOperation updateOperation(DataOperation.ID id, String status, Dataset<D, C> changes);
 //    DataOperation updateOperation(DataOperation.ID id, String status, Dataset<Datasource, ChangeSet> changes);
     
-    Dataset<DirectoryDataset, FileList> createChangeSet(DirectoryDataset ds, List<Path> paths);
-    Dataset<HiveTableDataset, HiveTableUpdate> createChangeSet(HiveTableDataset ds, int count);
+    Dataset<DirectoryDatasource, FileList> createDataset(DirectoryDatasource ds, List<Path> paths);
+    Dataset<HiveTableDatasource, HiveTableUpdate> createDataset(HiveTableDatasource ds, int count);
     
     DataOperationCriteria dataOperationCriteria();
 
@@ -44,12 +44,12 @@ public interface DataOperationsProvider {
     List<DataOperation> getDataOperations();
     List<DataOperation> getDataOperations(DataOperationCriteria criteria);
     
-    DatasetCriteria changeSetCriteria();
+    DatasetCriteria DatasetCriteria();
     
-    <D extends Datasource, C extends ChangeSet> Collection<Dataset<D, C>> getChangeSets(Datasource.ID dsId);
-    <D extends Datasource, C extends ChangeSet> Collection<Dataset<D, C>> getChangeSets(Datasource.ID dsId, DatasetCriteria criteria);
+    <D extends Datasource, C extends ChangeSet> Collection<Dataset<D, C>> getDatasets(Datasource.ID dsId);
+    <D extends Datasource, C extends ChangeSet> Collection<Dataset<D, C>> getDatasets(Datasource.ID dsId, DatasetCriteria criteria);
 
     void addListener(DataChangeEventListener<Datasource, ChangeSet> listener);
-    void addListener(DirectoryDataset ds, DataChangeEventListener<DirectoryDataset, FileList> listener);
-    void addListener(HiveTableDataset ds, DataChangeEventListener<HiveTableDataset, HiveTableUpdate> listener);
+    void addListener(DirectoryDatasource ds, DataChangeEventListener<DirectoryDatasource, FileList> listener);
+    void addListener(HiveTableDatasource ds, DataChangeEventListener<HiveTableDatasource, HiveTableUpdate> listener);
 }

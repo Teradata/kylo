@@ -12,7 +12,7 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
  */
 public interface FeedCriteria extends MetadataCriteria<FeedCriteria> {
 
-    FeedCriteria sourceDataset(Datasource.ID id, Datasource.ID... others);
-    FeedCriteria destinationDataset(Datasource.ID id, Datasource.ID... others);
+    FeedCriteria sourceDatasource(Datasource.ID id, Datasource.ID... others);
+    FeedCriteria destinationDatasource(Datasource.ID id, Datasource.ID... others);
     FeedCriteria name(String name);
 }

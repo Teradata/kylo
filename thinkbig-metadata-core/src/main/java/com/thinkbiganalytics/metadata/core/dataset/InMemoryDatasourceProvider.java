@@ -23,17 +23,17 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset;
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
-import com.thinkbiganalytics.metadata.core.dataset.files.BaseDirectoryDataset;
-import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableDataset;
+import com.thinkbiganalytics.metadata.core.dataset.files.BaseDirectoryDatasource;
+import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableDatasource;
 
 /**
  *
  * @author Sean Felten
  */
-public class InMemoryDatasetProvider implements DatasourceProvider {
+public class InMemoryDatasourceProvider implements DatasourceProvider {
     
     private Map<Datasource.ID, Datasource> datasets = new ConcurrentHashMap<>();
 
@@ -43,20 +43,20 @@ public class InMemoryDatasetProvider implements DatasourceProvider {
     
     @Override
     public ID resolve(Serializable id) {
-        if (id instanceof BaseDataset.DatasetId) {
-            return (BaseDataset.DatasetId) id;
+        if (id instanceof BaseDatasource.DatasourceId) {
+            return (BaseDatasource.DatasourceId) id;
         } else {
-            return new BaseDataset.DatasetId(id);
+            return new BaseDatasource.DatasourceId(id);
         }
     }
 
     @Override
-    public Datasource ensureDataset(String name, String descr) {
+    public Datasource ensureDatasource(String name, String descr) {
         synchronized (this.datasets) {
-            BaseDataset ds = getExistingDataset(name);
+            BaseDatasource ds = getExistingDataset(name);
             
             if (ds == null) {
-                ds = new BaseDataset(name, descr);
+                ds = new BaseDatasource(name, descr);
                 this.datasets.put(ds.getId(), ds);
             }
             
@@ -64,38 +64,38 @@ public class InMemoryDatasetProvider implements DatasourceProvider {
         }
     }
 
-    public DirectoryDataset ensureDirectoryDataset(String name, String descr, Path dir) {
+    public DirectoryDatasource ensureDirectoryDatasource(String name, String descr, Path dir) {
         synchronized (this.datasets) {
             Datasource ds = getExistingDataset(name);
             
             if (ds != null) {
-                if (ds.getClass().isAssignableFrom(BaseDirectoryDataset.class)) {
-                    return (BaseDirectoryDataset) ds;
+                if (ds.getClass().isAssignableFrom(BaseDirectoryDatasource.class)) {
+                    return (BaseDirectoryDatasource) ds;
                 } else {
-                    throw new DatasetException("A non-directory dataset already exists with the given name:" + name);
+                    throw new DatasourceException("A non-directory dataset already exists with the given name:" + name);
                 }
             }
             
-            BaseDirectoryDataset dds = new BaseDirectoryDataset(name, descr, dir);
+            BaseDirectoryDatasource dds = new BaseDirectoryDatasource(name, descr, dir);
             this.datasets.put(dds.getId(), dds);
             return dds;
         }
     }
 
     @Override
-    public HiveTableDataset ensureHiveTableDataset(String name, String descr, String database, String table) {
+    public HiveTableDatasource ensureHiveTableDatasource(String name, String descr, String database, String table) {
         synchronized (this.datasets) {
             Datasource ds = getExistingDataset(name);
             
             if (ds != null) {
-                if (ds.getClass().isAssignableFrom(BaseHiveTableDataset.class)) {
-                    return (BaseHiveTableDataset) ds;
+                if (ds.getClass().isAssignableFrom(BaseHiveTableDatasource.class)) {
+                    return (BaseHiveTableDatasource) ds;
                 } else {
-                    throw new DatasetException("A non-hive dataset already exists with the given name:" + name);
+                    throw new DatasourceException("A non-hive dataset already exists with the given name:" + name);
                 }
             }
             
-            BaseHiveTableDataset hds = new BaseHiveTableDataset(name, descr, database, table);
+            BaseHiveTableDatasource hds = new BaseHiveTableDatasource(name, descr, database, table);
             this.datasets.put(hds.getId(), hds);
             return hds;
         }
@@ -103,47 +103,47 @@ public class InMemoryDatasetProvider implements DatasourceProvider {
     
     
     @Override
-    public DirectoryDataset asDirectoryDataset(ID dsId, Path dir) {
+    public DirectoryDatasource asDirectoryDatasource(ID dsId, Path dir) {
         synchronized (this.datasets) {
-            BaseDataset ds = (BaseDataset) this.datasets.get(dsId);
+            BaseDatasource ds = (BaseDatasource) this.datasets.get(dsId);
             
             if (ds != null) {
-                BaseDirectoryDataset dds = new BaseDirectoryDataset(ds, dir);
+                BaseDirectoryDatasource dds = new BaseDirectoryDatasource(ds, dir);
                 this.datasets.put(dds.getId(), dds);
                 return dds;
             } else {
-                throw new DatasetException("A no dataset exists with the given ID: " + dsId);
+                throw new DatasourceException("A no dataset exists with the given ID: " + dsId);
             }
         }
     }
 
     @Override
-    public HiveTableDataset asHiveTableDataset(ID dsId, String database, String table) {
+    public HiveTableDatasource asHiveTableDatasource(ID dsId, String database, String table) {
         synchronized (this.datasets) {
-            BaseDataset ds = (BaseDataset) this.datasets.get(dsId);
+            BaseDatasource ds = (BaseDatasource) this.datasets.get(dsId);
             
             if (ds != null) {
-                BaseHiveTableDataset hds = new BaseHiveTableDataset(ds, database, table);
+                BaseHiveTableDatasource hds = new BaseHiveTableDatasource(ds, database, table);
                 this.datasets.put(hds.getId(), hds);
                 return hds;
             } else {
-                throw new DatasetException("A no dataset exists with the given ID: " + dsId);
+                throw new DatasourceException("A no dataset exists with the given ID: " + dsId);
             }
         }
     }
 
     @Override
-    public Datasource getDataset(ID id) {
+    public Datasource getDatasource(ID id) {
         return this.datasets.get(id);
     }
 
     @Override
-    public Set<Datasource> getDatasets() {
+    public Set<Datasource> getDatasources() {
         return new HashSet<Datasource>(this.datasets.values());
     }
 
     @Override
-    public List<Datasource> getDatasets(DatasourceCriteria criteria) {
+    public List<Datasource> getDatasources(DatasourceCriteria criteria) {
         // TODO replace cast with copy method
         DatasetCriteriaImpl critImpl = (DatasetCriteriaImpl) criteria;
         Iterator<Datasource> filtered = Iterators.filter(this.datasets.values().iterator(), critImpl);
@@ -155,11 +155,11 @@ public class InMemoryDatasetProvider implements DatasourceProvider {
     }
 
     
-    private BaseDataset getExistingDataset(String name) {
+    private BaseDatasource getExistingDataset(String name) {
         synchronized (this.datasets) {
             for (Datasource ds : this.datasets.values()) {
                 if (ds.getName().equals(name)) {
-                    return (BaseDataset) ds;
+                    return (BaseDatasource) ds;
                 }
             }
             return null;

@@ -343,11 +343,11 @@ public class FeedsResource {
         if (StringUtils.isNotEmpty(name)) criteria.name(name);
         if (StringUtils.isNotEmpty(srcId)) {
             Datasource.ID dsId = this.datasetProvider.resolve(srcId);
-            criteria.sourceDataset(dsId);
+            criteria.sourceDatasource(dsId);
         }
         if (StringUtils.isNotEmpty(destId)) {
             Datasource.ID dsId = this.datasetProvider.resolve(destId);
-            criteria.destinationDataset(dsId);
+            criteria.destinationDatasource(dsId);
         }
         
         return criteria;
@@ -360,7 +360,7 @@ public class FeedsResource {
     
         if (! domainSrcs.isEmpty()) {
             for (com.thinkbiganalytics.metadata.api.feed.FeedSource src : domainSrcs) {
-                domainCrit.destinationDataset(src.getDataset().getId());
+                domainCrit.destinationDatasource(src.getDatasource().getId());
             }
             
             Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainChildFeeds = this.feedProvider.getFeeds(domainCrit);

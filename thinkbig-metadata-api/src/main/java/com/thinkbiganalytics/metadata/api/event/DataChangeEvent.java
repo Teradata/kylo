@@ -13,5 +13,5 @@ import com.thinkbiganalytics.metadata.api.op.ChangeSet;
  */
 public interface DataChangeEvent<D extends Datasource, C extends ChangeSet> {
 
-    Dataset<D, C> getChangeSet();
+    Dataset<D, C> getDataset();
 }

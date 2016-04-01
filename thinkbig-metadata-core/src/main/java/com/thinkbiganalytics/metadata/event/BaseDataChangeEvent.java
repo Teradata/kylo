@@ -14,14 +14,14 @@ import com.thinkbiganalytics.metadata.api.op.ChangeSet;
  */
 public class BaseDataChangeEvent<D extends Datasource, C extends ChangeSet> implements DataChangeEvent<D, C> {
     
-    private Dataset<D, C> changeSet;
+    private Dataset<D, C> dataset;
     
     public BaseDataChangeEvent(Dataset<D, C> changeSet) {
-        this.changeSet = changeSet;
+        this.dataset = changeSet;
     }
 
-    public Dataset<D, C> getChangeSet() {
-        return this.changeSet;
+    public Dataset<D, C> getDataset() {
+        return this.dataset;
     }
 
 }

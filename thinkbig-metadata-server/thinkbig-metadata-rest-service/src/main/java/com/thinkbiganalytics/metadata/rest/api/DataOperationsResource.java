@@ -24,9 +24,9 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.Dataset;
@@ -105,15 +105,15 @@ public class DataOperationsResource {
                                          DataOperation op) {
         com.thinkbiganalytics.metadata.api.op.DataOperation.ID domainId = this.operationsProvider.asOperationId(opid);
         com.thinkbiganalytics.metadata.api.op.DataOperation domainOp = this.operationsProvider.getDataOperation(domainId);
-        Datasource domainDs = domainOp.getProducer().getDataset();
+        Datasource domainDs = domainOp.getProducer().getDatasource();
         com.thinkbiganalytics.metadata.api.op.DataOperation resultOp;
         
         if (op.getState() == State.SUCCESS) {
-            if (domainDs instanceof HiveTableDataset && op.getDataset().getContentType() == ContentType.PARTITIONS) {
+            if (domainDs instanceof HiveTableDatasource && op.getDataset().getContentType() == ContentType.PARTITIONS) {
                 // TODO Handle partitions
-                Dataset<HiveTableDataset, HiveTableUpdate> change = this.operationsProvider.createChangeSet((HiveTableDataset) domainDs, 0);
+                Dataset<HiveTableDatasource, HiveTableUpdate> change = this.operationsProvider.createDataset((HiveTableDatasource) domainDs, 0);
                 resultOp = this.operationsProvider.updateOperation(domainId, "", change);
-            } else if (domainDs instanceof DirectoryDataset && op.getDataset().getContentType() == ContentType.FILES) {
+            } else if (domainDs instanceof DirectoryDatasource && op.getDataset().getContentType() == ContentType.FILES) {
                 List<java.nio.file.Path> paths = new ArrayList<>();
                 
                 for (com.thinkbiganalytics.metadata.rest.model.op.ChangeSet cs : op.getDataset().getChangeSets()) {
@@ -123,7 +123,7 @@ public class DataOperationsResource {
                     }
                 }
                 
-                Dataset<DirectoryDataset, FileList> change = this.operationsProvider.createChangeSet((DirectoryDataset) domainDs, paths);
+                Dataset<DirectoryDatasource, FileList> change = this.operationsProvider.createDataset((DirectoryDatasource) domainDs, paths);
                 resultOp = this.operationsProvider.updateOperation(domainId, "", change);
             } else {
                 resultOp = this.operationsProvider.updateOperation(domainId, op.getStatus(), Model.OP_STATE_TO_DOMAIN.apply(op.getState()));

@@ -64,7 +64,7 @@ public class BaseFeed implements Feed {
     @Override
     public FeedDestination getDestination(Datasource.ID id) {
         for (FeedDestination dest : this.destinations.values()) {
-            if (dest.getDataset().getId().equals(id)) {
+            if (dest.getDatasource().getId().equals(id)) {
                 return dest;
             }
         }
@@ -192,7 +192,7 @@ public class BaseFeed implements Feed {
         }
 
         @Override
-        public Datasource getDataset() {
+        public Datasource getDatasource() {
             return this.dataset;
         }
     }

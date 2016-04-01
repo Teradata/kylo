@@ -11,13 +11,13 @@ import org.springframework.context.annotation.Import;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
-import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasetProvider;
+import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
-import com.thinkbiganalytics.metadata.core.feed.precond.DatasetUpdatedSinceMetricAssessor;
+import com.thinkbiganalytics.metadata.core.feed.precond.DatasourceUpdatedSinceAssessor;
 import com.thinkbiganalytics.metadata.core.feed.precond.DatasourceUpdatedSinceFeedExecutedAssessor;
-import com.thinkbiganalytics.metadata.core.feed.precond.FeedExecutedSinceFeedMetricAssessor;
-import com.thinkbiganalytics.metadata.core.feed.precond.FeedExecutedSinceScheduleMetricAssessor;
+import com.thinkbiganalytics.metadata.core.feed.precond.FeedExecutedSinceFeedAssessor;
+import com.thinkbiganalytics.metadata.core.feed.precond.FeedExecutedSinceScheduleAssessor;
 import com.thinkbiganalytics.metadata.core.feed.precond.WithinScheduleAssessor;
 import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.event.ChangeEventDispatcher;
@@ -47,7 +47,7 @@ public class ServerConfiguration {
 
     @Bean
     public DatasourceProvider datasetProvider() {
-        return new InMemoryDatasetProvider();
+        return new InMemoryDatasourceProvider();
     }
     
     @Bean
@@ -86,12 +86,12 @@ public class ServerConfiguration {
     
     @Bean
     public MetricAssessor<?, ?> feedExecutedSinceFeedMetricAssessor() {
-        return new FeedExecutedSinceFeedMetricAssessor();
+        return new FeedExecutedSinceFeedAssessor();
     }
     
     @Bean
     public MetricAssessor<?, ?> datasetUpdatedSinceMetricAssessor() {
-        return new DatasetUpdatedSinceMetricAssessor();
+        return new DatasourceUpdatedSinceAssessor();
     }
     
     @Bean
@@ -101,7 +101,7 @@ public class ServerConfiguration {
     
     @Bean
     public MetricAssessor<?, ?> feedExecutedSinceScheduleMetricAssessor() {
-        return new FeedExecutedSinceScheduleMetricAssessor();
+        return new FeedExecutedSinceScheduleAssessor();
     }
     
     @Bean

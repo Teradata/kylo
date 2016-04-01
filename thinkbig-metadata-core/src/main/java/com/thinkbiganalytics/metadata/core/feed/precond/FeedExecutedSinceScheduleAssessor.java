@@ -30,7 +30,7 @@ import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
  *
  * @author Sean Felten
  */
-public class FeedExecutedSinceScheduleMetricAssessor extends MetadataMetricAssessor<FeedExecutedSinceSchedule> {
+public class FeedExecutedSinceScheduleAssessor extends MetadataMetricAssessor<FeedExecutedSinceSchedule> {
 
     @Override
     public boolean accepts(Metric metric) {

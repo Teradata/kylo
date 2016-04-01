@@ -10,13 +10,13 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
-import com.thinkbiganalytics.metadata.core.dataset.files.BaseDirectoryDataset;
+import com.thinkbiganalytics.metadata.core.dataset.files.BaseDirectoryDatasource;
 import com.thinkbiganalytics.metadata.core.dataset.files.BaseFileList;
-import com.thinkbiganalytics.metadata.core.op.BaseChangeSet;
+import com.thinkbiganalytics.metadata.core.op.BaseDataset;
 
 public class SimpleChangeEventDispatcherTest {
     
@@ -30,16 +30,16 @@ public class SimpleChangeEventDispatcherTest {
     public void test() throws Exception {
         final AtomicBoolean bool = new AtomicBoolean(false);
         
-        this.dispatcher.addListener(new DataChangeEventListener<DirectoryDataset, FileList>() {
+        this.dispatcher.addListener(new DataChangeEventListener<DirectoryDatasource, FileList>() {
             @Override
-            public void handleEvent(DataChangeEvent<DirectoryDataset, FileList> event) {
+            public void handleEvent(DataChangeEvent<DirectoryDatasource, FileList> event) {
                 bool.set(true);
             }
         });
         
-        BaseDirectoryDataset dataset = new BaseDirectoryDataset("test", "test", Paths.get("/tmp"));
+        BaseDirectoryDatasource dataset = new BaseDirectoryDatasource("test", "test", Paths.get("/tmp"));
         BaseFileList content = new BaseFileList(Arrays.<Path>asList(Paths.get("file1.txt"), Paths.get("file2.txt")));
-        BaseChangeSet<DirectoryDataset, FileList> changeSet = new BaseChangeSet<DirectoryDataset, FileList>(dataset, content);
+        BaseDataset<DirectoryDatasource, FileList> changeSet = new BaseDataset<DirectoryDatasource, FileList>(dataset, content);
         
         this.dispatcher.nofifyChange(changeSet);
         

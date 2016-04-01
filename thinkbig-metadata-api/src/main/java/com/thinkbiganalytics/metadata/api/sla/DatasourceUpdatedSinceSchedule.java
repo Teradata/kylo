@@ -11,11 +11,11 @@ import org.quartz.CronExpression;
  *
  * @author Sean Felten
  */
-public class DatasetUpdatedSinceSchedule extends DependentDataset {
+public class DatasourceUpdatedSinceSchedule extends DependentDatasource {
 
     private final CronExpression cronExpression;
 
-    public DatasetUpdatedSinceSchedule(String datasetName, String cronExpression) throws ParseException {
+    public DatasourceUpdatedSinceSchedule(String datasetName, String cronExpression) throws ParseException {
         super(datasetName);
         this.cronExpression = new CronExpression(cronExpression);
     }
@@ -26,6 +26,6 @@ public class DatasetUpdatedSinceSchedule extends DependentDataset {
     
     @Override
     public String getDescription() {
-        return "dataset " + getDatasetName() + " has been updated since " + getCronExpression();
+        return "Datasource " + getDatasourceName() + " has been updated since " + getCronExpression();
     }
 }

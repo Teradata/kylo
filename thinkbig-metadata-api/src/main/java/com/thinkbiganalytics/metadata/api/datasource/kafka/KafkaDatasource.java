@@ -9,6 +9,6 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
  *
  * @author Sean Felten
  */
-public interface KafkaDataset extends Datasource {
+public interface KafkaDatasource extends Datasource {
 
 }

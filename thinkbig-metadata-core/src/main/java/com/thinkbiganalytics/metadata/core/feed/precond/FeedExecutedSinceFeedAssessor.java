@@ -26,7 +26,7 @@ import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
  *
  * @author Sean Felten
  */
-public class FeedExecutedSinceFeedMetricAssessor extends MetadataMetricAssessor<FeedExecutedSinceFeed> {
+public class FeedExecutedSinceFeedAssessor extends MetadataMetricAssessor<FeedExecutedSinceFeed> {
 
     @Override
     public boolean accepts(Metric metric) {

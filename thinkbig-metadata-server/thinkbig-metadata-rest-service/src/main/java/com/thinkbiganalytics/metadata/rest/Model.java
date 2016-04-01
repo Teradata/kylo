@@ -22,14 +22,11 @@ import org.quartz.CronExpression;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDataset;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate;
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDataset;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
-import com.thinkbiganalytics.metadata.api.sla.DatasetUpdatedSinceSchedule;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceSchedule;
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
@@ -40,6 +37,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
+import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
 import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceScheduleMetric;
@@ -70,7 +68,7 @@ public class Model {
     com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric
     com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule
     
-    com.thinkbiganalytics.metadata.api.sla.DatasetUpdatedSinceSchedule
+    com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceSchedule
     com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed
     com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceSchedule
     com.thinkbiganalytics.metadata.api.sla.WithinSchedule
@@ -127,7 +125,7 @@ public class Model {
             public com.thinkbiganalytics.metadata.sla.api.Metric apply(Metric model) {
                 DatasourceUpdatedSinceScheduleMetric cast = (DatasourceUpdatedSinceScheduleMetric) model;
                 try {
-                    return new DatasetUpdatedSinceSchedule(cast.getDatasourceName(), cast.getCronSchedule());
+                    return new DatasourceUpdatedSinceSchedule(cast.getDatasourceName(), cast.getCronSchedule());
                 } catch (ParseException e) {
                     throw new WebApplicationException("Invalid cron expression provided for datasource update schedule: " + 
                                 cast.getCronSchedule(), Status.BAD_REQUEST);
@@ -169,14 +167,14 @@ public class Model {
             public Metric apply(com.thinkbiganalytics.metadata.sla.api.Metric domain) {
                 com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceFeedExecuted cast 
                     = (com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceFeedExecuted) domain;
-                return DatasourceUpdatedSinceFeedExecutedMetric.named(cast.getDatasetName(), cast.getFeedName());
+                return DatasourceUpdatedSinceFeedExecutedMetric.named(cast.getDatasourceName(), cast.getFeedName());
             }
         });
-        map.put(DatasetUpdatedSinceSchedule.class, new Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric>() {
+        map.put(DatasourceUpdatedSinceSchedule.class, new Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric>() {
             @Override
             public Metric apply(com.thinkbiganalytics.metadata.sla.api.Metric domain) {
-                DatasetUpdatedSinceSchedule cast = (DatasetUpdatedSinceSchedule) domain;
-                return DatasourceUpdatedSinceScheduleMetric.named(cast.getDatasetName(), cast.getCronExpression().toString());
+                DatasourceUpdatedSinceSchedule cast = (DatasourceUpdatedSinceSchedule) domain;
+                return DatasourceUpdatedSinceScheduleMetric.named(cast.getDatasourceName(), cast.getCronExpression().toString());
             }
         });
         
@@ -228,7 +226,7 @@ public class Model {
                 src.setId(domain.getId().toString());
 //                src.setLastLoadTime();
 //                src.setDatasourceId(domain.getDataset().getId().toString());
-                src.setDatasource(DOMAIN_TO_DS.apply(domain.getDataset()));
+                src.setDatasource(DOMAIN_TO_DS.apply(domain.getDatasource()));
                 return src;
             }
         };
@@ -241,7 +239,7 @@ public class Model {
                 dest.setId(domain.getId().toString());
 //                dest.setFieldsPolicy();
 //                dest.setDatasourceId(domain.getDataset().getId().toString());
-                dest.setDatasource(DOMAIN_TO_DS.apply(domain.getDataset()));
+                dest.setDatasource(DOMAIN_TO_DS.apply(domain.getDatasource()));
                 return dest;
             }
         };
@@ -256,15 +254,15 @@ public class Model {
             }
         };
     
-    public static final Function<Datasource, Datasource> DOMAIN_TO_DS
-        = new Function<Datasource, Datasource>() {
+    public static final Function<com.thinkbiganalytics.metadata.api.datasource.Datasource, Datasource> DOMAIN_TO_DS
+        = new Function<com.thinkbiganalytics.metadata.api.datasource.Datasource, Datasource>() {
             @Override
-            public Datasource apply(Datasource domain) {
+            public Datasource apply(com.thinkbiganalytics.metadata.api.datasource.Datasource domain) {
                 // TODO Is there a better way?
-                if (domain instanceof DirectoryDataset) {
-                    return DOMAIN_TO_DIR_DS.apply((DirectoryDataset) domain);
-                } else if (domain instanceof HiveTableDataset) {
-                    return DOMAIN_TO_TABLE_DS.apply((HiveTableDataset) domain);
+                if (domain instanceof com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource) {
+                    return DOMAIN_TO_DIR_DS.apply((com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource) domain);
+                } else if (domain instanceof com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource) {
+                    return DOMAIN_TO_TABLE_DS.apply((com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource) domain);
                 } else {
                     Datasource ds = new Datasource();
                     ds.setName(domain.getName());
@@ -277,10 +275,10 @@ public class Model {
             }
         };
 
-    public static final Function<HiveTableDataset, HiveTableDatasource> DOMAIN_TO_TABLE_DS
-        = new Function<HiveTableDataset, HiveTableDatasource>() {
+    public static final Function<com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource, HiveTableDatasource> DOMAIN_TO_TABLE_DS
+        = new Function<com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource, HiveTableDatasource>() {
             @Override
-            public HiveTableDatasource apply(HiveTableDataset domain) {
+            public HiveTableDatasource apply(com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource domain) {
                 HiveTableDatasource table = new HiveTableDatasource();
                 table.setId(domain.getId().toString());
                 table.setName(domain.getName());
@@ -297,10 +295,10 @@ public class Model {
             }
         };
     
-    public static final Function<DirectoryDataset, DirectoryDatasource> DOMAIN_TO_DIR_DS
-        = new Function<DirectoryDataset, DirectoryDatasource>() {
+    public static final Function<com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource, DirectoryDatasource> DOMAIN_TO_DIR_DS
+        = new Function<com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource, DirectoryDatasource>() {
             @Override
-            public DirectoryDatasource apply(DirectoryDataset domain) {
+            public DirectoryDatasource apply(com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource domain) {
                 DirectoryDatasource dir = new DirectoryDatasource();
                 dir.setId(domain.getId().toString());
                 dir.setName(domain.getName());
@@ -325,18 +323,18 @@ public class Model {
                 op.setStopTiime(Formatters.TIME_FORMATTER.print(domain.getStopTime()));
                 op.setState(DataOperation.State.valueOf(domain.getState().name()));
                 op.setStatus(domain.getStatus());
-                if (domain.getChangeSet() != null) op.setDataset(DOMAIN_TO_DATASET.apply(domain.getChangeSet()));
+                if (domain.getDataset() != null) op.setDataset(DOMAIN_TO_DATASET.apply(domain.getDataset()));
                 
                 return op;
             }
         };
     
 
-    public static final Function<Dataset<Datasource, ChangeSet>, com.thinkbiganalytics.metadata.rest.model.op.Dataset> DOMAIN_TO_DATASET
-        = new Function<Dataset<Datasource, ChangeSet>, com.thinkbiganalytics.metadata.rest.model.op.Dataset>() {
+    public static final Function<com.thinkbiganalytics.metadata.api.op.Dataset<com.thinkbiganalytics.metadata.api.datasource.Datasource, ChangeSet>, Dataset> DOMAIN_TO_DATASET
+        = new Function<com.thinkbiganalytics.metadata.api.op.Dataset<com.thinkbiganalytics.metadata.api.datasource.Datasource, ChangeSet>, Dataset>() {
             @Override
-            public com.thinkbiganalytics.metadata.rest.model.op.Dataset apply(Dataset<Datasource, ChangeSet> domain) {
-                Datasource src = DOMAIN_TO_DS.apply(domain.getDataset());
+            public Dataset apply(com.thinkbiganalytics.metadata.api.op.Dataset<com.thinkbiganalytics.metadata.api.datasource.Datasource, ChangeSet> domain) {
+                Datasource src = DOMAIN_TO_DS.apply(domain.getDatasource());
                 com.thinkbiganalytics.metadata.rest.model.op.Dataset ds = new com.thinkbiganalytics.metadata.rest.model.op.Dataset();
                 List<com.thinkbiganalytics.metadata.rest.model.op.ChangeSet> changeSets 
                     = new ArrayList<>(Collections2.transform(domain.getChanges(), DOMAIN_TO_CHANGESET));

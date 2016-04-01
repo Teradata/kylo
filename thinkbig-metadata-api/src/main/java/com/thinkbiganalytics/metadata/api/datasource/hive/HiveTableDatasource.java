@@ -9,7 +9,7 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
  *
  * @author Sean Felten
  */
-public interface HiveTableDataset extends Datasource {
+public interface HiveTableDatasource extends Datasource {
 
     String getDatabaseName();
     

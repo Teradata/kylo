@@ -32,6 +32,6 @@ public interface DataOperation extends Serializable {
     
     FeedDestination getProducer();
     
-    Dataset<Datasource, ChangeSet> getChangeSet();
+    Dataset<Datasource, ChangeSet> getDataset();
 
 }

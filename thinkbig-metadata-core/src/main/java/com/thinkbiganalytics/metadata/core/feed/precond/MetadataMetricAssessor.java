@@ -54,7 +54,7 @@ public abstract class MetadataMetricAssessor<M extends Metric>
         int maxCompleteness = 0;
         
         for (DataOperation op : testedOps) {
-            Dataset<Datasource, ChangeSet> cs = op.getChangeSet();
+            Dataset<Datasource, ChangeSet> cs = op.getDataset();
             
             if (cs.getTime().isBefore(sinceTime)) {
                 break;

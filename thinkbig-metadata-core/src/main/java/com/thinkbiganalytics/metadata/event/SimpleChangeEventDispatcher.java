@@ -65,7 +65,7 @@ public class SimpleChangeEventDispatcher implements ChangeEventDispatcher {
         for (Entry<DataChangeEventListener<? extends Datasource, ? extends ChangeSet>, 
                 ListenerMatcher> entry : this.listeners.entrySet()) {
             for (C content : change.getChanges()) {
-                if (entry.getValue().matches(change.getDataset(), content)) {
+                if (entry.getValue().matches(change.getDatasource(), content)) {
                     DataChangeEvent<D, C> event = new BaseDataChangeEvent<>(change);
                     DataChangeEventListener<D, C> listener = (DataChangeEventListener<D, C>) entry.getKey();
                     listener.handleEvent(event);
