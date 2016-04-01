@@ -137,7 +137,7 @@ public abstract class ScriptEngine
      * @return the Spark context
      */
     @Nonnull
-    public final SparkContext getSparkContext ()
+    public SparkContext getSparkContext ()
     {
         if (this.sparkContext == null) {
             this.sparkContext = createSparkContext();
@@ -151,7 +151,7 @@ public abstract class ScriptEngine
      * @return the SQL context
      */
     @Nonnull
-    public final SQLContext getSQLContext ()
+    public SQLContext getSQLContext ()
     {
         if (this.sqlContext == null) {
             this.sqlContext = new HiveContext(getSparkContext());
@@ -199,7 +199,7 @@ public abstract class ScriptEngine
      * @return the value of the binding
      */
     @Nullable
-    final Object getValue (@Nonnull final String name)
+    Object getValue (@Nonnull final String name)
     {
         return this.values.get(name);
     }
@@ -209,7 +209,7 @@ public abstract class ScriptEngine
      *
      * @param t the exception
      */
-    final void setException (@Nonnull final Throwable t)
+    void setException (@Nonnull final Throwable t)
     {
         this.exception.set(t);
     }
@@ -219,7 +219,7 @@ public abstract class ScriptEngine
      *
      * @param result the result
      */
-    final void setResult (@Nullable final Object result)
+    void setResult (@Nullable final Object result)
     {
         this.exception.set(null);
         this.result.set(result);

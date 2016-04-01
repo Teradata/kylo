@@ -1,10 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.thinkbiganalytics.nifi</groupId>
+  <parent>
+    <groupId>com.thinkbiganalytics.nifi</groupId>
+    <artifactId>thinkbig-nifi</artifactId>
+    <version>0.5.0-SNAPSHOT</version>
+    <relativePath>..</relativePath>
+  </parent>
+
   <artifactId>thinkbig-spark-shell</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <name>Interactive Spark Shell Server</name>
+  <description>Compiles and executes Scala code in a Spark context.</description>
 
   <properties>
     <java.version>1.7</java.version>
@@ -44,11 +50,13 @@
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-compiler</artifactId>
       <version>${scala.version}</version>
+      <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
       <version>${scala.version}</version>
+      <scope>provided</scope>
     </dependency>
 
     <!-- Spark dependencies -->
@@ -75,8 +83,13 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.4</version>
+      <version>4.12</version>
       <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>1.10.19</version>
     </dependency>
     <dependency>
       <groupId>org.specs</groupId>

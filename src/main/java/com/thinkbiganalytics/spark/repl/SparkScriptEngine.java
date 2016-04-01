@@ -7,7 +7,6 @@ import javax.annotation.Nullable;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
-import org.apache.spark.repl.SparkILoop;
 import org.apache.spark.repl.SparkIMain;
 
 import com.google.common.base.Joiner;
@@ -16,19 +15,30 @@ import scala.collection.immutable.List;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.Results;
 
+/**
+ * Evaluates Scala scripts using the Spark REPL interface.
+ */
 public class SparkScriptEngine extends ScriptEngine
 {
+    /** Spark configuration */
     @Nonnull
     private final SparkConf conf;
 
+    /** Spark REPL interface */
     @Nullable
     private SparkIMain interpreter;
 
-    public SparkScriptEngine (@Nonnull final SparkConf conf)
+    /**
+     * Constructs a {@code SparkScriptEngine} with the specified Spark configuration.
+     *
+     * @param conf the Spark configuration
+     */
+    SparkScriptEngine (@Nonnull final SparkConf conf)
     {
         this.conf = conf;
     }
 
+    @Override
     public void init ()
     {
         getInterpreter();
@@ -48,6 +58,11 @@ public class SparkScriptEngine extends ScriptEngine
         getInterpreter().interpret(script);
     }
 
+    /**
+     * Gets the Spark REPL interface to be used.
+     *
+     * @return the interpreter
+     */
     @Nonnull
     private SparkIMain getInterpreter ()
     {
@@ -56,14 +71,12 @@ public class SparkScriptEngine extends ScriptEngine
             Settings settings = new Settings();
 
             if (settings.classpath().isDefault()) {
-                String classPath = Joiner.on(':').join(((URLClassLoader)getClass().getClassLoader()).getURLs()) + ":" + System.getProperty("java.class.path");
+                String classPath = Joiner.on(':').join(((URLClassLoader)getClass().getClassLoader())
+                        .getURLs()) + ":" + System.getProperty("java.class.path");
                 settings.classpath().value_$eq(classPath);
             }
 
             // Initialize engine
-//            SparkILoop loop = new SparkILoop(null, getPrintWriter());
-//            loop.settings_$eq(settings);
-//            loop.createInterpreter();
             final ClassLoader parentClassLoader = getClass().getClassLoader();
             SparkIMain interpreter = new SparkIMain(settings, getPrintWriter(), false) {
                 @Override
@@ -72,7 +85,6 @@ public class SparkScriptEngine extends ScriptEngine
                 }
             };
 
-//            this.interpreter = loop.intp();
             interpreter.setContextClassLoader();
             interpreter.initializeSynchronous();
 
@@ -80,7 +92,7 @@ public class SparkScriptEngine extends ScriptEngine
             Results.Result result = interpreter.bind("engine", SparkScriptEngine.class
                     .getName(), this, List.<String>empty());
             if (result instanceof Results.Error$) {
-                throw new RuntimeException("TODO");
+                throw new IllegalStateException("Failed to initialize interpreter");
             }
 
             this.interpreter = interpreter;
