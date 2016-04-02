@@ -238,7 +238,8 @@ public class TableMergeSupport implements Serializable {
                 String[] values = new String[count];
                 for (int i = 1; i <= count; i++) {
                     Object oVal = rs.getObject(i);
-                    values[i - 1] = StringUtils.defaultString(oVal.toString(), "");
+                    String sVal = (oVal == null ? "" : oVal.toString());
+                    values[i - 1] = StringUtils.defaultString(sVal, "");
                 }
                 Long numRecords = rs.getLong(count);
                 v.add(new PartitionBatch(numRecords, spec, values));
