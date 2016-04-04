@@ -57,7 +57,10 @@ public class JdbcCommon {
     public static Logger logger = LoggerFactory.getLogger(JdbcCommon.class);
 
     public static long convertToCSVStream(final ResultSet rs, final OutputStream outStream, final RowVisitor visitor) throws SQLException, IOException {
-         if (rs == null || rs.getMetaData() == null) {
+        // avoid overflowing log with redundant messages
+        int dateConversionWarning = 0;
+
+        if (rs == null || rs.getMetaData() == null) {
             logger.warn("Received empty resultset or no metadata.");
             return 0;
         }
@@ -87,7 +90,24 @@ public class JdbcCommon {
 
                 int colType = meta.getColumnType(i);
                 if (colType == Types.DATE || colType == Types.TIMESTAMP) {
-                    Timestamp sqlDate = rs.getTimestamp(i);
+                    Timestamp sqlDate = null;
+                    try {
+                        // Extract timestamp
+                        sqlDate = rs.getTimestamp(i);
+                    } catch (SQLException e) {
+                        try {
+                            // Attempt to extract date
+                            Date sqlDateDate = (rs.getDate(i));
+                            if (sqlDateDate != null) {
+                                Long timeInMillis = sqlDateDate.getTime();
+                                sqlDate = new Timestamp(timeInMillis);
+                            }
+                        } catch (Exception e2) {
+                            // Still failed, maybe exotic date type
+                            if (dateConversionWarning++ < 10) logger.warn(rs.getMetaData().getColumnName(i) + " is not convertible to timestamp or date");
+                        }
+                    }
+
                     if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, sqlDate);
                     if (sqlDate != null) {
                         DateTimeFormatter formatter = ISODateTimeFormat.dateTime().withZoneUTC();
@@ -102,7 +122,7 @@ public class JdbcCommon {
                     val = rs.getString(i);
                     if (visitor != null) visitor.visitColumn(rs.getMetaData().getColumnName(i), colType, val);
                 }
-                sb.append((val == null ? "" :  StringEscapeUtils.escapeCsv(val)));
+                sb.append((val == null ? "" : StringEscapeUtils.escapeCsv(val)));
                 if (i != nrOfColumns) {
                     sb.append(",");
                 } else {
