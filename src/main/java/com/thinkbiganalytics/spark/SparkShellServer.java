@@ -6,6 +6,7 @@ import javax.annotation.Nonnull;
 import javax.ws.rs.core.UriBuilder;
 
 import org.apache.spark.SparkConf;
+import org.apache.spark.util.Utils;
 import org.eclipse.jetty.server.Server;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -17,6 +18,9 @@ import com.thinkbiganalytics.spark.repl.ScriptEngine;
 import com.thinkbiganalytics.spark.repl.ScriptEngineFactory;
 import com.thinkbiganalytics.spark.rest.SparkShellController;
 import com.thinkbiganalytics.spark.service.TransformService;
+
+import scala.runtime.AbstractFunction0;
+import scala.runtime.BoxedUnit;
 
 /**
  * Instantiates a REST server for executing Spark scripts.
@@ -36,7 +40,7 @@ public class SparkShellServer
 
         SparkConf conf = new SparkConf().setAppName("SparkShellServer");
         final ScriptEngine scriptEngine = ScriptEngineFactory.getScriptEngine(conf);
-        final TransformService transformService = new TransformService(scriptEngine);
+        final TransformService transformService = createTransformService(scriptEngine);
         config.register(new AbstractBinder() {
             @Override
             protected void configure () {
@@ -60,5 +64,29 @@ public class SparkShellServer
         Server server = JettyHttpContainerFactory.createServer(bindUri, config);
         server.start();
         server.join();
+    }
+
+    /**
+     * Create a transform service using the specified script engine.
+     *
+     * @param engine the script engine
+     * @return the transform service
+     */
+    private static TransformService createTransformService (@Nonnull final ScriptEngine engine)
+    {
+        final TransformService service = new TransformService(engine);
+        service.startAsync();
+
+        Utils.addShutdownHook(new AbstractFunction0<BoxedUnit>() {
+            @Override
+            public BoxedUnit apply () {
+                service.stopAsync();
+                service.awaitTerminated();
+                return null;
+            }
+        });
+
+        service.awaitRunning();
+        return service;
     }
 }

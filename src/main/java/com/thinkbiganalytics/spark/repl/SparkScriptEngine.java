@@ -5,6 +5,8 @@ import java.net.URLClassLoader;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.repl.SparkIMain;
@@ -20,6 +22,8 @@ import scala.tools.nsc.interpreter.Results;
  */
 public class SparkScriptEngine extends ScriptEngine
 {
+    private static final Logger LOG = LogManager.getLogger(SparkScriptEngine.class);
+
     /** Spark configuration */
     @Nonnull
     private final SparkConf conf;
@@ -55,6 +59,7 @@ public class SparkScriptEngine extends ScriptEngine
     @Override
     protected void execute (@Nonnull final String script)
     {
+        LOG.debug("Executing script:\n{}", script);
         getInterpreter().interpret(script);
     }
 

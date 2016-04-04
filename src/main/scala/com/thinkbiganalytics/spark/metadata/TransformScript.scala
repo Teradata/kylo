@@ -1,32 +1,38 @@
 package com.thinkbiganalytics.spark.metadata
 
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.PrimitiveObjectInspectorFactory
+import java.util
+
+import com.thinkbiganalytics.spark.util.HiveUtils
+import org.apache.hadoop.hive.serde2.objectinspector.primitive.{JavaHiveDecimalObjectInspector, PrimitiveObjectInspectorFactory}
 import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspector, ObjectInspectorFactory}
+import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 
+/** Wraps a transform script into a function that can be evaluated.
+  *
+  * @param destination the name of the destination Hive table
+  * @param sqlContext the Spark SQL context
+  */
 abstract class TransformScript (destination: String, sqlContext: SQLContext) extends Runnable
 {
+    /** Evaluates this transform script and stores the result in a Hive table. */
     override def run (): Unit = {
         val df: DataFrame = dataFrame
-        var schema = "CREATE TABLE " + destination + " ("
-        var first = true
-
-        for (field <- df.schema.fields) {
-            if (first) first = false
-            else schema = schema + ", "
-            val name = field.name.replace('(', '_').replace(')', '_')
-            schema = schema + name + " " + toInspector(field.dataType).getTypeName
-        }
-
-        schema = schema + ") STORED AS ORC"
-
-        sqlContext.sql(schema)
-        dataFrame.write.mode(SaveMode.Overwrite).insertInto(destination)
+        sqlContext.sql(toSQL(df.schema))
+        df.write.mode(SaveMode.Overwrite).insertInto(destination)
     }
 
+    /** Evaluates the transform script.
+      *
+      * @return the transformation result
+      */
     protected def dataFrame: DataFrame
 
+    /** Fetches or re-generates the results of the parent transformation, if available.
+      *
+      * @return the parent results
+      */
     protected def parent: DataFrame = {
         try {
             sqlContext.read.table(parentTable)
@@ -36,38 +42,80 @@ abstract class TransformScript (destination: String, sqlContext: SQLContext) ext
         }
     }
 
+    /** Re-generates the parent transformation.
+      *
+      * @return the parent transformation
+      */
     protected def parentDataFrame: DataFrame = {
         throw new UnsupportedOperationException
     }
 
+    /** Gets the name of the Hive table with the results of the parent transformation.
+      *
+      * @return the parent transformation
+      */
     protected def parentTable: String = {
         throw new UnsupportedOperationException
     }
 
-    // TODO
-    def toInspector(dataType: DataType): ObjectInspector = dataType match {
-        case ArrayType(tpe, _) =>
-            ObjectInspectorFactory.getStandardListObjectInspector(toInspector(tpe))
-        case MapType(keyType, valueType, _) =>
-            ObjectInspectorFactory.getStandardMapObjectInspector(
-                toInspector(keyType), toInspector(valueType))
-        case StringType => PrimitiveObjectInspectorFactory.javaStringObjectInspector
-        case IntegerType => PrimitiveObjectInspectorFactory.javaIntObjectInspector
-        case DoubleType => PrimitiveObjectInspectorFactory.javaDoubleObjectInspector
-        case BooleanType => PrimitiveObjectInspectorFactory.javaBooleanObjectInspector
-        case LongType => PrimitiveObjectInspectorFactory.javaLongObjectInspector
-        case FloatType => PrimitiveObjectInspectorFactory.javaFloatObjectInspector
-        case ShortType => PrimitiveObjectInspectorFactory.javaShortObjectInspector
-        case ByteType => PrimitiveObjectInspectorFactory.javaByteObjectInspector
-        case NullType => PrimitiveObjectInspectorFactory.javaVoidObjectInspector
+    /** Converts the specified Spark SQL type to a Hive ObjectInspector.
+      *
+      * @param dataType the Spark SQL type
+      * @return the Hive ObjectInspector
+      */
+    def toInspector (dataType: DataType): ObjectInspector = dataType match {
+        // Primitive types
         case BinaryType => PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector
+        case BooleanType => PrimitiveObjectInspectorFactory.javaBooleanObjectInspector
+        case ByteType => PrimitiveObjectInspectorFactory.javaByteObjectInspector
         case DateType => PrimitiveObjectInspectorFactory.javaDateObjectInspector
+        case decimalType: DecimalType => new JavaHiveDecimalObjectInspector(new DecimalTypeInfo(
+            decimalType.precision, decimalType.scale))
+        case DoubleType => PrimitiveObjectInspectorFactory.javaDoubleObjectInspector
+        case FloatType => PrimitiveObjectInspectorFactory.javaFloatObjectInspector
+        case IntegerType => PrimitiveObjectInspectorFactory.javaIntObjectInspector
+        case LongType => PrimitiveObjectInspectorFactory.javaLongObjectInspector
+        case NullType => PrimitiveObjectInspectorFactory.javaVoidObjectInspector
+        case ShortType => PrimitiveObjectInspectorFactory.javaShortObjectInspector
+        case StringType => PrimitiveObjectInspectorFactory.javaStringObjectInspector
         case TimestampType => PrimitiveObjectInspectorFactory.javaTimestampObjectInspector
-        // TODO decimal precision?
-        case DecimalType() => PrimitiveObjectInspectorFactory.javaHiveDecimalObjectInspector
+
+        // Complex types
+        case ArrayType(elementType, _) => ObjectInspectorFactory.getStandardListObjectInspector(
+            toInspector(elementType))
+        case MapType(keyType, valueType, _) => ObjectInspectorFactory.getStandardMapObjectInspector(
+            toInspector(keyType), toInspector(valueType))
         case StructType(fields) =>
-            ObjectInspectorFactory.getStandardStructObjectInspector(
-                java.util.Arrays.asList(fields.map(f => f.name) : _*),
-                java.util.Arrays.asList(fields.map(f => toInspector(f.dataType)) : _*))
+            val fieldNames = util.Arrays.asList(fields.map(_.name): _*)
+            val fieldInspectors = util.Arrays.asList(fields.map(f => toInspector(f.dataType)): _*)
+            ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, fieldInspectors)
+
+        // Unsupported types
+        case _ => throw new IllegalArgumentException
+    }
+
+    /** Converts the specified DataFrame schema to a CREATE TABLE statement.
+      *
+      * @param schema the DataFrame schema
+      * @return the CREATE TABLE statement
+      */
+    def toSQL (schema: StructType): String = {
+        var first = true
+        val sql = new StringBuilder
+
+        sql.append("CREATE TABLE ")
+        sql.append(HiveUtils.quoteIdentifier(destination))
+        sql.append('(')
+
+        for (field <- schema.fields) {
+            if (first) first = false
+            else sql.append(',')
+            sql.append(HiveUtils.quoteIdentifier(field.name))
+            sql.append(' ')
+            sql.append(toInspector(field.dataType).getTypeName)
+        }
+
+        sql.append(") STORED AS ORC")
+        sql.toString()
     }
 }

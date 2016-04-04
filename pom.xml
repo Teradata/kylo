@@ -15,6 +15,7 @@
   <properties>
     <java.version>1.7</java.version>
     <jersey.version>2.22.2</jersey.version>
+    <log4j.version>2.5</log4j.version>
     <scala.version>2.10.4</scala.version>  <!-- Require 2.10.4+ for Java 8 -->
     <spark.version>1.4.0</spark.version>
   </properties>
@@ -43,6 +44,18 @@
       <groupId>org.glassfish.jersey.media</groupId>
       <artifactId>jersey-media-json-jackson</artifactId>
       <version>${jersey.version}</version>
+    </dependency>
+
+    <!-- Logging dependencies -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>${log4j.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>${log4j.version}</version>
     </dependency>
 
     <!-- Scala dependencies -->

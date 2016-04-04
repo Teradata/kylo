@@ -39,7 +39,7 @@ public abstract class ScriptEngine
     /** Label used by the compiler to indicate a compile error */
     private static final byte[] LABEL = "<console>".getBytes(Charsets.UTF_8);
 
-    /** Separator between label, line number, and error messgae */
+    /** Separator between label, line number, and error message */
     private static final byte[] SEPARATOR = new byte[] {':'};
 
     /** Exception thrown by the last script */
@@ -74,7 +74,7 @@ public abstract class ScriptEngine
      * @throws ScriptException if an error occurs in the script
      */
     @Nullable
-    public final synchronized Object eval (@Nonnull final String script) throws ScriptException
+    public synchronized Object eval (@Nonnull final String script) throws ScriptException
     {
         List<NamedParam> bindings = ImmutableList.of();
         return eval(script, bindings);
@@ -89,14 +89,14 @@ public abstract class ScriptEngine
      * @throws ScriptException if an error occurs in the script
      */
     @Nullable
-    public final synchronized Object eval (@Nonnull final String script,
+    public synchronized Object eval (@Nonnull final String script,
             @Nonnull final List<NamedParam> bindings) throws ScriptException
     {
         // Define class containing script
         final StringBuilder cls = new StringBuilder();
         cls.append("class Script (engine: com.thinkbiganalytics.spark.repl.ScriptEngine)");
         cls.append("    extends com.thinkbiganalytics.spark.repl.Script (engine) {\n");
-        cls.append("  override def eval (): Object = {\n");
+        cls.append("  override def eval (): Any = {\n");
         cls.append(script);
         cls.append("  }\n");
 
@@ -187,7 +187,7 @@ public abstract class ScriptEngine
      *
      * @return the compiler output stream
      */
-    protected final PrintWriter getPrintWriter ()
+    protected PrintWriter getPrintWriter ()
     {
         return new PrintWriter(this.out);
     }
