@@ -57,7 +57,7 @@ public class BaseFeed implements Feed {
         return new HashSet<>(this.sources.values());
     }
 
-    public Set<FeedDestination> getDestinations() {
+    public List<FeedDestination> getDestinations() {
         return new HashSet<>(destinations.values());
     }
     
@@ -88,7 +88,7 @@ public class BaseFeed implements Feed {
     }
     
     @Override
-    public FeedSource getSource(FeedSource.ID id) {
+    public FeedSource getSource(com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id) {
         return this.sources.get(id);
     }
 
@@ -214,7 +214,7 @@ public class BaseFeed implements Feed {
         }
         
         @Override
-        public ServiceLevelAgreement.ID getAgreementId() {
+        public ServiceLevelAgreement getAgreement() {
             return this.agreemenetId;
         }
     }

@@ -17,5 +17,5 @@ public interface FeedSource extends FeedData {
 
     ID getId();
     
-    ServiceLevelAgreement.ID getAgreementId();
+    ServiceLevelAgreement getAgreement();
 }

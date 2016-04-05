@@ -4,7 +4,7 @@
 package com.thinkbiganalytics.metadata.api.feed;
 
 import java.io.Serializable;
-import java.util.Set;
+import java.util.List;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 
@@ -24,11 +24,13 @@ public interface Feed extends Serializable {
     
     FeedPrecondition getPrecondition();
     
-    Set<FeedSource> getSources();
+    List<FeedSource> getSources();
+    
+    FeedSource getSource(Datasource.ID id);
     
     FeedSource getSource(FeedSource.ID id);
 
-    Set<FeedDestination> getDestinations();
+    List<FeedDestination> getDestinations();
 
     FeedDestination getDestination(Datasource.ID id);
 
