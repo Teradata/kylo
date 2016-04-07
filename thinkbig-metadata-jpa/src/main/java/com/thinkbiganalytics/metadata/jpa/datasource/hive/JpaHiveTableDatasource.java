@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.jpa.datasource.hive;
 
+import javax.persistence.DiscriminatorValue;
+
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 
@@ -10,7 +12,10 @@ import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
  *
  * @author Sean Felten
  */
+@DiscriminatorValue("hivetable")
 public class JpaHiveTableDatasource extends JpaDatasource implements HiveTableDatasource {
+    
+    private static final long serialVersionUID = -9033261327846205036L;
     
     private String database;
     private String tableName;

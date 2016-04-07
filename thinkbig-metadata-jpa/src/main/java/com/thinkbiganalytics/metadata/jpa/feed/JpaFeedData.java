@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.jpa.feed;
 
 import javax.persistence.ManyToOne;
+import javax.persistence.MappedSuperclass;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -14,8 +15,10 @@ import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
  *
  * @author Sean Felten
  */
-@SuppressWarnings("serial")
+@MappedSuperclass
 public abstract class JpaFeedData implements FeedData {
+
+    private static final long serialVersionUID = -1752094328137424635L;
 
     @ManyToOne
     private JpaFeed feed;

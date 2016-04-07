@@ -4,8 +4,10 @@
 package com.thinkbiganalytics.metadata.core.feed;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -53,12 +55,12 @@ public class BaseFeed implements Feed {
         return Description;
     }
 
-    public Set<FeedSource> getSources() {
-        return new HashSet<>(this.sources.values());
+    public List<FeedSource> getSources() {
+        return new ArrayList<>(this.sources.values());
     }
 
     public List<FeedDestination> getDestinations() {
-        return new HashSet<>(destinations.values());
+        return new ArrayList<>(destinations.values());
     }
     
     @Override
@@ -81,14 +83,25 @@ public class BaseFeed implements Feed {
         return addSource(ds, null);
     }
 
-    public FeedSource addSource(Datasource ds, ServiceLevelAgreement.ID agreemenetId) {
-        Source src = new Source(ds, agreemenetId);
+    public FeedSource addSource(Datasource ds, ServiceLevelAgreement agreement) {
+        Source src = new Source(ds, agreement);
         this.sources.put(src.getId(), src);
         return src;
     }
     
     @Override
-    public FeedSource getSource(com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id) {
+    public FeedSource getSource(Datasource.ID id) {
+        for (FeedSource src : this.sources.values()) {
+            if (src.getFeed().getId().equals(id)) {
+                return src;
+            }
+        }
+        
+        return null;
+    }
+
+    @Override
+    public FeedSource getSource(FeedSource.ID id) {
         return this.sources.get(id);
     }
 
@@ -200,12 +213,12 @@ public class BaseFeed implements Feed {
     private class Source extends Data implements FeedSource {
 
         private SourceId id;
-        private ServiceLevelAgreement.ID agreemenetId;
+        private ServiceLevelAgreement agreemenet;
         
-        public Source(Datasource ds, ServiceLevelAgreement.ID agreementId) {
+        public Source(Datasource ds, ServiceLevelAgreement agreement) {
             super(ds);
             this.id = new SourceId();
-            this.agreemenetId = agreementId;
+            this.agreemenet = agreement;
         }
  
         @Override
@@ -215,7 +228,7 @@ public class BaseFeed implements Feed {
         
         @Override
         public ServiceLevelAgreement getAgreement() {
-            return this.agreemenetId;
+            return this.agreemenet;
         }
     }
     

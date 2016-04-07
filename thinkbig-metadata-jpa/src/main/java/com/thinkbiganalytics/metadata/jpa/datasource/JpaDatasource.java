@@ -9,15 +9,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Embeddable;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 
 /**
  *
@@ -25,20 +30,24 @@ import com.thinkbiganalytics.metadata.api.op.ChangeSet;
  */
 @Entity
 @Table(name="DATASOURCE")
-public class JpaDatasource implements Datasource, Serializable {
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="TYPE")
+public abstract class JpaDatasource implements Datasource, Serializable {
 
     private static final long serialVersionUID = -2805184157648437890L;
     
-    private ID id;
+    @EmbeddedId
+    private DatasourceId id;
+    
     private String name;
     private String description;
     private DateTime creationTime;
     
     @Transient  // TODO implement
-    private List<Dataset<? extends Datasource, ? extends ChangeSet>> changeSets = new ArrayList<>();
+    private List<Dataset<? extends Datasource, ? extends ChangeSet>> datasets = new ArrayList<>();
 
     public JpaDatasource(String name, String descr) {
-        this.id = new DatasetId();
+        this.id = DatasourceId.create();
         this.creationTime = new DateTime();
         this.name = name;
         this.description = descr;
@@ -60,18 +69,34 @@ public class JpaDatasource implements Datasource, Serializable {
         return creationTime;
     }
 
-    public List<Dataset<? extends Datasource, ? extends ChangeSet>> getChangeSets() {
-        return changeSets;
+    public List<Dataset<? extends Datasource, ? extends ChangeSet>> getDatasets() {
+        return datasets;
     }
 
     
-    protected static class DatasetId implements ID {
-        private UUID uuid = UUID.randomUUID();
+    @Embeddable
+    protected static class DatasourceId implements ID {
         
-        public DatasetId() {
+        private static final long serialVersionUID = 241001606640713117L;
+        
+        private UUID uuid;
+        
+        public static DatasourceId create() {
+            return new DatasourceId(UUID.randomUUID());
         }
         
-        public DatasetId(Serializable ser) {
+        public DatasourceId() {
+        }
+        
+        public UUID getUuid() {
+            return uuid;
+        }
+        
+        public void setUuid(UUID uuid) {
+            this.uuid = uuid;
+        }
+        
+        public DatasourceId(Serializable ser) {
             if (ser instanceof String) {
                 this.uuid = UUID.fromString((String) ser);
             } else if (ser instanceof UUID) {
@@ -83,8 +108,8 @@ public class JpaDatasource implements Datasource, Serializable {
         
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof DatasetId) {
-                DatasetId that = (DatasetId) obj;
+            if (obj instanceof DatasourceId) {
+                DatasourceId that = (DatasourceId) obj;
                 return Objects.equals(this.uuid, that.uuid);
             } else {
                 return false;
@@ -101,4 +126,24 @@ public class JpaDatasource implements Datasource, Serializable {
             return this.uuid.toString();
         }
     }
+//
+//  
+//  @Embeddable
+//  protected static class DatasourceId extends BaseId implements ID {
+//      
+//      private static final long serialVersionUID = 241001606640713117L;
+//
+//      public static DatasourceId create() {
+//          return new DatasourceId(UUID.randomUUID());
+//      }
+//      
+//      public DatasourceId() {
+//          super();
+//      }
+//
+//      public DatasourceId(Serializable ser) {
+//          super(ser);
+//      } 
+//  }
+//  
 }

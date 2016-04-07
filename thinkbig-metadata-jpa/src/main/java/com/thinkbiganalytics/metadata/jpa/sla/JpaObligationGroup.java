@@ -5,8 +5,12 @@ package com.thinkbiganalytics.metadata.jpa.sla;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
@@ -20,17 +24,21 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  * @author Sean Felten
  */
 @Entity
-@Table(name="SLA_OBLIGATION")
+@Table(name="SLA_OBLIGATION_GROUP")
 public class JpaObligationGroup implements ObligationGroup, Serializable {
     
     private static final long serialVersionUID = 3948150775928992180L;
+
+    @Id
+    @GeneratedValue
+    private UUID id;
 
     private Condition condition;
     
     @ManyToOne
     private JpaServiceLevelAgreement agreement;
     
-    @OneToMany
+    @OneToMany(targetEntity=JpaObligation.class, mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Obligation> obligations;
     
     public JpaObligationGroup() {

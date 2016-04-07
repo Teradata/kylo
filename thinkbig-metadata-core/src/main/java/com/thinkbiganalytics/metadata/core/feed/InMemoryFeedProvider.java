@@ -312,9 +312,15 @@ public class InMemoryFeedProvider implements FeedProvider {
         if (srcIds.containsKey(ds.getId())) {
             return srcIds.get(ds.getId());
         } else {
-            FeedSource src = feed.addSource(ds, slaId);
-            this.sources.put(src.getId(), feed);
-            return src;
+            ServiceLevelAgreement sla = this.slaProvider.getAgreement(slaId);
+            
+            if (sla != null) {
+                FeedSource src = feed.addSource(ds, sla);
+                this.sources.put(src.getId(), feed);
+                return src;
+            } else {
+                throw new FeedCreateException("An SLA with the given ID does not exists: " + slaId);
+            }
         }
     }
 

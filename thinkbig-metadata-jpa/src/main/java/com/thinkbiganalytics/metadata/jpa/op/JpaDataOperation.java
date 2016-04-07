@@ -3,42 +3,94 @@
  */
 package com.thinkbiganalytics.metadata.jpa.op;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
+
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 
 import org.joda.time.DateTime;
 import org.springframework.util.StringUtils;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
+import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed.FeedId;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
 
 /**
  *
  * @author Sean Felten
  */
+@Entity
+@Table(name="DATA_OPERATION")
 public class JpaDataOperation implements DataOperation {
 
-    private ID id;
+    private static final long serialVersionUID = 4869637300972732879L;
+
+    @EmbeddedId
+    private OpId id;
+    
+    @ManyToOne
+    private JpaFeedDestination producer;
+    
+    @OneToOne
+    private JpaDataset<Datasource, ChangeSet> dataset;
+    
+    public void setId(OpId id) {
+        this.id = id;
+    }
+
+    public void setProducer(JpaFeedDestination producer) {
+        this.producer = producer;
+    }
+
+    public void setDataset(JpaDataset<Datasource, ChangeSet> dataset) {
+        this.dataset = dataset;
+    }
+
+    public void setStartTime(DateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setStopTime(DateTime stopTime) {
+        this.stopTime = stopTime;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+
     private DateTime startTime;
     private DateTime stopTime;
     private State state;
     private String status = "";
-    private FeedDestination producer;
-    private Dataset<Datasource, ChangeSet> changeSet;
+    
+    public JpaDataOperation() {
+    }
 
-    public JpaDataOperation(Datasource ds, FeedDestination feedDest) {
+    public JpaDataOperation(JpaDatasource ds, JpaFeedDestination feedDest) {
         this(ds, feedDest, "Operation in progress", new DateTime());
     }
     
-    public JpaDataOperation(Datasource ds, FeedDestination feedDest, DateTime time) {
+    public JpaDataOperation(JpaDatasource ds, JpaFeedDestination feedDest, DateTime time) {
         this(ds, feedDest, "Operation in progress", time);
     }
     
-    public JpaDataOperation(Datasource ds, FeedDestination feedDest, String status, DateTime time) {
-        this.id = new OpId();
+    public JpaDataOperation(JpaDatasource ds, JpaFeedDestination feedDest, String status, DateTime time) {
+        this.id = OpId.create();
         this.state = State.IN_PROGRESS;
         this.producer = feedDest;
         this.status = status;
@@ -58,10 +110,10 @@ public class JpaDataOperation implements DataOperation {
         this.stopTime = state != State.IN_PROGRESS ? new DateTime() : op.stopTime;
     }
 
-    public JpaDataOperation(JpaDataOperation op, String status, Dataset<Datasource, ChangeSet> changes) {
+    public JpaDataOperation(JpaDataOperation op, String status, JpaDataset<Datasource, ChangeSet> changes) {
         this(op, State.SUCCESS, "Operation completed successfully");
 
-        this.changeSet = changes;
+        this.dataset = changes;
     }
     
     public JpaDataOperation(JpaDataOperation op, String status, Throwable t) {
@@ -100,24 +152,44 @@ public class JpaDataOperation implements DataOperation {
 
     @Override
     public Dataset<Datasource, ChangeSet> getDataset() {
-        return changeSet;
+        return dataset;
     }
     
     
     protected static class OpId implements ID {
-        private final UUID uuid;
         
-        public OpId() {
-            this.uuid = UUID.randomUUID();
+        private static final long serialVersionUID = -8322308917629324338L;
+
+        private UUID uuid;
+        
+        public static OpId create() {
+            return new OpId(UUID.randomUUID());
         }
         
-        public OpId(String idStr) {
-            this.uuid = UUID.fromString(idStr);
+        public OpId() {
+        }
+        
+        public UUID getUuid() {
+            return uuid;
+        }
+        
+        public void setUuid(UUID uuid) {
+            this.uuid = uuid;
+        }
+        
+        public OpId(Serializable ser) {
+            if (ser instanceof String) {
+                this.uuid = UUID.fromString((String) ser);
+            } else if (ser instanceof UUID) {
+                this.uuid = (UUID) ser;
+            } else {
+                throw new IllegalArgumentException("Unknown ID value: " + ser);
+            }
         }
         
         @Override
         public boolean equals(Object obj) {
-            if (obj instanceof OpId) {
+            if (obj instanceof FeedId) {
                 OpId that = (OpId) obj;
                 return Objects.equals(this.uuid, that.uuid);
             } else {

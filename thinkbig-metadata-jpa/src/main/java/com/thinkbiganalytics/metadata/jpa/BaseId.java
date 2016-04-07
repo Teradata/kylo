@@ -1,17 +1,20 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.jpa.feed;
+package com.thinkbiganalytics.metadata.jpa;
 
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+import javax.persistence.Embeddable;
+
 /**
  *
  * @author Sean Felten
  */
-public class BaseId implements Serializable {
+@Embeddable
+public abstract class BaseId implements Serializable {
     
     private static final long serialVersionUID = 7625329514504205283L;
     

@@ -6,7 +6,6 @@ package com.thinkbiganalytics.metadata.rest.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -354,7 +353,7 @@ public class FeedsResource {
     }
 
     private FeedDependency collectFeedDependencies(com.thinkbiganalytics.metadata.api.feed.Feed currentFeed, boolean assessPrecond) {
-        Set<com.thinkbiganalytics.metadata.api.feed.FeedSource> domainSrcs = currentFeed.getSources();
+        List<com.thinkbiganalytics.metadata.api.feed.FeedSource> domainSrcs = currentFeed.getSources();
         com.thinkbiganalytics.metadata.api.feed.FeedCriteria domainCrit = this.feedProvider.feedCriteria();
         FeedDependency feedDep = new FeedDependency(Model.DOMAIN_TO_FEED.apply(currentFeed), null, null);
     

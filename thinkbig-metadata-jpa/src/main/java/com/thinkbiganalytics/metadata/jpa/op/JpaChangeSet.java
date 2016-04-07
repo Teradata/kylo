@@ -3,54 +3,54 @@
  */
 package com.thinkbiganalytics.metadata.jpa.op;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.UUID;
+
+import javax.persistence.DiscriminatorColumn;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.Table;
 
 import org.joda.time.DateTime;
+import org.joda.time.Period;
 
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.DataOperation;
 
 /**
  *
  * @author Sean Felten
  */
-public class JpaChangeSet<D extends Datasource, C extends ChangeSet> implements Dataset<D, C> {
+//@MappedSuperclass
+@Entity
+@Table(name="CHANGE_SET")
+@Inheritance(strategy = InheritanceType.JOINED)
+public abstract class JpaChangeSet implements ChangeSet {
 
-    private DateTime time;
-    private ChangeType type;
-    private DataOperation dataOperation;
-    private D dataset;
-    private Set<C> changes = new HashSet<>();
+    private static final long serialVersionUID = -5427878851793245525L;
+    
+    @Id
+    @GeneratedValue
+    private UUID id;
 
-    public JpaChangeSet(D dataset, C content) {
-        this.time = new DateTime();
-        this.type = ChangeType.UPDATE;
-        this.dataOperation = null;  // TODO
-        this.dataset = dataset;
-        this.changes.add(content); 
+    private DateTime intrinsicTime;
+    private Period intrinsicPeriod;
+    private int completenessFactor;
+
+    @Override
+    public DateTime getIntrinsicTime() {
+        return this.intrinsicTime;
     }
 
-    public DateTime getTime() {
-        return time;
+    @Override
+    public Period getIntrinsicPeriod() {
+        return this.intrinsicPeriod;
     }
 
-    public ChangeType getType() {
-        return type;
-    }
-
-    public D getDatasource() {
-        return dataset;
-    }
-
-    public DataOperation getDataOperation() {
-        return dataOperation;
-    }
-
-    public Set<C> getChanges() {
-        return changes;
+    @Override
+    public int getCompletenessFactor() {
+        return this.completenessFactor;
     }
 
 }

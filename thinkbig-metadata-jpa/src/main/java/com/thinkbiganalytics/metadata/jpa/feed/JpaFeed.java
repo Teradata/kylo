@@ -7,7 +7,9 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Embeddable;
@@ -45,10 +47,10 @@ public class JpaFeed implements Feed {
     private String Name;
     private String Description;
     
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity=JpaFeedSource.class, mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedSource> sources = new ArrayList<>();
     
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity=JpaFeedDestination.class, mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedDestination> destinations = new ArrayList<>();
     
     @Embedded
@@ -59,7 +61,7 @@ public class JpaFeed implements Feed {
     }
     
     public JpaFeed(String name, String description) {
-        this.Id = new FeedId();
+        this.Id = FeedId.create();
         Name = name;
         Description = description;
     }
@@ -157,147 +159,88 @@ public class JpaFeed implements Feed {
         return null;
     }
     
-    public FeedPrecondition setPrecondition(ServiceLevelAgreement sla) {
+    public FeedPrecondition setPrecondition(JpaServiceLevelAgreement sla) {
         this.precondition = new FeedPreconditionImpl(sla);
         return this.precondition;
     }
+
     
     @Embeddable
-    public static class FeedId extends BaseId implements Feed.ID {
+    public static class FeedId implements Feed.ID {
         
         private static final long serialVersionUID = -8322308917629324338L;
-    
-        public FeedId() {
-            super();
+
+        private UUID uuid;
+        
+        public static FeedId create() {
+            return new FeedId(UUID.randomUUID());
         }
-    
+        
+        public FeedId() {
+        }
+        
+        public UUID getUuid() {
+            return uuid;
+        }
+        
+        public void setUuid(UUID uuid) {
+            this.uuid = uuid;
+        }
+        
         public FeedId(Serializable ser) {
-            super(ser);
+            if (ser instanceof String) {
+                this.uuid = UUID.fromString((String) ser);
+            } else if (ser instanceof UUID) {
+                this.uuid = (UUID) ser;
+            } else {
+                throw new IllegalArgumentException("Unknown ID value: " + ser);
+            }
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof FeedId) {
+                FeedId that = (FeedId) obj;
+                return Objects.equals(this.uuid, that.uuid);
+            } else {
+                return false;
+            }
+        }
+        
+        @Override
+        public int hashCode() {
+            return Objects.hash(getClass(), this.uuid);
+        }
+        
+        @Override
+        public String toString() {
+            return this.uuid.toString();
         }
     }
-//
-//    public static abstract class BaseId {
-//        private final UUID uuid;
-//        
-//        public BaseId() {
-//            this.uuid = UUID.randomUUID();
-//        }
-//        
-//        public BaseId(Serializable ser) {
-//            if (ser instanceof String) {
-//                this.uuid = UUID.fromString((String) ser);
-//            } else if (ser instanceof UUID) {
-//                this.uuid = (UUID) ser;
-//            } else {
-//                throw new IllegalArgumentException("Unknown ID value: " + ser);
-//            }
-//        }
-//        
-//        @Override
-//        public boolean equals(Object obj) {
-//            if (getClass().isAssignableFrom(obj.getClass())) {
-//                BaseId that = (BaseId) obj;
-//                return Objects.equals(this.uuid, that.uuid);
-//            } else {
-//                return false;
-//            }
-//        }
-//        
-//        @Override
-//        public int hashCode() {
-//            return Objects.hash(getClass(), this.uuid);
-//        }
-//        
-//        @Override
-//        public String toString() {
-//            return this.uuid.toString();
-//        }
-//    }
 //    
-//    public static class SourceId extends BaseId implements FeedSource.ID {
-//        public SourceId() {
+//    
+//    @Embeddable
+//    public static class FeedId extends BaseId implements Feed.ID {
+//        
+//        private static final long serialVersionUID = -8322308917629324338L;
+//        
+//        public FeedId() {
 //            super();
 //        }
-//
-//        public SourceId(Serializable ser) {
+//        
+//        public FeedId(Serializable ser) {
 //            super(ser);
-//        } 
-//    }
-//    
-//    public static class DestinationId extends BaseId implements FeedDestination.ID {
-//        public DestinationId() {
-//            super();
-//        }
-//
-//        public DestinationId(Serializable ser) {
-//            super(ser);
-//        } 
-//    }
-//    
-//
-//    private abstract class Data implements FeedData {
-//        
-//        private Datasource dataset;
-//        
-//        public Data(Datasource ds) {
-//            this.dataset = ds;
-//        }
-//        
-//        @Override
-//        public Feed getFeed() {
-//            return JpaFeed.this;
-//        }
-//
-//        @Override
-//        public Datasource getDatasource() {
-//            return this.dataset;
 //        }
 //    }
-//    
-//    private class Source extends Data implements FeedSource {
-//
-//        private SourceId id;
-//        private ServiceLevelAgreement.ID agreemenetId;
-//        
-//        public Source(Datasource ds, ServiceLevelAgreement.ID agreementId) {
-//            super(ds);
-//            this.id = new SourceId();
-//            this.agreemenetId = agreementId;
-//        }
-// 
-//        @Override
-//        public ID getId() {
-//            return this.id;
-//        }
-//        
-//        @Override
-//        public ServiceLevelAgreement getAgreement() {
-//            return this.agreemenetId;
-//        }
-//    }
-//    
-//    private class Destination extends Data implements FeedDestination {
-//
-//        private DestinationId id;
-//        
-//        public Destination(Datasource ds) {
-//            super(ds);
-//            this.id = new DestinationId();
-//        }
-//        
-//        @Override
-//        public ID getId() {
-//            return this.id;
-//        }
-//    }
+
     
     @Embeddable
     public static class FeedPreconditionImpl implements FeedPrecondition {
         
         @OneToOne
-        private ServiceLevelAgreement sla;
+        private JpaServiceLevelAgreement sla;
         
-        public FeedPreconditionImpl(ServiceLevelAgreement sla) {
+        public FeedPreconditionImpl(JpaServiceLevelAgreement sla) {
             this.sla = sla;
         }
 
