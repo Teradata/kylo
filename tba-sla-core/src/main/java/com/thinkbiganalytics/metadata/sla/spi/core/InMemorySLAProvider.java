@@ -417,8 +417,13 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         }
 
         @Override
-        public ServiceLevelAgreement getSLA() {
+        public ServiceLevelAgreement getAgreement() {
             return this.group.getAgreement();
+        }
+        
+        @Override
+        public ObligationGroup getGroup() {
+            return this.group;
         }
 
         @Override
@@ -431,7 +436,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
     
         private SLAImpl sla;
         private Condition condition;
-        private Set<Obligation> obligations = new HashSet<>();
+        private List<Obligation> obligations = new ArrayList<>();
         
         public ObligationGroupImpl(SLAImpl sla, Condition condition) {
             this.sla = sla;
@@ -449,7 +454,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         }
     
         @Override
-        public Set<Obligation> getObligations() {
+        public List<Obligation> getObligations() {
             return this.obligations;
         }
     }

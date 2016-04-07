@@ -15,9 +15,14 @@ public interface Obligation {
     String getDescription();
     
     /**
-     * @return the SLA that this obligation is a part of
+     * @return the SLA of which this obligation is a part
      */
-    ServiceLevelAgreement getSLA();
+    ServiceLevelAgreement getAgreement();
+    
+    /**
+     * @return the group of which this obligation is a part
+     */
+    ObligationGroup getGroup();
     
     /**
      * @return the metrics of this obligation that are measured when this obligation is assessed

@@ -3,7 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.sla.api;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Groups together a set of obligations under an assessment rule governing how these obligations
@@ -25,7 +25,7 @@ public interface ObligationGroup {
     
     Condition getCondition();
     
-    Set<Obligation> getObligations();
+    List<Obligation> getObligations();
 
     ServiceLevelAgreement getAgreement();
 }
