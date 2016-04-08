@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=$sourceEncoding$">
+  $if(autoRefresh)$
+  <meta http-equiv="refresh" content="$autoRefreshInterval$">
+  $endif$
+  <title>Jasmine Spec Runner</title>
+  <script type="text/javascript">
+    window.onerror = function(msg,url,line) {
+      if (document.head) {
+        var jserror = document.head.getAttribute('jmp_jserror') || '';
+        if (jserror) {
+          jserror += ':!:';
+        }
+        jserror += msg;
+        document.head.setAttribute('jmp_jserror',jserror);
+      }
+    };
+  </script>
+
+      <!-- jQuery, Angular, Angular Materials and css -->
+      <script src="js/vendor/jquery/jquery.js" type="text/javascript"></script>
+      <script src="js/vendor/angular/angular.js"></script>
+      <script src="js/vendor/angular/angular-cookies.min.js"></script>
+      <script src="js/vendor/angular-animate/angular-animate.js"></script>
+      <script src="js/vendor/angular-aria/angular-aria.js"></script>
+      <script src="js/vendor/angular-messages/angular-messages.min.js"></script>
+      <script type="text/javascript" src="js/vendor/angular-material/angular-material.js"></script>
+      <link rel="stylesheet" href="js/vendor/angular-material/angular-material.min.css"/>
+      <script src="js/vendor/angular-ui-router/angular-ui-router.js"></script>
+
+      <script src="js/vendor/underscore/underscore-min.js"></script>
+
+      <!-- Date and Timezone scripts -->
+      <script src="js/vendor/moment/moment-2.10.3-min.js"></script>
+      <script src="js/vendor/moment/moment-timezone-0.4.0-min.js"></script>
+      <script src="js/vendor/moment/moment-duration-format.js"></script>
+      <script src="js/vendor/moment/humanize-duration.js"></script>
+
+      <!-- Material Datatable -->
+      <link rel="stylesheet" href="js/vendor/md-data-table/md-data-table.css"/>
+      <script src="js/vendor/md-data-table/md-data-table.js" type="text/javascript"></script>
+
+      <!-- ng-md-icon Material Icons -->
+      <script type="text/javascript" src="js/vendor/angular-material-icons/angular-material-icons.js"></script>
+      <script type="text/javascript" src="js/vendor/svg-morpheus/svg-morpheus.js"></script>
+      <link rel="stylesheet" href="js/vendor/angular-material-icons/angular-material-icons.css"/>
+
+
+      <!-- content assist autocomplete -->
+      <script type="text/javascript" src="js/vendor/ment.io/mentio.js"></script>
+      <script type="text/javascript" src="js/vendor/ment.io/templates.js"></script>
+      <link rel="stylesheet" href="js/vendor/ment.io/styles.css"/>
+
+      <link rel="stylesheet" href="js/vendor/codemirror/lib/codemirror.css"/>
+      <link rel="stylesheet" href="js/vendor/codemirror/addon/hint/show-hint.css"/>
+
+      <script src="js/vendor/codemirror/lib/codemirror.js"></script>
+      <script src="js/vendor/codemirror/ui-codemirror.js"></script>
+
+      <script src="js/vendor/codemirror/mode/pig/pig.js" ></script>
+      <script src="js/vendor/codemirror/mode/properties/properties.js" ></script>
+      <script src="js/vendor/codemirror/mode/python/python.js"></script>
+      <script src="js/vendor/codemirror/mode/xml/xml.js"></script>
+      <script src="js/vendor/codemirror/mode/shell/shell.js"></script>
+      <script src="js/vendor/codemirror/mode/javascript/javascript.js"></script>
+      <script src="js/vendor/codemirror/mode/sql/sql.js" ></script>
+      <script src="js/vendor/codemirror/addon/hint/show-hint.js"></script>
+      <script src="js/vendor/codemirror/addon/hint/sql-hint.js"></script>
+      <script src="js/vendor/codemirror/addon/hint/xml-hint.js"></script>
+      <script src="js/vendor/codemirror/mode/groovy/groovy.js"></script>
+
+      <script src="js/vendor/codemirror/addon/dialog/dialog.js"></script>
+      <link rel="stylesheet" href="js/vendor/codemirror/addon/dialog/dialog.css"/>
+
+      <script src="js/vendor/codemirror/addon/tern/tern.js"></script>
+      <!--<script src="js/vendor/codemirror/addon/tern/worker.js"></script> -->
+
+      <link rel="stylesheet" href="js/vendor/codemirror/addon/tern/tern.css"/>
+
+      <script src="js/vendor/tern/plugin/acorn.js"></script>
+          <script src="js/vendor/tern/plugin/acorn_loose.js"></script>
+                  <script src="js/vendor/tern/plugin/walk.js"></script>
+                  <script src="js/vendor/tern/plugin/polyfill.js"></script>
+                  <script src="js/vendor/tern/lib/signal.js"></script>
+                  <script src="js/vendor/tern/lib/tern.js"></script>
+                  <script src="js/vendor/tern/lib/def.js"></script>
+                  <script src="js/vendor/tern/lib/comment.js"></script>
+                  <script src="js/vendor/tern/lib/infer.js"></script>
+                  <script src="js/vendor/tern/plugin/doc_comment.js"></script>
+
+      <script src="js/vendor/dirPagination/dirPagination.js" type="text/javascript"></script>
+      <script src="js/vendor/drag-and-drop-lists/angular-drag-and-drop-lists.js" type="text/javascript"></script>
+      <link rel="stylesheet" href="js/vendor/drag-and-drop-lists/drag-and-drop-lists.css"/>
+      <script src="js/vendor/svg-pan-zoom/svg-pan-zoom.js"></script>
+      <script src="js/vendor/svg-pan-zoom/angular-svg-pan-zoom.js"></script>
+    <link rel="stylesheet" href="js/vendor/flowchart/flowchart.css"/>
+    <script src="js/vendor/flowchart/svg_class.js" type="text/javascript"></script>
+    <script src="js/vendor/flowchart/mouse_capture_service.js" type="text/javascript"></script>
+    <script src="js/vendor/flowchart/dragging_service.js" type="text/javascript"></script>
+    <script src="js/vendor/flowchart/flowchart_viewmodel.js" type="text/javascript"></script>
+    <script src="js/vendor/flowchart/flowchart_directive.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="js/vendor/ui-grid/ui-grid.css"/>
+    <link rel="stylesheet" href="js/vendor/ui-grid/ui-grid-material.css"/>
+    <script src="js/vendor/ui-grid/ui-grid.js"></script>
+
+  $cssDependencies$
+  $javascriptDependencies$
+  <script type="text/javascript">
+    window.onload = jasmine.boot;
+  </script>
+  $allScriptTags$
+</head>
+<body ng-app="app">
+  <script type="text/javascript">
+    if(window.location.href.indexOf("ManualSpecRunner.html") !== -1) {
+      document.body.appendChild(document.createTextNode("Warning: Opening this HTML file directly from the file system is deprecated. You should instead try running `mvn jasmine:bdd` from the command line, and then visit `http://localhost:8234` in your browser. "))
+    }
+  </script>
+</body>
+</html>
