@@ -9,11 +9,9 @@
     <artifactId>thinkbig-metadata-jpa</artifactId>
 
     <properties>
+        <spring.boot.version>1.3.3.RELEASE</spring.boot.version>
         <hibernate.version>5.1.0.Final</hibernate.version>
         <jackson.version>2.6.2</jackson.version>
-        <!-- 
-        <jadira.version>5.0.0.GA</jadira.version>
-         -->
     </properties>
 
     <dependencies>
@@ -33,6 +31,25 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-orm</artifactId>
             <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <version>${spring.boot.version}</version>
+        </dependency>
+        <!-- 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+            <version>${spring.boot.version}</version>
+            <optional>true</optional>
+        </dependency>
+         -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <version>${spring.boot.version}</version>
+            <optional>true</optional>
         </dependency>
 
         <!-- Hibernate -->
@@ -56,14 +73,6 @@
             <artifactId>jackson-datatype-hibernate5</artifactId>
             <version>2.7.3</version>
         </dependency>
-        <!-- 
-        <dependency>
-            <groupId>org.jadira.usertype</groupId>
-            <artifactId>usertype.core</artifactId>
-            <version>${jadira.version}</version>
-        </dependency>
-         -->
-
     </dependencies>
 
     <build>

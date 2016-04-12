@@ -119,6 +119,17 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.thinkbiganalytics.metadata</groupId>
+            <artifactId>thinkbig-metadata-jms</artifactId>
+            <version>0.5.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.metadata</groupId>
+            <artifactId>thinkbig-metadata-jpa</artifactId>
+            <version>0.5.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.thinkbiganalytics.bdp</groupId>
             <artifactId>tba-sla-core</artifactId>
             <version>1.3.0-SNAPSHOT</version>
@@ -204,11 +215,6 @@
             <version>${jackson.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-jms</artifactId>
-            <version>0.5.0-SNAPSHOT</version>
-        </dependency>
     </dependencies>
     
     <build>

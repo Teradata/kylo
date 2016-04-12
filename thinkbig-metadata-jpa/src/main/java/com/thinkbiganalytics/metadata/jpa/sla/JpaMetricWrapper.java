@@ -29,7 +29,7 @@ public class JpaMetricWrapper implements Serializable {
     @GeneratedValue
     private UUID id;
 
-    @Convert(attributeName = "metric", converter = JsonAttributeConverter.class)
+    @Convert(converter = JsonAttributeConverter.class)
     private Object metric;
 
     public JpaMetricWrapper() {

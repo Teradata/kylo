@@ -1,0 +1,22 @@
+
+alter table CHANGE_SET_FILES add constraint FK6phe0sauir4we82lyc2u2aai7 foreign key (id) references CHANGE_SET (id);
+alter table CHANGE_SET_FILES_PATH add constraint FK1t44p83myhihorkybm8t4ljsx foreign key (change_set_files_id) references CHANGE_SET_FILES (id);
+alter table CHANGE_SET_HIVE_TABLE add constraint FK8q6ytindtoluw2xfwwy218a3b foreign key (id) references CHANGE_SET (id);
+alter table CHANGE_SET_HIVE_TABLE_PART_VALUE add constraint FKop7wjrlfh06h8544k9uahf35k foreign key (change_set_hive_table_id) references CHANGE_SET_HIVE_TABLE (id);
+alter table DATA_OPERATION add constraint FKcxlae96uggnhy2sh7najjxu7d foreign key (dataset_id) references DATASET (id);
+alter table DATA_OPERATION add constraint FKg5etyfrh8woxvij3qa831nqh4 foreign key (producer_uuid) references FEED_DESTINATION (uuid);
+alter table DATASET add constraint FK4xjx0ocjrc613a0bds6f1qbrb foreign key (datasource_uuid) references DATASOURCE (uuid);
+alter table DATASET_CHANGE_SET add constraint UK_nhe2jli0jb6vh5h918r8tkhre unique (changes_id);
+alter table DATASET_CHANGE_SET add constraint FK8ya0mheolpnc5u2t4mx96r2id foreign key (changes_id) references CHANGE_SET (id);
+alter table DATASET_CHANGE_SET add constraint FKiyy8rbkc8xa58s346iqsv32lx foreign key (JpaDataset_id) references DATASET (id);
+alter table FEED add constraint FK7r4eqepwfbg8t6diekvs4ymg3 foreign key (sla_uuid) references SLA (uuid);
+alter table FEED_DESTINATION add constraint FKmccqujpwdbwnso6j89lesx6v8 foreign key (dataset_uuid) references DATASOURCE (uuid);
+alter table FEED_DESTINATION add constraint FKtbyj425tq7reqws2nsqlctx5v foreign key (feed_uuid) references FEED (uuid);
+alter table FEED_SOURCE add constraint FK283228h16wybih90p8uwsbfb1 foreign key (dataset_uuid) references DATASOURCE (uuid);
+alter table FEED_SOURCE add constraint FK3d1aj0ldo9n6omd5o2hix2yu foreign key (feed_uuid) references FEED (uuid);
+alter table FEED_SOURCE add constraint FK66reko1w0frap71von8ljro88 foreign key (agreemenet_uuid) references SLA (uuid);
+alter table SLA_OBLIGATION add constraint FKn1t5kx4s83yu0sth86xawrixh foreign key (group_id) references SLA_OBLIGATION_GROUP (id);
+alter table SLA_OBLIGATION_GROUP add constraint FKluy4ofh0ot6uuct0lnhq62qva foreign key (agreement_uuid) references SLA (uuid);
+alter table SLA_OBLIGATION_SLA_METRIC add constraint UK_iktb4o86r0deyu178eniquyn9 unique (metricWrappers_id);
+alter table SLA_OBLIGATION_SLA_METRIC add constraint FKch57usqwurpasv9xgk7j2qb0b foreign key (metricWrappers_id) references SLA_METRIC (id);
+alter table SLA_OBLIGATION_SLA_METRIC add constraint FK5cckwtquwrwaresanuh30c0am foreign key (JpaObligation_id) references SLA_OBLIGATION (id);

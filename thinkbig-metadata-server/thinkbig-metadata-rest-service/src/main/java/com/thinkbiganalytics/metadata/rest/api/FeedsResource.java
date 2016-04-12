@@ -25,6 +25,10 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.TransactionCallback;
+import org.springframework.transaction.support.TransactionTemplate;
 
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -60,18 +64,28 @@ public class FeedsResource {
     @Inject
     private FeedPreconditionService preconditionService;
     
+    @Inject
+    private PlatformTransactionManager transactionMgr;
+    
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Feed> getFeeds(@QueryParam(FeedCriteria.NAME) String name,
-                               @QueryParam(FeedCriteria.SRC_ID) String srcId,
-                               @QueryParam(FeedCriteria.DEST_ID) String destId) {
+    public List<Feed> getFeeds(@QueryParam(FeedCriteria.NAME) final String name,
+                               @QueryParam(FeedCriteria.SRC_ID) final String srcId,
+                               @QueryParam(FeedCriteria.DEST_ID) final String destId) {
         LOG.debug("Get feeds {}/{}/{}", name, srcId, destId);
         
-        com.thinkbiganalytics.metadata.api.feed.FeedCriteria criteria = createFeedCriteria(name, srcId, destId);
-        Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainFeeds = this.feedProvider.getFeeds(criteria);
+        TransactionTemplate template = new TransactionTemplate(this.transactionMgr);
+        return template.execute(new TransactionCallback<List<Feed>>() {
+            @Override
+            public List<Feed> doInTransaction(TransactionStatus status) {
+                com.thinkbiganalytics.metadata.api.feed.FeedCriteria criteria = createFeedCriteria(name, srcId, destId);
+                Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainFeeds = feedProvider.getFeeds(criteria);
+                
+                return new ArrayList<>(Collections2.transform(domainFeeds, Model.DOMAIN_TO_FEED));
+            }
+        });
         
-        return new ArrayList<>(Collections2.transform(domainFeeds, Model.DOMAIN_TO_FEED));
     }
     
     @GET
