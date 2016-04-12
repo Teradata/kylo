@@ -45,6 +45,16 @@ public class JpaDataOperation implements DataOperation {
     @OneToOne
     private JpaDataset<Datasource, ChangeSet> dataset;
     
+    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
+    private DateTime startTime;
+
+    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
+    private DateTime stopTime;
+
+    private State state;
+
+    private String status = "";
+
     public void setId(OpId id) {
         this.id = id;
     }
@@ -74,13 +84,6 @@ public class JpaDataOperation implements DataOperation {
     }
 
 
-    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
-    private DateTime startTime;
-    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
-    private DateTime stopTime;
-    private State state;
-    private String status = "";
-    
     public JpaDataOperation() {
     }
 

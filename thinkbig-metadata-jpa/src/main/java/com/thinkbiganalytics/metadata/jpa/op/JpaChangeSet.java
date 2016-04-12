@@ -36,6 +36,7 @@ public abstract class JpaChangeSet implements ChangeSet {
 
     @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
     private DateTime intrinsicTime;
+    @Type(type="org.joda.time.contrib.hibernate.PersistentPeriod")
     private Period intrinsicPeriod;
     private int completenessFactor;
 

@@ -2,7 +2,7 @@
 create table if not exists CHANGE_SET (
     id binary(255) not null, 
     completenessFactor integer not null, 
-    intrinsicPeriod tinyblob, 
+    intrinsicPeriod varchar(255), 
     intrinsicTime datetime, 
     primary key (id)
 ) ENGINE=InnoDB;
