@@ -5,7 +5,6 @@ package com.thinkbiganalytics.metadata.jpa.op;
 
 import java.util.UUID;
 
-import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -13,6 +12,7 @@ import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 
@@ -34,6 +34,7 @@ public abstract class JpaChangeSet implements ChangeSet {
     @GeneratedValue
     private UUID id;
 
+    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
     private DateTime intrinsicTime;
     private Period intrinsicPeriod;
     private int completenessFactor;

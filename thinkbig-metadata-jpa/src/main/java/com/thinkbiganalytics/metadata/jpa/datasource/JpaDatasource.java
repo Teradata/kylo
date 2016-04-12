@@ -18,6 +18,7 @@ import javax.persistence.InheritanceType;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -41,6 +42,8 @@ public abstract class JpaDatasource implements Datasource, Serializable {
     
     private String name;
     private String description;
+    
+    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
     private DateTime creationTime;
     
     @Transient  // TODO implement

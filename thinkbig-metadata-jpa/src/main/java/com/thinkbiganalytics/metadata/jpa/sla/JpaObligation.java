@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.jpa.sla;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
@@ -15,6 +16,9 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
@@ -37,8 +41,8 @@ public class JpaObligation implements Obligation, Serializable {
     @ManyToOne
     private JpaObligationGroup group;
     
-    @OneToMany(targetEntity=JpaMetric.class, cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Metric> metrics;
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<JpaMetricWrapper> metricWrappers = new HashSet<>();
     
     private String description;
 
@@ -59,7 +63,18 @@ public class JpaObligation implements Obligation, Serializable {
 
     @Override
     public Set<Metric> getMetrics() {
-        return this.metrics;
+        return Sets.newHashSet(Iterables.transform(this.metricWrappers, new Function<JpaMetricWrapper, Metric>() {
+            @Override
+            public Metric apply(JpaMetricWrapper input) {
+                return input.getMetric();
+            }
+        }));
+    }
+
+    public void setMetrics(Set<Metric> metrics) {
+        for (Metric metric : metrics) {
+            this.metricWrappers.add(new JpaMetricWrapper(metric));
+        }
     }
 
     public UUID getId() {
@@ -78,8 +93,13 @@ public class JpaObligation implements Obligation, Serializable {
         this.description = description;
     }
 
-    public void setMetrics(Set<Metric> metrics) {
-        this.metrics = metrics;
+    public Set<JpaMetricWrapper> getMetricWrappers() {
+        return metricWrappers;
     }
+
+    public void setMetricWrappers(Set<JpaMetricWrapper> metricWrappers) {
+        this.metricWrappers = metricWrappers;
+    }
+    
     
 }

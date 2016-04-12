@@ -16,6 +16,7 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
@@ -36,6 +37,7 @@ public class JpaServiceLevelAgreement implements ServiceLevelAgreement, Serializ
     private SlaId id;
     
     private String name;
+    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
     private DateTime creatingTime;
     private String description;
     

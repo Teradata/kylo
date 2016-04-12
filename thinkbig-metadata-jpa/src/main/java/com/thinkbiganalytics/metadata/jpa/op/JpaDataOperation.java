@@ -13,6 +13,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 import org.springframework.util.StringUtils;
 
@@ -73,7 +74,9 @@ public class JpaDataOperation implements DataOperation {
     }
 
 
+    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
     private DateTime startTime;
+    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
     private DateTime stopTime;
     private State state;
     private String status = "";

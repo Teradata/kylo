@@ -3,12 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.jpa.sla;
 
-import org.hibernate.boot.MetadataSources;
-import org.hibernate.boot.registry.StandardServiceRegistry;
-import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
-import org.hibernate.boot.spi.MetadataImplementor;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
-
 /**
  *
  * @author Sean Felten

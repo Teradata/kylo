@@ -10,7 +10,10 @@
 
     <properties>
         <hibernate.version>5.1.0.Final</hibernate.version>
+        <jackson.version>2.6.2</jackson.version>
+        <!-- 
         <jadira.version>5.0.0.GA</jadira.version>
+         -->
     </properties>
 
     <dependencies>
@@ -39,15 +42,27 @@
             <version>${hibernate.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.jadira.usertype</groupId>
-            <artifactId>usertype.core</artifactId>
-            <version>${jadira.version}</version>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time-hibernate</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-joda</artifactId>
+            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.datatype</groupId>
             <artifactId>jackson-datatype-hibernate5</artifactId>
             <version>2.7.3</version>
         </dependency>
+        <!-- 
+        <dependency>
+            <groupId>org.jadira.usertype</groupId>
+            <artifactId>usertype.core</artifactId>
+            <version>${jadira.version}</version>
+        </dependency>
+         -->
 
     </dependencies>
 
@@ -65,18 +80,14 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- 
                     <dialect>org.hibernate.dialect.MySQL5InnoDBDialect</dialect>
                     <url>jdbc:mysql://localhost:3306/pipeline_db</url>
                     <driver>com.mysql.jdbc.Driver</driver>
                     <username>root</username>
-                     -->
-                    <dialect>org.hibernate.dialect.H2Dialect</dialect>
-                    <url>jdbc:h2:file:./target/db</url>
-                    <driver>org.h2.Driver</driver>
-                    <username>sa</username>
-                
-                      <export>false</export>
+                    <!-- <dialect>org.hibernate.dialect.H2Dialect</dialect> 
+                        <url>jdbc:h2:file:./target/db</url> <driver>org.h2.Driver</driver> <username>sa</username> -->
+
+                    <export>false</export>
                     <skip>false</skip>
                     <scanDependencies>none</scanDependencies>
                 </configuration>
@@ -97,7 +108,8 @@
         </plugins>
         <pluginManagement>
             <plugins>
-                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                <!--This plugin's configuration is used to store Eclipse 
+                    m2e settings only. It has no influence on the Maven build itself. -->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
                     <artifactId>lifecycle-mapping</artifactId>
