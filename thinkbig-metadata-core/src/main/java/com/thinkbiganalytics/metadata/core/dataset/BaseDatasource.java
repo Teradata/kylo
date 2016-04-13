@@ -5,15 +5,19 @@ package com.thinkbiganalytics.metadata.core.dataset;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 
 /**
  *
@@ -26,6 +30,8 @@ public class BaseDatasource implements Datasource {
     private String description;
     private DateTime creationTime;
     private List<Dataset<? extends Datasource, ? extends ChangeSet>> datasets = new ArrayList<>();
+    private Set<FeedSource> feedSources = new HashSet<>();
+    private Set<FeedDestination> feedDestinations = new HashSet<>();
 
     public BaseDatasource(String name, String descr) {
         this.id = new DatasourceId();
@@ -54,7 +60,18 @@ public class BaseDatasource implements Datasource {
         return datasets;
     }
 
-    
+    @Override
+    public Set<FeedSource> getFeedSources() {
+        return this.feedSources;
+    }
+
+    @Override
+    public Set<FeedDestination> getFeedDestinations() {
+        return this.feedDestinations;
+    }
+
+
+
     protected static class DatasourceId implements ID {
         private UUID uuid = UUID.randomUUID();
         

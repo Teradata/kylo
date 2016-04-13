@@ -24,6 +24,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.jpa.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 /**
@@ -74,10 +75,7 @@ public class FeedProviderImpl implements FeedProvider {
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID, com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID)
      */
     @Override
-    public FeedSource ensureFeedSource(
-            ID feedId,
-            com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id,
-            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID slaId) {
+    public FeedSource ensureFeedSource(ID feedId, Datasource.ID id, ServiceLevelAgreement.ID slaId) {
         // TODO Auto-generated method stub
         return null;
     }

@@ -26,7 +26,7 @@ import com.thinkbiganalytics.metadata.jpa.op.JpaDataOperation;
  */
 @Entity
 @Table(name="FEED_DESTINATION")
-public class JpaFeedDestination extends JpaFeedData implements FeedDestination {
+public class JpaFeedDestination extends JpaFeedConnection implements FeedDestination {
 
     private static final long serialVersionUID = 241001606640713117L;
     
@@ -51,6 +51,11 @@ public class JpaFeedDestination extends JpaFeedData implements FeedDestination {
     @Override
     public ID getId() {
         return this.id;
+    }
+    
+    @Override
+    protected void addConnection(JpaDatasource ds) {
+        ds.addFeedDestination(this);
     }
     
     

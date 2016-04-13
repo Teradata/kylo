@@ -8,7 +8,7 @@ import javax.persistence.MappedSuperclass;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedData;
+import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 
 /**
@@ -16,7 +16,7 @@ import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
  * @author Sean Felten
  */
 @MappedSuperclass
-public abstract class JpaFeedData implements FeedData {
+public abstract class JpaFeedConnection implements FeedConnection {
 
     private static final long serialVersionUID = -1752094328137424635L;
 
@@ -26,14 +26,16 @@ public abstract class JpaFeedData implements FeedData {
     @ManyToOne
     private JpaDatasource dataset;
     
-    public JpaFeedData() {
+    public JpaFeedConnection() {
     }
     
-    public JpaFeedData(JpaFeed feed, JpaDatasource ds) {
+    public JpaFeedConnection(JpaFeed feed, JpaDatasource ds) {
         setFeed(feed);
-        setDataset(ds);
+        addConnection(ds);
     }
     
+    protected abstract void addConnection(JpaDatasource ds);
+
     public JpaDatasource getDataset() {
         return dataset;
     }

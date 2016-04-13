@@ -15,7 +15,7 @@ import java.util.UUID;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedData;
+import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
@@ -191,7 +191,7 @@ public class BaseFeed implements Feed {
     }
     
 
-    private abstract class Data implements FeedData {
+    private abstract class Data implements FeedConnection {
         
         private Datasource dataset;
         

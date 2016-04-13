@@ -5,25 +5,36 @@ package com.thinkbiganalytics.metadata.jpa.datasource;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
+import javax.persistence.CascadeType;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.Inheritance;
 import javax.persistence.InheritanceType;
+import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.Dataset;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedSource;
 
 /**
  *
@@ -45,6 +56,12 @@ public abstract class JpaDatasource implements Datasource, Serializable {
     
     @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
     private DateTime creationTime;
+    
+    @OneToMany(targetEntity=JpaFeedSource.class, mappedBy = "datasource", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<FeedSource> feedSources = new HashSet<>();
+    
+    @OneToMany(targetEntity=JpaFeedDestination.class, mappedBy = "datasource", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<FeedDestination> feedDestinations = new HashSet<>();
     
     @Transient  // TODO implement
     private List<Dataset<? extends Datasource, ? extends ChangeSet>> datasets = new ArrayList<>();
@@ -75,8 +92,40 @@ public abstract class JpaDatasource implements Datasource, Serializable {
     public List<Dataset<? extends Datasource, ? extends ChangeSet>> getDatasets() {
         return datasets;
     }
-
     
+    public Set<FeedConnection> getFeedConnections() {
+        return Sets.newHashSet(Iterables.concat(getFeedSources(), getFeedDestinations()));
+    }
+    
+    public Set<FeedSource> getFeedSources() {
+        return feedSources;
+    }
+
+    public void setFeedSources(Set<FeedSource> feedSources) {
+        this.feedSources = feedSources;
+    }
+
+    public Set<FeedDestination> getFeedDestinations() {
+        return feedDestinations;
+    }
+
+    public void setFeedDestinations(Set<FeedDestination> feedDestinations) {
+        this.feedDestinations = feedDestinations;
+    }
+
+    public void addFeedSource(JpaFeedSource src) {
+        this.feedSources.add(src);
+        src.setDataset(this);
+    }
+
+    public void addFeedDestination(JpaFeedDestination dest) {
+        this.feedDestinations.add(dest);
+        dest.setDataset(this);
+    }
+
+
+
+
     @Embeddable
     protected static class DatasourceId implements ID {
         
@@ -129,24 +178,4 @@ public abstract class JpaDatasource implements Datasource, Serializable {
             return this.uuid.toString();
         }
     }
-//
-//  
-//  @Embeddable
-//  protected static class DatasourceId extends BaseId implements ID {
-//      
-//      private static final long serialVersionUID = 241001606640713117L;
-//
-//      public static DatasourceId create() {
-//          return new DatasourceId(UUID.randomUUID());
-//      }
-//      
-//      public DatasourceId() {
-//          super();
-//      }
-//
-//      public DatasourceId(Serializable ser) {
-//          super(ser);
-//      } 
-//  }
-//  
 }

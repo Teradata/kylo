@@ -24,7 +24,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 @Entity
 @Table(name="FEED_SOURCE")
-public class JpaFeedSource extends JpaFeedData implements FeedSource {
+public class JpaFeedSource extends JpaFeedConnection implements FeedSource {
     
     private static final long serialVersionUID = -6526999444073467663L;
 
@@ -60,6 +60,11 @@ public class JpaFeedSource extends JpaFeedData implements FeedSource {
 
     public void setId(SourceId id) {
         this.id = id;
+    }
+    
+    @Override
+    protected void addConnection(JpaDatasource ds) {
+        ds.addFeedSource(this);
     }
 
 

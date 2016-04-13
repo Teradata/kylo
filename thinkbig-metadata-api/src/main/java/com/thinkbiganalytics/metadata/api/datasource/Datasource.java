@@ -4,8 +4,12 @@
 package com.thinkbiganalytics.metadata.api.datasource;
 
 import java.io.Serializable;
+import java.util.Set;
 
 import org.joda.time.DateTime;
+
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 
 /**
  *
@@ -22,6 +26,10 @@ public interface Datasource extends Serializable {
     String getDescription();
     
     DateTime getCreationTime();
+    
+    Set<FeedSource> getFeedSources();
+    
+    Set<FeedDestination> getFeedDestinations();
     
     // TODO add type/schema/format related properties
 

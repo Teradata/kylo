@@ -132,6 +132,7 @@ public class JpaFeed implements Feed {
     public FeedSource addSource(JpaDatasource ds, JpaServiceLevelAgreement agreemenet) {
         JpaFeedSource src = new JpaFeedSource(this, ds, agreemenet);
         getSources().add(src);
+        src.setFeed(this);
         return src;
     }
     

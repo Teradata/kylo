@@ -11,7 +11,7 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
  *
  * @author Sean Felten
  */
-public interface FeedData extends Serializable {
+public interface FeedConnection extends Serializable {
 
     Feed getFeed();
     
