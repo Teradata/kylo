@@ -89,12 +89,17 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <!-- 
                     <dialect>org.hibernate.dialect.MySQL5InnoDBDialect</dialect>
                     <url>jdbc:mysql://localhost:3306/pipeline_db</url>
                     <driver>com.mysql.jdbc.Driver</driver>
                     <username>root</username>
-                    <!-- <dialect>org.hibernate.dialect.H2Dialect</dialect> 
-                        <url>jdbc:h2:file:./target/db</url> <driver>org.h2.Driver</driver> <username>sa</username> -->
+                    -->
+                    
+                    <dialect>org.hibernate.dialect.H2Dialect</dialect>
+                    <url>jdbc:h2:file:./target/db</url>
+                    <driver>org.h2.Driver</driver>
+                    <username>sa</username> 
 
                     <export>false</export>
                     <skip>false</skip>
