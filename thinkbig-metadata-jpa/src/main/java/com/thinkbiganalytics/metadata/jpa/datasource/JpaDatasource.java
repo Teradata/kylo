@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.DiscriminatorColumn;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
@@ -115,12 +116,12 @@ public abstract class JpaDatasource implements Datasource, Serializable {
 
     public void addFeedSource(JpaFeedSource src) {
         this.feedSources.add(src);
-        src.setDataset(this);
+        src.setDatasource(this);
     }
 
     public void addFeedDestination(JpaFeedDestination dest) {
         this.feedDestinations.add(dest);
-        dest.setDataset(this);
+        dest.setDatasource(this);
     }
 
 
@@ -131,6 +132,7 @@ public abstract class JpaDatasource implements Datasource, Serializable {
         
         private static final long serialVersionUID = 241001606640713117L;
         
+        @Column(name="id")
         private UUID uuid;
         
         public static DatasourceId create() {

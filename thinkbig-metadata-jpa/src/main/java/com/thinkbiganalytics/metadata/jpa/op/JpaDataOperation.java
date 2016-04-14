@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.ManyToOne;
@@ -166,6 +167,7 @@ public class JpaDataOperation implements DataOperation {
         
         private static final long serialVersionUID = -8322308917629324338L;
 
+        @Column(name="id")
         private UUID uuid;
         
         public static OpId create() {

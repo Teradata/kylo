@@ -7,6 +7,7 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -32,12 +33,12 @@ public class JpaFeedSource extends JpaFeedConnection implements FeedSource {
     private SourceId id;
     
     @OneToOne()
-    private JpaServiceLevelAgreement agreemenet;
+    private JpaServiceLevelAgreement agreement;
     
     public JpaFeedSource(JpaFeed feed, JpaDatasource ds, JpaServiceLevelAgreement agreement) {
         super(feed, ds);
         this.id = SourceId.create();
-        this.agreemenet = agreement;
+        this.agreement = agreement;
     }
 
     @Override
@@ -47,15 +48,7 @@ public class JpaFeedSource extends JpaFeedConnection implements FeedSource {
     
     @Override
     public ServiceLevelAgreement getAgreement() {
-        return this.agreemenet;
-    }
-    
-    public ServiceLevelAgreement getAgreemenet() {
-        return agreemenet;
-    }
-
-    public void setAgreemenet(JpaServiceLevelAgreement agreemenet) {
-        this.agreemenet = agreemenet;
+        return this.agreement;
     }
 
     public void setId(SourceId id) {
@@ -73,6 +66,7 @@ public class JpaFeedSource extends JpaFeedConnection implements FeedSource {
         
         private static final long serialVersionUID = 241001606640713117L;
         
+        @Column(name="id")
         private UUID uuid;
         
         public static SourceId create() {

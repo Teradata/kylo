@@ -213,12 +213,12 @@ public class BaseFeed implements Feed {
     private class Source extends Data implements FeedSource {
 
         private SourceId id;
-        private ServiceLevelAgreement agreemenet;
+        private ServiceLevelAgreement agreement;
         
         public Source(Datasource ds, ServiceLevelAgreement agreement) {
             super(ds);
             this.id = new SourceId();
-            this.agreemenet = agreement;
+            this.agreement = agreement;
         }
  
         @Override
@@ -228,7 +228,7 @@ public class BaseFeed implements Feed {
         
         @Override
         public ServiceLevelAgreement getAgreement() {
-            return this.agreemenet;
+            return this.agreement;
         }
     }
     

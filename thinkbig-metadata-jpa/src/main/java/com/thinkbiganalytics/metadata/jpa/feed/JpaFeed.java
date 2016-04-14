@@ -12,6 +12,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.persistence.EmbeddedId;
@@ -117,6 +118,7 @@ public class JpaFeed implements Feed {
     public FeedDestination addDestination(Datasource ds) {
         JpaFeedDestination dest = new JpaFeedDestination(this, (JpaDatasource) ds);
         getDestinations().add(dest);
+        dest.setFeed(this);
         return dest;
     }
 
@@ -129,8 +131,8 @@ public class JpaFeed implements Feed {
         return addSource((JpaDatasource) ds, null);
     }
 
-    public FeedSource addSource(JpaDatasource ds, JpaServiceLevelAgreement agreemenet) {
-        JpaFeedSource src = new JpaFeedSource(this, ds, agreemenet);
+    public FeedSource addSource(JpaDatasource ds, JpaServiceLevelAgreement agreement) {
+        JpaFeedSource src = new JpaFeedSource(this, ds, agreement);
         getSources().add(src);
         src.setFeed(this);
         return src;
@@ -171,6 +173,7 @@ public class JpaFeed implements Feed {
         
         private static final long serialVersionUID = -8322308917629324338L;
 
+        @Column(name="id")
         private UUID uuid;
         
         public static FeedId create() {

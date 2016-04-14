@@ -24,7 +24,7 @@ public abstract class JpaFeedConnection implements FeedConnection {
     private JpaFeed feed;
     
     @ManyToOne
-    private JpaDatasource dataset;
+    private JpaDatasource datasource;
     
     public JpaFeedConnection() {
     }
@@ -34,12 +34,6 @@ public abstract class JpaFeedConnection implements FeedConnection {
         addConnection(ds);
     }
     
-    protected abstract void addConnection(JpaDatasource ds);
-
-    public JpaDatasource getDataset() {
-        return dataset;
-    }
-    
     @Override
     public Feed getFeed() {
         return this.feed;
@@ -47,15 +41,17 @@ public abstract class JpaFeedConnection implements FeedConnection {
     
     @Override
     public Datasource getDatasource() {
-        return this.dataset;
+        return this.datasource;
     }
 
-    public void setDataset(JpaDatasource dataset) {
-        this.dataset = dataset;
+    public void setDatasource(JpaDatasource dataset) {
+        this.datasource = dataset;
     }
 
     public void setFeed(JpaFeed feed) {
         this.feed = feed;
     }
+    
+    protected abstract void addConnection(JpaDatasource ds);
     
 }

@@ -11,6 +11,7 @@ import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
@@ -46,6 +47,7 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
     private D datasource;
     
     @OneToMany(targetEntity=JpaChangeSet.class, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name="dataset_id")
     private Set<C> changes = new HashSet<>();
     
     @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
@@ -56,11 +58,11 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
     }
     
     public JpaDataset(D dataset, C content) {
-        this.time = new DateTime();
-        this.type = ChangeType.UPDATE;
-        this.dataOperation = null;  // TODO
-        this.datasource = dataset;
-        this.changes.add(content); 
+        setTime(DateTime.now());
+        setType(ChangeType.UPDATE);
+//        setDataOperation(dataOperation);
+        setDatasource(dataset);
+        getChanges().add(content);
     }
 
     public DateTime getTime() {
@@ -81,6 +83,34 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
 
     public Set<C> getChanges() {
         return changes;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setDataOperation(JpaDataOperation dataOperation) {
+        this.dataOperation = dataOperation;
+    }
+
+    public void setDatasource(D datasource) {
+        this.datasource = datasource;
+    }
+
+    public void setChanges(Set<C> changes) {
+        this.changes = changes;
+    }
+
+    public void setTime(DateTime time) {
+        this.time = time;
+    }
+
+    public void setType(ChangeType type) {
+        this.type = type;
     }
 
 }

@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -117,6 +118,7 @@ public class JpaServiceLevelAgreement implements ServiceLevelAgreement, Serializ
         
         private static final long serialVersionUID = 6965221468619613881L;
         
+        @Column(name="id")
         private UUID uuid;
         
         public static SlaId create() {

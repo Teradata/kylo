@@ -9,6 +9,7 @@ import java.util.Objects;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
@@ -58,12 +59,26 @@ public class JpaFeedDestination extends JpaFeedConnection implements FeedDestina
         ds.addFeedDestination(this);
     }
     
-    
+    public List<DataOperation> getOperations() {
+        return operations;
+    }
+
+    public void setOperations(List<DataOperation> operations) {
+        this.operations = operations;
+    }
+
+    public void addOperation(JpaDataOperation op) {
+        getOperations().add(op);
+        op.setProducer(this);
+    }
+
+
     @Embeddable
     public static class DestinationId implements FeedDestination.ID {
         
         private static final long serialVersionUID = 241001606640713117L;
         
+        @Column(name="id")
         private UUID uuid;
         
         public static DestinationId create() {
@@ -111,24 +126,5 @@ public class JpaFeedDestination extends JpaFeedConnection implements FeedDestina
             return this.uuid.toString();
         }
     }
-//    
-//    
-//    @Embeddable
-//    public static class DestinationId extends BaseId implements FeedDestination.ID {
-//        
-//        private static final long serialVersionUID = -1229908599357170293L;
-//        
-//        public static DestinationId create() {
-//            return new DestinationId(UUID.randomUUID());
-//        }
-//        
-//        public DestinationId() {
-//            super();
-//        }
-//        
-//        public DestinationId(Serializable ser) {
-//            super(ser);
-//        } 
-//    }
 
 }
