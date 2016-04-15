@@ -22,7 +22,7 @@
     </properties>
 
     <dependencies>
-        <!-- Spring aritifacts -->
+        <!-- Spring artifacts -->
         <dependency>
             <groupId>com.thinkbiganalytics.bdp</groupId>
             <artifactId>thinkbig-activemq-core</artifactId>
