@@ -11,5 +11,5 @@ import java.util.List;
 
 public interface ServicesStatusCheck {
 
-    List<ServiceStatusResponse> healthCheck();
+  List<ServiceStatusResponse> healthCheck();
 }

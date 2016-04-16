@@ -7,27 +7,28 @@ import java.util.List;
  * Created by sr186054 on 4/13/16.
  */
 public interface ServiceStatusResponse {
-    String getServiceName();
 
-    List<ServiceComponent> getComponents();
+  String getServiceName();
 
-    List<ServiceComponent> getHealthyComponents();
+  List<ServiceComponent> getComponents();
 
-    List<ServiceComponent> getUnhealthyComponents();
+  List<ServiceComponent> getHealthyComponents();
 
-    Date getCheckDate();
+  List<ServiceComponent> getUnhealthyComponents();
 
-    List<ServiceAlert> getAlerts();
+  Date getCheckDate();
 
-    List<ServiceAlert> getAlertsWithoutComponent();
+  List<ServiceAlert> getAlerts();
 
-    STATE getState();
+  List<ServiceAlert> getAlertsWithoutComponent();
 
-    Date getLatestAlertTimestamp();
+  STATE getState();
 
-    Date getEarliestAlertTimestamp();
+  Date getLatestAlertTimestamp();
 
-    public enum STATE {
-        UP, DOWN, WARNING;
-    }
+  Date getEarliestAlertTimestamp();
+
+  public enum STATE {
+    UP, DOWN, WARNING;
+  }
 }

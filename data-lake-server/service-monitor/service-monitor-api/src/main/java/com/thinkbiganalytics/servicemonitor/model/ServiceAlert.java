@@ -6,52 +6,53 @@ import java.util.Date;
  * Created by sr186054 on 4/13/16.
  */
 public interface ServiceAlert {
-    String getServiceName();
 
-    void setServiceName(String serviceName);
+  String getServiceName();
 
-    String getComponentName();
+  void setServiceName(String serviceName);
 
-    void setComponentName(String componentName);
+  String getComponentName();
 
-    String getLabel();
+  void setComponentName(String componentName);
 
-    void setLabel(String label);
+  String getLabel();
 
-    String getMessage();
+  void setLabel(String label);
 
-    void setMessage(String message);
+  String getMessage();
 
-    Date getFirstTimestamp();
+  void setMessage(String message);
 
-    void setFirstTimestamp(Date firstTimestamp);
+  Date getFirstTimestamp();
 
-    Date getLatestTimestamp();
+  void setFirstTimestamp(Date firstTimestamp);
 
-    void setLatestTimestamp(Date latestTimestamp);
+  Date getLatestTimestamp();
 
-    STATE getState();
+  void setLatestTimestamp(Date latestTimestamp);
 
-    void setState(STATE state);
+  STATE getState();
 
-    public enum STATE {
-        OK(1), UNKNOWN(2), WARNING(3), CRITICAL(4);
-        private int severity;
+  void setState(STATE state);
 
-        STATE(int severity) {
-            this.severity = severity;
-        }
+  public enum STATE {
+    OK(1), UNKNOWN(2), WARNING(3), CRITICAL(4);
+    private int severity;
 
-        public int getSeverity() {
-            return this.severity;
-        }
-
-        public boolean isError() {
-            return this.severity > 1;
-        }
-
-        public boolean isHealthy() {
-            return this.severity == 1;
-        }
+    STATE(int severity) {
+      this.severity = severity;
     }
+
+    public int getSeverity() {
+      return this.severity;
+    }
+
+    public boolean isError() {
+      return this.severity > 1;
+    }
+
+    public boolean isHealthy() {
+      return this.severity == 1;
+    }
+  }
 }

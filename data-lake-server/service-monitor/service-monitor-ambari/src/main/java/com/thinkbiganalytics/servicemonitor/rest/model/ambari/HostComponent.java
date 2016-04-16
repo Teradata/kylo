@@ -1,47 +1,53 @@
 package com.thinkbiganalytics.servicemonitor.rest.model.ambari;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 
-import javax.annotation.Generated;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.annotation.Generated;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Generated("org.jsonschema2pojo")
 @JsonPropertyOrder({
-        "HostRoles"
-})
+                       "HostRoles"
+                   })
 public class HostComponent {
 
-    @JsonProperty("HostRoles")
-    private HostRoles HostRoles;
-    @JsonIgnore
-    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
+  @JsonProperty("HostRoles")
+  private HostRoles HostRoles;
+  @JsonIgnore
+  private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    /**
-     * @return The HostRoles
-     */
-    @JsonProperty("HostRoles")
-    public HostRoles getHostRoles() {
-        return HostRoles;
-    }
+  /**
+   * @return The HostRoles
+   */
+  @JsonProperty("HostRoles")
+  public HostRoles getHostRoles() {
+    return HostRoles;
+  }
 
-    /**
-     * @param HostRoles The HostRoles
-     */
-    @JsonProperty("HostRoles")
-    public void setHostRoles(HostRoles HostRoles) {
-        this.HostRoles = HostRoles;
-    }
+  /**
+   * @param HostRoles The HostRoles
+   */
+  @JsonProperty("HostRoles")
+  public void setHostRoles(HostRoles HostRoles) {
+    this.HostRoles = HostRoles;
+  }
 
-    @JsonAnyGetter
-    public Map<String, Object> getAdditionalProperties() {
-        return this.additionalProperties;
-    }
+  @JsonAnyGetter
+  public Map<String, Object> getAdditionalProperties() {
+    return this.additionalProperties;
+  }
 
-    @JsonAnySetter
-    public void setAdditionalProperty(String name, Object value) {
-        this.additionalProperties.put(name, value);
-    }
+  @JsonAnySetter
+  public void setAdditionalProperty(String name, Object value) {
+    this.additionalProperties.put(name, value);
+  }
 
 }

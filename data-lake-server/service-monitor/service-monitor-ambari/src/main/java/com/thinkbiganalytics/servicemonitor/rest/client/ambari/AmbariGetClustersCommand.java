@@ -11,18 +11,18 @@ import java.util.Map;
 
 public class AmbariGetClustersCommand extends RestCommand<ClusterList> {
 
-    @Override
-    public String payload() {
-        return null;
-    }
+  @Override
+  public String payload() {
+    return null;
+  }
 
-    @Override
-    public String getUrl() {
-        return "/clusters";
-    }
+  @Override
+  public String getUrl() {
+    return "/clusters";
+  }
 
-    @Override
-    public Map<String, Object> getParameters() {
-        return null;
-    }
+  @Override
+  public Map<String, Object> getParameters() {
+    return null;
+  }
 }

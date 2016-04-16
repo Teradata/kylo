@@ -9,9 +9,9 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AmbariSpringConfiguration {
 
-    @Bean(name = "ambariServicesStatus")
-    public AmbariServicesStatusCheck ambariServicesStatus() {
-        return new AmbariServicesStatusCheck();
-    }
+  @Bean(name = "ambariServicesStatus")
+  public AmbariServicesStatusCheck ambariServicesStatus() {
+    return new AmbariServicesStatusCheck();
+  }
 
 }

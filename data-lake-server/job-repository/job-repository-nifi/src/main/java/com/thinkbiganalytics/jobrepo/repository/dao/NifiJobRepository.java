@@ -10,26 +10,27 @@ import java.util.Map;
  * Created by sr186054 on 2/29/16.
  */
 public interface NifiJobRepository {
-    Long createJobInstance(NifiJobExecution nifiJobExecution);
 
-    Long saveJobExecution(NifiJobExecution nifiJobExecution);
+  Long createJobInstance(NifiJobExecution nifiJobExecution);
 
-    void completeJobExecution(NifiJobExecution nifiJobExecution);
+  Long saveJobExecution(NifiJobExecution nifiJobExecution);
 
-    void failJobExecution(NifiJobExecution nifiJobExecution);
+  void completeJobExecution(NifiJobExecution nifiJobExecution);
 
-    Long saveStepExecution(FlowFileComponent flowFileComponent);
+  void failJobExecution(NifiJobExecution nifiJobExecution);
 
-    void completeStep(FlowFileComponent flowFileComponent);
+  Long saveStepExecution(FlowFileComponent flowFileComponent);
 
-    void failStep(FlowFileComponent flowFileComponent);
+  void completeStep(FlowFileComponent flowFileComponent);
 
-    void saveStepExecutionContext(FlowFileComponent flowFileComponent, Map<String, Object> attrs);
+  void failStep(FlowFileComponent flowFileComponent);
 
-    void saveJobExecutionContext(NifiJobExecution jobExecution, Map<String, Object> attrs);
+  void saveStepExecutionContext(FlowFileComponent flowFileComponent, Map<String, Object> attrs);
 
-    Long getLastEventIdProcessedByPipelineController();
+  void saveJobExecutionContext(NifiJobExecution jobExecution, Map<String, Object> attrs);
 
-    void setAsCheckDataJob(Long jobExecutionId, String feedName);
+  Long getLastEventIdProcessedByPipelineController();
+
+  void setAsCheckDataJob(Long jobExecutionId, String feedName);
 
 }

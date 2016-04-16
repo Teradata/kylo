@@ -9,27 +9,27 @@ import java.util.Map;
  */
 public abstract class RestCommand<T> {
 
-    private String url;
-    private Map<String, Object> parameters;
+  private String url;
+  private Map<String, Object> parameters;
 
-    public abstract String payload();
+  public abstract String payload();
 
-    private Class<T> responseType;
+  private Class<T> responseType;
 
-    public RestCommand() {
-        this.responseType = (Class<T>) GenericTypeResolver.resolveTypeArgument(getClass(), RestCommand.class);
-    }
+  public RestCommand() {
+    this.responseType = (Class<T>) GenericTypeResolver.resolveTypeArgument(getClass(), RestCommand.class);
+  }
 
-    public Class<T> getResponseType() {
-        return this.responseType;
-    }
+  public Class<T> getResponseType() {
+    return this.responseType;
+  }
 
 
-    public String getUrl() {
-        return url;
-    }
+  public String getUrl() {
+    return url;
+  }
 
-    public Map<String, Object> getParameters() {
-        return parameters;
-    }
+  public Map<String, Object> getParameters() {
+    return parameters;
+  }
 }

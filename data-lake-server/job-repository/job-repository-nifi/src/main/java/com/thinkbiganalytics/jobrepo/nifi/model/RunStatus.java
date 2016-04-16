@@ -6,25 +6,26 @@ import java.util.Date;
  * Created by sr186054 on 2/26/16.
  */
 public interface RunStatus {
-    boolean markRunning();
 
-    boolean markCompleted();
+  boolean markRunning();
 
-    boolean markFailed();
+  boolean markCompleted();
 
-    public boolean isInitial();
+  boolean markFailed();
 
-    boolean isRunning();
+  public boolean isInitial();
 
-    boolean isComplete();
+  boolean isRunning();
 
-    RunStatusContext.RUN_STATUS getRunStatus();
+  boolean isComplete();
 
-    Date getStartTime();
+  RunStatusContext.RUN_STATUS getRunStatus();
 
-    Date getEndTime();
+  Date getStartTime();
 
-    Date getUTCStartTime();
+  Date getEndTime();
 
-    Date getUTCEndTime();
+  Date getUTCStartTime();
+
+  Date getUTCEndTime();
 }

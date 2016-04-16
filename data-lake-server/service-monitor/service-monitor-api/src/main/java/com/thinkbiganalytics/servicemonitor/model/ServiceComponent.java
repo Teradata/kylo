@@ -8,62 +8,63 @@ import java.util.Map;
  * Created by sr186054 on 4/13/16.
  */
 public interface ServiceComponent {
-    String DEFAULT_CLUSTER = "Default";
 
-    ServiceAlert.STATE getHighestAlertState();
+  String DEFAULT_CLUSTER = "Default";
 
-    Map<String, Object> getProperties();
+  ServiceAlert.STATE getHighestAlertState();
 
-    String getServiceName();
+  Map<String, Object> getProperties();
 
-    String getName();
+  String getServiceName();
 
-    boolean isHealthy();
+  String getName();
 
-    Date getCheckDate();
+  boolean isHealthy();
 
-    String getMessage();
+  Date getCheckDate();
 
-    STATE getState();
+  String getMessage();
 
-    List<ServiceAlert> getAlerts();
+  STATE getState();
 
-    boolean isContainsErrorAlerts();
+  List<ServiceAlert> getAlerts();
 
-    String getClusterName();
+  boolean isContainsErrorAlerts();
 
-    List<ServiceAlert> getErrorAlerts();
+  String getClusterName();
 
-    Date getLatestAlertTimestamp();
+  List<ServiceAlert> getErrorAlerts();
 
-    Date getEarliestAlertTimestamp();
+  Date getLatestAlertTimestamp();
 
-    void setServiceName(String serviceName);
+  Date getEarliestAlertTimestamp();
 
-    ServiceAlert.STATE getMaxAlertState();
+  void setServiceName(String serviceName);
 
-    public enum STATE {
-        UP(1), STARTING(2), DOWN(3), UNKNOWN(4);
-        private int severity;
+  ServiceAlert.STATE getMaxAlertState();
 
-        STATE(int severity) {
-            this.severity = severity;
-        }
+  public enum STATE {
+    UP(1), STARTING(2), DOWN(3), UNKNOWN(4);
+    private int severity;
 
-        public int getSeverity() {
-            return this.severity;
-        }
-
-        public boolean isError() {
-            return this.severity > 2;
-        }
-
-        public boolean isHealthy() {
-            return this.severity <= 2;
-        }
+    STATE(int severity) {
+      this.severity = severity;
     }
 
-    public enum TIMESTAMP_TYPE {
-        EARLIEST, LATEST
+    public int getSeverity() {
+      return this.severity;
     }
+
+    public boolean isError() {
+      return this.severity > 2;
+    }
+
+    public boolean isHealthy() {
+      return this.severity <= 2;
+    }
+  }
+
+  public enum TIMESTAMP_TYPE {
+    EARLIEST, LATEST
+  }
 }

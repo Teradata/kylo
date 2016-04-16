@@ -11,12 +11,12 @@ import java.util.List;
  */
 public class TextPlainJackson2HttpMessageConverter extends MappingJackson2HttpMessageConverter {
 
-    public TextPlainJackson2HttpMessageConverter() {
-        List<MediaType> types = Arrays.asList(
-                new MediaType("application", "json", DEFAULT_CHARSET),
-                new MediaType("application", "*+json", DEFAULT_CHARSET),
-                new MediaType("text", "plain", DEFAULT_CHARSET));
-        super.setSupportedMediaTypes(types);
-    }
+  public TextPlainJackson2HttpMessageConverter() {
+    List<MediaType> types = Arrays.asList(
+        new MediaType("application", "json", DEFAULT_CHARSET),
+        new MediaType("application", "*+json", DEFAULT_CHARSET),
+        new MediaType("text", "plain", DEFAULT_CHARSET));
+    super.setSupportedMediaTypes(types);
+  }
 
 }
