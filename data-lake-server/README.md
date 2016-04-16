@@ -17,23 +17,15 @@ You can build this project with the *ambari* profile to include just that resour
 Modules
 =========
 
-1. data-lake-server-app
-
-The Server application is a Spring Boot application.  
-
-1. job-repository
-
+1. ***data-lake-server-app***  
+The Server application is a Spring Boot application.    
+2. ***job-repository***
 Responsible for Reading and Writing Job Execution data.  
 Currently we support MySQL and Postgres as backends to store this data.  Under the covers we are using the JSR-352 compliant implementation using Spring Batches Data Model.
-The Execution Engine that is preforming these jobs is separate from the actual storage mechanism.  The default implementation for the data-lake-accelerator is Apache Nifi.  This is in the sub-module
-*job-repository-nifi*
-Alternatively if you wish you can use Spring Batch as the Execution Engine.  These files still exist in the *InternalAssets* project and will be ported over from the *pipeline-components* module
-
-1. scheduler
-
-Responsible for displaying the schedule information along with a REST endpoint to allow for user interaction with the schedule (start, pause etc)
-
-1. service-monitor
-
+The Execution Engine that is preforming these jobs is separate from the actual storage mechanism.  The default implementation for the data-lake-accelerator is Apache Nifi.  This is in the sub-module *job-repository-nifi*
+Alternatively if you wish you can use Spring Batch as the Execution Engine.  These files still exist in the *InternalAssets* project and will be ported over from the *pipeline-components* module  
+1. ***scheduler***  
+Responsible for displaying the schedule information along with a REST endpoint to allow for user interaction with the schedule (start, pause etc)  
+1. ***service-monitor***  
 Responsible for exposing various Service Health checks as a REST endpoint.  The ***data-lake-ui/operations-manager*** knows how to interact with these Health Checks and displays this information on the UI.
-The service-monitor is pluggable allowing you to easily add in health checks to any service and expose that information in the operations manager user interface.
+The service-monitor is pluggable allowing you to easily add in health checks to any service and expose that information in the operations manager user interface.  
