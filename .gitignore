@@ -1,0 +1,17 @@
+/.idea
+.classpath
+.project
+.settings
+target
+bin
+.DS_Store
+.idea
+*.iml
+.Rproj.user
+.metadata/
+.vagrant
+.recommenders
+derby.log
+.springBeans
+**/logs/
+
