@@ -9,6 +9,8 @@ import com.cloudera.api.v1.RootResourceV1;
  */
 public interface ClouderaRootResource {
     RootResourceV1 getRootResource();
+
     ClustersResource getClusterResource();
+
     ApiClusterList getPopulatedClusterList();
 }

@@ -3,7 +3,7 @@ package com.thinkbiganalytics.servicemonitor.check;
 import com.cloudera.api.model.*;
 import com.thinkbiganalytics.servicemonitor.model.*;
 import com.thinkbiganalytics.servicemonitor.rest.client.cdh.ClouderaClient;
-import com.thinkbiganalytics.servicemonitor.support.*;
+import com.thinkbiganalytics.servicemonitor.support.ServiceMonitorCheckUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,68 +23,55 @@ public class ClouderaServicesStatusCheck implements ServicesStatusCheck {
     @Autowired
     private ClouderaClient clouderaClient;
 
-    private ServiceComponent.STATE getServiceState(ApiServiceState clouderaState){
-        ServiceComponent.STATE  state = ServiceComponent.STATE.DOWN;
-    if(ApiServiceState.STARTED.equals(clouderaState)){
-        state = ServiceComponent.STATE.UP;
-    }
-     else if(ApiServiceState.STARTING.equals(clouderaState)){
-        state = ServiceComponent.STATE.STARTING;
-    }
-    else if(ApiServiceState.STOPPING.equals(clouderaState)){
-        state = ServiceComponent.STATE.DOWN;
-    }
-    else if(ApiServiceState.STOPPED.equals(clouderaState)){
-        state = ServiceComponent.STATE.DOWN;
-    }
-    else if(ApiServiceState.UNKNOWN.equals(clouderaState)){
-        state = ServiceComponent.STATE.UNKNOWN;
-    }
-        else {
-        state = ServiceComponent.STATE.UNKNOWN;
-    }
-        return state;
-    }
-
-    private ServiceComponent.STATE apiRoleStateToServiceComponentState(ApiRoleState roleState){
-        ServiceComponent.STATE  state = ServiceComponent.STATE.DOWN;
-        if(ApiRoleState.NA.equals(roleState) || ApiRoleState.HISTORY_NOT_AVAILABLE.equals(roleState) ||ApiRoleState.UNKNOWN.equals(roleState) ) {
-            state = ServiceComponent.STATE.UNKNOWN;
-        }
-
-        if(ApiRoleState.STARTED.equals(roleState)){
+    private ServiceComponent.STATE getServiceState(ApiServiceState clouderaState) {
+        ServiceComponent.STATE state = ServiceComponent.STATE.DOWN;
+        if (ApiServiceState.STARTED.equals(clouderaState)) {
             state = ServiceComponent.STATE.UP;
-        }
-        else if(ApiRoleState.STARTING.equals(roleState)){
+        } else if (ApiServiceState.STARTING.equals(clouderaState)) {
             state = ServiceComponent.STATE.STARTING;
-        }
-        else if(ApiRoleState.STOPPING.equals(roleState)){
+        } else if (ApiServiceState.STOPPING.equals(clouderaState)) {
             state = ServiceComponent.STATE.DOWN;
-        }
-        else if(ApiRoleState.STOPPED.equals(roleState)){
+        } else if (ApiServiceState.STOPPED.equals(clouderaState)) {
             state = ServiceComponent.STATE.DOWN;
-        }
-        else if(ApiRoleState.BUSY.equals(roleState)){
-            state = ServiceComponent.STATE.UP;
-        }
-        else {
+        } else if (ApiServiceState.UNKNOWN.equals(clouderaState)) {
+            state = ServiceComponent.STATE.UNKNOWN;
+        } else {
             state = ServiceComponent.STATE.UNKNOWN;
         }
         return state;
     }
 
-    private ServiceAlert.STATE apiHealthSummaryAlertState(ApiHealthSummary healthSummary){
+    private ServiceComponent.STATE apiRoleStateToServiceComponentState(ApiRoleState roleState) {
+        ServiceComponent.STATE state = ServiceComponent.STATE.DOWN;
+        if (ApiRoleState.NA.equals(roleState) || ApiRoleState.HISTORY_NOT_AVAILABLE.equals(roleState) || ApiRoleState.UNKNOWN.equals(roleState)) {
+            state = ServiceComponent.STATE.UNKNOWN;
+        }
+
+        if (ApiRoleState.STARTED.equals(roleState)) {
+            state = ServiceComponent.STATE.UP;
+        } else if (ApiRoleState.STARTING.equals(roleState)) {
+            state = ServiceComponent.STATE.STARTING;
+        } else if (ApiRoleState.STOPPING.equals(roleState)) {
+            state = ServiceComponent.STATE.DOWN;
+        } else if (ApiRoleState.STOPPED.equals(roleState)) {
+            state = ServiceComponent.STATE.DOWN;
+        } else if (ApiRoleState.BUSY.equals(roleState)) {
+            state = ServiceComponent.STATE.UP;
+        } else {
+            state = ServiceComponent.STATE.UNKNOWN;
+        }
+        return state;
+    }
+
+    private ServiceAlert.STATE apiHealthSummaryAlertState(ApiHealthSummary healthSummary) {
         ServiceAlert.STATE state = ServiceAlert.STATE.UNKNOWN;
-       if(ApiHealthSummary.DISABLED.equals(healthSummary) || ApiHealthSummary.HISTORY_NOT_AVAILABLE.equals(healthSummary) ||ApiHealthSummary.NOT_AVAILABLE.equals(healthSummary) ) {
+        if (ApiHealthSummary.DISABLED.equals(healthSummary) || ApiHealthSummary.HISTORY_NOT_AVAILABLE.equals(healthSummary) || ApiHealthSummary.NOT_AVAILABLE.equals(healthSummary)) {
             state = ServiceAlert.STATE.UNKNOWN;
-        }
-        else if(ApiHealthSummary.GOOD.equals(healthSummary)){
+        } else if (ApiHealthSummary.GOOD.equals(healthSummary)) {
             state = ServiceAlert.STATE.OK;
-        }
-        else if(ApiHealthSummary.BAD.equals(healthSummary)){
+        } else if (ApiHealthSummary.BAD.equals(healthSummary)) {
             state = ServiceAlert.STATE.CRITICAL;
-        }
-       else if(ApiHealthSummary.CONCERNING.equals(healthSummary)){
+        } else if (ApiHealthSummary.CONCERNING.equals(healthSummary)) {
             state = ServiceAlert.STATE.WARNING;
         }
         return state;
@@ -102,15 +89,15 @@ public class ClouderaServicesStatusCheck implements ServicesStatusCheck {
     @Override
     public List<ServiceStatusResponse> healthCheck() {
 
-       List<ServiceStatusResponse> serviceStatusResponseList = new ArrayList<>();
+        List<ServiceStatusResponse> serviceStatusResponseList = new ArrayList<>();
 
-        Map<String,List<ApiService>> serviceMap = new HashMap<String,List<ApiService>>();
+        Map<String, List<ApiService>> serviceMap = new HashMap<String, List<ApiService>>();
 
         //Get the Map of Services and optional Components we are tracking
-        Map<String,List<String>> definedServiceComponentMap  = ServiceMonitorCheckUtil.getMapOfServiceAndComponents(services);
+        Map<String, List<String>> definedServiceComponentMap = ServiceMonitorCheckUtil.getMapOfServiceAndComponents(services);
 
 
-        if(definedServiceComponentMap != null && !definedServiceComponentMap.isEmpty()) {
+        if (definedServiceComponentMap != null && !definedServiceComponentMap.isEmpty()) {
             try {
 
                 ApiClusterList clusters = clouderaClient.getClouderaResource().getPopulatedClusterList();
@@ -142,7 +129,7 @@ public class ClouderaServicesStatusCheck implements ServicesStatusCheck {
 
                                 ServiceComponent component = new DefaultServiceComponent.Builder(roleName, roleState).clusterName(clusterName).message(role.getRoleState().name()).build();
                                 if (definedServiceComponentMap.containsKey(serviceName) && (definedServiceComponentMap.get(serviceName).contains(
-                                    ServiceMonitorCheckUtil.ALL_COMPONENTS) || definedServiceComponentMap.get(serviceName).contains(component.getName()))) {
+                                        ServiceMonitorCheckUtil.ALL_COMPONENTS) || definedServiceComponentMap.get(serviceName).contains(component.getName()))) {
                                     serviceComponents.add(component);
                                 }
 
@@ -152,13 +139,11 @@ public class ClouderaServicesStatusCheck implements ServicesStatusCheck {
                         }
                     }
                 }
-            }
-            catch(Exception e){
+            } catch (Exception e) {
                 Throwable cause;
-                if(e.getCause() != null){
+                if (e.getCause() != null) {
                     cause = e.getCause();
-                }
-                else {
+                } else {
                     cause = e;
                 }
                 ServiceComponent clouderaServiceComponent = new DefaultServiceComponent.Builder("Cloudera REST_CLIENT", ServiceComponent.STATE.DOWN).serviceName("Cloudera").clusterName("UNKNOWN").exception(cause).build();
@@ -173,30 +158,26 @@ public class ClouderaServicesStatusCheck implements ServicesStatusCheck {
         }
 
 
-
-
         return serviceStatusResponseList;
     }
 
 
-
-    private void adddClouderaServiceErrors(String exceptionMessage,List<ServiceStatusResponse> list, Map<String,List<String>> definedServiceComponentMap){
-        if(definedServiceComponentMap != null && !definedServiceComponentMap.isEmpty()){
-            String message = "Status Unknown. Unable to check service.  Cloudera connection error: "+exceptionMessage;
-            for(Map.Entry<String,List<String>> entry: definedServiceComponentMap.entrySet()){
-                String serviceName= entry.getKey();
-                List<String>componentNames = entry.getValue();
+    private void adddClouderaServiceErrors(String exceptionMessage, List<ServiceStatusResponse> list, Map<String, List<String>> definedServiceComponentMap) {
+        if (definedServiceComponentMap != null && !definedServiceComponentMap.isEmpty()) {
+            String message = "Status Unknown. Unable to check service.  Cloudera connection error: " + exceptionMessage;
+            for (Map.Entry<String, List<String>> entry : definedServiceComponentMap.entrySet()) {
+                String serviceName = entry.getKey();
+                List<String> componentNames = entry.getValue();
                 List<ServiceComponent> components = new ArrayList<>();
-                if(componentNames != null && !componentNames.isEmpty()){
-                    for(String componentName: componentNames){
-                        if(ServiceMonitorCheckUtil.ALL_COMPONENTS.equals(componentName)){
+                if (componentNames != null && !componentNames.isEmpty()) {
+                    for (String componentName : componentNames) {
+                        if (ServiceMonitorCheckUtil.ALL_COMPONENTS.equals(componentName)) {
                             componentName = serviceName;
                         }
                         ServiceComponent serviceComponent = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.UNKNOWN).clusterName("UNKNOWN").message(message).build();
                         components.add(serviceComponent);
                     }
-                }
-                else {
+                } else {
                     //add the component based uppon the Service Name
                     ServiceComponent serviceComponent = new DefaultServiceComponent.Builder(serviceName, ServiceComponent.STATE.UNKNOWN).clusterName("UNKNOWN").message(message).build();
                     components.add(serviceComponent);
@@ -208,7 +189,9 @@ public class ClouderaServicesStatusCheck implements ServicesStatusCheck {
         }
     }
 
-    /** Setters for unit testing purposes */
+    /**
+     * Setters for unit testing purposes
+     */
 
     public void setClouderaClient(ClouderaClient clouderaClient) {
         this.clouderaClient = clouderaClient;

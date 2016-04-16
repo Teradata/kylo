@@ -23,6 +23,6 @@ public class AmbariGetClustersCommand extends RestCommand<ClusterList> {
 
     @Override
     public Map<String, Object> getParameters() {
-       return null;
+        return null;
     }
 }

@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class AmbariClientConfig {
 
-    @Bean(name="ambariRestClientConfig")
-    public RestClientConfig getConfig(){
+    @Bean(name = "ambariRestClientConfig")
+    public RestClientConfig getConfig() {
         return new RestClientConfig();
     }
 

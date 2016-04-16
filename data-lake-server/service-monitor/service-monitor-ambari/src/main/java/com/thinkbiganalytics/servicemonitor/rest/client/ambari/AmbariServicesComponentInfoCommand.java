@@ -1,4 +1,5 @@
 package com.thinkbiganalytics.servicemonitor.rest.client.ambari;
+
 import com.thinkbiganalytics.servicemonitor.rest.model.ambari.ServiceComponentInfoSummary;
 import com.thinkbiganalytics.servicemonitor.support.ServiceMonitorCheckUtil;
 
@@ -22,15 +23,15 @@ public class AmbariServicesComponentInfoCommand extends AmbariServiceCheckRestCo
 
     @Override
     public String getUrl() {
-        return "clusters/"+getClusterName()+"/components/";
+        return "clusters/" + getClusterName() + "/components/";
     }
 
     @Override
     public Map<String, Object> getParameters() {
-       Map<String,Object> params = new HashMap<>();
+        Map<String, Object> params = new HashMap<>();
         StringBuilder servicesString = null;
-      List<String> serviceList = ServiceMonitorCheckUtil.getServiceNames(this.getServices());
-        if(serviceList != null) {
+        List<String> serviceList = ServiceMonitorCheckUtil.getServiceNames(this.getServices());
+        if (serviceList != null) {
             for (String service : serviceList) {
                 if (servicesString == null) {
                     servicesString = new StringBuilder();

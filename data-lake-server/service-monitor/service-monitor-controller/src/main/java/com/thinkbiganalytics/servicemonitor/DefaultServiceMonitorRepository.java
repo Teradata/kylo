@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.servicemonitor;
 
-import com.thinkbiganalytics.servicemonitor.model.*;
+import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.inject.Named;

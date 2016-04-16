@@ -10,20 +10,19 @@ import java.util.Map;
 public abstract class RestCommand<T> {
 
     private String url;
-    private Map<String,Object> parameters;
+    private Map<String, Object> parameters;
 
     public abstract String payload();
 
     private Class<T> responseType;
 
-    public RestCommand(){
+    public RestCommand() {
         this.responseType = (Class<T>) GenericTypeResolver.resolveTypeArgument(getClass(), RestCommand.class);
     }
+
     public Class<T> getResponseType() {
         return this.responseType;
     }
-
-
 
 
     public String getUrl() {

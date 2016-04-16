@@ -25,9 +25,7 @@ public class HostRoles {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     *
-     * @return
-     * The componentName
+     * @return The componentName
      */
     @JsonProperty("component_name")
     public String getComponentName() {
@@ -35,9 +33,7 @@ public class HostRoles {
     }
 
     /**
-     *
-     * @param componentName
-     * The component_name
+     * @param componentName The component_name
      */
     @JsonProperty("component_name")
     public void setComponentName(String componentName) {
@@ -45,9 +41,7 @@ public class HostRoles {
     }
 
     /**
-     *
-     * @return
-     * The hostName
+     * @return The hostName
      */
     @JsonProperty("host_name")
     public String getHostName() {
@@ -55,9 +49,7 @@ public class HostRoles {
     }
 
     /**
-     *
-     * @param hostName
-     * The host_name
+     * @param hostName The host_name
      */
     @JsonProperty("host_name")
     public void setHostName(String hostName) {
@@ -65,9 +57,7 @@ public class HostRoles {
     }
 
     /**
-     *
-     * @return
-     * The state
+     * @return The state
      */
     @JsonProperty("state")
     public String getState() {
@@ -75,9 +65,7 @@ public class HostRoles {
     }
 
     /**
-     *
-     * @param state
-     * The state
+     * @param state The state
      */
     @JsonProperty("state")
     public void setState(String state) {

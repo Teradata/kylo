@@ -2,11 +2,11 @@ package com.thinkbiganalytics.servicemonitor.rest.servicestatus;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.servicemonitor.check.*;
+import com.thinkbiganalytics.servicemonitor.check.ServicesStatusCheck;
 import com.thinkbiganalytics.servicemonitor.model.*;
 import com.thinkbiganalytics.servicemonitor.rest.client.ambari.AmbariClient;
 import com.thinkbiganalytics.servicemonitor.rest.model.ambari.*;
-import com.thinkbiganalytics.servicemonitor.support.*;
+import com.thinkbiganalytics.servicemonitor.support.ServiceMonitorCheckUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,7 +18,6 @@ import java.util.*;
 
 /**
  * Ambari Service bean autowired in via the ServiceStatusManager looking for this ServicesStatusCheck interface
- *
  */
 public class AmbariServicesStatusCheck implements ServicesStatusCheck {
     private static final Logger LOG = LoggerFactory.getLogger(AmbariServicesStatusCheck.class);

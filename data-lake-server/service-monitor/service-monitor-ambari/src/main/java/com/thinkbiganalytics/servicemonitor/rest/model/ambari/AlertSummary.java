@@ -28,9 +28,7 @@ public class AlertSummary {
 
 
     /**
-     *
-     * @return
-     * The items
+     * @return The items
      */
     @JsonProperty("items")
     public List<AlertItem> getItems() {
@@ -38,9 +36,7 @@ public class AlertSummary {
     }
 
     /**
-     *
-     * @param items
-     * The items
+     * @param items The items
      */
     @JsonProperty("items")
     public void setItems(List<AlertItem> items) {

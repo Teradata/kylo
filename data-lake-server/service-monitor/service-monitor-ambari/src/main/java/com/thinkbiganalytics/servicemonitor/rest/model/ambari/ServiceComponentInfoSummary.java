@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.servicemonitor.rest.model.ambari;
 
 import com.fasterxml.jackson.annotation.*;
@@ -22,9 +21,7 @@ public class ServiceComponentInfoSummary {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     *
-     * @return
-     * The items
+     * @return The items
      */
     @JsonProperty("items")
     public List<ServiceComponentInfoItem> getItems() {
@@ -32,9 +29,7 @@ public class ServiceComponentInfoSummary {
     }
 
     /**
-     *
-     * @param items
-     * The items
+     * @param items The items
      */
     @JsonProperty("items")
     public void setItems(List<ServiceComponentInfoItem> items) {

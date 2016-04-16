@@ -1,4 +1,3 @@
-
 package com.thinkbiganalytics.servicemonitor.rest.model.ambari;
 
 import com.fasterxml.jackson.annotation.*;
@@ -42,9 +41,7 @@ public class ServiceComponentInfo {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     *
-     * @return
-     * The category
+     * @return The category
      */
     @JsonProperty("category")
     public String getCategory() {
@@ -52,9 +49,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @param category
-     * The category
+     * @param category The category
      */
     @JsonProperty("category")
     public void setCategory(String category) {
@@ -62,9 +57,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @return
-     * The clusterName
+     * @return The clusterName
      */
     @JsonProperty("cluster_name")
     public String getClusterName() {
@@ -72,9 +65,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @param clusterName
-     * The cluster_name
+     * @param clusterName The cluster_name
      */
     @JsonProperty("cluster_name")
     public void setClusterName(String clusterName) {
@@ -82,9 +73,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @return
-     * The componentName
+     * @return The componentName
      */
     @JsonProperty("component_name")
     public String getComponentName() {
@@ -92,9 +81,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @param componentName
-     * The component_name
+     * @param componentName The component_name
      */
     @JsonProperty("component_name")
     public void setComponentName(String componentName) {
@@ -102,9 +89,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @return
-     * The installedCount
+     * @return The installedCount
      */
     @JsonProperty("installed_count")
     public Integer getInstalledCount() {
@@ -112,9 +97,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @param installedCount
-     * The installed_count
+     * @param installedCount The installed_count
      */
     @JsonProperty("installed_count")
     public void setInstalledCount(Integer installedCount) {
@@ -122,9 +105,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @return
-     * The serviceName
+     * @return The serviceName
      */
     @JsonProperty("service_name")
     public String getServiceName() {
@@ -132,9 +113,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @param serviceName
-     * The service_name
+     * @param serviceName The service_name
      */
     @JsonProperty("service_name")
     public void setServiceName(String serviceName) {
@@ -142,9 +121,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @return
-     * The startedCount
+     * @return The startedCount
      */
     @JsonProperty("started_count")
     public Integer getStartedCount() {
@@ -152,9 +129,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @param startedCount
-     * The started_count
+     * @param startedCount The started_count
      */
     @JsonProperty("started_count")
     public void setStartedCount(Integer startedCount) {
@@ -167,9 +142,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @return
-     * The state..
+     * @return The state..
      * TODO Revisit if clustered with component on Multiple Hosts...
      */
     @JsonProperty("state")
@@ -178,9 +151,7 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @return
-     * The totalCount
+     * @return The totalCount
      */
     @JsonProperty("total_count")
     public Integer getTotalCount() {
@@ -188,18 +159,12 @@ public class ServiceComponentInfo {
     }
 
     /**
-     *
-     * @param totalCount
-     * The total_count
+     * @param totalCount The total_count
      */
     @JsonProperty("total_count")
     public void setTotalCount(Integer totalCount) {
         this.totalCount = totalCount;
     }
-
-
-
-
 
 
     @JsonAnyGetter

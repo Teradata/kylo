@@ -23,9 +23,7 @@ public class Cluster {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     *
-     * @return
-     * The clusterName
+     * @return The clusterName
      */
     @JsonProperty("cluster_name")
     public String getClusterName() {
@@ -33,9 +31,7 @@ public class Cluster {
     }
 
     /**
-     *
-     * @param clusterName
-     * The cluster_name
+     * @param clusterName The cluster_name
      */
     @JsonProperty("cluster_name")
     public void setClusterName(String clusterName) {
@@ -43,9 +39,7 @@ public class Cluster {
     }
 
     /**
-     *
-     * @return
-     * The version
+     * @return The version
      */
     @JsonProperty("version")
     public String getVersion() {
@@ -53,9 +47,7 @@ public class Cluster {
     }
 
     /**
-     *
-     * @param version
-     * The version
+     * @param version The version
      */
     @JsonProperty("version")
     public void setVersion(String version) {

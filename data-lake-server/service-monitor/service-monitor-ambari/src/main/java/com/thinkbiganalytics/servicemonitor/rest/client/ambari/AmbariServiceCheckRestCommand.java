@@ -9,7 +9,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class AmbariServiceCheckRestCommand<T> extends RestCommand<T> {
     private String clusterName;
-private String services;
+    private String services;
 
     public AmbariServiceCheckRestCommand(String clusterName, String services) {
         super();
@@ -30,7 +30,6 @@ private String services;
     public void setServices(String services) {
         this.services = services;
     }
-
 
 
     public String getClusterName() {

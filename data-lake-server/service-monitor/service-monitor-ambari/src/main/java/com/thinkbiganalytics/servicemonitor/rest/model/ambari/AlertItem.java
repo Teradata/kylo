@@ -15,7 +15,7 @@ import java.util.Map;
 @JsonPropertyOrder({
         "Alert"
 })
-@JsonIgnoreProperties(ignoreUnknown=true)
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class AlertItem {
 
     @JsonProperty("Alert")
@@ -24,9 +24,7 @@ public class AlertItem {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     *
-     * @return
-     * The Alert
+     * @return The Alert
      */
     @JsonProperty("Alert")
     public Alert getAlert() {
@@ -34,9 +32,7 @@ public class AlertItem {
     }
 
     /**
-     *
-     * @param Alert
-     * The Alert
+     * @param Alert The Alert
      */
     @JsonProperty("Alert")
     public void setAlert(Alert Alert) {

@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.servicemonitor.rest.client.ambari;
 
 
-
 import com.thinkbiganalytics.servicemonitor.rest.model.ambari.AlertSummary;
 import com.thinkbiganalytics.servicemonitor.support.ServiceMonitorCheckUtil;
 import org.apache.commons.lang3.StringUtils;
@@ -30,12 +29,12 @@ public class AmbariAlertsCommand extends AmbariServiceCheckRestCommand<AlertSumm
     public String getUrl() {
         List<String> serviceList = ServiceMonitorCheckUtil.getServiceNames(this.getServices());
         String serviceString = StringUtils.join(serviceList, ",");
-        return "clusters/"+getClusterName()+"/alerts?fields=*&Alert/service_name.in("+serviceString+")";
+        return "clusters/" + getClusterName() + "/alerts?fields=*&Alert/service_name.in(" + serviceString + ")";
     }
 
     @Override
     public Map<String, Object> getParameters() {
-       return null;
+        return null;
     }
 
 }

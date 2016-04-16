@@ -61,9 +61,7 @@ public class Alert {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     *
-     * @return
-     * The clusterName
+     * @return The clusterName
      */
     @JsonProperty("cluster_name")
     public String getClusterName() {
@@ -71,9 +69,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param clusterName
-     * The cluster_name
+     * @param clusterName The cluster_name
      */
     @JsonProperty("cluster_name")
     public void setClusterName(String clusterName) {
@@ -81,9 +77,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The componentName
+     * @return The componentName
      */
     @JsonProperty("component_name")
     public String getComponentName() {
@@ -91,9 +85,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param componentName
-     * The component_name
+     * @param componentName The component_name
      */
     @JsonProperty("component_name")
     public void setComponentName(String componentName) {
@@ -101,9 +93,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The definitionId
+     * @return The definitionId
      */
     @JsonProperty("definition_id")
     public Integer getDefinitionId() {
@@ -111,9 +101,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param definitionId
-     * The definition_id
+     * @param definitionId The definition_id
      */
     @JsonProperty("definition_id")
     public void setDefinitionId(Integer definitionId) {
@@ -121,9 +109,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The definitionName
+     * @return The definitionName
      */
     @JsonProperty("definition_name")
     public String getDefinitionName() {
@@ -131,9 +117,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param definitionName
-     * The definition_name
+     * @param definitionName The definition_name
      */
     @JsonProperty("definition_name")
     public void setDefinitionName(String definitionName) {
@@ -141,9 +125,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The hostName
+     * @return The hostName
      */
     @JsonProperty("host_name")
     public String getHostName() {
@@ -151,9 +133,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param hostName
-     * The host_name
+     * @param hostName The host_name
      */
     @JsonProperty("host_name")
     public void setHostName(String hostName) {
@@ -161,9 +141,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The id
+     * @return The id
      */
     @JsonProperty("id")
     public Integer getId() {
@@ -171,9 +149,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param id
-     * The id
+     * @param id The id
      */
     @JsonProperty("id")
     public void setId(Integer id) {
@@ -181,9 +157,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The instance
+     * @return The instance
      */
     @JsonProperty("instance")
     public Object getInstance() {
@@ -191,9 +165,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param instance
-     * The instance
+     * @param instance The instance
      */
     @JsonProperty("instance")
     public void setInstance(Object instance) {
@@ -201,9 +173,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The label
+     * @return The label
      */
     @JsonProperty("label")
     public String getLabel() {
@@ -211,9 +181,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param label
-     * The label
+     * @param label The label
      */
     @JsonProperty("label")
     public void setLabel(String label) {
@@ -221,9 +189,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The latestTimestamp
+     * @return The latestTimestamp
      */
     @JsonProperty("latest_timestamp")
     public Long getLatestTimestamp() {
@@ -231,9 +197,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param latestTimestamp
-     * The latest_timestamp
+     * @param latestTimestamp The latest_timestamp
      */
     @JsonProperty("latest_timestamp")
     public void setLatestTimestamp(Long latestTimestamp) {
@@ -241,9 +205,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The maintenanceState
+     * @return The maintenanceState
      */
     @JsonProperty("maintenance_state")
     public String getMaintenanceState() {
@@ -251,9 +213,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param maintenanceState
-     * The maintenance_state
+     * @param maintenanceState The maintenance_state
      */
     @JsonProperty("maintenance_state")
     public void setMaintenanceState(String maintenanceState) {
@@ -261,9 +221,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The originalTimestamp
+     * @return The originalTimestamp
      */
     @JsonProperty("original_timestamp")
     public Long getOriginalTimestamp() {
@@ -271,9 +229,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param originalTimestamp
-     * The original_timestamp
+     * @param originalTimestamp The original_timestamp
      */
     @JsonProperty("original_timestamp")
     public void setOriginalTimestamp(Long originalTimestamp) {
@@ -281,9 +237,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The scope
+     * @return The scope
      */
     @JsonProperty("scope")
     public String getScope() {
@@ -291,9 +245,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param scope
-     * The scope
+     * @param scope The scope
      */
     @JsonProperty("scope")
     public void setScope(String scope) {
@@ -301,9 +253,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The serviceName
+     * @return The serviceName
      */
     @JsonProperty("service_name")
     public String getServiceName() {
@@ -311,9 +261,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param serviceName
-     * The service_name
+     * @param serviceName The service_name
      */
     @JsonProperty("service_name")
     public void setServiceName(String serviceName) {
@@ -321,9 +269,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The state
+     * @return The state
      */
     @JsonProperty("state")
     public String getState() {
@@ -331,9 +277,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param state
-     * The state
+     * @param state The state
      */
     @JsonProperty("state")
     public void setState(String state) {
@@ -341,9 +285,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @return
-     * The text
+     * @return The text
      */
     @JsonProperty("text")
     public String getText() {
@@ -351,9 +293,7 @@ public class Alert {
     }
 
     /**
-     *
-     * @param text
-     * The text
+     * @param text The text
      */
     @JsonProperty("text")
     public void setText(String text) {

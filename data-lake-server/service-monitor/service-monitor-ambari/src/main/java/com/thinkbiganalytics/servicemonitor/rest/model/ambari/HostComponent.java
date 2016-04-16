@@ -19,9 +19,7 @@ public class HostComponent {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     *
-     * @return
-     * The HostRoles
+     * @return The HostRoles
      */
     @JsonProperty("HostRoles")
     public HostRoles getHostRoles() {
@@ -29,9 +27,7 @@ public class HostComponent {
     }
 
     /**
-     *
-     * @param HostRoles
-     * The HostRoles
+     * @param HostRoles The HostRoles
      */
     @JsonProperty("HostRoles")
     public void setHostRoles(HostRoles HostRoles) {

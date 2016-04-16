@@ -37,15 +37,19 @@ public interface ServiceAlert {
     public enum STATE {
         OK(1), UNKNOWN(2), WARNING(3), CRITICAL(4);
         private int severity;
-        STATE(int severity){
+
+        STATE(int severity) {
             this.severity = severity;
         }
-        public int getSeverity(){
-            return  this.severity;
+
+        public int getSeverity() {
+            return this.severity;
         }
-        public boolean isError(){
-            return this.severity >1;
+
+        public boolean isError() {
+            return this.severity > 1;
         }
+
         public boolean isHealthy() {
             return this.severity == 1;
         }

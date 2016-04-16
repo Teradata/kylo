@@ -1,7 +1,8 @@
 package com.thinkbiganalytics.servicemonitor;
 
-import com.thinkbiganalytics.servicemonitor.check.*;
-import com.thinkbiganalytics.servicemonitor.model.*;
+import com.thinkbiganalytics.servicemonitor.check.ServiceStatusCheck;
+import com.thinkbiganalytics.servicemonitor.check.ServicesStatusCheck;
+import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -19,8 +20,6 @@ import java.util.concurrent.Future;
 
 /**
  * Application Bean that looks for all beans implementing either ServiceStatusCheck or ServicesStatusCheck
- *
-
  */
 @Configuration
 public class ServiceMonitorManager implements ApplicationContextAware, InitializingBean {

@@ -10,8 +10,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class ClouderaClientConfig {
 
-    @Bean(name="clouderaRestClientConfig")
-    public RestClientConfig getConfig(){
+    @Bean(name = "clouderaRestClientConfig")
+    public RestClientConfig getConfig() {
         return new RestClientConfig();
     }
 

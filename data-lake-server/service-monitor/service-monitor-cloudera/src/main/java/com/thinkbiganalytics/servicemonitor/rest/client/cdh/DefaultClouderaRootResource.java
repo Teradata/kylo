@@ -11,22 +11,23 @@ import java.util.List;
  * Created by sr186054 on 10/12/15.
  */
 public class DefaultClouderaRootResource implements ClouderaRootResource {
-   private  RootResourceV1 rootResource;
-    public DefaultClouderaRootResource(RootResourceV1 rootResource){
+    private RootResourceV1 rootResource;
+
+    public DefaultClouderaRootResource(RootResourceV1 rootResource) {
         this.rootResource = rootResource;
     }
 
-    public RootResourceV1 getRootResource(){
+    public RootResourceV1 getRootResource() {
         return this.rootResource;
     }
 
-    public ClustersResource getClusterResource(){
+    public ClustersResource getClusterResource() {
         return rootResource.getClustersResource();
     }
 
     public ApiClusterList getPopulatedClusterList() {
         ApiClusterList clusters = rootResource.getClustersResource().readClusters(DataView.SUMMARY);
-        if(clusters != null && clusters.getClusters() != null) {
+        if (clusters != null && clusters.getClusters() != null) {
             for (ApiCluster cluster : clusters.getClusters()) {
                 String clusterName = cluster.getName();
                 ApiServiceList services = rootResource.getClustersResource().getServicesResource(clusterName).readServices(DataView.SUMMARY);

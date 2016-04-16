@@ -25,9 +25,7 @@ public class ClusterList {
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     /**
-     *
-     * @return
-     * The href
+     * @return The href
      */
     @JsonProperty("href")
     public String getHref() {
@@ -35,9 +33,7 @@ public class ClusterList {
     }
 
     /**
-     *
-     * @param href
-     * The href
+     * @param href The href
      */
     @JsonProperty("href")
     public void setHref(String href) {
@@ -45,9 +41,7 @@ public class ClusterList {
     }
 
     /**
-     *
-     * @return
-     * The items
+     * @return The items
      */
     @JsonProperty("items")
     public List<ClusterItem> getItems() {
@@ -55,9 +49,7 @@ public class ClusterList {
     }
 
     /**
-     *
-     * @param items
-     * The items
+     * @param items The items
      */
     @JsonProperty("items")
     public void setItems(List<ClusterItem> items) {

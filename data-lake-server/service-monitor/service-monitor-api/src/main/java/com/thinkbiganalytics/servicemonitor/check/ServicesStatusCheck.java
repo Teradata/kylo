@@ -4,7 +4,7 @@
 
 package com.thinkbiganalytics.servicemonitor.check;
 
-import com.thinkbiganalytics.servicemonitor.model.*;
+import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 
 import java.util.List;
 
