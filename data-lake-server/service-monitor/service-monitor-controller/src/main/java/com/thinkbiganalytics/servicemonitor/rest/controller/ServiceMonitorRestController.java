@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 
@@ -29,6 +31,7 @@ public class ServiceMonitorRestController {
    * @return A list of json objects representing the executions.  Http error code thrown on any error in execution
    */
   @GET
+  @Produces({MediaType.APPLICATION_JSON})
   public Response listServices() {
     return Response.ok(serviceRepository.listServices()).build();
   }
