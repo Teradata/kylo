@@ -1,0 +1,75 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>thinkbig-job-repository-core</artifactId>
+
+    <parent>
+        <artifactId>thinkbig-job-repository</artifactId>
+        <groupId>com.thinkbiganalytics</groupId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+
+
+
+    <dependencies>
+        <dependency>
+            <groupId>com.thinkbiganalytics</groupId>
+            <artifactId>thinkbig-job-repository-api</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.fasterxml.jackson.core</groupId>
+            <artifactId>jackson-annotations</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+        </dependency>
+
+        <!-- Spring batch is needed just to get access to the core Job objects -->
+        <dependency>
+            <groupId>org.springframework.batch</groupId>
+            <artifactId>spring-batch-core</artifactId>
+            <version>${spring.batch.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thinkbiganalytics.bdp</groupId>
+            <artifactId>pipeline-batch-common</artifactId>
+            <version>1.3.0-SNAPSHOT</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.thinkbiganalytics.bdp</groupId>
+                    <artifactId>pipeline-components</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+
+    </dependencies>
+
+</project>
