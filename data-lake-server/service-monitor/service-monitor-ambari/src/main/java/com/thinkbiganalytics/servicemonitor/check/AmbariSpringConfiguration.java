@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.servicemonitor.rest.servicestatus;
+package com.thinkbiganalytics.servicemonitor.check;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

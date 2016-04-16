@@ -1,8 +1,7 @@
-package com.thinkbiganalytics.servicemonitor.rest.servicestatus;
+package com.thinkbiganalytics.servicemonitor.check;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.servicemonitor.check.ServicesStatusCheck;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceAlert;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceComponent;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceStatusResponse;
