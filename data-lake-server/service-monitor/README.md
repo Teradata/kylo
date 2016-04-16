@@ -20,7 +20,7 @@ How To Use
 
 1. Create a new maven jar project/module 
 
-1. add the ### service-monitor-api ### and ### service-monitor-core ### maven dependencies
+1. add the ***service-monitor-api*** and ***service-monitor-core*** maven dependencies
 
 ```xml
         <dependency>
@@ -35,7 +35,6 @@ How To Use
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
 ```
-
 1. Create a class that implements one of the `ServiceStatus(s)Check` interfaces
 
 ```java
