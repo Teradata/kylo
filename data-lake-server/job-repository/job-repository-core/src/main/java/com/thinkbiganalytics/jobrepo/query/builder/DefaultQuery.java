@@ -8,8 +8,8 @@ import java.util.Map;
 /**
  * The Query that gets built by the QueryBuilder.
  * This is used by the BaseDao to query the database with the associated Bind Parameters
- * @see QueryBuilder
  *
+ * @see QueryBuilder
  */
 public class DefaultQuery implements Query {
 
@@ -23,6 +23,7 @@ public class DefaultQuery implements Query {
     public DefaultQuery() {
 
     }
+
     public DefaultQuery(String query) {
         this.query = query;
     }
@@ -53,8 +54,8 @@ public class DefaultQuery implements Query {
     }
 
     @Override
-    public void addNamedParameters(Map<String, Object> namedParameters){
-        if(namedParameters != null && !namedParameters.isEmpty()){
+    public void addNamedParameters(Map<String, Object> namedParameters) {
+        if (namedParameters != null && !namedParameters.isEmpty()) {
             this.namedParameters.putAll(namedParameters);
         }
     }

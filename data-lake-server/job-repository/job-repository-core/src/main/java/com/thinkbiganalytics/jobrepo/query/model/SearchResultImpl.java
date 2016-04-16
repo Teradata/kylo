@@ -11,7 +11,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SearchResultImpl implements SearchResult {
 
-    private List<? extends Object>data;
+    private List<? extends Object> data;
     private Long recordsTotal;
     private Long recordsFiltered;
     private String error;

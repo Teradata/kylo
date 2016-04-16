@@ -9,13 +9,13 @@ import java.util.Date;
  */
 public class DateTimeUtil {
 
-    public static Date convertToUTC(Date date){
+    public static Date convertToUTC(Date date) {
         DateTimeZone tz = DateTimeZone.getDefault();
-        Date utc = new Date(tz.convertLocalToUTC(date.getTime(),false));
+        Date utc = new Date(tz.convertLocalToUTC(date.getTime(), false));
         return utc;
     }
 
-    public static Date getUTCTime(){
+    public static Date getUTCTime() {
         return convertToUTC(new Date());
     }
 }

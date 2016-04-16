@@ -33,14 +33,14 @@ public class DefaultFeedHealth implements FeedHealth {
     @Override
     public Long getUnhealthyCount() {
 
-        if(unhealthyCount == null){
+        if (unhealthyCount == null) {
             unhealthyCount = 0L;
         }
         return unhealthyCount;
     }
 
     @Override
-    public void markHealthCountsSet(){
+    public void markHealthCountsSet() {
         healthCountsSet = true;
     }
 
@@ -91,24 +91,24 @@ public class DefaultFeedHealth implements FeedHealth {
 
     /**
      * Checks the last Processed Data Feed and if it is not in a FAILED State, mark it Healthy
+     *
      * @return
      */
     @Override
-    public boolean isHealthy(){
+    public boolean isHealthy() {
 
-        if(true) {
-            return getUnhealthyCount() == 0L ;
+        if (true) {
+            return getUnhealthyCount() == 0L;
         }
         boolean healthy = true;
         ExecutionStatus lastOpFeedStatus = null;
-        if(lastOpFeed != null)
-        {
-               lastOpFeedStatus = lastOpFeed.getStatus();
-                healthy = !ExecutionStatus.FAILED.equals(lastOpFeedStatus) && !ExecutionStatus.UNKNOWN.equals(lastOpFeedStatus) && !ExecutionStatus.ABANDONED.equals(lastOpFeedStatus);
-                //If the Feed fully completed, but it did so with a Failed Exit Code then markt his as unhealthy.
-                if (ExecutionStatus.COMPLETED.equals(lastOpFeedStatus) && ExitStatus.FAILED.getExitCode().equalsIgnoreCase(lastOpFeed.getExitCode())) {
-                    healthy = false;
-                }
+        if (lastOpFeed != null) {
+            lastOpFeedStatus = lastOpFeed.getStatus();
+            healthy = !ExecutionStatus.FAILED.equals(lastOpFeedStatus) && !ExecutionStatus.UNKNOWN.equals(lastOpFeedStatus) && !ExecutionStatus.ABANDONED.equals(lastOpFeedStatus);
+            //If the Feed fully completed, but it did so with a Failed Exit Code then markt his as unhealthy.
+            if (ExecutionStatus.COMPLETED.equals(lastOpFeedStatus) && ExitStatus.FAILED.getExitCode().equalsIgnoreCase(lastOpFeed.getExitCode())) {
+                healthy = false;
+            }
 
         }
         return healthy;
@@ -118,7 +118,7 @@ public class DefaultFeedHealth implements FeedHealth {
     @Override
     public String getFeedState(ExecutedFeed feed) {
         STATE state = STATE.WAITING;
-        if(feed != null) {
+        if (feed != null) {
             ExecutionStatus status = feed.getStatus();
             if (ExecutionStatus.STARTED.equals(status) || ExecutionStatus.STARTING.equals(status)) {
                 state = STATE.RUNNING;
@@ -129,13 +129,13 @@ public class DefaultFeedHealth implements FeedHealth {
 
     @Override
     public String getLastOpFeedState() {
-            String state = getFeedState(lastOpFeed);
+        String state = getFeedState(lastOpFeed);
         return state;
-       }
+    }
 
     @JsonIgnore
-    public static List<FeedHealth> parseToList(List<ExecutedFeed> latestOpFeeds,  Map<String,Long> avgRunTimes){
-return FeedHealthUtil.parseToList(latestOpFeeds, avgRunTimes, null);
+    public static List<FeedHealth> parseToList(List<ExecutedFeed> latestOpFeeds, Map<String, Long> avgRunTimes) {
+        return FeedHealthUtil.parseToList(latestOpFeeds, avgRunTimes, null);
 
     }
 

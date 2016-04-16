@@ -20,7 +20,6 @@ import java.util.List;
 /**
  * Created by sr186054 on 8/28/15.
  * All Exceptions are handled by the CustomResponseEntityExceptionHandler.java class and AngularHttpInterceptor.js
- *
  */
 @Path("/v1/data-confidence")
 public class DataConfidenceRestController {
@@ -31,7 +30,7 @@ public class DataConfidenceRestController {
 
     @GET
     @Path("/summary")
-    @Produces({MediaType.APPLICATION_JSON })
+    @Produces({MediaType.APPLICATION_JSON})
     public DataConfidenceSummary getDataConfidenceSummary() {
         DataConfidenceSummary summary = null;
         List<CheckDataJob> feeds = checkDataJobRepository.findLatestCheckDataJobs();

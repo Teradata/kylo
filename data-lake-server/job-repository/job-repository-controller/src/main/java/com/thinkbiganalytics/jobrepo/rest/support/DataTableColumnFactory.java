@@ -25,69 +25,70 @@ public class DataTableColumnFactory {
     /**
      * adds the uiColummn as a key as well as a column without whitespace as a key to the map
      * returns the dbColumn for the specified UIColumn
+     *
      * @param map
      * @param uiColumn
      * @param dbColumn
      */
-    private static void addToColumnMap(Map<String,String> map, String uiColumn, String dbColumn){
-        if(StringUtils.isNotBlank(uiColumn) && StringUtils.isNotBlank(dbColumn)){
+    private static void addToColumnMap(Map<String, String> map, String uiColumn, String dbColumn) {
+        if (StringUtils.isNotBlank(uiColumn) && StringUtils.isNotBlank(dbColumn)) {
             String key = uiColumn.toLowerCase();
             String noWhiteSpaceKey = StringUtils.deleteWhitespace(key);
-            map.put(key,dbColumn);
-            if(!key.equalsIgnoreCase(noWhiteSpaceKey)){
-                map.put(noWhiteSpaceKey,dbColumn);
+            map.put(key, dbColumn);
+            if (!key.equalsIgnoreCase(noWhiteSpaceKey)) {
+                map.put(noWhiteSpaceKey, dbColumn);
             }
         }
     }
 
     private static Map<String, String> getFeedDataTableColumnMap() {
         Map<String, String> map = getJobDataTableColumnMap();
-        addToColumnMap(map,"name", "FEED_NAME");
-        addToColumnMap(map,"feed instance id", "JOB_INSTANCE_ID");
-        addToColumnMap(map,"feed execution id", "JOB_EXECUTION_ID");
-        addToColumnMap(map,"latest feed", "IS_LATEST");
+        addToColumnMap(map, "name", "FEED_NAME");
+        addToColumnMap(map, "feed instance id", "JOB_INSTANCE_ID");
+        addToColumnMap(map, "feed execution id", "JOB_EXECUTION_ID");
+        addToColumnMap(map, "latest feed", "IS_LATEST");
         return map;
     }
 
     private static Map<String, String> getJobDataTableColumnMap() {
         Map<String, String> map = new HashMap<String, String>();
-        addToColumnMap(map,"name", "JOB_NAME");
-        addToColumnMap(map,"feed", "FEED_NAME");
-        addToColumnMap(map,"feed name", "FEED_NAME");
-        addToColumnMap(map,"job name", "JOB_NAME");
-        addToColumnMap(map,"started", "START_TIME");
-        addToColumnMap(map,"start time", "START_TIME");
-        addToColumnMap(map,"job id", "JOB_EXECUTION_ID");
-        addToColumnMap(map,"instance id", "JOB_INSTANCE_ID");
-        addToColumnMap(map,"execution id", "JOB_EXECUTION_ID");
-        addToColumnMap(map,"exit code", "EXIT_CODE");
+        addToColumnMap(map, "name", "JOB_NAME");
+        addToColumnMap(map, "feed", "FEED_NAME");
+        addToColumnMap(map, "feed name", "FEED_NAME");
+        addToColumnMap(map, "job name", "JOB_NAME");
+        addToColumnMap(map, "started", "START_TIME");
+        addToColumnMap(map, "start time", "START_TIME");
+        addToColumnMap(map, "job id", "JOB_EXECUTION_ID");
+        addToColumnMap(map, "instance id", "JOB_INSTANCE_ID");
+        addToColumnMap(map, "execution id", "JOB_EXECUTION_ID");
+        addToColumnMap(map, "exit code", "EXIT_CODE");
         addToColumnMap(map, "status", "STATUS");
         addToColumnMap(map, "run time", "RUN_TIME");
         addToColumnMap(map, "job type", "JOB_TYPE");
-        addToColumnMap(map,"is valid", "IS_VALID");
-        addToColumnMap(map,"validation message", "VALIDATION_MESSAGE");
-        addToColumnMap(map,"is latest", "IS_LATEST");
-        addToColumnMap(map,"latest job", "IS_LATEST");
-        addToColumnMap(map,"latest", "IS_LATEST");
+        addToColumnMap(map, "is valid", "IS_VALID");
+        addToColumnMap(map, "validation message", "VALIDATION_MESSAGE");
+        addToColumnMap(map, "is latest", "IS_LATEST");
+        addToColumnMap(map, "latest job", "IS_LATEST");
+        addToColumnMap(map, "latest", "IS_LATEST");
         map.put(JobQueryConstants.USE_ACTIVE_JOBS_QUERY.toLowerCase(), JobQueryConstants.USE_ACTIVE_JOBS_QUERY);
 
         return map;
     }
 
-    public static String getJobQueryColumn(String column){
+    public static String getJobQueryColumn(String column) {
         return getJobDataTableColumnMap().get(column.toLowerCase());
     }
+
     public static String getFeedQueryColumn(String dataTableColumn) {
-       return getFeedDataTableColumnMap().get(dataTableColumn.toLowerCase());
+        return getFeedDataTableColumnMap().get(dataTableColumn.toLowerCase());
     }
 
-    public static Map<String,String> getDatabaseColumnMap(PIPELINE_DATA_TYPE type){
+    public static Map<String, String> getDatabaseColumnMap(PIPELINE_DATA_TYPE type) {
         if (PIPELINE_DATA_TYPE.FEED.equals(type)) {
             return DataTableColumnFactory.getFeedDataTableColumnMap();
         } else if (PIPELINE_DATA_TYPE.JOB.equals(type)) {
             return DataTableColumnFactory.getJobDataTableColumnMap();
-        }
-        else return new HashMap<String,String>();
+        } else return new HashMap<String, String>();
     }
 
 
@@ -99,8 +100,6 @@ public class DataTableColumnFactory {
         }
         return "";
     }
-
-
 
 
     public static Map<String, String> getPipelineQueryParams(PIPELINE_DATA_TYPE type, DataTablesQueryParams params) {
@@ -120,14 +119,15 @@ public class DataTableColumnFactory {
     public static Map<String, String> getPipelineQueryParams(PIPELINE_DATA_TYPE type, List<VisualSearchFilter> filters) {
         //convert this into the JSON string pipeline is expecting
         Map<String, String> queryParams = new HashMap<String, String>();
-        for(VisualSearchFilter filter: filters) {
+        for (VisualSearchFilter filter : filters) {
             String pipelineColumn = DataTableColumnFactory.getDataTableColumn(type, filter.getKey());
             if (StringUtils.isNotBlank(pipelineColumn)) {
-                queryParams.put("param" + pipelineColumn, filter.getValue()+"::"+filter.getOperator());
+                queryParams.put("param" + pipelineColumn, filter.getValue() + "::" + filter.getOperator());
             }
         }
         return queryParams;
     }
+
     public static List<OrderBy> getPipelineOrderByQueryParam(PIPELINE_DATA_TYPE type, String dataTablesJson) {
         DataTablesQueryParams dataTablesQueryParams = DataTableColumnFactory.parseParameters(dataTablesJson);
         return DataTableColumnFactory.getPipelineOrderByQueryParam(type, dataTablesQueryParams);
@@ -135,7 +135,7 @@ public class DataTableColumnFactory {
 
     public static List<OrderBy> getPipelineOrderByQueryParam(PIPELINE_DATA_TYPE type, DataTablesQueryParams params) {
         List<OrderBy> orderBy = new ArrayList<OrderBy>();
-        if(params != null) {
+        if (params != null) {
             Map<String, String> orderMap = params.getOrderMap();
             for (Map.Entry<String, String> entry : orderMap.entrySet()) {
                 String pipelineColumn = DataTableColumnFactory.getDataTableColumn(type, entry.getKey());
@@ -147,10 +147,10 @@ public class DataTableColumnFactory {
         return orderBy;
     }
 
-    public static DataTablesQueryParams parseParameters(String params){
+    public static DataTablesQueryParams parseParameters(String params) {
         ObjectMapper mapper = new ObjectMapper();
         DataTablesQueryParams dataTablesQueryParams = null;
-        if(StringUtils.isNotBlank(params)) {
+        if (StringUtils.isNotBlank(params)) {
             try {
                 dataTablesQueryParams = mapper.readValue(params, DataTablesQueryParams.class);
             } catch (IOException e) {
@@ -160,7 +160,7 @@ public class DataTableColumnFactory {
         return dataTablesQueryParams;
     }
 
-    public static List<OrderBy> parseOrderBy(PIPELINE_DATA_TYPE type,String orderByString) {
+    public static List<OrderBy> parseOrderBy(PIPELINE_DATA_TYPE type, String orderByString) {
         return OrderByClause.convert(orderByString, DataTableColumnFactory.getDatabaseColumnMap(type));
     }
 }

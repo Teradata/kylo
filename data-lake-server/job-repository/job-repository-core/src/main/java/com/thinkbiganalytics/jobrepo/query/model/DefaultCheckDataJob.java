@@ -5,7 +5,7 @@ package com.thinkbiganalytics.jobrepo.query.model;
  */
 public class DefaultCheckDataJob extends DefaultExecutedJob implements CheckDataJob {
 
-    public DefaultCheckDataJob(ExecutedJob job){
+    public DefaultCheckDataJob(ExecutedJob job) {
         super(job);
     }
 

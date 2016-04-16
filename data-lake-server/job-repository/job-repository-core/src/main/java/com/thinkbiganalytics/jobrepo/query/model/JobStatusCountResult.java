@@ -13,11 +13,11 @@ public class JobStatusCountResult implements JobStatusCount {
     private Date date;
     private Long count;
 
-    public JobStatusCountResult(){
+    public JobStatusCountResult() {
 
     }
 
-    public JobStatusCountResult(JobStatusCount jobStatusCount){
+    public JobStatusCountResult(JobStatusCount jobStatusCount) {
         this.feedName = jobStatusCount.getFeedName();
         this.jobName = jobStatusCount.getJobName();
         this.status = jobStatusCount.getStatus();

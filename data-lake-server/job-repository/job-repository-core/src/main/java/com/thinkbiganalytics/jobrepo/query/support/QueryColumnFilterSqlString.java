@@ -15,23 +15,24 @@ import java.util.List;
  * Created by sr186054 on 8/12/15.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class QueryColumnFilterSqlString extends QueryColumnFilter implements  ColumnFilter {
+public class QueryColumnFilterSqlString extends QueryColumnFilter implements ColumnFilter {
 
     private String sqlString;
 
 
-
     List<ColumnFilterItem> filters = new ArrayList<ColumnFilterItem>();
-    public QueryColumnFilterSqlString(){
+
+    public QueryColumnFilterSqlString() {
 
     }
-    public QueryColumnFilterSqlString(@JsonProperty("name") String name, @JsonProperty("filters") List<ColumnFilterItem> filters){
+
+    public QueryColumnFilterSqlString(@JsonProperty("name") String name, @JsonProperty("filters") List<ColumnFilterItem> filters) {
         this.name = name;
         this.filters = filters;
     }
 
 
-    public QueryColumnFilterSqlString(String sqlStr){
+    public QueryColumnFilterSqlString(String sqlStr) {
         this.value = sqlStr;
         this.name = "";
     }
@@ -44,7 +45,7 @@ public class QueryColumnFilterSqlString extends QueryColumnFilter implements  Co
         super(name, value, operator);
     }
 
-    public QueryColumnFilterSqlString(QueryColumnFilter filter){
+    public QueryColumnFilterSqlString(QueryColumnFilter filter) {
         this.name = filter.getName();
         this.value = filter.getValue();
     }
@@ -55,8 +56,8 @@ public class QueryColumnFilterSqlString extends QueryColumnFilter implements  Co
     }
 
     @Override
-    public ColumnFilterItem getFirst(){
-        if(getFilters() != null && !getFilters().isEmpty()){
+    public ColumnFilterItem getFirst() {
+        if (getFilters() != null && !getFilters().isEmpty()) {
             return getFilters().get(0);
         }
         return this;
@@ -66,10 +67,9 @@ public class QueryColumnFilterSqlString extends QueryColumnFilter implements  Co
     @JsonIgnore
     public String getOperatorValueByName(String name) {
         ColumnFilterItem nameValue = getByName(name);
-        if(nameValue != null){
+        if (nameValue != null) {
             return nameValue.getOperator();
-        }
-        else {
+        } else {
             return "=";
         }
     }
@@ -80,36 +80,38 @@ public class QueryColumnFilterSqlString extends QueryColumnFilter implements  Co
         ColumnFilterItem nameValue = Iterables.tryFind(this.filters, new ColumnFilterFindByName(name)).orNull();
         return nameValue;
     }
+
     @Override
     @JsonIgnore
-    public Object getValueForName(String name){
-       if(this.name.equalsIgnoreCase(name)){
-           return this.getValue();
-       }
-        else {
-           ColumnFilterItem nameValue = getByName(name);
-           Object val = null;
-           if (nameValue != null) {
-               val = nameValue.getValue();
-           }
-           return val;
-       }
+    public Object getValueForName(String name) {
+        if (this.name.equalsIgnoreCase(name)) {
+            return this.getValue();
+        } else {
+            ColumnFilterItem nameValue = getByName(name);
+            Object val = null;
+            if (nameValue != null) {
+                val = nameValue.getValue();
+            }
+            return val;
+        }
     }
+
     @Override
     @JsonIgnore
-    public String getValueAsStringForName(String name){
+    public String getValueAsStringForName(String name) {
         ColumnFilterItem nameValue = getByName(name);
         String val = null;
-        if(nameValue != null){
+        if (nameValue != null) {
             val = nameValue.getStringValue();
         }
         return val;
     }
+
     @Override
     @JsonIgnore
-    public Collection<String> getValueAsCollection(String name){
+    public Collection<String> getValueAsCollection(String name) {
         String list = getValueAsStringForName(name);
-        if(list != null) {
+        if (list != null) {
             return CollectionUtils.arrayToList(list.split(","));
         }
         return new ArrayList<String>();
@@ -117,13 +119,13 @@ public class QueryColumnFilterSqlString extends QueryColumnFilter implements  Co
 
     @Override
     @JsonIgnore
-    public boolean isSqlString(){
+    public boolean isSqlString() {
         return StringUtils.isBlank(name) || StringUtils.isNotBlank(sqlString);
     }
 
     @Override
     @JsonIgnore
-    public String getNameOrFirstFilterName(){
+    public String getNameOrFirstFilterName() {
         return getFirst().getName();
     }
 

@@ -16,26 +16,27 @@ import java.util.Map;
  */
 public class NifiSpringBatchTransformer {
 
-public static JobExecution getJobExecution(NifiJobExecution nifiJobExecution) {
+    public static JobExecution getJobExecution(NifiJobExecution nifiJobExecution) {
 
-    Map<String,JobParameter> params = new HashMap<>();
-    for(Map.Entry<String,String> entry : nifiJobExecution.getJobParameters().entrySet()){
-        params.put(entry.getKey(),new JobParameter(entry.getValue()));
+        Map<String, JobParameter> params = new HashMap<>();
+        for (Map.Entry<String, String> entry : nifiJobExecution.getJobParameters().entrySet()) {
+            params.put(entry.getKey(), new JobParameter(entry.getValue()));
+        }
+        JobParameters jobParameters = new JobParameters(params);
+        JobExecution jobExecution = new JobExecution((Long) null, jobParameters);
+        jobExecution.setJobInstance(new JobInstance(nifiJobExecution.getJobInstanceId(), nifiJobExecution.getFeedName()));
+        jobExecution.setStartTime(nifiJobExecution.getUTCStartTime());
+        jobExecution.setEndTime(nifiJobExecution.getUTCEndTime());
+        jobExecution.setStatus(BatchStatus.valueOf(nifiJobExecution.getStatus().toString()));
+        jobExecution.setExitStatus(nifiJobExecution.getExitStatus());
+        jobExecution.setVersion(nifiJobExecution.getVersion());
+        jobExecution.setCreateTime(nifiJobExecution.getCreateTime());
+        jobExecution.setLastUpdated(nifiJobExecution.getLastUpdated());
+        jobExecution.setId(nifiJobExecution.getJobExecutionId());
+        return jobExecution;
+
     }
-    JobParameters jobParameters = new JobParameters(params);
-    JobExecution jobExecution = new JobExecution((Long)null, jobParameters);
-    jobExecution.setJobInstance(new JobInstance(nifiJobExecution.getJobInstanceId(), nifiJobExecution.getFeedName()));
-    jobExecution.setStartTime(nifiJobExecution.getUTCStartTime());
-    jobExecution.setEndTime(nifiJobExecution.getUTCEndTime());
-    jobExecution.setStatus(BatchStatus.valueOf(nifiJobExecution.getStatus().toString()));
-    jobExecution.setExitStatus(nifiJobExecution.getExitStatus());
-    jobExecution.setVersion(nifiJobExecution.getVersion());
-    jobExecution.setCreateTime(nifiJobExecution.getCreateTime());
-    jobExecution.setLastUpdated(nifiJobExecution.getLastUpdated());
-    jobExecution.setId(nifiJobExecution.getJobExecutionId());
-    return jobExecution;
 
-}
     public static StepExecution populateStepExecution(StepExecution stepExecution, FlowFileComponent component) {
         stepExecution.setStartTime(component.getUTCStartTime());
         stepExecution.setEndTime(component.getUTCEndTime());

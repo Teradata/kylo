@@ -67,7 +67,6 @@ public class ColumnFilterUtil {
     }
 
 
-
     public static boolean hasFilter(List<ColumnFilter> filters, String name) {
         if (filters != null && !filters.isEmpty()) {
             for (ColumnFilter f : filters) {

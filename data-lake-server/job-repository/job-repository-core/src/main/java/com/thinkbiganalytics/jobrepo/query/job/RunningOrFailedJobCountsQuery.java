@@ -24,21 +24,19 @@ public class RunningOrFailedJobCountsQuery extends AbstractConstructedQuery<JobS
         super(databaseType);
     }
 
-    public QueryBuilder getQueryBuilder(){
+    public QueryBuilder getQueryBuilder() {
         QueryBuilder q = newQueryBuilder()
-                .select("SELECT COUNT(*) CNT, "+ DaoUtil.getHealthStateSqlClause("e")+" as STATE ")
+                .select("SELECT COUNT(*) CNT, " + DaoUtil.getHealthStateSqlClause("e") + " as STATE ")
                 .from("FROM  BATCH_JOB_EXECUTION e " +
                         "WHERE e.STATUS in ('FAILED','UNKNOWN','STARTED','STARTING') ")
-                .groupBy( DaoUtil.getHealthStateSqlClause("e"));
+                .groupBy(DaoUtil.getHealthStateSqlClause("e"));
         return q;
     }
 
     @Override
-    public Query buildQuery(){
-            return getQueryBuilder().build();
+    public Query buildQuery() {
+        return getQueryBuilder().build();
     }
-
-
 
 
     @Override

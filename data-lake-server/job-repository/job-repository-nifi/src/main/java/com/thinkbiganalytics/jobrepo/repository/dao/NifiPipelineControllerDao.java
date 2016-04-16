@@ -16,10 +16,10 @@ import java.sql.Types;
 public class NifiPipelineControllerDao implements InitializingBean {
 
 
-    private static final String INSERT_NIFI_PIPELINE_CONTROLLER_JOB= "INSERT INTO NIFI_PIPELINE_CONTROLLER_JOB "
+    private static final String INSERT_NIFI_PIPELINE_CONTROLLER_JOB = "INSERT INTO NIFI_PIPELINE_CONTROLLER_JOB "
             + "(EVENT_ID,NIFI_EVENT_ID,FLOW_FILE_UUID, FEED_ID, FEED_NAME,JOB_INSTANCE_ID, JOB_EXECUTION_ID) " + "VALUES(?,?,?,?, ?, ?,?)";
 
-    private static final String INSERT_NIFI_PIPELINE_CONTROLLER_STEP= "INSERT INTO NIFI_PIPELINE_CONTROLLER_STEP "
+    private static final String INSERT_NIFI_PIPELINE_CONTROLLER_STEP = "INSERT INTO NIFI_PIPELINE_CONTROLLER_STEP "
             + "(EVENT_ID,NIFI_EVENT_ID,COMPONENT_ID,JOB_EXECUTION_ID,STEP_EXECUTION_ID) " + "VALUES(?,?, ?,?, ?)";
 
     private static final String GET_MAX_EVENT_ID = "SELECT MAX(EVENT_ID) FROM NIFI_PIPELINE_CONTROLLER_STEP";
@@ -31,20 +31,20 @@ public class NifiPipelineControllerDao implements InitializingBean {
 
     public void saveJobExecution(NifiJobExecution jobExecution) {
 
-        Object[] parameters = new Object[] {jobExecution.getFlowFile().getFirstEvent().getEventId(), jobExecution.getFlowFile().getFirstEvent().getNifiEventId(), jobExecution.getFlowFile().getUuid(),null,jobExecution.getFeedName(),jobExecution.getJobInstanceId(),jobExecution.getJobExecutionId()};
+        Object[] parameters = new Object[]{jobExecution.getFlowFile().getFirstEvent().getEventId(), jobExecution.getFlowFile().getFirstEvent().getNifiEventId(), jobExecution.getFlowFile().getUuid(), null, jobExecution.getFeedName(), jobExecution.getJobInstanceId(), jobExecution.getJobExecutionId()};
         getJdbcTemplate().update(
                 INSERT_NIFI_PIPELINE_CONTROLLER_JOB,
                 parameters,
-                new int[]{Types.BIGINT, Types.BIGINT, Types.VARCHAR,Types.BIGINT,Types.VARCHAR, Types.BIGINT, Types.BIGINT});
+                new int[]{Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.BIGINT});
     }
 
     public void saveStepExecution(FlowFileComponent component) {
 
-        Object[] parameters = new Object[] {component.getFirstEvent().getEventId(), component.getFirstEvent().getNifiEventId(),component.getComponentId(), component.getJobExecution().getJobExecutionId(),component.getStepExecutionId()};
+        Object[] parameters = new Object[]{component.getFirstEvent().getEventId(), component.getFirstEvent().getNifiEventId(), component.getComponentId(), component.getJobExecution().getJobExecutionId(), component.getStepExecutionId()};
         getJdbcTemplate().update(
                 INSERT_NIFI_PIPELINE_CONTROLLER_STEP,
                 parameters,
-                new int[]{Types.BIGINT,Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.BIGINT});
+                new int[]{Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.BIGINT});
     }
 
 
@@ -72,32 +72,26 @@ public class NifiPipelineControllerDao implements InitializingBean {
     }
 
     /**
- *
-
- /**
- *  CREATE TABLE NIFI_PIPELINE_CONTROLLER_STEP  (
-  EVENT_ID BIGINT NOT NULL PRIMARY KEY,
-     NIFI_EVENT_ID BIGINT,
-     COMPONENT_ID VARCHAR(255),
- JOB_EXECUTION_ID BIGINT,
- STEP_EXECUTION_ID BIGINT
- ) ENGINE=InnoDB;
-
-
-     CREATE TABLE NIFI_PIPELINE_CONTROLLER_JOB  (
-     EVENT_ID BIGINT NOT NULL PRIMARY KEY,
-     NIFI_EVENT_ID BIGINT,
-     FLOW_FILE_UUID VARCHAR(255),
-     FEED_ID BIGINT,
-     FEED_NAME VARCHAR(255),
-     JOB_INSTANCE_ID BIGINT,
-     JOB_EXECUTION_ID BIGINT
-     ) ENGINE=InnoDB;
-
-*/
-
-
-
+     * /**
+     * CREATE TABLE NIFI_PIPELINE_CONTROLLER_STEP  (
+     * EVENT_ID BIGINT NOT NULL PRIMARY KEY,
+     * NIFI_EVENT_ID BIGINT,
+     * COMPONENT_ID VARCHAR(255),
+     * JOB_EXECUTION_ID BIGINT,
+     * STEP_EXECUTION_ID BIGINT
+     * ) ENGINE=InnoDB;
+     * <p>
+     * <p>
+     * CREATE TABLE NIFI_PIPELINE_CONTROLLER_JOB  (
+     * EVENT_ID BIGINT NOT NULL PRIMARY KEY,
+     * NIFI_EVENT_ID BIGINT,
+     * FLOW_FILE_UUID VARCHAR(255),
+     * FEED_ID BIGINT,
+     * FEED_NAME VARCHAR(255),
+     * JOB_INSTANCE_ID BIGINT,
+     * JOB_EXECUTION_ID BIGINT
+     * ) ENGINE=InnoDB;
+     */
 
 
     @Override

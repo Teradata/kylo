@@ -97,10 +97,6 @@ public class NifiDao implements InitializingBean {
     }
 
 
-
-
-
-
     @Override
     public void afterPropertiesSet() throws Exception {
 

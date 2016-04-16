@@ -28,35 +28,32 @@ public class FeedStatusCountByDayQuery extends AbstractConstructedQuery<JobStatu
         super(databaseType);
     }
 
-    public QueryBuilder getQueryBuilder(){
+    public QueryBuilder getQueryBuilder() {
         QueryBuilder q = newQueryBuilder()
-                .select("select count(*) CNT, e.STATUS, "+ DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).truncateTimestampToDate("e.START_TIME")+" as START_DATE ")
+                .select("select count(*) CNT, e.STATUS, " + DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).truncateTimestampToDate("e.START_TIME") + " as START_DATE ")
                 .from("FROM  BATCH_JOB_EXECUTION e "
                         + " " + FeedQueryUtil.feedQueryJoin("e", "feedName", false) + " ")
                 .groupBy("e.STATUS," + DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).truncateTimestampToDate("e.START_TIME"))
-                .orderBy(new OrderByClause(DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).truncateTimestampToDate("e.START_TIME"),"asc"));
+                .orderBy(new OrderByClause(DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).truncateTimestampToDate("e.START_TIME"), "asc"));
         return q;
     }
 
     @Override
-    public Query buildQuery(){
-            return getQueryBuilder().buildWithFilterQueryModifier(new ColumnFilterQueryModifier() {
-                @Override
-                public void modifyFilterQueryValue(ColumnFilter columnFilter) {
-                    String name = columnFilter.getName();
-                    String strVal = columnFilter.getStringValue();
-                    if (("STRING_VAL".equals(name) || (FeedQueryConstants.QUERY_FEED_NAME_COLUMN.equals(name)) && !FeedQueryConstants.QUERY_ALL_VALUE.equalsIgnoreCase(strVal))) {
-                        columnFilter.setQueryName("STRING_VAL");
-                        columnFilter.setTableAlias("feedName");
-                    }
-                    else {
-                        ColumnFilterUtil.applyDatabaseTypeDateDiffSql(getDatabaseType(), columnFilter);
-                    }
+    public Query buildQuery() {
+        return getQueryBuilder().buildWithFilterQueryModifier(new ColumnFilterQueryModifier() {
+            @Override
+            public void modifyFilterQueryValue(ColumnFilter columnFilter) {
+                String name = columnFilter.getName();
+                String strVal = columnFilter.getStringValue();
+                if (("STRING_VAL".equals(name) || (FeedQueryConstants.QUERY_FEED_NAME_COLUMN.equals(name)) && !FeedQueryConstants.QUERY_ALL_VALUE.equalsIgnoreCase(strVal))) {
+                    columnFilter.setQueryName("STRING_VAL");
+                    columnFilter.setTableAlias("feedName");
+                } else {
+                    ColumnFilterUtil.applyDatabaseTypeDateDiffSql(getDatabaseType(), columnFilter);
                 }
-            });
+            }
+        });
     }
-
-
 
 
     @Override

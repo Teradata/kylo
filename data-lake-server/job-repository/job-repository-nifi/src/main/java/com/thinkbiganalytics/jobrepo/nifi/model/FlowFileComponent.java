@@ -28,7 +28,7 @@ public class FlowFileComponent extends RunStatusContext {
         this.componentId = componentId;
     }
 
-    Map<String,Object>executionContextMap = new HashMap<>();
+    Map<String, Object> executionContextMap = new HashMap<>();
 
     public FlowFileComponent(RUN_STATUS runStatus, Date startTime, Date endTime, String componentId) {
         super(runStatus, startTime, endTime);
@@ -67,14 +67,14 @@ public class FlowFileComponent extends RunStatusContext {
         this.stepExecutionId = stepExecutionId;
     }
 
-    public void updateJobExecution(){
-        if(getFirstEvent().getFlowFile().getRoot().getFirstEvent() != null) {
+    public void updateJobExecution() {
+        if (getFirstEvent().getFlowFile().getRoot().getFirstEvent() != null) {
             setJobExecution(getFirstEvent().getFlowFile().getRoot().getFirstEvent().getFlowFileComponent().getJobExecution());
         }
     }
 
     public Set<ProvenanceEventRecordDTO> getEvents() {
-        if(events == null) {
+        if (events == null) {
             events = new HashSet<>();
         }
         return events;
@@ -85,10 +85,10 @@ public class FlowFileComponent extends RunStatusContext {
     }
 
     public void addEvent(ProvenanceEventRecordDTO event) {
-        if(getEvents().isEmpty()){
+        if (getEvents().isEmpty()) {
             setFirstEvent(event);
         }
-     getEvents().add(event);
+        getEvents().add(event);
     }
 
     public Integer getVersion() {
@@ -103,17 +103,17 @@ public class FlowFileComponent extends RunStatusContext {
         return firstEvent;
     }
 
-    public List<ProvenanceEventRecordDTO> getEventsAsList(){
+    public List<ProvenanceEventRecordDTO> getEventsAsList() {
         List<ProvenanceEventRecordDTO> eventList = new ArrayList<>(getEvents());
         Collections.sort(eventList, new ProvenanceEventComparator());
         return eventList;
     }
 
-    public ProvenanceEventRecordDTO getLastEvent(){
+    public ProvenanceEventRecordDTO getLastEvent() {
         List<ProvenanceEventRecordDTO> eventList = getEventsAsList();
-        if(!eventList.isEmpty()){
+        if (!eventList.isEmpty()) {
             int size = eventList.size();
-            return eventList.get((size-1));
+            return eventList.get((size - 1));
         }
         return null;
     }

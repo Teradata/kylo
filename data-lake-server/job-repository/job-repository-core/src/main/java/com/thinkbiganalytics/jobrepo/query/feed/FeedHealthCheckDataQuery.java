@@ -71,10 +71,10 @@ public class FeedHealthCheckDataQuery extends AbstractConstructedQuery implement
     }
 
     protected String getDefaultJoins() {
-        String  query = " INNER JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID ";
-        query += " INNER JOIN BATCH_JOB_EXECUTION_PARAMS feed on feed.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID AND feed.KEY_NAME = '"+ FeedConstants.PARAM__FEED_NAME+"' ";
-        query += " INNER JOIN BATCH_JOB_EXECUTION_PARAMS jobType on jobType.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID AND jobType.KEY_NAME = '"+ FeedConstants.PARAM__JOB_TYPE+"' ";
-      //  query += " INNER JOIN BATCH_JOB_EXECUTION_PARAMS feedParent on feedParent.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID AND feedParent.KEY_NAME = '"+ FeedConstants.PARAM__FEED_IS_PARENT+"' AND feedParent.STRING_VAL = 'true' ";
+        String query = " INNER JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID ";
+        query += " INNER JOIN BATCH_JOB_EXECUTION_PARAMS feed on feed.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID AND feed.KEY_NAME = '" + FeedConstants.PARAM__FEED_NAME + "' ";
+        query += " INNER JOIN BATCH_JOB_EXECUTION_PARAMS jobType on jobType.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID AND jobType.KEY_NAME = '" + FeedConstants.PARAM__JOB_TYPE + "' ";
+        //  query += " INNER JOIN BATCH_JOB_EXECUTION_PARAMS feedParent on feedParent.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID AND feedParent.KEY_NAME = '"+ FeedConstants.PARAM__FEED_IS_PARENT+"' AND feedParent.STRING_VAL = 'true' ";
         return query;
     }
 

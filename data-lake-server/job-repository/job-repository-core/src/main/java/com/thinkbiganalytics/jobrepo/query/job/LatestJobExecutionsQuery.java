@@ -26,12 +26,9 @@ import org.springframework.jdbc.core.RowMapper;
 public class LatestJobExecutionsQuery extends AbstractConstructedQuery implements JobQueryConstants {
 
 
-
-
     public LatestJobExecutionsQuery(DatabaseType databaseType) {
         super(databaseType);
     }
-
 
 
     public QueryBuilder getQueryBuilder() {
@@ -41,11 +38,11 @@ public class LatestJobExecutionsQuery extends AbstractConstructedQuery implement
                         "e.EXIT_CODE, e.EXIT_MESSAGE, e.CREATE_TIME, e.LAST_UPDATED, e.VERSION, e.JOB_CONFIGURATION_LOCATION, " +
                         "UPPER(jobType.STRING_VAL) JOB_TYPE, feed.STRING_VAL FEED_NAME ")
 
-                        .from("BATCH_JOB_EXECUTION e  inner join (select job_execution.JOB_INSTANCE_ID, i.JOB_NAME, MAX(job_execution.JOB_EXECUTION_ID) JOB_EXECUTION_ID " +
-                                "FROM BATCH_JOB_EXECUTION job_execution " +
-                                "INNER JOIN BATCH_JOB_INSTANCE i on job_execution.JOB_INSTANCE_ID = i.JOB_INSTANCE_ID "+
-                                "GROUP BY job_execution.JOB_INSTANCE_ID, i.JOB_NAME) maxe on maxe.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
-                                getDefaultJoins())
+                .from("BATCH_JOB_EXECUTION e  inner join (select job_execution.JOB_INSTANCE_ID, i.JOB_NAME, MAX(job_execution.JOB_EXECUTION_ID) JOB_EXECUTION_ID " +
+                        "FROM BATCH_JOB_EXECUTION job_execution " +
+                        "INNER JOIN BATCH_JOB_INSTANCE i on job_execution.JOB_INSTANCE_ID = i.JOB_INSTANCE_ID " +
+                        "GROUP BY job_execution.JOB_INSTANCE_ID, i.JOB_NAME) maxe on maxe.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
+                        getDefaultJoins())
                 .defaultOrderBy("JOB_EXECUTION_ID", " DESC");
         return q;
     }
@@ -71,10 +68,10 @@ public class LatestJobExecutionsQuery extends AbstractConstructedQuery implement
     }
 */
     protected String getDefaultJoins() {
-        String  query = " INNER JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID ";
-        query += " INNER JOIN BATCH_JOB_EXECUTION_PARAMS jobType on jobType.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID AND jobType.KEY_NAME = '"+ FeedConstants.PARAM__JOB_TYPE+"' ";
-        query += " LEFT JOIN BATCH_JOB_EXECUTION_PARAMS feed on feed.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID AND feed.KEY_NAME = '"+ FeedConstants.PARAM__FEED_NAME+"' ";
-        query += " LEFT JOIN BATCH_JOB_EXECUTION_PARAMS feedParent on feedParent.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID AND feedParent.KEY_NAME = '"+ FeedConstants.PARAM__FEED_IS_PARENT+"' AND feedParent.STRING_VAL = 'true' ";
+        String query = " INNER JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID ";
+        query += " INNER JOIN BATCH_JOB_EXECUTION_PARAMS jobType on jobType.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID AND jobType.KEY_NAME = '" + FeedConstants.PARAM__JOB_TYPE + "' ";
+        query += " LEFT JOIN BATCH_JOB_EXECUTION_PARAMS feed on feed.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID AND feed.KEY_NAME = '" + FeedConstants.PARAM__FEED_NAME + "' ";
+        query += " LEFT JOIN BATCH_JOB_EXECUTION_PARAMS feedParent on feedParent.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID AND feedParent.KEY_NAME = '" + FeedConstants.PARAM__FEED_IS_PARENT + "' AND feedParent.STRING_VAL = 'true' ";
         return query;
     }
 
@@ -86,32 +83,29 @@ public class LatestJobExecutionsQuery extends AbstractConstructedQuery implement
                 String name = columnFilter.getNameOrFirstFilterName();
                 String strVal = columnFilter.getStringValue();
 
-                    columnFilter.setTableAlias("e");
-                    if (jobInstanceColumnNames.contains(name)) {
-                        columnFilter.setTableAlias("ji");
-                    } else if (QUERY_JOB_TYPE.equalsIgnoreCase(name)) {
-                        columnFilter.setTableAlias( "jobType");
-                        columnFilter.setQueryName("STRING_VAL");
-                    } else if (QUERY_RUN_TIME.equals(name)) {
-                        columnFilter.setTableAlias("");
-                        columnFilter.setSqlConditionBeforeOperator(DatabaseQuerySubstitutionFactory.JOB_EXECUTION_RUN_TIME_TEMPLATE_STRING);
-                    } else if (QUERY_LOOKBACK_TIME.equals(name)) {
-                        columnFilter.setTableAlias("");
-                        columnFilter.setSqlString(" AND maxe.START_TIME > NOW() - INTERVAL " + columnFilter.getStringValue() + " MINUTE ");
-                    }
-                    else if (FeedQueryConstants.QUERY_FEED_NAME_COLUMN.equalsIgnoreCase(name)) {
-                        columnFilter.setTableAlias( "feed");
-                        columnFilter.setQueryName("STRING_VAL");
-                    }
-                    else if ("START_TIME".equalsIgnoreCase(name) || "END_TIME".equalsIgnoreCase(name)) {
-                        columnFilter.setTableAlias("");
-                        columnFilter.setSqlString(" AND e."+name+" "+columnFilter.getOperator()+" "+ DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).toDateSql(strVal) + " ");
+                columnFilter.setTableAlias("e");
+                if (jobInstanceColumnNames.contains(name)) {
+                    columnFilter.setTableAlias("ji");
+                } else if (QUERY_JOB_TYPE.equalsIgnoreCase(name)) {
+                    columnFilter.setTableAlias("jobType");
+                    columnFilter.setQueryName("STRING_VAL");
+                } else if (QUERY_RUN_TIME.equals(name)) {
+                    columnFilter.setTableAlias("");
+                    columnFilter.setSqlConditionBeforeOperator(DatabaseQuerySubstitutionFactory.JOB_EXECUTION_RUN_TIME_TEMPLATE_STRING);
+                } else if (QUERY_LOOKBACK_TIME.equals(name)) {
+                    columnFilter.setTableAlias("");
+                    columnFilter.setSqlString(" AND maxe.START_TIME > NOW() - INTERVAL " + columnFilter.getStringValue() + " MINUTE ");
+                } else if (FeedQueryConstants.QUERY_FEED_NAME_COLUMN.equalsIgnoreCase(name)) {
+                    columnFilter.setTableAlias("feed");
+                    columnFilter.setQueryName("STRING_VAL");
+                } else if ("START_TIME".equalsIgnoreCase(name) || "END_TIME".equalsIgnoreCase(name)) {
+                    columnFilter.setTableAlias("");
+                    columnFilter.setSqlString(" AND e." + name + " " + columnFilter.getOperator() + " " + DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).toDateSql(strVal) + " ");
 
-                    }
-                    else {
-                        ColumnFilterUtil.applyDatabaseTypeDateDiffSql(getDatabaseType(), columnFilter);
-                    }
-                if("JOB_NAME".equalsIgnoreCase(name)) {
+                } else {
+                    ColumnFilterUtil.applyDatabaseTypeDateDiffSql(getDatabaseType(), columnFilter);
+                }
+                if ("JOB_NAME".equalsIgnoreCase(name)) {
                     columnFilter.setTableAlias("maxe");
                 }
             }
@@ -126,16 +120,14 @@ public class LatestJobExecutionsQuery extends AbstractConstructedQuery implement
                     } else if (QUERY_RUN_TIME.equals(column)) {
                         orderBy.setTableAlias("");
                         orderBy.setQueryName(DatabaseQuerySubstitutionFactory.JOB_EXECUTION_RUN_TIME_TEMPLATE_STRING);
-                    }
-                    else if (QUERY_JOB_TYPE.equalsIgnoreCase(column)) {
+                    } else if (QUERY_JOB_TYPE.equalsIgnoreCase(column)) {
                         orderBy.setTableAlias("jobType");
                         orderBy.setQueryName("STRING_VAL");
                     }
 
-                    if("JOB_NAME".equalsIgnoreCase(column) ){
+                    if ("JOB_NAME".equalsIgnoreCase(column)) {
                         orderBy.setTableAlias("maxe");
-                    }
-                    else if("START_TIME".equalsIgnoreCase(column)) {
+                    } else if ("START_TIME".equalsIgnoreCase(column)) {
                         orderBy.setTableAlias("maxe");
                         orderBy.setColumnName("JOB_EXECUTION_ID");
                     }
@@ -143,7 +135,6 @@ public class LatestJobExecutionsQuery extends AbstractConstructedQuery implement
             }
         });
     }
-
 
 
     @Override

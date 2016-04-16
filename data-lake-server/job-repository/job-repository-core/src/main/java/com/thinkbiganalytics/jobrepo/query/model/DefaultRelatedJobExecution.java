@@ -17,8 +17,6 @@ public class DefaultRelatedJobExecution implements RelatedJobExecution {
     private Date endTime;
 
 
-
-
     @Override
     public Long getJobExecutionId() {
         return jobExecutionId;

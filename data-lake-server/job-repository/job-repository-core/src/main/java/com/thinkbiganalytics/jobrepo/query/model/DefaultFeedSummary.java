@@ -11,80 +11,78 @@ public class DefaultFeedSummary implements FeedSummary {
     private FeedHealth feedHealth;
 
 
-    public DefaultFeedSummary(FeedHealth feedHealth){
+    public DefaultFeedSummary(FeedHealth feedHealth) {
         this.feedHealth = feedHealth;
     }
 
-    public DefaultFeedSummary(){
+    public DefaultFeedSummary() {
 
     }
 
 
     @Override
-    public String getFeed(){
+    public String getFeed() {
         return feedHealth.getFeed();
     }
-    @Override
-    public String getState(){
 
-        String state =  feedHealth.getLastOpFeedState();
+    @Override
+    public String getState() {
+
+        String state = feedHealth.getLastOpFeedState();
 
         return state;
     }
 
 
     @Override
-    public String getLastStatus(){
-        if(feedHealth.getLastOpFeed() != null && isWaiting()){
+    public String getLastStatus() {
+        if (feedHealth.getLastOpFeed() != null && isWaiting()) {
             return feedHealth.getLastOpFeed().getStatus().name();
-        }
-        else {
+        } else {
             return "N/A";
         }
     }
 
     @Override
-    public boolean isWaiting(){
+    public boolean isWaiting() {
         return DefaultFeedHealth.STATE.WAITING.equals(DefaultFeedHealth.STATE.valueOf(getState()));
     }
 
     @Override
-    public boolean isRunning(){
+    public boolean isRunning() {
         return DefaultFeedHealth.STATE.RUNNING.equals(DefaultFeedHealth.STATE.valueOf(getState()));
     }
 
     @Override
-    public Long getTimeSinceEndTime(){
-        if(feedHealth.getLastOpFeed() != null) {
+    public Long getTimeSinceEndTime() {
+        if (feedHealth.getLastOpFeed() != null) {
             return feedHealth.getLastOpFeed().getTimeSinceEndTime();
-        }
-        else{
+        } else {
             return null;
         }
     }
+
     @Override
     @JsonIgnore
     public String formatTimeMinSec(Long millis) {
-        if(millis == null){
-           return null;
+        if (millis == null) {
+            return null;
         }
 
-       Long hours = TimeUnit.MILLISECONDS.toHours(millis);
-       Long min =   TimeUnit.MILLISECONDS.toMinutes(millis) -TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis));
-       Long sec =        TimeUnit.MILLISECONDS.toSeconds(millis) -
-                        TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis));
-        String str =  String.format("%d hr %d min %d sec",
-                hours,min,sec);
-        if(hours == 0L)
-        {
+        Long hours = TimeUnit.MILLISECONDS.toHours(millis);
+        Long min = TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(TimeUnit.MILLISECONDS.toHours(millis));
+        Long sec = TimeUnit.MILLISECONDS.toSeconds(millis) -
+                TimeUnit.MINUTES.toSeconds(TimeUnit.MILLISECONDS.toMinutes(millis));
+        String str = String.format("%d hr %d min %d sec",
+                hours, min, sec);
+        if (hours == 0L) {
 
-            if(min == 0L){
-                str =  String.format("%d sec",
+            if (min == 0L) {
+                str = String.format("%d sec",
                         sec);
-            }
-            else {
-                str =  String.format("%d min %d sec",
-                        min,sec);
+            } else {
+                str = String.format("%d min %d sec",
+                        min, sec);
             }
 
         }
@@ -101,42 +99,42 @@ public class DefaultFeedSummary implements FeedSummary {
     public Long getRunTime() {
         if (feedHealth.getLastOpFeed() != null) {
             return feedHealth.getLastOpFeed().getRunTime();
-        }
-        else{
+        } else {
             return null;
         }
     }
+
     @Override
     public String getRunTimeString() {
         return formatTimeMinSec(getRunTime());
     }
 
     @Override
-    public Long getAvgCompleteTime(){
+    public Long getAvgCompleteTime() {
         return feedHealth.getAvgRuntime();
     }
+
     @Override
-    public String getAvgCompleteTimeString(){
+    public String getAvgCompleteTimeString() {
         Long avgRunTime = feedHealth.getAvgRuntime();
-        if(avgRunTime != null) {
-            avgRunTime *=1000;  //convert to millis
+        if (avgRunTime != null) {
+            avgRunTime *= 1000;  //convert to millis
         }
 
         return formatTimeMinSec(avgRunTime);
     }
 
     @Override
-    public boolean isHealthy(){
+    public boolean isHealthy() {
         return feedHealth.isHealthy();
     }
 
 
     @Override
-    public String getLastExitCode(){
+    public String getLastExitCode() {
         if (feedHealth.getLastOpFeed() != null) {
             return feedHealth.getLastOpFeed().getExitCode();
-        }
-        else{
+        } else {
             return null;
         }
     }

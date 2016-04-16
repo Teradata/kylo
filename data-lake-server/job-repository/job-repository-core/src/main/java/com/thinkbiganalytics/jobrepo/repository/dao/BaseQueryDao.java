@@ -43,15 +43,15 @@ public class BaseQueryDao implements InitializingBean {
     }
 
 
-    public <T extends ConstructedQuery> T getQuery(Class<T> queryClass){
+    public <T extends ConstructedQuery> T getQuery(Class<T> queryClass) {
         return QueryFactory.getQuery(getDatabaseType(), queryClass);
     }
 
-    public DatabaseType getDatabaseType(){
+    public DatabaseType getDatabaseType() {
         DatabaseType databaseType = DatabaseType.MYSQL;
         try {
             databaseType = DatabaseType.fromMetaData(this.jdbcTemplate.getDataSource());
-        }catch(MetaDataAccessException e){
+        } catch (MetaDataAccessException e) {
             LOG.error("Unable to get DatabaseType from Metadata... reverting to standard Mysql type");
         }
         return databaseType;
@@ -80,16 +80,14 @@ public class BaseQueryDao implements InitializingBean {
     }
 
 
-
-    public <T> List<T> findList(final AbstractConstructedQuery query){
-        return findList(query,0,null);
+    public <T> List<T> findList(final AbstractConstructedQuery query) {
+        return findList(query, 0, null);
     }
-
 
 
     public <T> List<T> findList(final AbstractConstructedQuery baseQuery, final Integer start, final Integer limit) {
 
-       final String limitAndOffset = DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(baseQuery.getDatabaseType()).limitAndOffset(limit,start);
+        final String limitAndOffset = DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(baseQuery.getDatabaseType()).limitAndOffset(limit, start);
 
         ResultSetExtractor<List<T>> extractor = new ResultSetExtractor<List<T>>() {
             private List<T> list = new ArrayList<T>();
@@ -97,7 +95,7 @@ public class BaseQueryDao implements InitializingBean {
             public List<T> extractData(ResultSet rs) throws SQLException, DataAccessException {
                 int rowNum = 0;
                 Integer _limit = limit;
-                if(StringUtils.isBlank(limitAndOffset)) {
+                if (StringUtils.isBlank(limitAndOffset)) {
 
                     for (rowNum = 0; rowNum < start && rs.next(); ++rowNum) {
                         ;
@@ -111,10 +109,9 @@ public class BaseQueryDao implements InitializingBean {
                         ++rowNum;
                     }
 
-                }
-                else {
+                } else {
 
-                    while(rowNum < _limit && rs.next()){
+                    while (rowNum < _limit && rs.next()) {
                         RowMapper<T> rowMapper = baseQuery.getRowMapper();
                         this.list.add(rowMapper.mapRow(rs, rowNum));
                         ++rowNum;
@@ -124,16 +121,15 @@ public class BaseQueryDao implements InitializingBean {
                 }
 
 
-
                 return this.list;
             }
         };
 
         Query query = baseQuery.buildQuery();
         //apply the limit and offset to the query
-        String queryString  = query.getQuery()+" "+limitAndOffset;
+        String queryString = query.getQuery() + " " + limitAndOffset;
         //String queryString = query.getQuery();
-      //     LOG.info("FINAL QUERY IS "+queryString);
+        //     LOG.info("FINAL QUERY IS "+queryString);
         List<T> results = namedParameterJdbcTemplate.query(queryString, query.getNamedParameters(), extractor);
         return results;
     }

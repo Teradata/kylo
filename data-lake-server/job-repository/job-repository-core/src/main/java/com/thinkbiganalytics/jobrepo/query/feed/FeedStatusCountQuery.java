@@ -25,34 +25,31 @@ public class FeedStatusCountQuery extends AbstractConstructedQuery<JobStatusCoun
         super(databaseType);
     }
 
-    public QueryBuilder getQueryBuilder(){
+    public QueryBuilder getQueryBuilder() {
         QueryBuilder q = newQueryBuilder()
                 .select("select count(*) CNT, e.STATUS ")
                 .from("FROM  BATCH_JOB_EXECUTION e "
-                + " "+ FeedQueryUtil.feedQueryJoin("e", "feedName") + " ")
+                        + " " + FeedQueryUtil.feedQueryJoin("e", "feedName") + " ")
                 .groupBy("STATUS");
         return q;
     }
 
     @Override
-    public Query buildQuery(){
-            return getQueryBuilder().buildWithFilterQueryModifier(new ColumnFilterQueryModifier() {
-                @Override
-                public void modifyFilterQueryValue(ColumnFilter columnFilter) {
-                    String name = columnFilter.getName();
-                    String strVal = columnFilter.getStringValue();
-                    if (("STRING_VAL".equals(name) || (FeedQueryConstants.QUERY_FEED_NAME_COLUMN.equals(name)) && !FeedQueryConstants.QUERY_ALL_VALUE.equalsIgnoreCase(strVal))) {
-                        columnFilter.setQueryName("STRING_VAL");
-                        columnFilter.setTableAlias("feedName");
-                    }
-                    else {
-                        ColumnFilterUtil.applyDatabaseTypeDateDiffSql(getDatabaseType(), columnFilter);
-                    }
+    public Query buildQuery() {
+        return getQueryBuilder().buildWithFilterQueryModifier(new ColumnFilterQueryModifier() {
+            @Override
+            public void modifyFilterQueryValue(ColumnFilter columnFilter) {
+                String name = columnFilter.getName();
+                String strVal = columnFilter.getStringValue();
+                if (("STRING_VAL".equals(name) || (FeedQueryConstants.QUERY_FEED_NAME_COLUMN.equals(name)) && !FeedQueryConstants.QUERY_ALL_VALUE.equalsIgnoreCase(strVal))) {
+                    columnFilter.setQueryName("STRING_VAL");
+                    columnFilter.setTableAlias("feedName");
+                } else {
+                    ColumnFilterUtil.applyDatabaseTypeDateDiffSql(getDatabaseType(), columnFilter);
                 }
-            });
+            }
+        });
     }
-
-
 
 
     @Override

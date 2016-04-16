@@ -6,5 +6,4 @@ package com.thinkbiganalytics.jobrepo.nifi.model;
 public interface ProvenanceEventConstants {
 
 
-
 }

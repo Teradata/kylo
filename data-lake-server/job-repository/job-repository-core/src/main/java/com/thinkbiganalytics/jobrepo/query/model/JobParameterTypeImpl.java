@@ -5,7 +5,7 @@ package com.thinkbiganalytics.jobrepo.query.model;
  */
 public class JobParameterTypeImpl implements JobParameterType {
 
-private String name;
+    private String name;
     private String value;
     private String type;
 

@@ -26,9 +26,10 @@ public class DefaultExecutedFeed implements Serializable, ExecutedFeed {
     private Long timeSinceEndTime;
     private boolean isLatest;
 
-    public DefaultExecutedFeed(){
+    public DefaultExecutedFeed() {
 
     }
+
     public DefaultExecutedFeed(ExecutedFeed feed) {
         this.name = feed.getName();
         this.feedInstanceId = feed.getFeedInstanceId();
@@ -148,6 +149,7 @@ public class DefaultExecutedFeed implements Serializable, ExecutedFeed {
     public void setExecutedJobs(List<ExecutedJob> executedJobs) {
         this.executedJobs = executedJobs;
     }
+
     @Override
     public Long getRunTime() {
         return runTime;

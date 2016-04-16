@@ -38,7 +38,7 @@ public class FeedsRestController {
 
     @GET
     @Path("/{feedName}/latest")
-    @Produces({MediaType.APPLICATION_JSON })
+    @Produces({MediaType.APPLICATION_JSON})
     public ExecutedFeed findLatestFeedsByName(@PathParam("feedName") String feedName, @Context HttpServletRequest request) {
         return feedRepository.findLastCompletedFeed(feedName);
     }
@@ -46,35 +46,33 @@ public class FeedsRestController {
 
     @GET
     @Path("/")
-    @Produces({MediaType.APPLICATION_JSON })
-    public  Response findFeeds(@QueryParam("sort") @DefaultValue("") String sort,@QueryParam("limit") @DefaultValue("10")Integer limit, @QueryParam("start") @DefaultValue("1") Integer start, @Context HttpServletRequest request)
-    {
-         List<ColumnFilter>filters = WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-         List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-         SearchResult searchResult = feedRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response findFeeds(@QueryParam("sort") @DefaultValue("") String sort, @QueryParam("limit") @DefaultValue("10") Integer limit, @QueryParam("start") @DefaultValue("1") Integer start, @Context HttpServletRequest request) {
+        List<ColumnFilter> filters = WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
+        List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
+        SearchResult searchResult = feedRepository.getDataTablesSearchResult(filters, null, orderByList, start, limit);
         return Response.ok(searchResult).build();
     }
 
     @GET
     @Path("/since/{timeframe}")
-    @Produces({MediaType.APPLICATION_JSON })
-    public  SearchResult findFeedActivity(@PathParam("timeframe") String timeframe, @QueryParam("sort") @DefaultValue("") String sort,@QueryParam("limit") @DefaultValue("10")Integer limit, @QueryParam("start") @DefaultValue("1") Integer start, @Context HttpServletRequest request)
-    {
-        List<ColumnFilter>filters = WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-        if(StringUtils.isNotBlank(timeframe)){
+    @Produces({MediaType.APPLICATION_JSON})
+    public SearchResult findFeedActivity(@PathParam("timeframe") String timeframe, @QueryParam("sort") @DefaultValue("") String sort, @QueryParam("limit") @DefaultValue("10") Integer limit, @QueryParam("start") @DefaultValue("1") Integer start, @Context HttpServletRequest request) {
+        List<ColumnFilter> filters = WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
+        if (StringUtils.isNotBlank(timeframe)) {
             DatabaseQuerySubstitution.DATE_PART datePart = DatabaseQuerySubstitution.DATE_PART.valueOf(timeframe);
-            if(datePart != null) {
-                ColumnFilter filter  = new QueryColumnFilterSqlString();
-                String filterName =   JobQueryConstants.DAY_DIFF_FROM_NOW;
-                switch(datePart) {
+            if (datePart != null) {
+                ColumnFilter filter = new QueryColumnFilterSqlString();
+                String filterName = JobQueryConstants.DAY_DIFF_FROM_NOW;
+                switch (datePart) {
                     case DAY:
-                         filterName =   JobQueryConstants.DAY_DIFF_FROM_NOW;
+                        filterName = JobQueryConstants.DAY_DIFF_FROM_NOW;
                     case WEEK:
-                        filterName =   JobQueryConstants.WEEK_DIFF_FROM_NOW;
+                        filterName = JobQueryConstants.WEEK_DIFF_FROM_NOW;
                     case MONTH:
-                        filterName =   JobQueryConstants.MONTH_DIFF_FROM_NOW;
+                        filterName = JobQueryConstants.MONTH_DIFF_FROM_NOW;
                     case YEAR:
-                        filterName =   JobQueryConstants.YEAR_DIFF_FROM_NOW;
+                        filterName = JobQueryConstants.YEAR_DIFF_FROM_NOW;
 
                 }
                 filter.setName(filterName);
@@ -89,39 +87,37 @@ public class FeedsRestController {
 
     @GET
     @Path("/{feedName}/daily-status-count/{timeframe}")
-    @Produces({MediaType.APPLICATION_JSON })
-    public  List<JobStatusCount> findFeedDailyStatusCount(@PathParam("feedName") String feedName, @PathParam("timeframe") String timeframe)
-    {
-      return findFeedDailyStatusCount(feedName,timeframe,1);
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<JobStatusCount> findFeedDailyStatusCount(@PathParam("feedName") String feedName, @PathParam("timeframe") String timeframe) {
+        return findFeedDailyStatusCount(feedName, timeframe, 1);
     }
 
 
     @GET
     @Path("/{feedName}/daily-status-count/{timeframe}/{amount}")
-    @Produces({MediaType.APPLICATION_JSON })
-    public  List<JobStatusCount> findFeedDailyStatusCount(@PathParam("feedName") String feedName, @PathParam("timeframe") String timeframe,@PathParam("amount") Integer amount)
-    {
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<JobStatusCount> findFeedDailyStatusCount(@PathParam("feedName") String feedName, @PathParam("timeframe") String timeframe, @PathParam("amount") Integer amount) {
         DatabaseQuerySubstitution.DATE_PART datePart = DatabaseQuerySubstitution.DATE_PART.DAY;
-          if(StringUtils.isNotBlank(timeframe)){
+        if (StringUtils.isNotBlank(timeframe)) {
             try {
                 datePart = DatabaseQuerySubstitution.DATE_PART.valueOf(timeframe.toUpperCase());
-            }catch(IllegalArgumentException e){
+            } catch (IllegalArgumentException e) {
 
             }
-        };
+        }
+        ;
 
-       List<JobStatusCount> list = feedRepository.getFeedStatusCountByDay(feedName, datePart, amount);
+        List<JobStatusCount> list = feedRepository.getFeedStatusCountByDay(feedName, datePart, amount);
         return list;
     }
 
 
     @GET
     @Path("/running")
-    @Produces({MediaType.APPLICATION_JSON })
-    public  SearchResult findRunningFeeds(@QueryParam("sort") @DefaultValue("") String sort,@QueryParam("limit") @DefaultValue("10")Integer limit, @QueryParam("start") @DefaultValue("1") Integer start, @Context HttpServletRequest request)
-    {
-        List<ColumnFilter>filters = WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-        ColumnFilter filter  = new QueryColumnFilterSqlString();
+    @Produces({MediaType.APPLICATION_JSON})
+    public SearchResult findRunningFeeds(@QueryParam("sort") @DefaultValue("") String sort, @QueryParam("limit") @DefaultValue("10") Integer limit, @QueryParam("start") @DefaultValue("1") Integer start, @Context HttpServletRequest request) {
+        List<ColumnFilter> filters = WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
+        ColumnFilter filter = new QueryColumnFilterSqlString();
         filter.setSqlString(" AND END_TIME IS NULL");
         filters.add(filter);
         List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
@@ -131,11 +127,10 @@ public class FeedsRestController {
 
     @GET
     @Path("/completed")
-    @Produces({MediaType.APPLICATION_JSON })
-    public  SearchResult findCompletedFeeds(@QueryParam("sort") @DefaultValue("") String sort,@QueryParam("limit") @DefaultValue("10")Integer limit, @QueryParam("start") @DefaultValue("1") Integer start, @Context HttpServletRequest request)
-    {
-        List<ColumnFilter>filters = WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
-        ColumnFilter filter  = new QueryColumnFilterSqlString();
+    @Produces({MediaType.APPLICATION_JSON})
+    public SearchResult findCompletedFeeds(@QueryParam("sort") @DefaultValue("") String sort, @QueryParam("limit") @DefaultValue("10") Integer limit, @QueryParam("start") @DefaultValue("1") Integer start, @Context HttpServletRequest request) {
+        List<ColumnFilter> filters = WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
+        ColumnFilter filter = new QueryColumnFilterSqlString();
         filter.setSqlString(" AND STATUS = 'COMPLETED' AND EXIT_CODE = 'COMPLETED' ");
         filters.add(filter);
         List<OrderBy> orderByList = RestUtil.buildOrderByList(sort, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
@@ -144,14 +139,13 @@ public class FeedsRestController {
     }
 
 
-
     @GET
     @Path("/health")
-    @Produces({MediaType.APPLICATION_JSON })
-    public FeedStatus getFeedHealth( @Context HttpServletRequest request) {
+    @Produces({MediaType.APPLICATION_JSON})
+    public FeedStatus getFeedHealth(@Context HttpServletRequest request) {
 
-        List<ColumnFilter>filters = WebColumnFilterUtil.buildFiltersFromRequest(request, null);
-        if( filters == null){
+        List<ColumnFilter> filters = WebColumnFilterUtil.buildFiltersFromRequest(request, null);
+        if (filters == null) {
             filters = new ArrayList<ColumnFilter>();
         }
         return this.feedRepository.getFeedStatusAndSummary(filters);
@@ -159,8 +153,8 @@ public class FeedsRestController {
 
     @GET
     @Path("/health-count")
-    @Produces({MediaType.APPLICATION_JSON })
-    public List<FeedHealth> getFeedHealthCounts(@Context  HttpServletRequest request) {
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<FeedHealth> getFeedHealthCounts(@Context HttpServletRequest request) {
 
         return this.feedRepository.getFeedHealthCounts();
     }
@@ -168,13 +162,12 @@ public class FeedsRestController {
 
     @GET
     @Path("/health-count/{feedName}")
-    @Produces({MediaType.APPLICATION_JSON })
-    public FeedHealth getFeedHealthCounts(@Context HttpServletRequest request,@PathParam("feedName") String feedName) {
+    @Produces({MediaType.APPLICATION_JSON})
+    public FeedHealth getFeedHealthCounts(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
         List<FeedHealth> feedHealthList = this.feedRepository.getFeedHealthCounts(feedName);
-        if(feedHealthList != null && !feedHealthList.isEmpty()) {
+        if (feedHealthList != null && !feedHealthList.isEmpty()) {
             return feedHealthList.get(0);
-        }
-        else{
+        } else {
             return null;
         }
     }
@@ -182,11 +175,11 @@ public class FeedsRestController {
 
     @GET
     @Path("/health/{feedName}")
-    @Produces({MediaType.APPLICATION_JSON })
-    public FeedStatus getFeedHealthForFeed( @Context HttpServletRequest request,@PathParam("feedName") String feedName) {
+    @Produces({MediaType.APPLICATION_JSON})
+    public FeedStatus getFeedHealthForFeed(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
 
-        List<ColumnFilter>filters = WebColumnFilterUtil.buildFiltersFromRequest(request, null);
-        if( filters == null){
+        List<ColumnFilter> filters = WebColumnFilterUtil.buildFiltersFromRequest(request, null);
+        if (filters == null) {
             filters = new ArrayList<ColumnFilter>();
         }
         filters.add(new QueryColumnFilterSqlString(FeedQueryConstants.QUERY_FEED_NAME_COLUMN, feedName));
@@ -195,8 +188,8 @@ public class FeedsRestController {
 
     @GET
     @Path("/names")
-    @Produces({MediaType.APPLICATION_JSON })
-    public List<String> getFeedNames(){
+    @Produces({MediaType.APPLICATION_JSON})
+    public List<String> getFeedNames() {
         return feedRepository.getFeedNames();
     }
 

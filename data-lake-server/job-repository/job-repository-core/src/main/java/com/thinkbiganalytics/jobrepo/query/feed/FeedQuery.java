@@ -12,40 +12,38 @@ import org.springframework.jdbc.core.RowMapper;
 
 /**
  * Main Query for the Feeds Section of the Pipeline Controller
- *
  */
 public class FeedQuery extends AbstractConstructedQuery implements FeedQueryConstants {
-
 
 
     public FeedQuery(DatabaseType databaseType) {
         super(databaseType);
     }
 
-    public QueryBuilder getQueryBuilder(){
-    return newQueryBuilder()
-            .select("SELECT ji.JOB_INSTANCE_ID, ji.JOB_NAME, ji.JOB_KEY, e.JOB_EXECUTION_ID, " +
-                    "e.START_TIME, COALESCE(childJobs.END_TIME,e.END_TIME) as END_TIME, " +
-                    DatabaseQuerySubstitutionFactory.FEED_EXECUTION_RUN_TIME_TEMPLATE_STRING + " as RUN_TIME, " +
-                    "COALESCE(childJobs.STATUS,e.STATUS) as STATUS, COALESCE(childJobs.EXIT_CODE,e.EXIT_CODE) as EXIT_CODE, " +
-                    "e.EXIT_MESSAGE, e.CREATE_TIME, e.LAST_UPDATED, e.VERSION, e.JOB_CONFIGURATION_LOCATION, feed.STRING_VAL as FEED_NAME, " +
-                    "'FEED' as JOB_TYPE")
-            .from("BATCH_JOB_EXECUTION e " +
-                    FeedQueryUtil.feedQueryJoin("e", "feed")
-                    + " INNER JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID " +
-                    " LEFT JOIN ( " +
-                    " SELECT MAX(e.END_TIME) as END_TIME ,e.STATUS, e.EXIT_CODE, p.STRING_VAL as PARENT_JOB_EXECUTION_ID" +
-                    " FROM BATCH_JOB_EXECUTION e " +
-                    " INNER JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID " +
-                    " INNER JOIN BATCH_JOB_EXECUTION_PARAMS p on p.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
-                    " AND p.KEY_NAME = 'parentJobExecutionId' " +
-                    " GROUP BY e.STATUS, e.EXIT_CODE, p.STRING_VAL ) childJobs on childJobs.PARENT_JOB_EXECUTION_ID = e.JOB_EXECUTION_ID ")
-        .defaultOrderBy("JOB_EXECUTION_ID", "DESC");
+    public QueryBuilder getQueryBuilder() {
+        return newQueryBuilder()
+                .select("SELECT ji.JOB_INSTANCE_ID, ji.JOB_NAME, ji.JOB_KEY, e.JOB_EXECUTION_ID, " +
+                        "e.START_TIME, COALESCE(childJobs.END_TIME,e.END_TIME) as END_TIME, " +
+                        DatabaseQuerySubstitutionFactory.FEED_EXECUTION_RUN_TIME_TEMPLATE_STRING + " as RUN_TIME, " +
+                        "COALESCE(childJobs.STATUS,e.STATUS) as STATUS, COALESCE(childJobs.EXIT_CODE,e.EXIT_CODE) as EXIT_CODE, " +
+                        "e.EXIT_MESSAGE, e.CREATE_TIME, e.LAST_UPDATED, e.VERSION, e.JOB_CONFIGURATION_LOCATION, feed.STRING_VAL as FEED_NAME, " +
+                        "'FEED' as JOB_TYPE")
+                .from("BATCH_JOB_EXECUTION e " +
+                        FeedQueryUtil.feedQueryJoin("e", "feed")
+                        + " INNER JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID " +
+                        " LEFT JOIN ( " +
+                        " SELECT MAX(e.END_TIME) as END_TIME ,e.STATUS, e.EXIT_CODE, p.STRING_VAL as PARENT_JOB_EXECUTION_ID" +
+                        " FROM BATCH_JOB_EXECUTION e " +
+                        " INNER JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID " +
+                        " INNER JOIN BATCH_JOB_EXECUTION_PARAMS p on p.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
+                        " AND p.KEY_NAME = 'parentJobExecutionId' " +
+                        " GROUP BY e.STATUS, e.EXIT_CODE, p.STRING_VAL ) childJobs on childJobs.PARENT_JOB_EXECUTION_ID = e.JOB_EXECUTION_ID ")
+                .defaultOrderBy("JOB_EXECUTION_ID", "DESC");
 
-}
+    }
 
 
-    public Query buildQuery(){
+    public Query buildQuery() {
         return getQueryBuilder()
                 .buildWithQueryModifiers(new ColumnFilterQueryModifier() {
                     @Override
@@ -71,8 +69,7 @@ public class FeedQuery extends AbstractConstructedQuery implements FeedQueryCons
                             if (("STRING_VAL".equals(name) || (QUERY_FEED_NAME_COLUMN.equals(name)) && !QUERY_ALL_VALUE.equalsIgnoreCase(strVal))) {
                                 columnFilter.setQueryName("STRING_VAL");
                                 columnFilter.setTableAlias("feed");
-                            }
-                            else {
+                            } else {
                                 ColumnFilterUtil.applyDatabaseTypeDateDiffSql(getDatabaseType(), columnFilter);
                             }
 

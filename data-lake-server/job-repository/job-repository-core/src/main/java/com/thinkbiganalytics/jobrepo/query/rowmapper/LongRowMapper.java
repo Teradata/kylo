@@ -16,10 +16,10 @@ public class LongRowMapper implements RowMapper<Long> {
 
     private List<String> columnNames = new ArrayList<String>();
 
-    private void fetchColumnMetaData(ResultSet rs)  throws SQLException {
+    private void fetchColumnMetaData(ResultSet rs) throws SQLException {
         ResultSetMetaData rsmd = rs.getMetaData();
         int i = 0;
-        while(i<rsmd.getColumnCount()){
+        while (i < rsmd.getColumnCount()) {
             i++;
             String columnName = rsmd.getColumnName(i);
             int columnType = rsmd.getColumnType(i);
@@ -30,10 +30,9 @@ public class LongRowMapper implements RowMapper<Long> {
 
     @Override
     public Long mapRow(ResultSet resultSet, int i) throws SQLException {
-       if(columnNames.isEmpty())
-       {
-           fetchColumnMetaData(resultSet);
-       }
+        if (columnNames.isEmpty()) {
+            fetchColumnMetaData(resultSet);
+        }
 
         Long o = resultSet.getLong(1);
         return o;

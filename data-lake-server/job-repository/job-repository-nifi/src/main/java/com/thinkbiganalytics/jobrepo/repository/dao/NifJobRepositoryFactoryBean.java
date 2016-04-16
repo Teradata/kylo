@@ -75,31 +75,31 @@ public class NifJobRepositoryFactoryBean implements FactoryBean<NifiJobRepositor
 
     public void afterPropertiesSet() throws Exception {
         Assert.notNull(this.dataSource, "DataSource must not be null.");
-        if(this.jdbcOperations == null) {
+        if (this.jdbcOperations == null) {
             this.jdbcOperations = new JdbcTemplate(this.dataSource);
         }
 
-        if(this.incrementerFactory == null) {
+        if (this.incrementerFactory == null) {
             this.incrementerFactory = new DefaultDataFieldMaxValueIncrementerFactory(this.dataSource);
         }
 
-        if(this.databaseType == null) {
+        if (this.databaseType == null) {
             this.databaseType = DatabaseType.fromMetaData(this.dataSource).name();
             //logger.info("No database type set, using meta data indicating: " + this.databaseType);
         }
 
-        if(this.lobHandler == null && this.databaseType.equalsIgnoreCase(DatabaseType.ORACLE.toString())) {
+        if (this.lobHandler == null && this.databaseType.equalsIgnoreCase(DatabaseType.ORACLE.toString())) {
             this.lobHandler = new OracleLobHandler();
         }
 
-        if(this.serializer == null) {
+        if (this.serializer == null) {
             XStreamExecutionContextStringSerializer defaultSerializer = new XStreamExecutionContextStringSerializer();
             defaultSerializer.afterPropertiesSet();
             this.serializer = defaultSerializer;
         }
 
         Assert.isTrue(this.incrementerFactory.isSupportedIncrementerType(this.databaseType), "\'" + this.databaseType + "\' is an unsupported database type.  The supported database types are " + StringUtils.arrayToCommaDelimitedString(this.incrementerFactory.getSupportedIncrementerTypes()));
-        if(this.lobType != null) {
+        if (this.lobType != null) {
             Assert.isTrue(this.isValidTypes(this.lobType.intValue()), "lobType must be a value from the java.sql.Types class");
         }
 
@@ -144,7 +144,7 @@ public class NifJobRepositoryFactoryBean implements FactoryBean<NifiJobRepositor
         dao.setTablePrefix(this.tablePrefix);
         dao.setClobTypeToUse(this.determineClobTypeToUse(this.databaseType));
         dao.setSerializer(this.serializer);
-        if(this.lobHandler != null) {
+        if (this.lobHandler != null) {
             dao.setLobHandler(this.lobHandler);
         }
 
@@ -163,7 +163,7 @@ public class NifJobRepositoryFactoryBean implements FactoryBean<NifiJobRepositor
     }
 
     private int determineClobTypeToUse(String databaseType) throws Exception {
-        return this.lobType != null?this.lobType.intValue():(DatabaseType.SYBASE == DatabaseType.valueOf(databaseType.toUpperCase())?-1:2005);
+        return this.lobType != null ? this.lobType.intValue() : (DatabaseType.SYBASE == DatabaseType.valueOf(databaseType.toUpperCase()) ? -1 : 2005);
     }
 
     private boolean isValidTypes(int value) throws Exception {
@@ -171,10 +171,10 @@ public class NifJobRepositoryFactoryBean implements FactoryBean<NifiJobRepositor
         Field[] arr$ = Types.class.getFields();
         int len$ = arr$.length;
 
-        for(int i$ = 0; i$ < len$; ++i$) {
+        for (int i$ = 0; i$ < len$; ++i$) {
             Field field = arr$[i$];
-            int curValue = field.getInt((Object)null);
-            if(curValue == value) {
+            int curValue = field.getInt((Object) null);
+            if (curValue == value) {
                 result = true;
                 break;
             }
@@ -182,7 +182,6 @@ public class NifJobRepositoryFactoryBean implements FactoryBean<NifiJobRepositor
 
         return result;
     }
-
 
 
     protected NifiPipelineControllerDao createNifiPipelineControllerDao() throws Exception {
@@ -194,18 +193,14 @@ public class NifJobRepositoryFactoryBean implements FactoryBean<NifiJobRepositor
     }
 
 
-
-
-
-
     private void initializeProxy() throws Exception {
-        if(this.proxyFactory == null) {
+        if (this.proxyFactory == null) {
             this.proxyFactory = new ProxyFactory();
             TransactionInterceptor advice = new TransactionInterceptor(this.transactionManager, PropertiesConverter.stringToProperties("create*=PROPAGATION_REQUIRES_NEW," + this.isolationLevelForCreate + "\ngetLastJobExecution*=PROPAGATION_REQUIRES_NEW," + this.isolationLevelForCreate + "\n*=PROPAGATION_REQUIRED"));
-            if(this.validateTransactionState) {
+            if (this.validateTransactionState) {
                 DefaultPointcutAdvisor advisor = new DefaultPointcutAdvisor(new MethodInterceptor() {
                     public Object invoke(MethodInvocation invocation) throws Throwable {
-                        if(TransactionSynchronizationManager.isActualTransactionActive()) {
+                        if (TransactionSynchronizationManager.isActualTransactionActive()) {
                             throw new IllegalStateException("Existing transaction detected in JobRepository. Please fix this and try again (e.g. remove @Transactional annotations from client).");
                         } else {
                             return invocation.proceed();
@@ -230,15 +225,15 @@ public class NifJobRepositoryFactoryBean implements FactoryBean<NifiJobRepositor
 
 
     private Object getTarget() throws Exception {
-        return new NifiSimpleJobRepository(this.createJobInstanceDao(), this.createJobExecutionDao(), this.createStepExecutionDao(), this.createExecutionContextDao(), this.createJobParametersDao(),this.createNifiPipelineControllerDao(), this.executionContextValuesService);
+        return new NifiSimpleJobRepository(this.createJobInstanceDao(), this.createJobExecutionDao(), this.createStepExecutionDao(), this.createExecutionContextDao(), this.createJobParametersDao(), this.createNifiPipelineControllerDao(), this.executionContextValuesService);
     }
 
     public NifiJobRepository getObject() throws Exception {
-        if(this.proxyFactory == null) {
+        if (this.proxyFactory == null) {
             this.afterPropertiesSet();
         }
 
-        return (NifiJobRepository)this.proxyFactory.getProxy();
+        return (NifiJobRepository) this.proxyFactory.getProxy();
     }
 
     @Override

@@ -22,17 +22,17 @@ public class FeedNameStatusCountQuery extends AbstractConstructedQuery {
         super(databaseType);
     }
 
-    public QueryBuilder getQueryBuilder(){
+    public QueryBuilder getQueryBuilder() {
         QueryBuilder q = newQueryBuilder()
                 .select("select count(*) CNT, feedName.STRING_VAL as FEED_NAME, e.STATUS ")
                 .from("FROM  BATCH_JOB_EXECUTION e "
-                        + " "+ FeedQueryUtil.feedQueryJoin("e", "feedName") + " ")
+                        + " " + FeedQueryUtil.feedQueryJoin("e", "feedName") + " ")
                 .groupBy("STATUS, feedName.STRING_VAL");
         return q;
     }
 
     @Override
-    public Query buildQuery(){
+    public Query buildQuery() {
         return getQueryBuilder().build();
     }
 

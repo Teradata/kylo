@@ -18,7 +18,7 @@ public class ExitStatus implements Serializable, Comparable<ExitStatus> {
 
     public ExitStatus(String exitCode, String exitDescription) {
         this.exitCode = exitCode;
-        this.exitDescription = exitDescription == null?"":exitDescription;
+        this.exitDescription = exitDescription == null ? "" : exitDescription;
     }
 
     public String getExitCode() {
@@ -34,7 +34,7 @@ public class ExitStatus implements Serializable, Comparable<ExitStatus> {
     }
 
     public boolean equals(Object obj) {
-        return obj == null?false:this.toString().equals(obj.toString());
+        return obj == null ? false : this.toString().equals(obj.toString());
     }
 
     public int hashCode() {
@@ -42,11 +42,11 @@ public class ExitStatus implements Serializable, Comparable<ExitStatus> {
     }
 
     private int severity(ExitStatus status) {
-        return status.exitCode.startsWith(EXECUTING.exitCode)?1:(status.exitCode.startsWith(COMPLETED.exitCode)?2:(status.exitCode.startsWith(NOOP.exitCode)?3:(status.exitCode.startsWith(STOPPED.exitCode)?4:(status.exitCode.startsWith(FAILED.exitCode)?5:(status.exitCode.startsWith(UNKNOWN.exitCode)?6:7)))));
+        return status.exitCode.startsWith(EXECUTING.exitCode) ? 1 : (status.exitCode.startsWith(COMPLETED.exitCode) ? 2 : (status.exitCode.startsWith(NOOP.exitCode) ? 3 : (status.exitCode.startsWith(STOPPED.exitCode) ? 4 : (status.exitCode.startsWith(FAILED.exitCode) ? 5 : (status.exitCode.startsWith(UNKNOWN.exitCode) ? 6 : 7)))));
     }
 
     public int compareTo(ExitStatus status) {
-        return this.severity(status) > this.severity(this)?-1:(this.severity(status) < this.severity(this)?1:this.getExitCode().compareTo(status.getExitCode()));
+        return this.severity(status) > this.severity(this) ? -1 : (this.severity(status) < this.severity(this) ? 1 : this.getExitCode().compareTo(status.getExitCode()));
     }
 
 }

@@ -19,11 +19,11 @@ public class JobExecutionFeedRowMapper extends JobExecutionRowMapper {
         JobParameters jobParameters = null;
         try {
             String feedName = rs.getString("FEED_NAME");
-            Map<String,JobParameter> params = new HashMap<String,JobParameter>();
+            Map<String, JobParameter> params = new HashMap<String, JobParameter>();
 
             JobParameter jobParameter = new JobParameter(feedName, true);
-            params.put(FeedConstants.PARAM__FEED_NAME,jobParameter);
-            jobParameters  = new JobParameters(params);
+            params.put(FeedConstants.PARAM__FEED_NAME, jobParameter);
+            jobParameters = new JobParameters(params);
             return jobParameters;
         } catch (SQLException e) {
             e.printStackTrace();

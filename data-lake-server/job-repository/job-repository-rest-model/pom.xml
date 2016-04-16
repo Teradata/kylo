@@ -12,7 +12,6 @@
     </parent>
 
 
-
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics</groupId>

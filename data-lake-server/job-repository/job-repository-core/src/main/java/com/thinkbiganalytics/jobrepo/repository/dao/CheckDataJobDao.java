@@ -32,11 +32,11 @@ public class CheckDataJobDao extends BaseQueryDao {
         Assert.notNull(this.namedParameterJdbcTemplate);
     }
 
-    public CheckDataAllJobsQuery getQuery(){
+    public CheckDataAllJobsQuery getQuery() {
         return new CheckDataAllJobsQuery(getDatabaseType());
     }
 
-    public CheckDataLatestJobsQuery getLatestJobsQuery(){
+    public CheckDataLatestJobsQuery getLatestJobsQuery() {
         return new CheckDataLatestJobsQuery(getDatabaseType());
     }
 
@@ -81,7 +81,6 @@ public class CheckDataJobDao extends BaseQueryDao {
         }
         return jobs;
     }
-
 
 
 }

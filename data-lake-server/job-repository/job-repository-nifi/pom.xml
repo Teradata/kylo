@@ -16,7 +16,6 @@
     </properties>
 
 
-
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics</groupId>
@@ -57,8 +56,6 @@
             <artifactId>thinkbig-nifi-rest</artifactId>
             <version>${thinkbig.nifi.version}</version>
         </dependency>
-
-
 
 
     </dependencies>

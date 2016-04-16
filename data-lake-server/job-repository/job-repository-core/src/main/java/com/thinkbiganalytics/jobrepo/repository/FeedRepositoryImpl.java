@@ -49,12 +49,13 @@ public class FeedRepositoryImpl implements FeedRepository {
         DateTime startTime = utcDateTimeCorrection(jobExecution.getStartTime());
         DateTime endTime = utcDateTimeCorrection(jobExecution.getEndTime());
 
-        if(jobExecution.getStartTime() == null){
+        if (jobExecution.getStartTime() == null) {
             startTime = null;
         }
         Long runTime = null;
-        Long timeSinceEndTime = null;		;
-        if(startTime != null) {
+        Long timeSinceEndTime = null;
+        ;
+        if (startTime != null) {
             runTime = endTime.getMillis() - startTime.getMillis();
             timeSinceEndTime = utcDateTimeCorrection((DateTime) null).getMillis() - endTime.getMillis();
         }
@@ -82,10 +83,9 @@ public class FeedRepositoryImpl implements FeedRepository {
         executedFeed.setEndTime(endTime);
         executedFeed.setRunTime(runTime);
         executedFeed.setTimeSinceEndTime(timeSinceEndTime);
-       if(jobExecution instanceof TbaJobExecution)
-       {
-           executedFeed.setIsLatest(((TbaJobExecution)jobExecution).isLatest());
-       }
+        if (jobExecution instanceof TbaJobExecution) {
+            executedFeed.setIsLatest(((TbaJobExecution) jobExecution).isLatest());
+        }
         executedFeed.setExecutedJobs(new ArrayList<ExecutedJob>());
 
         executedFeed.getExecutedJobs().add(JobRepositoryImpl.convertToExecutedJob(jobInstance, jobExecution));
@@ -99,35 +99,35 @@ public class FeedRepositoryImpl implements FeedRepository {
      * @param jobExecution The Job Execution information
      * @return An ExecutedJob instance representing both the JobInstance and its execution
      */
-    public  ExecutedFeed convertToExecutedFeed(final JobInstance jobInstance, final JobExecution jobExecution) {
+    public ExecutedFeed convertToExecutedFeed(final JobInstance jobInstance, final JobExecution jobExecution) {
 
 
         ExecutedFeed executedFeed = FeedRepositoryImpl.convertToExecutedFeed(jobExecution);
-            List<ExecutedJob> childJobs = findChildJobs(new Long(jobInstance.getInstanceId()).toString(), 50);
-            for (ExecutedJob job : childJobs) {
-                executedFeed.getExecutedJobs().add(job);
-                if (job.getEndTime().isAfter(jobExecution.getEndTime().getTime())) {
-                    executedFeed.setEndTime(utcDateTimeCorrection(job.getEndTime()));
-                }
-                if (!job.getStatus().equals(jobExecution.getStatus())) {
-                    executedFeed.setStatus(job.getStatus());
-                }
-                if (!job.getExitCode().equals(jobExecution.getExitStatus().getExitCode())) {
-                    executedFeed.setExitCode(job.getExitCode());
-                }
+        List<ExecutedJob> childJobs = findChildJobs(new Long(jobInstance.getInstanceId()).toString(), 50);
+        for (ExecutedJob job : childJobs) {
+            executedFeed.getExecutedJobs().add(job);
+            if (job.getEndTime().isAfter(jobExecution.getEndTime().getTime())) {
+                executedFeed.setEndTime(utcDateTimeCorrection(job.getEndTime()));
             }
+            if (!job.getStatus().equals(jobExecution.getStatus())) {
+                executedFeed.setStatus(job.getStatus());
+            }
+            if (!job.getExitCode().equals(jobExecution.getExitStatus().getExitCode())) {
+                executedFeed.setExitCode(job.getExitCode());
+            }
+        }
         return executedFeed;
     }
 
-    public List<ExecutedFeed> findLastCompletedFeeds( List<ColumnFilter> filters) {
+    public List<ExecutedFeed> findLastCompletedFeeds(List<ColumnFilter> filters) {
         List<ExecutedFeed> executedFeeds = new ArrayList<ExecutedFeed>();
         LatestCompletedFeedQuery query = feedDao.getQuery(LatestCompletedFeedQuery.class);
         query.setColumnFilterList(filters);
         List<OrderBy> orderBy = new ArrayList<>();
         orderBy.add(new OrderByClause(FeedQueryConstants.QUERY_FEED_NAME_COLUMN, "asc"));
         query.setOrderByList(orderBy);
-        List<JobExecution> jobExecutions =  feedDao.findList(query,0,-1);
-        if(jobExecutions != null && !jobExecutions.isEmpty()) {
+        List<JobExecution> jobExecutions = feedDao.findList(query, 0, -1);
+        if (jobExecutions != null && !jobExecutions.isEmpty()) {
             for (JobExecution jobExecution : jobExecutions) {
                 executedFeeds.add(convertToExecutedFeed(jobExecution));
             }
@@ -135,64 +135,62 @@ public class FeedRepositoryImpl implements FeedRepository {
         return executedFeeds;
     }
 
-    public ExecutedFeed findLastCompletedFeed( String feedName) {
+    public ExecutedFeed findLastCompletedFeed(String feedName) {
         ExecutedFeed feed = null;
         List<ColumnFilter> filter = new ArrayList<ColumnFilter>();
         filter.add(new QueryColumnFilterSqlString(FeedQueryConstants.QUERY_FEED_NAME_COLUMN, feedName));
         LatestCompletedFeedQuery query = feedDao.getQuery(LatestCompletedFeedQuery.class);
         query.setColumnFilterList(filter);
         List<JobExecution> jobExecutions = feedDao.findList(query, 0, -1);
-        if(jobExecutions != null && !jobExecutions.isEmpty()) {
-           feed = convertToExecutedFeed(jobExecutions.get(0));
+        if (jobExecutions != null && !jobExecutions.isEmpty()) {
+            feed = convertToExecutedFeed(jobExecutions.get(0));
         }
         return feed;
     }
 
 
     /**
-     *
      * @param filters
      * @param limit
      * @param orderBy
      * @return
      */
-    public List<ExecutedFeed> findFeeds( List<ColumnFilter> filters,  List<OrderBy> orderBy,final Integer start,final Integer limit) {
+    public List<ExecutedFeed> findFeeds(List<ColumnFilter> filters, List<OrderBy> orderBy, final Integer start, final Integer limit) {
         List<ExecutedFeed> executedFeeds = new ArrayList<ExecutedFeed>();
         executedFeeds = feedDao.findExecutedFeeds(filters, orderBy, start, limit);
         return executedFeeds;
     }
 
-    public List<Object> selectDistinctColumnValues( List<ColumnFilter> filters, String columnName) {
+    public List<Object> selectDistinctColumnValues(List<ColumnFilter> filters, String columnName) {
         List<Object> columnValues = new ArrayList<Object>();
         columnValues = feedDao.selectDistinctColumnValues(filters, columnName);
         return columnValues;
     }
 
-    public Long selectCount( List<ColumnFilter> filters) {
+    public Long selectCount(List<ColumnFilter> filters) {
         return feedDao.selectCount(filters);
     }
 
-    public SearchResult getDataTablesSearchResult(List<ColumnFilter> conditions, List<ColumnFilter>defaultFilters,List<OrderBy> order,  Integer start,  Integer limit) {
+    public SearchResult getDataTablesSearchResult(List<ColumnFilter> conditions, List<ColumnFilter> defaultFilters, List<OrderBy> order, Integer start, Integer limit) {
         boolean noConditions = false;
-        if(defaultFilters != null && !defaultFilters.isEmpty()){
-            if(conditions == null){
+        if (defaultFilters != null && !defaultFilters.isEmpty()) {
+            if (conditions == null) {
                 conditions = new ArrayList<ColumnFilter>();
                 noConditions = true;
             }
             conditions.addAll(defaultFilters);
         }
-        if(!noConditions && (conditions == null || conditions.isEmpty())){
+        if (!noConditions && (conditions == null || conditions.isEmpty())) {
             noConditions = true;
         }
 
         List<ExecutedFeed> feeds = feedDao.findExecutedFeeds(conditions, order, start, limit);
         Long allCount = feedDao.selectCount(defaultFilters);
         Long filterCount = null;
-       //No need to do the filter count query since there are no filter conditions present.
-        if(noConditions){
+        //No need to do the filter count query since there are no filter conditions present.
+        if (noConditions) {
             filterCount = allCount;
-        }
-        else {
+        } else {
             filterCount = feedDao.selectCount(conditions);
         }
 
@@ -217,9 +215,9 @@ public class FeedRepositoryImpl implements FeedRepository {
 
         String sql = "SELECT JOB_INSTANCE_ID from BATCH_JOB_EXECUTION_PARAMS p " +
                 "inner join BATCH_JOB_EXECUTION e on p.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
-                "WHERE p.KEY_NAME = 'parentJobExecutionId' AND p.STRING_VAL = "+parentJobExecutionId+" " +
+                "WHERE p.KEY_NAME = 'parentJobExecutionId' AND p.STRING_VAL = " + parentJobExecutionId + " " +
                 "ORDER BY e.CREATE_TIME desc " +
-                "LIMIT "+limit;
+                "LIMIT " + limit;
         // Query q = this.entityManager.createNativeQuery(sql);
         // List<BigInteger> queryResult = q.getResultList();
         List<BigInteger> queryResult = pipelineDao.queryForList(sql, BigInteger.class);
@@ -252,38 +250,38 @@ public class FeedRepositoryImpl implements FeedRepository {
         return executedFeeds;
     }
 
-    public List<JobStatusCount> getFeedStatusCountByDay(String feedName,DatabaseQuerySubstitution.DATE_PART datePart, Integer interval){
+    public List<JobStatusCount> getFeedStatusCountByDay(String feedName, DatabaseQuerySubstitution.DATE_PART datePart, Integer interval) {
 
-        List<ColumnFilter>filters = new ArrayList<>();
-        filters.add(new QueryColumnFilterSqlString(FeedQueryConstants.QUERY_FEED_NAME_COLUMN,feedName));
+        List<ColumnFilter> filters = new ArrayList<>();
+        filters.add(new QueryColumnFilterSqlString(FeedQueryConstants.QUERY_FEED_NAME_COLUMN, feedName));
 
-            if(datePart != null) {
-                ColumnFilter filter  = new QueryColumnFilterSqlString();
-                String filterName =   JobQueryConstants.DAY_DIFF_FROM_NOW;
-                switch(datePart) {
-                    case DAY:
-                        filterName =   JobQueryConstants.DAY_DIFF_FROM_NOW;
-                        break;
-                    case WEEK:
-                        filterName =   JobQueryConstants.WEEK_DIFF_FROM_NOW;
-                        break;
-                    case MONTH:
-                        filterName =   JobQueryConstants.MONTH_DIFF_FROM_NOW;
-                        break;
-                    case YEAR:
-                        filterName =   JobQueryConstants.YEAR_DIFF_FROM_NOW;
-                        break;
+        if (datePart != null) {
+            ColumnFilter filter = new QueryColumnFilterSqlString();
+            String filterName = JobQueryConstants.DAY_DIFF_FROM_NOW;
+            switch (datePart) {
+                case DAY:
+                    filterName = JobQueryConstants.DAY_DIFF_FROM_NOW;
+                    break;
+                case WEEK:
+                    filterName = JobQueryConstants.WEEK_DIFF_FROM_NOW;
+                    break;
+                case MONTH:
+                    filterName = JobQueryConstants.MONTH_DIFF_FROM_NOW;
+                    break;
+                case YEAR:
+                    filterName = JobQueryConstants.YEAR_DIFF_FROM_NOW;
+                    break;
 
-                }
-                filter.setName(filterName);
-                filter.setValue(interval);
-                filters.add(filter);
             }
+            filter.setName(filterName);
+            filter.setValue(interval);
+            filters.add(filter);
+        }
 
         FeedStatusCountByDayQuery query = feedDao.getQuery(FeedStatusCountByDayQuery.class);
         query.setColumnFilterList(filters);
         List<JobStatusCount> statusCountList = feedDao.findList(query);
-        DailyJobStatusCount statusCount = new DailyJobStatusCountResult(datePart,interval,statusCountList);
+        DailyJobStatusCount statusCount = new DailyJobStatusCountResult(datePart, interval, statusCountList);
         statusCount.checkAndAddStartDate();
         return statusCount.getJobStatusCounts();
 
@@ -293,10 +291,11 @@ public class FeedRepositoryImpl implements FeedRepository {
     public List<FeedHealth> getFeedHealthCounts() {
         return getFeedHealthCounts(null);
     }
+
     public List<FeedHealth> getFeedHealthCounts(String feedName) {
 
         FeedHealthQuery feedHealthQuery = feedDao.getQuery(FeedHealthQuery.class);
-        if(StringUtils.isNotBlank(feedName)) {
+        if (StringUtils.isNotBlank(feedName)) {
             List<ColumnFilter> filters = new ArrayList<>();
             filters.add(new QueryColumnFilterSqlString(FeedQueryConstants.QUERY_FEED_NAME_COLUMN, feedName));
         }
@@ -305,10 +304,9 @@ public class FeedRepositoryImpl implements FeedRepository {
 
         FeedHealthCheckDataQuery feedHealthCheckDataQuery = feedDao.getQuery(FeedHealthCheckDataQuery.class);
         List<FeedHealthQueryResult> feedHealthCheckDataQueryResults = feedDao.findList(feedHealthCheckDataQuery);
-        if(feedHealthCheckDataQueryResults != null && !feedHealthCheckDataQueryResults.isEmpty()){
-            mergeCheckDataHealthWithFeedHealth(feedHealthList,feedHealthCheckDataQueryResults);
+        if (feedHealthCheckDataQueryResults != null && !feedHealthCheckDataQueryResults.isEmpty()) {
+            mergeCheckDataHealthWithFeedHealth(feedHealthList, feedHealthCheckDataQueryResults);
         }
-
 
 
         return feedHealthList;
@@ -317,29 +315,28 @@ public class FeedRepositoryImpl implements FeedRepository {
 
 
     private void mergeCheckDataHealthWithFeedHealth(List<FeedHealth> feedHealth, List<FeedHealthQueryResult> checkDataHealth) {
-        if(checkDataHealth != null && !checkDataHealth.isEmpty() && feedHealth != null && !feedHealth.isEmpty()){
+        if (checkDataHealth != null && !checkDataHealth.isEmpty() && feedHealth != null && !feedHealth.isEmpty()) {
             //merge in the check data results
-            Map<String,FeedHealth> map = new HashMap<String,FeedHealth>();
-            for(FeedHealth feedHealthResult : feedHealth){
-                map.put(feedHealthResult.getFeed(),feedHealthResult);
+            Map<String, FeedHealth> map = new HashMap<String, FeedHealth>();
+            for (FeedHealth feedHealthResult : feedHealth) {
+                map.put(feedHealthResult.getFeed(), feedHealthResult);
             }
 
-            for(FeedHealthQueryResult checkDataResult : checkDataHealth){
-                if(checkDataResult.getHealth().equalsIgnoreCase("UNHEALTHY") && checkDataResult.getCount() > 0L){
+            for (FeedHealthQueryResult checkDataResult : checkDataHealth) {
+                if (checkDataResult.getHealth().equalsIgnoreCase("UNHEALTHY") && checkDataResult.getCount() > 0L) {
                     FeedHealth feedResult = map.get(checkDataResult.getFeed());
-                    if(feedResult != null && (feedResult.getUnhealthyCount() == null ||  feedResult.getUnhealthyCount() == 0L)) {
+                    if (feedResult != null && (feedResult.getUnhealthyCount() == null || feedResult.getUnhealthyCount() == 0L)) {
                         feedResult.setUnhealthyCount(1L); //mark it unhealthy as the check data job for the feed failed
-                    }
-                    else if(feedResult != null) {
+                    } else if (feedResult != null) {
                         //it is already unhealthy, add it to the error count
                         Long unhealthCount = feedResult.getUnhealthyCount();
-                        if(unhealthCount == null){
+                        if (unhealthCount == null) {
                             unhealthCount = 0L;
                         }
-                        unhealthCount +=1;
+                        unhealthCount += 1;
                         feedResult.setUnhealthyCount(unhealthCount);
                     }
-                    if(feedResult != null) {
+                    if (feedResult != null) {
                         if (feedResult.getLastUnhealthyTime() == null) {
                             feedResult.setLastUnhealthyTime(checkDataResult.getEndTime());
                         } else if (feedResult.getLastUnhealthyTime().before(checkDataResult.getEndTime())) {
@@ -350,7 +347,6 @@ public class FeedRepositoryImpl implements FeedRepository {
             }
 
 
-
         }
     }
 
@@ -359,12 +355,11 @@ public class FeedRepositoryImpl implements FeedRepository {
         LatestOperationalFeedQuery latestOperationalFeedQuery = feedDao.getQuery(LatestOperationalFeedQuery.class);
         latestOperationalFeedQuery.setColumnFilterList(filters);
         List<ExecutedFeed> latestOpFeeds = feedDao.findExecutedFeeds(latestOperationalFeedQuery);
-        Map<String,Long> avgRunTimes = null;//feedDao.findAverageRunTimes();
+        Map<String, Long> avgRunTimes = null;//feedDao.findAverageRunTimes();
 
         FeedHealthQuery feedHealthQuery = feedDao.getQuery(FeedHealthQuery.class);
         feedHealthQuery.setColumnFilterList(filters);
         List<FeedHealthQueryResult> feedHealthQueryResults = feedDao.findList(feedHealthQuery);
-
 
 
         List<FeedHealth> feedHealthList = FeedHealthUtil.parseToList(latestOpFeeds, avgRunTimes, feedHealthQueryResults);
@@ -372,13 +367,13 @@ public class FeedRepositoryImpl implements FeedRepository {
         FeedHealthCheckDataQuery feedHealthCheckDataQuery = feedDao.getQuery(FeedHealthCheckDataQuery.class);
         feedHealthCheckDataQuery.setColumnFilterList(filters);
         List<FeedHealthQueryResult> feedHealthCheckDataQueryResults = feedDao.findList(feedHealthCheckDataQuery);
-        if(feedHealthCheckDataQueryResults != null && !feedHealthCheckDataQueryResults.isEmpty()){
-            mergeCheckDataHealthWithFeedHealth(feedHealthList,feedHealthCheckDataQueryResults);
+        if (feedHealthCheckDataQueryResults != null && !feedHealthCheckDataQueryResults.isEmpty()) {
+            mergeCheckDataHealthWithFeedHealth(feedHealthList, feedHealthCheckDataQueryResults);
         }
         return new DefaultFeedStatus(feedHealthList);
     }
 
-    public List<String> getFeedNames(){
+    public List<String> getFeedNames() {
         return feedDao.getFeedNames();
     }
 
@@ -396,9 +391,9 @@ public class FeedRepositoryImpl implements FeedRepository {
 
         String sql = "SELECT DISTINCT JOB_INSTANCE_ID from BATCH_JOB_EXECUTION e " +
                 "inner join BATCH_JOB_EXECUTION_PARAMS p on p.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
-                "WHERE p.STRING_VAL = '"+feed+"' " +
+                "WHERE p.STRING_VAL = '" + feed + "' " +
                 "ORDER BY e.CREATE_TIME desc " +
-                "LIMIT "+limit;
+                "LIMIT " + limit;
 
         List<BigInteger> queryResult = pipelineDao.queryForList(sql, BigInteger.class);
 
@@ -421,9 +416,9 @@ public class FeedRepositoryImpl implements FeedRepository {
     @Override
     public List<String> uniqueFeedNames() {
         List<String> jobNames = new ArrayList<String>();
-        String sql = "SELECT DISTINCT STRING_CAL FROM BATCH_JOB_EXECUTION_PARAMS WHERE KEY_NAME = '"+ FeedConstants.PARAM__FEED_NAME+"'";
+        String sql = "SELECT DISTINCT STRING_CAL FROM BATCH_JOB_EXECUTION_PARAMS WHERE KEY_NAME = '" + FeedConstants.PARAM__FEED_NAME + "'";
 
-       List<String> queryResult = pipelineDao.queryForList(sql,String.class);
+        List<String> queryResult = pipelineDao.queryForList(sql, String.class);
         // Protection against null list
         if (queryResult != null) {
             jobNames.addAll(queryResult);

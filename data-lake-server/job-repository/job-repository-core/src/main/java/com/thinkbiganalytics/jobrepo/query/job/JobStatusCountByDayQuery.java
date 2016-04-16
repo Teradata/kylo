@@ -28,27 +28,25 @@ public class JobStatusCountByDayQuery extends AbstractConstructedQuery<JobStatus
         super(databaseType);
     }
 
-    public QueryBuilder getQueryBuilder(){
+    public QueryBuilder getQueryBuilder() {
         QueryBuilder q = newQueryBuilder()
                 .select("select count(*) CNT," + DaoUtil.getHealthStateSqlClause("e") + "as STATE," + DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).truncateTimestampToDate("e.START_TIME") + "as START_DATE")
-                        .from("FROM  BATCH_JOB_EXECUTION e ")
-                        .groupBy(DaoUtil.getHealthStateSqlClause("e") +","+DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).truncateTimestampToDate("e.START_TIME"))
-                        .orderBy(new OrderByClause(DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).truncateTimestampToDate("e.START_TIME"), "asc"));
+                .from("FROM  BATCH_JOB_EXECUTION e ")
+                .groupBy(DaoUtil.getHealthStateSqlClause("e") + "," + DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).truncateTimestampToDate("e.START_TIME"))
+                .orderBy(new OrderByClause(DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).truncateTimestampToDate("e.START_TIME"), "asc"));
         return q;
     }
 
     @Override
-    public Query buildQuery(){
-            return getQueryBuilder().buildWithFilterQueryModifier(new ColumnFilterQueryModifier() {
-                @Override
-                public void modifyFilterQueryValue(ColumnFilter columnFilter) {
-                     ColumnFilterUtil.applyDatabaseTypeDateDiffSql(getDatabaseType(), columnFilter);
+    public Query buildQuery() {
+        return getQueryBuilder().buildWithFilterQueryModifier(new ColumnFilterQueryModifier() {
+            @Override
+            public void modifyFilterQueryValue(ColumnFilter columnFilter) {
+                ColumnFilterUtil.applyDatabaseTypeDateDiffSql(getDatabaseType(), columnFilter);
 
-                }
-            });
+            }
+        });
     }
-
-
 
 
     @Override

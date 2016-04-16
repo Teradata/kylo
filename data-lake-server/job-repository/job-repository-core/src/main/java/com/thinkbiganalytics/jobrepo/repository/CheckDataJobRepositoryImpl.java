@@ -22,9 +22,9 @@ public class CheckDataJobRepositoryImpl implements CheckDataJobRepository {
     @Inject
     CheckDataJobDao checkDataJobDao;
 
-     public SearchResult getDataTablesSearchResult(List<ColumnFilter> conditions, List<ColumnFilter>defaultFilters,List<OrderBy> order,  Integer start,  Integer limit) {
-        if(defaultFilters != null && !defaultFilters.isEmpty()){
-            if(conditions == null){
+    public SearchResult getDataTablesSearchResult(List<ColumnFilter> conditions, List<ColumnFilter> defaultFilters, List<OrderBy> order, Integer start, Integer limit) {
+        if (defaultFilters != null && !defaultFilters.isEmpty()) {
+            if (conditions == null) {
                 conditions = new ArrayList<ColumnFilter>();
             }
             conditions.addAll(defaultFilters);
@@ -39,18 +39,18 @@ public class CheckDataJobRepositoryImpl implements CheckDataJobRepository {
         return searchResult;
     }
 
-    public List<Object> selectDistinctColumnValues( List<ColumnFilter> filters, String columnName) {
+    public List<Object> selectDistinctColumnValues(List<ColumnFilter> filters, String columnName) {
         List<Object> columnValues = new ArrayList<Object>();
         columnValues = checkDataJobDao.selectDistinctColumnValues(filters, columnName);
         return columnValues;
     }
 
-    public Long selectCount( List<ColumnFilter> filters) {
+    public Long selectCount(List<ColumnFilter> filters) {
         return checkDataJobDao.selectCount(filters);
     }
 
     public List<CheckDataJob> findLatestCheckDataJobs() {
-       return checkDataJobDao.findLatestCheckDataJobs();
+        return checkDataJobDao.findLatestCheckDataJobs();
     }
 
 

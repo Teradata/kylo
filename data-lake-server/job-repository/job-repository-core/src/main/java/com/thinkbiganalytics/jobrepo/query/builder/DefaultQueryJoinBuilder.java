@@ -9,7 +9,7 @@ public class DefaultQueryJoinBuilder implements QueryJoinBuilder {
     private String joinAlias;
     private String joinClause;
     private Query joinQuery;
-    private JOIN_TYPE  joinType;
+    private JOIN_TYPE joinType;
 
     protected DefaultQueryJoinBuilder(QueryBuilder queryBuilder, Query query, JOIN_TYPE joinType) {
         this.queryBuilder = queryBuilder;
@@ -17,39 +17,40 @@ public class DefaultQueryJoinBuilder implements QueryJoinBuilder {
         this.joinQuery = query;
     }
 
-    public static QueryJoinBuilder innerJoin(QueryBuilder queryBuilder,Query query) {
-        QueryJoinBuilder builder =  new DefaultQueryJoinBuilder(queryBuilder,query, JOIN_TYPE.INNER);
+    public static QueryJoinBuilder innerJoin(QueryBuilder queryBuilder, Query query) {
+        QueryJoinBuilder builder = new DefaultQueryJoinBuilder(queryBuilder, query, JOIN_TYPE.INNER);
         return builder;
     }
 
-    public static QueryJoinBuilder leftJoin(QueryBuilder queryBuilder,Query query) {
-        return  new DefaultQueryJoinBuilder(queryBuilder,query, JOIN_TYPE.LEFT);
+    public static QueryJoinBuilder leftJoin(QueryBuilder queryBuilder, Query query) {
+        return new DefaultQueryJoinBuilder(queryBuilder, query, JOIN_TYPE.LEFT);
     }
 
     @Override
     public QueryBuilder buildJoin() {
         Query query = new DefaultQuery();
         String join = " INNER JOIN ";
-        if(JOIN_TYPE.LEFT.equals(this.joinType)){
+        if (JOIN_TYPE.LEFT.equals(this.joinType)) {
             join = " LEFT JOIN ";
         }
-        String queryFragment = join+"( "+this.joinQuery.getQuery()+") "+this.joinAlias+" on "+this.joinClause+" ";
+        String queryFragment = join + "( " + this.joinQuery.getQuery() + ") " + this.joinAlias + " on " + this.joinClause + " ";
         query.setQuery(queryFragment);
         query.setNamedParameters(this.joinQuery.getNamedParameters());
         this.queryBuilder.addJoin(query);
         return queryBuilder;
     }
+
     @Override
     public QueryJoinBuilder as(String as) {
-       this.joinAlias = as;
+        this.joinAlias = as;
         return this;
     }
+
     @Override
     public QueryBuilder on(String on) {
         this.joinClause = on;
         return buildJoin();
     }
-
 
 
 }

@@ -10,49 +10,49 @@ import java.util.List;
 public class DefaultFeedStatus implements FeedStatus {
 
     private List<FeedHealth> feeds;
-    private Integer healthyCount =0;
+    private Integer healthyCount = 0;
     private Integer failedCount = 0;
-    float  percent;
+    float percent;
     private List<FeedHealth> healthyFeeds;
     private List<FeedHealth> failedFeeds;
 
     private List<FeedSummary> feedSummary;
 
-    public DefaultFeedStatus(List<FeedHealth> feeds){
+    public DefaultFeedStatus(List<FeedHealth> feeds) {
         this.feeds = feeds;
         this.populate();
 
     }
 
 
-    public DefaultFeedStatus(){
+    public DefaultFeedStatus() {
 
     }
+
     @Override
-    public void populate(){
+    public void populate() {
         this.healthyFeeds = new ArrayList<FeedHealth>();
         this.failedFeeds = new ArrayList<FeedHealth>();
         this.feedSummary = new ArrayList<>();
-         healthyCount = 0;
+        healthyCount = 0;
         failedCount = 0;
         percent = 0f;
-        if(feeds!=null && !feeds.isEmpty()){
-            for(FeedHealth feedHealth:feeds){
-                if(feedHealth.isHealthy()){
+        if (feeds != null && !feeds.isEmpty()) {
+            for (FeedHealth feedHealth : feeds) {
+                if (feedHealth.isHealthy()) {
                     healthyCount++;
                     healthyFeeds.add(feedHealth);
-                }
-                else{
+                } else {
                     failedCount++;
                     failedFeeds.add(feedHealth);
                 }
                 this.feedSummary.add(new DefaultFeedSummary(feedHealth));
             }
-            percent = (float)healthyCount/feeds.size();
+            percent = (float) healthyCount / feeds.size();
         }
-        if(percent > 0f){
+        if (percent > 0f) {
             DecimalFormat twoDForm = new DecimalFormat("##.##");
-            this.percent = Float.valueOf(twoDForm.format(this.percent)) *100;
+            this.percent = Float.valueOf(twoDForm.format(this.percent)) * 100;
         }
 
     }

@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.jobrepo.rest.model.datatables;
 
 
-
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.HashMap;
@@ -13,14 +12,14 @@ import java.util.Map;
  */
 public class DataTablesQueryParams {
 
-   private List<Column>columns;
+    private List<Column> columns;
     private Integer draw;
-    private  Integer start;
+    private Integer start;
     private Integer length;
     private List<Order> order;
     private Search search;
 
-    public DataTablesQueryParams(){
+    public DataTablesQueryParams() {
 
     }
 
@@ -72,9 +71,9 @@ public class DataTablesQueryParams {
         this.search = search;
     }
 
-    public Map<String,String> getFilterMap() {
-        Map<String,String> filter = new HashMap<String,String>();
-        if(columns != null) {
+    public Map<String, String> getFilterMap() {
+        Map<String, String> filter = new HashMap<String, String>();
+        if (columns != null) {
             for (Column col : getColumns()) {
                 Search s = col.getSearch();
                 if (StringUtils.isNotBlank(s.getValue())) {
@@ -90,9 +89,9 @@ public class DataTablesQueryParams {
         return filter;
     }
 
-    public Map<String,String> getOrderMap() {
-        Map<String,String> orderMap = new HashMap<String,String>();
-        if(this.order != null) {
+    public Map<String, String> getOrderMap() {
+        Map<String, String> orderMap = new HashMap<String, String>();
+        if (this.order != null) {
             for (Order o : order) {
                 Integer colIndex = o.getColumn();
                 String dir = o.getDir();

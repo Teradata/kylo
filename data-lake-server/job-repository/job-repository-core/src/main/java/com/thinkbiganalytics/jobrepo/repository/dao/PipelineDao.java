@@ -15,7 +15,7 @@ import java.util.Map;
  * Created by sr186054 on 8/20/15.
  */
 @Named
-public class PipelineDao  implements InitializingBean {
+public class PipelineDao implements InitializingBean {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -32,25 +32,25 @@ public class PipelineDao  implements InitializingBean {
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    public List<Map<String,Object>> queryForList(String sql){
+    public List<Map<String, Object>> queryForList(String sql) {
         ColumnMapRowMapper m = new ColumnMapRowMapper();
-        List<Map<String,Object>> rows = getJdbcTemplate().queryForList(sql);
+        List<Map<String, Object>> rows = getJdbcTemplate().queryForList(sql);
         return rows;
     }
 
-    public List<Object[]> queryForObjectArray(String sql){
+    public List<Object[]> queryForObjectArray(String sql) {
         List<Object[]> list = getJdbcTemplate().query(sql, new ObjectArrayRowMapper());
 
         return list;
     }
 
-    public List<Object[]> queryForObjectArray(String sql,Map<Class,Class>conversionClass){
+    public List<Object[]> queryForObjectArray(String sql, Map<Class, Class> conversionClass) {
         List<Object[]> list = getJdbcTemplate().query(sql, new ObjectArrayRowMapper());
 
         return list;
     }
 
-    public <T> List<T>  queryForList(String sql, Class<T> clazz){
+    public <T> List<T> queryForList(String sql, Class<T> clazz) {
         List<T> result = (List<T>) getJdbcTemplate().queryForList(sql, clazz);
         return result;
     }

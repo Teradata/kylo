@@ -28,7 +28,7 @@ public class DataConfidenceSummary {
 
     }
 
-    public DataConfidenceSummary( List<CheckDataJob> latestCompletedFeeds, Integer warningTimeThreshold) {
+    public DataConfidenceSummary(List<CheckDataJob> latestCompletedFeeds, Integer warningTimeThreshold) {
         failedJobs = new ArrayList<CheckDataJob>();
         this.latestCheckDataFeeds = latestCompletedFeeds;
         this.warningTimeThreshold = warningTimeThreshold;
@@ -38,7 +38,7 @@ public class DataConfidenceSummary {
 
     @JsonIgnore
     private void parse() {
-        if(latestCheckDataFeeds != null && !latestCheckDataFeeds.isEmpty()) {
+        if (latestCheckDataFeeds != null && !latestCheckDataFeeds.isEmpty()) {
             this.totalCount = latestCheckDataFeeds.size();
             Date minCompleteDate = null;
             for (CheckDataJob job : latestCheckDataFeeds) {
@@ -57,13 +57,13 @@ public class DataConfidenceSummary {
             long duration = now.getTime() - minCompleteDate.getTime();
             long diffInMinutes = TimeUnit.MILLISECONDS.toMinutes(duration);
 
-            this.timeSinceLastCheck = diffInMinutes+" min ";
-            if(diffInMinutes ==0) {
+            this.timeSinceLastCheck = diffInMinutes + " min ";
+            if (diffInMinutes == 0) {
                 long diffInSeconds = TimeUnit.MILLISECONDS.toSeconds(duration);
-                this.timeSinceLastCheck = diffInSeconds+" sec ";
+                this.timeSinceLastCheck = diffInSeconds + " sec ";
             }
-            this.confidencePercentage  = ((float)successCount / totalCount) * 100;
-            if(this.confidencePercentage >0) {
+            this.confidencePercentage = ((float) successCount / totalCount) * 100;
+            if (this.confidencePercentage > 0) {
                 DecimalFormat twoDForm = new DecimalFormat("##.##");
                 this.confidencePercentage = Float.valueOf(twoDForm.format(this.confidencePercentage));
             }
@@ -71,8 +71,7 @@ public class DataConfidenceSummary {
                 warnings.add(" Warning it has been over " + this.warningTimeThreshold + " minutes since some of the check data jobs have been run");
             }
             this.minCompleteDate = minCompleteDate;
-        }
-        else {
+        } else {
             warnings.add("No Check Data Jobs Found");
 
         }

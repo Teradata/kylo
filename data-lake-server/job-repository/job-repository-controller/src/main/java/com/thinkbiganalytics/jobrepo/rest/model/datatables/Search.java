@@ -6,6 +6,7 @@ package com.thinkbiganalytics.jobrepo.rest.model.datatables;
 public class Search {
     private String regex;
     private String value;
+
     public Search() {
 
     }

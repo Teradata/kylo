@@ -23,10 +23,10 @@ public class RepositoryUtils {
         DateTime newUTC = null;
         if (utcDate == null) {
             newUTC = new DateTime();
-        } else { 
+        } else {
             newUTC = utcDate;
 /*
-        	String isoDate = utcDate.toDateTimeISO().toString();
+            String isoDate = utcDate.toDateTimeISO().toString();
             if (!isoDate.endsWith("Z")) {
             	// Strip the timezone information and replace it
                 int tzIndex = isoDate.lastIndexOf("-");
@@ -43,20 +43,20 @@ public class RepositoryUtils {
         if (utcDate != null) {
             return utcDateTimeCorrection(new DateTime(utcDate));
         } else {
-            return utcDateTimeCorrection((DateTime)null);
+            return utcDateTimeCorrection((DateTime) null);
         }
     }
 
-    public static  Map<String,Object> convertJobParameters(JobParameters jobParameters){
-        Map<String,Object> params = new HashMap<>();
-        for(Map.Entry<String,JobParameter> entry: jobParameters.getParameters().entrySet()){
+    public static Map<String, Object> convertJobParameters(JobParameters jobParameters) {
+        Map<String, Object> params = new HashMap<>();
+        for (Map.Entry<String, JobParameter> entry : jobParameters.getParameters().entrySet()) {
             String key = entry.getKey();
-            params.put(key,entry.getValue().getValue());
+            params.put(key, entry.getValue().getValue());
         }
         return params;
     }
 
-    public static ExecutionStatus convertBatchStatus(BatchStatus batchStatus){
+    public static ExecutionStatus convertBatchStatus(BatchStatus batchStatus) {
         return ExecutionStatus.valueOf(batchStatus.name());
     }
 

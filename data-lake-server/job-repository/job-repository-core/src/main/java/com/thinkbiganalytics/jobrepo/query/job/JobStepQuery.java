@@ -21,7 +21,7 @@ import java.sql.SQLException;
  */
 public class JobStepQuery extends AbstractConstructedQuery {
 
-private Long jobExecutionId;
+    private Long jobExecutionId;
 
     public JobStepQuery() {
         super();
@@ -51,11 +51,11 @@ private Long jobExecutionId;
 
     @Override
     public QueryBuilder getQueryBuilder() {
-      return DefaultQueryBuilder.newQuery(getDatabaseType()).select("SELECT MAX(se.JOB_EXECUTION_ID) as \"JOB_EXECUTION_ID\", se.STEP_NAME,MAX(se.STEP_EXECUTION_ID) as \"STEP_EXECUTION_ID\", je.JOB_INSTANCE_ID")
+        return DefaultQueryBuilder.newQuery(getDatabaseType()).select("SELECT MAX(se.JOB_EXECUTION_ID) as \"JOB_EXECUTION_ID\", se.STEP_NAME,MAX(se.STEP_EXECUTION_ID) as \"STEP_EXECUTION_ID\", je.JOB_INSTANCE_ID")
                 .from("FROM BATCH_STEP_EXECUTION se\n" +
                         "INNER JOIN BATCH_JOB_EXECUTION je on je.JOB_EXECUTION_ID = se.JOB_EXECUTION_ID\n" +
                         "where je.JOB_INSTANCE_ID = (SELECT JOB_INSTANCE_ID from BATCH_JOB_EXECUTION WHERE JOB_EXECUTION_ID = :executionId )\n" +
-                        " AND je.JOB_EXECUTION_ID <= :executionId "+
+                        " AND je.JOB_EXECUTION_ID <= :executionId " +
                         "GROUP BY  se.STEP_NAME,je.JOB_INSTANCE_ID ")
                 .withNamedParameter("executionId", jobExecutionId)
                 .defaultOrderBy("MAX(se.STEP_EXECUTION_ID)", "asc");

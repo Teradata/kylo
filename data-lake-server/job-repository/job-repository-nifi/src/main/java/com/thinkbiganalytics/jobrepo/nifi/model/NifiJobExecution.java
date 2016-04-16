@@ -14,7 +14,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 /**
  * Created by sr186054 on 2/26/16.
  */
-public class NifiJobExecution extends RunStatusContext{
+public class NifiJobExecution extends RunStatusContext {
 
     private static final Logger LOG = LoggerFactory.getLogger(NifiJobExecution.class);
 
@@ -28,11 +28,11 @@ public class NifiJobExecution extends RunStatusContext{
     private Integer version;
     private ExitStatus exitStatus;
     private BatchStatus status;
-    private Map<String,String> jobParameters;
+    private Map<String, String> jobParameters;
 
     private String jobType = FeedConstants.PARAM_VALUE__JOB_TYPE_FEED;
 
-    private Map<Long,BulletinDTO> processedBulletinErrors = new HashMap<>();
+    private Map<Long, BulletinDTO> processedBulletinErrors = new HashMap<>();
 
     private Set<String> endingProcessorComponentIds = new HashSet<>();
 
@@ -44,29 +44,28 @@ public class NifiJobExecution extends RunStatusContext{
 
     private boolean jobExecutionContextSet;
 
-    private Map<String,Object>jobExecutionContextMap = new HashMap<>();
+    private Map<String, Object> jobExecutionContextMap = new HashMap<>();
 
 
-
-    public NifiJobExecution(String feedName,ProvenanceEventRecordDTO event){
+    public NifiJobExecution(String feedName, ProvenanceEventRecordDTO event) {
         this.feedName = feedName;
-        this.flowFile =event.getFlowFile();
+        this.flowFile = event.getFlowFile();
         this.createTime = DateTimeUtil.getUTCTime();
         this.lastUpdated = DateTimeUtil.getUTCTime();
         jobParameters = new HashMap<>(event.getAttributeMap());
         //bootstrap the feed parameters
-        jobParameters.put(FeedConstants.PARAM__FEED_NAME,feedName);
+        jobParameters.put(FeedConstants.PARAM__FEED_NAME, feedName);
         jobParameters.put(FeedConstants.PARAM__JOB_TYPE, FeedConstants.PARAM_VALUE__JOB_TYPE_FEED);
         jobParameters.put(FeedConstants.PARAM__FEED_IS_PARENT, "true");
         this.jobType = FeedConstants.PARAM_VALUE__JOB_TYPE_FEED;
 
     }
 
-    public void componentComplete(String componentId){
-        if(endingProcessorComponentIds.contains(componentId)){
+    public void componentComplete(String componentId) {
+        if (endingProcessorComponentIds.contains(componentId)) {
             endingProcessorComponentIds.remove(componentId);
             endingProcessorCount.decrementAndGet();
-            LOG.info("Completed Ending Processor "+componentId+" "+endingProcessorCount.get()+" ending processors remain. ");
+            LOG.info("Completed Ending Processor " + componentId + " " + endingProcessorCount.get() + " ending processors remain. ");
         }
     }
 
@@ -86,8 +85,8 @@ public class NifiJobExecution extends RunStatusContext{
         this.endingProcessorCount.set(count);
     }
 
-    public Integer decrementEndingProcessorCount(){
-       return  this.endingProcessorCount.decrementAndGet();
+    public Integer decrementEndingProcessorCount() {
+        return this.endingProcessorCount.decrementAndGet();
     }
 
     public String getFeedName() {
@@ -142,7 +141,7 @@ public class NifiJobExecution extends RunStatusContext{
         this.status = status;
     }
 
-    public void markStarted(){
+    public void markStarted() {
         this.setStatus(BatchStatus.STARTED);
         this.exitStatus = ExitStatus.EXECUTING;
         this.markRunning();
@@ -161,21 +160,21 @@ public class NifiJobExecution extends RunStatusContext{
     }
 
     public Set<FlowFileComponent> getFailedComponents() {
-        if(failedComponents == null) {
+        if (failedComponents == null) {
             failedComponents = new HashSet<>();
         }
         return failedComponents;
     }
 
     public boolean containsComponent(String componentId) {
-      return flowFile.containsComponent(componentId);
+        return flowFile.containsComponent(componentId);
     }
 
-    public FlowFileComponent getComponent(String componentId){
+    public FlowFileComponent getComponent(String componentId) {
         return flowFile.getComponent(componentId);
     }
 
-    public Set<FlowFileComponent> getComponents(){
+    public Set<FlowFileComponent> getComponents() {
         return flowFile.getAllComponents();
     }
 
@@ -183,9 +182,10 @@ public class NifiJobExecution extends RunStatusContext{
         return !getFailedComponents().isEmpty();
     }
 
-    public void addFailedComponent(FlowFileComponent flowFileComponent){
+    public void addFailedComponent(FlowFileComponent flowFileComponent) {
         getFailedComponents().add(flowFileComponent);
     }
+
     /**
      * Increment the version number
      */
@@ -197,19 +197,21 @@ public class NifiJobExecution extends RunStatusContext{
         }
     }
 
-    public void addBulletinErrors(Collection<BulletinDTO> dtos){
-        for(BulletinDTO dto : dtos) {
+    public void addBulletinErrors(Collection<BulletinDTO> dtos) {
+        for (BulletinDTO dto : dtos) {
             processedBulletinErrors.put(dto.getId(), dto);
         }
     }
 
-    public void addBulletinError(BulletinDTO dto){
-        processedBulletinErrors.put(dto.getId(),dto);
+    public void addBulletinError(BulletinDTO dto) {
+        processedBulletinErrors.put(dto.getId(), dto);
     }
-    public boolean isBulletinProcessed(BulletinDTO dto){
+
+    public boolean isBulletinProcessed(BulletinDTO dto) {
         return processedBulletinErrors.containsKey(dto.getId());
     }
-    public void addComponentToOrder(FlowFileComponent component){
+
+    public void addComponentToOrder(FlowFileComponent component) {
         componentOrder.add(component);
     }
 
@@ -241,7 +243,7 @@ public class NifiJobExecution extends RunStatusContext{
         this.jobType = jobType;
     }
 
-    public boolean isCheckDataJob(){
+    public boolean isCheckDataJob() {
         return FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK.equalsIgnoreCase(jobType);
     }
 }

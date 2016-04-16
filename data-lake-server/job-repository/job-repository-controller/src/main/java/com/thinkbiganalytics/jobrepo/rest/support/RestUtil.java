@@ -13,9 +13,9 @@ import java.util.List;
  */
 public class RestUtil {
 
-    public static List<OrderBy> buildOrderByList(String sort, DataTableColumnFactory.PIPELINE_DATA_TYPE dataType){
+    public static List<OrderBy> buildOrderByList(String sort, DataTableColumnFactory.PIPELINE_DATA_TYPE dataType) {
         List<OrderBy> orderByList = new ArrayList<>();
-        if(StringUtils.isNotBlank(sort)) {
+        if (StringUtils.isNotBlank(sort)) {
             String[] orderBy = sort.split(",");
 
             for (String orderByField : orderBy) {
@@ -25,7 +25,7 @@ public class RestUtil {
                     direction = "desc";
                     field = orderByField.substring(1);
                 }
-                if(dataType != null){
+                if (dataType != null) {
                     field = DataTableColumnFactory.getDataTableColumn(dataType, field);
                 }
 

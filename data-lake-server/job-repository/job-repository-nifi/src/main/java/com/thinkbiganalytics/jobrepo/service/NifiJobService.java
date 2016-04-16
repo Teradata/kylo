@@ -49,13 +49,13 @@ public class NifiJobService extends AbstractJobService {
     @Override
     public boolean stopJobExecution(Long executionId) throws JobExecutionException {
         JobExecution execution = this.jobExplorer.getJobExecution(executionId);
-        if(execution.getStartTime() == null){
+        if (execution.getStartTime() == null) {
             execution.setStartTime(new Date());
         }
         execution.setEndTime(new Date());
         try {
-            return	this.jobOperator.stop(executionId);
-        } catch (NoSuchJobExecutionException |JobExecutionNotRunningException e) {
+            return this.jobOperator.stop(executionId);
+        } catch (NoSuchJobExecutionException | JobExecutionNotRunningException e) {
             throw new JobExecutionException(e);
         }
     }
@@ -63,13 +63,13 @@ public class NifiJobService extends AbstractJobService {
     @Override
     public void abandonJobExecution(Long executionId) throws JobExecutionException {
         JobExecution execution = this.jobExplorer.getJobExecution(executionId);
-        if(execution.getStartTime() == null){
+        if (execution.getStartTime() == null) {
             execution.setStartTime(new Date());
         }
         execution.setEndTime(new Date());
         try {
             this.jobOperator.abandon(executionId);
-        } catch (NoSuchJobExecutionException  |JobExecutionAlreadyRunningException e) {
+        } catch (NoSuchJobExecutionException | JobExecutionAlreadyRunningException e) {
             throw new JobExecutionException(e);
         }
     }
@@ -78,14 +78,14 @@ public class NifiJobService extends AbstractJobService {
     public void failJobExecution(Long executionId) {
         JobExecution execution = this.jobExplorer.getJobExecution(executionId);
         for (StepExecution step : execution.getStepExecutions()) {
-            if(step.getStatus().equals(BatchStatus.STARTED)) {
+            if (step.getStatus().equals(BatchStatus.STARTED)) {
                 step.setStatus(BatchStatus.FAILED);
                 step.setExitStatus(ExitStatus.FAILED);
 
                 this.jobRepository.update(step);
             }
         }
-        if(execution.getStartTime() == null){
+        if (execution.getStartTime() == null) {
             execution.setStartTime(new Date());
         }
         execution.setStatus(BatchStatus.FAILED);

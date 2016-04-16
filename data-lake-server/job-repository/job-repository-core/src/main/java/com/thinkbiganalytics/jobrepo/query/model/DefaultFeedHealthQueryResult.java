@@ -9,7 +9,7 @@ import java.util.Date;
 /**
  * Created by sr186054 on 1/5/16.
  */
-public class DefaultFeedHealthQueryResult implements  FeedHealthQueryResult {
+public class DefaultFeedHealthQueryResult implements FeedHealthQueryResult {
     private String feed;
     private Long count;
     private String health;

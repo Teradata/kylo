@@ -15,7 +15,6 @@ public class JobStepQueryRow {
     private Long jobInstanceId;
 
 
-
     public Long getJobExecutionId() {
         return jobExecutionId;
     }

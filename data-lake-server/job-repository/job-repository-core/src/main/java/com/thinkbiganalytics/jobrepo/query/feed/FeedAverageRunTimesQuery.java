@@ -33,12 +33,12 @@ public class FeedAverageRunTimesQuery extends AbstractConstructedQuery {
         return newQueryBuilder()
                 .select(" SELECT p2.STRING_VAL as FEED_NAME,  AVG(" + DatabaseQuerySubstitutionFactory.AVG_JOB_EXECUTION_RUN_TIME_TEMPLATE_STRING + ") as AVG_RUN_TIME")
                 .from("  BATCH_JOB_EXECUTION  e " +
-                                "inner JOIN BATCH_JOB_EXECUTION_PARAMS AS p1 ON e.JOB_EXECUTION_ID = p1.JOB_EXECUTION_ID " +
-                                "and p1.STRING_VAL = 'FEED' " +
-                                "inner JOIN BATCH_JOB_EXECUTION_PARAMS AS p2 ON  e.JOB_EXECUTION_ID = p2.JOB_EXECUTION_ID " +
-                                "and p2.KEY_NAME   = 'feed' " +
-                                "WHERE  e.STATUS       = 'COMPLETED'   " +
-                                "AND e.EXIT_CODE != 'NOOP'")
+                        "inner JOIN BATCH_JOB_EXECUTION_PARAMS AS p1 ON e.JOB_EXECUTION_ID = p1.JOB_EXECUTION_ID " +
+                        "and p1.STRING_VAL = 'FEED' " +
+                        "inner JOIN BATCH_JOB_EXECUTION_PARAMS AS p2 ON  e.JOB_EXECUTION_ID = p2.JOB_EXECUTION_ID " +
+                        "and p2.KEY_NAME   = 'feed' " +
+                        "WHERE  e.STATUS       = 'COMPLETED'   " +
+                        "AND e.EXIT_CODE != 'NOOP'")
                 .groupBy("p2.STRING_VAL");
 
     }
@@ -49,7 +49,7 @@ public class FeedAverageRunTimesQuery extends AbstractConstructedQuery {
             @Override
             public Object mapRow(ResultSet rs, int rowNum) throws SQLException {
 
-                Map mapOfColValues =  new LinkedCaseInsensitiveMap(2);
+                Map mapOfColValues = new LinkedCaseInsensitiveMap(2);
 
 
                 String feedName = rs.getString("FEED_NAME");

@@ -14,17 +14,17 @@ import java.util.Map;
  * Created by sr186054 on 2/24/16.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProvenanceEventRecordDTO extends ProvenanceEventDTO  implements RunStatus{
+public class ProvenanceEventRecordDTO extends ProvenanceEventDTO implements RunStatus {
 
     @JsonProperty("nifiEventId")
     private Long nifiEventId;
 
-    public ProvenanceEventRecordDTO(){
+    public ProvenanceEventRecordDTO() {
         runStatusContext = new RunStatusContext();
     }
 
     public ProvenanceEventRecordDTO(ProvenanceEventRecordDTO other) {
-        this((ProvenanceEventDTO)other);
+        this((ProvenanceEventDTO) other);
         this.nifiEventId = other.nifiEventId;
         this.runStatusContext = other.runStatusContext;
         this.flowFileComponent = other.flowFileComponent;
@@ -35,70 +35,71 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO  implements Run
         this.attributeMap = other.attributeMap;
     }
 
-    private boolean hasChanged(AttributeDTO attributeDTO){
+    private boolean hasChanged(AttributeDTO attributeDTO) {
         boolean changed = false;
-        if( (attributeDTO.getPreviousValue() == null && attributeDTO.getValue() != null)
+        if ((attributeDTO.getPreviousValue() == null && attributeDTO.getValue() != null)
                 || (attributeDTO.getValue() == null && attributeDTO.getPreviousValue() != null)
-            || (attributeDTO.getPreviousValue() != null && attributeDTO.getValue() != null && !attributeDTO.getPreviousValue().equalsIgnoreCase(attributeDTO.getValue()))) {
+                || (attributeDTO.getPreviousValue() != null && attributeDTO.getValue() != null && !attributeDTO.getPreviousValue().equalsIgnoreCase(attributeDTO.getValue()))) {
             changed = true;
         }
         return changed;
     }
-    public ProvenanceEventRecordDTO(ProvenanceEventDTO other){
+
+    public ProvenanceEventRecordDTO(ProvenanceEventDTO other) {
         this();
-    this.setId(other.getId());
-    this.setEventId(other.getEventId());
-    this.setEventTime(other.getEventTime());
-    this.setEventDuration(other.getEventDuration());
-    this.setLineageDuration(other.getLineageDuration());
-    this.setEventType(other.getEventType());
-    this.setFlowFileUuid(other.getFlowFileUuid());
-    this.setFileSize(other.getFileSize());
-    this.setFileSizeBytes(other.getFileSizeBytes());
-    this.setClusterNodeId(other.getClusterNodeId());
-    this.setClusterNodeAddress(other.getClusterNodeAddress());
-    this.setGroupId(other.getGroupId());
-    this.setComponentId(other.getComponentId());
-    this.setComponentType(other.getComponentType());
-    this.setComponentName(other.getComponentName());
-    this.setSourceSystemFlowFileId(other.getSourceSystemFlowFileId());
-    this.setAlternateIdentifierUri(other.getAlternateIdentifierUri());
-    this.setAttributes(other.getAttributes());
+        this.setId(other.getId());
+        this.setEventId(other.getEventId());
+        this.setEventTime(other.getEventTime());
+        this.setEventDuration(other.getEventDuration());
+        this.setLineageDuration(other.getLineageDuration());
+        this.setEventType(other.getEventType());
+        this.setFlowFileUuid(other.getFlowFileUuid());
+        this.setFileSize(other.getFileSize());
+        this.setFileSizeBytes(other.getFileSizeBytes());
+        this.setClusterNodeId(other.getClusterNodeId());
+        this.setClusterNodeAddress(other.getClusterNodeAddress());
+        this.setGroupId(other.getGroupId());
+        this.setComponentId(other.getComponentId());
+        this.setComponentType(other.getComponentType());
+        this.setComponentName(other.getComponentName());
+        this.setSourceSystemFlowFileId(other.getSourceSystemFlowFileId());
+        this.setAlternateIdentifierUri(other.getAlternateIdentifierUri());
+        this.setAttributes(other.getAttributes());
         this.attributeMap = new HashMap<>();
         this.updatedAttributes = new HashMap<>();
         this.previousAttributes = new HashMap<>();
-        if(other.getAttributes() != null) {
-            for(AttributeDTO attributeDTO: other.getAttributes()){
-                attributeMap.put(attributeDTO.getName(),attributeDTO.getValue());
-                previousAttributes.put(attributeDTO.getName(),attributeDTO.getPreviousValue());
-                if(hasChanged(attributeDTO)){
-                    updatedAttributes.put(attributeDTO.getName(),attributeDTO.getValue());
+        if (other.getAttributes() != null) {
+            for (AttributeDTO attributeDTO : other.getAttributes()) {
+                attributeMap.put(attributeDTO.getName(), attributeDTO.getValue());
+                previousAttributes.put(attributeDTO.getName(), attributeDTO.getPreviousValue());
+                if (hasChanged(attributeDTO)) {
+                    updatedAttributes.put(attributeDTO.getName(), attributeDTO.getValue());
                 }
             }
         }
-    this.setParentUuids(other.getParentUuids());
-    this.setChildUuids(other.getChildUuids());
-    this.setTransitUri(other.getTransitUri());
-    this.setRelationship(other.getRelationship());
-    this.setDetails(other.getDetails());
-    this.setContentEqual(other.getContentEqual());
-    this.setInputContentAvailable(other.getInputContentAvailable());
-    this.setInputContentClaimSection(other.getInputContentClaimSection());
-    this.setInputContentClaimContainer(other.getInputContentClaimContainer());
-    this.setInputContentClaimIdentifier(other.getInputContentClaimIdentifier());
-    this.setInputContentClaimOffset(other.getInputContentClaimOffset());
-    this.setInputContentClaimFileSize(other.getInputContentClaimFileSize());
-    this.setInputContentClaimFileSizeBytes(other.getInputContentClaimFileSizeBytes());
-    this.setOutputContentAvailable(other.getOutputContentAvailable());
-    this.setOutputContentClaimSection(other.getOutputContentClaimSection());
-    this.setOutputContentClaimContainer(other.getOutputContentClaimContainer());
-    this.setOutputContentClaimIdentifier(other.getOutputContentClaimIdentifier());
-    this.setOutputContentClaimOffset(other.getOutputContentClaimOffset());
-    this.setOutputContentClaimFileSize(other.getOutputContentClaimFileSize());
-    this.setOutputContentClaimFileSizeBytes(other.getOutputContentClaimFileSizeBytes());
-    this.setReplayAvailable(other.getReplayAvailable());
-    this.setReplayExplanation(other.getReplayExplanation());
-    this.setSourceConnectionIdentifier(other.getSourceConnectionIdentifier());
+        this.setParentUuids(other.getParentUuids());
+        this.setChildUuids(other.getChildUuids());
+        this.setTransitUri(other.getTransitUri());
+        this.setRelationship(other.getRelationship());
+        this.setDetails(other.getDetails());
+        this.setContentEqual(other.getContentEqual());
+        this.setInputContentAvailable(other.getInputContentAvailable());
+        this.setInputContentClaimSection(other.getInputContentClaimSection());
+        this.setInputContentClaimContainer(other.getInputContentClaimContainer());
+        this.setInputContentClaimIdentifier(other.getInputContentClaimIdentifier());
+        this.setInputContentClaimOffset(other.getInputContentClaimOffset());
+        this.setInputContentClaimFileSize(other.getInputContentClaimFileSize());
+        this.setInputContentClaimFileSizeBytes(other.getInputContentClaimFileSizeBytes());
+        this.setOutputContentAvailable(other.getOutputContentAvailable());
+        this.setOutputContentClaimSection(other.getOutputContentClaimSection());
+        this.setOutputContentClaimContainer(other.getOutputContentClaimContainer());
+        this.setOutputContentClaimIdentifier(other.getOutputContentClaimIdentifier());
+        this.setOutputContentClaimOffset(other.getOutputContentClaimOffset());
+        this.setOutputContentClaimFileSize(other.getOutputContentClaimFileSize());
+        this.setOutputContentClaimFileSizeBytes(other.getOutputContentClaimFileSizeBytes());
+        this.setReplayAvailable(other.getReplayAvailable());
+        this.setReplayExplanation(other.getReplayExplanation());
+        this.setSourceConnectionIdentifier(other.getSourceConnectionIdentifier());
     }
 
     private RunStatusContext runStatusContext;
@@ -110,18 +111,17 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO  implements Run
     private FlowFileEvents flowFile;
 
     @JsonProperty("updatedAttributes")
-    private Map<String,Object>updatedAttributes;
+    private Map<String, Object> updatedAttributes;
 
     @JsonProperty("previousAttributes")
-    private Map<String,Object>previousAttributes;
+    private Map<String, Object> previousAttributes;
 
 
     @JsonIgnore
     private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
     @JsonProperty("attributes")
-    private Map<String,String> attributeMap;
-
+    private Map<String, String> attributeMap;
 
 
     @JsonAnyGetter
@@ -169,13 +169,13 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO  implements Run
         this.previousAttributes = previousAttributes;
     }
 
-    public boolean hasUpdatedAttributes(){
+    public boolean hasUpdatedAttributes() {
         return this.updatedAttributes != null && !this.updatedAttributes.isEmpty();
     }
 
     @Override
     public boolean markRunning() {
-       return  runStatusContext.markRunning();
+        return runStatusContext.markRunning();
     }
 
     @Override
@@ -198,7 +198,7 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO  implements Run
         return runStatusContext.isComplete();
     }
 
-    public boolean isInitial(){
+    public boolean isInitial() {
         return runStatusContext.isInitial();
     }
 
@@ -228,7 +228,7 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO  implements Run
     }
 
     @JsonIgnore
-    public boolean isDropEvent(){
+    public boolean isDropEvent() {
         return "DROP".equalsIgnoreCase(getEventType());
     }
 
@@ -244,6 +244,7 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO  implements Run
     public FlowFileComponent getFlowFileComponent() {
         return flowFileComponent;
     }
+
     @JsonIgnore
     public void setFlowFileComponent(FlowFileComponent flowFileComponent) {
         this.flowFileComponent = flowFileComponent;
@@ -268,8 +269,8 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO  implements Run
         this.flowFile = flowFile;
     }
 
-    public boolean hasJobExecution(){
-        if(this.getFlowFile().getRoot().getFirstEvent() != null) {
+    public boolean hasJobExecution() {
+        if (this.getFlowFile().getRoot().getFirstEvent() != null) {
             return this.getFlowFile().getRoot().getFirstEvent().getFlowFileComponent().getJobExecution() != null;
         }
         return false;
@@ -278,10 +279,10 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO  implements Run
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("eventId",this.getEventId())
+                .add("eventId", this.getEventId())
                 .add("nifiEventId", nifiEventId)
-        .add("eventTime",this.getEventTime())
-                .add("eventType",this.getEventType())
+                .add("eventTime", this.getEventTime())
+                .add("eventType", this.getEventType())
                 .toString();
     }
 }

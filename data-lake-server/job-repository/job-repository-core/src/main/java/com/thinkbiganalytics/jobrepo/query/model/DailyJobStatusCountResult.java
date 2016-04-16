@@ -58,7 +58,7 @@ public class DailyJobStatusCountResult implements DailyJobStatusCount {
         this.jobStatusCounts = jobStatusCounts;
     }
 
-    private JobStatusCount findMin(){
+    private JobStatusCount findMin() {
 
         Ordering<JobStatusCount> o = new Ordering<JobStatusCount>() {
             @Override
@@ -70,10 +70,10 @@ public class DailyJobStatusCountResult implements DailyJobStatusCount {
     }
 
     @Override
-    public void checkAndAddStartDate(){
-        if(!hasStartDate()){
+    public void checkAndAddStartDate() {
+        if (!hasStartDate()) {
             //add in a startDate to the Date List
-            if(jobStatusCounts != null && !jobStatusCounts.isEmpty()){
+            if (jobStatusCounts != null && !jobStatusCounts.isEmpty()) {
                 JobStatusCount first = jobStatusCounts.get(0);
                 JobStatusCount min = new JobStatusCountResult(first);
                 min.setDate(getStartDate());
@@ -84,8 +84,8 @@ public class DailyJobStatusCountResult implements DailyJobStatusCount {
         }
     }
 
-    private boolean hasStartDate(){
-        if(jobStatusCounts != null && !jobStatusCounts.isEmpty()) {
+    private boolean hasStartDate() {
+        if (jobStatusCounts != null && !jobStatusCounts.isEmpty()) {
             Date minDate = findMin().getDate();
             Date startDate = getStartDate();
             if (minDate != null && startDate != null) {
@@ -95,30 +95,30 @@ public class DailyJobStatusCountResult implements DailyJobStatusCount {
         return false;
     }
 
-    private Date getStartDate(){
-        switch(datePart) {
+    private Date getStartDate() {
+        switch (datePart) {
             case DAY:
-                return  DateUtils.addDays(DateUtils.truncate(new Date(), Calendar.DATE), -interval);
+                return DateUtils.addDays(DateUtils.truncate(new Date(), Calendar.DATE), -interval);
             case WEEK:
-                return  DateUtils.addWeeks(DateUtils.truncate(new Date(), Calendar.DATE), -interval);
+                return DateUtils.addWeeks(DateUtils.truncate(new Date(), Calendar.DATE), -interval);
             case MONTH:
-                return  DateUtils.addMonths(DateUtils.truncate(new Date(), Calendar.DATE), -interval);
+                return DateUtils.addMonths(DateUtils.truncate(new Date(), Calendar.DATE), -interval);
             case YEAR:
-                return  DateUtils.addYears(DateUtils.truncate(new Date(), Calendar.DATE), -interval);
+                return DateUtils.addYears(DateUtils.truncate(new Date(), Calendar.DATE), -interval);
         }
         return null;
     }
 
-    private Date now(){
+    private Date now() {
         return DateUtils.truncate(new Date(), Calendar.DATE);
     }
 
-    private Date tomorrow(){
-       return  DateUtils.addDays(DateUtils.truncate(new Date(), Calendar.DATE), 1);
+    private Date tomorrow() {
+        return DateUtils.addDays(DateUtils.truncate(new Date(), Calendar.DATE), 1);
     }
 
-    private Date yesterday(){
-        return  DateUtils.addDays(DateUtils.truncate(new Date(), Calendar.DATE), -1);
+    private Date yesterday() {
+        return DateUtils.addDays(DateUtils.truncate(new Date(), Calendar.DATE), -1);
     }
 
 

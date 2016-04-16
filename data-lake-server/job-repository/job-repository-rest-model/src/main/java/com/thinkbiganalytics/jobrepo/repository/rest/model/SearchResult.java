@@ -18,42 +18,42 @@ public class SearchResult {
     public SearchResult() {
 
     }
-    
+
     public List<? extends Object> getData() {
         return data;
     }
 
-    
+
     public void setData(List<? extends Object> data) {
         this.data = data;
     }
 
-    
+
     public Long getRecordsTotal() {
         return recordsTotal;
     }
 
-    
+
     public void setRecordsTotal(Long recordsTotal) {
         this.recordsTotal = recordsTotal;
     }
 
-    
+
     public Long getRecordsFiltered() {
         return recordsFiltered;
     }
 
-    
+
     public void setRecordsFiltered(Long recordsFiltered) {
         this.recordsFiltered = recordsFiltered;
     }
 
-    
+
     public String getError() {
         return error;
     }
 
-    
+
     public void setError(String error) {
         this.error = error;
     }

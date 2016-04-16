@@ -15,7 +15,6 @@ import java.util.List;
 /**
  * Abstract version on a Constructed Query
  * Needs to supply the QueryBuilder and how the Query is built and Mapped upon return
- *
  */
 public abstract class AbstractConstructedQuery<T> implements ConstructedQuery<T> {
 
@@ -27,15 +26,16 @@ public abstract class AbstractConstructedQuery<T> implements ConstructedQuery<T>
 
     public abstract RowMapper<T> getRowMapper();
 
-    public AbstractConstructedQuery(){
+    public AbstractConstructedQuery() {
 
     }
-    public AbstractConstructedQuery(DatabaseType databaseType){
-       this.databaseType = databaseType;
+
+    public AbstractConstructedQuery(DatabaseType databaseType) {
+        this.databaseType = databaseType;
     }
 
     @Override
-    public QueryBuilder newQueryBuilder(){
+    public QueryBuilder newQueryBuilder() {
         return DefaultQueryBuilder.newQuery(getDatabaseType()).withFilters(columnFilterList).orderBy(orderByList);
     }
 
@@ -52,7 +52,7 @@ public abstract class AbstractConstructedQuery<T> implements ConstructedQuery<T>
 
     @Override
     public List<ColumnFilter> getColumnFilterList() {
-        if(columnFilterList == null){
+        if (columnFilterList == null) {
             columnFilterList = new ArrayList<>();
         }
         return columnFilterList;

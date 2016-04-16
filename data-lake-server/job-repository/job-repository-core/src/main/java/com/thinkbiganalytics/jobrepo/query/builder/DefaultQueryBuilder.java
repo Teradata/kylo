@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.jobrepo.query.builder;
 
 
-
 import com.thinkbiganalytics.jobrepo.query.substitution.DatabaseQuerySubstitutionFactory;
 import com.thinkbiganalytics.jobrepo.query.support.*;
 import org.apache.commons.lang3.StringUtils;
@@ -45,8 +44,9 @@ public class DefaultQueryBuilder<T> implements QueryBuilder<T> {
 
     @Override
     public Query build() {
-       return buildWithQueryModifiers(null, null);
+        return buildWithQueryModifiers(null, null);
     }
+
     @Override
     public Query buildWithFilterQueryModifier(ColumnFilterQueryModifier columnFilterQueryModifier) {
         return buildWithQueryModifiers(columnFilterQueryModifier, null);
@@ -58,16 +58,16 @@ public class DefaultQueryBuilder<T> implements QueryBuilder<T> {
         //return query;
         StringBuilder sb = new StringBuilder();
         sb.append(this.select).append(" ");
-        if(this.additionalSelectColumns != null && !additionalSelectColumns.isEmpty()){
-            for(String col: this.additionalSelectColumns){
+        if (this.additionalSelectColumns != null && !additionalSelectColumns.isEmpty()) {
+            for (String col : this.additionalSelectColumns) {
                 sb.append(",");
                 sb.append(col);
             }
         }
         sb.append(" ");
         sb.append(this.from).append(" ");
-        if(joins != null && !joins.isEmpty()){
-            for(Query join: joins) {
+        if (joins != null && !joins.isEmpty()) {
+            for (Query join : joins) {
                 sb.append(join.getQuery());
                 this.namedParameters.putAll(join.getNamedParameters());
             }
@@ -91,19 +91,19 @@ public class DefaultQueryBuilder<T> implements QueryBuilder<T> {
 
     protected void applyWhereClause(ColumnFilterQueryModifier filterQueryModifier) {
         if (filters != null) {
-             where = " WHERE 1=1 ";
+            where = " WHERE 1=1 ";
             int counter = 0;
             for (ColumnFilter filter : filters) {
                 String bindVar = "bind_" + counter;
-                bindVar +="_"+ IdentifierUtil.createUniqueName(bindVar).substring(0,2);
-                    applyFilterQueryConditions(filterQueryModifier,filter,bindVar);
+                bindVar += "_" + IdentifierUtil.createUniqueName(bindVar).substring(0, 2);
+                applyFilterQueryConditions(filterQueryModifier, filter, bindVar);
                 counter++;
             }
         }
     }
 
     private void applyFilterQueryConditions(ColumnFilterQueryModifier filterQueryModifier, ColumnFilter columnFilter, String bindVar) {
-        if(filterQueryModifier != null){
+        if (filterQueryModifier != null) {
             filterQueryModifier.modifyFilterQueryValue(columnFilter);
         }
         if (columnFilter.isSqlString()) {
@@ -117,10 +117,10 @@ public class DefaultQueryBuilder<T> implements QueryBuilder<T> {
     private void applyOrderBy(OrderByQueryModifier orderByQueryModifier) {
 
         List<OrderBy> list = orderByList;
-        if(list == null || list.isEmpty()){
+        if (list == null || list.isEmpty()) {
             list = defaultOrderByList;
         }
-        if(list != null) {
+        if (list != null) {
             int count = 0;
             for (OrderBy orderBy : list) {
                 if (count == 0 && !this.orderBy.toUpperCase().startsWith("ORDER BY")) {
@@ -145,8 +145,8 @@ public class DefaultQueryBuilder<T> implements QueryBuilder<T> {
         }
     }
 
-    private String applyQuerySubstitutions(String query){
-        if(this.databaseType != null) {
+    private String applyQuerySubstitutions(String query) {
+        if (this.databaseType != null) {
             return DatabaseQuerySubstitutionFactory.applyQuerySubstitutions(query, databaseType);
         }
         return query;
@@ -154,25 +154,26 @@ public class DefaultQueryBuilder<T> implements QueryBuilder<T> {
 
 
     @Override
-    public void addJoin(Query joinQuery){
+    public void addJoin(Query joinQuery) {
         this.joins.add(joinQuery);
     }
+
     @Override
     public QueryBuilder from(String from) {
-        if(StringUtils.isBlank(this.from) && !from.trim().toUpperCase().startsWith("FROM")) {
+        if (StringUtils.isBlank(this.from) && !from.trim().toUpperCase().startsWith("FROM")) {
             this.from = " FROM  ";
         }
-        this.from += " "+from;
+        this.from += " " + from;
         return this;
     }
 
     @Override
     public QueryBuilder replaceFrom(String from) {
         this.from = "";
-        if(StringUtils.isBlank(this.from) && !from.trim().toUpperCase().startsWith("FROM")) {
+        if (StringUtils.isBlank(this.from) && !from.trim().toUpperCase().startsWith("FROM")) {
             this.from = " FROM  ";
         }
-        this.from += " "+from;
+        this.from += " " + from;
         this.joins.clear();
         return this;
     }
@@ -180,20 +181,19 @@ public class DefaultQueryBuilder<T> implements QueryBuilder<T> {
 
     @Override
     public QueryBuilder select(String select) {
-        if(StringUtils.isBlank(this.select) && !select.trim().toUpperCase().startsWith("SELECT")) {
+        if (StringUtils.isBlank(this.select) && !select.trim().toUpperCase().startsWith("SELECT")) {
             this.select = "SELECT ";
-        }
-        else if(StringUtils.isNotBlank(this.select)){
+        } else if (StringUtils.isNotBlank(this.select)) {
             this.select += ", ";
         }
-        this.select += " "+select;
+        this.select += " " + select;
         return this;
     }
 
 
     @Override
     public QueryBuilder addSelectColumn(String select) {
-        if(this.additionalSelectColumns == null){
+        if (this.additionalSelectColumns == null) {
             this.additionalSelectColumns = new ArrayList<>();
         }
         this.additionalSelectColumns.add(select);
@@ -201,15 +201,15 @@ public class DefaultQueryBuilder<T> implements QueryBuilder<T> {
     }
 
 
-
     @Override
     public QueryBuilder withFilters(List<ColumnFilter> filters) {
         this.filters = filters;
         return this;
     }
+
     @Override
     public QueryBuilder orderBy(List<OrderBy> orderBy) {
-        if(orderBy != null) {
+        if (orderBy != null) {
             if (this.orderByList == null) {
                 this.orderByList = new ArrayList<>();
             }
@@ -219,44 +219,44 @@ public class DefaultQueryBuilder<T> implements QueryBuilder<T> {
     }
 
     @Override
-    public QueryBuilder withNamedParameter(String name, Object param){
-        this.namedParameters.put(name,param);
+    public QueryBuilder withNamedParameter(String name, Object param) {
+        this.namedParameters.put(name, param);
         return this;
     }
 
 
     @Override
-    public QueryBuilder groupBy(String groupBy){
-        if(StringUtils.isBlank(this.groupBy) && !groupBy.trim().toUpperCase().startsWith("GROUP BY")) {
+    public QueryBuilder groupBy(String groupBy) {
+        if (StringUtils.isBlank(this.groupBy) && !groupBy.trim().toUpperCase().startsWith("GROUP BY")) {
             this.groupBy = " GROUP BY ";
-        }
-        else if(StringUtils.isNotBlank(this.groupBy)){
-            this.groupBy +=",";
+        } else if (StringUtils.isNotBlank(this.groupBy)) {
+            this.groupBy += ",";
         }
         this.groupBy += groupBy;
         return this;
     }
 
     @Override
-    public QueryBuilder removeDefaultOrderBy(){
+    public QueryBuilder removeDefaultOrderBy() {
         this.defaultOrderByList.clear();
         return this;
     }
+
     @Override
-    public QueryBuilder defaultOrderBy(String column, String dir){
+    public QueryBuilder defaultOrderBy(String column, String dir) {
         this.defaultOrderByList.add(new OrderByClause(column, dir));
         return this;
     }
 
     @Override
-    public QueryBuilder orderBy(String column, String dir){
-        OrderBy orderBy = new OrderByClause(column,dir);
+    public QueryBuilder orderBy(String column, String dir) {
+        OrderBy orderBy = new OrderByClause(column, dir);
         return orderBy(orderBy);
     }
 
     @Override
-    public QueryBuilder orderBy(OrderBy orderBy){
-        if(this.orderByList == null){
+    public QueryBuilder orderBy(OrderBy orderBy) {
+        if (this.orderByList == null) {
             this.orderByList = new ArrayList<>();
         }
         this.orderByList.add(orderBy);
@@ -268,6 +268,7 @@ public class DefaultQueryBuilder<T> implements QueryBuilder<T> {
         QueryJoinBuilder joinBuilder = DefaultQueryJoinBuilder.innerJoin(this, new DefaultQuery(query));
         return joinBuilder;
     }
+
     @Override
     public QueryJoinBuilder leftJoin(String query) {
         QueryJoinBuilder joinBuilder = DefaultQueryJoinBuilder.leftJoin(this, new DefaultQuery(query));
@@ -285,7 +286,6 @@ public class DefaultQueryBuilder<T> implements QueryBuilder<T> {
         QueryJoinBuilder joinBuilder = DefaultQueryJoinBuilder.leftJoin(this, query);
         return joinBuilder;
     }
-
 
 
 }

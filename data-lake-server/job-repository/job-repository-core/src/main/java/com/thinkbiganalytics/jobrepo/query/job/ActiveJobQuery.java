@@ -13,27 +13,26 @@ import java.util.List;
 /**
  * Query to return the Latest (MAX) Job Executions which do not have an EXIT_CODE of NOOP
  * along with any Job Executions that are  'STARTED', or 'STARTING'
- *
+ * <p>
  * This is used for the Overview Page -> Active Jobs table
  */
 public class ActiveJobQuery extends JobQuery {
 
-    public ActiveJobQuery(DatabaseType databaseType){
+    public ActiveJobQuery(DatabaseType databaseType) {
         super(databaseType);
     }
 
 
-
-    protected List<ColumnFilter> getDefaultFilters(){
+    protected List<ColumnFilter> getDefaultFilters() {
         List<ColumnFilter> filters = getColumnFilterList();
-        filters.add(new QueryColumnFilterSqlString("STATUS","STARTED,FAILED","in"));
+        filters.add(new QueryColumnFilterSqlString("STATUS", "STARTED,FAILED", "in"));
         return filters;
     }
 
     @Override
     public QueryBuilder newQueryBuilder() {
         List<ColumnFilter> filters = getDefaultFilters();
-        if(this.getColumnFilterList() != null && !this.getColumnFilterList().isEmpty()){
+        if (this.getColumnFilterList() != null && !this.getColumnFilterList().isEmpty()) {
             filters.addAll(getColumnFilterList());
         }
         return DefaultQueryBuilder.newQuery(getDatabaseType()).withFilters(filters).orderBy(getOrderByList());
@@ -59,10 +58,9 @@ public class ActiveJobQuery extends JobQuery {
                 " UNION SELECT JOB_INSTANCE_ID, JOB_EXECUTION_ID " +
                 " FROM BATCH_JOB_EXECUTION e " +
                 " WHERE e.STATUS in ('STARTED','STARTING') ) x on x.JOB_EXECUTION_ID = je1.JOB_EXECUTION_ID) e" +
-        getDefaultJoins());
+                getDefaultJoins());
         return q;
     }
-
 
 
 }

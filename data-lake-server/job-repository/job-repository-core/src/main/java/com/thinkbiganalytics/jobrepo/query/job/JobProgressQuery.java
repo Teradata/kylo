@@ -61,10 +61,9 @@ public class JobProgressQuery extends AbstractConstructedQuery {
                         "      ) " +
                         "    GROUP BY  ji.JOB_NAME, be.STEP_NAME " +
                         "  ) AS step_names ON bse.STEP_NAME = step_names.AVAIL_STEPS")
-                .withNamedParameter("executionId",getJobExecutionId());
+                .withNamedParameter("executionId", getJobExecutionId());
         return q;
     }
-
 
 
     @Override

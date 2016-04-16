@@ -33,7 +33,7 @@ public class CheckDataAllJobsQuery extends AbstractConstructedQuery implements J
                 .select("SELECT ji.JOB_INSTANCE_ID, ji.JOB_NAME, ji.JOB_KEY, e.JOB_EXECUTION_ID, e.START_TIME, e.END_TIME as END_TIME, " +
                         DatabaseQuerySubstitutionFactory.JOB_EXECUTION_RUN_TIME_TEMPLATE_STRING + " as RUN_TIME, e.STATUS as STATUS," +
                         "e.EXIT_CODE as EXIT_CODE, e.EXIT_MESSAGE, e.CREATE_TIME, e.LAST_UPDATED, e.VERSION, e.JOB_CONFIGURATION_LOCATION, " +
-                        "p2.STRING_VAL as FEED_NAME, '"+ FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK+"' as JOB_TYPE, " +
+                        "p2.STRING_VAL as FEED_NAME, '" + FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK + "' as JOB_TYPE, " +
                         "exec_ctx1.STRING_VAL as " + QUERY_IS_VALID + ", exec_ctx2.STRING_VAL as " + QUERY_VALIDATION_MESSAGE + " ")
                 .from(" from  BATCH_JOB_EXECUTION e"
                         + " INNER JOIN BATCH_JOB_EXECUTION_PARAMS jobType on jobType.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
@@ -46,31 +46,29 @@ public class CheckDataAllJobsQuery extends AbstractConstructedQuery implements J
                         " AND exec_ctx1.KEY_NAME = :validation_key " +
                         " LEFT JOIN BATCH_EXECUTION_CONTEXT_VALUES exec_ctx2 ON exec_ctx2.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
                         " AND exec_ctx2.KEY_NAME = :validation_message_key ")
-        .withNamedParameter("jobType", FeedConstants.PARAM__JOB_TYPE)
-        .withNamedParameter("check", FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK)
-        .withNamedParameter("feed", FeedConstants.PARAM__FEED_NAME)
-        .withNamedParameter("validation_key", CheckDataStepConstants.VALIDATION_KEY)
-        .withNamedParameter("validation_message_key", CheckDataStepConstants.VALIDATION_MESSAGE_KEY);
+                .withNamedParameter("jobType", FeedConstants.PARAM__JOB_TYPE)
+                .withNamedParameter("check", FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK)
+                .withNamedParameter("feed", FeedConstants.PARAM__FEED_NAME)
+                .withNamedParameter("validation_key", CheckDataStepConstants.VALIDATION_KEY)
+                .withNamedParameter("validation_message_key", CheckDataStepConstants.VALIDATION_MESSAGE_KEY);
         return q;
     }
 
     @Override
     public Query buildQuery() {
-        return   getQueryBuilder().buildWithQueryModifiers(new ColumnFilterQueryModifier() {
+        return getQueryBuilder().buildWithQueryModifiers(new ColumnFilterQueryModifier() {
             @Override
             public void modifyFilterQueryValue(ColumnFilter columnFilter) {
                 String name = columnFilter.getNameOrFirstFilterName();
                 String strVal = columnFilter.getStringValue();
 
-                if(QUERY_LATEST_JOB.equals(name)){
-                    if(strVal.equalsIgnoreCase("true")){
+                if (QUERY_LATEST_JOB.equals(name)) {
+                    if (strVal.equalsIgnoreCase("true")) {
                         columnFilter.setSqlString(" AND latestJobs.JOB_EXECUTION_ID IS NOT NULL ");
-                    }
-                    else if(strVal.equalsIgnoreCase("false")){
+                    } else if (strVal.equalsIgnoreCase("false")) {
                         columnFilter.setSqlString(" AND latestJobs.JOB_EXECUTION_ID IS NULL ");
                     }
-                }
-                else {
+                } else {
                     columnFilter.setTableAlias("e");
                     if (jobInstanceColumnNames.contains(name)) {
                         columnFilter.setTableAlias("ji");
@@ -83,8 +81,7 @@ public class CheckDataAllJobsQuery extends AbstractConstructedQuery implements J
                     } else if (QUERY_LOOKBACK_TIME.equals(name)) {
                         columnFilter.setTableAlias("");
                         columnFilter.setSqlString(" AND e.START_TIME > NOW() - INTERVAL " + columnFilter.getStringValue() + " MINUTE ");
-                    }
-                    else  if (QUERY_FEED_NAME.equals(name)) {
+                    } else if (QUERY_FEED_NAME.equals(name)) {
                         columnFilter.setTableAlias("p2");
                         columnFilter.setQueryName("STRING_VAL");
                     }
@@ -109,20 +106,16 @@ public class CheckDataAllJobsQuery extends AbstractConstructedQuery implements J
                     } else if (QUERY_RUN_TIME.equals(column)) {
                         orderBy.setTableAlias("");
                         orderBy.setQueryName(DatabaseQuerySubstitutionFactory.JOB_EXECUTION_RUN_TIME_TEMPLATE_STRING);
-                    }
-                    else if (QUERY_JOB_TYPE.equalsIgnoreCase(column)) {
+                    } else if (QUERY_JOB_TYPE.equalsIgnoreCase(column)) {
                         orderBy.setTableAlias("jobType");
                         orderBy.setQueryName("STRING_VAL");
-                    }
-                    else  if(QUERY_LATEST_JOB.equals(column)) {
+                    } else if (QUERY_LATEST_JOB.equals(column)) {
                         orderBy.setTableAlias("latestJobs");
                         orderBy.setQueryName("JOB_EXECUTION_ID");
-                    }
-                    else  if(QUERY_IS_VALID.equalsIgnoreCase(column)) {
+                    } else if (QUERY_IS_VALID.equalsIgnoreCase(column)) {
                         orderBy.setQueryName("STRING_VAL");
                         orderBy.setTableAlias("exec_ctx1");
-                    }
-                    else if (QUERY_VALIDATION_MESSAGE.equals(column)) {
+                    } else if (QUERY_VALIDATION_MESSAGE.equals(column)) {
                         orderBy.setTableAlias("exec_ctx2");
                         orderBy.setQueryName("STRING_VAL");
                     }

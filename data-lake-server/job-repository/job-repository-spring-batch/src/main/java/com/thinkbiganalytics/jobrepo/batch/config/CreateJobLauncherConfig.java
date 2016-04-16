@@ -14,24 +14,25 @@ import javax.inject.Inject;
  */
 @Configuration
 public class CreateJobLauncherConfig {
-	public final static String PIPELINE_CONTROLLER_THREAD_POOL = "CreateJobThreadPool";
-	public final static String PIPELINE_CONTROLLER_JOB_LAUNCHER = "PipelineControllerJobLauncher";
+    public final static String PIPELINE_CONTROLLER_THREAD_POOL = "CreateJobThreadPool";
+    public final static String PIPELINE_CONTROLLER_JOB_LAUNCHER = "PipelineControllerJobLauncher";
 
-	@Inject
-	private SchedulerService schedulerService;
+    @Inject
+    private SchedulerService schedulerService;
 
-	/**
-	 * Declare a thread pool that only allows one historical job at a time
-	 * @return An initialized thread pool to run historical jobs on
-	 */
-	@Bean
-	public TaskExecutor pipelineControllerThreadPoolExecutor() {
+    /**
+     * Declare a thread pool that only allows one historical job at a time
+     *
+     * @return An initialized thread pool to run historical jobs on
+     */
+    @Bean
+    public TaskExecutor pipelineControllerThreadPoolExecutor() {
 
-		return PausableJobConfig.createPausableThreadPoolExecutor(this.schedulerService, PIPELINE_CONTROLLER_JOB_LAUNCHER, 1, 1, 100);
+        return PausableJobConfig.createPausableThreadPoolExecutor(this.schedulerService, PIPELINE_CONTROLLER_JOB_LAUNCHER, 1, 1, 100);
 
-		//Standard TaskExecutor
+        //Standard TaskExecutor
 /*
-		ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
 		executor.setCorePoolSize(1);
 		executor.setMaxPoolSize(1);
 		executor.setQueueCapacity(100);
@@ -42,23 +43,24 @@ public class CreateJobLauncherConfig {
 
 		return executor;
 		*/
-	}
+    }
 
-	/**
-	 * Declare a job launcher for running detailed jobs that is tied to an asynchronous thread pool that we
-	 * can adjust to specify how many of these may be run in parallel
-	 * @param jobRepository The repository to use for persisting job information
-	 * @param pipelineControllerThreadPoolExecutor The executor specifying the concurrency level of these jobs
-	 * @return An instance of an async job launcher
-	 */
-	@Bean(name=PIPELINE_CONTROLLER_JOB_LAUNCHER)
-	public JobLauncher pipelineControllerJobLauncher(
-			final JobRepository jobRepository,
-			final TaskExecutor pipelineControllerThreadPoolExecutor) {
-		return PausableJobConfig.createPausableJobLauncher(jobRepository, pipelineControllerThreadPoolExecutor);
-	}
+    /**
+     * Declare a job launcher for running detailed jobs that is tied to an asynchronous thread pool that we
+     * can adjust to specify how many of these may be run in parallel
+     *
+     * @param jobRepository                        The repository to use for persisting job information
+     * @param pipelineControllerThreadPoolExecutor The executor specifying the concurrency level of these jobs
+     * @return An instance of an async job launcher
+     */
+    @Bean(name = PIPELINE_CONTROLLER_JOB_LAUNCHER)
+    public JobLauncher pipelineControllerJobLauncher(
+            final JobRepository jobRepository,
+            final TaskExecutor pipelineControllerThreadPoolExecutor) {
+        return PausableJobConfig.createPausableJobLauncher(jobRepository, pipelineControllerThreadPoolExecutor);
+    }
 
-	public void setSchedulerService(SchedulerService schedulerService) {
-		this.schedulerService = schedulerService;
-	}
+    public void setSchedulerService(SchedulerService schedulerService) {
+        this.schedulerService = schedulerService;
+    }
 }

@@ -28,20 +28,20 @@ public class JobStatusCountQuery extends AbstractConstructedQuery<JobStatusCount
 
     @Override
     public QueryBuilder getQueryBuilder() {
-       QueryBuilder q = newQueryBuilder()
-               .select("select count(*) CNT, e.STATUS ")
-               .from("FROM  BATCH_JOB_EXECUTION e ")
-               .groupBy("group by STATUS");
+        QueryBuilder q = newQueryBuilder()
+                .select("select count(*) CNT, e.STATUS ")
+                .from("FROM  BATCH_JOB_EXECUTION e ")
+                .groupBy("group by STATUS");
         return q;
     }
 
 
     private String latestJobsQuery() {
-        return   "select MAX(je.JOB_EXECUTION_ID) JOB_EXECUTION_ID  " +
+        return "select MAX(je.JOB_EXECUTION_ID) JOB_EXECUTION_ID  " +
                 " FROM BATCH_JOB_EXECUTION je  " +
                 " inner join BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = je.JOB_INSTANCE_ID " +
-                " WHERE STATUS != 'STARTING' "+
-                " group by ji.JOB_NAME " ;
+                " WHERE STATUS != 'STARTING' " +
+                " group by ji.JOB_NAME ";
     }
 
     @Override

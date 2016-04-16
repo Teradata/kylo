@@ -25,7 +25,6 @@ public abstract class AbstractJobService implements JobService {
     private JobDao jobDao;
 
 
-
     public Map<ExecutionStatus, Long> getJobStatusCount() {
         return jobDao.getCountOfJobsByStatus();
     }
@@ -37,6 +36,7 @@ public abstract class AbstractJobService implements JobService {
     public List<JobParameterType> getJobParametersForJob(String jobName) {
         return jobDao.getJobParametersForJob(jobName);
     }
+
     public List<JobParameterType> getJobParametersForJob(Long executionId) {
         return jobDao.getJobParametersForJob(executionId);
     }

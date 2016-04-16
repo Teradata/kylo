@@ -15,7 +15,7 @@ import org.springframework.jdbc.core.RowMapper;
 /**
  * Created by sr186054 on 8/28/15.
  */
-public class MaxFeedQuery extends AbstractConstructedQuery implements FeedQueryConstants{
+public class MaxFeedQuery extends AbstractConstructedQuery implements FeedQueryConstants {
     public MaxFeedQuery(DatabaseType databaseType) {
         super(databaseType);
     }
@@ -29,11 +29,11 @@ public class MaxFeedQuery extends AbstractConstructedQuery implements FeedQueryC
                 String name = columnFilter.getName();
                 String strVal = columnFilter.getStringValue();
 
-                    columnFilter.setTableAlias("e");
-                    if (("STRING_VAL".equals(name) || (QUERY_FEED_NAME_COLUMN.equals(name)) && !QUERY_ALL_VALUE.equalsIgnoreCase(strVal))) {
-                        columnFilter.setQueryName("STRING_VAL");
-                        columnFilter.setTableAlias("feedName");
-                    }
+                columnFilter.setTableAlias("e");
+                if (("STRING_VAL".equals(name) || (QUERY_FEED_NAME_COLUMN.equals(name)) && !QUERY_ALL_VALUE.equalsIgnoreCase(strVal))) {
+                    columnFilter.setQueryName("STRING_VAL");
+                    columnFilter.setTableAlias("feedName");
+                }
             }
         }, new OrderByQueryModifier() {
             @Override
@@ -54,9 +54,9 @@ public class MaxFeedQuery extends AbstractConstructedQuery implements FeedQueryC
     @Override
     public QueryBuilder getQueryBuilder() {
         return newQueryBuilder()
-                .select("select feedName.STRING_VAL as FEED_NAME, MAX(e.JOB_EXECUTION_ID) JOB_EXECUTION_ID  " )
+                .select("select feedName.STRING_VAL as FEED_NAME, MAX(e.JOB_EXECUTION_ID) JOB_EXECUTION_ID  ")
                 .from("FROM BATCH_JOB_EXECUTION e  " +
-                        FeedQueryUtil.feedQueryJoin("e", "feedName") )
+                        FeedQueryUtil.feedQueryJoin("e", "feedName"))
                 .groupBy("feedName.STRING_VAL ");
 
 

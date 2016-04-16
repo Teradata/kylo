@@ -17,11 +17,13 @@ public class OrderByClause implements OrderBy {
     private String dir;
     private String queryName;
     private String tableAlias;
+
     public OrderByClause() {
 
     }
+
     public OrderByClause(@JsonProperty("columnName") String columnName, @JsonProperty("dir") String dir) {
-        this.columnName =  columnName;
+        this.columnName = columnName;
         this.dir = dir;
 
     }
@@ -48,29 +50,30 @@ public class OrderByClause implements OrderBy {
     }
 
     public static List<OrderBy> convert(String orderBy) {
-        return convert(orderBy,null);
+        return convert(orderBy, null);
     }
 
     /**
      * FIELD asc, FIELD2 desc, FIELD3 asc
+     *
      * @param orderBy
      * @return
      */
-    public static List<OrderBy> convert(String orderBy, Map<String,String> columnMap) {
+    public static List<OrderBy> convert(String orderBy, Map<String, String> columnMap) {
         List<OrderBy> list = null;
-        if(StringUtils.isNotBlank(orderBy)) {
+        if (StringUtils.isNotBlank(orderBy)) {
             list = new ArrayList<OrderBy>();
             String[] order = orderBy.split(",");
             for (String item : order) {
                 String field = StringUtils.substringBefore(item, " ");
-                if(columnMap != null && StringUtils.isNotBlank(field)) {
+                if (columnMap != null && StringUtils.isNotBlank(field)) {
                     String dbColumn = columnMap.get(field.trim().toLowerCase());
-                    if(StringUtils.isNotBlank(dbColumn)){
+                    if (StringUtils.isNotBlank(dbColumn)) {
                         field = dbColumn;
                     }
                 }
                 String dir = StringUtils.substringAfterLast(item, " ");
-                if(dir == null){
+                if (dir == null) {
                     dir = "asc";
                 }
                 OrderBy ob = new OrderByClause(field.trim(), dir.trim());
@@ -83,7 +86,7 @@ public class OrderByClause implements OrderBy {
 
     @Override
     public String getQueryName() {
-        if(StringUtils.isNotBlank(queryName)){
+        if (StringUtils.isNotBlank(queryName)) {
             return queryName;
         }
         return columnName;
@@ -96,7 +99,7 @@ public class OrderByClause implements OrderBy {
 
     @Override
     public String getTableAlias() {
-        if(tableAlias == null){
+        if (tableAlias == null) {
             tableAlias = "";
         }
         return tableAlias;

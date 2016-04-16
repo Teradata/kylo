@@ -22,7 +22,7 @@ import java.sql.SQLException;
  */
 public class RelatedJobExecutionsQuery extends AbstractConstructedQuery {
 
-private Long jobExecutionId;
+    private Long jobExecutionId;
 
     public RelatedJobExecutionsQuery() {
         super();
@@ -52,7 +52,7 @@ private Long jobExecutionId;
 
     @Override
     public QueryBuilder getQueryBuilder() {
-      return DefaultQueryBuilder.newQuery(getDatabaseType()).select("SELECT je.JOB_EXECUTION_ID, ji.JOB_NAME, je.START_TIME, je.END_TIME")
+        return DefaultQueryBuilder.newQuery(getDatabaseType()).select("SELECT je.JOB_EXECUTION_ID, ji.JOB_NAME, je.START_TIME, je.END_TIME")
                 .from("from BATCH_JOB_EXECUTION je\n" +
                         "inner join BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = je.JOB_INSTANCE_ID\n" +
                         "WHERE je.JOB_INSTANCE_ID = (SELECT JOB_INSTANCE_ID from BATCH_JOB_EXECUTION WHERE JOB_EXECUTION_ID = :executionId )")

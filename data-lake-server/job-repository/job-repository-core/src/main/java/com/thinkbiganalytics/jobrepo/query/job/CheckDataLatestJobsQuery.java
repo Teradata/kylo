@@ -22,24 +22,24 @@ public class CheckDataLatestJobsQuery extends CheckDataAllJobsQuery {
     public QueryBuilder getQueryBuilder() {
         QueryBuilder q = super.getQueryBuilder();
         q.replaceFrom(" BATCH_JOB_EXECUTION e" +
-              " LEFT JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID " +
+                " LEFT JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID " +
                 " LEFT JOIN BATCH_EXECUTION_CONTEXT_VALUES exec_ctx1 ON exec_ctx1.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
                 " AND exec_ctx1.KEY_NAME = :validation_key " +
                 " LEFT JOIN BATCH_EXECUTION_CONTEXT_VALUES exec_ctx2 ON exec_ctx2.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
                 " AND exec_ctx2.KEY_NAME = :validation_message_key ")
-        .innerJoin(getMaxQuery()).as("p2 ").on("p2.MAX_JOB_EXECUTION_ID = e.JOB_EXECUTION_ID");
+                .innerJoin(getMaxQuery()).as("p2 ").on("p2.MAX_JOB_EXECUTION_ID = e.JOB_EXECUTION_ID");
         return q;
     }
 
-    private Query getMaxQuery(){
+    private Query getMaxQuery() {
         return DefaultQueryBuilder.newQuery(getDatabaseType())
                 .select("select params.STRING_VAL, MAX(je.JOB_EXECUTION_ID) MAX_JOB_EXECUTION_ID, jobType.STRING_VAL as JOB_TYPE ")
                 .from(" BATCH_JOB_EXECUTION je " +
-                " INNER JOIN BATCH_JOB_EXECUTION_PARAMS jobType on jobType.JOB_EXECUTION_ID = je.JOB_EXECUTION_ID " +
-                " and jobType.KEY_NAME = :jobType " +
-                " and UPPER(jobType.STRING_VAL) = :check " +
-                " INNER JOIN BATCH_JOB_EXECUTION_PARAMS params on params.JOB_EXECUTION_ID = je.JOB_EXECUTION_ID " +
-                " and params.KEY_NAME =  :feed ")
+                        " INNER JOIN BATCH_JOB_EXECUTION_PARAMS jobType on jobType.JOB_EXECUTION_ID = je.JOB_EXECUTION_ID " +
+                        " and jobType.KEY_NAME = :jobType " +
+                        " and UPPER(jobType.STRING_VAL) = :check " +
+                        " INNER JOIN BATCH_JOB_EXECUTION_PARAMS params on params.JOB_EXECUTION_ID = je.JOB_EXECUTION_ID " +
+                        " and params.KEY_NAME =  :feed ")
                 .withFilters(selectMaxFilters)
                 .groupBy("params.STRING_VAL, jobType.STRING_VAL ")
                 .buildWithFilterQueryModifier(new ColumnFilterQueryModifier() {
@@ -53,7 +53,6 @@ public class CheckDataLatestJobsQuery extends CheckDataAllJobsQuery {
     public CheckDataLatestJobsQuery(DatabaseType databaseType) {
         super(databaseType);
     }
-
 
 
     public void setSelectMaxFilters(List<ColumnFilter> selectMaxFilters) {
