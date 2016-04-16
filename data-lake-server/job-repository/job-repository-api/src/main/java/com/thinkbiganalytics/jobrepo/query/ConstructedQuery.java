@@ -12,21 +12,22 @@ import java.util.List;
  * Created by sr186054 on 4/14/16.
  */
 public interface ConstructedQuery<T> {
-    Query buildQuery();
 
-    QueryBuilder newQueryBuilder();
+  Query buildQuery();
 
-    QueryBuilder getQueryBuilder();
+  QueryBuilder newQueryBuilder();
 
-    boolean hasFilter(String name);
+  QueryBuilder getQueryBuilder();
 
-    void setColumnFilterList(List<ColumnFilter> columnFilterList);
+  boolean hasFilter(String name);
 
-    List<ColumnFilter> getColumnFilterList();
+  void setColumnFilterList(List<ColumnFilter> columnFilterList);
 
-    DatabaseType getDatabaseType();
+  List<ColumnFilter> getColumnFilterList();
 
-    List<OrderBy> getOrderByList();
+  DatabaseType getDatabaseType();
 
-    void setOrderByList(List<OrderBy> orderByList);
+  List<OrderBy> getOrderByList();
+
+  void setOrderByList(List<OrderBy> orderByList);
 }

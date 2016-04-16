@@ -9,41 +9,41 @@ package com.thinkbiganalytics.jobrepo.query.model;
  */
 public class JobStepQueryRow {
 
-    private Long jobExecutionId;
-    private String stepName;
-    private Long stepExecutionId;
-    private Long jobInstanceId;
+  private Long jobExecutionId;
+  private String stepName;
+  private Long stepExecutionId;
+  private Long jobInstanceId;
 
 
-    public Long getJobExecutionId() {
-        return jobExecutionId;
-    }
+  public Long getJobExecutionId() {
+    return jobExecutionId;
+  }
 
-    public void setJobExecutionId(Long jobExecutionId) {
-        this.jobExecutionId = jobExecutionId;
-    }
+  public void setJobExecutionId(Long jobExecutionId) {
+    this.jobExecutionId = jobExecutionId;
+  }
 
-    public String getStepName() {
-        return stepName;
-    }
+  public String getStepName() {
+    return stepName;
+  }
 
-    public void setStepName(String stepName) {
-        this.stepName = stepName;
-    }
+  public void setStepName(String stepName) {
+    this.stepName = stepName;
+  }
 
-    public Long getStepExecutionId() {
-        return stepExecutionId;
-    }
+  public Long getStepExecutionId() {
+    return stepExecutionId;
+  }
 
-    public void setStepExecutionId(Long stepExecutionId) {
-        this.stepExecutionId = stepExecutionId;
-    }
+  public void setStepExecutionId(Long stepExecutionId) {
+    this.stepExecutionId = stepExecutionId;
+  }
 
-    public Long getJobInstanceId() {
-        return jobInstanceId;
-    }
+  public Long getJobInstanceId() {
+    return jobInstanceId;
+  }
 
-    public void setJobInstanceId(Long jobInstanceId) {
-        this.jobInstanceId = jobInstanceId;
-    }
+  public void setJobInstanceId(Long jobInstanceId) {
+    this.jobInstanceId = jobInstanceId;
+  }
 }

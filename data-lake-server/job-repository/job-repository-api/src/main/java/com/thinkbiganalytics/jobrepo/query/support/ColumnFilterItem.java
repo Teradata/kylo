@@ -7,45 +7,46 @@ import java.util.Collection;
  * Created by sr186054 on 4/13/16.
  */
 public interface ColumnFilterItem {
-    String INTERNAL_QUERY_FLAG_PREFIX = "_";
 
-    void setApplyToWhereClause(boolean applyToWhereClause);
+  String INTERNAL_QUERY_FLAG_PREFIX = "_";
 
-    String getSqlConditionBeforeOperator();
+  void setApplyToWhereClause(boolean applyToWhereClause);
 
-    void setSqlConditionBeforeOperator(String sqlConditionBeforeOperator);
+  String getSqlConditionBeforeOperator();
 
-    String getName();
+  void setSqlConditionBeforeOperator(String sqlConditionBeforeOperator);
 
-    void setName(String name);
+  String getName();
 
-    Object getValue();
+  void setName(String name);
 
-    void setValue(Object value);
+  Object getValue();
 
-    String getOperator();
+  void setValue(Object value);
 
-    void setOperator(String operator);
+  String getOperator();
 
-    Object getSqlValue();
+  void setOperator(String operator);
 
-    String getStringValue();
+  Object getSqlValue();
 
-    Collection<?> getValueAsCollection();
+  String getStringValue();
 
-    boolean isCollection();
+  Collection<?> getValueAsCollection();
 
-    String getDataType();
+  boolean isCollection();
 
-    void setDataType(String dataType);
+  String getDataType();
 
-    boolean isApplyToWhereClause();
+  void setDataType(String dataType);
 
-    String getQueryName();
+  boolean isApplyToWhereClause();
 
-    void setQueryName(String queryName);
+  String getQueryName();
 
-    String getTableAlias();
+  void setQueryName(String queryName);
 
-    void setTableAlias(String tableAlias);
+  String getTableAlias();
+
+  void setTableAlias(String tableAlias);
 }

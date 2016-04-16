@@ -5,6 +5,6 @@ package com.thinkbiganalytics.jobrepo.common.constants;
  */
 public interface CheckDataStepConstants {
 
-    String VALIDATION_KEY = "checkData.validationCheck";
-    String VALIDATION_MESSAGE_KEY = "checkData.validationMessage";
+  String VALIDATION_KEY = "checkData.validationCheck";
+  String VALIDATION_MESSAGE_KEY = "checkData.validationMessage";
 }

@@ -9,89 +9,90 @@ import java.util.Map;
  * Created by sr186054 on 4/13/16.
  */
 public interface ExecutedJob {
-    long getInstanceId();
 
-    void setInstanceId(long instanceId);
+  long getInstanceId();
 
-    long getExecutionId();
+  void setInstanceId(long instanceId);
 
-    void setExecutionId(long executionId);
+  long getExecutionId();
 
-    void setJobId(Long jobId);
+  void setExecutionId(long executionId);
 
-    String getJobName();
+  void setJobId(Long jobId);
 
-    void setJobName(String jobName);
+  String getJobName();
 
-    List<Throwable> getExceptions();
+  void setJobName(String jobName);
 
-    void setExceptions(List<Throwable> exceptions);
+  List<Throwable> getExceptions();
 
-    DateTime getCreateTime();
+  void setExceptions(List<Throwable> exceptions);
 
-    void setCreateTime(DateTime createTime);
+  DateTime getCreateTime();
 
-    DateTime getEndTime();
+  void setCreateTime(DateTime createTime);
 
-    void setEndTime(DateTime endTime);
+  DateTime getEndTime();
 
-    Map<String, Object> getExecutionContext();
+  void setEndTime(DateTime endTime);
 
-    void setExecutionContext(Map<String, Object> executionContext);
+  Map<String, Object> getExecutionContext();
 
-    String getExitCode();
+  void setExecutionContext(Map<String, Object> executionContext);
 
-    void setExitCode(String exitCode);
+  String getExitCode();
 
-    String getExitStatus();
+  void setExitCode(String exitCode);
 
-    void setExitStatus(String exitStatus);
+  String getExitStatus();
 
-    String getJobConfigurationName();
+  void setExitStatus(String exitStatus);
 
-    void setJobConfigurationName(String jobConfigurationName);
+  String getJobConfigurationName();
 
-    Long getJobId();
+  void setJobConfigurationName(String jobConfigurationName);
 
-    Map<String, Object> getJobParameters();
+  Long getJobId();
 
-    void setJobParameters(Map<String, Object> jobParameters);
+  Map<String, Object> getJobParameters();
 
-    DateTime getLastUpdated();
+  void setJobParameters(Map<String, Object> jobParameters);
 
-    void setLastUpdated(DateTime lastUpdated);
+  DateTime getLastUpdated();
 
-    DateTime getStartTime();
+  void setLastUpdated(DateTime lastUpdated);
 
-    void setStartTime(DateTime startTime);
+  DateTime getStartTime();
 
-    ExecutionStatus getStatus();
+  void setStartTime(DateTime startTime);
 
-    void setStatus(ExecutionStatus status);
+  ExecutionStatus getStatus();
 
-    List<ExecutedStep> getExecutedSteps();
+  void setStatus(ExecutionStatus status);
 
-    void setExecutedSteps(List<ExecutedStep> executedSteps);
+  List<ExecutedStep> getExecutedSteps();
 
-    Long getRunTime();
+  void setExecutedSteps(List<ExecutedStep> executedSteps);
 
-    void setRunTime(Long runTime);
+  Long getRunTime();
 
-    Long getTimeSinceEndTime();
+  void setRunTime(Long runTime);
 
-    void setTimeSinceEndTime(Long timeSinceEndTime);
+  Long getTimeSinceEndTime();
 
-    String getJobType();
+  void setTimeSinceEndTime(Long timeSinceEndTime);
 
-    void setJobType(String jobType);
+  String getJobType();
 
-    boolean isLatest();
+  void setJobType(String jobType);
 
-    void setIsLatest(boolean isLatest);
+  boolean isLatest();
 
-    String getFeedName();
+  void setIsLatest(boolean isLatest);
 
-    void setFeedName(String feedName);
+  String getFeedName();
 
-    String getDisplayStatus();
+  void setFeedName(String feedName);
+
+  String getDisplayStatus();
 }

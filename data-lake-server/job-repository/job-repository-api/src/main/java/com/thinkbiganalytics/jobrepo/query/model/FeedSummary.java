@@ -5,33 +5,34 @@ package com.thinkbiganalytics.jobrepo.query.model;
  * Created by sr186054 on 4/14/16.
  */
 public interface FeedSummary {
-    String getFeed();
 
-    String getState();
+  String getFeed();
 
-    String getLastStatus();
+  String getState();
 
-    boolean isWaiting();
+  String getLastStatus();
 
-    boolean isRunning();
+  boolean isWaiting();
 
-    Long getTimeSinceEndTime();
+  boolean isRunning();
 
-    String formatTimeMinSec(Long millis);
+  Long getTimeSinceEndTime();
 
-    String getTimeSinceEndTimeString();
+  String formatTimeMinSec(Long millis);
 
-    Long getRunTime();
+  String getTimeSinceEndTimeString();
 
-    String getRunTimeString();
+  Long getRunTime();
 
-    Long getAvgCompleteTime();
+  String getRunTimeString();
 
-    String getAvgCompleteTimeString();
+  Long getAvgCompleteTime();
 
-    boolean isHealthy();
+  String getAvgCompleteTimeString();
 
-    String getLastExitCode();
+  boolean isHealthy();
 
-    FeedHealth getFeedHealth();
+  String getLastExitCode();
+
+  FeedHealth getFeedHealth();
 }

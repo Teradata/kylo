@@ -5,39 +5,39 @@ package com.thinkbiganalytics.jobrepo.query.substitution;
  */
 public class DefaultDatabaseQuerySubstitution implements DatabaseQuerySubstitution {
 
-    public String getDateDiffWhereClause(String column, DATE_PART dayPart, Integer number) {
-        return null;
-    }
+  public String getDateDiffWhereClause(String column, DATE_PART dayPart, Integer number) {
+    return null;
+  }
 
-    public String truncateTimestampToDate(String column) {
-        return "trunc(" + column + ")";
-    }
+  public String truncateTimestampToDate(String column) {
+    return "trunc(" + column + ")";
+  }
 
 
-    public String getJobExecutionRunTimeSql() {
-        return "TIMESTAMPDIFF(SECOND,e.START_TIME,COALESCE(e.END_TIME,NOW()))";
-    }
+  public String getJobExecutionRunTimeSql() {
+    return "TIMESTAMPDIFF(SECOND,e.START_TIME,COALESCE(e.END_TIME,NOW()))";
+  }
 
-    public String getTimeAfterNow(DATE_PART datePart, Integer number) {
-        return null;
-    }
+  public String getTimeAfterNow(DATE_PART datePart, Integer number) {
+    return null;
+  }
 
-    public String getTimeBeforeNow(DATE_PART datePart, Integer number) {
-        return null;
-    }
+  public String getTimeBeforeNow(DATE_PART datePart, Integer number) {
+    return null;
+  }
 
-    @Override
-    public String getFeedExecutionRunTimeSql() {
-        return null;
-    }
+  @Override
+  public String getFeedExecutionRunTimeSql() {
+    return null;
+  }
 
-    @Override
-    public String limitAndOffset(Integer limit, Integer offset) {
-        String limitString = "";
-        return limitString;
-    }
+  @Override
+  public String limitAndOffset(Integer limit, Integer offset) {
+    String limitString = "";
+    return limitString;
+  }
 
-    public String toDateSql(String date) {
-        return "TO_DATE('" + date + "','MM/DD/YYYY')";
-    }
+  public String toDateSql(String date) {
+    return "TO_DATE('" + date + "','MM/DD/YYYY')";
+  }
 }

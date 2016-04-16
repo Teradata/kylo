@@ -6,39 +6,40 @@ import java.util.Date;
  * Created by sr186054 on 4/13/16.
  */
 public interface FeedHealth {
-    Long getHealthyCount();
 
-    void setHealthyCount(Long healthyCount);
+  Long getHealthyCount();
 
-    Long getUnhealthyCount();
+  void setHealthyCount(Long healthyCount);
 
-    void markHealthCountsSet();
+  Long getUnhealthyCount();
 
-    void setUnhealthyCount(Long unhealthyCount);
+  void markHealthCountsSet();
 
-    String getFeed();
+  void setUnhealthyCount(Long unhealthyCount);
 
-    void setFeed(String feed);
+  String getFeed();
 
-    ExecutedFeed getLastOpFeed();
+  void setFeed(String feed);
 
-    void setLastOpFeed(ExecutedFeed lastOpFeed);
+  ExecutedFeed getLastOpFeed();
 
-    Long getAvgRuntime();
+  void setLastOpFeed(ExecutedFeed lastOpFeed);
 
-    void setAvgRuntime(Long avgRuntime);
+  Long getAvgRuntime();
 
-    Date getLastUnhealthyTime();
+  void setAvgRuntime(Long avgRuntime);
 
-    void setLastUnhealthyTime(Date lastUnhealthyTime);
+  Date getLastUnhealthyTime();
 
-    boolean isHealthy();
+  void setLastUnhealthyTime(Date lastUnhealthyTime);
 
-    String getFeedState(ExecutedFeed feed);
+  boolean isHealthy();
 
-    String getLastOpFeedState();
+  String getFeedState(ExecutedFeed feed);
 
-    public static enum STATE {
-        WAITING, RUNNING
-    }
+  String getLastOpFeedState();
+
+  public static enum STATE {
+    WAITING, RUNNING
+  }
 }

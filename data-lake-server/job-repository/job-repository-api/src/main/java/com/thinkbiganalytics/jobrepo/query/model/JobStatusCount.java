@@ -7,23 +7,23 @@ import java.util.Date;
  */
 public interface JobStatusCount {
 
-    Long getCount();
+  Long getCount();
 
-    void setCount(Long count);
+  void setCount(Long count);
 
-    String getFeedName();
+  String getFeedName();
 
-    void setFeedName(String feedName);
+  void setFeedName(String feedName);
 
-    String getJobName();
+  String getJobName();
 
-    void setJobName(String jobName);
+  void setJobName(String jobName);
 
-    String getStatus();
+  String getStatus();
 
-    void setStatus(String status);
+  void setStatus(String status);
 
-    Date getDate();
+  Date getDate();
 
-    void setDate(Date date);
+  void setDate(Date date);
 }

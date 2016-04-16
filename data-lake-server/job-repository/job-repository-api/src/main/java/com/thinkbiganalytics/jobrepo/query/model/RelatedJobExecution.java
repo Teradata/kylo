@@ -6,19 +6,20 @@ import java.util.Date;
  * Created by sr186054 on 4/14/16.
  */
 public interface RelatedJobExecution {
-    Long getJobExecutionId();
 
-    void setJobExecutionId(Long jobExecutionId);
+  Long getJobExecutionId();
 
-    String getJobName();
+  void setJobExecutionId(Long jobExecutionId);
 
-    void setJobName(String jobName);
+  String getJobName();
 
-    Date getStartTime();
+  void setJobName(String jobName);
 
-    void setStartTime(Date startTime);
+  Date getStartTime();
 
-    Date getEndTime();
+  void setStartTime(Date startTime);
 
-    void setEndTime(Date endTime);
+  Date getEndTime();
+
+  void setEndTime(Date endTime);
 }

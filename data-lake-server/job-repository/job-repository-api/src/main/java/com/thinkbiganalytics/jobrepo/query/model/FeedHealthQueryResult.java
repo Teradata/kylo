@@ -6,19 +6,20 @@ import java.util.Date;
  * Created by sr186054 on 4/13/16.
  */
 public interface FeedHealthQueryResult {
-    String getFeed();
 
-    void setFeed(String feed);
+  String getFeed();
 
-    Long getCount();
+  void setFeed(String feed);
 
-    void setCount(Long count);
+  Long getCount();
 
-    String getHealth();
+  void setCount(Long count);
 
-    void setHealth(String health);
+  String getHealth();
 
-    Date getEndTime();
+  void setHealth(String health);
 
-    void setEndTime(Date endTime);
+  Date getEndTime();
+
+  void setEndTime(Date endTime);
 }

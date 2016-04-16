@@ -9,43 +9,44 @@ import java.util.List;
  * Created by sr186054 on 4/13/16.
  */
 public interface QueryBuilder<T> {
-    Query build();
 
-    Query buildWithFilterQueryModifier(ColumnFilterQueryModifier columnFilterQueryModifier);
+  Query build();
 
-    Query buildWithQueryModifiers(ColumnFilterQueryModifier columnFilterQueryModifier, OrderByQueryModifier orderByQueryModifier);
+  Query buildWithFilterQueryModifier(ColumnFilterQueryModifier columnFilterQueryModifier);
 
-    void addJoin(Query joinQuery);
+  Query buildWithQueryModifiers(ColumnFilterQueryModifier columnFilterQueryModifier, OrderByQueryModifier orderByQueryModifier);
 
-    QueryBuilder from(String from);
+  void addJoin(Query joinQuery);
 
-    QueryBuilder replaceFrom(String from);
+  QueryBuilder from(String from);
 
-    QueryBuilder select(String select);
+  QueryBuilder replaceFrom(String from);
 
-    QueryBuilder addSelectColumn(String select);
+  QueryBuilder select(String select);
 
-    QueryBuilder withFilters(List<ColumnFilter> filters);
+  QueryBuilder addSelectColumn(String select);
 
-    QueryBuilder orderBy(List<OrderBy> orderBy);
+  QueryBuilder withFilters(List<ColumnFilter> filters);
 
-    QueryBuilder withNamedParameter(String name, Object param);
+  QueryBuilder orderBy(List<OrderBy> orderBy);
 
-    QueryBuilder groupBy(String groupBy);
+  QueryBuilder withNamedParameter(String name, Object param);
 
-    QueryBuilder removeDefaultOrderBy();
+  QueryBuilder groupBy(String groupBy);
 
-    QueryBuilder defaultOrderBy(String column, String dir);
+  QueryBuilder removeDefaultOrderBy();
 
-    QueryBuilder orderBy(String column, String dir);
+  QueryBuilder defaultOrderBy(String column, String dir);
 
-    QueryBuilder orderBy(OrderBy orderBy);
+  QueryBuilder orderBy(String column, String dir);
 
-    QueryJoinBuilder innerJoin(String query);
+  QueryBuilder orderBy(OrderBy orderBy);
 
-    QueryJoinBuilder leftJoin(String query);
+  QueryJoinBuilder innerJoin(String query);
 
-    QueryJoinBuilder innerJoin(Query query);
+  QueryJoinBuilder leftJoin(String query);
 
-    QueryJoinBuilder leftJoin(Query query);
+  QueryJoinBuilder innerJoin(Query query);
+
+  QueryJoinBuilder leftJoin(Query query);
 }

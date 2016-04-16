@@ -6,33 +6,34 @@ import java.util.List;
  * Created by sr186054 on 4/14/16.
  */
 public interface FeedStatus {
-    void populate();
 
-    List<FeedHealth> getFeeds();
+  void populate();
 
-    void setFeeds(List<FeedHealth> feeds);
+  List<FeedHealth> getFeeds();
 
-    Integer getHealthyCount();
+  void setFeeds(List<FeedHealth> feeds);
 
-    void setHealthyCount(Integer healthyCount);
+  Integer getHealthyCount();
 
-    Integer getFailedCount();
+  void setHealthyCount(Integer healthyCount);
 
-    void setFailedCount(Integer failedCount);
+  Integer getFailedCount();
 
-    Float getPercent();
+  void setFailedCount(Integer failedCount);
 
-    void setPercent(Integer percent);
+  Float getPercent();
 
-    List<FeedHealth> getHealthyFeeds();
+  void setPercent(Integer percent);
 
-    void setHealthyFeeds(List<FeedHealth> healthyFeeds);
+  List<FeedHealth> getHealthyFeeds();
 
-    List<FeedHealth> getFailedFeeds();
+  void setHealthyFeeds(List<FeedHealth> healthyFeeds);
 
-    void setFailedFeeds(List<FeedHealth> failedFeeds);
+  List<FeedHealth> getFailedFeeds();
 
-    List<FeedSummary> getFeedSummary();
+  void setFailedFeeds(List<FeedHealth> failedFeeds);
 
-    void setFeedSummary(List<FeedSummary> feedSummary);
+  List<FeedSummary> getFeedSummary();
+
+  void setFeedSummary(List<FeedSummary> feedSummary);
 }

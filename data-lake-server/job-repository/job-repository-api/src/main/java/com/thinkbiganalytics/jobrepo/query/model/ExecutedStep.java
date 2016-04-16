@@ -8,71 +8,72 @@ import java.util.Map;
  * Created by sr186054 on 4/13/16.
  */
 public interface ExecutedStep {
-    String getStepName();
 
-    void setStepName(String stepName);
+  String getStepName();
 
-    ExecutionStatus getStatus();
+  void setStepName(String stepName);
 
-    void setStatus(ExecutionStatus status);
+  ExecutionStatus getStatus();
 
-    long getReadCount();
+  void setStatus(ExecutionStatus status);
 
-    void setReadCount(long readCount);
+  long getReadCount();
 
-    long getWriteCount();
+  void setReadCount(long readCount);
 
-    void setWriteCount(long writeCount);
+  long getWriteCount();
 
-    long getCommitCount();
+  void setWriteCount(long writeCount);
 
-    void setCommitCount(long commitCount);
+  long getCommitCount();
 
-    long getRollbackCount();
+  void setCommitCount(long commitCount);
 
-    void setRollbackCount(long rollbackCount);
+  long getRollbackCount();
 
-    long getReadSkipCount();
+  void setRollbackCount(long rollbackCount);
 
-    void setReadSkipCount(long readSkipCount);
+  long getReadSkipCount();
 
-    long getProcessSkipCount();
+  void setReadSkipCount(long readSkipCount);
 
-    void setProcessSkipCount(long processSkipCount);
+  long getProcessSkipCount();
 
-    long getWriteSkipCount();
+  void setProcessSkipCount(long processSkipCount);
 
-    void setWriteSkipCount(long writeSkipCount);
+  long getWriteSkipCount();
 
-    DateTime getStartTime();
+  void setWriteSkipCount(long writeSkipCount);
 
-    void setStartTime(DateTime startTime);
+  DateTime getStartTime();
 
-    DateTime getEndTime();
+  void setStartTime(DateTime startTime);
 
-    void setEndTime(DateTime endTime);
+  DateTime getEndTime();
 
-    DateTime getLastUpdateTime();
+  void setEndTime(DateTime endTime);
 
-    void setLastUpdateTime(DateTime lastUpdateTime);
+  DateTime getLastUpdateTime();
 
-    Map<String, Object> getExecutionContext();
+  void setLastUpdateTime(DateTime lastUpdateTime);
 
-    void setExecutionContext(Map<String, Object> executionContext);
+  Map<String, Object> getExecutionContext();
 
-    String getExitCode();
+  void setExecutionContext(Map<String, Object> executionContext);
 
-    void setExitCode(String exitCode);
+  String getExitCode();
 
-    String getExitDescription();
+  void setExitCode(String exitCode);
 
-    void setExitDescription(String exitDescription);
+  String getExitDescription();
 
-    long getId();
+  void setExitDescription(String exitDescription);
 
-    void setId(long id);
+  long getId();
 
-    int getVersion();
+  void setId(long id);
 
-    void setVersion(int version);
+  int getVersion();
+
+  void setVersion(int version);
 }

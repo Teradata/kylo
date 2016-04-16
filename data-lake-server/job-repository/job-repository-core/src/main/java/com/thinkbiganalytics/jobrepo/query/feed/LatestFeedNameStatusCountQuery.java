@@ -10,16 +10,16 @@ import com.thinkbiganalytics.jobrepo.query.support.FeedQueryUtil;
  */
 public class LatestFeedNameStatusCountQuery extends FeedNameStatusCountQuery {
 
-    public LatestFeedNameStatusCountQuery(DatabaseType databaseType) {
-        super(databaseType);
-    }
+  public LatestFeedNameStatusCountQuery(DatabaseType databaseType) {
+    super(databaseType);
+  }
 
-    public QueryBuilder getQueryBuilder() {
+  public QueryBuilder getQueryBuilder() {
 
-        QueryBuilder q = super.getQueryBuilder();
-        q.replaceFrom("BATCH_JOB_EXECUTION e inner join ( " + FeedQueryUtil.latestFeedQuery() +
-                " ) x on x.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID ");
-        return q;
-    }
+    QueryBuilder q = super.getQueryBuilder();
+    q.replaceFrom("BATCH_JOB_EXECUTION e inner join ( " + FeedQueryUtil.latestFeedQuery() +
+                  " ) x on x.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID ");
+    return q;
+  }
 
 }

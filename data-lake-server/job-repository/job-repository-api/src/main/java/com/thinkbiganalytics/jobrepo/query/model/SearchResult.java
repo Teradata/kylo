@@ -6,19 +6,20 @@ import java.util.List;
  * Created by sr186054 on 4/13/16.
  */
 public interface SearchResult {
-    List<? extends Object> getData();
 
-    void setData(List<? extends Object> data);
+  List<? extends Object> getData();
 
-    Long getRecordsTotal();
+  void setData(List<? extends Object> data);
 
-    void setRecordsTotal(Long recordsTotal);
+  Long getRecordsTotal();
 
-    Long getRecordsFiltered();
+  void setRecordsTotal(Long recordsTotal);
 
-    void setRecordsFiltered(Long recordsFiltered);
+  Long getRecordsFiltered();
 
-    String getError();
+  void setRecordsFiltered(Long recordsFiltered);
 
-    void setError(String error);
+  String getError();
+
+  void setError(String error);
 }

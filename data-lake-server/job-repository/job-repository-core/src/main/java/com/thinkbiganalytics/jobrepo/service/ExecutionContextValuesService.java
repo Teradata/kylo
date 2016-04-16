@@ -10,11 +10,11 @@ import java.util.List;
  */
 public interface ExecutionContextValuesService {
 
-    public void saveStepExecutionContextValues(StepExecution stepExecution);
+  public void saveStepExecutionContextValues(StepExecution stepExecution);
 
-    public void saveStepExecutionContextValues(StepExecution stepExecution, List<String> stepExecutionKeys);
+  public void saveStepExecutionContextValues(StepExecution stepExecution, List<String> stepExecutionKeys);
 
-    public void saveJobExecutionContextValues(JobExecution jobExecution);
+  public void saveJobExecutionContextValues(JobExecution jobExecution);
 
-    public void saveJobExecutionContextValues(JobExecution jobExecution, List<String> jobExecutionKeys);
+  public void saveJobExecutionContextValues(JobExecution jobExecution, List<String> jobExecutionKeys);
 }

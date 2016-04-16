@@ -8,55 +8,56 @@ import java.util.List;
  * Created by sr186054 on 4/13/16.
  */
 public interface ExecutedFeed {
-    String getName();
 
-    void setName(String name);
+  String getName();
 
-    long getFeedInstanceId();
+  void setName(String name);
 
-    void setFeedInstanceId(long feedInstanceId);
+  long getFeedInstanceId();
 
-    long getFeedExecutionId();
+  void setFeedInstanceId(long feedInstanceId);
 
-    void setFeedExecutionId(long feedExecutionId);
+  long getFeedExecutionId();
 
-    List<Throwable> getExceptions();
+  void setFeedExecutionId(long feedExecutionId);
 
-    void setExceptions(List<Throwable> exceptions);
+  List<Throwable> getExceptions();
 
-    DateTime getEndTime();
+  void setExceptions(List<Throwable> exceptions);
 
-    void setEndTime(DateTime endTime);
+  DateTime getEndTime();
 
-    String getExitCode();
+  void setEndTime(DateTime endTime);
 
-    void setExitCode(String exitCode);
+  String getExitCode();
 
-    String getExitStatus();
+  void setExitCode(String exitCode);
 
-    void setExitStatus(String exitStatus);
+  String getExitStatus();
 
-    DateTime getStartTime();
+  void setExitStatus(String exitStatus);
 
-    void setStartTime(DateTime startTime);
+  DateTime getStartTime();
 
-    ExecutionStatus getStatus();
+  void setStartTime(DateTime startTime);
 
-    void setStatus(ExecutionStatus status);
+  ExecutionStatus getStatus();
 
-    List<ExecutedJob> getExecutedJobs();
+  void setStatus(ExecutionStatus status);
 
-    void setExecutedJobs(List<ExecutedJob> executedJobs);
+  List<ExecutedJob> getExecutedJobs();
 
-    Long getRunTime();
+  void setExecutedJobs(List<ExecutedJob> executedJobs);
 
-    void setRunTime(Long runTime);
+  Long getRunTime();
 
-    Long getTimeSinceEndTime();
+  void setRunTime(Long runTime);
 
-    void setTimeSinceEndTime(Long timeSinceEndTime);
+  Long getTimeSinceEndTime();
 
-    boolean isLatest();
+  void setTimeSinceEndTime(Long timeSinceEndTime);
 
-    void setIsLatest(boolean isLatest);
+  boolean isLatest();
+
+  void setIsLatest(boolean isLatest);
 }

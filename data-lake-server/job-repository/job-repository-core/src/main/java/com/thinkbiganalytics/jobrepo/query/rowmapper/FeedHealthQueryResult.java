@@ -10,40 +10,41 @@ import java.util.Date;
  * Created by sr186054 on 1/5/16.
  */
 public class FeedHealthQueryResult {
-    private String feed;
-    private Long count;
-    private String health;
-    private Date endTime;
 
-    public String getFeed() {
-        return feed;
-    }
+  private String feed;
+  private Long count;
+  private String health;
+  private Date endTime;
 
-    public void setFeed(String feed) {
-        this.feed = feed;
-    }
+  public String getFeed() {
+    return feed;
+  }
 
-    public Long getCount() {
-        return count;
-    }
+  public void setFeed(String feed) {
+    this.feed = feed;
+  }
 
-    public void setCount(Long count) {
-        this.count = count;
-    }
+  public Long getCount() {
+    return count;
+  }
 
-    public String getHealth() {
-        return health;
-    }
+  public void setCount(Long count) {
+    this.count = count;
+  }
 
-    public void setHealth(String health) {
-        this.health = health;
-    }
+  public String getHealth() {
+    return health;
+  }
 
-    public Date getEndTime() {
-        return endTime;
-    }
+  public void setHealth(String health) {
+    this.health = health;
+  }
 
-    public void setEndTime(Date endTime) {
-        this.endTime = endTime;
-    }
+  public Date getEndTime() {
+    return endTime;
+  }
+
+  public void setEndTime(Date endTime) {
+    this.endTime = endTime;
+  }
 }

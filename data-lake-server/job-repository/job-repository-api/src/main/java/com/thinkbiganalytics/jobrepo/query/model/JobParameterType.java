@@ -4,15 +4,16 @@ package com.thinkbiganalytics.jobrepo.query.model;
  * Created by sr186054 on 4/14/16.
  */
 public interface JobParameterType {
-    String getName();
 
-    void setName(String name);
+  String getName();
 
-    String getValue();
+  void setName(String name);
 
-    void setValue(String value);
+  String getValue();
 
-    String getType();
+  void setValue(String value);
 
-    void setType(String type);
+  String getType();
+
+  void setType(String type);
 }

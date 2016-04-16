@@ -10,18 +10,18 @@ import java.lang.reflect.Constructor;
  */
 public class QueryFactory {
 
-    public static <T> T getQuery(DatabaseType databaseType, Class<? extends ConstructedQuery> queryClass) {
-        T query = null;
-        try {
-            //get constructor that takes a String as argument
-            Constructor constructor = queryClass.getConstructor(DatabaseType.class);
+  public static <T> T getQuery(DatabaseType databaseType, Class<? extends ConstructedQuery> queryClass) {
+    T query = null;
+    try {
+      //get constructor that takes a String as argument
+      Constructor constructor = queryClass.getConstructor(DatabaseType.class);
 
-            query = (T)
-                    constructor.newInstance(databaseType);
+      query = (T)
+          constructor.newInstance(databaseType);
 
-        } catch (Exception e) {
+    } catch (Exception e) {
 
-        }
-        return query;
     }
+    return query;
+  }
 }

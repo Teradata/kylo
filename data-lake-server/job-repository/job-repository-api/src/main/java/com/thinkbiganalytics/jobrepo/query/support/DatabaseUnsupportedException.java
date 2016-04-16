@@ -6,28 +6,28 @@ package com.thinkbiganalytics.jobrepo.query.support;
 public class DatabaseUnsupportedException extends RuntimeException {
 
 
-    private String message;
+  private String message;
 
-    public DatabaseUnsupportedException() {
-        initMessage();
-    }
+  public DatabaseUnsupportedException() {
+    initMessage();
+  }
 
-    public DatabaseUnsupportedException(Throwable cause) {
-        super(cause);
-        initMessage();
-    }
+  public DatabaseUnsupportedException(Throwable cause) {
+    super(cause);
+    initMessage();
+  }
 
-    private void initMessage() {
-        message = "Your database is not supported by Pipeline Controller";
-    }
+  private void initMessage() {
+    message = "Your database is not supported by Pipeline Controller";
+  }
 
-    @Override
-    public String getMessage() {
-        return message;
-    }
+  @Override
+  public String getMessage() {
+    return message;
+  }
 
-    @Override
-    public String getLocalizedMessage() {
-        return message;
-    }
+  @Override
+  public String getLocalizedMessage() {
+    return message;
+  }
 }

@@ -8,17 +8,18 @@ import java.util.List;
  * Created by sr186054 on 4/14/16.
  */
 public interface DailyJobStatusCount {
-    DatabaseQuerySubstitution.DATE_PART getDatePart();
 
-    void setDatePart(DatabaseQuerySubstitution.DATE_PART datePart);
+  DatabaseQuerySubstitution.DATE_PART getDatePart();
 
-    Integer getInterval();
+  void setDatePart(DatabaseQuerySubstitution.DATE_PART datePart);
 
-    void setInterval(Integer interval);
+  Integer getInterval();
 
-    List<JobStatusCount> getJobStatusCounts();
+  void setInterval(Integer interval);
 
-    void setJobStatusCounts(List<JobStatusCount> jobStatusCounts);
+  List<JobStatusCount> getJobStatusCounts();
 
-    void checkAndAddStartDate();
+  void setJobStatusCounts(List<JobStatusCount> jobStatusCounts);
+
+  void checkAndAddStartDate();
 }

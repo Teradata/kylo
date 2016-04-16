@@ -8,6 +8,6 @@ import com.thinkbiganalytics.jobrepo.query.support.OrderBy;
  */
 public interface OrderByQueryModifier {
 
-    public void modifyOrderByQueryName(OrderBy orderBy);
+  public void modifyOrderByQueryName(OrderBy orderBy);
 
 }

@@ -9,35 +9,35 @@ import org.springframework.batch.core.JobParameters;
  */
 public class TbaJobExecution extends JobExecution {
 
-    private String jobType;
-    private boolean isLatest;
-    private String feedName;
+  private String jobType;
+  private boolean isLatest;
+  private String feedName;
 
-    public TbaJobExecution(JobInstance job, Long id, JobParameters jobParameters, String jobConfigurationName) {
-        super(job, id, jobParameters, jobConfigurationName);
-    }
+  public TbaJobExecution(JobInstance job, Long id, JobParameters jobParameters, String jobConfigurationName) {
+    super(job, id, jobParameters, jobConfigurationName);
+  }
 
-    public String getJobType() {
-        return jobType;
-    }
+  public String getJobType() {
+    return jobType;
+  }
 
-    public void setJobType(String jobType) {
-        this.jobType = jobType;
-    }
+  public void setJobType(String jobType) {
+    this.jobType = jobType;
+  }
 
-    public boolean isLatest() {
-        return isLatest;
-    }
+  public boolean isLatest() {
+    return isLatest;
+  }
 
-    public void setIsLatest(boolean isLatest) {
-        this.isLatest = isLatest;
-    }
+  public void setIsLatest(boolean isLatest) {
+    this.isLatest = isLatest;
+  }
 
-    public String getFeedName() {
-        return feedName;
-    }
+  public String getFeedName() {
+    return feedName;
+  }
 
-    public void setFeedName(String feedName) {
-        this.feedName = feedName;
-    }
+  public void setFeedName(String feedName) {
+    this.feedName = feedName;
+  }
 }

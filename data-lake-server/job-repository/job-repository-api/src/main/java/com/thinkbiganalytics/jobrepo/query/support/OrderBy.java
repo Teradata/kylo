@@ -4,19 +4,20 @@ package com.thinkbiganalytics.jobrepo.query.support;
  * Created by sr186054 on 4/13/16.
  */
 public interface OrderBy {
-    String getColumnName();
 
-    void setColumnName(String columnName);
+  String getColumnName();
 
-    String getDir();
+  void setColumnName(String columnName);
 
-    void setDir(String dir);
+  String getDir();
 
-    String getQueryName();
+  void setDir(String dir);
 
-    void setQueryName(String queryName);
+  String getQueryName();
 
-    String getTableAlias();
+  void setQueryName(String queryName);
 
-    void setTableAlias(String tableAlias);
+  String getTableAlias();
+
+  void setTableAlias(String tableAlias);
 }

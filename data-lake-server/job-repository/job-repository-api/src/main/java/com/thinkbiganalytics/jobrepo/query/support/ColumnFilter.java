@@ -8,25 +8,26 @@ import java.util.List;
  * Created by sr186054 on 4/13/16.
  */
 public interface ColumnFilter extends ColumnFilterItem {
-    List<ColumnFilterItem> getFilters();
 
-    ColumnFilterItem getFirst();
+  List<ColumnFilterItem> getFilters();
 
-    String getOperatorValueByName(String name);
+  ColumnFilterItem getFirst();
 
-    ColumnFilterItem getByName(String name);
+  String getOperatorValueByName(String name);
 
-    Object getValueForName(String name);
+  ColumnFilterItem getByName(String name);
 
-    String getValueAsStringForName(String name);
+  Object getValueForName(String name);
 
-    Collection<?> getValueAsCollection(String name);
+  String getValueAsStringForName(String name);
 
-    boolean isSqlString();
+  Collection<?> getValueAsCollection(String name);
 
-    String getNameOrFirstFilterName();
+  boolean isSqlString();
 
-    String getSqlString();
+  String getNameOrFirstFilterName();
 
-    void setSqlString(String sqlString);
+  String getSqlString();
+
+  void setSqlString(String sqlString);
 }

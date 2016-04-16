@@ -4,13 +4,14 @@ package com.thinkbiganalytics.jobrepo.query.builder;
  * Created by sr186054 on 4/14/16.
  */
 public interface QueryJoinBuilder {
-    QueryBuilder buildJoin();
 
-    QueryJoinBuilder as(String as);
+  QueryBuilder buildJoin();
 
-    QueryBuilder on(String on);
+  QueryJoinBuilder as(String as);
 
-    enum JOIN_TYPE {
-        INNER, LEFT
-    }
+  QueryBuilder on(String on);
+
+  enum JOIN_TYPE {
+    INNER, LEFT
+  }
 }

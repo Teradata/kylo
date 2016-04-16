@@ -8,21 +8,22 @@ import java.util.Map;
  * Created by sr186054 on 4/13/16.
  */
 public interface Query {
-    String getQuery();
 
-    void setQuery(String query);
+  String getQuery();
 
-    DatabaseType getDatabaseType();
+  void setQuery(String query);
 
-    void setDatabaseType(DatabaseType databaseType);
+  DatabaseType getDatabaseType();
 
-    Map<String, Object> getNamedParameters();
+  void setDatabaseType(DatabaseType databaseType);
 
-    void addNamedParameters(Map<String, Object> namedParameters);
+  Map<String, Object> getNamedParameters();
 
-    String getQueryWithoutOrderBy();
+  void addNamedParameters(Map<String, Object> namedParameters);
 
-    void setQueryWithoutOrderBy(String queryWithoutOrderBy);
+  String getQueryWithoutOrderBy();
 
-    void setNamedParameters(Map<String, Object> namedParameters);
+  void setQueryWithoutOrderBy(String queryWithoutOrderBy);
+
+  void setNamedParameters(Map<String, Object> namedParameters);
 }

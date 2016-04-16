@@ -13,12 +13,13 @@ import java.util.List;
  */
 public interface CheckDataJobRepository {
 
-    public SearchResult getDataTablesSearchResult(List<ColumnFilter> conditions, List<ColumnFilter> defaultFilters, List<OrderBy> order, Integer start, Integer limit);
+  public SearchResult getDataTablesSearchResult(List<ColumnFilter> conditions, List<ColumnFilter> defaultFilters,
+                                                List<OrderBy> order, Integer start, Integer limit);
 
-    public List<Object> selectDistinctColumnValues(List<ColumnFilter> filters, String columnName);
+  public List<Object> selectDistinctColumnValues(List<ColumnFilter> filters, String columnName);
 
-    public Long selectCount(List<ColumnFilter> filters);
+  public Long selectCount(List<ColumnFilter> filters);
 
-    public List<CheckDataJob> findLatestCheckDataJobs();
+  public List<CheckDataJob> findLatestCheckDataJobs();
 
 }

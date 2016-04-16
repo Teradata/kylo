@@ -1,31 +1,31 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-    <modelVersion>4.0.0</modelVersion>
+  <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thinkbig-job-repository-api</artifactId>
+  <artifactId>thinkbig-job-repository-api</artifactId>
 
-    <parent>
-        <artifactId>thinkbig-job-repository</artifactId>
-        <groupId>com.thinkbiganalytics</groupId>
-        <version>0.1.0-SNAPSHOT</version>
-    </parent>
-
-
-    <dependencies>
-        <!-- needed just for the DatabaseType Enum .... think about changing this so the jdbc dep is not needed -->
-
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-jdbc</artifactId>
-        </dependency>
-
-        <dependency>
-            <groupId>joda-time</groupId>
-            <artifactId>joda-time</artifactId>
-        </dependency>
+  <parent>
+    <artifactId>thinkbig-job-repository</artifactId>
+    <groupId>com.thinkbiganalytics</groupId>
+    <version>0.1.0-SNAPSHOT</version>
+  </parent>
 
 
-    </dependencies>
+  <dependencies>
+    <!-- needed just for the DatabaseType Enum .... think about changing this so the jdbc dep is not needed -->
+
+    <dependency>
+      <groupId>org.springframework</groupId>
+      <artifactId>spring-jdbc</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>joda-time</groupId>
+      <artifactId>joda-time</artifactId>
+    </dependency>
+
+
+  </dependencies>
 
 </project>
