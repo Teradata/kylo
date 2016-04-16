@@ -19,7 +19,7 @@ Modules
 
 1. ***data-lake-server-app***  
 The Server application is a Spring Boot application.    
-2. ***job-repository***
+2. ***job-repository***  
 Responsible for Reading and Writing Job Execution data.  
 Currently we support MySQL and Postgres as backends to store this data.  Under the covers we are using the JSR-352 compliant implementation using Spring Batches Data Model.
 The Execution Engine that is preforming these jobs is separate from the actual storage mechanism.  The default implementation for the data-lake-accelerator is Apache Nifi.  This is in the sub-module *job-repository-nifi*

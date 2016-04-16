@@ -18,25 +18,21 @@ Any class on the classpath that implements one of those interfaces above will ha
 How To Use
 --------------
 
-1. Create a new maven jar project/module 
-
-1. add the ***service-monitor-api*** and ***service-monitor-core*** maven dependencies
-
+1. Create a new maven jar project/module  
+1. add the ***service-monitor-api*** and ***service-monitor-core*** maven dependencies   
 ```xml
         <dependency>
             <groupId>com.thinkbiganalytics</groupId>
             <artifactId>thinkbig-service-monitor-api</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
-
         <dependency>
             <groupId>com.thinkbiganalytics</groupId>
             <artifactId>thinkbig-service-monitor-core</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
-```
-1. Create a class that implements one of the `ServiceStatus(s)Check` interfaces
-
+```  
+1. Create a class that implements one of the `ServiceStatus(s)Check` interfaces  
 ```java
 public class MySystemStatusCheck implements ServiceStatusCheck {
 
@@ -55,5 +51,5 @@ public class MySystemStatusCheck implements ServiceStatusCheck {
     return response;
   }
 }
-```
+```  
 
