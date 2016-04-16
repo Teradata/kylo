@@ -23,35 +23,34 @@ import java.util.concurrent.Executors;
 @EnableConfigurationProperties
 @Import({DatabaseConfiguration.class, SpringJerseyConfiguration.class})
 @ComponentScan("com.thinkbiganalytics") //FIX this
-public class ThinkbigServerApplication  implements SchedulingConfigurer {
+public class ThinkbigServerApplication implements SchedulingConfigurer {
 
 
-	@Bean
-	public static PropertyOverrideConfigurer propertyOverrideConfigurer() {
-		PropertyOverrideConfigurer poc = new PropertyOverrideConfigurer();
-		poc.setIgnoreInvalidKeys(true);
-		poc.setIgnoreResourceNotFound(true);
-		poc.setLocations(new ClassPathResource("application.properties"),
-				new ClassPathResource("applicationDevOverride.properties"));
-		poc.setOrder(-100);
-		return poc;
-	}
+  @Bean
+  public static PropertyOverrideConfigurer propertyOverrideConfigurer() {
+    PropertyOverrideConfigurer poc = new PropertyOverrideConfigurer();
+    poc.setIgnoreInvalidKeys(true);
+    poc.setIgnoreResourceNotFound(true);
+    poc.setLocations(new ClassPathResource("application.properties"),
+                     new ClassPathResource("applicationDevOverride.properties"));
+    poc.setOrder(-100);
+    return poc;
+  }
 
-	@Bean(destroyMethod = "shutdown")
-	public Executor scheduledTaskExecutor() {
-		return Executors.newScheduledThreadPool(25);
-	}
+  @Bean(destroyMethod = "shutdown")
+  public Executor scheduledTaskExecutor() {
+    return Executors.newScheduledThreadPool(25);
+  }
 
-	@Override
-	public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
-		scheduledTaskRegistrar.setScheduler(scheduledTaskExecutor());
-	}
+  @Override
+  public void configureTasks(ScheduledTaskRegistrar scheduledTaskRegistrar) {
+    scheduledTaskRegistrar.setScheduler(scheduledTaskExecutor());
+  }
 
 
-
-public static void main(String[] args) {
-		SpringApplication.run("classpath:application-context.xml", args);
-	}
+  public static void main(String[] args) {
+    SpringApplication.run("classpath:application-context.xml", args);
+  }
 
 
 }

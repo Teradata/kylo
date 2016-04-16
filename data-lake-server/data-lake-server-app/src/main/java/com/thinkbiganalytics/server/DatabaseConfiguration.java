@@ -12,25 +12,27 @@ import javax.sql.DataSource;
 
 @Configuration
 public class DatabaseConfiguration {
-    /**
-     * Access to the jdbc template for persisting job executions
-     * @param dataSource The datasource injected from spring boot
-     * @return The jdbc template
-     */
-    @Bean
-    @Primary
-    public JdbcTemplate jdbcTemplate(final DataSource dataSource) {
-        return new JdbcTemplate(dataSource);
-    }
 
-    @Bean
-    @Primary
-    @ConfigurationProperties(prefix = "spring.datasource")
-    public DataSource dataSource() {
-        DataSource newDataSource = DataSourceBuilder.create().build();
+  /**
+   * Access to the jdbc template for persisting job executions
+   *
+   * @param dataSource The datasource injected from spring boot
+   * @return The jdbc template
+   */
+  @Bean
+  @Primary
+  public JdbcTemplate jdbcTemplate(final DataSource dataSource) {
+    return new JdbcTemplate(dataSource);
+  }
 
-        return newDataSource;
-    }
+  @Bean
+  @Primary
+  @ConfigurationProperties(prefix = "spring.datasource")
+  public DataSource dataSource() {
+    DataSource newDataSource = DataSourceBuilder.create().build();
+
+    return newDataSource;
+  }
 }
 
 

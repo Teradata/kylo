@@ -9,8 +9,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class SpringJerseyConfiguration {
 
-    @Bean
-    public JerseyConfig jerseyConfig(){
-        return new JerseyConfig();
-    }
+  @Bean
+  public JerseyConfig jerseyConfig() {
+    return new JerseyConfig();
+  }
 }
