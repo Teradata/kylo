@@ -7,7 +7,7 @@
 
     <parent>
         <artifactId>thinkbig-data-lake-accelerator</artifactId>
-        <groupId>com.thinkbiganalytics</groupId>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 
@@ -20,7 +20,6 @@
 
     <build>
         <plugins>
-            <!-- use java 1.6 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

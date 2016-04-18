@@ -7,7 +7,7 @@
 <packaging>pom</packaging>
     <parent>
         <artifactId>thinkbig-data-lake-accelerator</artifactId>
-        <groupId>com.thinkbiganalytics</groupId>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
         <version>0.1.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>

@@ -7,14 +7,14 @@
 
   <parent>
     <artifactId>thinkbig-job-repository</artifactId>
-    <groupId>com.thinkbiganalytics</groupId>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
 
 
   <dependencies>
     <dependency>
-      <groupId>com.thinkbiganalytics</groupId>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-job-repository-api</artifactId>
       <version>0.1.0-SNAPSHOT</version>
     </dependency>
@@ -55,7 +55,7 @@
       <artifactId>spring-batch-core</artifactId>
       <version>${spring.batch.version}</version>
     </dependency>
-
+<!--
     <dependency>
       <groupId>com.thinkbiganalytics.bdp</groupId>
       <artifactId>pipeline-batch-common</artifactId>
@@ -67,7 +67,7 @@
         </exclusion>
       </exclusions>
     </dependency>
-
+-->
 
   </dependencies>
 
