@@ -232,8 +232,8 @@ public abstract class ScriptEngine {
         }
 
         // Look for start and end of message
-        int lineIndex = labelIndex + LABEL.length;
-        int msgStart = ArrayUtils.indexOf(outBytes, 0, outBytes.length, SEPARATOR, 0, SEPARATOR.length, lineIndex);
+        int lineIndex = labelIndex + LABEL.length + 1;
+        int msgStart = ArrayUtils.indexOf(outBytes, 0, outBytes.length, SEPARATOR, 0, SEPARATOR.length, lineIndex) + 2;
         int msgEnd = ArrayUtils.indexOf(outBytes, 0, outBytes.length, END_LINE, 0, END_LINE.length, msgStart);
 
         // Throw exception
@@ -241,13 +241,13 @@ public abstract class ScriptEngine {
         String message;
 
         try {
-            line = 0; // TODO Integer.parseInt(new String(outBytes, lineIndex, msgStart - lineIndex));
-            message = new String(outBytes, msgStart, msgEnd, "UTF-8");
+            line = Integer.parseInt(new String(outBytes, lineIndex, msgStart - lineIndex - 2));
+            message = new String(outBytes, msgStart, msgEnd - msgStart, "UTF-8");
         } catch (UnsupportedEncodingException e) {
             throw new IllegalStateException(e);
         }
 
-        throw new ScriptException(new String(outBytes), "<console>", line);
+        throw new ScriptException(message, "<console>", line);
     }
 
     /**
