@@ -1,9 +1,6 @@
 package com.thinkbiganalytics.spark.repl;
 
-import java.net.URLClassLoader;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import com.google.common.base.Joiner;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,7 +8,10 @@ import org.apache.spark.SparkConf;
 import org.apache.spark.SparkContext;
 import org.apache.spark.repl.SparkIMain;
 
-import com.google.common.base.Joiner;
+import java.net.URLClassLoader;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import scala.collection.immutable.List;
 import scala.tools.nsc.Settings;
@@ -20,8 +20,8 @@ import scala.tools.nsc.interpreter.Results;
 /**
  * Evaluates Scala scripts using the Spark REPL interface.
  */
-public class SparkScriptEngine extends ScriptEngine
-{
+public class SparkScriptEngine extends ScriptEngine {
+
     private static final Logger LOG = LogManager.getLogger(SparkScriptEngine.class);
 
     /** Spark configuration */
@@ -37,28 +37,24 @@ public class SparkScriptEngine extends ScriptEngine
      *
      * @param conf the Spark configuration
      */
-    SparkScriptEngine (@Nonnull final SparkConf conf)
-    {
+    SparkScriptEngine(@Nonnull final SparkConf conf) {
         this.conf = conf;
     }
 
     @Override
-    public void init ()
-    {
+    public void init() {
         getInterpreter();
     }
 
     @Nonnull
     @Override
-    protected SparkContext createSparkContext ()
-    {
+    protected SparkContext createSparkContext() {
         this.conf.set("spark.repl.class.uri", getInterpreter().classServerUri());
         return new SparkContext(this.conf);
     }
 
     @Override
-    protected void execute (@Nonnull final String script)
-    {
+    protected void execute(@Nonnull final String script) {
         LOG.debug("Executing script:\n{}", script);
         getInterpreter().interpret(script);
     }
@@ -69,15 +65,14 @@ public class SparkScriptEngine extends ScriptEngine
      * @return the interpreter
      */
     @Nonnull
-    private SparkIMain getInterpreter ()
-    {
+    private SparkIMain getInterpreter() {
         if (this.interpreter == null) {
             // Determine engine settings
             Settings settings = new Settings();
 
             if (settings.classpath().isDefault()) {
-                String classPath = Joiner.on(':').join(((URLClassLoader)getClass().getClassLoader())
-                        .getURLs()) + ":" + System.getProperty("java.class.path");
+                String classPath = Joiner.on(':').join(((URLClassLoader) getClass().getClassLoader()).getURLs()) + ":" + System
+                        .getProperty("java.class.path");
                 settings.classpath().value_$eq(classPath);
             }
 
@@ -85,7 +80,7 @@ public class SparkScriptEngine extends ScriptEngine
             final ClassLoader parentClassLoader = getClass().getClassLoader();
             SparkIMain interpreter = new SparkIMain(settings, getPrintWriter(), false) {
                 @Override
-                public ClassLoader parentClassLoader ()  {
+                public ClassLoader parentClassLoader() {
                     return parentClassLoader;
                 }
             };
@@ -94,8 +89,7 @@ public class SparkScriptEngine extends ScriptEngine
             interpreter.initializeSynchronous();
 
             // Setup environment
-            Results.Result result = interpreter.bind("engine", SparkScriptEngine.class
-                    .getName(), this, List.<String>empty());
+            Results.Result result = interpreter.bind("engine", SparkScriptEngine.class.getName(), this, List.<String>empty());
             if (result instanceof Results.Error$) {
                 throw new IllegalStateException("Failed to initialize interpreter");
             }

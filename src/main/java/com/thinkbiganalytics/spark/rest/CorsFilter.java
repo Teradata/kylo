@@ -1,5 +1,12 @@
 package com.thinkbiganalytics.spark.rest;
 
+import com.google.common.base.Joiner;
+import com.google.common.collect.Sets;
+
+import org.glassfish.jersey.server.ContainerRequest;
+import org.glassfish.jersey.server.model.ResourceMethod;
+import org.glassfish.jersey.server.model.RuntimeResource;
+
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
@@ -11,17 +18,11 @@ import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
 import javax.ws.rs.core.MultivaluedMap;
 
-import org.glassfish.jersey.server.ContainerRequest;
-import org.glassfish.jersey.server.model.ResourceMethod;
-import org.glassfish.jersey.server.model.RuntimeResource;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.Sets;
-
 /**
  * Adds content origin headers to responses.
  */
 public class CorsFilter implements ContainerResponseFilter {
+
     @Override
     public void filter(@Nonnull final ContainerRequestContext request, @Nonnull final ContainerResponseContext response)
             throws IOException {

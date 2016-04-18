@@ -1,20 +1,5 @@
 package com.thinkbiganalytics.spark.service;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
-import javax.script.ScriptException;
-
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SQLContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
@@ -31,6 +16,21 @@ import com.thinkbiganalytics.spark.metadata.TransformResponse;
 import com.thinkbiganalytics.spark.repl.ScriptEngine;
 import com.thinkbiganalytics.spark.util.HiveUtils;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SQLContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Queue;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
+import javax.script.ScriptException;
+
 import scala.tools.nsc.interpreter.NamedParam;
 import scala.tools.nsc.interpreter.NamedParamClass;
 
@@ -44,35 +44,23 @@ public class TransformService extends AbstractScheduledService {
 
     private static final Logger log = LoggerFactory.getLogger(TransformService.class);
 
-    /**
-     * Name of the database
-     */
+    /** Name of the database */
     private static final String DATABASE = "spark_shell_temp";
 
-    /**
-     * Time in seconds after last use for a table to expire
-     */
+    /** Time in seconds after last use for a table to expire */
     private static final long EXPIRE_TIME = 3600L;
 
-    /**
-     * Minimum table size in bytes, to ensure there aren't too many tables
-     */
+    /** Minimum table size in bytes, to ensure there aren't too many tables */
     private static final int MIN_BYTES = 1048576;
 
-    /**
-     * Maximum database size in bytes (soft limit)
-     */
+    /** Maximum database size in bytes (soft limit) */
     private static final long MAX_BYTES = 10737418240L;
 
-    /**
-     * Tables with cached results
-     */
+    /** Tables with cached results */
     @Nonnull
     private final TableCache cache = new TableCache();
 
-    /**
-     * Script execution engine
-     */
+    /** Script execution engine */
     @Nonnull
     private final ScriptEngine engine;
 

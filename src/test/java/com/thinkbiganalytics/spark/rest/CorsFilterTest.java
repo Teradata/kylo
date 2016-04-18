@@ -1,9 +1,6 @@
 package com.thinkbiganalytics.spark.rest;
 
-import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 import org.glassfish.jersey.server.ContainerRequest;
 import org.glassfish.jersey.server.ContainerResponse;
@@ -24,6 +21,7 @@ import javax.ws.rs.core.MultivaluedHashMap;
 import javax.ws.rs.core.MultivaluedMap;
 
 public class CorsFilterTest {
+
     /** Verify headers set by CORS filter */
     @Test
     @SuppressWarnings("unchecked")
@@ -36,8 +34,8 @@ public class CorsFilterTest {
 
         RuntimeResource runtimeResource = Mockito.when(Mockito.mock(RuntimeResource.class).getResourceMethods()).thenReturn(
                 ImmutableList.of(getMethod, postMethod)).getMock();
-        ExtendedUriInfo uriInfo = (ExtendedUriInfo)Mockito.when(Mockito.mock(ExtendedUriInfo.class).getMatchedRuntimeResources())
-                .thenReturn((List)ImmutableList.of(runtimeResource)).getMock();
+        ExtendedUriInfo uriInfo = (ExtendedUriInfo) Mockito.when(Mockito.mock(ExtendedUriInfo.class).getMatchedRuntimeResources())
+                .thenReturn((List) ImmutableList.of(runtimeResource)).getMock();
         ContainerRequest request = Mockito.when(Mockito.mock(ContainerRequest.class).getUriInfo()).thenReturn(uriInfo).getMock();
 
         // Mock response
@@ -58,7 +56,7 @@ public class CorsFilterTest {
         Assert.assertNotNull("Methods header should not be null", methodsList);
         Assert.assertEquals(1, methodsList.size());
 
-        String[] methods = ((String)methodsList.get(0)).split(",");
+        String[] methods = ((String) methodsList.get(0)).split(",");
         Arrays.sort(methods);
         Assert.assertArrayEquals(new String[] {"GET", "OPTIONS", "POST"}, methods);
     }

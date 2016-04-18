@@ -5,32 +5,29 @@ import javax.annotation.Nonnull;
 /**
  * Static utility methods for arrays.
  */
-public class ArrayUtils
-{
+public class ArrayUtils {
+
     /**
-     * Returns the index of the first occurrence of the specified array. The returned index is
-     * relative to the offset in the source array, and will be -1 if the target is not found.
+     * Returns the index of the first occurrence of the specified array. The returned index is relative to the offset in the
+     * source array, and will be -1 if the target is not found.
      *
-     * @param sourceBytes array being searched
+     * @param sourceBytes  array being searched
      * @param sourceOffset offset in source array
      * @param sourceLength number of elements to search
-     * @param targetBytes array to be matched
+     * @param targetBytes  array to be matched
      * @param targetOffset offset in target array
      * @param targetLength number of elements to match
-     * @param fromIndex start position in source array, relative to its offset
+     * @param fromIndex    start position in source array, relative to its offset
      * @return index of the first occurrence, or -1 if not found
-     * @throws IndexOutOfBoundsException if the offsets and lengths are greater than the size of the
-     *     arrays
+     * @throws IndexOutOfBoundsException if the offsets and lengths are greater than the size of the arrays
      */
-    public static int indexOf (@Nonnull final byte[] sourceBytes, final int sourceOffset,
-            final int sourceLength, @Nonnull final byte[] targetBytes, final int targetOffset,
-            final int targetLength, final int fromIndex)
-    {
+    public static int indexOf(@Nonnull final byte[] sourceBytes, final int sourceOffset, final int sourceLength,
+                              @Nonnull final byte[] targetBytes, final int targetOffset, final int targetLength,
+                              final int fromIndex) {
         // Range checks
         if (fromIndex >= sourceLength) {
             return (targetLength == 0) ? sourceLength : -1;
-        }
-        else if (targetLength == 0) {
+        } else if (targetLength == 0) {
             return fromIndex;
         }
 
@@ -60,8 +57,12 @@ public class ArrayUtils
         return -1;
     }
 
-    private ArrayUtils ()
-    {
+    /**
+     * Instances of {@code ArrayUtils} should not be constructed.
+     *
+     * @throws UnsupportedOperationException always
+     */
+    private ArrayUtils() {
         throw new UnsupportedOperationException();
     }
 }

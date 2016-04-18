@@ -1,7 +1,10 @@
 package com.thinkbiganalytics.spark.service;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.clearspring.analytics.util.Lists;
+import com.google.common.collect.ImmutableList;
+import com.thinkbiganalytics.spark.metadata.TransformRequest;
+import com.thinkbiganalytics.spark.metadata.TransformResponse;
+import com.thinkbiganalytics.spark.repl.ScriptEngine;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.spark.sql.DataFrame;
@@ -13,21 +16,17 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
-import com.clearspring.analytics.util.Lists;
-import com.google.common.collect.ImmutableList;
-import com.thinkbiganalytics.spark.metadata.TransformRequest;
-import com.thinkbiganalytics.spark.metadata.TransformResponse;
-import com.thinkbiganalytics.spark.repl.ScriptEngine;
+import java.util.ArrayList;
+import java.util.List;
 
 import scala.tools.nsc.interpreter.NamedParam;
 
-public class TransformServiceTest
-{
+public class TransformServiceTest {
+
     /** Verify executing a transformation request. */
     @Test
     @SuppressWarnings("unchecked")
-    public void execute () throws Exception
-    {
+    public void execute() throws Exception {
         // Mock SQL context and script engine
         DataFrame dataFrame = Mockito.mock(DataFrame.class);
         Mockito.when(dataFrame.collectAsList()).thenReturn(new ArrayList<Row>());
@@ -49,8 +48,7 @@ public class TransformServiceTest
         TransformResponse response = null;
         try {
             response = service.execute(request);
-        }
-        finally {
+        } finally {
             service.stopAsync();
         }
 
@@ -61,8 +59,7 @@ public class TransformServiceTest
         ArgumentCaptor<List> evalBindings = ArgumentCaptor.forClass(List.class);
         Mockito.verify(engine).eval(evalScript.capture(), evalBindings.capture());
 
-        String expectedScript = IOUtils.toString(getClass().getResourceAsStream("transform-service"
-                + "-script1.scala"), "UTF-8");
+        String expectedScript = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
         Assert.assertEquals(expectedScript, evalScript.getValue());
 
         List<NamedParam> bindings = evalBindings.getValue();
@@ -77,8 +74,7 @@ public class TransformServiceTest
 
     /** Verify cleaning up during shutdown. */
     @Test
-    public void shutDown () throws Exception
-    {
+    public void shutDown() throws Exception {
         // Mock SQL context and script engine
         SQLContext context = Mockito.mock(SQLContext.class);
         ScriptEngine engine = Mockito.mock(ScriptEngine.class);
@@ -87,8 +83,7 @@ public class TransformServiceTest
         // Mock service
         TransformService service = new TransformService(engine) {
             @Override
-            protected void startUp ()
-            {}
+            protected void startUp() {}
         };
         service.startAsync();
         service.awaitRunning();
@@ -102,30 +97,24 @@ public class TransformServiceTest
             tables.add(service.execute(request).getTable());
             tables.add(service.execute(request).getTable());
             tables.add(service.execute(request).getTable());
-        }
-        finally {
+        } finally {
             service.stopAsync();
         }
 
         service.awaitTerminated();
 
         // Test clean-up
-        Mockito.verify(context).sql("DROP TABLE IF EXISTS `spark_shell_temp`.`" + tables.get(0)
-                + "`");
-        Mockito.verify(context).sql("DROP TABLE IF EXISTS `spark_shell_temp`.`" + tables.get(1)
-                + "`");
-        Mockito.verify(context).sql("DROP TABLE IF EXISTS `spark_shell_temp`.`" + tables.get(2)
-                + "`");
+        Mockito.verify(context).sql("DROP TABLE IF EXISTS `spark_shell_temp`.`" + tables.get(0) + "`");
+        Mockito.verify(context).sql("DROP TABLE IF EXISTS `spark_shell_temp`.`" + tables.get(1) + "`");
+        Mockito.verify(context).sql("DROP TABLE IF EXISTS `spark_shell_temp`.`" + tables.get(2) + "`");
     }
 
     /** Verify setting up database during start-up. */
     @Test
-    public void startUp ()
-    {
+    public void startUp() {
         // Mock SQL context and script engine
         DataFrame dataFrame = Mockito.mock(DataFrame.class);
-        ImmutableList<Row> tables = ImmutableList.of(RowFactory.create("table1", false), RowFactory
-                .create("table2", false));
+        ImmutableList<Row> tables = ImmutableList.of(RowFactory.create("table1", false), RowFactory.create("table2", false));
         Mockito.when(dataFrame.collectAsList()).thenReturn(tables);
 
         SQLContext context = Mockito.mock(SQLContext.class);
@@ -143,17 +132,17 @@ public class TransformServiceTest
         Mockito.verify(context).sql("DROP TABLE IF EXISTS `spark_shell_temp`.`table2`");
     }
 
-    /** Verify converting a transformation request to a Scala script. */
+    /**
+     * Verify converting a transformation request to a Scala script.
+     */
     @Test
-    public void toScript () throws Exception
-    {
+    public void toScript() throws Exception {
         // Build the request
         TransformRequest request = new TransformRequest();
         request.setScript("sqlContext.range(1,10)");
 
         // Test converting request to script
-        String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service"
-                + "-script1.scala"), "UTF-8");
+        String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
 
         TransformService service = new TransformService(Mockito.mock(ScriptEngine.class));
         Assert.assertEquals(expected, service.toScript(request));
@@ -161,8 +150,7 @@ public class TransformServiceTest
 
     /** Verify converting a transformation request with a parent to a Scala script. */
     @Test
-    public void toScriptWithParent () throws Exception
-    {
+    public void toScriptWithParent() throws Exception {
         // Build the request
         TransformRequest.Parent parent = new TransformRequest.Parent();
         parent.setScript("sqlContext.range(1,10)");
@@ -173,8 +161,7 @@ public class TransformServiceTest
         request.setScript("parent.withColumn(functions.expr(\"id+1\")");
 
         // Test converting request to script
-        String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service"
-                + "-script2.scala"), "UTF-8");
+        String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script2.scala"), "UTF-8");
 
         TransformService service = new TransformService(Mockito.mock(ScriptEngine.class));
         Assert.assertEquals(expected, service.toScript(request));

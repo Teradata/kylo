@@ -1,23 +1,20 @@
 package com.thinkbiganalytics.spark.repl;
 
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
+import org.apache.spark.util.Utils;
+
 import java.io.File;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
-import org.apache.spark.util.Utils;
-
-import scala.Function1;
 import scala.collection.immutable.List;
-import scala.runtime.BoxedUnit;
-import scala.tools.nsc.GenericRunnerSettings;
 import scala.tools.nsc.Settings;
 import scala.tools.nsc.interpreter.IMain;
 
-public class ScalaScriptEngine extends ScriptEngine
-{
+public class ScalaScriptEngine extends ScriptEngine {
+
     private static final String OUTPUTDIR = "spark.repl.class.outputDir";
 
     @Nonnull
@@ -26,15 +23,13 @@ public class ScalaScriptEngine extends ScriptEngine
     @Nullable
     private IMain interpreter;
 
-    public ScalaScriptEngine (@Nonnull final SparkConf conf)
-    {
+    public ScalaScriptEngine(@Nonnull final SparkConf conf) {
         this.conf = conf;
     }
 
     @Nonnull
     @Override
-    protected SparkContext createSparkContext ()
-    {
+    protected SparkContext createSparkContext() {
         // Set output directory
         String rootDir = this.conf.get("spark.repl.classdir", Utils.getLocalDir(this.conf));
         File outputDir = Utils.createTempDir(rootDir, "repl");
@@ -45,17 +40,15 @@ public class ScalaScriptEngine extends ScriptEngine
     }
 
     @Override
-    protected void execute (@Nonnull String script)
-    {
+    protected void execute(@Nonnull String script) {
         getInterpreter().interpret(script);
     }
 
     @Nonnull
-    private IMain getInterpreter ()
-    {
+    private IMain getInterpreter() {
         if (this.interpreter == null) {
-            List<String> interpArguments = List.fromArray(new String[] {"-Yrepl-class-based",
-                    "-Yrepl-outdir", getOutputDirectory()});
+            List<String> interpArguments = List.fromArray(new String[]{"-Yrepl-class-based", "-Yrepl-outdir",
+                    getOutputDirectory()});
 
 //            GenericRunnerSettings settings = new GenericRunnerSettings(
 //                    new Function1<String,BoxedUnit>() {
@@ -73,15 +66,13 @@ public class ScalaScriptEngine extends ScriptEngine
             this.interpreter.initializeSynchronous();
 
             // Setup environment
-            this.interpreter.bind("engine", ScalaScriptEngine.class.getName(), this,
-                    List.<String>empty());
+            this.interpreter.bind("engine", ScalaScriptEngine.class.getName(), this, List.<String>empty());
         }
         return this.interpreter;
     }
 
     @Nonnull
-    private String getOutputDirectory ()
-    {
+    private String getOutputDirectory() {
         return getSparkContext().getConf().get(OUTPUTDIR);
     }
 }

@@ -8,12 +8,11 @@ import org.apache.spark.sql.SQLContext
   *
   * @param engine the script engine
   */
-abstract class Script (engine: ScriptEngine) extends Runnable
-{
+abstract class Script(engine: ScriptEngine) extends Runnable {
     /**
       * Evaluates this script and passes the result to the script engine.
       */
-    override def run (): Unit = {
+    override def run(): Unit = {
         try {
             val result: Any = eval()
             if (result == Unit) {
@@ -35,7 +34,7 @@ abstract class Script (engine: ScriptEngine) extends Runnable
       * @return the result
       */
     @throws(classOf[Throwable])
-    protected def eval (): Any
+    protected def eval(): Any
 
     /**
       * Gets the value for a bound variable.
@@ -44,7 +43,7 @@ abstract class Script (engine: ScriptEngine) extends Runnable
       * @tparam T the type
       * @return the value
       */
-    protected def getValue[T] (name: String): T = {
+    protected def getValue[T](name: String): T = {
         engine.getValue(name).asInstanceOf[T]
     }
 

@@ -4,7 +4,6 @@ import java.util
 
 import org.apache.hadoop.hive.serde2.objectinspector.ObjectInspectorFactory
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.{JavaHiveDecimalObjectInspector, PrimitiveObjectInspectorFactory}
-import org.apache.hadoop.hive.serde2.typeinfo.{DecimalTypeInfo, HiveDecimalUtils}
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SQLContext}
 import org.junit.{Assert, Test}
@@ -21,8 +20,8 @@ class TransformScriptTest {
 
         // Test type conversions
         Assert.assertEquals(PrimitiveObjectInspectorFactory.javaIntObjectInspector, script.toInspector(IntegerType))
-        Assert.assertEquals(ObjectInspectorFactory.getStandardListObjectInspector(
-                PrimitiveObjectInspectorFactory.javaIntObjectInspector),
+        Assert.assertEquals(
+                ObjectInspectorFactory.getStandardListObjectInspector(PrimitiveObjectInspectorFactory.javaIntObjectInspector),
                 script.toInspector(ArrayType(IntegerType)))
         Assert.assertEquals(ObjectInspectorFactory.getStandardMapObjectInspector(
                 PrimitiveObjectInspectorFactory.javaStringObjectInspector,

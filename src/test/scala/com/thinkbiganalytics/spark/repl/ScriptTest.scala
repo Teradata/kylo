@@ -5,11 +5,10 @@ import org.apache.spark.sql.SQLContext
 import org.junit.Test
 import org.mockito.Mockito
 
-class ScriptTest
-{
+class ScriptTest {
     /** Verify evaluating a script. */
     @Test
-    def run (): Unit = {
+    def run(): Unit = {
         // Mock engine and script
         val engine = Mockito.mock(classOf[ScriptEngine])
         val script = new Script(engine) {
@@ -25,7 +24,7 @@ class ScriptTest
 
     /** Verify handling an exception when evaluating a script. */
     @Test
-    def runWithException (): Unit = {
+    def runWithException(): Unit = {
         // Mock engine and script
         val engine = Mockito.mock(classOf[ScriptEngine])
         val exception = new UnsupportedOperationException
@@ -42,7 +41,7 @@ class ScriptTest
 
     /** Verify evaluating a script that returns void. */
     @Test
-    def runWithVoid (): Unit = {
+    def runWithVoid(): Unit = {
         // Mock engine and script
         val engine = Mockito.mock(classOf[ScriptEngine])
         val script = new Script(engine) {
@@ -56,7 +55,7 @@ class ScriptTest
 
     /** Verify getting a value from the engine. */
     @Test
-    def getValue (): Unit = {
+    def getValue(): Unit = {
         // Mock engine and script
         val engine = Mockito.mock(classOf[ScriptEngine])
         Mockito.when(engine.getValue("myval")).thenReturn(new Integer(42), Nil: _*)
@@ -75,7 +74,7 @@ class ScriptTest
 
     /** Verify getting the Spark context from the engine. */
     @Test
-    def sc (): Unit = {
+    def sc(): Unit = {
         // Mock engine and script
         val sc = Mockito.mock(classOf[SparkContext])
 
@@ -95,7 +94,7 @@ class ScriptTest
 
     /** Verify getting the SQL context from the engine. */
     @Test
-    def sqlContext (): Unit = {
+    def sqlContext(): Unit = {
         // Mock engine and script
         val sqlContext = Mockito.mock(classOf[SQLContext])
 

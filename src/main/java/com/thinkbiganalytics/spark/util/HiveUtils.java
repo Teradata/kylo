@@ -6,8 +6,8 @@ import javax.annotation.Nullable;
 /**
  * Utility methods for interacting with Hive.
  */
-public class HiveUtils
-{
+public class HiveUtils {
+
     /**
      * Quotes the specified Hive identifier.
      *
@@ -15,31 +15,25 @@ public class HiveUtils
      * @return the quoted Hive identifier
      */
     @Nonnull
-    public static String quoteIdentifier (@Nonnull final String identifier)
-    {
+    public static String quoteIdentifier(@Nonnull final String identifier) {
         return "`" + identifier.replaceAll("`", "``") + "`";
     }
 
     /**
-     * Quotes the specified Hive identifiers. This method is commonly used to reference a specific
-     * table in a specific database.
+     * Quotes the specified Hive identifiers. This method is commonly used to reference a specific table in a specific database.
      *
-     * <p>If the first argument is not {@code null}, then the result will be in the format:
-     * `first`.`second`. Otherwise, the format is the same as
-     * {@link #quoteIdentifier(String) quoteIdentifier(second)}</p>
+     * <p>If the first argument is not {@code null}, then the result will be in the format: `first`.`second`. Otherwise, the
+     * format is the same as {@link #quoteIdentifier(String) quoteIdentifier(second)}</p>
      *
-     * @param first the first identifier, name of the database, or {@code null}
+     * @param first  the first identifier, name of the database, or {@code null}
      * @param second the second identifier or name of the table
      * @return the string containing the quoted Hive identifiers
      */
     @Nonnull
-    public static String quoteIdentifier (@Nullable final String first,
-            @Nonnull final String second)
-    {
+    public static String quoteIdentifier(@Nullable final String first, @Nonnull final String second) {
         if (first != null) {
             return quoteIdentifier(first) + "." + quoteIdentifier(second);
-        }
-        else {
+        } else {
             return quoteIdentifier(second);
         }
     }
@@ -49,8 +43,7 @@ public class HiveUtils
      *
      * @throws UnsupportedOperationException always
      */
-    private HiveUtils ()
-    {
+    private HiveUtils() {
         throw new UnsupportedOperationException();
     }
 }

@@ -5,8 +5,8 @@ import javax.annotation.Nonnull;
 /**
  * A request to perform a transformation on a table.
  */
-public class TransformRequest
-{
+public class TransformRequest {
+
     /** Previous transformation result */
     private Parent parent;
 
@@ -21,8 +21,7 @@ public class TransformRequest
      *
      * @return the previous result
      */
-    public Parent getParent ()
-    {
+    public Parent getParent() {
         return parent;
     }
 
@@ -31,8 +30,7 @@ public class TransformRequest
      *
      * @param parent the previous result
      */
-    public void setParent (@Nonnull final Parent parent)
-    {
+    public void setParent(@Nonnull final Parent parent) {
         this.parent = parent;
     }
 
@@ -41,8 +39,7 @@ public class TransformRequest
      *
      * @return the transformation script
      */
-    public String getScript ()
-    {
+    public String getScript() {
         return script;
     }
 
@@ -51,8 +48,7 @@ public class TransformRequest
      *
      * @param script the transformation script
      */
-    public void setScript (@Nonnull final String script)
-    {
+    public void setScript(@Nonnull final String script) {
         this.script = script;
     }
 
@@ -61,8 +57,7 @@ public class TransformRequest
      *
      * @return {@code true} if results should be sent in the response, or {@code false} otherwise
      */
-    public boolean isSendResults ()
-    {
+    public boolean isSendResults() {
         return sendResults;
     }
 
@@ -71,16 +66,15 @@ public class TransformRequest
      *
      * @param sendResults {@code true} if results should be sent in the response, or {@code false} otherwise
      */
-    public void setSendResults (final boolean sendResults)
-    {
+    public void setSendResults(final boolean sendResults) {
         this.sendResults = sendResults;
     }
 
     /**
      * Results of a previous transformation.
      */
-    public static class Parent
-    {
+    public static class Parent {
+
         /** Scala script with the transformation */
         private String script;
 
@@ -92,8 +86,7 @@ public class TransformRequest
          *
          * @return the transformation script
          */
-        public String getScript ()
-        {
+        public String getScript() {
             return script;
         }
 
@@ -102,8 +95,7 @@ public class TransformRequest
          *
          * @param script the transformation script
          */
-        public void setScript (String script)
-        {
+        public void setScript(String script) {
             this.script = script;
         }
 
@@ -112,8 +104,7 @@ public class TransformRequest
          *
          * @return the table name
          */
-        public String getTable ()
-        {
+        public String getTable() {
             return table;
         }
 
@@ -122,8 +113,7 @@ public class TransformRequest
          *
          * @param table the table name
          */
-        public void setTable (String table)
-        {
+        public void setTable(String table) {
             this.table = table;
         }
     }

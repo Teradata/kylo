@@ -1,5 +1,10 @@
 package com.thinkbiganalytics.spark.rest;
 
+import com.google.common.collect.ImmutableMap;
+import com.thinkbiganalytics.spark.metadata.TransformRequest;
+import com.thinkbiganalytics.spark.metadata.TransformResponse;
+import com.thinkbiganalytics.spark.service.TransformService;
+
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -13,17 +18,12 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.google.common.collect.ImmutableMap;
-import com.thinkbiganalytics.spark.metadata.TransformRequest;
-import com.thinkbiganalytics.spark.metadata.TransformResponse;
-import com.thinkbiganalytics.spark.service.TransformService;
-
 /**
  * Endpoint for executing Spark scripts on the server.
  */
 @Path("/api/v1/spark/shell")
-public class SparkShellController
-{
+public class SparkShellController {
+
     /** Name of the status field for responses */
     private static final String STATUS = "status";
 
@@ -45,8 +45,7 @@ public class SparkShellController
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Nonnull
-    public Response transform (@Nonnull final TransformRequest request)
-    {
+    public Response transform(@Nonnull final TransformRequest request) {
         // Validate request
         if (request.getScript() == null) {
             return error(Response.Status.BAD_REQUEST, "transform.missingScript");
@@ -64,8 +63,7 @@ public class SparkShellController
         try {
             TransformResponse response = this.transformService.execute(request);
             return Response.ok(response).build();
-        }
-        catch (ScriptException e) {
+        } catch (ScriptException e) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
         }
     }
@@ -77,8 +75,7 @@ public class SparkShellController
      * @return the error response
      */
     @Nonnull
-    private Response error (@Nonnull final Response.Status status, @Nonnull final String key)
-    {
+    private Response error(@Nonnull final Response.Status status, @Nonnull final String key) {
         // Determine the error message
         String message = key;
 
@@ -90,7 +87,7 @@ public class SparkShellController
 //        }
 
         // Generate the response
-        Map<String,String> entity = ImmutableMap.of(STATUS, "error", "message", message);
+        Map<String, String> entity = ImmutableMap.of(STATUS, "error", "message", message);
         return Response.status(status).entity(entity).build();
     }
 }
