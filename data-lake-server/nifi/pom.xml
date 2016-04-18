@@ -3,7 +3,7 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>thinkbig-job-repository</artifactId>
+  <artifactId>thinkbig-nifi</artifactId>
   <packaging>pom</packaging>
   <parent>
     <artifactId>thinkbig-data-lake-server</artifactId>
@@ -11,11 +11,13 @@
     <version>0.1.0-SNAPSHOT</version>
     <relativePath>../pom.xml</relativePath>
   </parent>
+
+  <properties>
+    <nifi.version>0.5.0</nifi.version>
+    <thinkbig.nifi.version>0.5.0-SNAPSHOT</thinkbig.nifi.version>
+  </properties>
   <modules>
-    <module>job-repository-api</module>
-    <module>job-repository-core</module>
-    <module>job-repository-rest-model</module>
-    <module>job-repository-controller</module>
+    <module>job-repository-nifi</module>
   </modules>
 
 </project>

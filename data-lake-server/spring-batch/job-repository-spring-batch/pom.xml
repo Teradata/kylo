@@ -3,17 +3,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>thinkbig-job-repository-nifi</artifactId>
+  <artifactId>thinkbig-job-repository-spring-batch</artifactId>
 
   <parent>
-    <artifactId>thinkbig-job-repository</artifactId>
+    <artifactId>thinkbig-spring-batch</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>
-  <properties>
-    <nifi.version>0.5.0</nifi.version>
-    <thinkbig.nifi.version>0.5.0-SNAPSHOT</thinkbig.nifi.version>
-  </properties>
 
 
   <dependencies>
@@ -40,21 +36,9 @@
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
     </dependency>
-
     <dependency>
-      <artifactId>tba-rest-client</artifactId>
-      <groupId>com.thinkbiganalytics.bdp</groupId>
-    </dependency>
-    <dependency>
-      <groupId>org.apache.nifi</groupId>
-      <artifactId>nifi-client-dto</artifactId>
-      <version>${nifi.version}</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.nifi</groupId>
-      <artifactId>thinkbig-nifi-rest</artifactId>
-      <version>${thinkbig.nifi.version}</version>
+      <groupId>org.springframework.batch</groupId>
+      <artifactId>spring-batch-core</artifactId>
     </dependency>
 
 
