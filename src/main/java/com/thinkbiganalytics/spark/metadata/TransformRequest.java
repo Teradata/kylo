@@ -13,6 +13,9 @@ public class TransformRequest
     /** Scala script with transformation */
     private String script;
 
+    /** Indicates results should be sent in response */
+    private boolean sendResults;
+
     /**
      * Gets the previous transformation result.
      *
@@ -51,6 +54,26 @@ public class TransformRequest
     public void setScript (@Nonnull final String script)
     {
         this.script = script;
+    }
+
+    /**
+     * Indicates if results should be sent in the response.
+     *
+     * @return {@code true} if results should be sent in the response, or {@code false} otherwise
+     */
+    public boolean isSendResults ()
+    {
+        return sendResults;
+    }
+
+    /**
+     * Sets whether the results should be sent in the response.
+     *
+     * @param sendResults {@code true} if results should be sent in the response, or {@code false} otherwise
+     */
+    public void setSendResults (final boolean sendResults)
+    {
+        this.sendResults = sendResults;
     }
 
     /**

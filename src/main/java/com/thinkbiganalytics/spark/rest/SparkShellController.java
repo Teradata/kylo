@@ -6,7 +6,6 @@ import java.util.ResourceBundle;
 import javax.annotation.Nonnull;
 import javax.script.ScriptException;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.OPTIONS;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
@@ -16,6 +15,7 @@ import javax.ws.rs.core.Response;
 
 import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.spark.metadata.TransformRequest;
+import com.thinkbiganalytics.spark.metadata.TransformResponse;
 import com.thinkbiganalytics.spark.service.TransformService;
 
 /**
@@ -33,18 +33,6 @@ public class SparkShellController
     /** Service for evaluating transform scripts */
     @Context
     public TransformService transformService;
-
-    @OPTIONS
-    @Path("/transform")
-    @Nonnull
-    public Response transform ()
-    {
-        return Response.ok()
-                .header("Access-Control-Allow-Origin", "*")
-                .header("Access-Control-Allow-Methods", "POST")
-                .header("Access-Control-Allow-Headers", "Content-Type")
-                .build();
-    }
 
     /**
      * Executes a Spark script that performs transformations using a {@code DataFrame}.
@@ -74,14 +62,8 @@ public class SparkShellController
 
         // Execute request
         try {
-            String table = this.transformService.execute(request);
-
-            Map<String,String> response = ImmutableMap.of(STATUS, "success", "table", table);
-            return Response.ok(response)
-                    .header("Access-Control-Allow-Origin", "*")
-                    .header("Access-Control-Allow-Methods", "POST")
-                    .header("Access-Control-Allow-Headers", "Content-Type")
-                    .build();
+            TransformResponse response = this.transformService.execute(request);
+            return Response.ok(response).build();
         }
         catch (ScriptException e) {
             return error(Response.Status.INTERNAL_SERVER_ERROR, e.getMessage());
@@ -109,10 +91,6 @@ public class SparkShellController
 
         // Generate the response
         Map<String,String> entity = ImmutableMap.of(STATUS, "error", "message", message);
-        return Response.status(status).entity(entity)
-                .header("Access-Control-Allow-Origin", "*")
-                .header("Access-Control-Allow-Methods", "POST")
-                .header("Access-Control-Allow-Headers", "Content-Type")
-                .build();
+        return Response.status(status).entity(entity).build();
     }
 }

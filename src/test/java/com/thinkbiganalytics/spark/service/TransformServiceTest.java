@@ -16,6 +16,7 @@ import org.mockito.Mockito;
 import com.clearspring.analytics.util.Lists;
 import com.google.common.collect.ImmutableList;
 import com.thinkbiganalytics.spark.metadata.TransformRequest;
+import com.thinkbiganalytics.spark.metadata.TransformResponse;
 import com.thinkbiganalytics.spark.repl.ScriptEngine;
 
 import scala.tools.nsc.interpreter.NamedParam;
@@ -45,13 +46,15 @@ public class TransformServiceTest
         service.startAsync();
         service.awaitRunning();
 
-        String table = null;
+        TransformResponse response = null;
         try {
-            table = service.execute(request);
+            response = service.execute(request);
         }
         finally {
             service.stopAsync();
         }
+
+        Assert.assertEquals(response.getStatus(), TransformResponse.Status.SUCCESS);
 
         // Test eval arguments
         ArgumentCaptor<String> evalScript = ArgumentCaptor.forClass(String.class);
@@ -69,7 +72,7 @@ public class TransformServiceTest
         Assert.assertEquals("spark_shell_temp", bindings.get(0).value());
         Assert.assertEquals("tableName", bindings.get(1).name());
         Assert.assertEquals("String", bindings.get(1).tpe());
-        Assert.assertEquals(table, bindings.get(1).value());
+        Assert.assertEquals(response.getTable(), bindings.get(1).value());
     }
 
     /** Verify cleaning up during shutdown. */
@@ -96,9 +99,9 @@ public class TransformServiceTest
 
         List<String> tables = Lists.newArrayList();
         try {
-            tables.add(service.execute(request));
-            tables.add(service.execute(request));
-            tables.add(service.execute(request));
+            tables.add(service.execute(request).getTable());
+            tables.add(service.execute(request).getTable());
+            tables.add(service.execute(request).getTable());
         }
         finally {
             service.stopAsync();

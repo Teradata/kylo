@@ -2,6 +2,7 @@ package com.thinkbiganalytics.spark.metadata
 
 import java.util
 
+import com.thinkbiganalytics.db.{QueryResult, QueryResultColumn}
 import com.thinkbiganalytics.spark.util.HiveUtils
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.{JavaHiveDecimalObjectInspector, PrimitiveObjectInspectorFactory}
 import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspector, ObjectInspectorFactory}
@@ -12,15 +13,42 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 /** Wraps a transform script into a function that can be evaluated.
   *
   * @param destination the name of the destination Hive table
-  * @param sqlContext the Spark SQL context
+  * @param sqlContext  the Spark SQL context
   */
-abstract class TransformScript (destination: String, sqlContext: SQLContext) extends Runnable
-{
+abstract class TransformScript(destination: String, sendResults: Boolean, sqlContext: SQLContext) {
     /** Evaluates this transform script and stores the result in a Hive table. */
-    override def run (): Unit = {
+    def run(): Any = {
         val df: DataFrame = dataFrame
-        sqlContext.sql(toSQL(df.schema))
-        df.write.mode(SaveMode.Overwrite).insertInto(destination)
+
+        if (sendResults) {
+            df.registerTempTable(destination)
+
+            val result = new QueryResult("SELECT * FROM " + destination)
+            val columns = new util.ArrayList[QueryResultColumn]
+            val displayNameMap = new util.HashMap[String, Int]()
+            for (field <- df.schema.fields) {
+                val column = new QueryResultColumn
+                column.setField(field.name)
+                column.setHiveColumnLabel(field.name)
+                column.setDisplayName(field.name)
+                column.setTableName(destination)
+                column.setDataType(field.dataType.toString)
+                columns.add(column)
+            }
+            result.setColumns(columns)
+            for (row <- df.collect()) {
+                val r = new util.LinkedHashMap[String, Object]()
+                for (i <- 0 until columns.size()) {
+                    r.put(columns.get(i).getDisplayName, row.getAs(i))
+                }
+                result.addRow(r)
+            }
+            result
+        }
+        else {
+            sqlContext.sql(toSQL(df.schema))
+            df.write.mode(SaveMode.Overwrite).insertInto(destination)
+        }
     }
 
     /** Evaluates the transform script.
@@ -63,14 +91,14 @@ abstract class TransformScript (destination: String, sqlContext: SQLContext) ext
       * @param dataType the Spark SQL type
       * @return the Hive ObjectInspector
       */
-    def toInspector (dataType: DataType): ObjectInspector = dataType match {
+    def toInspector(dataType: DataType): ObjectInspector = dataType match {
         // Primitive types
         case BinaryType => PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector
         case BooleanType => PrimitiveObjectInspectorFactory.javaBooleanObjectInspector
         case ByteType => PrimitiveObjectInspectorFactory.javaByteObjectInspector
         case DateType => PrimitiveObjectInspectorFactory.javaDateObjectInspector
-        case decimalType: DecimalType => new JavaHiveDecimalObjectInspector(new DecimalTypeInfo(
-            decimalType.precision, decimalType.scale))
+        case decimalType: DecimalType => new JavaHiveDecimalObjectInspector(new DecimalTypeInfo(decimalType.precision, decimalType
+                .scale))
         case DoubleType => PrimitiveObjectInspectorFactory.javaDoubleObjectInspector
         case FloatType => PrimitiveObjectInspectorFactory.javaFloatObjectInspector
         case IntegerType => PrimitiveObjectInspectorFactory.javaIntObjectInspector
@@ -99,7 +127,7 @@ abstract class TransformScript (destination: String, sqlContext: SQLContext) ext
       * @param schema the DataFrame schema
       * @return the CREATE TABLE statement
       */
-    def toSQL (schema: StructType): String = {
+    def toSQL(schema: StructType): String = {
         var first = true
         val sql = new StringBuilder
 

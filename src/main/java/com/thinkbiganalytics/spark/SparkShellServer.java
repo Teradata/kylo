@@ -16,9 +16,12 @@ import org.glassfish.jersey.server.ResourceConfig;
 
 import com.thinkbiganalytics.spark.repl.ScriptEngine;
 import com.thinkbiganalytics.spark.repl.ScriptEngineFactory;
+import com.thinkbiganalytics.spark.rest.CorsFilter;
 import com.thinkbiganalytics.spark.rest.SparkShellController;
 import com.thinkbiganalytics.spark.service.TransformService;
+import com.thinkbiganalytics.spark.util.ClassUtils;
 
+import scala.Function0;
 import scala.runtime.AbstractFunction0;
 import scala.runtime.BoxedUnit;
 
@@ -36,7 +39,7 @@ public class SparkShellServer
     public static void main (@Nonnull final String[] args) throws Exception
     {
         // Create configuration
-        ResourceConfig config = new ResourceConfig(SparkShellController.class);
+        ResourceConfig config = new ResourceConfig(CorsFilter.class, SparkShellController.class);
 
         SparkConf conf = new SparkConf().setAppName("SparkShellServer");
         final ScriptEngine scriptEngine = ScriptEngineFactory.getScriptEngine(conf);
@@ -59,7 +62,7 @@ public class SparkShellServer
         });
 
         // Start server
-        URI bindUri = UriBuilder.fromUri("http://localhost/").port(8076).build();
+        URI bindUri = UriBuilder.fromUri("http://0.0.0.0/").port(8076).build();
 
         Server server = JettyHttpContainerFactory.createServer(bindUri, config);
         server.start();
@@ -74,18 +77,29 @@ public class SparkShellServer
      */
     private static TransformService createTransformService (@Nonnull final ScriptEngine engine)
     {
+        // Start the service
         final TransformService service = new TransformService(engine);
         service.startAsync();
 
-        Utils.addShutdownHook(new AbstractFunction0<BoxedUnit>() {
+        // Add a shutdown hook
+        Function0<BoxedUnit> hook = new AbstractFunction0<BoxedUnit>() {
             @Override
             public BoxedUnit apply () {
                 service.stopAsync();
                 service.awaitTerminated();
-                return null;
+                return BoxedUnit.UNIT;
             }
-        });
+        };
 
+        try {
+            Class<?> cls = Class.forName("com.apache.spark.util.ShutdownHookManager");
+            ClassUtils.invoke(cls, "addShutdownHook", hook);
+        }
+        catch (ClassNotFoundException e) {
+            Utils.addShutdownHook(hook);
+        }
+
+        // Wait for service to start
         service.awaitRunning();
         return service;
     }

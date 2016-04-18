@@ -111,6 +111,13 @@
       <version>1.2.5</version>
       <scope>test</scope>
     </dependency>
+
+    <!-- Think Big dependencies -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.nifi</groupId>
+      <artifactId>thinkbig-nifi-common</artifactId>
+      <version>${version}</version>
+    </dependency>
   </dependencies>
 
   <build>
