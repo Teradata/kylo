@@ -32,7 +32,7 @@
  * @property {string} tableName name of the source table
  */
 
-angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $mdDialog) {
+angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $mdDialog) {
   // URL to the API server
   var API_URL = "http://" + window.location.hostname + ":8076/api/v1/spark/shell";
 
@@ -40,7 +40,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
   var DEFINE_DIRECTIVE = "!define";
 
   /** Regular expression for conversion strings */
-  var FORMAT_REGEX = /%([cdfs])/g;
+  var FORMAT_REGEX = /%([cCdfs])/g;
 
   /** TernJS directive for the Spark code */
   var SPARK_DIRECTIVE = "!spark";
@@ -57,7 +57,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
    * @constructor
    * @param sql the source SQL for transformations
    */
-  var SparkShellService = function (sql) {
+  var SparkShellService = function(sql) {
     /**
      * Stack of the columns for each script as returned by the server.
      *
@@ -106,19 +106,19 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
      *
      * @returns {Object} the column type definitions
      */
-    getColumnDefs: function () {
+    getColumnDefs: function() {
       // Set directives
       var defs = {
-        "!name": "columns",
-        DEFINE_DIRECTIVE: {
-          TERNJS_COLUMN_TYPE: {}
-        }
+        "!name": "columns"
       };
+
+      defs[DEFINE_DIRECTIVE] = {};
+      defs[DEFINE_DIRECTIVE][TERNJS_COLUMN_TYPE] = {};
 
       // Add column names
       var columns = (this.columns_.length !== 0) ? this.columns_[this.columns_.length - 1] : [];
 
-      angular.forEach(columns, function (column) {
+      angular.forEach(columns, function(column) {
         defs[column.displayName] = TERNJS_COLUMN_TYPE;
       });
 
@@ -130,7 +130,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
      *
      * @return {Object} the function definitions
      */
-    getFunctionDefs: function () {
+    getFunctionDefs: function() {
       return this.defs_;
     },
 
@@ -139,10 +139,10 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
      *
      * @returns {string} the Spark script
      */
-    getScript: function () {
+    getScript: function() {
       var sparkScript = "import org.apache.spark.sql._\nsqlContext.sql(\"" + this.source_ + " LIMIT " + this.limit_ + "\")";
 
-      angular.forEach(this.script_, function (script) {
+      angular.forEach(this.script_, function(script) {
         sparkScript += script;
       });
 
@@ -152,7 +152,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
     /**
      * Removes the last transformation from the stack.
      */
-    pop: function () {
+    pop: function() {
       if (this.script_.length > 1) {
         this.columns_.pop();
         this.script_.pop();
@@ -164,7 +164,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
      *
      * @param {acorn.Node} tree the abstract syntax tree for the expression
      */
-    push: function (tree) {
+    push: function(tree) {
       this.script_.push(toScript(tree, this));
     },
 
@@ -173,7 +173,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
      *
      * @param {Object} defs the function definitions
      */
-    setFunctionDefs: function (defs) {
+    setFunctionDefs: function(defs) {
       this.defs_ = defs;
     },
 
@@ -182,13 +182,13 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
      *
      * @return {HttpPromise} a promise for the response
      */
-    transform: function () {
+    transform: function() {
       // Create the response handlers
       var self = this;
-      var successCallback = function (response) {
+      var successCallback = function(response) {
         self.columns_[self.script_.length - 1] = response.data.results.columns;
       };
-      var errorCallback = function (response) {
+      var errorCallback = function(response) {
         var alert = $mdDialog.alert()
             .parent($('body'))
             .clickOutsideToClose(true)
@@ -229,7 +229,26 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
     GROUPED_DATA: "groupeddata",
 
     /** Represents a Scala number or string literal */
-    LITERAL: "literal"
+    LITERAL: "literal",
+
+    /**
+     * Gets the TernJS definition name for the specified type.
+     *
+     * @param {SparkType} sparkType the Spark type
+     * @returns {string|null}
+     */
+    toTernjsName: function(sparkType) {
+      switch (sparkType) {
+        case SparkType.COLUMN:
+          return TERNJS_COLUMN_TYPE;
+                
+        case SparkType.GROUPED_DATA:
+          return "GroupedData";
+                
+        default:
+          return null;
+      }
+    }
   };
 
   /**
@@ -283,6 +302,14 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
 
   angular.extend(SparkExpression, {
     /**
+     * Context for formatting a Spark conversion string.
+     *
+     * @typedef {Object} FormatContext
+     * @property {SparkExpression[]} args the format parameters
+     * @property {number} index the current position within {@code args}
+     */
+
+    /**
      * Formats the specified string by replacing the type specifiers with the specified parameters.
      *
      * @static
@@ -292,9 +319,12 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
      * @throws {Error} if the conversion string is not valid
      * @throws {ParseException} if a format parameter cannot be converted to the specified type
      */
-    format: function (str, var_args) {
-      var args = Array.prototype.slice.call(arguments, 1);
-      return str.replace(FORMAT_REGEX, angular.bind(str, SparkExpression.replace, args));
+    format: function(str, var_args) {
+      var context = {
+        args: Array.prototype.slice.call(arguments, 1),
+        index: 0
+      };
+      return str.replace(FORMAT_REGEX, angular.bind(str, SparkExpression.replace, context));
     },
 
     /**
@@ -308,7 +338,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
      * @throws {Error} if the function definition is not valid
      * @throws {ParseException} if a format parameter cannot be converted to the required type
      */
-    fromDefinition: function (definition, node, var_args) {
+    fromDefinition: function(definition, node, var_args) {
       // Convert Spark string to code
       var args = [definition[SPARK_DIRECTIVE]];
       Array.prototype.push.apply(args, Array.prototype.slice.call(arguments, 2));
@@ -324,26 +354,29 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
      *
      * @private
      * @static
-     * @param {SparkExpression[]} args the format parameters
+     * @param {FormatContext} context the format context
      * @param {string} match the conversion specification
      * @param {string} type the type specifier
      * @returns {string} the converted Spark code
      * @throws {Error} if the type specifier is not supported
      * @throws {ParseException} if the format parameter cannot be converted to the specified type
      */
-    replace: function (args, match, type) {
+    replace: function(context, match, type) {
       // Validate arguments
-      if (args.length === 0) {
+      if (context.args.length <= context.index) {
         throw new ParseException("Not enough arguments for conversion");
       }
 
       // Convert to requested type
       switch (type) {
         case "c":
-          return SparkExpression.toColumn(args.shift());
+          return SparkExpression.toColumn(context.args[context.index++]);
+
+        case "C":
+          return SparkExpression.toColumnArgs(context);
 
         case "s":
-          return SparkExpression.toString(args.shift());
+          return SparkExpression.toString(context.args[context.index++]);
 
         default:
           throw new Error("Not a recognized type specifier: " + match);
@@ -359,7 +392,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
      * @returns {string} the Spark code for the new type
      * @throws {ParseException} if the expression cannot be converted to a column
      */
-    toColumn: function (expression) {
+    toColumn: function(expression) {
       switch (expression.type) {
         case SparkType.COLUMN:
           return expression.source;
@@ -373,6 +406,26 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
     },
 
     /**
+     * Converts the specified Spark expressions to a list of function arguments.
+     *
+     * @param {FormatContext} context the format context
+     * @returns {string} the Spark code for the function arguments
+     * @throws {ParseException} if any expression cannot be converted to a column
+     */
+    toColumnArgs: function(context) {
+      var result = "";
+
+      for (; context.index < context.args.length; ++context.index) {
+        if (context.index !== 0) {
+          result += ", ";
+        }
+        result += SparkExpression.toColumn(context.args[context.index]);
+      }
+
+      return result;
+    },
+
+    /**
      * Converts the specified Spark expression to a string literal.
      *
      * @private
@@ -381,11 +434,10 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
      * @returns {string} the Spark code for the string literal
      * @throws {ParseException} if the expression cannot be converted to a string
      */
-    toString: function (expression) {
+    toString: function(expression) {
       if (SparkType.LITERAL) {
         return (expression.source.charAt(0) === "\"") ? expression.source : "\"" + expression.source + "\"";
-      }
-      else {
+      } else {
         throw new ParseException("Expression cannot be converted to a string: " + expression.type, expression.start);
       }
     }
@@ -458,11 +510,12 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
       case "MemberExpression":
         parent = toSpark(node.callee.object, sparkShellService);
 
-        if (parent.type === SparkType.COLUMN) {
-          def = sparkShellService.getFunctionDefs()[DEFINE_DIRECTIVE][TERNJS_COLUMN_TYPE][node.callee.property.name];
-          name = node.callee.property.name;
-        }
-        else {
+        // Find function definition
+        var ternjsName = SparkType.toTernjsName(parent.type);
+
+        if (ternjsName !== null) {
+          def = sparkShellService.getFunctionDefs()[DEFINE_DIRECTIVE][ternjsName][node.callee.property.name];
+        } else {
           throw new ParseException("Result type has no members: " + parent.type);
         }
         break;
@@ -478,7 +531,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
     // Convert to a Spark expression
     var args = [def, node];
 
-    angular.forEach(node.arguments, function (arg) {
+    angular.forEach(node.arguments, function(arg) {
       args.push(toSpark(arg, sparkShellService));
     });
 
@@ -510,6 +563,9 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function ($http, $m
     switch (spark.type) {
       case SparkType.COLUMN:
         return ".select(new Column(\"*\"), " + spark.source + ")";
+
+      case SparkType.DATA_FRAME:
+        return spark.source;
 
       default:
         throw new Error("Result type not supported: " + spark.type);

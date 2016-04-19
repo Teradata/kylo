@@ -8,7 +8,31 @@
         "!spark": ".as(%s)",
         "!sparkType": "column"
       }
+    },
+    "DataFrame": {},
+    "GroupedData": {
+      "agg": {
+        "!type": "fn(expr1: Column, var_args: Column) -> DataFrame",
+        "!doc": "Compute aggregates by specifying a series of aggregate columns.",
+        "!spark": ".agg(%c%C)",
+        "!sparkType": "dataframe"
+      }
     }
+  },
+
+  "!AGGREGATE_FUNCTIONS": "Grouping and aggregating functions.",
+
+  "groupBy": {
+    "!type": "fn(col1: Column, var_args: Column) -> GroupedData",
+    "!doc": "Groups using the specified columns.",
+    "!spark": ".groupBy(%C)",
+    "!sparkType": "groupeddata"
+  },
+  "sum": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Returns the sum of all values.",
+    "!spark": "functions.sum(%c)",
+    "!sparkType": "column"
   },
 
   "!MATH_FUNCTIONS": "These functions define mathematical operations on columns.",
