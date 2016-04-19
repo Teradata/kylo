@@ -97,6 +97,14 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
      * @type {string}
      */
     this.source_ = sql;
+
+    /**
+     * List of tables containing transformation results.
+     *
+     * @private
+     * @type {string[]}
+     */
+    this.tables_ = [];
   };
 
   angular.extend(SparkShellService.prototype, {
@@ -137,14 +145,22 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
     /**
      * Gets the Spark script.
      *
+     * @param {number} [opt_start] the index of the first transformation
+     * @param {number} [opt_end] the index of the last transformation
      * @returns {string} the Spark script
      */
-    getScript: function() {
-      var sparkScript = "import org.apache.spark.sql._\nsqlContext.sql(\"" + this.source_ + " LIMIT " + this.limit_ + "\")";
+    getScript: function(opt_start, opt_end) {
+      // Determine start and end indexes
+      var start = (typeof(opt_start) !== "undefined") ? opt_start : 0;
+      var end = (typeof(opt_end) !== "undefined") ? opt_end + 1 : this.script_.length;
 
-      angular.forEach(this.script_, function(script) {
-        sparkScript += script;
-      });
+      // Build script
+      var sparkScript = "import org.apache.spark.sql._\n";
+      sparkScript += (start === 0) ? "sqlContext.sql(\"" + this.source_ + " LIMIT " + this.limit_ + "\")" : "parent";
+
+      for (var i=start; i < end; ++i) {
+        sparkScript += this.script_[i];
+      }
 
       return sparkScript;
     },
@@ -154,8 +170,15 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
      */
     pop: function() {
       if (this.script_.length > 1) {
-        this.columns_.pop();
         this.script_.pop();
+
+        while (this.columns_.length > this.script_.length) {
+          this.columns_.pop();
+        }
+
+        while (this.tables_.length > this.script_.length) {
+          this.tables_.pop();
+        }
       }
     },
 
@@ -183,10 +206,26 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
      * @return {HttpPromise} a promise for the response
      */
     transform: function() {
+      // Build the request body
+      var body = {sendResults: true};
+      var index = this.script_.length - 1;
+
+      if (index > 0 && typeof(this.tables_[index - 1]) !== "undefined") {
+        body["script"] = this.getScript(index, index);
+        body["parent"] = {
+          table: this.tables_[index - 1],
+          script: this.getScript(0, index - 1)
+        };
+      }
+      else {
+        body["script"] = this.getScript()
+      }
+
       // Create the response handlers
       var self = this;
       var successCallback = function(response) {
-        self.columns_[self.script_.length - 1] = response.data.results.columns;
+        self.columns_[index] = response.data.results.columns;
+        self.tables_[index] = response.data.table;
       };
       var errorCallback = function(response) {
         var alert = $mdDialog.alert()
@@ -203,7 +242,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
       var promise = $http({
         method: "POST",
         url: API_URL + "/transform",
-        data: JSON.stringify({script: this.getScript(), sendResults: true}),
+        data: JSON.stringify(body),
         headers: {"Content-Type": "application/json"},
         responseType: "json"
       });

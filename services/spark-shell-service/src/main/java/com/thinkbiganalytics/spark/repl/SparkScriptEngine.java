@@ -22,7 +22,7 @@ import scala.tools.nsc.interpreter.Results;
  */
 public class SparkScriptEngine extends ScriptEngine {
 
-    private static final Logger LOG = LoggerFactory.getLogger(SparkScriptEngine.class);
+    private static final Logger log = LoggerFactory.getLogger(SparkScriptEngine.class);
 
     /** Spark configuration */
     @Nonnull
@@ -55,7 +55,7 @@ public class SparkScriptEngine extends ScriptEngine {
 
     @Override
     protected void execute(@Nonnull final String script) {
-        LOG.debug("Executing script:\n{}", script);
+        log.debug("Executing script:\n{}", script);
         getInterpreter().interpret(script);
     }
 

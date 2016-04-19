@@ -9,6 +9,7 @@ import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspector, ObjectIns
 import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
+import org.slf4j.LoggerFactory
 
 /** Wraps a transform script into a function that can be evaluated.
   *
@@ -16,17 +17,21 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
   * @param sqlContext  the Spark SQL context
   */
 abstract class TransformScript(destination: String, sendResults: Boolean, sqlContext: SQLContext) {
+
+    val log = LoggerFactory.getLogger(classOf[TransformScript])
+
     /** Evaluates this transform script and stores the result in a Hive table. */
     def run(): Any = {
         val df: DataFrame = dataFrame
 
         if (sendResults) {
-            df.registerTempTable(destination)
+            val cache = df.cache
+            cache.registerTempTable(destination)
 
             val result = new QueryResult("SELECT * FROM " + destination)
             val columns = new util.ArrayList[QueryResultColumn]
             val displayNameMap = new util.HashMap[String, Int]()
-            for (field <- df.schema.fields) {
+            for (field <- cache.schema.fields) {
                 val column = new QueryResultColumn
                 column.setField(field.name)
                 column.setHiveColumnLabel(field.name)
@@ -36,7 +41,7 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
                 columns.add(column)
             }
             result.setColumns(columns)
-            for (row <- df.collect()) {
+            for (row <- cache.collect()) {
                 val r = new util.LinkedHashMap[String, Object]()
                 for (i <- 0 until columns.size()) {
                     r.put(columns.get(i).getDisplayName, row.getAs(i))
@@ -66,7 +71,11 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
             sqlContext.read.table(parentTable)
         }
         catch {
-            case e: Exception => parentDataFrame
+            case e: Exception => {
+                log.trace("Exception reading parent table: {}", e.toString)
+                log.debug("Parent table not found: {}", parentTable)
+                parentDataFrame
+            }
         }
     }
 
