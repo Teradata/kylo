@@ -14,12 +14,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.thinkbiganalytics.calendar.HolidayCalendarService;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
+import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
-import com.thinkbiganalytics.pipelinecontroller.repositories.FeedRepository;
-import com.thinkbiganalytics.pipelinecontroller.rest.dataobjects.ExecutedFeed;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
 /**

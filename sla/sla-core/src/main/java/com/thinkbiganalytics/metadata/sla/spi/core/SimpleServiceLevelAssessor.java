@@ -12,7 +12,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.mortbay.log.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -22,6 +23,7 @@ import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
+import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.AssessorNotFoundException;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
@@ -34,6 +36,8 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
  * @author Sean Felten
  */
 public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
+    
+    private static final Logger Log = LoggerFactory.getLogger(FeedOnTimeArrivalMetricAssessor.class);
 
     private Set<ObligationAssessor<? extends Obligation>> obligationAssessors;
     private Set<MetricAssessor<? extends Metric, ? extends Serializable>> metricAssessors;
