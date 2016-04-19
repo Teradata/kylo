@@ -42,12 +42,14 @@
 
     </dependencies>
     <modules>
-        <module>data-lake-server-app</module>
+        <module>db-schema</module>
+        <module>thrift-proxy</module>
         <module>job-repository</module>
         <module>scheduler</module>
         <module>service-monitor</module>
         <module>nifi</module>
         <module>spring-batch</module>
+        <module>data-lake-server-app</module>
     </modules>
 
 
