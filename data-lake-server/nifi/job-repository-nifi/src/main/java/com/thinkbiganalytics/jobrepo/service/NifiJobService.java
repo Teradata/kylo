@@ -1,8 +1,7 @@
-package main.java.com.thinkbiganalytics.service;
+package com.thinkbiganalytics.jobrepo.service;
+
 
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
-import com.thinkbiganalytics.jobrepo.service.AbstractJobService;
-import com.thinkbiganalytics.jobrepo.service.JobExecutionException;
 
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;

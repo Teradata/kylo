@@ -39,22 +39,16 @@
     </dependency>
 
     <dependency>
-      <artifactId>tba-rest-client</artifactId>
-      <groupId>com.thinkbiganalytics.bdp</groupId>
-    </dependency>
-    <dependency>
       <groupId>org.apache.nifi</groupId>
       <artifactId>nifi-client-dto</artifactId>
       <version>${nifi.version}</version>
     </dependency>
 
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi</groupId>
-      <artifactId>thinkbig-nifi-rest</artifactId>
-      <version>${thinkbig.nifi.version}</version>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-nifi-rest-client</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
     </dependency>
-
-
 
 
     <!-- needed for spring batch execution context serialization -->

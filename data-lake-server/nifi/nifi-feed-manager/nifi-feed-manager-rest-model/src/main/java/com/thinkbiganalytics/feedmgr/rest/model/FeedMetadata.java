@@ -1,0 +1,281 @@
+package com.thinkbiganalytics.feedmgr.rest.model;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
+import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
+import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+
+import java.util.Date;
+import java.util.List;
+
+/**
+ * Created by sr186054 on 1/13/16.
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class FeedMetadata implements UIFeed{
+    private Long id;
+
+    @MetadataField(description = "The unique feed GUID")
+    private String feedId;
+
+    //pointer to RegisteredTemplate.id
+    private String templateId;
+
+
+    //Nifi specific
+    private String inputProcessorType;
+    private String templateName;
+    private List<NifiProperty> properties;
+
+
+    private FeedSchedule schedule;
+
+
+
+    @MetadataField
+    private String feedName;
+    @MetadataField(description = "The system feed name")
+    private String systemFeedName;
+    @MetadataField
+    private String description;
+
+    private List<Tag>tags;
+    @MetadataField
+    private String dataOwner;
+
+    private FeedCategory category;
+    private TableSetup table;
+    @MetadataField
+    private Date createDate;
+    @MetadataField
+    private Date updateDate;
+
+    private boolean active = true;
+
+
+
+    private Long version;
+
+
+    private NifiProcessGroup nifiProcessGroup;
+
+    private RegisteredTemplate registeredTemplate;
+
+    public String getTemplateId() {
+        return templateId;
+    }
+    public FeedMetadata() {
+
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public void setTemplateId(String templateId) {
+        this.templateId = templateId;
+    }
+
+
+    public String getTemplateName() {
+        return templateName;
+    }
+
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
+    }
+
+    public String getFeedName() {
+        return feedName;
+    }
+
+    public void setFeedName(String feedName) {
+        this.feedName = feedName;
+    }
+
+    public List<NifiProperty> getProperties() {
+        return properties;
+    }
+
+    public void setProperties(List<NifiProperty> properties) {
+        this.properties = properties;
+    }
+
+    public FeedSchedule getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(FeedSchedule schedule) {
+        this.schedule = schedule;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public String getInputProcessorType() {
+        return inputProcessorType;
+    }
+
+    public void setInputProcessorType(String inputProcessorType) {
+        this.inputProcessorType = inputProcessorType;
+    }
+
+    public List<Tag> getTags() {
+        return tags;
+    }
+
+    public void setTags(List<Tag> tags) {
+        this.tags = tags;
+    }
+
+    public String getDataOwner() {
+        return dataOwner;
+    }
+
+    public void setDataOwner(String dataOwner) {
+        this.dataOwner = dataOwner;
+    }
+
+    public FeedCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(FeedCategory category) {
+        this.category = category;
+    }
+
+    public String getSystemFeedName() {
+        return systemFeedName;
+    }
+
+    public void setSystemFeedName(String systemFeedName) {
+        this.systemFeedName = systemFeedName;
+    }
+
+    public TableSetup getTable() {
+        return table;
+    }
+
+    public void setTable(TableSetup table) {
+        this.table = table;
+    }
+
+    public NifiProcessGroup getNifiProcessGroup() {
+        return nifiProcessGroup;
+    }
+
+    public void setNifiProcessGroup(NifiProcessGroup nifiProcessGroup) {
+        this.nifiProcessGroup = nifiProcessGroup;
+    }
+
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
+
+    public Date getUpdateDate() {
+        return updateDate;
+    }
+
+    public void setUpdateDate(Date updateDate) {
+        this.updateDate = updateDate;
+    }
+
+    public boolean isActive() {
+        return active;
+    }
+
+    public void setActive(boolean active) {
+        this.active = active;
+    }
+
+
+    public void setVersion(Long version){
+        this.version = version;
+    }
+
+    public Long getVersion(){
+        return version;
+    }
+
+    @JsonIgnore
+    public String getProfileTableName(){
+        return this.category.getSystemName()+"."+this.getSystemFeedName()+"_profile";
+    }
+    @JsonIgnore
+    public String getInvalidTableName(){
+        return this.category.getSystemName()+"."+this.getSystemFeedName()+"_invalid";
+    }
+
+    @JsonIgnore
+    public String getValidTableName(){
+        return this.category.getSystemName()+"."+this.getSystemFeedName()+"_valid";
+    }
+
+    @JsonIgnore
+    public String getCategoryAndFeedName(){
+        return this.category.getSystemName()+"."+this.getSystemFeedName();
+    }
+
+
+    public String getFeedId() {
+        return feedId;
+    }
+
+    public void setFeedId(String feedId) {
+        this.feedId = feedId;
+    }
+
+    public RegisteredTemplate getRegisteredTemplate() {
+        return registeredTemplate;
+    }
+
+    public void setRegisteredTemplate(RegisteredTemplate registeredTemplate) {
+        this.registeredTemplate = registeredTemplate;
+    }
+
+
+    @Override
+    public String getCategoryName() {
+   return this.category.getName();
+    }
+
+    @Override
+    public Long getCategoryId() {
+        return this.category.getId();
+    }
+
+    @Override
+    public String getCategoryAndFeedDisplayName() {
+   return this.category.getName()+"."+this.getFeedName();
+    }
+
+    @Override
+    public String getSystemCategoryName() {
+        return getCategoryAndFeedName();
+    }
+
+    @Override
+    public String getCategoryIcon() {
+        return this.category.getIcon();
+    }
+
+    @Override
+    public String getCategoryIconColor() {
+        return this.category.getIconColor();
+    }
+}

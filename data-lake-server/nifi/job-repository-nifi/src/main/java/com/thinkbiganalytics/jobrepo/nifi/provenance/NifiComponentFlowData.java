@@ -7,9 +7,9 @@ import com.thinkbiganalytics.jobrepo.nifi.model.FlowFileComponent;
 import com.thinkbiganalytics.jobrepo.nifi.model.FlowFileEvents;
 import com.thinkbiganalytics.jobrepo.nifi.model.NifiJobExecution;
 import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.nifi.NifiRestClient;
-import com.thinkbiganalytics.nifi.rest.util.NifiProcessUtil;
-import com.thinkbiganalytics.nifi.rest.visitor.NifiVisitableProcessor;
+import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
+import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.commons.lang3.StringUtils;

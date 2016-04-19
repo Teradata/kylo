@@ -18,6 +18,23 @@
   </properties>
   <modules>
     <module>job-repository-nifi</module>
+    <module>nifi-feed-manager</module>
+    <module>nifi-rest</module>
   </modules>
 
+
+  <dependencyManagement>
+    <dependencies>
+
+
+      <dependency>
+        <groupId>org.apache.nifi</groupId>
+        <artifactId>nifi-client-dto</artifactId>
+        <version>${nifi.version}</version>
+      </dependency>
+
+
+    </dependencies>
+
+  </dependencyManagement>
 </project>
