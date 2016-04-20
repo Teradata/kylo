@@ -15,4 +15,4 @@ bin
 derby.log
 .springBeans
 **/logs/
-
+**/node_modules/
