@@ -31,12 +31,25 @@
         <quartz.version>2.2.1</quartz.version>
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <elasticsearch.version>2.2.0</elasticsearch.version>
+        <httpclient.version>4.5.1</httpclient.version>
+        <activemq.version>5.13.1</activemq.version>
+        <nifi.version>0.5.0</nifi.version>
+        <mockito.version>1.10.19</mockito.version>
+        <powermock.version>1.6.3</powermock.version>
+        <assertj.version>2.2.0</assertj.version>
     </properties>
     <modules>
         <module>data-lake-server</module>
+<!--
         <module>data-lake-ui</module>
-         <module>rest-model-common</module>
-
+-->
+        <module>rest-model-common</module>
+        <module>activemq</module>
+        <module>alerts</module>
+        <module>commons</module>
+        <module>jira</module>
+        <module>rest-client</module>
+        <module>sla</module>
     </modules>
 
     <repositories>
@@ -363,6 +376,25 @@
                 <version>${guava.version}</version>
             </dependency>
 
+            <!-- Testing -->
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-all</artifactId>
+                <version>${mockito.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+            <dependency>
+                <groupId>org.powermock</groupId>
+                <artifactId>powermock-mockito-release-full</artifactId>
+                <version>${powermock.version}</version>
+                <scope>test</scope>
+                <type>pom</type>
+            </dependency>
 
 
         </dependencies>
