@@ -102,6 +102,13 @@
       <artifactId>commons-lang3</artifactId>
     </dependency>
 
+    <!-- Swagger -->
+    <dependency>
+      <groupId>io.swagger</groupId>
+      <artifactId>swagger-jersey2-jaxrs</artifactId>
+    </dependency>
+
+
 
 
   </dependencies>

@@ -47,10 +47,13 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
+
 /**
  * Created by sr186054 on 1/13/16.
  */
-@Path("/v1/nifi/feeds")
+@Api(value = "feed-manager-feeds", produces = "application/json")
+@Path("/v1/feedmgr/feeds")
 @Component
 public class FeedRestController {
 

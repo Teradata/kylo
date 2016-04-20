@@ -7,9 +7,12 @@ import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.glassfish.jersey.server.wadl.internal.WadlResource;
+
+import java.util.HashSet;
+import java.util.Set;
 
 import javax.ws.rs.ApplicationPath;
-
 
 @ApplicationPath("/api")
 public class JerseyConfig extends ResourceConfig {
@@ -17,17 +20,27 @@ public class JerseyConfig extends ResourceConfig {
 
   public JerseyConfig() {
 
+    //Register Swagger
+    Set<Class<?>> resources = new HashSet();
+    resources.add(io.swagger.jaxrs.listing.ApiListingResource.class);
+    resources.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
+    registerClasses(resources);
+
     packages("com.thinkbiganalytics.servicemonitor.rest.controller", "com.thinkbiganalytics.scheduler.rest.controller",
-             "com.thinkbiganalytics.jobrepo.rest.controller","com.thinkbiganalytics.hive.rest.controller","com.thinkbiganalytics.feedmgr.rest.controller");
+             "com.thinkbiganalytics.hive.rest.controller",
+             "com.thinkbiganalytics.jobrepo.rest.controller",
+             "com.thinkbiganalytics.feedmgr.rest.controller");
     register(JacksonFeature.class);
     register(MultiPartFeature.class);
+    register(WadlResource.class);
 
     ObjectMapper om = new ObjectMapper();
     om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     JacksonJaxbJsonProvider provider = new JacksonJaxbJsonProvider();
     provider.setMapper(om);
     register(provider);
-    // property(ServerProperties.TRACING, "ALL");
+
+
   }
 
 }

@@ -12,10 +12,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
+
 /**
  * Created by sr186054 on 1/13/16.
  */
-@Path("/v1/nifi/configuration")
+@Api(value = "feed-manager-nifi-configuration", produces = "application/json")
+@Path("/v1/feedmgr/nifi/configuration")
 @Component
 public class NifiConfigurationPropertiesRestController {
 

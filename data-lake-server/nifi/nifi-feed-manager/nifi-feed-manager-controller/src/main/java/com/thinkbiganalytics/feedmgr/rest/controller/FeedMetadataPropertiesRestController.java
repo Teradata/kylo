@@ -14,10 +14,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
+
 /**
- * Created by sr186054 on 1/13/16.
+ * Returns a list of all properties that can be assigned durning Feed Registation process
+ * this is the list of @MetadataField annotations on the FeedMetadata object
  */
-@Path("/v1/nifi/metadata")
+@Api(value = "feed-manager-feed-properties", produces = "application/json")
+@Path("/v1/feedmgr/metadata-properties")
 @Component
 public class FeedMetadataPropertiesRestController {
 
@@ -25,7 +29,7 @@ public class FeedMetadataPropertiesRestController {
     }
 
     @GET
-    @Path("/property-names")
+    @Path("/")
     @Produces({MediaType.APPLICATION_JSON })
     public Response getProperties(){
         List<AnnotatedFieldProperty> properties = PropertyExpressionResolver.getMetadataProperties();

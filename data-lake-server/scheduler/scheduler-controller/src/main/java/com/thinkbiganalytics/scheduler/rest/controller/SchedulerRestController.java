@@ -16,12 +16,12 @@ import com.thinkbiganalytics.scheduler.rest.model.TriggerInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -33,7 +33,7 @@ import io.swagger.annotations.Api;
 /**
  * Rest Controller for Quartz Scheduler
  */
-@Api(basePath = "/api/v1/scheduler/", value = "Scheduler", description = "Scheduler Controller", produces = "application/json")
+@Api(value = "scheduler",  produces = "application/json")
 @Path("/v1/scheduler")
 public class SchedulerRestController {
 
@@ -73,8 +73,9 @@ public class SchedulerRestController {
 
   @POST
   @Path("/triggers/update")
+  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
   @Produces({MediaType.APPLICATION_JSON})
-  public RestResponseStatus rescheduleTrigger(@RequestBody TriggerInfo trigger) throws JobSchedulerException {
+  public RestResponseStatus rescheduleTrigger(TriggerInfo trigger) throws JobSchedulerException {
 
     //convert to Domain Code
 
@@ -86,8 +87,9 @@ public class SchedulerRestController {
 
   @POST
   @Path("/triggers/pause")
+  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
   @Produces({MediaType.APPLICATION_JSON})
-  public RestResponseStatus pauseTrigger(@RequestBody ScheduleIdentifier triggerIdentifier) throws JobSchedulerException {
+  public RestResponseStatus pauseTrigger( ScheduleIdentifier triggerIdentifier) throws JobSchedulerException {
 
     quartzScheduler.pauseTrigger(Model.TRIGGER_IDENTIFIER_TO_DOMAIN.apply(triggerIdentifier));
     return RestResponseStatus.SUCCESS;
@@ -96,8 +98,9 @@ public class SchedulerRestController {
 
   @POST
   @Path("/triggers/resume")
+  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
   @Produces({MediaType.APPLICATION_JSON})
-  public RestResponseStatus resumeTrigger(@RequestBody ScheduleIdentifier triggerIdentifier) throws JobSchedulerException {
+  public RestResponseStatus resumeTrigger(ScheduleIdentifier triggerIdentifier) throws JobSchedulerException {
 
     quartzScheduler.resumeTrigger(Model.TRIGGER_IDENTIFIER_TO_DOMAIN.apply(triggerIdentifier));
     return RestResponseStatus.SUCCESS;
@@ -117,24 +120,27 @@ public class SchedulerRestController {
 
   @POST
   @Path("/jobs/trigger")
+  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
   @Produces({MediaType.APPLICATION_JSON})
-  public RestResponseStatus triggerJob(@RequestBody ScheduleIdentifier jobIdentifier) throws JobSchedulerException {
+  public RestResponseStatus triggerJob( ScheduleIdentifier jobIdentifier) throws JobSchedulerException {
     quartzScheduler.triggerJob(Model.JOB_IDENTIFIER_TO_DOMAIN.apply(jobIdentifier));
     return RestResponseStatus.SUCCESS;
   }
 
   @POST
   @Path("/jobs/pause")
+  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
   @Produces({MediaType.APPLICATION_JSON})
-  public RestResponseStatus pauseJob(@RequestBody ScheduleIdentifier jobIdentifier) throws JobSchedulerException {
+  public RestResponseStatus pauseJob(ScheduleIdentifier jobIdentifier) throws JobSchedulerException {
     quartzScheduler.pauseTriggersOnJob(Model.JOB_IDENTIFIER_TO_DOMAIN.apply(jobIdentifier));
     return RestResponseStatus.SUCCESS;
   }
 
   @POST
   @Path("/jobs/resume")
+  @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
   @Produces({MediaType.APPLICATION_JSON})
-  public RestResponseStatus resumeJob(@RequestBody ScheduleIdentifier jobIdentifier) throws JobSchedulerException {
+  public RestResponseStatus resumeJob(ScheduleIdentifier jobIdentifier) throws JobSchedulerException {
     quartzScheduler.resumeTriggersOnJob(Model.JOB_IDENTIFIER_TO_DOMAIN.apply(jobIdentifier));
     return RestResponseStatus.SUCCESS;
   }

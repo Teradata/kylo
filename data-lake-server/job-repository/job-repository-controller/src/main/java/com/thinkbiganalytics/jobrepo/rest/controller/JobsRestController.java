@@ -50,7 +50,7 @@ import io.swagger.annotations.ApiOperation;
 /**
  * Provides rest endpoints for control and monitoring of the pipeline
  */
-@Api(basePath = "/api/api-version/jobs", value = "Jobs", description = "Job Details", produces = "application/json")
+@Api(value = "jobs", produces = "application/json")
 @Path("/v1/jobs")
 public class JobsRestController {
 

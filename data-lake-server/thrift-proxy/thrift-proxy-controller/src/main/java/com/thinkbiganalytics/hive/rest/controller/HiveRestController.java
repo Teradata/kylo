@@ -25,10 +25,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
+
 /**
  * Created by sr186054 on 2/12/16.
  */
-@Component
+@Api(value = "hive", produces = "application/json")
 @Path("/v1/hive")
 public class HiveRestController {
 

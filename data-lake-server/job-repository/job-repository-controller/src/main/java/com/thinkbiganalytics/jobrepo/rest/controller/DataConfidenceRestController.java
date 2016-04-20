@@ -19,10 +19,10 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-/**
- * Created by sr186054 on 8/28/15. All Exceptions are handled by the CustomResponseEntityExceptionHandler.java class and
- * AngularHttpInterceptor.js
- */
+import io.swagger.annotations.Api;
+
+
+@Api(value = "data-confidence", produces = "application/json")
 @Path("/v1/data-confidence")
 public class DataConfidenceRestController {
 

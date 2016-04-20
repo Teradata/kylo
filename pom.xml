@@ -29,7 +29,6 @@
         <guava.version>18.0</guava.version>
         <spring.batch.version>3.0.6.RELEASE</spring.batch.version>
         <quartz.version>2.2.1</quartz.version>
-        <springfox.swagger.version>2.1.2</springfox.swagger.version>
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <elasticsearch.version>2.2.0</elasticsearch.version>
     </properties>
@@ -163,14 +162,9 @@
 
             <!-- Swagger -->
             <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger2</artifactId>
-                <version>${springfox.swagger.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.springfox</groupId>
-                <artifactId>springfox-swagger-ui</artifactId>
-                <version>${springfox.swagger.version}</version>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-jersey2-jaxrs</artifactId>
+                <version>1.5.8</version>
             </dependency>
 
             <!-- Spring boot -->

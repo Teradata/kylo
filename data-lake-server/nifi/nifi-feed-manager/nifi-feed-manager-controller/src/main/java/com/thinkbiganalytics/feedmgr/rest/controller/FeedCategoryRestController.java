@@ -23,10 +23,13 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
+
 /**
  * Created by sr186054 on 1/13/16.
  */
-@Path("/v1/categories")
+@Api(value = "feed-manager-categories", produces = "application/json")
+@Path("/v1/feedmgr/categories")
 @Component
 public class FeedCategoryRestController {
     private static final Logger LOG = Logger.getLogger(FeedCategoryRestController.class);

@@ -16,8 +16,10 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import io.swagger.annotations.Api;
 
-@Path("/v1/services")
+@Api(value = "service-monitoring", produces = "application/json")
+@Path("/monitor/v1/services")
 public class ServiceMonitorRestController {
 
   private static final Logger LOG = LoggerFactory.getLogger(ServiceMonitorRestController.class);
