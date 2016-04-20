@@ -1,0 +1,10 @@
+ <div style="white-space: nowrap;margin-top:10px;" class="card-title">{{::$cardFilterHeader.cardTitle}}</div>
+        <span flex="5"></span>
+        <md-input-container flex style="margin-top:0px;margin-bottom:0px;">
+            <label>Filter</label>
+            <input ng-model="$cardFilterHeader.filterModel" />
+        </md-input-container>
+ <div layout="row" layout-align=""space-between center">
+           <tba-view-type-selection view-type="$cardFilterHeader.viewType" style="margin-left:10px;"></tba-view-type-selection>
+           <tba-options-menu sort-options="$cardFilterHeader.sortOptions" show-pagination="false" menu-key="{{$cardFilterHeader.pageName}}" selected-option="$cardFilterHeader.selectedOption" show-view-type="false" menu-icon="more_vert"></tba-options-menu>
+</div>
