@@ -42,13 +42,13 @@
                             <goal>minify</goal>
                         </goals>
                         <configuration>
-                            <webappSourceDir>${project.basedir}/src/main/resources/static</webappSourceDir>
+                            <webappSourceDir>${project.basedir}/src/main/resources/static-common</webappSourceDir>
                             <jsSourceDir>js</jsSourceDir>
-                            <webappTargetDir>${project.basedir}/src/main/resources/META-INF/resources/webjars</webappTargetDir>
+                            <webappTargetDir>${project.basedir}/src/main/resources/static-common</webappTargetDir>
                             <skipMinify>true</skipMinify>
                             <jsEngine>CLOSURE</jsEngine>
-                            <jsFinalFile>thinkbig-ui-common.js</jsFinalFile>
-                            <jsTargetDir>thinkbig-ui-common/${project.version}/</jsTargetDir>
+                            <jsFinalFile>datalake-ui-common.js</jsFinalFile>
+                            <jsTargetDir>js/min/</jsTargetDir>
                             <!-- <cssSourceFiles>
                                 <cssSourceFile>file-1.css</cssSourceFile>
                                 ...
@@ -83,7 +83,7 @@
                             <goal>copy-resources</goal>
                         </goals>
                         <configuration>
-                            <outputDirectory>${project.basedir}/src/main/resources/META-INF/resources/webjars/thinkbig-ui-common/${project.version}/vendor</outputDirectory>
+                            <outputDirectory>${project.basedir}/src/main/resources/META-INF/resources/webjars/thinkbig-ui-common/js/vendor</outputDirectory>
                             <resources>
                                 <resource>
                                     <directory>${basedir}/src/main/resources/static/js/vendor</directory>

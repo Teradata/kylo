@@ -16,7 +16,7 @@ angular.module(COMMON_APP_MODULE_NAME).service('NotificationService', function (
             },timeout);
         }*/
         if(groupKey){
-            alert.groupKey = groupKey;a
+            alert.groupKey = groupKey;
         }
         self.toastAlert(alert,timeout);
         return alert;
@@ -24,8 +24,7 @@ angular.module(COMMON_APP_MODULE_NAME).service('NotificationService', function (
 
     this.toastAlert = function(alert,timeout) {
 
-        console.log('TOASTING ',alert,$mdToast)
-        var options = {hideDelay:false, msg:alert.msg}
+         var options = {hideDelay:false, msg:alert.msg}
         if(timeout){
             options.hideDelay = timeout;
         }

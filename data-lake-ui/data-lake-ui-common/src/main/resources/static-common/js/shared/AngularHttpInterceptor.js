@@ -53,7 +53,6 @@
                     if(rejection.data == undefined){
                         rejection.data = {};
                     }
-                    console.log('Response Error!',rejection);
                     if(rejection.status === 401) {
                         // you are not autorized
                         NotificationService.errorWithGroupKey("Unauthorized","You are unauthorized to view this content.","Unauthorized");
