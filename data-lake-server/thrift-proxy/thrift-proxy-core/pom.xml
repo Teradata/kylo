@@ -221,14 +221,6 @@
       <version>${hive.version}</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.apache.httpcomponents</groupId>
-      <artifactId>httpcomponents-core</artifactId>
-      <version>4.4.4</version>
-    </dependency>
-
-
-
   </dependencies>
 
 </project>
