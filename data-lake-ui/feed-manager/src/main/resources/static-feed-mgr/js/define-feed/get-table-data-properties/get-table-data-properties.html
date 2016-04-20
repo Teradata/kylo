@@ -1,0 +1,86 @@
+<div  class="layout-padding-indent">
+
+         <md-input-container property-disabled="ctl.mode == 'edit'" nifi-property-input class="md-block layout-padding-top-bottom" property="ctl.dbConnectionProperty"  flex-gt-sm >
+             </md-input-container>
+
+
+    <md-autocomplete flex ng-disabled="ctl.mode == 'edit'"
+                     md-selected-item="ctl.tablesAutocomplete.selectedTable"
+                     md-search-text-change="ctl.tablesAutocomplete.searchTextChange(ctl.tablesAutocomplete.searchText)"
+                     md-search-text="ctl.tablesAutocomplete.searchText"
+                     md-selected-item-change="ctl.tablesAutocomplete.selectedItemChange(item)"
+                     md-items="item in ctl.tablesAutocomplete.querySearch(ctl.tablesAutocomplete.searchText)"
+                     md-item-text="item.fullName"
+                     md-min-length="1"
+                     placeholder="Select a Table"
+                     md-menu-class="autocomplete-hive-table-template">
+        <md-item-template>
+
+                    <span class="item-title" >
+                       <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
+                    <span  md-highlight-text="ctl.tablesAutocomplete.searchText" md-highlight-flags="^i" style="padding-left:5px;"> {{item.fullName}} </span>
+                      </span>
+                <span class="item-metadata" >
+                        <span class="item-metastat"><span style="color:grey;">Schema:</span><span md-highlight-text="ctl.tablesAutocomplete.searchText" md-highlight-flags="^i" >{{item.schema}}</span></span>
+                    <span class="item-metastat"><span style="color:grey;">Table:</span><span md-highlight-text="ctl.tablesAutocomplete.searchText" md-highlight-flags="^i" >{{item.tableName}}</span></span>
+
+                  </span>
+
+        </md-item-template>
+        <md-not-found>
+            No tables matching "{{ctl.tablesAutocomplete.searchText}}" were found.
+        </md-not-found>
+    </md-autocomplete>
+
+    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" >
+        <label class="label-small md-container-ignore">Load Strategy</label>
+        <md-radio-group ng-model="ctl.loadStrategyProperty.value" layout="row" layout-wrap="true" class="layout-padding-top">
+            <md-radio-button ng-repeat="strategy in ctl.loadStrategies"
+                             ng-value="strategy.strategy"
+                             aria-label="{{strategy.name}}">
+                {{strategy.name}}
+                <div class="hint" ng-if="strategy.strategy != 'INCREMENTAL'">{{strategy.hint}}</div>
+                <div class="hint" ng-if="strategy.strategy == 'INCREMENTAL'">Extracts delta and merges into table</div>
+            </md-radio-button>
+        </md-radio-group>
+
+    </md-input-container>
+
+    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="ctl.mode =='edit' && ctl.model.table.tableType == 'DELTA'">
+        <label class="label-small md-container-ignore">Date Field to use when merging incremental updates</label>
+        <md-select ng-model="ctl.model.table.incrementalDateField" ng-change="ctl.onIncrementalDateFieldChange()">
+            <md-option ng-repeat="field in ctl.model.table.tableSchema.fields | filter: ctl.filterFieldDates track by $index" value="{{field.name}}">
+                {{field.name}}
+            </md-option>
+        </md-select>
+    </md-input-container>
+
+    <nifi-property-time-unit-input property="ctl.retentionPeriodProperty"></nifi-property-time-unit-input>
+
+    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" >
+        <label class="label-small md-container-ignore">Minimum Time Unit</label>
+    <md-select ng-model="ctl.archiveUnitProperty.value" >
+        <md-option ng-repeat="unit in ctl.archiveUnitProperty.propertyDescriptor.allowableValues" value="{{unit.value}}">
+            {{unit.displayName}}
+        </md-option>
+    </md-select>
+
+        </md-input-container>
+
+    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" >
+    <md-checkbox
+                 ng-model="ctl.deleteSourceProperty.value"
+                 aria-label="property.key"
+                 ng-true-value="'true'"
+                 ng-false-value="'false'">Delete Source?
+    </md-checkbox>
+</md-input-container>
+
+
+
+    <md-input-container nifi-property-input class="md-block layout-padding-top-bottom" property="property" ng-repeat="property in ctl.processor.properties | filter:{userEditable:true}"  flex-gt-sm ng-if="ctl.isCustomProperty(property) == false">
+
+         </md-input-container>
+
+
+</div>

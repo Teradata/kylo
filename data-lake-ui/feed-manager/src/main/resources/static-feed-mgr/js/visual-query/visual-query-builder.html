@@ -1,0 +1,62 @@
+<div layout-fill flex layout="column"  ng-class="{'visual-query-auto-complete-centered':$vq.selectedColumnsAndTables.length ==0,'visual-query-auto-complete-top':$vq.selectedColumnsAndTables.length >0}">
+     <div layout="row" flex layout-fill layout-align="center center">
+         <span flex="20"></span>
+         <div layout="column" flex>
+             <span ng-if="$vq.selectedColumnsAndTables.length == 0" class="md-input-label" style="padding-bottom:5px;">Start typing a table to start building your query</span>
+        <md-autocomplete flex
+                md-selected-item="$vq.tablesAutocomplete.selectedTable"
+                md-search-text-change="$vq.tablesAutocomplete.searchTextChange($vq.tablesAutocomplete.searchText)"
+                md-search-text="$vq.tablesAutocomplete.searchText"
+                md-selected-item-change="$vq.tablesAutocomplete.selectedItemChange(item)"
+                md-items="item in $vq.tablesAutocomplete.querySearch($vq.tablesAutocomplete.searchText)"
+                md-item-text="item.fullName"
+                md-input-min-length="1"
+                         md-min-length="1"
+                placeholder="Select a Table"
+                md-menu-class="autocomplete-hive-table-template">
+            <md-item-template>
+
+                    <span class="item-title" >
+                       <ng-md-icon icon="table_grid" size="20" style="fill:#F08C38"></ng-md-icon>
+                    <span  md-highlight-text="$vq.tablesAutocomplete.searchText" md-highlight-flags="^i" style="padding-left:5px;"> {{item.fullName}} </span>
+                      </span>
+                <span class="item-metadata" >
+                        <span class="item-metastat"><span style="color:grey;">Schema:</span><span md-highlight-text="$vq.tablesAutocomplete.searchText" md-highlight-flags="^i" >{{item.schema}}</span></span>
+                    <span class="item-metastat"><span style="color:grey;">Table:</span><span md-highlight-text="$vq.tablesAutocomplete.searchText" md-highlight-flags="^i" >{{item.tableName}}</span></span>
+
+                  </span>
+
+            </md-item-template>
+            <md-not-found>
+                No tables matching "{{$vq.tablesAutocomplete.searchText}}" were found.
+            </md-not-found>
+        </md-autocomplete>
+             </div>
+         <md-button ng-click="$vq.onAddTable()" class="md-raised" style="margin:0px 8px;">Add</md-button>
+         <md-button ng-click="$vq.toggleAdvancedMode()" class="md-raised" style="margin:0px 8px;">{{$vq.advancedModeText}}</md-button>
+         <span flex="20"></span>
+         </div>
+
+    </div>
+
+        <div class="visual-query-canvas"   style="margin-top:8px;" layout="column"  layout-fill flex  mouse-capture ng-hide="$vq.selectedColumnsAndTables.length ==0 || $vq.advancedMode ==true" >
+                <div >
+                <div layout="row" flex >
+                    <span flex></span>
+                    <thinkbig-step-buttons can-continue="$vq.isValid" step-index="{{::$vq.stepIndex}}" ></thinkbig-step-buttons>
+                    <span flex="10"></span>
+                </div>
+
+
+                <div class="svg-container" browser-height browser-height-scroll-y="true" browser-height-scroll-x="true" browser-height-offset="300">
+                <flow-chart class="flowchart" id="visual-query-canvas"
+                        chart="$vq.chartViewModel"
+                        on-create-connection-callback="$vq.onCreateConnectionCallback"
+                            on-edit-connection-callback="$vq.onEditConnectionCallback"
+                        >
+                </flow-chart>
+                </div>
+                </div>
+        </div>
+
+ <thinkbig-hql-editor ng-model="$vq.model.visualQuerySql" ng-if="$vq.advancedMode == true " allow-fullscreen="false" allow-database-browse="false" allow-execute-query="false" ></thinkbig-hql-editor>

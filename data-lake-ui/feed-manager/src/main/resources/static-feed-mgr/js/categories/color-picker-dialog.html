@@ -1,0 +1,34 @@
+<md-dialog aria-label="Category"  ng-cloak >
+    <form>
+        <div  class="md-toolbar-tools">
+                <span> Color for {{category.name}}</span>
+                <ng-md-icon icon="{{category.icon}}" size="50" style="fill:{{selectedTile.background}};margin-top:5px;"></ng-md-icon>
+                <div class="hint" style="width:80px;max-width:80px;">{{selectedTile.title}}</div>
+        </div>
+        <md-dialog-content layout="column" flex  layout-padding style="min-width:500px;min-height:400px;">
+
+            <md-grid-list
+                    md-cols="3" md-cols-sm="3" md-cols-md="4" md-cols-gt-md="4"
+                    md-row-height-gt-md="3:3" md-row-height="1:1"
+                    md-gutter="8px" md-gutter-gt-sm="4px" >
+                <md-grid-tile ng-repeat="tile in tiles"
+                              md-rowspan="1"
+                              md-colspan="1"
+                              md-colspan-sm="1"
+                              style="background-color:{{tile.background}}"
+                        ng-click="selectColor(tile)">
+                    <md-grid-tile-footer><h3>{{tile.title}}</h3></md-grid-tile-footer>
+                </md-grid-tile>
+            </md-grid-list>
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <md-button ng-click="cancel()">
+                Cancel
+            </md-button>
+            <span flex></span>
+            <md-button class="md-primary md-raised" ng-click="save()">
+                Save
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

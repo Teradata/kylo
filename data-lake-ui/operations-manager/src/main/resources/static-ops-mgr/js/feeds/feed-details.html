@@ -1,0 +1,64 @@
+
+<div layout="row" layout-sm="column" layout-xs="column" ng-controller="FeedDetailsController as feedDetails" >
+    <div layout="column" flex="100" flex-gt-sm="70" flex-order="1" flex-order-xs="2" flex-order-sm="2" >
+            <tba-feed-activity  feed-name="feedDetails.feedName"></tba-feed-activity>
+            <tba-jobs hide-feed-column="true" card-title="Feed Jobs" feed-filter="feedDetails.feedName" page-name="feed-job-details" on-job-action="feedDetails.onJobAction(action,job)"></tba-jobs>
+    </div>
+
+    <div layout="column"  flex="100"  flex-gt-sm="30"  style="margin:8px;" flex-order="2" flex-order-xs="1" flex-order-sm="1">
+        <card-layout>
+            <header-section transclude-to="head">
+                <div style="white-space:nowrap" class="card-title" flex>Feed Details</div>
+                </header-section>
+            <body-section transclude-to="body">
+                <md-list flex layout-fill class="feed-details-list list-item-table">
+                <md-list-item>
+                    <div layout="column"  class="item-column md-list-item-text ">
+                      <span class="item-title">
+                                                           {{feedDetails.feedName}}
+                                                </span>
+                                    <span  class="{{feedDetails.feed.iconstyle}} column-title-bottom">
+                                           <ng-md-icon icon="{{feedDetails.feed.icon}}" size="20" ng-if="feedDetails.feed.icon"  >
+                                           </ng-md-icon>   {{feedDetails.feed.healthText}}</span>
+                    </div>
+                    </md-list-item>
+                <md-divider></md-divider>
+
+                <md-list-item>
+                    <div layout="column"  class="item-column md-list-item-text ">
+
+                                   <span  class="item-title" ng-class="{'healthy':feedDetails.feed.displayStatus == 'COMPLETED' || feedDetails.feed.displayStatus =='RUNNING','error':feedDetails.feed.displayStatus == 'FAILED'}">
+                                     {{feedDetails.feed.displayStatus}}</span>
+                                     <span class="column-title column-title-bottom">
+                                     Status
+                                   </span>
+                        </div>
+                </md-list-item>
+                <md-divider></md-divider>
+
+                <md-list-item >
+                    <div layout="column"  class="item-column md-list-item-text ">
+                                    <span class="item-title">
+                                        <tba-timer start-time="feedDetails.feed.timeSinceEndTime"></tba-timer>
+                                   </span>
+                        <span class="column-title column-title-bottom">Since</span>
+                        </div>
+                </md-list-item>
+                <md-divider></md-divider>
+
+                <md-list-item >
+                    <div layout="column"  class="item-column md-list-item-text ">
+                        <span class="item-title">{{feedDetails.feed.runTimeString}}</span>
+                        <span class="column-title column-title-bottom">Last Run Time</span>
+                        </div>
+                </md-list-item>
+                    </md-list>
+            </body-section>
+        </card-layout>
+        <tba-alerts feed-name="{{feedDetails.feedName}}" style="margin-left:8px;" >
+        </tba-alerts>
+    </div>
+
+</div>
+
+

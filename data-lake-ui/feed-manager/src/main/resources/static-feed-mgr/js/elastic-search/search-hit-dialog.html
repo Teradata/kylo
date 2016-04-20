@@ -1,0 +1,25 @@
+<md-dialog aria-label="Search Hit Data"  ng-cloak>
+    <form>
+        <div  class="md-toolbar-tools">
+            <h4 class="md-title">
+                <span>{{searchHit.type}} - {{searchHit.index}}</span></h4>
+            <span flex></span>
+            <md-button class="md-icon-button" ng-click="cancel($event)">
+                <ng-md-icon md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+            </md-button>
+        </div>
+        <md-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
+            <ul style="list-style-type: none;" flex>
+            <li ng-repeat="(key,value) in searchHit.source" flex >
+                <span class="md-subhead">{{key}}</span><span style="padding-left:20px;" flex>{{value}}</span></li>
+            </ul>
+
+        </md-dialog-content>
+        <md-dialog-actions layout="row">
+            <md-button ng-click="cancel($event)">
+                Close
+            </md-button>
+            <span flex></span>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

@@ -1,0 +1,107 @@
+<div ng-controller="FeedDetailsController as vm" class="centered">
+
+    <card-layout  class="not-centered" style="max-width:980px;width:980px;" flex="initial">
+        <header-section>
+            <h2 class="md-title" flex>Feed Details</h2>
+        </header-section>
+
+        <body-section transclude-to="body" class="md-padding">
+
+            <md-tabs md-dynamic-height md-border-bottom md-selected="vm.selectedTabIndex" >
+                <md-tab >
+                    <md-tab-label >
+                        <div>Details</div>
+                    </md-tab-label>
+                    <md-tab-body>
+                        <md-progress-linear md-mode="indeterminate"  ng-if="vm.loadingFeedData"></md-progress-linear>
+                    <thinkbig-feed-info ng-if="!vm.loadingFeedData && vm.model.loaded" selected-tab-index="vm.selectedTabIndex"></thinkbig-feed-info>
+                     <div ng-if="vm.loadingFeedData" class="layout-padding" style="min-height:200px;height:200px;">Loading Feed</div>
+
+                    <div ng-if="!vm.loadingFeedData && vm.model.loaded == false && vm.loadMessage != '' " class="layout-padding" >{{vm.loadMessage}}</div>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab >
+                    <md-tab-label >
+                        <div>Profiles</div>
+                    </md-tab-label>
+                    <md-tab-body>
+                        <thinkbig-feed-profile-history ng-if="vm.selectedTabIndex == 1"></thinkbig-feed-profile-history>
+                    </md-tab-body>
+                </md-tab>
+                <md-tab >
+                    <md-tab-label >
+                        <div>Related</div>
+                    </md-tab-label>
+                    <md-tab-body>
+                        Related
+                    </md-tab-body>
+                </md-tab>
+                <md-tab >
+                    <md-tab-label >
+                        <div>SLA</div>
+                    </md-tab-label>
+                    <md-tab-body>
+                    Service Level Agreements
+                    </md-tab-body>
+                </md-tab>
+                <md-tab >
+                    <md-tab-label >
+                        <div>Versions</div>
+                    </md-tab-label>
+                    <md-tab-body>
+                        Version History
+                    </md-tab-body>
+                </md-tab>
+                </md-tabs>
+            </body-section>
+
+    </card-layout>
+
+    <card-layout  style="max-width:250px;width:250px;min-width:250px;" flex="initial" body-css="md-padding">
+        <header-section >
+            <h2 class="md-title" flex>Feed Summary</h2>
+            <span class="md-subhead">{{vm.model.feedName}}</span>
+        </header-section>
+
+        <body-section >
+         <div layout="column" class="layout-padding-top">
+             <md-button ng-click="disableFeed()" class="border-btn">
+                 DISABLE FEED
+             </md-button>
+             <div layout="column" class="layout-padding-top-bottom">
+                 <span>{{vm.model.dataOwner}}</span>
+                 <span class="hint">Data Owner</span>
+             </div>
+             <div layout="column" class="layout-padding-top-bottom">
+                <div class="primary-color-1" style="cursor:pointer;" ng-click="vm.onTableClick()">{{vm.model.table.tableSchema.name}}</div>
+                <span class="hint">Table</span>
+              </div>
+             <div layout="column" class="layout-padding-top-bottom">
+                <span ng-repeat="tag in vm.model.tags">
+                    {{tag.name}}
+
+                </span>
+                <span class="hint">Tags</span>
+             </div>
+             <div layout="column" class="layout-padding-top-bottom">
+                 <div layout="row" layout-align="start center" ng-click="vm.onCategoryClick()" class="primary-color-1" style="cursor: pointer;">
+                     <ng-md-icon icon="{{vm.model.category.icon}}" style="fill:{{vm.model.category.iconColor}}" ng-if="vm.model.category.icon != null"></ng-md-icon>
+                     <span style="padding-left:10px;">{{vm.model.category.name}}</span>
+                     <span flex></span>
+                 </div>
+                <span class="hint">Category</span>
+             </div>
+
+             <div layout="row" layout-align="space-between center">
+                 <md-button ng-click="addAlert()" class="md-primary">
+                 ADD ALERT
+                 </md-button>
+                 <md-button ng-click="addSla()" class="md-primary">
+                     ADD SLA
+                 </md-button>
+             </div>
+         </div>
+        </body-section>
+        </card-layout>
+
+</div>

@@ -1,0 +1,36 @@
+<card-layout body-css="md-padding">
+    <header-section>
+        <div layout="row" layout-align="space-between-center" flex>
+            <h2 class="md-title" flex>Properties</h2><h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+        </div>
+    </header-section>
+    <body-section >
+        <md-input-container class="md-block" flex-gt-sm>
+            <label>Data Owner</label>
+            <input  ng-model="vm.model.dataOwner">
+            </input>
+        </md-input-container>
+
+        <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
+            <label class="label-small md-container-ignore">Tags</label>
+               <md-chips ng-model="vm.model.tags" md-autocomplete-snap
+                         md-transform-chip="vm.transformChip($chip)"
+                         md-require-match="false">
+                  <md-autocomplete
+                          md-selected-item="vm.tagChips.selectedItem"
+                          md-search-text="vm.tagChips.searchText"
+                          md-items="item in vm.feedTagService.querySearch(vm.tagChips.searchText)"
+                          md-item-text="item.name"
+                          placeholder="Add a Tag">
+                     <span md-highlight-text="vm.tagChips.searchText">{{item.name}}</span>
+                  </md-autocomplete>
+                  <md-chip-template>
+                                        <span>
+                                          <strong>{{$chip.name}}</strong>
+                                        </span>
+                  </md-chip-template>
+               </md-chips>
+            </md-input-container>
+        <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
+    </body-section>
+</card-layout>

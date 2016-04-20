@@ -1,0 +1,36 @@
+<md-dialog aria-label="Unable to Register the Template"  ng-cloak>
+        <div  class="md-toolbar-tools md-warn">
+            <h4 class="md-warn">Unable to register the template: {{templateName}}</h4>
+            <span flex></span>
+            <md-button class="md-icon-button" ng-click="cancel()">
+                <ng-md-icon md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+            </md-button>
+        </div>
+        <md-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
+           <div class="md-warn">The following properties require the existence of a controller service in Nifi.
+            <br/>
+            Please go to Nifi, create the following controller service(s), save the template, and try again.
+               <br/>
+               <b>NOTE:</b> You may need to re-create the template again once you have created the required controller services in Nifi.
+               <ol>
+                   <li>Create the required Services</li>
+                   <li>Re create/save the template in Nifi</li>
+               </ol>
+               </div>
+            <section ng-repeat="(name,services) in servicesNeeded" flex>
+                            <md-subheader class="md-warn">{{::name}}</md-subheader>
+                            <md-list class="padding-left">
+                                <md-list-item ng-repeat="service in ::services">
+                                    <div class="md-list-item-text">
+                                        <div>Processor: {{::service.processor}}</div>
+                                        <div>Property: {{::service.name}}</div>
+                                        <div class="hint">{{::service.description}}</div>
+                                    </div>
+                                    <md-divider ng-if="!$last"></md-divider>
+                                </md-list-item>
+                            </md-list>
+                            <md-divider ng-if="!$last"></md-divider>
+            </section>
+            <br/><br/>
+        </md-dialog-content>
+</md-dialog>

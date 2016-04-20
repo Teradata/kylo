@@ -1,0 +1,216 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Operations Manager</title>
+
+    <!-- jQuery, Angular, Angular Materials and css -->
+    <script src="/ui-common/js/vendor/jquery/jquery.js" type="text/javascript"></script>
+    <script src="/ui-common/js/vendor/angular/angular.js"></script>
+    <script src="/ui-common/js/vendor/angular-cookies/angular-cookies.min.js"></script>
+    <script src="/ui-common/js/vendor/angular-animate/angular-animate.js"></script>
+    <script src="/ui-common/js/vendor/angular-aria/angular-aria.js"></script>
+    <script src="/ui-common/js/vendor/angular-messages/angular-messages.min.js"></script>
+    <script type="text/javascript" src="/ui-common/js/vendor/angular-material/angular-material.js"></script>
+    <link rel="stylesheet" href="/ui-common/js/vendor/angular-material/angular-material.min.css"/>
+    <script src="/ui-common/js/vendor/angular-ui-router/angular-ui-router.js"></script>
+
+    <script src="/ui-common/js/vendor/underscore/underscore-min.js"></script>
+
+    <!-- Date and Timezone scripts -->
+    <script src="/ui-common/js/vendor/moment/moment-2.10.3-min.js"></script>
+    <script src="/ui-common/js/vendor/moment/moment-timezone-0.4.0-min.js"></script>
+    <script src="/ui-common/js/vendor/moment/moment-duration-format.js"></script>
+     <script src="/ui-common/js/vendor/moment/humanize-duration.js"></script>
+
+    <!-- search widget
+    <link rel="stylesheet" href="webjars/thinkbig-ui-common/js/vendor/angular-advanced-searchbox/angular-advanced-searchbox.css">
+    <script src="webjars/thinkbig-ui-common/js/vendor/angular-advanced-searchbox/angular-advanced-searchbox-tpls.js"></script>
+-->
+
+    <!-- ng-md-icon Material Icons -->
+    <script type="text/javascript" src="/ui-common/js/vendor/angular-material-icons/angular-material-icons.js"></script>
+    <script type="text/javascript" src="/ui-common/js/vendor/svg-morpheus/svg-morpheus.js"></script>
+    <link rel="stylesheet" href="/ui-common/js/vendor/angular-material-icons/angular-material-icons.css"/>
+
+    <!-- Material Font Icons (  <md-icon ... >icon_name </md-icon> -->
+    <link rel="stylesheet" href="/ui-common/js/vendor/material-icons/material-icons.css"/>
+    <link rel="stylesheet" href="/ui-common/js/vendor/material-design-icons/css/material-design-iconic-font.min.css"/>
+
+    <!-- Material Datatable -->
+    <link rel="stylesheet" href="/ui-common/js/vendor/md-data-table/md-data-table.css"/>
+    <script src="/ui-common/js/vendor/md-data-table/md-data-table.js" type="text/javascript"></script>
+
+    <!-- Paginator -->
+    <script src="/ui-common/js/vendor/dirPagination/dirPagination.js"></script>
+    <link rel="stylesheet" href="/ui-common/js/vendor/dirPagination/pagination.css"/>
+
+
+    <!-- d3 for charts -->
+    <script src="/ui-common/js/vendor/d3/d3.js"></script>
+    <script src="/ui-common/js/vendor/d3/nv.d3.min.js"></script> <!-- or use another assembly -->
+    <script src="/ui-common/js/vendor/angular-nvd3/angular-nvd3.js"></script>
+    <link rel="stylesheet" href="/ui-common/js/vendor/d3/nv.d3.css">
+
+    <!-- truncate text filter -->
+    <script src="/ui-common/js/vendor/ng-text-truncate/ng-text-truncate.js" type="text/javascript"></script>
+
+    <!-- The Base Application Script -->
+    <script src="js/app.js" type="text/javascript"></script>
+    <script src="/ui-common/js/min/datalake-ui-common.js"></script>
+
+
+
+
+
+    <!-- Services and Utilities -->
+    <script src="js/services/RestUrlService.js" type="text/javascript"></script>
+    <script src="js/services/JobService.js" type="text/javascript"></script>
+    <script src="js/services/FeedService.js" type="text/javascript"></script>
+    <script src="js/services/ServicesStatusService.js" type="text/javascript"></script>
+
+    <!-- Helper Services -->
+    <script src="js/services/StateService.js" type="text/javascript"></script>
+    <script src="js/services/IconStatusService.js" type="text/javascript"></script>
+    <script src="js/services/ChartJobStatusService.js" type="text/javascript"></script>
+    <script src="js/services/TabService.js" type="text/javascript"></script>
+    <script src="js/services/Nvd3ChartService.js" type="text/javascript"></script>
+    <script src="js/services/EventService.js" type="text/javascript"></script>
+
+
+
+    <!-- Shared Directives -->
+    <script src="js/shared/loading-directive/LoadingDirective.js" type="text/javascript"></script>
+
+    <!-- Main Controller  index.html-->
+    <script src="js/main/MainController.js" type="text/javascript"></script>
+
+    <!-- Overview Page -->
+    <script src="js/overview/OverviewController.js" type="text/javascript"></script>
+    <!-- Overview kpis -->
+    <script src="js/overview/services-indicator/ServicesIndicatorDirective.js" type="text/javascript"></script>
+    <script src="js/overview/feed-status-indicator/FeedsStatusIndicatorDirective.js" type="text/javascript"></script>
+    <script src="js/overview/data-confidence-indicator/DataConfidenceIndicatorDirective.js" type="text/javascript"></script>
+    <script src="js/overview/job-status-indicator/JobStatusIndicatorDirective.js" type="text/javascript"></script>
+    <!-- Feed Card -->
+    <script src="js/overview/feed-health/FeedHealthTableCardDirective.js" type="text/javascript"></script>
+    <!-- Alerts -->
+    <script src="js/overview/alerts/AlertsDirective.js" type="text/javascript"></script>
+    <script src="js/overview/alerts/AlertsService.js" type="text/javascript"></script>
+
+    <!-- Services Page -->
+    <script src="js/service-health/ServiceHealthDirective.js" type="text/javascript"></script>
+    <script src="js/service-health/ServiceComponentHealthDetailsController.js" type="text/javascript"></script>
+    <script src="js/service-health/ServiceHealthDetailsController.js" type="text/javascript"></script>
+
+    <!-- Jobs Page -->
+    <script src="js/jobs/JobsDirective.js" type="text/javascript"></script>
+
+    <!-- Job Details -->
+    <script src="js/jobs/JobDetailsController.js" type="text/javascript"></script>
+    <script src="js/jobs/JobDetailsDirective.js" type="text/javascript"></script>
+
+    <!-- Scheduler -->
+    <script src="js/scheduler/SchedulerController.js" type="text/javascript"></script>
+    <!-- Feed Details -->
+    <script src="js/feeds/FeedDetailsController.js" type="text/javascript"></script>
+    <script src="js/feeds/FeedActivityDirective.js" type="text/javascript"></script>
+
+    <!-- Charts Page -->
+    <script src="js/charts/ChartsController.js" type="text/javascript"></script>
+
+    <link rel="stylesheet" href="assets/app.css"/>
+
+
+
+    <!-- Pivot Tables -->
+    <script src="/ui-common/js/vendor/jquery-ui/jquery-ui.js" type="text/javascript"></script>
+    <link rel="stylesheet" type="text/css" href="js/vendor/pivottable/pivot.css">
+    <script type="text/javascript" src="js/vendor/pivottable/pivot.js"></script>
+    <link rel="stylesheet" type="text/css" href="/ui-common/js/vendor/c3/c3.min.css">
+    <script type="text/javascript" src="/ui-common/js/vendor/c3/c3.min.js"></script>
+
+    <script type="text/javascript" src="js/vendor/pivottable/c3_renderers.js"></script>
+
+    <!-- TODO change to host locally -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+
+
+    <style type="text/css">
+        /**
+         * Hide when Angular is not yet loaded and initialized
+         */
+        [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+            display: none !important;
+        }
+    </style>
+
+</head>
+<!-- index.html -->
+<body ng-app="datalakeui.opsManager" layout="row" ng-controller="MainController as mc" ng-cloak >
+
+
+<md-sidenav class="site-sidenav md-sidenav-left md-whiteframe-z2"
+            md-component-id="left"
+            md-is-locked-open="$mdMedia('gt-md')">
+
+    <md-toolbar class="md-hue-2" style="padding-left:15px;padding-right:15px;padding-top:5px;color:#ffffff" layout="column">
+        <div layout="row" layout-wrap layout-align="space-between-center" style="padding-bottom:10px;">
+            <img src="images/teradata_logo.gif" width="70px">
+            <span class="md-title">THINK&nbsp;<b>BIG</b></span>
+        </div>
+        <div layout="row" layout-wrap layout-align="space-between-center">
+            <span style="font-size:12px;">User:  dladmin </span>
+            <md-button class="md-icon-button" style="height:24px;min-height:24px;max-height:24px;margin:0;padding:0;">
+                <ng-md-icon md-icon icon="arrow_drop_down" ></ng-md-icon>
+            </md-button>
+        </div>
+    </md-toolbar>
+
+    <md-list>
+        <md-list-item ng-repeat="item in mc.menu">
+            <md-button ui-sref="{{item.sref}}" ng-click="mc.selectMenuItem($event,item)" class="nav-btn" ng-class="{'selected' : item === mc.selectedMenuItem, 'nav-btn': item !== mc.selectedMenuItem }">
+                <ng-md-icon md-icon icon="{{item.icon}}" options='{"rotation": "clock"}' ng-class="{'selected' : item === mc.selectedMenuItem, 'nav-btn': item !== mc.selectedMenuItem }"></ng-md-icon>
+                <span style="padding-left:10px;">{{item.text}}</span>
+                <span ng-if="item.text == 'Overview' && mc.alertsCount >0" class="alerts-count">{{mc.alertsCount}}</span>
+            </md-button>
+        </md-list-item>
+    </md-list>
+    <md-list>
+        <md-list-item>
+            <md-button flex ng-click="mc.gotoFeedManager()" class="nav-btn">
+                <ng-md-icon md-icon icon="trending_up"></ng-md-icon>
+                <span style="padding-left:10px;">Feed Manager</span>
+            </md-button>
+        </md-list-item>
+    </md-list>
+
+</md-sidenav>
+
+<div flex layout="column" tabIndex="-1" role="main" class="md-whiteframe-z2" layout-fill>
+
+
+
+    <md-toolbar layout="row" class="md-whiteframe-z1 page-header" layout-align="start center">
+        <md-button class="menu toggle-side-nav" hide-gt-md ng-click="mc.toggleSideNavList()" aria-label="Show Menu">
+            <ng-md-icon icon="menu"></ng-md-icon>
+        </md-button>
+        <ui-router-breadcrumbs displayname-property="data.displayName" template-url="js/shared/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html" style="padding-left:25px;"></ui-router-breadcrumbs>
+    </md-toolbar>
+
+    <md-content flex id="content" md-scroll-y>
+        <!-- inject views-->
+        <div ui-view="content"></div>
+
+    </md-content>
+
+
+</div>
+
+
+</body>
+
+</html>

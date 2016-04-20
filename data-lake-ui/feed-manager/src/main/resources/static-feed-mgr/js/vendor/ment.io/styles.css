@@ -1,0 +1,44 @@
+.menu-highlighted {
+    font-weight: bold;
+}
+
+.expression-properties {
+    box-shadow: 0 5px 15px rgba(0,0,0,.5);
+    border-radius: 6px;
+    -webkit-box-shadow: 0 3px 9px rgba(0,0,0,.5);
+    box-shadow: 0 3px 9px rgba(0,0,0,.5);
+    background-clip: padding-box;
+    outline: 0;
+    background-color:#ffffff;
+    height: 300px;
+    width: 100%;
+    overflow: auto;
+}
+.expression-properties div:first-child {
+    line-height:30px;
+}
+
+.expression-properties:hover {
+    cursor: pointer;
+}
+
+.expression-properties div.active {
+    color: #fff;
+    background-color: #428bca;
+    border-color: #428bca;
+}
+
+.expression-properties div.active .hint {
+    color: #fff;
+}
+
+.expression-properties .expression-property {
+    border-bottom: 1px solid #ddd;
+    box-sizing: border-box;
+    /*height: 50px; */
+    padding-top: 5px;
+    padding-left:16px;
+    padding-right:16px;
+    padding-bottom:5px;
+}
+

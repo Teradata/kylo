@@ -1,0 +1,46 @@
+<div ng-controller="TablesController as $tbl">
+
+    <card-layout class="centered">
+        <header-section>
+            <h2 class="md-title" flex>Tables</h2>
+        </header-section>
+
+        <body-section >
+
+            <div layout="row" layout-fill class="layout-padding-left-right">
+            <md-input-container flex="30">
+                <label>Database</label>
+                <md-select ng-model="$tbl.selectedDatabase" ng-change="$tbl.onDatabaseChange()"  >
+                    <md-option ng-repeat="databaseName in $tbl.schemas" value="{{::databaseName}}">
+                        {{::databaseName}}
+                    </md-option>
+                </md-select>
+            </md-input-container>
+                <span flex></span>
+                </div>
+                     <div >
+                       <md-list class="list-item-table">
+                           <md-list-item >
+                               <div flex="40" class="item-column md-list-item-text table-column-header">
+                                   Schema
+                               </div>
+                               <div flex="40" class="item-column md-list-item-text table-column-header">
+                                  Table
+                               </div>
+                               </md-list-item>
+                         <md-list-item ng-repeat="table in $tbl.selectedTables" ng-click="$tbl.onClickTable(table)">
+                             <div flex="40" class="item-column md-list-item-text ">
+                                 {{::table.schema}}
+                             </div>
+                             <div flex="40" class="item-column md-list-item-text ">
+                                 {{::table.tableName}}
+                             </div>
+                             <md-divider ng-if="!$last"></md-divider>
+                         </md-list-item>
+                       </md-list>
+                         </div>
+
+        </body-section>
+
+    </card-layout>
+</div>

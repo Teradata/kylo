@@ -1,0 +1,99 @@
+<div  ng-controller="TableController as vm">
+
+    <card-layout class="centered" >
+        <header-section>
+            <h2 class="md-title" flex>Tables</h2>
+        </header-section>
+
+        <body-section >
+
+            <md-tabs md-dynamic-height  md-border-bottom md-selected="vm.selectedTabIndex" >
+                <md-tab  >
+                    <md-tab-label>
+                        <div >
+                            Fields
+                        </div>
+                    </md-tab-label>
+                    <md-tab-body>
+
+                        <div >
+                            <md-list class="list-item-table">
+                                <md-list-item >
+                                    <div flex="40" class="item-column md-list-item-text table-column-header">
+                                       Field
+                                    </div>
+                                    <div flex="20" class="item-column md-list-item-text table-column-header">
+                                        Data Type
+                                    </div>
+                                    <div flex="20" class="item-column md-list-item-text table-column-header">
+                                       Primary Key
+                                    </div>
+                                    <div flex="20" class="item-column md-list-item-text table-column-header">
+                                       Nullable
+                                    </div>
+                                    <md-divider ng-if="!$last"></md-divider>
+                                </md-list-item>
+                                <md-list-item ng-repeat="field in vm.tableSchema.fields">
+                                    <div flex="40" class="item-column md-list-item-text">
+                                        {{field.name}}
+                                    </div>
+                                    <div flex="20" class="item-column md-list-item-text">
+                                        {{field.dataType}}
+                                    </div>
+                                    <div flex="20" class="item-column md-list-item-text">
+                                        <ng-md-icon icon="check" ng-if="field.primaryKey"></ng-md-icon>
+                                        <ng-md-icon icon="not_interested" ng-if="!field.primaryKey"></ng-md-icon>
+                                    </div>
+                                    <div flex="20" class="item-column md-list-item-text">
+                                        <ng-md-icon icon="check" ng-if="field.nullable"></ng-md-icon>
+                                        <ng-md-icon icon="not_interested" ng-if="!field.nullable"></ng-md-icon>
+                                    </div>
+                                    <md-divider ng-if="!$last"></md-divider>
+                                </md-list-item>
+                            </md-list>
+
+                            </ul>
+                        </div>
+
+                    </md-tab-body>
+                </md-tab>
+                <md-tab  >
+                    <md-tab-label>
+                        <div >
+                            Search
+                        </div>
+                    </md-tab-label>
+                    <md-tab-body>
+
+                        Search body
+
+                    </md-tab-body>
+                </md-tab>
+                <md-tab  >
+                    <md-tab-label>
+                        <div >
+                            SQL
+                        </div>
+                    </md-tab-label>
+                    <md-tab-body>
+
+                        SQL body
+
+                    </md-tab-body>
+                </md-tab>
+                <md-tab  >
+                    <md-tab-label>
+                        <div >
+                            Browse
+                        </div>
+                    </md-tab-label>
+                    <md-tab-body>
+                        <thinkbig-hql-editor default-schema-name="{{vm.schema}}" default-table-name="{{vm.tableName}}" allow-database-browse="false" allow-execute-query="true" ng-if="vm.selectedTabIndex == 3"></thinkbig-hql-editor>
+
+                    </md-tab-body>
+                </md-tab>
+            </md-tabs>
+        </div>
+
+    </card-layout>
+</div>

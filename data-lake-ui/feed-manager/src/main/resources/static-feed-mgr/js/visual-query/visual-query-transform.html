@@ -1,0 +1,44 @@
+<div layout="row" style="top:250px;">
+     <div layout="column" layout-padding  style="background-color:#ffffff" layout-fill>
+         <div layout="row" layout-fill layout-align="center center">
+             <md-button class="md-raised " ng-click="vm.toggleFunctionHistory()" >History<span ng-if="vm.functionHistory.length>0" style="padding-left:10px;">({{vm.functionHistory.length}})</span></md-button>
+             <span flex="10"></span>
+             <div rows="1" class="formula-editor" ui-codemirror="{ onLoad : vm.codemirrorLoaded }"  ng-model="vm.currentFormula" ui-codemirror-opts="vm.codemirrorOptions">
+             </div>
+             <md-button class="md-raised" ng-click="vm.onAddFunction()">Add</md-button>
+             <span flex></span>
+             <thinkbig-step-buttons style="padding:inherit" can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
+
+             </div>
+         <div layout="row" layout-fill layout-align="center center" browser-height browser-height-scroll-y="false" browser-height-offset="410">
+             <div class="visual-query-function-history"   layout="column" style="width:200px;height:500px;" ng-show="vm.isShowFunctionHistory" style="opacity: 0; transition: opacity 0.2s, border 0.2s;">
+
+                 <md-list flex>
+                     <md-subheader class="md-no-sticky">Function History
+                         <div layout="row">
+                             <md-button class="md-icon-button " ng-click="vm.onUndo()" ng-disabled="vm.canUndo() == false">
+                                 <ng-md-icon icon="undo"></ng-md-icon>
+                             </md-button>
+                             <md-button class="md-icon-button " ng-click="vm.onRedo()" ng-disabled="vm.canRedo() == false">
+                                 <ng-md-icon icon="redo"></ng-md-icon>
+                             </md-button>
+                         </div>
+                     </md-subheader>
+                     <md-list-item  ng-repeat="history in vm.functionHistory" ng-click="vm.executHistoryItem(history)">
+                         <div class="md-list-item-text" layout="column" >
+                             {{history}}
+                         </div>
+                         <md-divider ></md-divider>
+                     </md-list-item>
+                     </md-list>
+             </div>
+         <div  ui-grid-auto-resize style="width:100%;height:500px;" browser-height browser-height-scroll-y="false" browser-height-offset="450"
+             ui-grid="vm.gridOptions"
+             ></div>
+         </div>
+    </div>
+
+
+
+
+</div>

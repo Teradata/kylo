@@ -1,0 +1,44 @@
+<label ng-class="{'label-small md-container-ignore':property.renderWithCodeMirror || property.renderType =='radio'}" ng-if="property.renderType == null || property.renderType != 'checkbox-true-false'">{{property.key}}</label>
+    <div ng-if="property.renderWithCodeMirror && property.renderType != 'text/x-hive' " ng-model="property.value" ui-codemirror="{
+            lineWrapping : true,
+            indentWithTabs: true,
+    smartIndent: true,
+    lineNumbers: true,
+    matchBrackets : true,
+    autofocus: true,
+            mode: '{{::property.renderType}}'
+          }">
+    </div>
+<thinkbig-hql-editor ng-model="property.value" ng-if="property.renderWithCodeMirror && property.renderType == 'text/x-hive'" allow-fullscreen="false" allow-database-browse="false" allow-execute-query="false" ></thinkbig-hql-editor>
+<div ng-if="!property.renderWithCodeMirror">
+    <input ng-model="property.value" ng-if="property.renderType == 'text' || property.renderType == null"  ng-disabled="propertyDisabled"/>
+
+    <input ng-model="property.value" string-to-number type="number" ng-if="property.renderType == 'number'" ng-disabled="propertyDisabled"/>
+
+    <textarea ng-model="property.value" ng-if="property.renderType == 'textarea'" ng-disabled="propertyDisabled">
+        {{property.value}}
+    </textarea>
+
+
+    <md-checkbox ng-if="property.renderType == 'checkbox-true-false'" ng-disabled="propertyDisabled"
+            ng-model="property.value"
+            aria-label="property.key"
+            ng-true-value="'true'"
+            ng-false-value="'false'">{{property.key}}
+    </md-checkbox>
+
+    <md-radio-group ng-model="property.value" ng-if="property.renderType == 'radio' && property.propertyDescriptor.allowableValues != null " layout="row" layout-wrap="true">
+        <md-radio-button ng-repeat="allowableValue in ::property.propertyDescriptor.allowableValues" value="{{::allowableValue.value}}" ng-disabled="propertyDisabled">
+            {{::allowableValue.displayName}}
+            </md-radio-button>
+    </md-radio-group>
+
+    <md-select ng-model="property.value"  ng-if="property.renderType == 'select' && property.propertyDescriptor.allowableValues != null" ng-disabled="propertyDisabled">
+            <md-option ng-repeat="allowableValue in ::property.propertyDescriptor.allowableValues" value="{{::allowableValue.value}}">
+                {{::allowableValue.displayName}}
+            </md-option>
+    </md-select>
+
+</div>
+<div class="hint">{{property.propertyDescriptor.description}}</div>
+

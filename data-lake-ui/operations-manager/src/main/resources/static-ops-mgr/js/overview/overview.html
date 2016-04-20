@@ -1,0 +1,36 @@
+<div ng-controller="OverviewController as vm">
+  <div  layout="row"  layout-sm="column" layout-xs="column">
+            <div flex layout="column" flex-gt-sm="70" flex="100" flex-order="1" flex-order-xs="2" flex-order-sm="2">
+                <!-- THE KPIs -->
+                <div layout="row" layout-xs="column" layout-wrap  layout-align="space-between center" class="kpi-row">
+                    <div flex-gt-md="25" flex-gt-xs="50"  class="service-wrapper kpi" tba-services-indicator
+                         id="services-summary" panel-title="Services" refresh-interval-time="5000" >
+                    </div>
+                    <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" tba-feed-status-indicator
+                         id="feeds-health-summary" panel-title="Feed Status" refresh-interval-time="5000" >
+                    </div>
+                    <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" tba-data-confidence-indicator
+                         id="data-confidence-summary" panel-title="Data Confidence" refresh-interval-time="5000" >
+
+                    </div>
+                    <div flex-gt-md="25" flex-gt-xs="50" class="service-wrapper kpi" tba-job-status-indicator
+                         id="job-activity-kpi" panel-title="Job Status" refresh-interval-time="1000">
+
+                    </div>
+                </div>
+                <!-- END KPIs -->
+                <!-- the Feeds Table-->
+                    <tba-feed-health-table-card refresh-interval-time="5000" layout-fill flex card-title="Feed Health">
+
+                   </tba-feed-health-table-card>
+
+
+                <!-- end feeds table-->
+            </div>
+            <!-- the ALERTS -->
+            <tba-alerts flex layout="column"  flex="100"  flex-gt-sm="30" flex-order="2" flex-order-xs="1" flex-order-sm="1" >
+               </tba-alerts>
+
+        </div>
+
+</div>

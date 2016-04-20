@@ -1,0 +1,64 @@
+<vertical-section-layout section-title="Properties" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()">
+
+    <readonly-section>
+
+         <div layout="column">
+
+                <div layout="row" class="layout-padding-top-bottom">
+                    <span flex="25" class="property-name">Data Owner</span>
+
+                    <div flex>
+                        {{vm.model.dataOwner}}
+                    </div>
+                </div>
+                <div layout="row" class="layout-padding-top-bottom">
+                    <span flex="25" class="property-name">Tags</span>
+
+                    <div flex>
+                        {{vm.model.tags | join: ',':'name'}}
+                    </div>
+                </div>
+
+                <!--
+               <div layout="row" ng-repeat="property in ::vm.model.additionalProperties" class="layout-padding-top-bottom">
+                    <span flex="25">{{::property.key}}</span>
+
+                    <div flex>
+                        {{::property.value}}
+                    </div>
+                </div>
+                -->
+            </div>
+
+    </readonly-section>
+    <editable-section>
+        <md-input-container class="md-block" flex-gt-sm>
+            <label>Data Owner</label>
+            <input  ng-model="vm.editModel.dataOwner">
+            </input>
+        </md-input-container>
+
+        <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
+            <label class="label-small md-container-ignore">Tags</label>
+            <md-chips ng-model="vm.editModel.tags" md-autocomplete-snap
+                      md-transform-chip="vm.transformChip($chip)"
+                      md-require-match="false">
+                <md-autocomplete
+                        md-selected-item="vm.tagChips.selectedItem"
+                        md-search-text="vm.tagChips.searchText"
+                        md-items="item in vm.feedTagService.querySearch(vm.tagChips.searchText)"
+                        md-item-text="item.name"
+                        placeholder="Add a Tag">
+                    <span md-highlight-text="vm.tagChips.searchText">{{item.name}}</span>
+                </md-autocomplete>
+                <md-chip-template>
+                            <span>
+                              <strong>{{$chip.name}}</strong>
+                            </span>
+                </md-chip-template>
+            </md-chips>
+        </md-input-container>
+
+
+    </editable-section>
+</vertical-section-layout>
