@@ -176,6 +176,12 @@
                 <version>${jackson.version}</version>
             </dependency>
 
+            <!-- JMS -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jms</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
 
 
             <!-- Swagger -->
