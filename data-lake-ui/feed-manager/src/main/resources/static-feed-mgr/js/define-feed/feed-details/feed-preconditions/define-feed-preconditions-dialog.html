@@ -1,0 +1,65 @@
+<md-dialog aria-label="Validation Results"  ng-cloak>
+    <form>
+        <div  class="md-toolbar-tools">
+            <h4 class="md-title">
+                <span>{{title}} for {{feed.feedName}}</span></h4>
+            <span flex></span>
+        </div>
+        <md-dialog-content layout="column" style="min-width:500px;" layout-padding>
+
+             <div class="edit-form">
+
+                <md-input-container class="md-block layout-padding-top-bottom">
+                    <label class="md-container-ignore label-small layout-padding-top">Select Rule Type</label>
+                    <md-select ng-model="ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="onRuleTypeChange()" aria-label="Rule Type">
+                        <md-option ng-value="opt" ng-repeat="opt in options">{{ opt.name }}</md-option>
+                    </md-select>
+                    <span class="hint">{{editRule.description}}</span>
+                </md-input-container>
+
+                <div ng-repeat="property in editRule.properties">
+                    <md-input-container class="md-block" ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' ">
+                        <label>{{property.name}}</label>
+                        <input type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"/>
+                        <input ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder"/>
+                        <md-select ng-model="property.value" ng-if="property.type == 'select' " >
+                            <md-option ng-repeat="value in property.selectableValues" value="{{value.value}}">
+                                {{value.label}}
+                            </md-option>
+                        </md-select>
+                        <div ng-if="property.hint" class="hint">
+                            {{property.hint}}
+                        </div>
+                    </md-input-container>
+
+                    <md-datepicker ng-if="property.type == 'date' " ng-model="property.value" md-placeholder="property.placeholder"></md-datepicker>
+                    <div ng-if="property.hint && property.type == 'date' " class="hint">
+                        {{property.hint}}
+                    </div>
+                    <div ng-if="property.type == 'regex'">
+                        <span>Test your Regex Pattern</span>
+                        <md-input-container class="md-block">
+                            <label>Sample String</label>
+                            <input  ng-model="property.regexSampleString" md-placeholder="Sample String"/>
+                        </md-input-container>
+                        <div>
+                            {{property.regexValid}}
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+        </md-dialog-content>
+        <md-dialog-actions layout="row" layout-align="start stretch" flex>
+            <span flex></span>
+            <md-button ng-click="cancel($event)">
+                Cancel
+            </md-button>
+            <md-button class="md-raised md-primary" ng-click="addPolicy($event)" >
+                Done
+            </md-button>
+        </md-dialog-actions>
+    </form>
+</md-dialog>

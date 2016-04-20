@@ -1,0 +1,314 @@
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="description" content="">
+    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <title>Thinkbig Feed Manager</title>
+
+
+
+    <!-- jQuery, Angular, Angular Materials and css -->
+    <script src="/ui-common/js/vendor/jquery/jquery.js" type="text/javascript"></script>
+    <script src="/ui-common/js/vendor/angular/angular.js"></script>
+    <script src="/ui-common/js/vendor/angular-cookies/angular-cookies.min.js"></script>
+    <script src="/ui-common/js/vendor/angular-animate/angular-animate.js"></script>
+    <script src="/ui-common/js/vendor/angular-aria/angular-aria.js"></script>
+    <script src="/ui-common/js/vendor/angular-messages/angular-messages.min.js"></script>
+    <script type="text/javascript" src="/ui-common/js/vendor/angular-material/angular-material.js"></script>
+    <link rel="stylesheet" href="/ui-common/js/vendor/angular-material/angular-material.min.css"/>
+    <script src="/ui-common/js/vendor/angular-ui-router/angular-ui-router.js"></script>
+
+    <script src="/ui-common/js/vendor/underscore/underscore-min.js"></script>
+
+    <!-- Date and Timezone scripts -->
+    <script src="/ui-common/js/vendor/moment/moment-2.10.3-min.js"></script>
+    <script src="/ui-common/js/vendor/moment/moment-timezone-0.4.0-min.js"></script>
+    <script src="/ui-common/js/vendor/moment/moment-duration-format.js"></script>
+    <script src="/ui-common/js/vendor/moment/humanize-duration.js"></script>
+
+
+    <!-- ng-md-icon Material Icons -->
+    <script type="text/javascript" src="/ui-common/js/vendor/angular-material-icons/angular-material-icons.js"></script>
+    <script type="text/javascript" src="/ui-common/js/vendor/svg-morpheus/svg-morpheus.js"></script>
+    <link rel="stylesheet" href="/ui-common/js/vendor/angular-material-icons/angular-material-icons.css"/>
+
+    <!-- Material Font Icons (  <md-icon ... >icon_name </md-icon> -->
+    <link rel="stylesheet" href="/ui-common/js/vendor/material-icons/material-icons.css"/>
+    <link rel="stylesheet" href="/ui-common/js/vendor/material-design-icons/css/material-design-iconic-font.min.css"/>
+
+    <!-- Material Datatable -->
+    <link rel="stylesheet" href="/ui-common/js/vendor/md-data-table/md-data-table.css"/>
+    <script src="/ui-common/js/vendor/md-data-table/md-data-table.js" type="text/javascript"></script>
+
+    <!-- Paginator -->
+    <script src="/ui-common/js/vendor/dirPagination/dirPagination.js"></script>
+    <link rel="stylesheet" href="/ui-common/js/vendor/dirPagination/pagination.css"/>
+
+
+
+    <!-- content assist autocomplete -->
+    <script type="text/javascript" src="js/vendor/ment.io/mentio.js"></script>
+    <script type="text/javascript" src="js/vendor/ment.io/templates.js"></script>
+    <link rel="stylesheet" href="js/vendor/ment.io/styles.css"/>
+
+    <link rel="stylesheet" href="js/vendor/codemirror/lib/codemirror.css"/>
+    <link rel="stylesheet" href="js/vendor/codemirror/addon/hint/show-hint.css"/>
+
+    <script src="js/vendor/codemirror/lib/codemirror.js"></script>
+    <script src="js/vendor/codemirror/ui-codemirror.js"></script>
+
+    <script src="js/vendor/codemirror/mode/pig/pig.js" ></script>
+    <script src="js/vendor/codemirror/mode/properties/properties.js" ></script>
+    <script src="js/vendor/codemirror/mode/python/python.js"></script>
+    <script src="js/vendor/codemirror/mode/xml/xml.js"></script>
+    <script src="js/vendor/codemirror/mode/shell/shell.js"></script>
+    <script src="js/vendor/codemirror/mode/javascript/javascript.js"></script>
+    <script src="js/vendor/codemirror/mode/sql/sql.js" ></script>
+    <script src="js/vendor/codemirror/addon/hint/show-hint.js"></script>
+    <script src="js/vendor/codemirror/addon/hint/sql-hint.js"></script>
+    <script src="js/vendor/codemirror/addon/hint/xml-hint.js"></script>
+    <script src="js/vendor/codemirror/mode/groovy/groovy.js"></script>
+
+    <script src="js/vendor/codemirror/addon/dialog/dialog.js"></script>
+    <link rel="stylesheet" href="js/vendor/codemirror/addon/dialog/dialog.css"/>
+
+    <script src="js/vendor/codemirror/addon/tern/tern.js"></script>
+    <!--<script src="js/vendor/codemirror/addon/tern/worker.js"></script> -->
+
+    <link rel="stylesheet" href="js/vendor/codemirror/addon/tern/tern.css"/>
+
+    <script src="js/vendor/tern/plugin/acorn.js"></script>
+    <script src="js/vendor/tern/plugin/acorn_loose.js"></script>
+    <script src="js/vendor/tern/plugin/walk.js"></script>
+    <script src="js/vendor/tern/plugin/polyfill.js"></script>
+    <script src="js/vendor/tern/lib/signal.js"></script>
+    <script src="js/vendor/tern/lib/tern.js"></script>
+    <script src="js/vendor/tern/lib/def.js"></script>
+    <script src="js/vendor/tern/lib/comment.js"></script>
+    <script src="js/vendor/tern/lib/infer.js"></script>
+    <script src="js/vendor/tern/plugin/doc_comment.js"></script>
+
+
+    <!-- The Base Application Script -->
+    <script src="js/app.js" type="text/javascript"></script>
+    <script src="/ui-common/js/min/datalake-ui-common.js"></script>
+
+
+    <script src="js/shared/filters/filters.js" type="text/javascript"></script>
+    <script src="js/shared/fixed-top-right/fixed-top-right.js" type="text/javascript"></script>
+
+    <script src="js/shared/stepper/StepperService.js" type="text/javascript"></script>
+    <script src="js/services/RestUrlService.js" type="text/javascript"></script>
+    <script src="js/services/FeedTagService.js" type="text/javascript"></script>
+    <script src="js/services/FeedSecurityGroupsService.js" type="text/javascript"></script>
+    <script src="js/services/FeedService.js" type="text/javascript"></script>
+    <script src="js/services/EditFeedNifiPropertiesService.js" type="text/javascript"></script>
+    <script src="js/services/CategoriesService.js" type="text/javascript"></script>
+
+    <script src="js/services/StateService.js" type="text/javascript"></script>
+
+    <script src="js/services/AddButtonService.js" type="text/javascript"></script>
+    <script src="js/shared/add-button/add-button.js" type="text/javascript"></script>
+
+    <!-- Main Controller  index.html-->
+    <script src="js/main/MainController.js" type="text/javascript"></script>
+
+
+    <script src="js/services/RegisterTemplateService.js" type="text/javascript"></script>
+    <script src="js/register-template/RegisteredTemplatesController.js" type="text/javascript"></script>
+    <script src="js/register-template/RegisterTemplateController.js" type="text/javascript"></script>
+    <script src="js/services/FeedInputProcessorPropertiesTemplateFactory.js" type="text/javascript"></script>
+    <script src="js/register-template/select-template/select-template.js" type="text/javascript"></script>
+    <script src="js/register-template/register-template/register-template-step.js" type="text/javascript"></script>
+    <script src="js/register-template/processor-properties/processor-properties.js" type="text/javascript"></script>
+    <script src="js/register-template/processor-properties/derived-expression.js" type="text/javascript"></script>
+
+    <script src="js/define-feed/feed-details/DefineFeedGeneralInfoDirective.js" type="text/javascript"></script>
+    <script src="js/define-feed/feed-details/DefineFeedDetailsDirective.js" type="text/javascript"></script>
+    <script src="js/define-feed/feed-details/DefineFeedTableDirective.js" type="text/javascript"></script>
+    <script src="js/define-feed/feed-details/DefineFeedDataProcessingDirective.js" type="text/javascript"></script>
+    <script src="js/define-feed/feed-details/DefineFeedPropertiesDirective.js" type="text/javascript"></script>
+    <script src="js/define-feed/feed-details/DefineFeedScheduleDirective.js" type="text/javascript"></script>
+    <script src="js/define-feed/feed-details/DefineFeedCompleteController.js" type="text/javascript"></script>
+
+    <script src="js/define-feed/get-table-data-properties/GetTableDataPropertiesController.js" type="text/javascript"></script>
+    <script src="js/services/DBCPTableSchemaService.js" type="text/javascript"></script>
+    <script src="js/shared/nifi-property-input/nifi-property-input.js"></script>
+    <script src="js/shared/nifi-property-input/nifi-property-timunit-input.js"></script>
+
+    <script src="js/define-feed/DefineFeedController.js" type="text/javascript"></script>
+    <script src="js/feeds/FeedsTableController.js" type="text/javascript"></script>
+
+    <script src="js/shared/stepper/stepper.js" type="text/javascript"></script>
+    <script src="js/shared/stepper/step-buttons.js" type="text/javascript"></script>
+
+
+    <script src="js/shared/cron-expression-preview/cron-expression-preview.js" type="text/javascript"></script>
+    <link rel="stylesheet" href="js/shared/cron-expression-preview/cron-expression-preview.css"/>
+
+    <script src="js/feeds/FeedsTableController.js" type="text/javascript"></script>
+
+
+    <script src="js/tables/TablesController.js" type="text/javascript"></script>
+    <script src="js/tables/TableController.js" type="text/javascript"></script>
+
+    <link rel="stylesheet" href="assets/app.css"/>
+
+    <script src="js/categories/CategoriesController.js"></script>
+    <script src="js/categories/category-details.js"></script>
+    <script src="js/services/ElasticSearchService.js"></script>
+    <script src="js/elastic-search/ElasticSearchController.js"></script>
+
+    <script src="js/hql-editor/hql-editor.js"></script>
+    <script src="js/services/HiveService.js"></script>
+
+
+    <script src="js/shared/feed-field-policy-rules/FeedFieldPolicyRuleDialog.js"></script>
+
+    <script src="js/feed-details/FeedDetailsController.js"></script>
+    <script src="js/feed-details/details/feed-definition.js"></script>
+    <script src="js/feed-details/details/feed-info.js"></script>
+    <script src="js/feed-details/details/feed-nifi-properties.js"></script>
+    <script src="js/feed-details/details/feed-data-policies.js"></script>
+    <script src="js/feed-details/details/feed-additional-properties.js"></script>
+    <script src="js/feed-details/details/feed-schedule.js"></script>
+
+    <script src="js/feed-details/profile-history/profile-history.js"></script>
+    <script src="js/feed-details/profile-history/profile-invalid.js"></script>
+    <script src="js/feed-details/profile-history/profile-valid.js"></script>
+    <script src="js/feed-details/profile-history/profile-stats.js"></script>
+
+
+    <script src="js/shared/icon-picker-dialog/icon-picker-dialog.js"></script>
+
+
+    <link rel="stylesheet" href="js/visual-query/visual-query.css"/>
+    <script src="js/visual-query/visual-query-builder.js"></script>
+    <script src="js/visual-query/visual-query-transform.js"></script>
+    <script src="js/visual-query/visual-query-store.js"></script>
+    <script src="js/visual-query/VisualQueryController.js"></script>
+    <script src="js/visual-query/TableDataFunctions.js"></script>
+    <script src="js/visual-query/SparkTransformService.js"></script>
+    <script src="js/services/VisualQueryService.js"></script>
+
+
+    <script src="js/services/SideNavService.js"></script>
+
+
+    <link rel="stylesheet" href="js/vendor/flowchart/flowchart.css"/>
+    <script src="js/vendor/flowchart/svg_class.js" type="text/javascript"></script>
+    <script src="js/vendor/flowchart/mouse_capture_service.js" type="text/javascript"></script>
+    <script src="js/vendor/flowchart/dragging_service.js" type="text/javascript"></script>
+    <script src="js/vendor/flowchart/flowchart_viewmodel.js" type="text/javascript"></script>
+    <script src="js/vendor/flowchart/flowchart_directive.js" type="text/javascript"></script>
+
+    <script src="js/utils/StringUtils.js" type="text/javascript"></script>
+
+
+
+    <link rel="stylesheet" href="/ui-common/js/vendor/ui-grid/ui-grid.css"/>
+    <link rel="stylesheet" href="/ui-common/js/vendor/ui-grid/ui-grid-material.css"/>
+    <script src="/ui-common/js/vendor/ui-grid/ui-grid.js"></script>
+    <!-- TODO change to host locally -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,400italic">
+
+
+    <style type="text/css">
+        /**
+         * Hide when Angular is not yet loaded and initialized
+         */
+        [ng\:cloak], [ng-cloak], [data-ng-cloak], [x-ng-cloak], .ng-cloak, .x-ng-cloak {
+            display: none !important;
+        }
+    </style>
+
+</head>
+<!-- index.html -->
+<body ng-app="datalakeui.feedmgr" layout="row" ng-controller="MainController as mc" ng-cloak >
+
+
+<md-sidenav class="site-sidenav md-sidenav-left md-whiteframe-z2"
+            md-component-id="left"
+            md-is-locked-open="$mdMedia('gt-md') && mc.sideNavService.isLockOpen">
+
+    <md-toolbar class="md-hue-2" style="padding-left:15px;padding-right:15px;padding-top:5px;color:#ffffff" layout="column">
+        <div layout="row" layout-wrap layout-align="space-between-center" style="padding-bottom:10px;">
+            <img src="images/terradata_thinkbig_logo_white.png" height="25px">
+        </div>
+        <div layout="row" layout-wrap layout-align="space-between-center">
+            <span style="font-size:12px;">User:  dladmin </span>
+            <md-button class="md-icon-button" style="height:24px;min-height:24px;max-height:24px;margin:0;padding:0;">
+                <ng-md-icon md-icon icon="arrow_drop_down" ></ng-md-icon>
+            </md-button>
+        </div>
+    </md-toolbar>
+
+    <md-list >
+        <md-list-item ng-repeat="item in mc.menu">
+            <md-button flex ui-sref="{{item.sref}}" ng-click="mc.selectMenuItem($event,item)" class="nav-btn" ng-class="{'selected' : item === mc.selectedMenuItem, 'nav-btn': item !== mc.selectedMenuItem }">
+                <ng-md-icon md-icon icon="{{item.icon}}" options='{"rotation": "clock"}' ng-class="{'selected' : item === mc.selectedMenuItem, 'nav-btn': item !== mc.selectedMenuItem }"></ng-md-icon>
+                <span style="padding-left:10px;">{{item.text}}</span>
+            </md-button>
+        </md-list-item>
+        <md-subheader>Admin</md-subheader>
+        <md-divider></md-divider>
+        <md-list-item ng-repeat="item in mc.adminMenu">
+            <md-button flex ui-sref="{{item.sref}}" ng-click="mc.selectMenuItem($event,item)" class="nav-btn" ng-class="{'selected' : item === mc.selectedMenuItem, 'nav-btn': item !== mc.selectedMenuItem }">
+                <ng-md-icon md-icon icon="{{item.icon}}" options='{"rotation": "clock"}' ng-class="{'selected' : item === mc.selectedMenuItem, 'nav-btn': item !== mc.selectedMenuItem }"></ng-md-icon>
+                <span style="padding-left:10px;">{{item.text}}</span>
+            </md-button>
+        </md-list-item>
+    </md-list>
+    <md-list>
+        <md-list-item>
+            <md-button flex ng-click="mc.gotoOperationsManager()" class="nav-btn">
+                <ng-md-icon md-icon icon="trending_up"></ng-md-icon>
+                <span style="padding-left:10px;">Operations Manager</span>
+            </md-button>
+        </md-list-item>
+    </md-list>
+
+</md-sidenav>
+
+<div flex layout="column" tabIndex="-1" role="main" class="md-whiteframe-z2" layout-fill style="background-color:#F9F9F9;">
+    <add-button></add-button>
+    <md-toolbar layout="row" class="md-whiteframe-z1 page-header" layout-align="space-between center">
+        <div layout="row " flex>
+
+        <md-button class="menu toggle-side-nav" ng-hide="mc.isSideNavHidden()" ng-click="mc.toggleSideNavList()" aria-label="Show Menu">
+            <ng-md-icon icon="menu"></ng-md-icon>
+        </md-button>
+        <ui-router-breadcrumbs displayname-property="data.displayName" template-url="js/shared/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html" style="padding-left:25px;width:400px;align-self: center"></ui-router-breadcrumbs>
+            <div layout="row" layout-fill layout-align="center" style="align-self: center; ">
+                <ng-md-icon icon="search"></ng-md-icon>
+                 <md-input-container  class="condensed-no-float md-block global-search" md-no-float style="margin-top:8px;margin-bottom:-15px;"  flex >
+                    <input ng-model="mc.searchQuery" ng-keypress="mc.onSearchKeypress($event)" placeholder="Global Search" style="color:white">
+                </md-input-container>
+                <md-button class=" border-btn-white " ng-click="mc.search()">
+                    Search
+                </md-button>
+                <span flex="20"></span>
+                <!--
+                <div style="padding:5px;"><md-button class="md-primary md-raised md-icon-button rounded-rectangle" ng-click="mc.search()">
+                    <ng-md-icon icon="search" ></ng-md-icon>
+                </md-button>
+                </div>            </div>
+                -->
+                </div>
+
+        </div>
+    </md-toolbar>
+
+    <md-content flex id="content" md-scroll-y class="{{mc.currentState.name}}" scroll>
+      <div ui-view="content" class="main-content"></div>
+     </md-content>
+
+
+</div>
+
+
+</body>
+
+</html>

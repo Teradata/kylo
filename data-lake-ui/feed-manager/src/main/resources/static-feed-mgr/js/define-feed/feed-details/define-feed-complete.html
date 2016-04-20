@@ -1,0 +1,43 @@
+
+<div ng-controller="DefineFeedCompleteController as vm">
+
+    <div layout="column" ng-if="vm.isValid" layout-align="center center" layout-fill style="background-color:#ffffff">
+
+        <div layout="row">
+        <ng-md-icon icon="done_all" size="50" style="fill:#EF8E43"></ng-md-icon>
+        <div class="md-headline" style="padding-left:40px;padding-top:40px;">Congratulations! Your feed has been successfully created.</div>
+        </div>
+        <div class="md-subhead" style="padding-left:40px;">You can augment your feed by adding the following enhancements</div>
+        <div layout="column" layout-align="center start">
+            <div layout="row" class="layout-padding-top-bottom" style="cursor:pointer;outline:none;padding-top:20px;" ng-click="vm.onAddServiceLevelAgreement()">
+                <ng-md-icon icon="note_add" size="50" style="fill:#3782B8;"></ng-md-icon>
+                <span class="md-subhead" style="padding-top:40px;padding-left:30px;"> Add a Service Level Agreement</span>
+            </div>
+            <div layout="row" style="cursor:pointer;outline:none;" >
+                <ng-md-icon icon="add_alert" size="50" style="fill:#3782B8;"></ng-md-icon>
+                <span class="md-subhead" style="padding-top:40px;padding-left:30px;"> Add an alert</span>
+            </div>
+        </div>
+        <span flex style="padding-top:40px;"></span>
+        <div flex layout="row" style="padding-left:520px;">
+            <md-button class="md-primary md-raised" ng-click="vm.gotIt()">Got It</md-button>
+        </div>
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

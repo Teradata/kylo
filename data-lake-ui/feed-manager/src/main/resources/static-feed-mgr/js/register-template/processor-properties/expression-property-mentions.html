@@ -1,0 +1,24 @@
+<!--<ul class="list-group expression-properties">
+    <li mentio-menu-item="property" ng-repeat="property in items" class="list-group-item" layout-fill layout-column>
+        <div layout="row">
+        <span ng-bind-html="property.key | mentioHighlight:typedTerm:'menu-highlighted' | unsafe"></span>
+        <span style="padding-left:15px;color:#cccccc" ng-bind="property.dataType"></span>
+        <span style="padding-left:15px;" ng-bind="property.value"></span>
+        </div>
+        <span class="hint">{{property.description}}</span>
+        <md-divider ng-if="!$last"></md-divider>
+    </li>
+</ul>
+-->
+
+<div class="expression-properties">
+    <div mentio-menu-item="property" ng-repeat="property in items" layout-column
+         class="expression-property" flex>
+        <div layout="row">
+            <span ng-bind-html="property.key | mentioHighlight:typedTerm:'menu-highlighted' | unsafe"></span>
+            <span style="padding-left:15px;color:#cccccc" ng-bind="property.dataType"></span>
+            <span style="padding-left:15px;" ng-bind="property.value"></span>
+        </div>
+        <span class="hint">{{property.description}}</span>
+    </div>
+</div>

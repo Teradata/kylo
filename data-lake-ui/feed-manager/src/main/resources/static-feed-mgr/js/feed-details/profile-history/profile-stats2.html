@@ -1,0 +1,21 @@
+<div >
+    <div ng-if="vm.loading">
+    <md-progress-linear md-mode="indeterminate" ></md-progress-linear>
+        <span flex>Loading...</span>
+    </div>
+  <div ng-if="!vm.loading" overflow-scroll parent="md-dialog-content" offset-height="100">
+    <div class="layout-padding-left">
+    <md-input-container>
+        <label>Filter</label>
+        <input ng-model="vm.profileFilter"/>
+    </md-input-container>
+    </div>
+      <div flex="initial" >
+
+          <div style="width:900px;"
+               ag-grid="vm.gridOptions"
+               class="material-data-table"></div>
+</div>
+
+</div>
+    </div>

@@ -1,0 +1,67 @@
+<vertical-section-layout section-title="Feed Definition" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()">
+
+    <readonly-section>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Feed Name</span>
+            <div flex>
+                {{vm.model.feedName}}
+            </div>
+        </div>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">System Name</span>
+
+            <div flex>
+                {{vm.model.systemFeedName}}
+            </div>
+        </div>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Description</span>
+
+            <div flex>
+                {{vm.model.description}}
+            </div>
+        </div>
+        <div layout="row" class="layout-padding-top-bottom">
+            <span flex="25" class="property-name">Feed Type</span>
+
+            <div flex>
+                {{vm.model.templateId}}
+            </div>
+        </div>
+    </readonly-section>
+    <editable-section>
+        <div layout="row" layout-align="space-between start">
+            <md-input-container flex="45" class="condensed">
+                <label>Display Name</label>
+                <input required ng-model="vm.editModel.feedName" name="feedName" />
+                <div ng-show="editFeedDefinitionForm.feedName.$touched && editFeedDefinitionForm.feedName.$invalid" ng-messages="editFeedDefinitionForm.feedName.$error">
+                    <div ng-show="editFeedDefinitionForm.feedName.$error.required" ng-message="required">Required.</div>
+                </div>
+            </md-input-container>
+            <div flex="10"></div>
+            <md-input-container flex="45" class="condensed">
+                <label>System Name</label>
+                <input  readonly ng-model="vm.editModel.systemFeedName"/>
+            </md-input-container>
+        </div>
+
+        <md-input-container class="md-block condensed">
+            <label>Description</label>
+            <textarea ng-model="vm.editModel.description"></textarea>
+        </md-input-container>
+        <div layout="row" layout-align="space-between start" class="layout-padding-top">
+            <md-input-container  flex="45" class="condensed">
+                <label>Feed Type</label>
+                <md-select required ng-model="vm.editModel.templateId" name="templateId">
+                    <md-option ng-repeat="template in vm.templates | orderBy:templateName" value="{{template.templateId}}">
+                        {{template.templateName}}
+                    </md-option>
+                </md-select>
+                <div ng-show="editFeedDefinitionForm.templateId.$touched && editFeedDefinitionForm.templateId.$invalid" ng-messages="editFeedDefinitionForm.templateId.$error">
+                    <div ng-show="editFeedDefinitionForm.templateId.$error.required" ng-message="required">Required.</div>
+                </div>
+            </md-input-container>
+            <span flex></span>
+        </div>
+    </editable-section>
+</vertical-section-layout>

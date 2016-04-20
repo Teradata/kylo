@@ -1,0 +1,61 @@
+<md-dialog aria-label="Profile Data"  ng-cloak style="width:100%;height:100%;" class="md-dialog-fullscreen-fixed" >
+         <div  class="md-toolbar-tools">
+            <h4 class="md-title">
+                <span>Profile Statistics for {{processingdate |date:'MM/dd/yyyy @ hh:mm:ssa'}}</span></h4>
+            <span flex></span>
+        </div>
+        <md-dialog-content layout="column" layout-padding style="width:100%;height:100%;">
+
+            <md-tabs md-dynamic-height md-border-bottom md-selected="selectedTabIndex" >
+                <md-tab >
+                    <md-tab-label >
+                        <div>stats</div>
+                    </md-tab-label>
+                    <md-tab-body>
+                        <thinkbig-feed-profile-stats ng-if="selectedTabIndex ==0"  processingdttm="processingdttm" rows-per-page="paginationData.rowsPerPage"></thinkbig-feed-profile-stats>
+
+                    </md-tab-body>
+                </md-tab>
+                <md-tab >
+                    <md-tab-label >
+                        <div>Valid</div>
+                    </md-tab-label>
+                    <md-tab-body>
+                        <thinkbig-feed-profile-valid ng-if="selectedTabIndex ==1"  processingdttm="processingdttm" rows-per-page="paginationData.rowsPerPage"></thinkbig-feed-profile-valid>
+
+                    </md-tab-body>
+                </md-tab>
+                <md-tab >
+                    <md-tab-label >
+                        <div>Invalid</div>
+                    </md-tab-label>
+                    <md-tab-body>
+                      <thinkbig-feed-profile-invalid ng-if="selectedTabIndex ==2"  processingdttm="processingdttm" rows-per-page="paginationData.rowsPerPage"></thinkbig-feed-profile-invalid>
+
+                    </md-tab-body>
+                </md-tab>
+                </md-tabs>
+        </md-dialog-content>
+        <md-dialog-actions layout="row" layout-align="start center" flex>
+            <md-button class="md-raised" ng-click="cancel($event)">
+                Cancel
+            </md-button>
+            <span flex></span>
+            <div   layout-align="end start"  layout-row class="pagination-list-item" ng-if="renderPagination">
+                <dir-pagination-controls pagination-id="paginationId"
+                                         auto-hide="false"
+                                         max-size="5"
+                                         direction-links="true"
+                                         boundary-links="false"
+                                         template-url="js/vendor/dirPagination/dirPagination.tpl.html"
+                                         on-page-change="onPaginationChange(newPageNumber)"
+                                         label="Rows per page"
+                                         rows-per-page="paginationData.rowsPerPage"
+                                         rows-per-page-options="paginationData.rowsPerPageOptions"
+                                         class="pagination-row">
+                </dir-pagination-controls>
+            </div>
+
+
+        </md-dialog-actions>
+</md-dialog>

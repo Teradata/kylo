@@ -1,0 +1,215 @@
+<card-layout body-css="md-padding">
+    <header-section>
+        <div layout="row" layout-align="space-between-center" flex>
+            <h2 class="md-title" flex>Table</h2><h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+        </div>
+    </header-section>
+<body-section md-content class="md-padding">
+    <ng-form name="defineFeedForm">
+
+        <div layout="row" layout-align="start center" >
+            <div class="" flex="45">
+                <md-input-container class="md-block" >
+                    <label>Table Name</label>
+                    <input ng-model="vm.model.table.tableSchema.name"/>
+                </md-input-container>
+            </div>
+            <span flex></span>
+        </div>
+    <div  ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+        <div class="md-subhead">Choose a method for specifing the schema</div>
+        <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
+            <div class="layout-padding-indent" style="padding-top:8px;">
+                <md-radio-group ng-model="vm.model.table.method" layout="row" >
+                    <md-radio-button ng-repeat="method in vm.tableCreateMethods"
+                                     ng-value="method.type"
+                                     aria-label="{{method.name}}">
+                        {{method.name}}
+                    </md-radio-button>
+                </md-radio-group>
+            </div>
+            <div ng-if="vm.model.table.method == 'SAMPLE_FILE'" layout="row" layout-align="center center" style="padding-left:25px;">
+                    <input type="file"  file-model="vm.sampleFile"/>
+                <md-button class="md-raised" ng-click="vm.uploadSampleFile();" ng-if="vm.sampleFile != null" ng-disabled="vm.uploadBtnDisabled">
+                    Upload
+                </md-button>
+            </div>
+        </div>
+    </div>
+    <div>
+        <div class="md-subhead">Schema Definition</div>
+        <div ng-show="vm.model.table.tableSchema.fields.length ==0" class="hint layout-padding-top-bottom layout-padding-indent">
+            No fields are defined.  Click Add Field to define a new field for this table.  At least 1 field is required
+        </div>
+        <div ng-if="vm.model.table.tableSchema.fields.length >0" class="layout-padding-indent">
+        <md-list flex layout-fill class="list-item-table list-condensed">
+
+            <md-list-item >
+                <div layout="row" layout-fill>
+                    <div flex="20" class="md-list-item-text hint">
+                      Field Name
+                    </div>
+                    <div flex="20" class="md-list-item-text hint">
+                        Description
+                    </div>
+                    <div flex="20" class="md-list-item-text hint">
+                       Data Type
+                    </div>
+                    <div flex="5"  style="width:50px;min-width:50px;max-width:50px;" class="md-list-item-text hint">
+                        Primary
+                    </div>
+                    <div flex="5" style="width:50px;min-width:50px;max-width:50px;" class="md-list-item-text hint">
+                       Nullable
+                    </div>
+                    <div flex="20" class="md-list-item-text hint" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+                        Preview Data
+                    </div>
+                    <div flex="5" class="md-list-item-text hint" >
+
+                    </div>
+                </div>
+            </md-list-item>
+
+
+            <md-list-item  class="md-secondary" ng-repeat="columnDef in vm.model.table.tableSchema.fields">
+                <div layout="row" layout-fill>
+                    <div flex="20" class="md-list-item-text ">
+                        <md-input-container md-no-float class="md-block" flex-gt-sm>
+                            <input ng-model="columnDef.name" placeholder="Field Name"/>
+                        </md-input-container>
+                    </div>
+                    <div flex="20" class="md-list-item-text ">
+                        <md-input-container md-no-float class="md-block" flex-gt-sm>
+                            <input ng-model="columnDef.description" placeholder="Description"/>
+                        </md-input-container>
+                    </div>
+                    <div flex="20" class="md-list-item-text ">
+                        <md-input-container class="md-block" flex-gt-sm>
+                            <md-select ng-model="columnDef.dataType" placeholder="Data Type" >
+                                <md-option ng-repeat="dataType in ::vm.columnDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{::dataType}}"  aria-label="{{::dataType}}">
+                                    {{::dataType}}
+                                </md-option>
+                            </md-select>
+                        </md-input-container>
+                    </div>
+
+                    <div flex="5" style="width:50px;min-width:50px;max-width:50px;" class="md-list-item-text ">
+                        <md-input-container  class="md-block" flex-gt-sm>
+                            <input type="checkbox" ng-model="columnDef.primaryKey" aria-label="Primary"/>
+                        </md-input-container>
+                    </div>
+                    <div flex="5" style="width:50px;min-width:50px;max-width:50px;" class="md-list-item-text ">
+                        <md-input-container  class="md-block" flex-gt-sm>
+                            <input type="checkbox" ng-model="columnDef.nullable" aria-label="Nullable"/>
+                        </md-input-container>
+                    </div>
+                    <div flex="20" class="md-list-item-text " ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+                        <md-input-container class="md-block" flex-gt-sm>
+                            <md-select ng-model="columnDef.selectedSampleValue" placeholder="Preview Data">
+                                <md-option ng-repeat="data in ::columnDef.sampleValues | unique" value="{{::data}}"  aria-label="{{data}}">
+                                    {{::data}}
+                                </md-option>
+                            </md-select>
+                        </md-input-container>
+                    </div>
+                    <div flex="5" class="md-list-item-text" >
+                        <md-button class="md-icon-button" ng-click="vm.removeColumn($index)"  aria-label="Remove Field">
+                            <ng-md-icon md-icon icon="clear"></ng-md-icon>
+                        </md-button>
+                    </div>
+                    </div>
+                </md-list-item>
+            </md-list>
+        </div>
+        <div  class="layout-padding-top-bottom layout-padding-indent" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+            <md-button class="md-raised" ng-click="vm.addColumn()">
+                Add Field
+            </md-button>
+        </div>
+    </div>
+    <div class="layout-padding-top">
+        <div class="md-subhead">Partition Structure</div>
+        <div ng-if="vm.model.table.partitions.length ==0" class=" hint layout-padding-top-bottom layout-padding-indent">
+            No partition fields are defined.  Click Add Partition Field below to define a new partition.
+        </div>
+        <div ng-if="vm.model.table.partitions.length >0" class="layout-padding-indent">
+
+        <md-list flex layout-fill class="list-item-table list-condensed">
+
+            <md-list-item  class="md-secondary">
+                <div layout="row" layout-fill>
+                    <div flex="30" class="md-list-item-text hint">
+                        Field
+                    </div>
+                    <div flex="30" class="md-list-item-text hint">
+                        Source Field
+                    </div>
+                    <div  flex="30" class="md-list-item-text hint">
+                        Partion Formula
+                    </div>
+                    <div class="md-list-item-text hint" flex="none"  style="width:50px;min-width:50px;max-width:50px;">
+
+                    </div>
+                </div>
+            </md-list-item>
+
+
+            <md-list-item  ng-repeat="partition in vm.model.table.partitions">
+                <div layout="row" layout-fill>
+                    <div flex="30" class="md-list-item-text ">
+                        <md-input-container  md-no-float class="md-block" flex-gt-sm>
+                            <input ng-model="partition.field" placeholder="Field"/>
+                        </md-input-container>
+                    </div>
+                    <div flex="30" class="md-list-item-text ">
+                        <md-input-container class="md-block" flex-gt-sm>
+                            <md-select ng-model="partition.sourceField" placeholder="Source Field">
+                                <md-option ng-repeat="field in vm.model.table.tableSchema.fields" value="{{field.name}}"  aria-label="{{field.name}}">
+                                    {{field.name}}
+                                </md-option>
+                            </md-select>
+                        </md-input-container>
+                    </div>
+                    <div flex="30" class="md-list-item-text ">
+                        <md-input-container class="md-block" flex-gt-sm>
+                            <md-select ng-model="partition.formula" placeholder="Partition Formula">
+                                <md-option ng-repeat="formula in vm.partitionFormulas | orderBy:'toString()' | filterPartitionFormula:partition" value="{{formula}}"  aria-label="{{formula}}">
+                                    {{formula}}()
+                                </md-option>
+                            </md-select>
+                        </md-input-container>
+                    </div>
+                    <div class="md-list-item-text">
+                        <md-button class="md-icon-button" ng-click="vm.removePartitionField($index)">
+                            <ng-md-icon md-icon icon="clear"></ng-md-icon>
+                        </md-button>
+                    </div>
+                </div>
+            </md-list-item>
+        </md-list>
+            </div>
+        <div class="layout-padding-top-bottom layout-padding-indent">
+            <md-button class="md-raised" ng-click="vm.addPartitionField()">
+                Add Partition Field
+            </md-button>
+        </div>
+    </div>
+        <div class="layout-padding-top-bottom">
+            <div class="md-subhead">Record Format</div>
+            <div class="layout-padding-indent">
+                <md-radio-group ng-model="vm.model.table.recordFormat" layout="row" layout-align="start start" class="layout-padding-top-bottom">
+                    <md-radio-button ng-repeat="recordFormat in vm.tableRecordFormats"
+                                     ng-value="recordFormat.type"
+                                     aria-label="{{recordFormat.name}}" >
+                        {{recordFormat.name}}
+                        <div class="hint">{{recordFormat.hint}}</div>
+                    </md-radio-button>
+                </md-radio-group>
+            </div>
+        </div>
+
+
+    <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{vm.stepIndex}}" ></thinkbig-step-buttons>
+        </ng-form>
+</body-section>
+    </card-layout>

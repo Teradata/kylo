@@ -1,0 +1,48 @@
+/*
+table.md-table.visual-query-table {
+    position: relative;
+}
+
+.visual-query-table tbody.md-body.md-virtual-repeat-container {
+    display: table-row-group;
+}
+
+.visual-query-table .md-virtual-repeat-scroller {
+    top: initial;
+    bottom: initial;
+}
+*/
+
+
+.autocomplete-hive-table-template li {
+    border-bottom: 1px solid #ccc;
+    height: auto;
+    padding-top: 8px;
+    padding-bottom: 8px;
+    white-space: normal; }
+.autocomplete-hive-table-template li:last-child {
+    border-bottom-width: 0; }
+.autocomplete-hive-table-template .item-title,
+.autocomplete-hive-table-template .item-metadata {
+    display: block;
+    line-height: 2;
+}
+.autocomplete-hive-table-template .item-title ng-md-icon {
+    height: 18px;
+    width: 18px; }
+
+.autocomplete-hive-table-template .item-metadata .highlight, .autocomplete-hive-table-template .item-title .highlight {
+   color: #3483BA;
+}
+
+
+.visual-query-function-history {
+    min-width:300px;
+    height: 100%;
+    z-index: 9999;
+    position: absolute;
+    left: 10px;
+    top: 90px;
+    background-color: white;
+    border: 1px solid grey;
+}

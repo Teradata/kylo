@@ -1,0 +1,240 @@
+<div flex layout="row">
+    <card-layout flex>
+        <header-section transclude-to="head" flex layout>
+            <div style="white-space:nowrap" class="card-title" flex>{{vm.cardTitle}}</div>
+            <span class="md-caption" layout-align="end top">Job {{vm.relatedJobIndex+1}} of {{vm.relatedJobs.length}}</span>
+        </header-section>
+        <body-section transclude-to="body" transclude-replace="true">
+            <md-content>
+                <div ng-repeat="tab in tabs">
+                    {{tab.title}}<Br/>
+                </div>
+                <md-tabs class="job-details-tabs" flex md-selected="vm.tabMetadata.selectedIndex"
+                         md-align-tabs="{{vm.tabMetadata.bottom ? 'bottom' : 'top'}}" layout-fill md-dynamic-height>
+
+                    <md-tab ng-repeat="tab in vm.jobTabs"
+                            ng-disabled="tab.content.disabled"
+                            md-on-select="vm.tabSelected(tab)" flex
+                            >
+                        <md-tab-label>
+                            <ng-md-icon ng-if="tab.content.tabIcon" class="{{tab.content.tabIconStyle}}" icon="{{tab.content.tabIcon}}" size="20">
+                            </ng-md-icon>  {{tab.title}}
+                        </md-tab-label>
+                        <md-tab-body>
+                            <md-divider></md-divider>
+                            <div flex layout="column" class="tab-content" >
+                                <div ng-if="vm.showProgress" class="md-list-table-progress">
+                                    <md-progress-linear md-mode="indeterminate"></md-progress-linear>
+                                </div>
+                                <div layout="row">
+
+                                    <div flex="30" layout="column">
+                                                 <span class="item-title">
+                                                   {{tab.content.name}}
+                                               </span>
+                                                <span class="column-title-bottom" ng-class="{'success':(tab.content.displayStatus == 'COMPLETED' || tab.content.displayStatus =='STARTING' || tab.content.displayStatus =='STARTED' || tab.content.displayStatus =='EXECUTING' ),'error':tab.content.displayStatus == 'FAILED', 'warn':(tab.content.displayStatus == 'STOPPING' || tab.content.displayStatus =='STOPPED'), 'abandoned':tab.content.displayStatus == 'ABANDONED', 'unknown':tab.content.displayStatus == 'UNKNOWN'}">
+                                                       <ng-md-icon ng-if="tab.content.statusIcon" icon="{{tab.content.statusIcon}}" size="20">
+                                                       </ng-md-icon>{{tab.content.displayStatus}}</span>
+
+                                    </div>
+
+                                    <div flex="30" layout="column">
+                                               <span class="item-title">{{tab.content.startTime | date:'MMM d, yyyy HH:mm:ss'}}
+                                               </span>
+                                        <span class="column-title column-title-bottom">Start Time</span>
+                                    </div>
+                                    <div flex="25" layout="column">
+                                               <span class="item-title">
+                                                   <tba-timer ng-if="tab.content.running"
+                                                              start-time="tab.content.runTime"></tba-timer>
+                                                   <span ng-if="tab.content.running == false">{{tab.content.runTime | time }}</span>
+                                               </span>
+                                        <span class="column-title column-title-bottom">Run Time</span>
+                                    </div>
+                                    <div flex="15" layout="column">
+                                               <span class="item-title">{{tab.content.exitCode}}
+                                               </span>
+                                        <span class="column-title column-title-bottom">Exit Code</span>
+                                    </div>
+
+                                </div>
+                                <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Exit Description</div>
+                                <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="tab.content.exitDescription"
+                                     ng-tt-chars-threshold="150">
+                                </div>
+                                <div ng-if="tab.title == 'JOB'" layout="row" layout-align="end center">
+                                    <span  class="md-button-group" layout="row" layout-align="end center">
+                                          <span flex></span>
+                                    <md-button class="border-btn" style="max-width:200px;"  ng-class="{'selected': vm.showJobParameters == true}" ng-click="vm.toggleJobParameters('JobParameters')">Job Parameters</md-button>
+                                    <md-button class="border-btn" style="max-width:200px;" ng-class="{'selected': vm.showJobParameters == false}" ng-click="vm.toggleJobParameters('ExecutionContext')">Execution Context Data</md-button>
+                                        </span>
+
+                                </div>
+                                <md-list flex layout-fill  ng-show="vm.loading == false" class="list-item-table">
+                                    <md-divider></md-divider>
+                                    <md-list-item ng-if="tab.title == 'JOB' && vm.showJobParameters == true" >
+                                        <div flex="30"  class="item-column md-list-item-text accent-color-3">
+                                            Parameters
+                                        </div>
+                                        <div flex="70"  class="item-column md-list-item-text accent-color-3">
+                                            Values
+                                        </div>
+                                        <md-divider></md-divider>
+                                    </md-list-item>
+                                    <md-list-item ng-if="tab.title == 'JOB' && vm.showJobParameters == true"
+                                                  ng-repeat="item in tab.content.jobParametersArray | orderBy:key">
+                                        <div flex="30" style="word-wrap:break-word;"  class="item-column md-list-item-text ">
+                                            {{item.key}}
+                                        </div>
+                                        <div flex="70"  class="item-column md-list-item-text " style="word-wrap: break-word;">
+                                            {{item.value}}
+                                        </div>
+                                        <md-divider ng-if="!$last"></md-divider>
+                                    </md-list-item>
+                                    <md-list-item ng-if="tab.title != 'JOB' || vm.showJobParameters == false">
+                                       <div flex="30"  class="item-column md-list-item-text accent-color-3">
+                                            Context Parameters
+                                        </div>
+                                        <div flex="70"  class="item-column md-list-item-text accent-color-3">
+                                            Values
+                                        </div>
+                                        <md-divider></md-divider>
+                                    </md-list-item>
+                                    <md-list-item ng-if="tab.title != 'JOB' || vm.showJobParameters == false" ng-repeat="item in tab.content.executionContextArray | orderBy:key">
+                                        <div flex="30" style="word-wrap:break-word;"  class="item-column md-list-item-text ">
+                                            {{item.key}}
+                                        </div>
+                                        <div flex="70"  class="item-column md-list-item-text ">
+                                            {{item.value}}
+                                        </div>
+                                        <md-divider ng-if="!$last"></md-divider>
+                                    </md-list-item>
+                                </md-list>
+                            </div>
+                        </md-tab-body>
+
+
+                    </md-tab>
+                </md-tabs>
+            </md-content>
+        </body-section>
+    </card-layout>
+
+    <card-layout flex="30" header-css="job-details-header" body-css="job-details-right-body">
+        <header-section transclude-to="head" flex layout>
+            <div style="white-space:nowrap" class="card-title">Job Details</div>
+            <span flex></span>
+            <md-button class="icon-btn" ng-click="vm.showJobDialog()" >
+                <ng-md-icon md-icon icon="control_point_duplicate" class="accent-color-2"></ng-md-icon>
+            </md-button>
+        </header-section>
+        <body-section transclude-to="body">
+            <md-content flex md-scroll-y>
+                <div class="card-content">
+                    <md-button class="border-btn action-btn" ng-if="vm.jobTabData['JOB'].status =='FAILED'"
+                               ng-click="vm.restartJob($event)">RESTART
+                    </md-button>
+                    <md-button class="border-btn action-btn"
+                               ng-if="vm.jobTabData['JOB'].status =='STARTED' || vm.jobTabData['JOB'].status =='STARTING'"
+                               ng-click="vm.stopJob($event)">STOP
+                    </md-button>
+                    <md-button class="border-btn action-btn"
+                               ng-if="vm.jobTabData['JOB'].status !='COMPLETED' && vm.jobTabData['JOB'].status !='FAILED'"
+                               ng-click="vm.failJob($event)">FAIL
+                    </md-button>
+                    <md-button class="border-btn action-btn" ng-if="vm.jobTabData['JOB'].status =='FAILED'"
+                               ng-click="vm.abandonJob($event)">ABANDON
+                    </md-button>
+                </div>
+                <div ng-if="vm.jobTabData['JOB'].errorMessage != ''" class="error">
+                    {{vm.jobTabData['JOB'].errorMessage }}
+                </div>
+
+                <md-list flex layout-fill layout="column" class="list-item-table">
+                    <md-list-item>
+
+                        <div layout="column"  class="item-column md-list-item-text ">
+                                                         <span class="item-title">
+                                                           {{vm.jobTabData['JOB'].name}}
+                                                       </span>
+                                                             <span ng-class="{'success':(vm.jobTabData['JOB'].displayStatus == 'COMPLETED' || vm.jobTabData['JOB'].displayStatus =='STARTING' || vm.jobTabData['JOB'].displayStatus =='STARTED' || vm.jobTabData['JOB'].displayStatus =='EXECUTING' ),'error':vm.jobTabData['JOB'].displayStatus == 'FAILED', 'warn':(vm.jobTabData['JOB'].displayStatus == 'STOPPING' || vm.jobTabData['JOB'].displayStatus =='STOPPED'), 'abandoned':vm.jobTabData['JOB'].displayStatus == 'ABANDONED','unknown':tab.content.displayStatus == 'UNKNOWN'}" class="column-title-bottom">
+                                                               <ng-md-icon
+                                                                       icon="{{vm.jobTabData['JOB'].statusIcon}}"
+                                                                       size="20">
+                                                               </ng-md-icon>{{vm.jobTabData['JOB'].displayStatus}}</span>
+
+                        </div>
+                    </md-list-item>
+                    <md-divider></md-divider>
+                    <md-list-item>
+
+                        <div layout="column"  class="item-column md-list-item-text ">
+                                               <span class="item-title">{{vm.jobTabData['JOB'].jobType}}
+                                               </span>
+                            <span class="column-title column-title-bottom">Type</span>
+                        </div>
+                    </md-list-item>
+                    <md-divider></md-divider>
+                    <md-list-item>
+                        <div layout="column"  class="item-column md-list-item-text ">
+                                               <span class="item-title">{{vm.jobTabData['JOB'].startTime | date:'MMM d, yyyy HH:mm:ss'}}
+                                               </span>
+                            <span class="column-title column-title-bottom">Start Time</span>
+                        </div>
+                    </md-list-item>
+                    <md-divider></md-divider>
+                    <md-list-item>
+                        <div layout="column"  class="item-column md-list-item-text ">
+                                               <span class="item-title">
+                                                   <tba-timer ng-if="vm.jobTabData['JOB'].running"
+                                                              start-time="vm.jobTabData['JOB'].runTime"></tba-timer>
+                                                   <span ng-if="vm.jobTabData['JOB'].running == false">{{vm.jobTabData['JOB'].runTime | time }}</span>
+                                               </span>
+                            <span class="column-title column-title-bottom">Run Time</span>
+                        </div>
+                    </md-list-item>
+                    <md-divider></md-divider>
+                    <md-list-item>
+                        <div layout="column"  class="item-column md-list-item-text ">
+                                               <span class="item-title">{{vm.jobTabData['JOB'].exitCode}}
+                                               </span>
+                            <span class="column-title column-title-bottom">Exit Code</span>
+                        </div>
+                    </md-list-item>
+                    <!--
+                    <md-list-item>
+                        <div layout="column">
+                                               <span class="item-title">{{vm.jobTabData['JOB'].instanceId}}
+                                               </span>
+                            <span class="column-title column-title-bottom">Instance Id</span>
+                        </div>
+                    </md-list-item>
+                    <md-list-item>
+                        <div layout="column">
+                                               <span class="item-title">{{vm.jobTabData['JOB'].executionId}}
+                                               </span>
+                            <span class="column-title column-title-bottom">Execution Id</span>
+                        </div>
+                    </md-list-item>
+                    -->
+                    <md-divider></md-divider>
+                    <md-list-item>
+                        <div layout="column"  class="item-column md-list-item-text ">
+                            <span class="item-title">Related Jobs</span>
+                            <md-input-container>
+                                <label>Job</label>
+                                <md-select ng-model="vm.relatedJob" ng-change="vm.changeRelatedJob(vm.relatedJob)">
+                                    <md-option ng-repeat="relatedJob in vm.relatedJobs" value="{{relatedJob.jobExecutionId}}">
+                                        {{$index +1}}. {{relatedJob.startTime | date:'MMM d, yyyy HH:mm:ss'}}
+                                    </md-option>
+                                </md-select>
+                            </md-input-container>
+                        </div>
+                    </md-list-item>
+                </md-list>
+
+
+            </md-content>
+        </body-section>
+        </card-layout>
+</div>

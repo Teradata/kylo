@@ -1,0 +1,16 @@
+<div layout="column" layout-fill layout-align="start start" class="layout-padding-top-bottom">
+<div layout="row" layout-fill layout-align="start start">
+<md-input-container class="md-block condensed">
+<label>Source Retention Period</label>
+    <input ng-model="units" />
+</md-input-container>
+<md-input-container class="md-block condensed">
+    <label>Period</label>
+<md-select ng-model="timePeriod"  >
+    <md-option ng-repeat="timePeriod in timePeriods" value="{{timePeriod}}">
+        {{timePeriod}}
+    </md-option>
+</md-select>
+</md-input-container>
+</div>
+</div>

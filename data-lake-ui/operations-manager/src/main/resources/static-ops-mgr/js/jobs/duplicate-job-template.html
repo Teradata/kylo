@@ -1,0 +1,43 @@
+<!--
+  ~ Copyright (c) 2015.
+  -->
+<md-dialog aria-label="Create Job"  ng-cloak>
+    <form>
+    <md-toolbar>
+                <div  class="md-toolbar-tools">
+                    <h4 class="md-title">Create Job Like {{jobName}}</h4>
+                    <span flex></span>
+                    <md-button class="md-icon-button" ng-click="cancel()">
+                        <ng-md-icon md-icon icon="close" aria-label="Close dialog"></ng-md-icon>
+                    </md-button>
+                </div>
+    </md-toolbar>
+<md-dialog-content layout="column" flex style="min-width:800px;" layout-padding>
+      <div ng-repeat="param in jobParameters" layout-gt-sm="row" ng-if="!param.hide">
+                <md-input-container class="md-block" flex-gt-sm>
+                    <label>{{param.name}}</label>
+                    <input ng-model="param.value" type="{{param.inputType}}" >
+                    <div class="hint" ng-if="param.modified">
+                        <ng-md-icon md-icon icon="check" class="healthy">Valid</ng-md-icon>
+                    </div>
+                    <div class="hint" ng-if="param.modified == false && param.value != '' && param.value == param.lastValue && prefillData">Copied from last Job</div>
+                </md-input-container>
+                <md-input-container flex-gt-sm="20">
+                    <label>Type</label>
+                    <md-select ng-model="param.type" ng-change="selectedParameterType(param.type,param)">
+                        <md-option ng-repeat="paramType in parameterTypes" value="{{paramType}}">{{paramType}}</md-option>
+                    </md-select>
+                </md-input-container>
+            </div>
+</md-dialog-content>
+<md-dialog-actions layout="row">
+    <span flex></span>
+    <md-button ng-click="cancel()" class="border-btn">
+       Cancel
+    </md-button>
+    <md-button ng-click="createJob()" style="margin-right:20px;" class="border-btn">
+        Create Job
+    </md-button>
+</md-dialog-actions>
+</form>
+</md-dialog>

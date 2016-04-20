@@ -1,0 +1,21 @@
+<card-layout>
+
+    <header-section>
+        <div layout="row" layout-align="space-between-center" flex>
+            <h2 class="md-title" flex>Select Template</h2><h2 class="md-subheader">1 of 4</h2>
+        </div>
+    </header-section >
+
+    <body-section class="md-padding">
+        <md-input-container>
+            <label>Template</label>
+            <md-select ng-model="vm.nifiTemplateId" ng-disabled="vm.templateSelectionDisabled" ng-change="vm.changeTemplate()">
+                <md-option test="test" ng-repeat="template in vm.templates | orderBy:'name'" value="{{template.id}}">
+                    {{template.name}}
+                </md-option>
+            </md-select>
+        </md-input-container>
+        <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
+    </body-section>
+
+</card-layout>

@@ -1,0 +1,73 @@
+<card-layout body-css="md-padding">
+
+    <header-section >
+        <div layout="row" layout-align="space-between-center" flex>
+            <h2 class="md-title" flex>Complete & Register</h2><h2 class="md-subheader">4 of 4</h2>
+        </div>
+    </header-section>
+
+    <body-section>
+           <div layout="column">
+
+
+            <md-input-container class="md-block condensed">
+                <label>Description</label>
+                <textarea ng-model="vm.model.description"></textarea>
+            </md-input-container>
+
+
+            <div layout="column">
+                <md-subheader class="md-subhead left-aligned layout-padding-bottom">Feed Destination Table Options</md-subheader>
+
+                <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" >
+                    <label class="label-small md-container-ignore">Destination Table</label>
+                <md-radio-group ng-model="vm.templateTableOption" flex layout="row"  ng-change="vm.onTableOptionChange()">
+                    <md-radio-button ng-repeat="tableOption in vm.templateTableOptions" value="{{tableOption.type}}" flex="33">
+                        {{tableOption.displayName}}
+                        <div class="hint">{{tableOption.description}}</div>
+                    </md-radio-button>
+
+                </md-radio-group>
+                </md-input-container>
+            </div>
+
+            <div layout="column">
+                <md-subheader class="md-subhead left-aligned">Feed Scheduling Options</md-subheader>
+            <md-checkbox ng-model="vm.model.allowPreconditions" aria-label=" ">
+                Allow for Feed Preconditions
+                <div class="hint">Allow user ability to schedule/trigger this feed on a pre condition (i.e. the completion of another feed)</div>
+            </md-checkbox>
+
+            </div>
+
+            <div layout="column">
+                <md-subheader class="md-subhead left-aligned">Display Options</md-subheader>
+
+            <div layout="column" class="layout-padding-top-bottom">
+                <span class="md-input-label" style="font-size: 11px;" >Icon </span>
+                <div layout="row">
+                    <ng-md-icon icon="{{vm.model.icon.title}}" size="45" style="margin:inherit;fill:{{vm.model.icon.color}}"></ng-md-icon>
+                    <md-button class="md-primary" ng-click="vm.showIconPicker()" style="margin-left:35px;">
+                        Change Icon
+                    </md-button>
+                </div>
+
+            </div>
+
+                </div>
+
+
+        </div>
+
+
+
+
+
+            <thinkbig-step-buttons can-continue="vm.isValid && registerTemplateForm.$valid" step-index="{{::vm.stepIndex}}" final-step="Register" on-click-final-button="vm.registerTemplate()" ></thinkbig-step-buttons>
+
+
+
+
+    </body-section>
+
+</card-layout>

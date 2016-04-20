@@ -1,0 +1,143 @@
+<card-layout body-css="md-padding">
+   <header-section>
+      <div layout="row" layout-align="space-between-center" flex>
+         <h2 class="md-title" flex>Data Processing</h2><h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+      </div>
+   </header-section>
+ <body-section md-content >
+
+   <md-list  layout-fill class="list-item-table list-condensed" id="policy-list">
+
+      <md-list-item  >
+         <div layout="row" layout-fill>
+            <div flex="25" class="md-list-item-text hint">
+               Field Name
+            </div>
+            <div flex="10" class="md-list-item-text hint">
+               Index
+            </div>
+            <div flex="10" class="md-list-item-text hint">
+               Profile
+            </div>
+            <div flex="25" class="md-list-item-text hint">
+               Standardize
+            </div>
+            <div flex="25" class="md-list-item-text hint">
+               Validate
+            </div>
+         </div>
+      </md-list-item>
+
+
+      <md-list-item ng-repeat="policy in vm.model.table.fieldPolicies">
+         <div layout="row" layout-fill>
+            <div flex="25" class="md-list-item-text">
+               <md-input-container class="md-block" flex-gt-sm>
+                  <div>{{policy.name}}</div>
+               </md-input-container>
+            </div>
+            <div flex="10" class="md-list-item-text ">
+               <md-input-container class="md-block"  flex-gt-sm>
+                  <input type="checkbox" ng-model="policy.index" aria-label="Index"/>
+               </md-input-container>
+            </div>
+            <div flex="10" class="md-list-item-text ">
+               <md-input-container class="md-block"  flex-gt-sm>
+                  <input type="checkbox" ng-model="policy.profile" aria-label="Profile"/>
+               </md-input-container>
+            </div>
+            <div flex="25" class="md-list-item-text hint" layout-align="start center">
+              <div ng-click="vm.showFieldRuleDialog(policy,'standardization')" style="color:#2D78B1;">
+                 <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;"><ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon></md-button>ADD</div>
+               <div ng-if="policy.standardization != null && policy.standardization.length >0" class="orange" style="padding-left:32px;">
+                  {{policy.standardization.length}} Added
+               </div>
+            </div>
+            <div flex="25" class="md-list-item-text hint" layout-align="start center">
+               <div href ng-click="vm.showFieldRuleDialog(policy,'validation')" style="color:#2D78B1;">
+                  <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;"><ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon></md-button>ADD</div>
+               <div ng-if="policy.validation != null && policy.validation.length >0" class="orange" style="padding-left:32px;">
+                  {{policy.validation.length}} Added
+               </div>
+            </div>
+         </div>
+   </md-list-item>
+      </md-list>
+
+
+   <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
+      <label class="label-small md-container-ignore">Type</label>
+      <md-radio-group ng-model="vm.model.table.tableType" layout="row" layout-wrap="true" class="layout-padding-top">
+         <md-radio-button ng-repeat="tableType in vm.tableTypes"
+                          ng-value="tableType.type"
+                          aria-label="{{tableType.name}}">
+            {{tableType.name}}
+            <div class="hint">{{tableType.hint}}</div>
+         </md-radio-button>
+      </md-radio-group>
+
+   </md-input-container>
+
+
+     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="vm.model.table.tableType == 'DELTA'">
+         <label class="label-small md-container-ignore">Date Field to use when merging incremental updates</label>
+         <md-select ng-model="vm.model.table.incrementalDateField" ng-change="vm.onIncrementalDateFieldChange()">
+             <md-option ng-repeat="field in vm.model.table.tableSchema.fields | filter: vm.filterFieldDates track by $index" value="{{field.name}}">
+                 {{field.name}}
+             </md-option>
+         </md-select>
+     </md-input-container>
+
+
+     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" >
+         <label class="label-small md-container-ignore">ORC Compression options</label>
+         <md-select ng-model="vm.model.table.options.compressionFormat" >
+             <md-option ng-repeat="opt in ::vm.compressionOptions track by $index" value="{{opt}}">
+                 {{opt}}
+             </md-option>
+         </md-select>
+     </md-input-container>
+
+
+
+      <md-input-container class="md-block layout-padding-top-bottom">
+         <label class="label-small md-container-ignore">Options</label>
+          <div layout="row" class="layout-padding-top ">
+                <md-checkbox  ng-model="vm.model.table.options.auditLogging" aria-label="Audit Logging">
+                Audit Logging
+                   </md-checkbox>
+                <md-checkbox  ng-model="vm.model.table.options.encrypt" aria-label="Encrypt">
+                   Encrypt
+                   </md-checkbox>
+              <!--  <md-checkbox ng-model="vm.model.table.options.trackHistory" aria-label="Track History">
+                   Track History
+                   </md-checkbox> -->
+          </div>
+         </md-input-container>
+
+   <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
+      <label class="label-small md-container-ignore">Security Groups</label>
+         <md-chips ng-model="vm.model.table.securityGroups" md-autocomplete-snap
+                   md-transform-chip="vm.transformChip($chip)"
+                   md-require-match="true" class="layout-padding-top-bottom">
+            <md-autocomplete
+                    md-min-length="0"
+                    md-selected-item="vm.securityGroupChips.selectedItem"
+                    md-search-text="vm.securityGroupChips.searchText"
+                    md-items="item in vm.feedSecurityGroups.querySearch(vm.securityGroupChips.searchText)"
+                    md-item-text="item.name"
+                    placeholder="Add a Security Group">
+               <span md-highlight-text="vm.securityGroupChips.searchText">{{item.name}}</span>
+            </md-autocomplete>
+            <md-chip-template>
+                            <span>
+                              <strong>{{$chip.name}}</strong>
+                            </span>
+            </md-chip-template>
+         </md-chips>
+      </md-input-container>
+
+   <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
+</body-section>
+
+</card-layout>

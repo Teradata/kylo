@@ -1,0 +1,40 @@
+{
+  "!name":"tableDataFunctions",
+  "!define": {
+    "Column": {
+      "as": {
+        "!type": "fn(alias: string) -> Column",
+        "!doc": "Gives the column an alias.",
+        "!spark": ".as(%s)",
+        "!sparkType": "column"
+      }
+    }
+  },
+
+  "!MATH_FUNCTIONS": "These functions define mathematical operations on columns.",
+
+  "add": {
+    "!type": "fn(col1: Column, col2: Column) -> Column",
+    "!doc": "Add two numbers together.",
+    "!spark": "%c.plus(%c)",
+    "!sparkType": "column"
+  },
+  "divide": {
+    "!type": "fn(col1: Column, col2: Column) -> Column",
+    "!doc": "Divides one number by another.",
+    "!spark": "%c.divide(%c)",
+    "!sparkType": "column"
+  },
+  "multiply": {
+    "!type": "fn(col1: Column, col2: Column) -> Column",
+    "!doc": "Multiplies one column by another.",
+    "!spark": "%c.multiply(%c)",
+    "!sparkType": "column"
+  },
+  "subtract": {
+    "!type": "fn(col1: Column, col2: Column) -> Column",
+    "!doc": "Subtracts one number from another.",
+    "!spark": "%c.minus(%c)",
+    "!sparkType": "column"
+  }
+}
