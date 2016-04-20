@@ -13,11 +13,11 @@
     <name>thinkbig-metadata</name>
     
     <modules>
-        <module>thinkbig-metadata-orientdb</module>
-        <module>thinkbig-metadata-api</module>
-        <module>thinkbig-metadata-core</module>
-        <module>thinkbig-metadata-server</module>
-        <module>thinkbig-metadata-jpa</module>
+        <module>metadata-orientdb</module>
+        <module>metadata-api</module>
+        <module>metadata-core</module>
+        <module>metadata-server</module>
+        <module>metadata-jpa</module>
     </modules>
     
     <dependencies>
