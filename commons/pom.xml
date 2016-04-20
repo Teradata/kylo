@@ -3,55 +3,53 @@
 		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<artifactId>pipeline-common</artifactId>
+	<artifactId>thinkbig-commons</artifactId>
 
 	<parent>
-		<artifactId>data-lake-starter</artifactId>
-		<groupId>com.thinkbiganalytics.bdp</groupId>
-		<version>1.3.0-SNAPSHOT</version>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>thinkbig-data-lake-accelerator</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
 	</parent>
 
 	<dependencies>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+        </dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-databind</artifactId>
-			<version>${jackson.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
 			<artifactId>jackson-annotations</artifactId>
-			<version>${jackson.version}</version>
 		</dependency>
+        
 		<!-- QuartzJobBean in spring-context-support.jar -->
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context-support</artifactId>
-			<version>${spring.framework.version}</version>
 		</dependency>
 
 		<!-- Quartz framework -->
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
 			<artifactId>quartz</artifactId>
-			<version>${quartz.version}</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
-			<version>1.9.5</version>
 		</dependency>
 	    
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-tx</artifactId>
-			<version>${spring.framework.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-test</artifactId>
-			<version>${spring.framework.version}</version>
 			<scope>test</scope>
 		</dependency>
 
