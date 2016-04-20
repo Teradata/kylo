@@ -39,7 +39,7 @@ Static Template files are merged together and placed in the **/resources/static-
 This is done using **gulp** and the node module **gulp-angular-templatecache**. 
 If a static template file is modified then gulp will be needed to run to update this **/resources/static-common/templates.js** file.
 
-#### Installing and running Gulp to merge the template html files
+#### Installing and running gulp to merge the template html files
 1. install node  
 2. install gulp  (follow steps 1 and 2 here: https://github.com/gulpjs/gulp/blob/master/docs/getting-started.md)
 3. install the **gulp-angular-templatecache**
