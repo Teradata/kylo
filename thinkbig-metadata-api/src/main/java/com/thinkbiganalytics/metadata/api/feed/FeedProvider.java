@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.metadata.api.feed;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -27,8 +26,8 @@ public interface FeedProvider {
     FeedCriteria feedCriteria();
     
     Feed getFeed(Feed.ID id);
-    Collection<Feed> getFeeds();
-    Collection<Feed> getFeeds(FeedCriteria criteria);
+    List<Feed> getFeeds();
+    List<Feed> getFeeds(FeedCriteria criteria);
     
     FeedSource getFeedSource(FeedSource.ID id);
     FeedDestination getFeedDestination(FeedDestination.ID id);

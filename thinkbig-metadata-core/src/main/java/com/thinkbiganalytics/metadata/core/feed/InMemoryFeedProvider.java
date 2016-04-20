@@ -4,7 +4,6 @@
 package com.thinkbiganalytics.metadata.core.feed;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -266,7 +265,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Collection<Feed> getFeeds() {
+    public List<Feed> getFeeds() {
         return getFeeds(ALL);
     }
 

@@ -55,7 +55,7 @@ public class JpaFeed implements Feed {
     private List<FeedDestination> destinations = new ArrayList<>();
     
     @Embedded
-    private FeedPreconditionImpl precondition;
+    private JpaFeedPrecondition precondition;
     
 
     public JpaFeed() {
@@ -115,7 +115,7 @@ public class JpaFeed implements Feed {
         return null;
     }
 
-    public FeedDestination addDestination(Datasource ds) {
+    public JpaFeedDestination addDestination(Datasource ds) {
         JpaFeedDestination dest = new JpaFeedDestination(this, (JpaDatasource) ds);
         getDestinations().add(dest);
         dest.setFeed(this);
@@ -127,11 +127,11 @@ public class JpaFeed implements Feed {
         return this.precondition;
     }
 
-    public FeedSource addSource(Datasource ds) {
+    public JpaFeedSource addSource(Datasource ds) {
         return addSource((JpaDatasource) ds, null);
     }
 
-    public FeedSource addSource(JpaDatasource ds, JpaServiceLevelAgreement agreement) {
+    public JpaFeedSource addSource(JpaDatasource ds, JpaServiceLevelAgreement agreement) {
         JpaFeedSource src = new JpaFeedSource(this, ds, agreement);
         getSources().add(src);
         src.setFeed(this);
@@ -163,7 +163,7 @@ public class JpaFeed implements Feed {
     }
     
     public FeedPrecondition setPrecondition(JpaServiceLevelAgreement sla) {
-        this.precondition = new FeedPreconditionImpl(sla);
+        this.precondition = new JpaFeedPrecondition(sla);
         return this.precondition;
     }
 
@@ -239,12 +239,12 @@ public class JpaFeed implements Feed {
 
     
     @Embeddable
-    public static class FeedPreconditionImpl implements FeedPrecondition {
+    public static class JpaFeedPrecondition implements FeedPrecondition {
         
         @OneToOne
         private JpaServiceLevelAgreement sla;
         
-        public FeedPreconditionImpl(JpaServiceLevelAgreement sla) {
+        public JpaFeedPrecondition(JpaServiceLevelAgreement sla) {
             this.sla = sla;
         }
 
