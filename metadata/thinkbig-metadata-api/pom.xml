@@ -19,7 +19,7 @@
             <version>${quartz.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.thinkbiganalytics.bdp</groupId>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>tba-sla-api</artifactId>
             <version>${pipeline.controller.version}</version>
             <exclusions>

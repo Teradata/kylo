@@ -34,7 +34,7 @@
             <version>2.0.7.RELEASE</version>
         </dependency>
         <dependency>
-            <groupId>com.thinkbiganalytics.bdp</groupId>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>pipeline-common</artifactId>
             <version>1.3.0-SNAPSHOT</version>
         </dependency>
