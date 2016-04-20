@@ -46,3 +46,12 @@ table.md-table.visual-query-table {
     background-color: white;
     border: 1px solid grey;
 }
+.visual-query-sample-menu {
+    background-color: white;
+    border: 1px solid grey;
+    left: 114px;
+    min-width: 300px;
+    position: absolute;
+    top: 90px;
+    z-index: 9999;
+}

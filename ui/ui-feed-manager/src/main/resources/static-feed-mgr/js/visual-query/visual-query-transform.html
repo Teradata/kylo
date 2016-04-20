@@ -2,6 +2,7 @@
      <div layout="column" layout-padding  style="background-color:#ffffff" layout-fill>
          <div layout="row" layout-fill layout-align="center center">
              <md-button class="md-raised " ng-click="vm.toggleFunctionHistory()" >History<span ng-if="vm.functionHistory.length>0" style="padding-left:10px;">({{vm.functionHistory.length}})</span></md-button>
+             <md-button class="md-raised" ng-click="vm.toggleSampleMenu()">Sample</md-button>
              <span flex="10"></span>
              <div rows="1" class="formula-editor" ui-codemirror="{ onLoad : vm.codemirrorLoaded }"  ng-model="vm.currentFormula" ui-codemirror-opts="vm.codemirrorOptions">
              </div>
@@ -31,6 +32,21 @@
                          <md-divider ></md-divider>
                      </md-list-item>
                      </md-list>
+             </div>
+             <div class="visual-query-sample-menu" layout="column" ng-show="vm.isShowSampleMenu">
+                 <md-subheader class="md-no-sticky">
+                     Sampling
+                     <md-input-container layout="row">
+                         <label>Fraction</label>
+                         <input type="number" ng-model="vm.sparkShellService.sample" ng-model-options="{getterSetter: true}">
+                     </md-input-container>
+                     <md-input-container layout="row">
+                         <label>Limit</label>
+                         <input type="number" ng-model="vm.sparkShellService.limit" ng-model-options="{getterSetter: true}">
+                     </md-input-container>
+                     <md-checkbox layout="row" ng-model="vm.sparkShellService.shouldLimitBeforeSample" ng-model-options="{getterSetter: true}" aria-label="Should sample?">Limit before sampling</md-checkbox>
+                     <div layout="row"><md-button class="md-primary md-raised" ng-click="vm.isShowSampleMenu = false; vm.query();">Update</md-button></div>
+                 </md-subheader>
              </div>
          <div  ui-grid-auto-resize style="width:100%;height:500px;" browser-height browser-height-scroll-y="false" browser-height-offset="450"
              ui-grid="vm.gridOptions"

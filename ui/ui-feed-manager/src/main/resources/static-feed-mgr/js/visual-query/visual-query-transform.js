@@ -60,6 +60,9 @@
     //Flag to show/hide function history panel
     this.isShowFunctionHistory = false;
 
+    // Flag to show/hide sample menu
+    this.isShowSampleMenu = false;
+
     //Setup initial grid options
     this.gridOptions = {
       columnDefs: [],
@@ -89,6 +92,13 @@
      */
     this.toggleFunctionHistory = function() {
       self.isShowFunctionHistory = !self.isShowFunctionHistory;
+    };
+
+    /**
+     * Toggle the visibility of the sample menu.
+     */
+    this.toggleSampleMenu = function() {
+      self.isShowSampleMenu = !self.isShowSampleMenu;
     };
 
     //Callback when Codemirror has been loaded (reference is in the html page at:

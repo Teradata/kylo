@@ -75,12 +75,28 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
     this.defs_ = {};
 
     /**
-     * Maximum number of results to return.
+     * Number of rows to select in the initial query.
      *
      * @private
      * @type {number}
      */
     this.limit_ = 1000;
+
+    /**
+     * Indicates if limiting should be done before sampling.
+     *
+     * @private
+     * @type {boolean}
+     */
+    this.limitBeforeSample_ = false;
+
+    /**
+     * Fraction of rows to include when sampling.
+     *
+     * @private
+     * @type {number}
+     */
+    this.sample_ = 1.0;
 
     /**
      * Stack of the scripts for each transformation.
@@ -156,13 +172,41 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
 
       // Build script
       var sparkScript = "import org.apache.spark.sql._\n";
-      sparkScript += (start === 0) ? "sqlContext.sql(\"" + this.source_ + " LIMIT " + this.limit_ + "\")" : "parent";
+
+      if (start === 0) {
+        sparkScript += "sqlContext.sql(\"" + this.source_ + "\")";
+        if (this.limitBeforeSample_ && this.limit_ > 0) {
+          sparkScript += ".limit(" + this.limit_ + ")";
+        }
+        if (this.sample_ > 0 && this.sample_ < 1) {
+          sparkScript += ".sample(false, " + this.sample_ + ")";
+        }
+        if (!this.limitBeforeSample_ && this.limit_ > 0) {
+          sparkScript += ".limit(" + this.limit_ + ")";
+        }
+      } else {
+        sparkScript += "parent";
+      }
 
       for (var i=start; i < end; ++i) {
         sparkScript += this.script_[i];
       }
 
       return sparkScript;
+    },
+
+    /**
+     * The number of rows to select in the initial query.
+     *
+     * @param {number} [opt_value] the new value
+     * @returns {number} the number of rows
+     */
+    limit: function(opt_value) {
+      if (arguments.length !== 0) {
+        this.limit_ = opt_value;
+        this.tables_ = [];
+      }
+      return this.limit_;
     },
 
     /**
@@ -192,12 +236,40 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
     },
 
     /**
+     * The fraction of rows to include when sampling.
+     *
+     * @param {number} [opt_value] the new value
+     * @returns {number} the fraction of rows
+     */
+    sample: function(opt_value) {
+      if (arguments.length !== 0) {
+        this.sample_ = opt_value;
+        this.tables_ = [];
+      }
+      return this.sample_;
+    },
+
+    /**
      * Sets the function definitions to use.
      *
      * @param {Object} defs the function definitions
      */
     setFunctionDefs: function(defs) {
       this.defs_ = defs;
+    },
+
+    /**
+     * Indicates if the limiting should be done before sampling.
+     *
+     * @param {boolean} [opt_value] the new value
+     * @returns {boolean} {@code true} if limiting should be done first, or {@code false} if sampling should be done first
+     */
+    shouldLimitBeforeSample: function(opt_value) {
+      if (arguments.length !== 0) {
+        this.sample_ = opt_value;
+        this.tables_ = [];
+      }
+      return this.sample_;
     },
 
     /**
