@@ -5,7 +5,7 @@ import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
 import com.thinkbiganalytics.scheduler.model.DefaultJobInfo;
 import com.thinkbiganalytics.scheduler.model.DefaultTriggerIdentifier;
 import com.thinkbiganalytics.scheduler.model.DefaultTriggerInfo;
-import com.thinkbiganalytics.scheduler.support.CronExpressionUtil;
+import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
 import org.quartz.CronScheduleBuilder;
 import org.quartz.CronTrigger;
