@@ -56,7 +56,7 @@ public class FeedHealthCheckDataQuery extends AbstractConstructedQuery implement
   @Override
   public QueryBuilder getQueryBuilder() {
     return newQueryBuilder().select(
-        "SELECT CASE WHEN e.status <> 'ABANDONED' AND (e.status IN('FAILED','UNKNOWN') OR e.EXIT_CODE IN('FAILED')) then\n" +
+        " SELECT CASE WHEN e.status <> 'ABANDONED' AND (e.status IN('FAILED','UNKNOWN') OR e.EXIT_CODE IN('FAILED')) then\n" +
         "    1 else 0 end CNT, MAX(e.END_TIME) END_TIME,\n" +
         "maxe.FEED_NAME FEED_NAME, \n" +
         " 'UNHEALTHY' as HEALTH        \n" +
@@ -70,9 +70,11 @@ public class FeedHealthCheckDataQuery extends AbstractConstructedQuery implement
         "                 INNER JOIN BATCH_JOB_EXECUTION_PARAMS feed on feed.JOB_EXECUTION_ID = job_execution.JOB_EXECUTION_ID AND feed.KEY_NAME = 'feed' \n"
         +
         "                where job_execution.STATUS not in('STARTING','STARTED')\n" +
-        "                group by feed.string_val) maxe on maxe.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID ");
-
+        "                group by feed.string_val) maxe on maxe.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID "
+    ).groupBy(
+        " GROUP BY  CASE WHEN e.status <> 'ABANDONED' AND (e.status IN('FAILED','UNKNOWN') OR e.EXIT_CODE IN('FAILED')) then 1 else 0 end, maxe.FEED_NAME ");
   }
+
 
   protected String getDefaultJoins() {
     String query = " INNER JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID ";
