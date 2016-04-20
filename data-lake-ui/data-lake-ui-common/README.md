@@ -31,7 +31,7 @@ The angular components are stored in the angular module **datalakeui.common**.  
 <script src="/ui-common/js/min/datalake-ui-common.js"></script>
 ```
 **Add the module to your application**
-```html
+```javascript
 angular.module("mymodule", ['datalakeui.common']);
 ```
 ### Static Template files
