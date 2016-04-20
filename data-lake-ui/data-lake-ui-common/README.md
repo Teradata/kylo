@@ -8,7 +8,16 @@ This allows for common javascript css to be coded in 1 place and then referenced
 
 Referencing Static Content
 ----------
-In a sub module all static content is available at the path **/ui-common/**.  This is done via the **StaticCommonContentConfiguration** class.
+1. Include this module as a maven dependency
+```xml
+  <dependency>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <artifactId>thinkbig-data-lake-ui-common</artifactId>
+    <version>0.1.0-SNAPSHOT</version>
+   </dependency>
+```
+2. Once included all the common static content is available at the path **/ui-common/**.  
+	1. This path is configured in the **StaticCommonContentConfiguration** class.
 
 Static External Code
 -------------
