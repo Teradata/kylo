@@ -19,7 +19,7 @@ import javax.ws.rs.core.Response;
 import io.swagger.annotations.Api;
 
 @Api(value = "service-monitoring", produces = "application/json")
-@Path("/monitor/v1/services")
+@Path("/v1/service-monitor")
 public class ServiceMonitorRestController {
 
   private static final Logger LOG = LoggerFactory.getLogger(ServiceMonitorRestController.class);
