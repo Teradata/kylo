@@ -176,14 +176,6 @@
                 <version>${jackson.version}</version>
             </dependency>
 
-            <!-- JMS -->
-            <dependency>
-                <groupId>org.springframework</groupId>
-                <artifactId>spring-jms</artifactId>
-                <version>${spring.version}</version>
-            </dependency>
-
-
             <!-- Swagger -->
             <dependency>
                 <groupId>io.swagger</groupId>
@@ -193,9 +185,9 @@
 
             <!-- Spring boot -->
             <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot</artifactId>
-            <version>${spring.boot.version}</version>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot</artifactId>
+                <version>${spring.boot.version}</version>
             </dependency>
 
             <dependency>
@@ -234,11 +226,22 @@
                     </exclusion>
                 </exclusions>
             </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-jpa</artifactId>
+                <version>${spring.boot.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-configuration-processor</artifactId>
+                <version>${spring.boot.version}</version>
+                <optional>true</optional>
+            </dependency>
 
 
 
             <dependency>
-                <artifactId>tba-rest-client</artifactId>
+                <artifactId>rest-client</artifactId>
                 <groupId>com.thinkbiganalytics.bdp</groupId>
                 <version>${pipeline.controller.version}</version>
                 <exclusions>
@@ -297,12 +300,17 @@
                 <artifactId>spring-tx</artifactId>
                 <version>${spring.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>org.springframework</groupId>
-                <artifactId>spring-test</artifactId>
+                <artifactId>spring-orm</artifactId>
                 <version>${spring.version}</version>
-                <scope>test</scope>
+            </dependency>
+
+            <!-- JMS + Spring -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-jms</artifactId>
+                <version>${spring.version}</version>
             </dependency>
 
 
@@ -405,6 +413,12 @@
                 <version>${powermock.version}</version>
                 <scope>test</scope>
                 <type>pom</type>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-test</artifactId>
+                <version>${spring.version}</version>
+                <scope>test</scope>
             </dependency>
 
 
