@@ -1,32 +1,5 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
-import com.thinkbiganalytics.db.model.query.QueryResult;
-import com.thinkbiganalytics.db.model.schema.TableSchema;
-import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
-import com.thinkbiganalytics.feedmgr.rest.model.GenericUIPrecondition;
-import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
-import com.thinkbiganalytics.feedmgr.service.HiveService;
-import com.thinkbiganalytics.feedmgr.service.MetadataService;
-import com.thinkbiganalytics.feedmgr.service.PreconditionFactory;
-import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
-import com.thinkbiganalytics.rest.JerseyClientException;
-import com.thinkbiganalytics.schema.TextFileParser;
-
-import org.apache.commons.lang3.StringUtils;
-import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
-
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -46,6 +19,33 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.commons.lang3.StringUtils;
+import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
+
+import com.thinkbiganalytics.db.model.query.QueryResult;
+import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.GenericUIPrecondition;
+import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.service.HiveService;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.service.PreconditionFactory;
+import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
+import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
+import com.thinkbiganalytics.rest.JerseyClientException;
+import com.thinkbiganalytics.schema.TextFileParser;
 
 import io.swagger.annotations.Api;
 

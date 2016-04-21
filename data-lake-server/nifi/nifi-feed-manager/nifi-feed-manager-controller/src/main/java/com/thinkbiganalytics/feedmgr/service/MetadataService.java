@@ -1,5 +1,10 @@
 package com.thinkbiganalytics.feedmgr.service;
 
+import java.util.Collection;
+import java.util.List;
+
+import org.springframework.stereotype.Service;
+
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -8,11 +13,6 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.rest.JerseyClientException;
-
-import org.springframework.stereotype.Service;
-
-import java.util.Collection;
-import java.util.List;
 
 /**
  * Created by sr186054 on 2/23/16.

@@ -1,5 +1,11 @@
 package com.thinkbiganalytics.feedmgr.service;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.GenericUIPrecondition;
 import com.thinkbiganalytics.feedmgr.rest.model.LabelValue;
@@ -7,12 +13,6 @@ import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldRuleProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldRulePropertyBuilder;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by sr186054 on 3/15/16.

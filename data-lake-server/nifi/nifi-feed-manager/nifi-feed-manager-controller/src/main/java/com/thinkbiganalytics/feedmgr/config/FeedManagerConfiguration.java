@@ -1,22 +1,18 @@
 package com.thinkbiganalytics.feedmgr.config;
 
 
-import com.thinkbiganalytics.feedmgr.service.InMemoryMetadataService;
-import com.thinkbiganalytics.feedmgr.service.MetadataService;
-import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
+import java.net.URI;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-import org.springframework.util.Assert;
 
-import java.net.URI;
+import com.thinkbiganalytics.feedmgr.service.InMemoryMetadataService;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 
 /**
  * Created by sr186054 on 2/26/16.

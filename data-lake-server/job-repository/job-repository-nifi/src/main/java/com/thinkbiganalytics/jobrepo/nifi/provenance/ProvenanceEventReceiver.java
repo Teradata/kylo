@@ -4,16 +4,16 @@
 
 package com.thinkbiganalytics.jobrepo.nifi.provenance;
 
-import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
-import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.nifi.activemq.Topics;
-
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
+
+import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
+import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.activemq.Topics;
 
 /**
  * Created by sr186054 on 3/3/16.

@@ -1,14 +1,5 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
-import com.thinkbiganalytics.db.model.schema.TableSchema;
-import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.rest.JerseyClientException;
-
-import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
-import org.apache.nifi.web.api.entity.ControllerServicesEntity;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.util.List;
 
 import javax.ws.rs.GET;
@@ -18,6 +9,15 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
+import org.apache.nifi.web.api.entity.ControllerServicesEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.feedmgr.nifi.DBCPConnectionPoolTableInfo;
+import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.rest.JerseyClientException;
 
 import io.swagger.annotations.Api;
 

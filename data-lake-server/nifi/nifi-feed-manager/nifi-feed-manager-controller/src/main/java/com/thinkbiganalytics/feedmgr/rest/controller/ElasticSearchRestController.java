@@ -1,11 +1,5 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
-import com.thinkbiganalytics.es.ElasticSearch;
-import com.thinkbiganalytics.es.SearchResult;
-import com.thinkbiganalytics.rest.JerseyClientException;
-
-import org.springframework.stereotype.Component;
-
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -13,6 +7,12 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import org.springframework.stereotype.Component;
+
+import com.thinkbiganalytics.es.ElasticSearch;
+import com.thinkbiganalytics.es.SearchResult;
+import com.thinkbiganalytics.rest.JerseyClientException;
 
 import io.swagger.annotations.Api;
 

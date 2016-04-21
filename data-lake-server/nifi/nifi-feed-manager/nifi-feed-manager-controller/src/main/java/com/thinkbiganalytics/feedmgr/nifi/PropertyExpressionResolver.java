@@ -1,20 +1,20 @@
 package com.thinkbiganalytics.feedmgr.nifi;
 
 
-import com.thinkbiganalytics.feedmgr.MetadataFieldAnnotationFieldNameResolver;
-import com.thinkbiganalytics.feedmgr.MetadataFields;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
-import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.support.AnnotatedFieldProperty;
-
-import org.apache.commons.beanutils.BeanUtils;
-import org.apache.commons.lang3.StringUtils;
-
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.StringUtils;
+
+import com.thinkbiganalytics.feedmgr.MetadataFieldAnnotationFieldNameResolver;
+import com.thinkbiganalytics.feedmgr.MetadataFields;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.support.AnnotatedFieldProperty;
 
 /**
  * Created by sr186054 on 1/25/16.

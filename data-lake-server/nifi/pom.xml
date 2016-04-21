@@ -18,6 +18,7 @@
   <modules>
     <module>nifi-feed-manager</module>
     <module>nifi-rest</module>
+    <module>nifi-activemq</module>
   </modules>
 
 

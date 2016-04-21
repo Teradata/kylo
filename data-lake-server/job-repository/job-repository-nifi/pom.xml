@@ -65,7 +65,6 @@
     <!-- end spring batch deps -->
 
 
-
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-nifi-activemq</artifactId>

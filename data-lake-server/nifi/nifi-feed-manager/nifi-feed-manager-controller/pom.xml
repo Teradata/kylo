@@ -71,12 +71,12 @@
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>thinkbig-metadata-api</artifactId>
-      <version>${thinkbig.nifi.version}</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>thinkbig-metadata-core</artifactId>
-      <version>${thinkbig.nifi.version}</version>
+      <version>${project.version}</version>
       <exclusions>
         <exclusion>
           <artifactId>pipeline-common</artifactId>
@@ -87,12 +87,12 @@
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>thinkbig-metadata-rest-model</artifactId>
-      <version>${thinkbig.nifi.version}</version>
+      <version>${project.version}</version>
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>thinkbig-metadata-rest-client-spring</artifactId>
-      <version>${thinkbig.nifi.version}</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>

@@ -19,39 +19,22 @@
        </dependency>
 
 
-       <!-- ActiveMQ Artifacts
-       <dependency>
-           <groupId>org.apache.activemq</groupId>
-           <artifactId>activemq-spring</artifactId>
-           <version>${activemq.version}</version>
-       </dependency> -->
-
        <dependency>
            <groupId>org.springframework</groupId>
            <artifactId>spring-jms</artifactId>
-           <version>${spring.version}</version>
        </dependency>
-<!--
-       <dependency>
-           <groupId>org.springframework.boot</groupId>
-           <artifactId>spring-boot-starter</artifactId>
-           <version>${spring.boot.version}</version>
-       </dependency>
-       -->
+
        <dependency>
            <groupId>org.apache.activemq</groupId>
            <artifactId>activemq-broker</artifactId>
-           <version>${activemq.version}</version>
        </dependency>
        <dependency>
            <groupId>org.apache.activemq</groupId>
            <artifactId>activemq-client</artifactId>
-           <version>${activemq.version}</version>
        </dependency>
        <dependency>
            <groupId>org.apache.activemq</groupId>
            <artifactId>activemq-pool</artifactId>
-           <version>${activemq.version}</version>
        </dependency>
 
 
@@ -59,18 +42,15 @@
        <dependency>
            <groupId>com.fasterxml.jackson.core</groupId>
            <artifactId>jackson-core</artifactId>
-           <version>${jackson.version}</version>
        </dependency>
        <dependency>
            <groupId>com.fasterxml.jackson.core</groupId>
            <artifactId>jackson-databind</artifactId>
-           <version>${jackson.version}</version>
        </dependency>
 
        <dependency>
            <groupId>com.fasterxml.jackson.dataformat</groupId>
            <artifactId>jackson-dataformat-xml</artifactId>
-           <version>${jackson.version}</version>
        </dependency>
 
 

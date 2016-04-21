@@ -1,19 +1,19 @@
 package com.thinkbiganalytics.feedmgr.nifi;
 
-import com.thinkbiganalytics.schema.DBSchemaParser;
-import com.thinkbiganalytics.db.PoolingDataSourceService;
-import com.thinkbiganalytics.db.model.schema.TableSchema;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.rest.JerseyClientException;
+import java.util.List;
+
+import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.entity.ControllerServiceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
-import javax.sql.DataSource;
+import com.thinkbiganalytics.db.PoolingDataSourceService;
+import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.rest.JerseyClientException;
+import com.thinkbiganalytics.schema.DBSchemaParser;
 
 /**
  * Created by sr186054 on 1/28/16.
