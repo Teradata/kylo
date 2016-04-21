@@ -17,7 +17,7 @@ You can build this project with the *ambari* profile to include just that resour
 Modules
 =========
 
-### data-lake-server-app
+### data-lake-server-app ###
 The Server application is a Spring Boot application.    
 Swagger is used to document all rest controllers.  The swagger path is /api-docs/index.html
 
@@ -36,7 +36,7 @@ The Rest Controller package is **com.thinkbiganalytics.feedmgr.rest.controller**
 7. "/api/v1/feedmgr/search" - Elastic Search
 8. "/api/v1/feedmgr/nifi/configuration" - optional endpoint for getting gloabl nifi configuration properties that will be used along with the metadata-properties for registering a template
 
-### job-repository  
+### job-repository ###
 Responsible for Reading and Writing Job Execution data.  
 Currently we support MySQL and Postgres as backends to store this data.  Under the covers we are using the JSR-352 compliant implementation using Spring Batches Data Model.
 The Execution Engine that is preforming these jobs is separate from the actual storage mechanism.  The default implementation for the data-lake-accelerator is Apache Nifi.  This is in the sub-module *job-repository-nifi*
@@ -49,7 +49,7 @@ The Rest Controller package is **com.thinkbiganalytics.jobrep.rest.controller**
 2. "/api/vi/feeds/..." - access to Job Repository Feed Execution data
 3. "/api/v1/data-confidence/..." - access to Job Repository Check data Jobs
 
-### scheduler  
+### scheduler ###
 Responsible for displaying the schedule information along with a REST endpoint to allow for user interaction with the schedule (start, pause etc)  
 
 #### Rest Endpoints ####
