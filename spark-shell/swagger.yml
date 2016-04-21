@@ -1,0 +1,148 @@
+# this is an example of the Uber API
+# as a demonstration of an API spec in YAML
+swagger: '2.0'
+info:
+  title: Spark Shell API
+  description: Transforms SQL data in real-time
+  version: "1"
+# the domain of the service
+host: localhost:8076
+# array of all schemes that your API supports
+schemes:
+  - http
+# will be prefixed to all paths
+basePath: /api/v1/spark/shell
+consumes:
+  - application/json
+produces:
+  - application/json
+paths:
+  /transform:
+    post:
+      summary: Queries a Hive table and applies a series of transformations on the rows.
+      parameters:
+        - name: TransformRequest
+          in: body
+          description: The request indicates the transformations to apply to the source table and how the user wishes the results to be displayed. Exactly one parent or source must be specified.
+          required: true
+          schema:
+            type: object
+            required:
+              - script
+            properties:
+              parent:
+                type: object
+                description: The previous transformations to build upon.
+                properties:
+                  script:
+                    type: string
+                    description: Scala script for rebuilding the previous results if not available.
+                  table:
+                    type: string
+                    description: The Hive table containing the previous results.
+              script:
+                type: string
+                description: Scala script with transformations to perform.
+              sendResults:
+                type: boolean
+                description: Indicates that the resulting table should be returned as part of the response. Defaults to false.
+      responses:
+        200:
+          description: Returns the status from executing the script.
+          schema:
+            type: object
+            required:
+              - status
+              - table
+            properties:
+              results:
+                $ref: '#/definitions/QueryResult'
+                type: object
+                description: The resulting table if sendResults was true.
+              status:
+                type: string
+                description: success
+              table:
+                type: string
+                description: The Hive table containing the results of the transformation.
+        400:
+          description: The request could not be parsed.
+        500:
+          description: There was a problem processing the data.
+          schema:
+            type: object
+            required:
+              - message
+              - status
+            properties:
+              message:
+                type: string
+                description: The error message.
+              status:
+                type: string
+                description: error
+definitions:
+  QueryResult:
+    type: object
+    description: The result of a SQL query or Spark DataFrame.
+    required:
+      - columnDisplayNameMap
+      - columnFieldMap
+      - columns
+      - query
+      - rows
+    properties:
+      columnDisplayNameMap:
+        type: object
+        description: Maps column display names to column details.
+        additionalProperties:
+          $ref: '#/definitions/QueryResultColumn'
+      columnFieldMap:
+        type: object
+        description: Maps field names to column details.
+        additionalProperties:
+          $ref: '#/definitions/QueryResultColumn'
+      columns:
+        type: array
+        description: List of column details.
+        items:
+          $ref: '#/definitions/QueryResultColumn'
+      query:
+        type: string
+        description: The Spark script that was sent in the request.
+      rows:
+        type: string
+        description: Maps field names to values.
+  QueryResultColumn:
+    type: object
+    description: A column in a QueryResult.
+    required:
+      - databaseName
+      - dataType
+      - displayName
+      - field
+      - hiveColumnLabel
+      - index
+      - tableName
+    properties:
+      databaseName:
+        type: string
+        description: Name of the database containing the table.
+      dataType:
+        type: string
+        description: Name of the data type for the column.
+      displayName:
+        type: string
+        description: A human-readable name for the column.
+      field:
+        type: string
+        description: Name of the column in the table.
+      hiveColumnLabel:
+        type: string
+        description: Suggested title for the column. This is usually specified by the AS clause.
+      index:
+        type: integer
+        description: Position of the column in the table.
+      tableName:
+        type: string
+        description: Name of the source table.
