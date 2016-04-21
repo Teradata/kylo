@@ -89,10 +89,13 @@ public class DefaultScheduleIdentifier implements ScheduleIdentifier {
     }
   }
 
-  public int compareTo(DefaultScheduleIdentifier o) {
-    if (this.group.equals("DEFAULT") && !o.group.equals("DEFAULT")) {
+
+
+
+  public int compareTo(ScheduleIdentifier o) {
+    if (this.group.equals("DEFAULT") && !o.getGroup().equals("DEFAULT")) {
       return -1;
-    } else if (!this.group.equals("DEFAULT") && o.group.equals("DEFAULT")) {
+    } else if (!this.group.equals("DEFAULT") && o.getGroup().equals("DEFAULT")) {
       return 1;
     } else {
       int r = this.group.compareTo(o.getGroup());

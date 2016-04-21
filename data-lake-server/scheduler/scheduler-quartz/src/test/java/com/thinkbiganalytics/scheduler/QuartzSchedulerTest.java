@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.scheduler.quartz;
+package com.thinkbiganalytics.scheduler;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
@@ -14,6 +14,9 @@ import static org.mockito.Mockito.when;
 import java.util.*;
 
 import com.thinkbiganalytics.scheduler.*;
+import com.thinkbiganalytics.scheduler.model.DefaultTriggerIdentifier;
+import com.thinkbiganalytics.scheduler.quartz.MockJob;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;
@@ -186,7 +189,7 @@ public class QuartzSchedulerTest {
     @Test
     public void updateTriggerTest() throws Exception {
 
-        toTest.updateTrigger(new TriggerIdentifier("trigger-key-name", "trigger-key-name"),
+        toTest.updateTrigger(new DefaultTriggerIdentifier("trigger-key-name", "trigger-key-name"),
                 "0 0 12 * * ?");
         verify(scheduler).rescheduleJob(eq(new TriggerKey("trigger-key-name", "trigger-key-name")),
                 (Trigger) any());
@@ -194,7 +197,7 @@ public class QuartzSchedulerTest {
         doThrow(new SchedulerException()).when(scheduler).rescheduleJob((TriggerKey) any(),
                 (Trigger) any());
         try {
-            toTest.updateTrigger(new TriggerIdentifier("trigger-key-name", "trigger-key-name"),
+            toTest.updateTrigger(new DefaultTriggerIdentifier("trigger-key-name", "trigger-key-name"),
                     "0 0 12 * * ?");
         } catch (final JobSchedulerException e) {
             return;
@@ -314,7 +317,7 @@ public class QuartzSchedulerTest {
         Mockito.when(scheduler.getJobKeys((GroupMatcher) anyObject())).thenReturn(set);
 
         toTest.jobExists(jobIdentifier);
-        TriggerIdentifier triggerIdentifer = new TriggerIdentifier("trigger-key-name", "trigger-key-name");
+        TriggerIdentifier triggerIdentifer = new DefaultTriggerIdentifier("trigger-key-name", "trigger-key-name");
         toTest.triggerExists(triggerIdentifer);
         toTest.resumeAll();
         toTest.getMetaData();

@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.scheduler.quartz;
 
+import com.thinkbiganalytics.scheduler.QuartzScheduler;
+import com.thinkbiganalytics.scheduler.SimpleSchedulerSetup;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mock;

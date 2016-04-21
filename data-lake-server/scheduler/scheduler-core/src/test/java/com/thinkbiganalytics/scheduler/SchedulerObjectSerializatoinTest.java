@@ -2,10 +2,10 @@ package com.thinkbiganalytics.scheduler;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.scheduler.JobIdentifier;
-import com.thinkbiganalytics.scheduler.TriggerIdentifier;
-import com.thinkbiganalytics.scheduler.TriggerInfo;
-import com.thinkbiganalytics.scheduler.impl.TriggerInfoImpl;
+import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
+import com.thinkbiganalytics.scheduler.model.DefaultTriggerIdentifier;
+import com.thinkbiganalytics.scheduler.model.DefaultTriggerInfo;
+
 import org.junit.Test;
 
 import java.io.IOException;
@@ -19,7 +19,7 @@ public class SchedulerObjectSerializatoinTest {
     public void testTriggerInfoSerialization() {
 
         try {
-            TriggerInfo info = new TriggerInfoImpl(new JobIdentifier(), new TriggerIdentifier());
+            TriggerInfo info = new DefaultTriggerInfo(new DefaultJobIdentifier(), new DefaultTriggerIdentifier());
             ObjectMapper objectMapper = new ObjectMapper();
 
             String json = null;

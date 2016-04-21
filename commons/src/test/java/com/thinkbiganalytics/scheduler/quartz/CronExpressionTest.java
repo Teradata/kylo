@@ -1,4 +1,6 @@
-package com.thinkbiganalytics.scheduler.util;
+package com.thinkbiganalytics.scheduler.quartz;
+
+import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
 import org.junit.Test;
 import org.slf4j.Logger;

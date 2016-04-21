@@ -1,9 +1,11 @@
-package com.thinkbiganalytics.scheduler.impl;
+package com.thinkbiganalytics.scheduler;
 
 import com.thinkbiganalytics.scheduler.JobIdentifier;
 import com.thinkbiganalytics.scheduler.TriggerIdentifier;
 import com.thinkbiganalytics.scheduler.TriggerInfo;
-import com.thinkbiganalytics.scheduler.util.JavaBeanTester;
+import com.thinkbiganalytics.scheduler.model.DefaultTriggerInfo;
+import com.thinkbiganalytics.scheduler.support.JavaBeanTester;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -17,7 +19,7 @@ import static org.junit.Assert.assertNotNull;
  */
 public class TriggerInfoImplTest {
 
-    private TriggerInfoImpl trigger;
+    private TriggerInfo trigger;
     private Date today;
 
     @Before
@@ -25,7 +27,7 @@ public class TriggerInfoImplTest {
 
         today = new Date();
 
-        trigger = new TriggerInfoImpl(Mockito.mock(JobIdentifier.class), Mockito.mock(TriggerIdentifier.class));
+        trigger = new DefaultTriggerInfo(Mockito.mock(JobIdentifier.class), Mockito.mock(TriggerIdentifier.class));
         trigger.setJobIdentifier(Mockito.mock(JobIdentifier.class));
         trigger.setState(TriggerInfo.TriggerState.BLOCKED);
         trigger.setTriggerClass(Object.class);
@@ -34,7 +36,7 @@ public class TriggerInfoImplTest {
 
     @Test
     public void test() throws Exception {
-        JavaBeanTester.test(TriggerInfoImpl.class, "jobIdentifier", "state", "triggerClass", "triggerIdentifier");
+        JavaBeanTester.test(TriggerInfo.class, "jobIdentifier", "state", "triggerClass", "triggerIdentifier");
         assertNotNull(trigger.getState());
         assertNotNull(trigger.getJobIdentifier());
         assertNotNull(trigger.getState());

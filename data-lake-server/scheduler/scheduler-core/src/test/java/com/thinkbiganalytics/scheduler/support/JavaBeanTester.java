@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.scheduler.util;
+package com.thinkbiganalytics.scheduler.support;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;

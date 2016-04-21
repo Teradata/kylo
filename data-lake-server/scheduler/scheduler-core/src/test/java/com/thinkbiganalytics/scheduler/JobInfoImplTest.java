@@ -1,7 +1,8 @@
-package com.thinkbiganalytics.scheduler.impl;
+package com.thinkbiganalytics.scheduler;
+
+import com.thinkbiganalytics.scheduler.model.DefaultJobInfo;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.mock;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -10,26 +11,24 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-
-import com.thinkbiganalytics.scheduler.JobIdentifier;
-import com.thinkbiganalytics.scheduler.TriggerInfo;
+import org.mockito.Mockito;
 
 public class JobInfoImplTest {
 
-    JobInfoImpl toTest;
+    JobInfo toTest;
 
     @Before
     public void before() {
-        toTest = new JobInfoImpl();
+        toTest = new DefaultJobInfo();
     }
 
     @Test
     public void jobIdentifierTest() {
-        final JobIdentifier identifier = mock(JobIdentifier.class);
+        final JobIdentifier identifier = Mockito.mock(JobIdentifier.class);
         toTest.setJobIdentifier(identifier);
         assertEquals(toTest.getJobIdentifier(), identifier);
 
-        toTest = new JobInfoImpl(identifier);
+        toTest = new DefaultJobInfo(identifier);
         assertEquals(toTest.getJobIdentifier(), identifier);
     }
 

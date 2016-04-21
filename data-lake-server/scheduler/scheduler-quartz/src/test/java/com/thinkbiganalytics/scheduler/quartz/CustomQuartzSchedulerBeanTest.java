@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.scheduler.quartz;
 
+import com.thinkbiganalytics.scheduler.CustomQuartzSchedulerBean;
+import com.thinkbiganalytics.scheduler.QuartzScheduler;
+
 import static org.mockito.Mockito.verify;
 
 import org.junit.Before;
@@ -22,7 +25,7 @@ public class CustomQuartzSchedulerBeanTest {
     @Mock
     MethodInvokingJobDetailFactoryBean mijdfb;
     @Mock
-    QuartzScheduler                    scheduler;
+    QuartzScheduler scheduler;
     @Mock
     Trigger                            trigger;
 

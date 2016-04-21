@@ -1,18 +1,14 @@
 package com.thinkbiganalytics.scheduler.quartz;
 
-import com.thinkbiganalytics.scheduler.JobIdentifier;
 import com.thinkbiganalytics.scheduler.JobSchedulerException;
-import com.thinkbiganalytics.scheduler.TriggerIdentifier;
+import com.thinkbiganalytics.scheduler.QuartzScheduler;
+import com.thinkbiganalytics.scheduler.SimpleSchedulerQuartzJobBeanSetup;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.quartz.SchedulerException;
-import org.springframework.scheduling.quartz.QuartzJobBean;
-
 import java.util.HashMap;
-import java.util.Map;
 
 public class SimpleSchedulerQuartzJobBeanSetupTest {
 

@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.scheduler;
 
+import com.thinkbiganalytics.scheduler.model.DefaultScheduleIdentifier;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -15,10 +17,10 @@ public class ScheduleIdentifierTest {
     ScheduleIdentifier identifier3;
     @Before
     public void setUp() throws Exception {
-        identifier = new ScheduleIdentifier();
-        identifier = new ScheduleIdentifier("name1", "group");
-        identifier2 = new ScheduleIdentifier("name1", "group");
-        identifier3 = new ScheduleIdentifier("name3", "group");
+        identifier = new DefaultScheduleIdentifier();
+        identifier = new DefaultScheduleIdentifier("name1", "group");
+        identifier2 = new DefaultScheduleIdentifier("name1", "group");
+        identifier3 = new DefaultScheduleIdentifier("name3", "group");
     }
 
     @Test

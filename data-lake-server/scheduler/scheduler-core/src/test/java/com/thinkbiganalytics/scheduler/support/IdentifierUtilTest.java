@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.scheduler.util;
+package com.thinkbiganalytics.scheduler.support;
 
 import org.junit.Test;
 
