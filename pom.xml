@@ -49,6 +49,7 @@
         <module>rest-client</module>
         <module>sla</module>
         <module>metadata</module>
+        <module>nifi-nar-bundles</module>
     </modules>
 
     <repositories>
