@@ -49,6 +49,7 @@
         <module>sla</module>
         <module>metadata</module>
         <module>spark</module>
+        <module>spark-shell</module>
         <module>nifi-nar-bundles</module>
         <module>data-lake-server</module>
         <module>data-lake-ui</module>
