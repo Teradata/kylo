@@ -67,23 +67,9 @@
 
 
     <dependency>
-      <groupId>com.thinkbiganalytics.nifi</groupId>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-nifi-activemq</artifactId>
-      <version>${thinkbig.nifi.version}</version>
-      <exclusions>
-        <exclusion>
-          <artifactId>spring-core</artifactId>
-          <groupId>org.springframework</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>spring-jms</artifactId>
-          <groupId>org.springframework</groupId>
-        </exclusion>
-        <exclusion>
-          <artifactId>spring-context</artifactId>
-          <groupId>org.springframework</groupId>
-        </exclusion>
-      </exclusions>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
@@ -91,13 +77,7 @@
       <artifactId>thinkbig-activemq-core</artifactId>
       <version>${project.version}</version>
     </dependency>
-<!--
-    <dependency>
-      <groupId>com.thinkbiganalytics.bdp</groupId>
-      <artifactId>thinkbig-activemq-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
--->
+
 
   </dependencies>
 
