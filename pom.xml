@@ -41,9 +41,7 @@
     </properties>
     <modules>
         <module>data-lake-server</module>
-<!--
         <module>data-lake-ui</module>
--->
         <module>rest-model-common</module>
         <module>activemq</module>
         <module>alerts</module>
@@ -126,6 +124,12 @@
             <dependency>
                 <groupId>org.glassfish.jersey.media</groupId>
                 <artifactId>jersey-media-multipart</artifactId>
+                <version>${jersey.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.glassfish.jersey.connectors</groupId>
+                <artifactId>jersey-apache-connector</artifactId>
                 <version>${jersey.version}</version>
             </dependency>
 
