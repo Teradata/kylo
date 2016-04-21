@@ -52,17 +52,6 @@
         </dependency>
 
         <!-- Services monitoring code-->
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-service-monitor-api</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-service-monitor-core</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
 
 
         <dependency>
@@ -87,23 +76,7 @@
         <!-- end service monitoring -->
 
         <!-- Job Repo -->
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-job-repository-api</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-job-repository-core</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-job-repository-rest-model</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-job-repository-spring-batch</artifactId>
@@ -121,16 +94,6 @@
 
         <!-- scheduler -->
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-scheduler-api</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-scheduler-core</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -147,6 +110,13 @@
             <artifactId>thinkbig-scheduler-rest-model</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-simple-auth</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
+
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>

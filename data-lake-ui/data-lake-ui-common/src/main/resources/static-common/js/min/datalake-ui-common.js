@@ -60,9 +60,9 @@ angular.module(COMMON_APP_MODULE_NAME, [] );
                         // you are not autorized
                         NotificationService.errorWithGroupKey("Unauthorized","You are unauthorized to view this content.","Unauthorized");
                     }
-                    else if(rejection.status == 0){
+                    else if(rejection.status <=0){
                         //internet is down
-                        NotificationService.errorWithGroupKey("Connection Error","Not Connected. Pipeline Controller Server is down.","Connection Error");
+                        NotificationService.errorWithGroupKey("Connection Error","Not Connected. Server is down.","Connection Error");
                     }
                     else  if(rejection.status === 400) {
                         // Bad Request
