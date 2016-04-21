@@ -48,6 +48,7 @@
         <module>jira</module>
         <module>rest-client</module>
         <module>sla</module>
+        <module>metadata</module>
     </modules>
 
     <repositories>
