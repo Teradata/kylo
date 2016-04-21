@@ -3,24 +3,17 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>com.thinkbiganalytics.nifi</groupId>
     <artifactId>thinkbig-nifi-provenance</artifactId>
     <parent>
-        <artifactId>thinkbig-nifi</artifactId>
-        <groupId>com.thinkbiganalytics.nifi</groupId>
-        <version>0.5.0-SNAPSHOT</version>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>thinkbig-data-lake-accelerator</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
     </parent>
-    <version>0.5.0-SNAPSHOT</version>
     <packaging>nar</packaging>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <lucene.version>4.10.4</lucene.version>
-        <jackson.version>2.6.2</jackson.version>
-        <guava.version>18.0</guava.version>
-        <commons.dbcp2>2.1.1</commons.dbcp2>
-        <commons.pool2>2.4.2</commons.pool2>
-        <activemq.version>5.13.1</activemq.version>
     </properties>
 
     <dependencies>
@@ -31,9 +24,9 @@
         </dependency>
 
         <dependency>
-            <groupId>com.thinkbiganalytics.bdp</groupId>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-activemq-core</artifactId>
-            <version>1.3.0-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
@@ -115,30 +108,25 @@
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-core</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.dataformat</groupId>
             <artifactId>jackson-dataformat-xml</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-annotations</artifactId>
-            <version>${jackson.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>${guava.version}</version>
         </dependency>
 
         <!-- Temporary MYSQL driver for testing REMOVE FOR LICENSING REASONS!-->
@@ -152,13 +140,11 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-dbcp2</artifactId>
-            <version>${commons.dbcp2}</version>
         </dependency>
 
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-pool2</artifactId>
-            <version>${commons.pool2}</version>
         </dependency>
 
 
@@ -166,14 +152,12 @@
         <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
-            <version>3.4</version>
         </dependency>
 
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jdbc</artifactId>
-            <version>${spring.version}</version>
         </dependency>
 
 
@@ -182,7 +166,6 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-jms</artifactId>
-            <version>${spring.version}</version>
         </dependency>
 
         <dependency>
@@ -213,20 +196,17 @@
         <dependency>
             <groupId>org.assertj</groupId>
             <artifactId>assertj-core</artifactId>
-            <version>2.2.0</version>
             <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.mockito</groupId>
-            <artifactId>mockito-core</artifactId>
-            <version>1.10.19</version>
+            <artifactId>mockito-all</artifactId>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-test</artifactId>
-            <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
 
