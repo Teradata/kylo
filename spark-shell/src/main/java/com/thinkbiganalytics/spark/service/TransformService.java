@@ -1,5 +1,20 @@
 package com.thinkbiganalytics.spark.service;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.Queue;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
+import javax.script.ScriptException;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SQLContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
@@ -10,26 +25,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.AbstractScheduledService;
-import com.thinkbiganalytics.db.QueryResult;
+import com.thinkbiganalytics.db.model.query.QueryResult;
 import com.thinkbiganalytics.spark.metadata.TransformRequest;
 import com.thinkbiganalytics.spark.metadata.TransformResponse;
 import com.thinkbiganalytics.spark.repl.ScriptEngine;
 import com.thinkbiganalytics.spark.util.HiveUtils;
-
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SQLContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
-import javax.script.ScriptException;
 
 import scala.tools.nsc.interpreter.NamedParam;
 import scala.tools.nsc.interpreter.NamedParamClass;

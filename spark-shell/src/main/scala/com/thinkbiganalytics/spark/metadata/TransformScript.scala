@@ -2,7 +2,7 @@ package com.thinkbiganalytics.spark.metadata
 
 import java.util
 
-import com.thinkbiganalytics.db.{QueryResult, QueryResultColumn}
+import com.thinkbiganalytics.db.model.query.{QueryResult, QueryResultColumn}
 import com.thinkbiganalytics.spark.util.HiveUtils
 import org.apache.hadoop.hive.serde2.objectinspector.primitive.{JavaHiveDecimalObjectInspector, PrimitiveObjectInspectorFactory}
 import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspector, ObjectInspectorFactory}

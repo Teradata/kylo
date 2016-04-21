@@ -1,13 +1,13 @@
 package com.thinkbiganalytics.spark.repl;
 
-import org.apache.spark.SparkConf;
-import org.apache.spark.SparkContext;
-import org.apache.spark.util.Utils;
-
 import java.io.File;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import org.apache.spark.SparkConf;
+import org.apache.spark.SparkContext;
+import org.apache.spark.util.Utils;
 
 import scala.collection.immutable.List;
 import scala.tools.nsc.Settings;

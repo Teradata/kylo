@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.spark.metadata;
 
-import com.thinkbiganalytics.db.QueryResult;
+import com.thinkbiganalytics.db.model.query.QueryResult;
 
 /**
  * The result of a Spark transformation.

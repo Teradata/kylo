@@ -1,10 +1,5 @@
 package com.thinkbiganalytics.spark.rest;
 
-import com.google.common.collect.ImmutableMap;
-import com.thinkbiganalytics.spark.metadata.TransformRequest;
-import com.thinkbiganalytics.spark.metadata.TransformResponse;
-import com.thinkbiganalytics.spark.service.TransformService;
-
 import java.util.Map;
 import java.util.ResourceBundle;
 
@@ -17,6 +12,11 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+
+import com.google.common.collect.ImmutableMap;
+import com.thinkbiganalytics.spark.metadata.TransformRequest;
+import com.thinkbiganalytics.spark.metadata.TransformResponse;
+import com.thinkbiganalytics.spark.service.TransformService;
 
 /**
  * Endpoint for executing Spark scripts on the server.

@@ -1,11 +1,9 @@
 package com.thinkbiganalytics.spark;
 
-import com.thinkbiganalytics.spark.repl.ScriptEngine;
-import com.thinkbiganalytics.spark.repl.ScriptEngineFactory;
-import com.thinkbiganalytics.spark.rest.CorsFilter;
-import com.thinkbiganalytics.spark.rest.SparkShellController;
-import com.thinkbiganalytics.spark.service.TransformService;
-import com.thinkbiganalytics.spark.util.ClassUtils;
+import java.net.URI;
+
+import javax.annotation.Nonnull;
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.util.Utils;
@@ -16,10 +14,12 @@ import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import java.net.URI;
-
-import javax.annotation.Nonnull;
-import javax.ws.rs.core.UriBuilder;
+import com.thinkbiganalytics.spark.repl.ScriptEngine;
+import com.thinkbiganalytics.spark.repl.ScriptEngineFactory;
+import com.thinkbiganalytics.spark.rest.CorsFilter;
+import com.thinkbiganalytics.spark.rest.SparkShellController;
+import com.thinkbiganalytics.spark.service.TransformService;
+import com.thinkbiganalytics.spark.util.ClassUtils;
 
 import scala.Function0;
 import scala.runtime.AbstractFunction0;
