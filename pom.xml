@@ -51,6 +51,7 @@
         <module>spark</module>
         <module>spark-shell</module>
         <module>nifi-nar-bundles</module>
+        <module>swagger-ui</module>
         <module>data-lake-server</module>
         <module>data-lake-ui</module>
     </modules>
