@@ -50,6 +50,12 @@
             <artifactId>spark-core_2.10</artifactId>
             <version>${sparkcore.version}</version>
             <scope>provided</scope>
+            <exclusions>
+            	<exclusion>
+            		<artifactId>jackson-module-scala_2.10</artifactId>
+            		<groupId>com.fasterxml.jackson.module</groupId>
+            	</exclusion>
+            </exclusions>
         </dependency>
         
         <dependency> <!-- Spark dependency -->
@@ -77,6 +83,12 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-lang3</artifactId>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <artifactId>jackson-module-scala_2.10</artifactId>
+            <groupId>com.fasterxml.jackson.module</groupId>
+            <version>${jackson.version}</version>
         </dependency>
     </dependencies>
 
