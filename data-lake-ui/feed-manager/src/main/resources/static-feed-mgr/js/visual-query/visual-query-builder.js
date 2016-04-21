@@ -585,9 +585,9 @@
     };
 
 
-    angular.module('app').controller('VisualQueryBuilderController', controller);
+    angular.module(MODULE_FEED_MGR).controller('VisualQueryBuilderController', controller);
 
-    angular.module('app')
+    angular.module(MODULE_FEED_MGR)
         .directive('thinkbigVisualQueryBuilder', directive);
 
 })();

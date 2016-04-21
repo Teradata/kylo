@@ -33,7 +33,7 @@ public class NifiConfigurationPropertiesService {
                      this.getClass().getClassLoader().getResourceAsStream("nifi-configuration.properties")) {
             properties.load(stream);
     /* or properties.loadFromXML(...) */
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -53,8 +53,10 @@ public class NifiConfigurationPropertiesService {
 
     public Properties getPropertiesWithPrefix(String prefix){
         Properties p = new Properties();
-        for(String str: properties.stringPropertyNames()) {
-            p.put(prefix+str,properties.getProperty(str));
+        if(properties != null) {
+            for (String str : properties.stringPropertyNames()) {
+                p.put(prefix + str, properties.getProperty(str));
+            }
         }
         return p;
 

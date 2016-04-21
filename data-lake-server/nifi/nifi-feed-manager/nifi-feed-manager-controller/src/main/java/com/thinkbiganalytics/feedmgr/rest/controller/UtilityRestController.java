@@ -2,7 +2,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.service.UIService;
 import com.thinkbiganalytics.rest.JerseyClientException;
-import com.thinkbiganalytics.scheduler.support.CronExpressionUtil;
+import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
 import org.quartz.CronExpression;
 import org.springframework.beans.factory.annotation.Autowired;

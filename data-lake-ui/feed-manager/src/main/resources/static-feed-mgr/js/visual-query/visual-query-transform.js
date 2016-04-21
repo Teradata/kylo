@@ -408,9 +408,9 @@
   };
 
 
-  angular.module('app').controller('VisualQueryTransformController', controller);
+  angular.module(MODULE_FEED_MGR).controller('VisualQueryTransformController', controller);
 
-  angular.module('app')
+  angular.module(MODULE_FEED_MGR)
       .directive('thinkbigVisualQueryTransform', directive);
 
 })();

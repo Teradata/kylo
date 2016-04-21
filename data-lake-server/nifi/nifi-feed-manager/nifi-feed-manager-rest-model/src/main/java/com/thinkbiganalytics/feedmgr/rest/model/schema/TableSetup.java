@@ -37,16 +37,16 @@ public class TableSetup {
 
     private String recordFormat;
 
-    @MetadataField
+    @MetadataField(description = "Nifi propety name 'elasticsearch.columns'")
     private String fieldIndexString;
 
-    @MetadataField
+    @MetadataField(description = "Nifi property name 'table_partition_specs'")
     private String partitionStructure;
 
-    @MetadataField
+    @MetadataField(description = "Nifi property name 'partition_specs'")
     private String partitionSpecs;
 
-    @MetadataField
+    @MetadataField(description = "Nifi property name 'table_column_specs'")
     public String fieldStructure;
 
     @MetadataField(description = "List of destination (feed table) field names separated by a new line")

@@ -610,16 +610,18 @@ angular.module('mentio', [])
                     var menuItem = (menuEl.querySelector('[mentio-menu-item].active') || 
                         menuEl.querySelector('[data-mentio-menu-item].active'));
 
-                    if (scope.isFirstItemActive()) {
-                        return menuItemsList.scrollTop = 0;
-                    } else if(scope.isLastItemActive()) {
-                        return menuItemsList.scrollTop = menuItemsList.scrollHeight;
-                    }
+                    if(menuItemsList != unedfined && menuItemsList != null) {
+                        if (scope.isFirstItemActive()) {
+                            return menuItemsList.scrollTop = 0;
+                        } else if (scope.isLastItemActive()) {
+                            return menuItemsList.scrollTop = menuItemsList.scrollHeight;
+                        }
 
-                    if (direction === 1) {
-                        menuItemsList.scrollTop += menuItem.offsetHeight;
-                    } else {
-                        menuItemsList.scrollTop -= menuItem.offsetHeight;
+                        if (direction === 1) {
+                            menuItemsList.scrollTop += menuItem.offsetHeight;
+                        } else {
+                            menuItemsList.scrollTop -= menuItem.offsetHeight;
+                        }
                     }
                 };
 

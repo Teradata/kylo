@@ -11,6 +11,6 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter
 public class FeedManagerStaticContentConfiguration extends WebMvcConfigurerAdapter {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/feed-mgr/**").addResourceLocations("classpath:/feed-manager/");
+        registry.addResourceHandler("/feed-mgr/**").addResourceLocations("classpath:/static-feed-mgr/");
     }
 }
