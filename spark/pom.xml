@@ -89,6 +89,7 @@
             <artifactId>jackson-module-scala_2.10</artifactId>
             <groupId>com.fasterxml.jackson.module</groupId>
             <version>${jackson.version}</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
