@@ -39,8 +39,7 @@
         <assertj.version>2.2.0</assertj.version>
     </properties>
     <modules>
-        <module>data-lake-server</module>
-        <module>data-lake-ui</module>
+        <module>auth</module>
         <module>rest-model-common</module>
         <module>activemq</module>
         <module>alerts</module>
@@ -49,6 +48,8 @@
         <module>rest-client</module>
         <module>sla</module>
         <module>metadata</module>
+        <module>data-lake-server</module>
+        <module>data-lake-ui</module>
     </modules>
 
     <repositories>
