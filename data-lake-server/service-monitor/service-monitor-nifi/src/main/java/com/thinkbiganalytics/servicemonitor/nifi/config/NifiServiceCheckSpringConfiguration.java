@@ -12,7 +12,7 @@ import org.springframework.context.annotation.Configuration;
 public class NifiServiceCheckSpringConfiguration {
 
   @Bean(name = "nifiServiceStatus")
-  public NifiServiceStatusCheck pipelineDatabaseServiceHealth() {
+  public NifiServiceStatusCheck nifiServiceStatusCheck() {
     return new NifiServiceStatusCheck();
   }
 }

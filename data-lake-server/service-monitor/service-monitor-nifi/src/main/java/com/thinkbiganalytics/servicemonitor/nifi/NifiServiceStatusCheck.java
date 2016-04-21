@@ -25,7 +25,10 @@ public class NifiServiceStatusCheck implements ServiceStatusCheck {
 
   @Autowired
   @Qualifier("nifiRestClient")
-  NifiRestClient nifiRestClient;
+ private NifiRestClient nifiRestClient;
+
+  public NifiServiceStatusCheck(){
+  }
 
 
   @Override
@@ -51,5 +54,7 @@ public class NifiServiceStatusCheck implements ServiceStatusCheck {
     return new DefaultServiceStatusResponse(serviceName, Arrays.asList(component));
   }
 
-
+  public void setNifiRestClient(NifiRestClient nifiRestClient) {
+    this.nifiRestClient = nifiRestClient;
+  }
 }
