@@ -22,20 +22,4 @@ public class SpringJerseyConfiguration {
   }
 
 
-  @Bean(name = "mainSwaggerBeanConfig")
-  public BeanConfig jobRepoBeanConfig() {
-    //swagger init
-    BeanConfig beanConfig = new BeanConfig();
-    beanConfig.setVersion("1.0");
-    beanConfig.setSchemes(new String[]{"http"});
-    beanConfig.setHost("localhost:8284");
-    beanConfig.setBasePath("/api");
-    beanConfig.setConfigId("core");
-    beanConfig.setPrettyPrint(true);
-    beanConfig.setResourcePackage(
-        "com.thinkbiganalytics.server.DataLakeServerApiDefinition,com.thinkbiganalytics.servicemonitor.rest.controller,com.thinkbiganalytics.jobrepo.rest.controller,com.thinkbiganalytics.scheduler.rest.controller,com.thinkbiganalytics.hive.rest.controller,com.thinkbiganalytics.feedmgr.rest.controller");
-    beanConfig.setScan(true);
-    return beanConfig;
-  }
-
 }

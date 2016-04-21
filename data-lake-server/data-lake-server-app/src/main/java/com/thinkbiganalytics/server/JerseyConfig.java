@@ -26,10 +26,7 @@ public class JerseyConfig extends ResourceConfig {
     resources.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
     registerClasses(resources);
 
-    packages("com.thinkbiganalytics.servicemonitor.rest.controller", "com.thinkbiganalytics.scheduler.rest.controller",
-             "com.thinkbiganalytics.hive.rest.controller",
-             "com.thinkbiganalytics.jobrepo.rest.controller",
-             "com.thinkbiganalytics.feedmgr.rest.controller");
+    packages("com.thinkbiganalytics");
     register(JacksonFeature.class);
     register(MultiPartFeature.class);
     register(WadlResource.class);
