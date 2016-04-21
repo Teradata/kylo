@@ -16,23 +16,24 @@ import org.springframework.util.Assert;
 @Configuration
 public class SpringNifiRestConfiguration {
 
-@Autowired
-private Environment env;
+  @Autowired
+  private Environment env;
 
-  @Bean(name="nifiRestClient")
-  public NifiRestClient nifiRestClient(@Qualifier("nifiRestClientConfig") NifiRestClientConfig clientConfig){
+  @Bean(name = "nifiRestClient")
+  public NifiRestClient nifiRestClient(@Qualifier("nifiRestClientConfig") NifiRestClientConfig clientConfig) {
 
     return new NifiRestClient(clientConfig);
 
   }
+
   @Bean(name = "nifiRestClientConfig")
-  public NifiRestClientConfig nifiRestClientConfig(){
+  public NifiRestClientConfig nifiRestClientConfig() {
     String host = env.getProperty("nifi.rest.host");
     String configPort = env.getProperty("nifi.rest.port");
     Integer port = null;
     try {
       port = Integer.parseInt(configPort);
-    }catch(NumberFormatException e) {
+    } catch (NumberFormatException e) {
       Assert.notNull(port,
                      "The Nifi Port property 'nifi.rest.port' must be configured and must be a valid number in the config.properties file. ");
     }
