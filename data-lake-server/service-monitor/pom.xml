@@ -16,6 +16,7 @@
     <module>service-monitor-core</module>
     <module>service-monitor-cloudera</module>
     <module>service-monitor-ambari</module>
+    <module>service-monitor-nifi</module>
     <module>service-monitor-controller</module>
     <module>service-monitor-pipeline-db</module>
   </modules>
