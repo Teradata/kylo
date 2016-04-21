@@ -15,6 +15,10 @@
     <module>job-repository-api</module>
     <module>job-repository-core</module>
     <module>job-repository-rest-model</module>
+    <module>job-repository-nifi</module>
+    <module>job-repository-spring-batch</module>
+
+
     <module>job-repository-controller</module>
   </modules>
 

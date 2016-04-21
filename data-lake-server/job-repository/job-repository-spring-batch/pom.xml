@@ -6,7 +6,7 @@
   <artifactId>thinkbig-job-repository-spring-batch</artifactId>
 
   <parent>
-    <artifactId>thinkbig-spring-batch</artifactId>
+    <artifactId>thinkbig-job-repository</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <version>0.1.0-SNAPSHOT</version>
   </parent>

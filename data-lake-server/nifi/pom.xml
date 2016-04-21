@@ -13,11 +13,9 @@
   </parent>
 
   <properties>
-    <nifi.version>0.5.0</nifi.version>
-    <thinkbig.nifi.version>0.5.0-SNAPSHOT</thinkbig.nifi.version>
+
   </properties>
   <modules>
-    <module>job-repository-nifi</module>
     <module>nifi-feed-manager</module>
     <module>nifi-rest</module>
   </modules>

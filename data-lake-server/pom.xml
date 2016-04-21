@@ -48,7 +48,6 @@
         <module>scheduler</module>
         <module>service-monitor</module>
         <module>nifi</module>
-        <module>spring-batch</module>
         <module>data-lake-server-app</module>
     </modules>
 
