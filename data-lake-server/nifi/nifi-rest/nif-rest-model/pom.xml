@@ -34,8 +34,8 @@
     </dependency>
 
     <dependency>
-      <artifactId>tba-rest-client</artifactId>
-      <groupId>com.thinkbiganalytics.bdp</groupId>
+      <artifactId>thinkbig-rest-client</artifactId>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
     </dependency>
     <dependency>
       <groupId>org.apache.nifi</groupId>

@@ -22,8 +22,8 @@
 
     <!-- TODO change to point to datalake project once moved over -->
     <dependency>
-      <artifactId>tba-rest-client</artifactId>
-      <groupId>com.thinkbiganalytics.bdp</groupId>
+      <artifactId>thinkbig-rest-client</artifactId>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
     </dependency>
 
 

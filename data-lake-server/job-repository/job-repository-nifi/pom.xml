@@ -87,11 +87,17 @@
     </dependency>
 
     <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-activemq-core</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+<!--
+    <dependency>
       <groupId>com.thinkbiganalytics.bdp</groupId>
       <artifactId>thinkbig-activemq-core</artifactId>
-      <version>${pipeline.controller.version}</version>
+      <version>${project.version}</version>
     </dependency>
-
+-->
 
   </dependencies>
 
