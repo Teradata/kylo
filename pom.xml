@@ -48,6 +48,7 @@
         <module>rest-client</module>
         <module>sla</module>
         <module>metadata</module>
+        <module>spark</module>
         <module>nifi-nar-bundles</module>
         <module>data-lake-server</module>
         <module>data-lake-ui</module>
