@@ -354,7 +354,7 @@ public class QuartzScheduler implements JobScheduler {
   private TriggerInfo buildTriggerInfo(JobIdentifier jobIdentifier, Trigger trigger) {
     TriggerInfo triggerInfo = new DefaultTriggerInfo(jobIdentifier, triggerIdentifierForTriggerKey(trigger.getKey()));
     triggerInfo.setDescription(trigger.getDescription());
-
+    triggerInfo.setTriggerClass(trigger.getClass());
     String cronExpression = null;
     triggerInfo.setCronExpressionSummary("");
     if (trigger instanceof CronTrigger) {
@@ -371,7 +371,7 @@ public class QuartzScheduler implements JobScheduler {
     boolean isScheduled = CronTrigger.class.isAssignableFrom(triggerInfo.getTriggerClass());
     triggerInfo.setScheduled(isScheduled);
 
-    triggerInfo.setTriggerClass(trigger.getClass());
+
     triggerInfo.setCronExpression(cronExpression);
     triggerInfo.setNextFireTime(trigger.getNextFireTime());
     triggerInfo.setStartTime(trigger.getStartTime());

@@ -36,7 +36,7 @@ public class TriggerInfoImplTest {
 
     @Test
     public void test() throws Exception {
-        JavaBeanTester.test(TriggerInfo.class, "jobIdentifier", "state", "triggerClass", "triggerIdentifier");
+        JavaBeanTester.test(DefaultTriggerInfo.class, "jobIdentifier", "state", "triggerClass", "triggerIdentifier");
         assertNotNull(trigger.getState());
         assertNotNull(trigger.getJobIdentifier());
         assertNotNull(trigger.getState());
