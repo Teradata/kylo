@@ -20,6 +20,7 @@ public class FieldPolicyTransformer {
     this.uiFieldPolicy = uiFieldPolicy;
   }
 
+
   public List<StandardizationPolicy> getStandardizationPolicies(){
     List<StandardizationPolicy> policies = new ArrayList<>();
     List<FieldStandardizationRule> rules = uiFieldPolicy.getStandardization();
