@@ -43,7 +43,6 @@
         <module>rest-model-common</module>
         <module>activemq</module>
         <module>alerts</module>
-        <module>commons</module>
         <module>jira</module>
         <module>rest-client</module>
         <module>sla</module>
@@ -55,6 +54,14 @@
         <module>swagger-ui</module>
         <module>data-lake-server</module>
         <module>data-lake-ui</module>
+        <module>security</module>
+        <module>ui</module>
+        <module>core</module>
+        <module>plugins</module>
+        
+        <module>services</module>
+        <module>integrations</module>
+        <module>commons</module>
     </modules>
 
     <repositories>
