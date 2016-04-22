@@ -22,6 +22,7 @@
         <module>field-policies-api</module>
         <module>field-policies-core</module>
         <module>field-policies-default</module>
+        <module>field-policies-controller</module>
     </modules>
 
 

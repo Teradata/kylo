@@ -3,6 +3,8 @@ package com.thinkbiganalytics.policies;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRule;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldValidationRule;
 
+import org.junit.Assert;
+
 import org.junit.Test;
 
 import java.util.List;
@@ -18,7 +20,8 @@ public class AvailablePoliciesTest {
 
     List<FieldStandardizationRule> standardizationRules = AvailablePolicies.discoverStandardizationRules();
     List<FieldValidationRule> validationRules = AvailablePolicies.discoverValidationRules();
-    int i = 0;
+    Assert.assertTrue(standardizationRules.size() >0);
+    Assert.assertNotNull(validationRules.size() >0);
 
   }
 }
