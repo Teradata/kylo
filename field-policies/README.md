@@ -10,7 +10,7 @@ Standardization and Validation rules are written as simple Java POJO along with 
 **Purpose:** Annotate any Parameter that is needed to be captured the User Interface in order to create the Standardization or Validation Policy.
 
 | Attribute              | Required  | Default Value | Description      | 
-| -----------------      | --------- | -------------    |
+| -----------------      | --------- | -------------    |------------|
 | name                   | Y         |                  | Unique Name for the User Inerface and Domain to match. <br/> **NOTE** This will also become the User Interface Display Name, (**displayName attribute**) if one is not specified |
 | displayName            | N         | name value above | The display name on the UI |
 | value                  | N         |                  | default value on the UI |
@@ -31,6 +31,7 @@ Standardization and Validation rules are written as simple Java POJO along with 
 
 #### @Standardizer
 **Purpose:** Annotate the Class to inform the system and the User Interface that this is a Standardizer
+
 | Attribute     | Required |  Description |
 | ----------    | -------- | ----------   |
 | name          | Y        | This name of the Standardizer.  This will be displayed on the User Interface |
@@ -38,6 +39,7 @@ Standardization and Validation rules are written as simple Java POJO along with 
 
 #### @FieldValidator
 **Purpose:** Annotate the Class to inform the system and the User Interface that this is a Validator
+
 | Attribute     | Required |  Description |
 | ----------    | -------- | ----------   |
 | name          | Y        | This name of the Validator.  This will be displayed on the User Interface |
