@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.policies;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRule;
@@ -33,7 +34,7 @@ public class FieldPoliciesJsonTransformer {
     this.jsonFieldPolicies = jsonFieldPolicies;
     ObjectMapper mapper = new ObjectMapper();
     try {
-           uiFieldPolicies =  mapper.readValue(jsonFieldPolicies, List.class);
+           uiFieldPolicies =  mapper.readValue(jsonFieldPolicies, new TypeReference<List<com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicy>>(){});
 
     }
     catch ( IOException e) {
