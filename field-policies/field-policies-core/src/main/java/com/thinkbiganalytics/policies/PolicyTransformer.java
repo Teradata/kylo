@@ -7,7 +7,7 @@ import java.lang.annotation.Annotation;
 /**
  * Created by sr186054 on 4/21/16.
  */
-public interface PolicyTransformer<UI extends BaseUiPolicyRule,P extends FieldPolicyItem, A extends Annotation> {
+public interface PolicyTransformer<UI extends BaseUiPolicyRule, P extends FieldPolicyItem, A extends Annotation> {
 
   UI toUIModel(P standardizationRule);
 

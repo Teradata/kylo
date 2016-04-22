@@ -1,18 +1,9 @@
 package com.thinkbiganalytics.policies;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRule;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldValidationRule;
-import com.thinkbiganalytics.policies.standardization.StandardizationPolicy;
-import com.thinkbiganalytics.policies.validation.Validator;
-import com.thinkbiganalytics.standardization.transform.StandardizationAnnotationTransformer;
-import com.thinkbiganalytics.validation.transform.ValidatorAnnotationTransformer;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -34,21 +25,23 @@ public class FieldPoliciesJsonTransformer {
     this.jsonFieldPolicies = jsonFieldPolicies;
     ObjectMapper mapper = new ObjectMapper();
     try {
-           uiFieldPolicies =  mapper.readValue(jsonFieldPolicies, new TypeReference<List<com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicy>>(){});
+      uiFieldPolicies =
+          mapper.readValue(jsonFieldPolicies,
+                           new TypeReference<List<com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicy>>() {
+                           });
 
-    }
-    catch ( IOException e) {
+    } catch (IOException e) {
       e.printStackTrace();
     }
 
 
   }
 
-  public Map<String,FieldPolicy> buildPolicies(){
-    Map<String,FieldPolicy> fieldPolicyMap= new HashMap<>();
-    for(com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicy uiFieldPolicy: uiFieldPolicies){
+  public Map<String, FieldPolicy> buildPolicies() {
+    Map<String, FieldPolicy> fieldPolicyMap = new HashMap<>();
+    for (com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicy uiFieldPolicy : uiFieldPolicies) {
       FieldPolicyTransformer transformer = new FieldPolicyTransformer(uiFieldPolicy);
-      fieldPolicyMap.put(uiFieldPolicy.getFieldName(),transformer.buildPolicy());
+      fieldPolicyMap.put(uiFieldPolicy.getFieldName(), transformer.buildPolicy());
     }
     return fieldPolicyMap;
 

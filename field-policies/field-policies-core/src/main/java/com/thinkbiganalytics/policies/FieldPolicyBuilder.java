@@ -2,86 +2,82 @@ package com.thinkbiganalytics.policies;
 
 import com.thinkbiganalytics.policies.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policies.validation.Validator;
-import java.util.HashMap;
+
 import java.util.List;
-import java.util.Map;
 import java.util.Vector;
 
 
 public class FieldPolicyBuilder {
 
-    public static final FieldPolicy SKIP_VALIDATION = FieldPolicyBuilder.newBuilder().skipSchemaValidation().build();
+  public static final FieldPolicy SKIP_VALIDATION = FieldPolicyBuilder.newBuilder().skipSchemaValidation().build();
 
-    private FieldPolicy policy = new FieldPolicy();
-    private List<Validator> validators = new Vector<>();
-    private List<StandardizationPolicy> standardizationPolicies = new Vector<>();
+  private FieldPolicy policy = new FieldPolicy();
+  private List<Validator> validators = new Vector<>();
+  private List<StandardizationPolicy> standardizationPolicies = new Vector<>();
 
-    private FieldPolicyBuilder() {
-        super();
-    }
+  private FieldPolicyBuilder() {
+    super();
+  }
 
-    public static FieldPolicyBuilder newBuilder() {
-        return new FieldPolicyBuilder();
-    }
+  public static FieldPolicyBuilder newBuilder() {
+    return new FieldPolicyBuilder();
+  }
 
-    public FieldPolicyBuilder addValidator(Validator validator) {
-        validators.add(validator);
-        return this;
-    }
+  public FieldPolicyBuilder addValidator(Validator validator) {
+    validators.add(validator);
+    return this;
+  }
 
-    public FieldPolicyBuilder addValidators(List<Validator> validator) {
-        validators.addAll(validator);
-        return this;
-    }
+  public FieldPolicyBuilder addValidators(List<Validator> validator) {
+    validators.addAll(validator);
+    return this;
+  }
 
-    public FieldPolicyBuilder addStandardizers(List<StandardizationPolicy> policyList) {
-        standardizationPolicies.addAll(policyList);
-        return this;
-    }
+  public FieldPolicyBuilder addStandardizers(List<StandardizationPolicy> policyList) {
+    standardizationPolicies.addAll(policyList);
+    return this;
+  }
 
-    public FieldPolicyBuilder addStandardizer(StandardizationPolicy policy) {
-        standardizationPolicies.add(policy);
-        return this;
-    }
+  public FieldPolicyBuilder addStandardizer(StandardizationPolicy policy) {
+    standardizationPolicies.add(policy);
+    return this;
+  }
 
-    public FieldPolicyBuilder fieldName(String fieldName) {
-        policy.setField(fieldName);
-        return this;
-    }
-    public FieldPolicyBuilder disallowNullOrEmpty() {
-        policy.setNullable(false);
-        return this;
-    }
+  public FieldPolicyBuilder fieldName(String fieldName) {
+    policy.setField(fieldName);
+    return this;
+  }
 
-    /**
-     * Constrains value to one of the values provided in the list
+  public FieldPolicyBuilder disallowNullOrEmpty() {
+    policy.setNullable(false);
+    return this;
+  }
 
-    public FieldPolicyBuilder constrainValues(String... values) {
-        validators.add(new LookupValidator(values));
-        return this;
-    }
+  /**
+   * Constrains value to one of the values provided in the list
+   *
+   * public FieldPolicyBuilder constrainValues(String... values) { validators.add(new LookupValidator(values)); return this; }
+   *
+   * public FieldPolicyBuilder constrainLength(int minlen, int maxlen) { validators.add(new LengthValidator(minlen, maxlen));
+   * return this; }
+   */
 
-    public FieldPolicyBuilder constrainLength(int minlen, int maxlen) {
-        validators.add(new LengthValidator(minlen, maxlen));
-        return this;
-    }     */
+  public FieldPolicyBuilder skipSchemaValidation() {
+    policy.setSkipSchemaValidation(true);
+    return this;
+  }
 
-    public FieldPolicyBuilder skipSchemaValidation() {
-        policy.setSkipSchemaValidation(true);
-        return this;
-    }
+  public FieldPolicyBuilder enableDiscoverTypes() {
+    policy.setTypeDiscovery(true);
+    return this;
+  }
 
-    public FieldPolicyBuilder enableDiscoverTypes() {
-        policy.setTypeDiscovery(true);
-        return this;
-    }
-
-    public FieldPolicy build() {
-        FieldPolicy newPolicy = this.policy;
-        newPolicy.setValidators(validators);
-        newPolicy.setStandardizationPolicies(standardizationPolicies);
-        return newPolicy;
-    }
+  public FieldPolicy build() {
+    FieldPolicy newPolicy = this.policy;
+    newPolicy.setValidators(validators);
+    newPolicy.setStandardizationPolicies(standardizationPolicies);
+    return newPolicy;
+  }
 
     /*
     FieldPolicyBuilder constrainRange(Number min, Number max) {

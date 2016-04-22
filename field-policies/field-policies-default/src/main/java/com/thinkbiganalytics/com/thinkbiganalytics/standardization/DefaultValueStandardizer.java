@@ -21,7 +21,7 @@ public class DefaultValueStandardizer implements StandardizationPolicy, AcceptsE
   private String defaultStr;
 
 
-  public DefaultValueStandardizer(@PolicyPropertyRef(name="Default Value") String defaultStr) {
+  public DefaultValueStandardizer(@PolicyPropertyRef(name = "Default Value") String defaultStr) {
     this.defaultStr = defaultStr;
   }
 

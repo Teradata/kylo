@@ -12,7 +12,7 @@ import java.io.Serializable;
 /**
  * Created by matthutton on 1/20/16.
  */
-public interface Validator<T> extends Serializable,FieldPolicyItem {
+public interface Validator<T> extends Serializable, FieldPolicyItem {
 
-    boolean validate(T value);
+  boolean validate(T value);
 }

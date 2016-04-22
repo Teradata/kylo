@@ -11,21 +11,21 @@ import com.thinkbiganalytics.policies.standardization.Standardizer;
 /**
  * Upper case
  */
-@Standardizer(name="Uppercase", description = "Convert string to uppercase")
+@Standardizer(name = "Uppercase", description = "Convert string to uppercase")
 public class UppercaseStandardizer implements StandardizationPolicy {
 
-    private static final UppercaseStandardizer instance = new UppercaseStandardizer();
+  private static final UppercaseStandardizer instance = new UppercaseStandardizer();
 
-    private UppercaseStandardizer() {
-        super();
-    }
+  private UppercaseStandardizer() {
+    super();
+  }
 
-    @Override
-    public String convertValue(String value) {
-        return value.toUpperCase();
-    }
+  @Override
+  public String convertValue(String value) {
+    return value.toUpperCase();
+  }
 
-    public static UppercaseStandardizer instance() {
-        return instance;
-    }
+  public static UppercaseStandardizer instance() {
+    return instance;
+  }
 }

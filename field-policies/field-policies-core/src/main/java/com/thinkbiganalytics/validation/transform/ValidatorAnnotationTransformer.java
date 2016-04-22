@@ -19,10 +19,10 @@ public class ValidatorAnnotationTransformer
 
   @Override
   public FieldValidationRule buildUiModel(FieldValidator annotation, Validator policy,
-                                               List<FieldRuleProperty> properties) {
+                                          List<FieldRuleProperty> properties) {
 
-    FieldValidationRule     rule =     new FieldValidationRuleBuilder(annotation.name()).objectClassType(policy.getClass()).description(
-            annotation.description()).addProperties(properties).build();
+    FieldValidationRule rule = new FieldValidationRuleBuilder(annotation.name()).objectClassType(policy.getClass()).description(
+        annotation.description()).addProperties(properties).build();
     return rule;
   }
 

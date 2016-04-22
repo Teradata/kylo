@@ -14,14 +14,14 @@ import com.thinkbiganalytics.policies.validation.Validator;
 @FieldValidator(name = "US Zip", description = "Validate US Zip")
 public class USZipCodeValidator extends RegexValidator implements Validator<String> {
 
-    private static final USZipCodeValidator instance = new USZipCodeValidator();
+  private static final USZipCodeValidator instance = new USZipCodeValidator();
 
-    private USZipCodeValidator() {
-        super("[0-9]{5}([- /]?[0-9]{4})?$");
-    }
+  private USZipCodeValidator() {
+    super("[0-9]{5}([- /]?[0-9]{4})?$");
+  }
 
-    public static USZipCodeValidator instance() {
-        return instance;
-    }
+  public static USZipCodeValidator instance() {
+    return instance;
+  }
 
 }

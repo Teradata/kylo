@@ -26,48 +26,48 @@ import java.util.regex.Pattern;
 /**
  * Created by sr186054 on 4/21/16.
  */
-public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule,P extends FieldPolicyItem, A extends Annotation> implements PolicyTransformer<U,P, A> {
+public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule, P extends FieldPolicyItem, A extends Annotation>
+    implements PolicyTransformer<U, P, A> {
 
 
+  private List<FieldRuleProperty> getUiProperties(P policy) {
+    AnnotationFieldNameResolver annotationFieldNameResolver = new AnnotationFieldNameResolver(PolicyProperty.class);
+    List<AnnotatedFieldProperty> list = annotationFieldNameResolver.getProperties(policy.getClass());
+    List<FieldRuleProperty> properties = new ArrayList<>();
+    if (hasConstructor(policy.getClass())) {
 
-private List<FieldRuleProperty> getUiProperties(P policy) {
-  AnnotationFieldNameResolver annotationFieldNameResolver = new AnnotationFieldNameResolver(PolicyProperty.class);
-  List<AnnotatedFieldProperty> list = annotationFieldNameResolver.getProperties(policy.getClass());
-  List<FieldRuleProperty> properties = new ArrayList<>();
-  if(hasConstructor(policy.getClass())) {
+      for (AnnotatedFieldProperty<PolicyProperty> annotatedFieldProperty : list) {
+        PolicyProperty prop = annotatedFieldProperty.getAnnotation();
+        String value = null;
+        try {
+          Object fieldValue = FieldUtils.readField(annotatedFieldProperty.getField(), policy, true);
+          if (fieldValue != null) {
+            value = fieldValue.toString();
+          }
+        } catch (IllegalAccessException e) {
 
-    for (AnnotatedFieldProperty<PolicyProperty> annotatedFieldProperty : list) {
-      PolicyProperty prop = annotatedFieldProperty.getAnnotation();
-      String value = null;
-      try {
-        Object fieldValue = FieldUtils.readField(annotatedFieldProperty.getField(), policy, true);
-        if (fieldValue != null) {
-          value = fieldValue.toString();
         }
-      } catch (IllegalAccessException e) {
-
+        FieldRuleProperty rule = new FieldRulePropertyBuilder(prop.name()).displayName(
+            StringUtils.isNotBlank(prop.displayName()) ? prop.displayName() : prop.name()).hint(prop.hint())
+            .type(FieldRulePropertyBuilder.PROPERTY_TYPE.valueOf(prop.type().name())).value(prop.value())
+            .objectProperty(annotatedFieldProperty.getName())
+            .value(value)
+            .addSelectableValues(convertToLabelValue(prop.selectableValues())).build();
+        properties.add(rule);
       }
-      FieldRuleProperty rule = new FieldRulePropertyBuilder(prop.name()).displayName(
-          StringUtils.isNotBlank(prop.displayName()) ? prop.displayName() : prop.name()).hint(prop.hint())
-          .type(FieldRulePropertyBuilder.PROPERTY_TYPE.valueOf(prop.type().name())).value(prop.value())
-          .objectProperty(annotatedFieldProperty.getName())
-          .value(value)
-          .addSelectableValues(convertToLabelValue(prop.selectableValues())).build();
-      properties.add(rule);
     }
+    return properties;
   }
-  return properties;
-}
 
-  public abstract U buildUiModel(A annotation,P policy, List<FieldRuleProperty> properties);
+  public abstract U buildUiModel(A annotation, P policy, List<FieldRuleProperty> properties);
 
   public abstract Class<A> getAnnotationClass();
 
   @Override
   public U toUIModel(P standardizationPolicy) {
     Annotation annotation = standardizationPolicy.getClass().getAnnotation(getAnnotationClass());
-     List<FieldRuleProperty> properties = getUiProperties(standardizationPolicy);
-     U rule = buildUiModel((A)annotation,standardizationPolicy,properties);
+    List<FieldRuleProperty> properties = getUiProperties(standardizationPolicy);
+    U rule = buildUiModel((A) annotation, standardizationPolicy, properties);
     return rule;
   }
 
@@ -77,7 +77,7 @@ private List<FieldRuleProperty> getUiProperties(P policy) {
     try {
       P standardizationPolicy = createClass(rule);
 
-      if(hasConstructor(standardizationPolicy.getClass())) {
+      if (hasConstructor(standardizationPolicy.getClass())) {
 
         for (FieldRuleProperty property : rule.getProperties()) {
           String field = property.getObjectProperty();
@@ -93,11 +93,11 @@ private List<FieldRuleProperty> getUiProperties(P policy) {
     }
   }
 
-  private Object getPropertyValue(BaseUiPolicyRule rule, Class<P> standardizationPolicyClass, PolicyPropertyRef reference){
+  private Object getPropertyValue(BaseUiPolicyRule rule, Class<P> standardizationPolicyClass, PolicyPropertyRef reference) {
 
     for (FieldRuleProperty property : rule.getProperties()) {
       String name = property.getName();
-      if(name.equalsIgnoreCase(reference.name())) {
+      if (name.equalsIgnoreCase(reference.name())) {
         String field = property.getObjectProperty();
         String value = property.getValue();
         Field f = FieldUtils.getField(standardizationPolicyClass, field, true);
@@ -105,12 +105,12 @@ private List<FieldRuleProperty> getUiProperties(P policy) {
         return objectValue;
       }
     }
-  return null;
-}
+    return null;
+  }
 
 
-  private boolean hasConstructor(Class<?> policyClass){
-    return policyClass.getConstructors().length >0;
+  private boolean hasConstructor(Class<?> policyClass) {
+    return policyClass.getConstructors().length > 0;
   }
 
   private P createClass(BaseUiPolicyRule rule)
@@ -165,15 +165,15 @@ private List<FieldRuleProperty> getUiProperties(P policy) {
       }
     }
 
-      return standardizationPolicy;
+    return standardizationPolicy;
 
   }
 
 
-  private  List<LabelValue> convertToLabelValue(String[] values) {
+  private List<LabelValue> convertToLabelValue(String[] values) {
     if (values != null) {
       List<LabelValue> list = new ArrayList<>();
-      for(String value: values) {
+      for (String value : values) {
         LabelValue labelValue = new LabelValue();
         labelValue.setLabel(value);
         labelValue.setValue(value);
@@ -213,16 +213,14 @@ private List<FieldRuleProperty> getUiProperties(P policy) {
 
 
   public Object convertStringToObject(String value, Class type) {
-    if(type.isEnum()){
+    if (type.isEnum()) {
       return Enum.valueOf(type, value);
-    }
-   else if (StringUtils.isBlank(value)) {
+    } else if (StringUtils.isBlank(value)) {
       return null;
     }
     if (String.class.equals(type)) {
       return value;
-    }
-    else if (Number.class.equals(type)) {
+    } else if (Number.class.equals(type)) {
       return NumberUtils.createNumber(value);
     } else if (Integer.class.equals(type)) {
       return new Integer(value);
@@ -232,10 +230,9 @@ private List<FieldRuleProperty> getUiProperties(P policy) {
       return Double.valueOf(value);
     } else if (Float.class.equals(type)) {
       return Float.valueOf(value);
-    } else if (Pattern.class.equals(type)){
+    } else if (Pattern.class.equals(type)) {
       return Pattern.compile(value);
-    }
-    else {
+    } else {
       throw new IllegalArgumentException("Unable to convert the value " + value + " to an object of type " + type.getName());
     }
 
