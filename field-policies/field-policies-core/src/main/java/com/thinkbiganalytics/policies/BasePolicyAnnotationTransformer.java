@@ -60,6 +60,32 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
     return properties;
   }
 
+
+  public List<FieldRuleProperty> getUiProperties(Class<P> policyClass) {
+    AnnotationFieldNameResolver annotationFieldNameResolver = new AnnotationFieldNameResolver(PolicyProperty.class);
+    List<AnnotatedFieldProperty> list = annotationFieldNameResolver.getProperties(policyClass);
+    List<FieldRuleProperty> properties = new ArrayList<>();
+    if (hasConstructor(policyClass)) {
+
+      for (AnnotatedFieldProperty<PolicyProperty> annotatedFieldProperty : list) {
+        PolicyProperty prop = annotatedFieldProperty.getAnnotation();
+        String value = null;
+        FieldRuleProperty rule = new FieldRulePropertyBuilder(prop.name()).displayName(
+            StringUtils.isNotBlank(prop.displayName()) ? prop.displayName() : prop.name()).hint(prop.hint())
+            .type(FieldRulePropertyBuilder.PROPERTY_TYPE.valueOf(prop.type().name())).value(prop.value())
+            .objectProperty(annotatedFieldProperty.getName())
+            .value(value)
+            .addSelectableValues(convertToLabelValue(prop.selectableValues()))
+            .addSelectableValues(convertToLabelValue(prop.labelValues())).build();
+        properties.add(rule);
+      }
+    }
+    return properties;
+  }
+
+
+
+
   public abstract U buildUiModel(A annotation, P policy, List<FieldRuleProperty> properties);
 
   public abstract Class<A> getAnnotationClass();
