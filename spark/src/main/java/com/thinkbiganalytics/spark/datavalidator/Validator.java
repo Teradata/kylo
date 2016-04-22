@@ -10,6 +10,7 @@ import com.thinkbiganalytics.com.thinkbiganalytics.validation.LengthValidator;
 import com.thinkbiganalytics.com.thinkbiganalytics.validation.LookupValidator;
 import com.thinkbiganalytics.com.thinkbiganalytics.validation.TimestampValidator;
 import com.thinkbiganalytics.com.thinkbiganalytics.validation.ValidationResult;
+import com.thinkbiganalytics.policies.FieldPoliciesJsonTransformer;
 import com.thinkbiganalytics.policies.FieldPolicyTransformer;
 import com.thinkbiganalytics.policies.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policies.FieldPolicy;
@@ -95,6 +96,8 @@ public class Validator implements Serializable {
     // Hardcode for now until we can fetch from metadata
     //TODO change to load from JSON and call the FieldPolicyTransformer
     private void loadPolicies() {
+
+     //   policyMap =new FieldPoliciesJsonTransformer("JSON STRING").buildPolicies();
 
         policyMap.put("registration_dttm", FieldPolicyBuilder.newBuilder().addValidator(TimestampValidator.instance()).build());
         policyMap.put("id", FieldPolicyBuilder.newBuilder().disallowNullOrEmpty().build());

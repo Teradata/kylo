@@ -48,6 +48,7 @@
         <module>rest-client</module>
         <module>sla</module>
         <module>metadata</module>
+        <module>field-policies</module>
         <module>spark</module>
         <module>spark-shell</module>
         <module>nifi-nar-bundles</module>
