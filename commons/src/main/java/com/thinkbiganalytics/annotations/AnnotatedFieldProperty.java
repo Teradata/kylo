@@ -1,19 +1,23 @@
-package com.thinkbiganalytics.support;
+package com.thinkbiganalytics.annotations;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.MoreObjects;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 
 /**
  * Created by sr186054 on 4/4/16.
  */
-public class AnnotatedFieldProperty {
+public class AnnotatedFieldProperty<T extends Annotation> {
     private String name;
     private String description;
     @JsonIgnore
     private Field field;
     private String dataType;
+
+    private T annotation;
+
 
     public AnnotatedFieldProperty() {
 
@@ -49,6 +53,14 @@ public class AnnotatedFieldProperty {
 
     public void setDataType(String dataType) {
         this.dataType = dataType;
+    }
+
+    public T getAnnotation() {
+        return annotation;
+    }
+
+    public void setAnnotation(T annotation) {
+        this.annotation = annotation;
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.support;
+package com.thinkbiganalytics.annotations;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
@@ -44,6 +44,8 @@ public class AnnotationFieldNameResolver {
 
     public AnnotatedFieldProperty addFieldProperty( Class clazz,List<AnnotatedFieldProperty> names, Field field){
         AnnotatedFieldProperty annotatedFieldProperty = new AnnotatedFieldProperty();
+        annotatedFieldProperty.setAnnotation(field.getAnnotation(annotation));
+
         annotatedFieldProperty.setName(stackAsString() + field.getName());
         //annotatedFieldProperty.setFieldName(field.getName());
         annotatedFieldProperty.setField(field);
