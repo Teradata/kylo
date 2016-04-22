@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.feedmgr;
 
+import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
-import com.thinkbiganalytics.support.AnnotatedFieldProperty;
 
 import java.util.List;
 

@@ -1,9 +1,9 @@
 package com.thinkbiganalytics.feedmgr;
 
 
+import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
+import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
-import com.thinkbiganalytics.support.AnnotatedFieldProperty;
-import com.thinkbiganalytics.support.AnnotationFieldNameResolver;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
