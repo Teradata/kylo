@@ -3,15 +3,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-data-lake-accelerator</artifactId>
+        <artifactId>core</artifactId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
-
-    <artifactId>thinkbig-sla</artifactId>
+    <artifactId>thinkbig-alerts</artifactId>
     <packaging>pom</packaging>
-
     <modules>
-        <module>sla-api</module>
-        <module>sla-core</module>
+        <module>alerts-api</module>
+        <module>alerts-core</module>
     </modules>
 </project>

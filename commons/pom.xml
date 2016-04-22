@@ -8,7 +8,7 @@
     </parent>
     <artifactId>commons</artifactId>
     <packaging>pom</packaging>
-    
+
     <modules>
         <module>commons-util</module>
     </modules>

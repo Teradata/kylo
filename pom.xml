@@ -42,10 +42,10 @@
         <module>auth</module>
         <module>rest-model-common</module>
         <module>activemq</module>
-        <module>alerts</module>
+        
         <module>jira</module>
         <module>rest-client</module>
-        <module>sla</module>
+        
         <module>metadata</module>
         <module>field-policies</module>
         <module>spark</module>
