@@ -52,7 +52,8 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
             .type(FieldRulePropertyBuilder.PROPERTY_TYPE.valueOf(prop.type().name())).value(prop.value())
             .objectProperty(annotatedFieldProperty.getName())
             .value(value)
-            .addSelectableValues(convertToLabelValue(prop.selectableValues())).build();
+            .addSelectableValues(convertToLabelValue(prop.selectableValues()))
+            .addSelectableValues(convertToLabelValue(prop.labelValues())).build();
         properties.add(rule);
       }
     }

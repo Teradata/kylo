@@ -13,7 +13,7 @@ import java.util.List;
  * Created by sr186054 on 4/21/16.
  */
 public class ValidatorAnnotationTransformer
-    extends BasePolicyAnnotationTransformer<FieldValidationRule, Validator, FieldValidator> {
+    extends BasePolicyAnnotationTransformer<FieldValidationRule, Validator, FieldValidator> implements ValidationTransformer {
 
   private static final ValidatorAnnotationTransformer instance = new ValidatorAnnotationTransformer();
 

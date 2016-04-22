@@ -13,7 +13,7 @@ import java.util.List;
  * Created by sr186054 on 4/21/16.
  */
 public class StandardizationAnnotationTransformer
-    extends BasePolicyAnnotationTransformer<FieldStandardizationRule, StandardizationPolicy, Standardizer> {
+    extends BasePolicyAnnotationTransformer<FieldStandardizationRule, StandardizationPolicy, Standardizer> implements StandardizationTransformer {
 
   private static final StandardizationAnnotationTransformer instance = new StandardizationAnnotationTransformer();
 
