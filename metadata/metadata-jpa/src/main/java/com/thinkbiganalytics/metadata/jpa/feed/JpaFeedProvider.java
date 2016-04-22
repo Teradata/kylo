@@ -11,10 +11,6 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.JoinType;
-import javax.persistence.criteria.Root;
 
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -42,7 +38,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
  *
  * @author Sean Felten
  */
-public class FeedProviderImpl implements FeedProvider {
+public class JpaFeedProvider implements FeedProvider {
 
     @Inject
     private EntityManager entityMgr;
@@ -290,54 +286,60 @@ public class FeedProviderImpl implements FeedProvider {
      */
     @Override
     public List<Feed> getFeeds(FeedCriteria criteria) {
-        // TODO Auto-generated method stub
-//        return null;
-        return getFeeds();
+        Criteria critImpl = (Criteria) criteria;
+        return new ArrayList<Feed>(critImpl.select(this.entityMgr));
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#getFeedSource(com.thinkbiganalytics.metadata.api.feed.FeedSource.ID)
      */
     @Override
-    public FeedSource getFeedSource(com.thinkbiganalytics.metadata.api.feed.FeedSource.ID id) {
-        // TODO Auto-generated method stub
-        return null;
+    public FeedSource getFeedSource(FeedSource.ID id) {
+        return this.entityMgr.find(JpaFeedSource.class, id);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#getFeedDestination(com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID)
      */
     @Override
-    public FeedDestination getFeedDestination(com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID id) {
-        // TODO Auto-generated method stub
-        return null;
+    public FeedDestination getFeedDestination(FeedDestination.ID id) {
+        return this.entityMgr.find(JpaFeedDestination.class, id);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#resolveFeed(java.io.Serializable)
      */
     @Override
-    public ID resolveFeed(Serializable fid) {
-        // TODO Auto-generated method stub
-        return null;
+    public Feed.ID resolveFeed(Serializable fid) {
+        if (fid instanceof JpaFeed.FeedId) {
+            return (JpaFeed.FeedId) fid;
+        } else {
+            return new JpaFeed.FeedId(fid);
+        }
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#resolveSource(java.io.Serializable)
      */
     @Override
-    public com.thinkbiganalytics.metadata.api.feed.FeedSource.ID resolveSource(Serializable sid) {
-        // TODO Auto-generated method stub
-        return null;
+    public FeedSource.ID resolveSource(Serializable sid) {
+        if (sid instanceof JpaFeedSource.SourceId) {
+            return (JpaFeedSource.SourceId) sid;
+        } else {
+            return new JpaFeedSource.SourceId(sid);
+        }
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#resolveDestination(java.io.Serializable)
      */
     @Override
-    public com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID resolveDestination(Serializable sid) {
-        // TODO Auto-generated method stub
-        return null;
+    public FeedDestination.ID resolveDestination(Serializable did) {
+        if (did instanceof JpaFeedDestination.DestinationId) {
+            return (JpaFeedDestination.DestinationId) did;
+        } else {
+            return new JpaFeedDestination.DestinationId(did);
+        }
     }
 
     
@@ -348,19 +350,46 @@ public class FeedProviderImpl implements FeedProvider {
         private Set<Datasource.ID> destIds = new HashSet<>();
         
         protected List<JpaFeed> select(EntityManager emgr) {
-            CriteriaBuilder builder = emgr.getCriteriaBuilder();
-            CriteriaQuery<JpaFeed> query = builder.createQuery( JpaFeed.class );
-            Root<JpaFeed> root = query.from( JpaFeed.class );
-//            root.fetch( "projects", JoinType.LEFT);
-//            query.select(root).where(
-//                builder.and(
-//                    builder.equal(root.get("username"), username),
-//                    builder.equal(root.get("password"), password)
-//                )
-//            );
-            return emgr.createQuery( query ).getResultList();
+            StringBuilder query = new StringBuilder("select f from JpaFeed f ");
+            
+            applyFilter(query);
+            
+            return emgr.createQuery(query.toString()).getResultList();
+//            return emgr.createQuery(query.toString(), JpaFeed.class).getResultList();
+            
+//            CriteriaBuilder builder = emgr.getCriteriaBuilder();
+//            CriteriaQuery<JpaFeed> query = builder.createQuery( JpaFeed.class );
+//            Root<JpaFeed> root = query.from( JpaFeed.class );
+//            
+//            root.fetch("JpaFeed", JoinType.LEFT);
+//            query.
+//            
+//            return emgr.createQuery( query ).getResultList();
         }
         
+        private void applyFilter(StringBuilder query) {
+            if (this.name != null || ! this.sourceIds.isEmpty() || ! this.destIds.isEmpty()) {
+                StringBuilder filter = new StringBuilder();
+                
+                query.append("where ");
+                
+                if (this.name != null) filter.append("f.name = \"").append(this.name).append("\" ");
+                
+                applyIdClause(filter, this.sourceIds, "sources");
+                applyIdClause(filter, this.destIds, "destinations");
+            }
+        }
+        
+        private void applyIdClause(StringBuilder filter, Set<Datasource.ID> idSet, String relation) {
+            if (! idSet.isEmpty()) {
+                String ids = idSet.toString().replace('[', '(').replace(']',  ')');
+                
+                if (! filter.toString().isEmpty()) filter.append(" and ");
+                
+                filter.append("f.").append(relation).append(".datasource.id in ").append(ids).append(" ");
+            }
+        }
+
         @Override
         public boolean apply(Feed input) {
             if (this.name != null && ! name.equals(input.getName())) return false;

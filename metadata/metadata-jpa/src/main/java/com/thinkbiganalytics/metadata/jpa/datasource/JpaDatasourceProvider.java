@@ -19,7 +19,7 @@ import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
  *
  * @author Sean Felten
  */
-public class DatasourceProviderImpl implements DatasourceProvider {
+public class JpaDatasourceProvider implements DatasourceProvider {
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider#datasetCriteria()

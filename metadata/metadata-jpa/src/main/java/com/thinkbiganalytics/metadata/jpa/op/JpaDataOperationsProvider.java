@@ -28,7 +28,7 @@ import com.thinkbiganalytics.metadata.api.op.Dataset;
  *
  * @author Sean Felten
  */
-public class DataOperationsProviderImpl implements DataOperationsProvider {
+public class JpaDataOperationsProvider implements DataOperationsProvider {
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#asOperationId(java.lang.String)

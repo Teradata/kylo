@@ -21,9 +21,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
-import com.thinkbiganalytics.metadata.jpa.datasource.DatasourceProviderImpl;
-import com.thinkbiganalytics.metadata.jpa.feed.FeedProviderImpl;
-import com.thinkbiganalytics.metadata.jpa.op.DataOperationsProviderImpl;
+import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasourceProvider;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedProvider;
+import com.thinkbiganalytics.metadata.jpa.op.JpaDataOperationsProvider;
 
 /**
  *
@@ -60,19 +60,19 @@ public class JpaConfiguration {
     @Bean
     @Primary
     public FeedProvider feedProvider() {
-        return new FeedProviderImpl();
+        return new JpaFeedProvider();
     }
 
     @Bean
     @Primary
     public DatasourceProvider datasetProvider() {
-        return new DatasourceProviderImpl();
+        return new JpaDatasourceProvider();
     }
     
     @Bean
     @Primary
     public DataOperationsProvider dataOperationsProvider() {
-        return new DataOperationsProviderImpl();
+        return new JpaDataOperationsProvider();
     }
 
 }
