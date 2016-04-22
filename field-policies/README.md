@@ -21,19 +21,25 @@ Standardization and Validation rules are written as simple Java POJO along with 
 
 
 #### @PolicyPropertyRef
-**Purpose:** Annotate any Constructor Parameter that references a given **@PolicyProperty**
+**Purpose:** Annotate any Constructor Parameter that references a given 
+**@PolicyProperty**
+
 | Attribute     | Required |  Description |
+| ----------    | -------- | ----------   |
 | name          | Y        | This name should match the @PolicyProperty name |
+
 
 #### @Standardizer
 **Purpose:** Annotate the Class to inform the system and the User Interface that this is a Standardizer
 | Attribute     | Required |  Description |
+| ----------    | -------- | ----------   |
 | name          | Y        | This name of the Standardizer.  This will be displayed on the User Interface |
 | description   | N        | Short Description of the Standardizer. This will be displayed on the User Interface  |
 
 #### @FieldValidator
 **Purpose:** Annotate the Class to inform the system and the User Interface that this is a Validator
 | Attribute     | Required |  Description |
+| ----------    | -------- | ----------   |
 | name          | Y        | This name of the Validator.  This will be displayed on the User Interface |
 | description   | N        | Short Description of the Validator. This will be displayed on the User Interface  |
 
@@ -67,7 +73,7 @@ public class DefaultValueStandardizer implements StandardizationPolicy, AcceptsE
   }
 ```
 
-4.  Either supply a no arg Constructor, or supply a Constructor with the **@PolicyPropertyRef** indicating which property the parameter refers to.  The Name attribute of *@PolicyPropertyRef* matches on the name attribute of *@PolicyProperty*
+4.  Either supply a no arg Constructor, or supply a Constructor with the **@PolicyPropertyRef** indicating which property the parameter refers to. <br>**Note:** The Name attribute of *@PolicyPropertyRef* matches on the name attribute of *@PolicyProperty*
 ```java
 @Standardizer(name = "Default Value", description = "Applies a default value if null")
 public class DefaultValueStandardizer implements StandardizationPolicy, AcceptsEmptyValues {
@@ -89,4 +95,6 @@ public class DefaultValueStandardizer implements StandardizationPolicy, AcceptsE
 
 
 ### Default Implementations
+
+
 
