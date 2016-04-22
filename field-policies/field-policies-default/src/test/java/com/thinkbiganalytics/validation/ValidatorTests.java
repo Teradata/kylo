@@ -2,7 +2,11 @@
  * Copyright (c) 2016. Teradata Inc.
  */
 
-package com.thinkbiganalytics.spark.validation.impl;
+package com.thinkbiganalytics.validation;
+
+import com.thinkbiganalytics.com.thinkbiganalytics.validation.CreditCardValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.validation.IPAddressValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.validation.TimestampValidator;
 
 import org.junit.Assert;
 import org.junit.Test;
