@@ -1,13 +1,21 @@
 package com.thinkbiganalytics.spark.datavalidator;
 
-import com.thinkbiganalytics.spark.standardization.StandardizationPolicy;
-import com.thinkbiganalytics.spark.standardization.impl.AcceptsEmptyValues;
-import com.thinkbiganalytics.spark.standardization.impl.DateTimeStandardizer;
-import com.thinkbiganalytics.spark.standardization.impl.RemoveControlCharsStandardizer;
-import com.thinkbiganalytics.spark.validation.FieldPolicy;
-import com.thinkbiganalytics.spark.validation.FieldPolicyBuilder;
+import com.thinkbiganalytics.com.thinkbiganalytics.standardization.AcceptsEmptyValues;
+import com.thinkbiganalytics.com.thinkbiganalytics.standardization.DateTimeStandardizer;
+import com.thinkbiganalytics.com.thinkbiganalytics.standardization.RemoveControlCharsStandardizer;
+import com.thinkbiganalytics.com.thinkbiganalytics.validation.CreditCardValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.validation.EmailValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.validation.IPAddressValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.validation.LengthValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.validation.LookupValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.validation.TimestampValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.validation.ValidationResult;
+import com.thinkbiganalytics.policies.FieldPolicyTransformer;
+import com.thinkbiganalytics.policies.standardization.StandardizationPolicy;
+import com.thinkbiganalytics.policies.FieldPolicy;
+import com.thinkbiganalytics.policies.FieldPolicyBuilder;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
-import com.thinkbiganalytics.spark.validation.impl.*;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.Accumulator;
 import org.apache.spark.SparkContext;
@@ -85,6 +93,7 @@ public class Validator implements Serializable {
     }
 
     // Hardcode for now until we can fetch from metadata
+    //TODO change to load from JSON and call the FieldPolicyTransformer
     private void loadPolicies() {
 
         policyMap.put("registration_dttm", FieldPolicyBuilder.newBuilder().addValidator(TimestampValidator.instance()).build());
@@ -92,14 +101,14 @@ public class Validator implements Serializable {
         //policyMap.put("first_name", FieldPolicyBuilder.SKIP_VALIDATION);
         //policyMap.put("last_name",  FieldPolicyBuilder.SKIP_VALIDATION);
         policyMap.put("email", FieldPolicyBuilder.newBuilder().addValidator(EmailValidator.instance()).build());
-        policyMap.put("gender", FieldPolicyBuilder.newBuilder().constrainValues("Male", "Female").build());
+        policyMap.put("gender", FieldPolicyBuilder.newBuilder().addValidator(new LookupValidator("Male,Female")).build());
         policyMap.put("ip_address", FieldPolicyBuilder.newBuilder().addValidator(IPAddressValidator.instance()).build());
         policyMap.put("cc", FieldPolicyBuilder.newBuilder().addValidator(CreditCardValidator.instance()).build());
         //policyMap.put("country", FieldPolicyBuilder.SKIP_VALIDATION);
         policyMap.put("birthdate", FieldPolicyBuilder.newBuilder().addStandardizer(new DateTimeStandardizer("MM/dd/YYYY", DateTimeStandardizer.OutputFormats.DATE_ONLY)).build()); //addValidator(TimestampValidator.instance()).build());
         //policyMap.put("salary", FieldPolicyBuilder.SKIP_VALIDATION);
         //policyMap.put("title", FieldPolicyBuilder.SKIP_VALIDATION);
-        policyMap.put("comments", FieldPolicyBuilder.newBuilder().addStandardizer(RemoveControlCharsStandardizer.instance()).constrainLength(0, 255).build());
+        policyMap.put("comments", FieldPolicyBuilder.newBuilder().addStandardizer(RemoveControlCharsStandardizer.instance()).addValidator(new LengthValidator(0,255)).build());
     }
 
 
@@ -329,9 +338,9 @@ public class Validator implements Serializable {
             }
 
             // Validate type using provided validators
-            List<com.thinkbiganalytics.spark.validation.Validator> validators = fieldPolicy.getValidators();
+            List<com.thinkbiganalytics.policies.validation.Validator> validators = fieldPolicy.getValidators();
             if (validators != null) {
-                for (com.thinkbiganalytics.spark.validation.Validator validator : validators) {
+                for (com.thinkbiganalytics.policies.validation.Validator validator : validators) {
                     if (!validator.validate(fieldValue)) {
                         return ValidationResult.failFieldRule("rule", fieldDataType.getName(), validator.getClass().getSimpleName(), "Rule violation");
                     }

@@ -20,7 +20,7 @@ public class FieldRulePropertyBuilder {
     private String hint;
     private String objectProperty;
     private List<LabelValue> selectableValues;
-    public enum PROPERTY_TYPE {
+    public static enum PROPERTY_TYPE {
         number,string,select,regex,date
     }
 
@@ -67,7 +67,9 @@ public class FieldRulePropertyBuilder {
         if(selectableValues == null){
             selectableValues = new ArrayList<>();
         }
-        selectableValues.addAll(labelValues);
+        if(labelValues != null) {
+            selectableValues.addAll(labelValues);
+        }
         return this;
     }
 
@@ -75,7 +77,9 @@ public class FieldRulePropertyBuilder {
         if(selectableValues == null){
             selectableValues = new ArrayList<>();
         }
-      selectableValues.add(labelValue);
+        if(labelValue != null) {
+            selectableValues.add(labelValue);
+        }
         return this;
     }
 
@@ -96,6 +100,7 @@ public class FieldRulePropertyBuilder {
         property.setPlaceholder(this.placeholder);
         property.setSelectableValues(this.selectableValues);
         property.setObjectProperty(this.objectProperty);
+        property.setValue(this.value);
         return property;
     }
 }
