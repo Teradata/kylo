@@ -53,15 +53,15 @@
         <module>data-lake-server</module>
         <module>data-lake-ui</module>
      -->
-        
-        
-        <module>security</module>
-        <module>ui</module>
+
+        <module>commons</module>
         <module>core</module>
+        <module>security</module>
         <module>plugins</module>
         <module>services</module>
+        <module>metadata</module>
         <module>integrations</module>
-        <module>commons</module>
+        <module>ui</module>
     </modules>
 
     <repositories>
@@ -379,23 +379,6 @@
                 </exclusions>
             </dependency>
 
-            <!-- active mq -->
-
-            <dependency>
-                <groupId>org.apache.activemq</groupId>
-                <artifactId>activemq-broker</artifactId>
-                <version>${activemq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.activemq</groupId>
-                <artifactId>activemq-client</artifactId>
-                <version>${activemq.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.activemq</groupId>
-                <artifactId>activemq-pool</artifactId>
-                <version>${activemq.version}</version>
-            </dependency>
 
 
             <!-- Spring batch -->
@@ -455,6 +438,12 @@
                 <version>${guava.version}</version>
             </dependency>
 
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-client-dto</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+
             <!-- Testing -->
             <dependency>
                 <groupId>org.mockito</groupId>
@@ -480,6 +469,7 @@
                 <version>${spring.version}</version>
                 <scope>test</scope>
             </dependency>
+
 
 
         </dependencies>

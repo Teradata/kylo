@@ -16,7 +16,7 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-nifi-feed-manager-api</artifactId>
+      <artifactId>thinkbig-feed-manager-api</artifactId>
       <version>0.1.0-SNAPSHOT</version>
     </dependency>
 

@@ -11,6 +11,12 @@
     
     <modules>
         <module>field-policy-service</module>
+        <module>jms-service</module>
+        <module>spark-shell-service</module>
+        <module>scheduler-service</module>
+        <module>job-repository-service</module>
         <module>service-monitor-service</module>
+        <module>feed-manager-service</module>
+        <module>service-app</module>
     </modules>
 </project>

@@ -11,7 +11,10 @@
 
     <modules>
         <module>alerts</module>
+        <module>db-schema</module>
         <module>sla</module>
         <module>field-policy</module>
+        <module>job-repository</module>
+        <module>service-monitor</module>
     </modules>
 </project>

@@ -6,8 +6,8 @@
     <packaging>pom</packaging>
 
     <parent>
-        <artifactId>thinkbig-data-lake-server</artifactId>
-        <groupId>thinkbig-core</groupId>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>thinkbig-core</artifactId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 
