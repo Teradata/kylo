@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.db.model.schema.Field;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
+import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 
 import org.apache.commons.lang3.StringUtils;
 

@@ -14,11 +14,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 public class FieldPoliciesJsonTransformer {
 
   /**
-   * JSON ARRY OF com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicy objects
+   * JSON ARRY OF com.thinkbiganalytics.policy.rest.model.FieldPolicy objects
    */
   private String jsonFieldPolicies;
 
-  List<com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicy>
+  List<com.thinkbiganalytics.policy.rest.model.FieldPolicy>
       uiFieldPolicies;
 
   public FieldPoliciesJsonTransformer(String jsonFieldPolicies) {
@@ -27,7 +27,7 @@ public class FieldPoliciesJsonTransformer {
     try {
       uiFieldPolicies =
           mapper.readValue(jsonFieldPolicies,
-                           new TypeReference<List<com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicy>>() {
+                           new TypeReference<List<com.thinkbiganalytics.policy.rest.model.FieldPolicy>>() {
                            });
 
     } catch (IOException e) {
@@ -39,7 +39,7 @@ public class FieldPoliciesJsonTransformer {
 
   public Map<String, FieldPolicy> buildPolicies() {
     Map<String, FieldPolicy> fieldPolicyMap = new HashMap<>();
-    for (com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicy uiFieldPolicy : uiFieldPolicies) {
+    for (com.thinkbiganalytics.policy.rest.model.FieldPolicy uiFieldPolicy : uiFieldPolicies) {
       FieldPolicyTransformer transformer = new FieldPolicyTransformer(uiFieldPolicy);
       fieldPolicyMap.put(uiFieldPolicy.getFieldName(), transformer.buildPolicy());
     }

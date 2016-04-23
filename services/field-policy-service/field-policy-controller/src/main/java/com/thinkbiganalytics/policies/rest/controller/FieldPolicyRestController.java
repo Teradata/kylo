@@ -1,9 +1,9 @@
 package com.thinkbiganalytics.policies.rest.controller;
 
 
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRule;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldValidationRule;
 import com.thinkbiganalytics.policies.AvailablePolicies;
+import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
+import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 
 import org.springframework.stereotype.Component;
 

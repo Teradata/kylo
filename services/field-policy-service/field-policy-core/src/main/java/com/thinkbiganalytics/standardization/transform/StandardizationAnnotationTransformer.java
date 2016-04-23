@@ -1,11 +1,11 @@
 package com.thinkbiganalytics.standardization.transform;
 
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldRuleProperty;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRule;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRuleBuilder;
 import com.thinkbiganalytics.policies.BasePolicyAnnotationTransformer;
 import com.thinkbiganalytics.policies.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policies.standardization.Standardizer;
+import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
+import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
+import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRuleBuilder;
 
 import java.util.List;
 

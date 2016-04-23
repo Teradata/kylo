@@ -2,10 +2,10 @@ package com.thinkbiganalytics.policies;
 
 import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
-import com.thinkbiganalytics.feedmgr.rest.model.LabelValue;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.BaseUiPolicyRule;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldRuleProperty;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldRulePropertyBuilder;
+import com.thinkbiganalytics.policy.rest.model.BaseUiPolicyRule;
+import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
+import com.thinkbiganalytics.policy.rest.model.FieldRulePropertyBuilder;
+import com.thinkbiganalytics.rest.model.LabelValue;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;

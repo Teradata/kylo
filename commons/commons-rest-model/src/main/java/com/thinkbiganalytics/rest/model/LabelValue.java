@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.rest.model;
+package com.thinkbiganalytics.rest.model;
 
 /**
  * Created by sr186054 on 3/15/16.

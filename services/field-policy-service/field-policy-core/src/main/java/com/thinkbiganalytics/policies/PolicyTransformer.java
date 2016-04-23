@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.policies;
 
-import com.thinkbiganalytics.feedmgr.rest.model.schema.BaseUiPolicyRule;
+
+import com.thinkbiganalytics.policy.rest.model.BaseUiPolicyRule;
 
 import java.lang.annotation.Annotation;
 

@@ -1,7 +1,7 @@
-package com.thinkbiganalytics.feedmgr.rest.model.schema;
+package com.thinkbiganalytics.policy.rest.model;
 
 
-import com.thinkbiganalytics.feedmgr.rest.model.LabelValue;
+import com.thinkbiganalytics.rest.model.LabelValue;
 
 import java.util.ArrayList;
 import java.util.List;

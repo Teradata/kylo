@@ -1,11 +1,11 @@
 package com.thinkbiganalytics.validation.transform;
 
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldRuleProperty;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldValidationRule;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldValidationRuleBuilder;
 import com.thinkbiganalytics.policies.BasePolicyAnnotationTransformer;
 import com.thinkbiganalytics.policies.validation.FieldValidator;
 import com.thinkbiganalytics.policies.validation.Validator;
+import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
+import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
+import com.thinkbiganalytics.policy.rest.model.FieldValidationRuleBuilder;
 
 import java.util.List;
 

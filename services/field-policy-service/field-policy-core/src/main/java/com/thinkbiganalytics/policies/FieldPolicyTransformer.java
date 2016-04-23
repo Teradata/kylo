@@ -1,9 +1,9 @@
 package com.thinkbiganalytics.policies;
 
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRule;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldValidationRule;
 import com.thinkbiganalytics.policies.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policies.validation.Validator;
+import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
+import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.standardization.transform.StandardizationAnnotationTransformer;
 import com.thinkbiganalytics.validation.transform.ValidatorAnnotationTransformer;
 
@@ -15,9 +15,9 @@ import java.util.List;
  */
 public class FieldPolicyTransformer {
 
-  private com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicy uiFieldPolicy;
+  private com.thinkbiganalytics.policy.rest.model.FieldPolicy uiFieldPolicy;
 
-  public FieldPolicyTransformer(com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicy uiFieldPolicy) {
+  public FieldPolicyTransformer(com.thinkbiganalytics.policy.rest.model.FieldPolicy uiFieldPolicy) {
     this.uiFieldPolicy = uiFieldPolicy;
   }
 

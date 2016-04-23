@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldRuleProperty;
+import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 
 import java.util.ArrayList;
 import java.util.List;

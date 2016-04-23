@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.rest.model.schema;
+package com.thinkbiganalytics.policy.rest.model;
 
 /**
  * Created by sr186054 on 4/21/16.

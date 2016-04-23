@@ -1,12 +1,12 @@
 package com.thinkbiganalytics.policies;
 
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldRuleProperty;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRule;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRuleBuilder;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldValidationRule;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldValidationRuleBuilder;
 import com.thinkbiganalytics.policies.standardization.Standardizer;
 import com.thinkbiganalytics.policies.validation.FieldValidator;
+import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
+import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
+import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRuleBuilder;
+import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
+import com.thinkbiganalytics.policy.rest.model.FieldValidationRuleBuilder;
 import com.thinkbiganalytics.standardization.transform.StandardizationAnnotationTransformer;
 import com.thinkbiganalytics.validation.transform.ValidatorAnnotationTransformer;
 

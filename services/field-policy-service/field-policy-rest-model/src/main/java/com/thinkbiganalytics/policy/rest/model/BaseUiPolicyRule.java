@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.rest.model.schema;
+package com.thinkbiganalytics.policy.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Predicate;
