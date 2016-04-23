@@ -8,8 +8,9 @@
     </parent>
     <artifactId>thinkbig-security</artifactId>
     <packaging>pom</packaging>
-    
+
     <modules>
+        <module>simple-auth</module>
         <module>oauth-server</module>
     </modules>
 </project>
