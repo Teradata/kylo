@@ -11,5 +11,6 @@
     
     <modules>
         <module>field-policy-service</module>
+        <module>service-monitor-service</module>
     </modules>
 </project>

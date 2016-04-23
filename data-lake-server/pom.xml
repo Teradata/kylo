@@ -45,7 +45,6 @@
         <module>thrift-proxy</module>
         <module>job-repository</module>
         <module>scheduler</module>
-        <module>service-monitor</module>
         <module>nifi</module>
         <module>data-lake-server-app</module>
     </modules>
