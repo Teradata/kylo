@@ -16,7 +16,7 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-commons</artifactId>
+            <artifactId>thinkbig-commons-util</artifactId>
             <version>${project.version}</version>
         </dependency>
         
