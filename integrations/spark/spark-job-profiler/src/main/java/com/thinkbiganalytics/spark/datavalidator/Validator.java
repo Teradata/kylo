@@ -1,20 +1,19 @@
 package com.thinkbiganalytics.spark.datavalidator;
 
-import com.thinkbiganalytics.com.thinkbiganalytics.standardization.AcceptsEmptyValues;
-import com.thinkbiganalytics.com.thinkbiganalytics.standardization.DateTimeStandardizer;
-import com.thinkbiganalytics.com.thinkbiganalytics.standardization.RemoveControlCharsStandardizer;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.CreditCardValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.EmailValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.IPAddressValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.LengthValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.LookupValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.TimestampValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.ValidationResult;
-import com.thinkbiganalytics.policies.FieldPoliciesJsonTransformer;
-import com.thinkbiganalytics.policies.FieldPolicyTransformer;
-import com.thinkbiganalytics.policies.standardization.StandardizationPolicy;
-import com.thinkbiganalytics.policies.FieldPolicy;
-import com.thinkbiganalytics.policies.FieldPolicyBuilder;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.AcceptsEmptyValues;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.DateTimeStandardizer;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.RemoveControlCharsStandardizer;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.CreditCardValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.EmailValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.IPAddressValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.LengthValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.LookupValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.TimestampValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.ValidationResult;
+import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
+import com.thinkbiganalytics.policy.FieldPolicy;
+import com.thinkbiganalytics.policy.FieldPolicyBuilder;
+import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
 import org.apache.commons.lang.StringUtils;
@@ -341,9 +340,9 @@ public class Validator implements Serializable {
             }
 
             // Validate type using provided validators
-            List<com.thinkbiganalytics.policies.validation.Validator> validators = fieldPolicy.getValidators();
+            List<ValidationPolicy> validators = fieldPolicy.getValidators();
             if (validators != null) {
-                for (com.thinkbiganalytics.policies.validation.Validator validator : validators) {
+                for (ValidationPolicy validator : validators) {
                     if (!validator.validate(fieldValue)) {
                         return ValidationResult.failFieldRule("rule", fieldDataType.getName(), validator.getClass().getSimpleName(), "Rule violation");
                     }

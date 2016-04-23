@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.standardization.transform;
 
-import com.thinkbiganalytics.policies.PolicyTransformException;
-import com.thinkbiganalytics.policies.standardization.StandardizationPolicy;
+import com.thinkbiganalytics.policy.PolicyTransformException;
+import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 
 /**

@@ -4,9 +4,9 @@
 
 package com.thinkbiganalytics.validation;
 
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.CreditCardValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.IPAddressValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.TimestampValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.CreditCardValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.IPAddressValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.TimestampValidator;
 
 import org.junit.Assert;
 import org.junit.Test;

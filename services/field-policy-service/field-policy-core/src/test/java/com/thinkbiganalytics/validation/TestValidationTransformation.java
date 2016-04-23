@@ -1,18 +1,18 @@
 package com.thinkbiganalytics.validation;
 
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.CreditCardValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.EmailValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.IPAddressValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.LengthValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.LookupValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.RangeValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.RegexValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.TimestampValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.USPhoneValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.validation.USZipCodeValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.CreditCardValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.EmailValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.IPAddressValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.LengthValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.LookupValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.RangeValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.RegexValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.TimestampValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.USPhoneValidator;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.USZipCodeValidator;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldValidationRule;
-import com.thinkbiganalytics.policies.PolicyTransformException;
-import com.thinkbiganalytics.policies.validation.Validator;
+import com.thinkbiganalytics.policy.PolicyTransformException;
+import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.validation.transform.ValidatorAnnotationTransformer;
 
 import org.apache.commons.lang3.StringUtils;
@@ -118,9 +118,9 @@ public class TestValidationTransformation {
   }
 
 
-  private <T extends Validator> T fromUI(FieldValidationRule uiModel, Class<T> policyClass) {
+  private <T extends ValidationPolicy> T fromUI(FieldValidationRule uiModel, Class<T> policyClass) {
     try {
-      Validator policy = ValidatorAnnotationTransformer.instance().fromUiModel(uiModel);
+      ValidationPolicy policy = ValidatorAnnotationTransformer.instance().fromUiModel(uiModel);
       return (T) policy;
     } catch (PolicyTransformException e) {
       e.printStackTrace();

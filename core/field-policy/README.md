@@ -31,13 +31,13 @@ To understand how the system uses the annotations to automatically transform the
 
    #### Standardization    
     
-   1. Create a class that implements `com.thinkbiganalytics.policies.standardization.StandardizationPolicy`     
+   1. Create a class that implements `com.thinkbiganalytics.policy.standardization.StandardizationPolicy`     
    2. Add the `@Standardizer` annotation to the class
    3. Annotate any field inputs with `@PolicyProperty` and any Constructor arguments with `@PolicyPropertyRef`
     
    #### Validation 
     
-   1. Create a class that implements `com.thinkbiganalytics.policies.validation.Validator`
+   1. Create a class that implements `com.thinkbiganalytics.policy.validation.Validator`
    2. Add the `@FieldValidator` annotation to the class
    3. Annotate any field inputs with `@PolicyProperty` and any Constructor arguments with `@PolicyPropertyRef`
 
@@ -181,7 +181,7 @@ Notice above the default constructor is private, but there is a static **instanc
 ### The Rest Controller
 The **field-policies-controller** module discovers all classes on the classpath that have either a `@Standardizer` or `@FieldValidator` and creates default User Interface Objects that are then displayed when a user creates a new Field Policy.
 
-The `com.thinkbiganalytics.policies.AvaliablePolicies` class exposes these objects using Reflection.  The `com.thinkbiganalytics.policies.rest.controller.FieldPolicyRestController` surfaces these so the User Interface can display the available options to the user. 
+The `com.thinkbiganalytics.policy.AvaliablePolicies` class exposes these objects using Reflection.  The `com.thinkbiganalytics.policy.rest.controller.FieldPolicyRestController` surfaces these so the User Interface can display the available options to the user. 
 
 ### Under the covers
 In the **field-policies-core** module 2 classes are used to do the Standardization and Validation transformation
@@ -192,9 +192,9 @@ com.thinkbiganalytics.standardization.transform.ValidatorAnnotationTransformer;
 
 Additional Transformers are used that utilize these 2 classes to Transform multiple policies on a Field
 ```java
-com.thinkbiganalytics.policies.FieldPolicyTransfomer;
-com.thinkbiganalytics.policies.FieldPoliciesJsonTransfomer;
+com.thinkbiganalytics.policy.FieldPolicyTransfomer;
+com.thinkbiganalytics.policy.FieldPoliciesJsonTransfomer;
 ```
 
-The `com.thinkbiganalytics.policies.FieldPoliciesJsonTransfomer` is used by the **spark-job-validate-cleanse** module to convert a JSON string that has come from the User Interface and create Domain StandardizationPolicy and Validator Objects.
+The `com.thinkbiganalytics.policy.FieldPoliciesJsonTransfomer` is used by the **spark-job-validate-cleanse** module to convert a JSON string that has come from the User Interface and create Domain StandardizationPolicy and Validator Objects.
  

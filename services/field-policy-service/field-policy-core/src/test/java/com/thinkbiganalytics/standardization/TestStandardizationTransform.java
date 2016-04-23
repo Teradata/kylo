@@ -1,15 +1,15 @@
 package com.thinkbiganalytics.standardization;
 
-import com.thinkbiganalytics.com.thinkbiganalytics.standardization.DateTimeStandardizer;
-import com.thinkbiganalytics.com.thinkbiganalytics.standardization.DefaultValueStandardizer;
-import com.thinkbiganalytics.com.thinkbiganalytics.standardization.MaskLeavingLastFourDigitStandardizer;
-import com.thinkbiganalytics.com.thinkbiganalytics.standardization.RemoveControlCharsStandardizer;
-import com.thinkbiganalytics.com.thinkbiganalytics.standardization.SimpleRegexReplacer;
-import com.thinkbiganalytics.com.thinkbiganalytics.standardization.StripNonNumeric;
-import com.thinkbiganalytics.com.thinkbiganalytics.standardization.UppercaseStandardizer;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.DateTimeStandardizer;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.DefaultValueStandardizer;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.MaskLeavingLastFourDigitStandardizer;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.RemoveControlCharsStandardizer;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.SimpleRegexReplacer;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.StripNonNumeric;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.UppercaseStandardizer;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRule;
-import com.thinkbiganalytics.policies.PolicyTransformException;
-import com.thinkbiganalytics.policies.standardization.StandardizationPolicy;
+import com.thinkbiganalytics.policy.PolicyTransformException;
+import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.standardization.transform.StandardizationAnnotationTransformer;
 
 import org.junit.Assert;
