@@ -6,6 +6,6 @@
         <artifactId>thinkbig-data-lake-accelerator</artifactId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>ui</artifactId>
+    <artifactId>thinkbig-ui</artifactId>
     <packaging>pom</packaging>
 </project>

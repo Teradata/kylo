@@ -6,11 +6,12 @@
         <artifactId>thinkbig-data-lake-accelerator</artifactId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
-    <artifactId>core</artifactId>
+    <artifactId>thinkbig-core</artifactId>
     <packaging>pom</packaging>
-    
+
     <modules>
         <module>alerts</module>
         <module>sla</module>
+        <module>field-policy</module>
     </modules>
 </project>

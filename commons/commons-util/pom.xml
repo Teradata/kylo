@@ -7,7 +7,7 @@
 
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>commons</artifactId>
+        <artifactId>thinkbig-commons</artifactId>
         <version>0.1.0-SNAPSHOT</version>
     </parent>
 

@@ -42,7 +42,6 @@
 
     </dependencies>
     <modules>
-        <module>db-schema</module>
         <module>thrift-proxy</module>
         <module>job-repository</module>
         <module>scheduler</module>
