@@ -25,7 +25,7 @@ To understand how the system uses the annotations to automatically transform the
       3. or be a singleton with a private constructor and a public static **instance()** method (See examples below)  
 
 2. Standardization Policies must implement the StandardizationPolicy interface and be annotated with **@Standardizer**
-3. Validator Policies must implement the Validator interface and be annotated with **@FieldValidator**
+3. Validator Policies must implement the Validator interface and be annotated with **@Validator**
 
 ### Quick Start
 
@@ -37,8 +37,8 @@ To understand how the system uses the annotations to automatically transform the
     
    #### Validation 
     
-   1. Create a class that implements `com.thinkbiganalytics.policy.validation.Validator`
-   2. Add the `@FieldValidator` annotation to the class
+   1. Create a class that implements `com.thinkbiganalytics.policy.validation.ValidationPolicy`
+   2. Add the `@Validator` annotation to the class
    3. Annotate any field inputs with `@PolicyProperty` and any Constructor arguments with `@PolicyPropertyRef`
 
 
@@ -74,7 +74,7 @@ To understand how the system uses the annotations to automatically transform the
 | name          | Y        | This name of the Standardizer.  This will be displayed on the User Interface |
 | description   | N        | Short Description of the Standardizer. This will be displayed on the User Interface  |
 
-#### @FieldValidator  - Class Annotation
+#### @Validator  - Class Annotation
 **Purpose:** Annotate the Class to inform the system and the User Interface that this is a Validator
 
 | Attribute     | Required |  Description |
@@ -179,7 +179,7 @@ Notice above the default constructor is private, but there is a static **instanc
 
 
 ### The Rest Controller
-The **field-policies-controller** module discovers all classes on the classpath that have either a `@Standardizer` or `@FieldValidator` and creates default User Interface Objects that are then displayed when a user creates a new Field Policy.
+The **field-policies-controller** module discovers all classes on the classpath that have either a `@Standardizer` or `@Validator` and creates default User Interface Objects that are then displayed when a user creates a new Field Policy.
 
 The `com.thinkbiganalytics.policy.AvaliablePolicies` class exposes these objects using Reflection.  The `com.thinkbiganalytics.policy.rest.controller.FieldPolicyRestController` surfaces these so the User Interface can display the available options to the user. 
 
