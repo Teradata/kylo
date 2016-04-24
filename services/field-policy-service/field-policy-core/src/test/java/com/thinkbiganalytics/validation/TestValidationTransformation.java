@@ -82,7 +82,7 @@ public class TestValidationTransformation {
     FieldValidationRule uiModel = ValidatorAnnotationTransformer.instance().toUIModel(validator);
     LengthValidator convertedValidator = fromUI(uiModel, LengthValidator.class);
     Assert.assertEquals(min.intValue(), convertedValidator.getMinLength());
-    Assert.assertEquals(min.intValue(), convertedValidator.getMaxLength());
+    Assert.assertEquals(max.intValue(), convertedValidator.getMaxLength());
   }
 
   @Test
