@@ -8,6 +8,7 @@ import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;
 import org.apache.nifi.provenance.StandardProvenanceEventRecord;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,11 +27,11 @@ import java.util.UUID;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {NifiActiveMqConfig.class,ActiveMqConfig.class,NifiProvenanceConfig.class,TestConfig.class  })
+@Ignore
 public class TestProvenance {
 
-
-@Autowired
-private ProvenanceEventActiveMqWriter activeMqWriter;
+    @Autowired
+    private ProvenanceEventActiveMqWriter activeMqWriter;
 
     @Test
     public void sendSimpleMessage() throws InterruptedException, JMSException {

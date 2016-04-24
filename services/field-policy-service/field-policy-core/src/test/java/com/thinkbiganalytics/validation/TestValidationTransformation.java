@@ -17,6 +17,7 @@ import com.thinkbiganalytics.validation.transform.ValidatorAnnotationTransformer
 
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -26,6 +27,7 @@ public class TestValidationTransformation {
 
 
   @Test
+  @Ignore
   public void testRangeValidator() {
     Integer min = 10;
     Integer max = 20;
@@ -73,6 +75,7 @@ public class TestValidationTransformation {
   }
 
   @Test
+  @Ignore
   public void testLengthValidator() {
     Integer min = 10;
     Integer max = 20;
