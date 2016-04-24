@@ -90,4 +90,8 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
         return self.GET_FEEDS_URL+"/"+feedId+"/profile-invalid-results";
     }
 
+    //Field Policy Urls
+
+    this.AVAILABLE_STANDARDIZATION_POLICIES = this.ROOT+"/api/v1/field-policies/standardization";
+    this.AVAILABLE_VALIDATION_POLICIES = this.ROOT+"/api/v1/field-policies/validation";
 });

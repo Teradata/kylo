@@ -3,7 +3,11 @@
 
     var controller = function($scope, $mdDialog, $mdToast, $http, StateService, field, policyParameter , FieldPolicyRuleOptionsFactory){
     $scope.field = field;
-    $scope.options = FieldPolicyRuleOptionsFactory.getOptionsForType(policyParameter);
+        $scope.options = [];
+    FieldPolicyRuleOptionsFactory.getOptionsForType(policyParameter).then(function(response){
+        console.log('RESPONSE',response)
+        $scope.options =response.data;
+    });
 
     //$scope.policyRules = field[policyParameter];
     var arr = field[policyParameter];
@@ -124,9 +128,14 @@ angular.module(MODULE_FEED_MGR).controller('FeedFieldPolicyRuleDialogController'
 }());
 
 
-angular.module(MODULE_FEED_MGR).factory('FieldPolicyRuleOptionsFactory', function () {
+angular.module(MODULE_FEED_MGR).factory('FieldPolicyRuleOptionsFactory', function ($http,$q,RestUrlService) {
 
     function getStandardizationOptions() {
+
+        return    $http.get(RestUrlService.AVAILABLE_STANDARDIZATION_POLICIES, {cache:true});
+
+
+        /*
         var options = [];
         options.push({name:"Date/Time",description:"Converts any date to ISO8601",properties:[{name:"Date Format",value:"",placeholder:"",type:"string",hint:'Format Example: MM/DD/YYYY'}]});
         options.push({name:"Default value",description:"Default Value if empty",properties:[{name:"Default value",value:"",placeholder:"",type:"string"}]});
@@ -136,10 +145,13 @@ angular.module(MODULE_FEED_MGR).factory('FieldPolicyRuleOptionsFactory', functio
         options.push({name:"Regex replace",description:"Replace all matching",properties:[{name:"Regex",value:"",placeholder:"",type:"regex"}]});
         options.push({name:"Strip non-numeric",description:"Strips non numeric characters"});
         return options;
+        */
     }
 
     function getValidationOptions(){
-        var options = [];
+        return    $http.get(RestUrlService.AVAILABLE_VALIDATION_POLICIES,{cache:true});
+
+       /* var options = [];
 
         options.push({name:"Schema",description:"Must convert to target schema type"});
         options.push({name:"Regular expression",description:"Must match user defined regex",properties:[{name:"Regex",value:"",placeholder:"",type:"regex"}]});
@@ -154,10 +166,12 @@ angular.module(MODULE_FEED_MGR).factory('FieldPolicyRuleOptionsFactory', functio
         options.push({name:"US phone",description:"Valid US phone",properties:[{name:"Phone format",value:"",placeholder:"",type:"string",hint:'(###) ###-####'}]});
         options.push({name:"US zip",description:"Valid US zip",properties:[{name:"Zip format",value:"",placeholder:"",type:"string",hint:'#####'}]});
         return options;
-
+*/
     }
 
     var data = {
+        standardizationOptions:[],
+        validationOptions :[],
         getTitleForType:function(type){
             if(type == 'standardization'){
                 return "Standardization Policies";
@@ -168,7 +182,7 @@ angular.module(MODULE_FEED_MGR).factory('FieldPolicyRuleOptionsFactory', functio
 
         },
         getOptionsForType:function(type) {
-            if(type == 'standardization'){
+            if(type == 'standardization') {
                 return getStandardizationOptions();
             }
             else if(type =='validation'){

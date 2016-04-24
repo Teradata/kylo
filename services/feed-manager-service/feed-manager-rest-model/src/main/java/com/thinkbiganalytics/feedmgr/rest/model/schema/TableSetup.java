@@ -2,6 +2,8 @@ package com.thinkbiganalytics.feedmgr.rest.model.schema;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbiganalytics.db.model.schema.Field;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
@@ -37,6 +39,9 @@ public class TableSetup {
     private TableOptions options;
 
     private String recordFormat;
+
+    @MetadataField(description = "JSON array of FieldPolicy objects")
+    private  String fieldPoliciesJson;
 
     @MetadataField(description = "Nifi propety name 'elasticsearch.columns'")
     private String fieldIndexString;
@@ -235,6 +240,19 @@ public class TableSetup {
         setPartitionSpecs(sb.toString());
     }
 
+    @JsonIgnore
+    private void updateFieldPolicyJson(){
+        ObjectMapper mapper = new ObjectMapper();
+        String json = "[]";
+        try {
+            json = mapper.writeValueAsString(getFieldPolicies());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        fieldPoliciesJson = json;
+
+    }
+
     public void updateMetadataFieldValues(){
         updatePartitionStructure();
         updateFieldStructure();
@@ -243,6 +261,7 @@ public class TableSetup {
         updateFieldIndexString();
         updatePartitionSpecs();
         updateFieldPolicyNames();
+        updateFieldPolicyJson();
 
     }
 
