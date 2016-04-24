@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.standardization;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.DateTimeStandardizer;
 import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.DefaultValueStandardizer;
 import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.MaskLeavingLastFourDigitStandardizer;
@@ -7,8 +9,9 @@ import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.Remove
 import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.SimpleRegexReplacer;
 import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.StripNonNumeric;
 import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.UppercaseStandardizer;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRule;
+import com.thinkbiganalytics.policy.AvailablePolicies;
 import com.thinkbiganalytics.policy.PolicyTransformException;
+import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.standardization.transform.StandardizationAnnotationTransformer;
 
@@ -16,6 +19,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.List;
 
 /**
  * Created by sr186054 on 4/5/16.
@@ -87,6 +91,21 @@ public class TestStandardizationTransform {
     Assert.assertEquals(replace, convertedPolicy.getReplacement());
     Assert.assertEquals(true, convertedPolicy.isValid());
 
+  }
+
+  @Test
+  public void testUiCreation() {
+    List<FieldStandardizationRule> standardizationRules = AvailablePolicies.discoverStandardizationRules();
+    FieldStandardizationRule defaultValue = Iterables.tryFind(standardizationRules, new Predicate<FieldStandardizationRule>() {
+      @Override
+      public boolean apply(FieldStandardizationRule fieldStandardizationRule) {
+        return fieldStandardizationRule.getName().equalsIgnoreCase("Default Value");
+      }
+    }).orNull();
+
+    defaultValue.getProperty("Default Value").setValue("a new default value");
+    DefaultValueStandardizer convertedPolicy = fromUI(defaultValue, DefaultValueStandardizer.class);
+    Assert.assertEquals("a new default value",convertedPolicy.getDefaultStr());
   }
 
 

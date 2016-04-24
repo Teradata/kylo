@@ -31,7 +31,7 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-feed-manager-rest-model</artifactId>
+            <artifactId>thinkbig-field-policy-rest-model</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
 

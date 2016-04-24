@@ -1,7 +1,10 @@
 package com.thinkbiganalytics.policy;
 
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRule;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldValidationRule;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.DateTimeStandardizer;
+import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
+import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 
 import org.junit.Assert;
 
@@ -20,8 +23,13 @@ public class AvailablePoliciesTest {
 
     List<FieldStandardizationRule> standardizationRules = AvailablePolicies.discoverStandardizationRules();
     List<FieldValidationRule> validationRules = AvailablePolicies.discoverValidationRules();
-    Assert.assertTrue(standardizationRules.size() >0);
-    Assert.assertNotNull(validationRules.size() >0);
+    Assert.assertTrue(standardizationRules.size() > 0);
+    Assert.assertNotNull(validationRules.size() > 0);
+
+    FieldStandardizationRule rule = standardizationRules.get(0);
+    Assert.assertNotNull(rule.getObjectClassType());
 
   }
+
+
 }

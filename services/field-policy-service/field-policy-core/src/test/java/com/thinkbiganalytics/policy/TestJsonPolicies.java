@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.DateTimeStandardizer;
 import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.DefaultValueStandardizer;
 import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.RangeValidator;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicyBuilder;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldStandardizationRule;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldValidationRule;
+import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
+import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.standardization.transform.StandardizationAnnotationTransformer;
 import com.thinkbiganalytics.validation.transform.ValidatorAnnotationTransformer;
+import com.thinkbiganalytics.policy.rest.model.FieldPolicyBuilder;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -26,7 +26,7 @@ public class TestJsonPolicies {
 
   @Test
   public void testJson() throws IOException {
-    List<com.thinkbiganalytics.feedmgr.rest.model.schema.FieldPolicy> fieldPolicies = new ArrayList<>();
+    List<com.thinkbiganalytics.policy.rest.model.FieldPolicy> fieldPolicies = new ArrayList<>();
     List<FieldStandardizationRule> standardizationPolicyList = new ArrayList<>();
     List<FieldValidationRule> validationRules = new ArrayList<>();
 

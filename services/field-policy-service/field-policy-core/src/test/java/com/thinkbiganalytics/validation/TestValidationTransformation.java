@@ -10,8 +10,8 @@ import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.RegexValida
 import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.TimestampValidator;
 import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.USPhoneValidator;
 import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.USZipCodeValidator;
-import com.thinkbiganalytics.feedmgr.rest.model.schema.FieldValidationRule;
 import com.thinkbiganalytics.policy.PolicyTransformException;
+import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.validation.transform.ValidatorAnnotationTransformer;
 

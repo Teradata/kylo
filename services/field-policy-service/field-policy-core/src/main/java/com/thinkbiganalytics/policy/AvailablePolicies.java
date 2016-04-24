@@ -31,7 +31,7 @@ public class AvailablePolicies {
       Standardizer standardizer = (Standardizer) c.getAnnotation(Standardizer.class);
       List<FieldRuleProperty> properties = StandardizationAnnotationTransformer.instance().getUiProperties(c);
       rules.add(new FieldStandardizationRuleBuilder(standardizer.name()).description(standardizer.description())
-                    .addProperties(properties).build());
+                    .addProperties(properties).objectClassType(c).build());
     }
     return rules;
   }
@@ -45,7 +45,7 @@ public class AvailablePolicies {
       Validator validator = (Validator) c.getAnnotation(Validator.class);
       List<FieldRuleProperty> properties = ValidatorAnnotationTransformer.instance().getUiProperties(c);
       rules.add(new FieldValidationRuleBuilder(validator.name()).description(validator.description())
-                    .addProperties(properties).build());
+                    .addProperties(properties).objectClassType(c).build());
     }
     return rules;
   }
