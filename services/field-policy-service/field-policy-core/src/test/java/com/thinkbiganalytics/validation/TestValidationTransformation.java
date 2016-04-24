@@ -75,7 +75,6 @@ public class TestValidationTransformation {
   }
 
   @Test
-  @Ignore
   public void testLengthValidator() {
     Integer min = 10;
     Integer max = 20;

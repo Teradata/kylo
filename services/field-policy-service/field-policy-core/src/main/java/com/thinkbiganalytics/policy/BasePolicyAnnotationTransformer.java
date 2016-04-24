@@ -249,13 +249,13 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
       return value;
     } else if (Number.class.equals(type)) {
       return NumberUtils.createNumber(value);
-    } else if (Integer.class.equals(type)) {
+    } else if (Integer.class.equals(type) || Integer.TYPE.equals(type)) {
       return new Integer(value);
-    } else if (Long.class.equals(type)) {
+    } else if (Long.class.equals(type) || Long.TYPE.equals(type)) {
       return Long.valueOf(value);
-    } else if (Double.class.equals(type)) {
+    } else if (Double.class.equals(type) || Double.TYPE.equals(type)) {
       return Double.valueOf(value);
-    } else if (Float.class.equals(type)) {
+    } else if (Float.class.equals(type) || Float.TYPE.equals(type)) {
       return Float.valueOf(value);
     } else if (Pattern.class.equals(type)) {
       return Pattern.compile(value);
