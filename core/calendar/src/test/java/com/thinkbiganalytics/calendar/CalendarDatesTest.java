@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.calendar;
 
 import org.joda.time.LocalDate;
+import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.HashSet;
@@ -20,17 +21,17 @@ public class CalendarDatesTest {
         HashSet<LocalDate> calDatesSet = new HashSet<>();
         calDatesSet.add(new LocalDate());
         CalendarDates calDates1 = new CalendarDates(calDatesSet);
-        assertTrue(calDates1.getDates().size() == 1);
+        Assert.assertTrue(calDates1.getDates().size() == 1);
 
         Vector<String> datesList = new Vector<>();
         datesList.add("2010-12-01");
         CalendarDates calDates2 = new CalendarDates(datesList);
-        assertTrue(calDates2.getDates().size()  == 1);
+        Assert.assertTrue(calDates2.getDates().size() == 1);
 
         CalendarDates calDates = new CalendarDates();
         // should be immutable
         calDates.getDates().add(new LocalDate());
-        assertTrue(calDates.getDates().size() == 0);
+        Assert.assertTrue(calDates.getDates().size() == 0);
 
     }
 }

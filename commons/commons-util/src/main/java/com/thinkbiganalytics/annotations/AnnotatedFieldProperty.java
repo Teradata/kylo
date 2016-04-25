@@ -1,7 +1,8 @@
 package com.thinkbiganalytics.annotations;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.MoreObjects;
+
+import org.apache.commons.lang3.builder.ToStringBuilder;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -65,11 +66,9 @@ public class AnnotatedFieldProperty<T extends Annotation> {
 
     @Override
     public String toString() {
-        return MoreObjects.toStringHelper(this)
-                .add("description", description)
-                .add("name", name)
-                .toString();
+        return new ToStringBuilder(this)
+             .append("name", name)
+            .append("description", description)
+            .toString();
     }
-
-
 }

@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>calendar</module>
         <module>alerts</module>
         <module>db-schema</module>
         <module>sla</module>

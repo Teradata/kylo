@@ -44,20 +44,20 @@ public class SimpleHolidayCalendarServiceTest {
 
         // get calendar
         HolidayCalendar cal = service.getCalendar("USA-standard");
-        assertNotNull(cal);
+        Assert.assertNotNull(cal);
 
         System.out.println(cal);
 
         // The time will not be included if it falls on a holiday
-        assertFalse(cal.isTimeIncluded(new DateTime(2016, 2, 15, 0, 0).getMillis()));
-        assertTrue(cal.isTimeIncluded(new DateTime(2016, 5, 18, 0, 0).getMillis()));
-        assertEquals(4, cal.getExcludedDates().size());
+        Assert.assertFalse(cal.isTimeIncluded(new DateTime(2016, 2, 15, 0, 0).getMillis()));
+        Assert.assertTrue(cal.isTimeIncluded(new DateTime(2016, 5, 18, 0, 0).getMillis()));
+        Assert.assertEquals(4, cal.getExcludedDates().size());
         cal.addExcludedDate(new DateTime(2016, 6, 18, 0, 0).toDate());
-        assertEquals(5, cal.getExcludedDates().size());
+        Assert.assertEquals(5, cal.getExcludedDates().size());
         cal.removeExcludedDate(new DateTime(2016, 6, 18, 0, 0).toDate());
-        assertTrue(cal.getExcludedDates().size() == 4);
-        assertNotNull(cal.getNextIncludedTime(new DateTime(2016, 2, 15, 0, 0).getMillis()));
-        assertNotNull(cal.clone());
+        Assert.assertTrue(cal.getExcludedDates().size() == 4);
+        Assert.assertNotNull(cal.getNextIncludedTime(new DateTime(2016, 2, 15, 0, 0).getMillis()));
+        Assert.assertNotNull(cal.clone());
 
         Map<String, CalendarDates> calMap = new HashMap<>();
         CalendarDates calendarDates = new CalendarDates();
@@ -66,9 +66,9 @@ public class SimpleHolidayCalendarServiceTest {
         service.addCalendarDates(calMap);
         assertEquals(2, service.getCalendars().size());
 
-        assertNotNull(service.getCalendar(null));
-        assertNotNull(service.getCalendar("test"));
-        assertTrue(service.getCalendarNames().contains("test"));
+        Assert.assertNotNull(service.getCalendar(null));
+        Assert.assertNotNull(service.getCalendar("test"));
+        Assert.assertTrue(service.getCalendarNames().contains("test"));
 
     }
 

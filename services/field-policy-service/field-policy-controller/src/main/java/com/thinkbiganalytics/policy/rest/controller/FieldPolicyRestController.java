@@ -5,7 +5,6 @@ import com.thinkbiganalytics.policy.AvailablePolicies;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
@@ -23,7 +22,6 @@ import io.swagger.annotations.Api;
  */
 @Api(value = "field -policies", produces = "application/json")
 @Path("/v1/field-policies")
-@Component
 public class FieldPolicyRestController {
 
     public FieldPolicyRestController() {
