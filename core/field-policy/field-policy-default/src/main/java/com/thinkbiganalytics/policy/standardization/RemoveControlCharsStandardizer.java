@@ -2,9 +2,7 @@
  * Copyright (c) 2016. Teradata Inc.
  */
 
-package com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization;
-
-import com.thinkbiganalytics.policy.standardization.Standardizer;
+package com.thinkbiganalytics.policy.standardization;
 
 /**
  * Removes all control characters from a strings including newlines, tabs

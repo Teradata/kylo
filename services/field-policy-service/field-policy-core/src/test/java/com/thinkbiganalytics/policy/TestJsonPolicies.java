@@ -1,9 +1,9 @@
 package com.thinkbiganalytics.policy;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.DateTimeStandardizer;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.DefaultValueStandardizer;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.RangeValidator;
+import com.thinkbiganalytics.policy.standardization.DateTimeStandardizer;
+import com.thinkbiganalytics.policy.standardization.DefaultValueStandardizer;
+import com.thinkbiganalytics.policy.validation.RangeValidator;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.standardization.transform.StandardizationAnnotationTransformer;

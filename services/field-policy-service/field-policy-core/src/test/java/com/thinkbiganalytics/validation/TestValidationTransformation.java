@@ -1,15 +1,15 @@
 package com.thinkbiganalytics.validation;
 
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.CreditCardValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.EmailValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.IPAddressValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.LengthValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.LookupValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.RangeValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.RegexValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.TimestampValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.USPhoneValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.USZipCodeValidator;
+import com.thinkbiganalytics.policy.validation.CreditCardValidator;
+import com.thinkbiganalytics.policy.validation.EmailValidator;
+import com.thinkbiganalytics.policy.validation.IPAddressValidator;
+import com.thinkbiganalytics.policy.validation.LengthValidator;
+import com.thinkbiganalytics.policy.validation.LookupValidator;
+import com.thinkbiganalytics.policy.validation.RangeValidator;
+import com.thinkbiganalytics.policy.validation.RegexValidator;
+import com.thinkbiganalytics.policy.validation.TimestampValidator;
+import com.thinkbiganalytics.policy.validation.USPhoneValidator;
+import com.thinkbiganalytics.policy.validation.USZipCodeValidator;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;

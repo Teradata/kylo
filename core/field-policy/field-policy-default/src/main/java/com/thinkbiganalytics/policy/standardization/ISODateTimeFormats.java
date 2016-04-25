@@ -2,7 +2,7 @@
  * Copyright (c) 2016. Teradata Inc.
  */
 
-package com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization;
+package com.thinkbiganalytics.policy.standardization;
 
 
 import org.joda.time.format.DateTimeFormatter;

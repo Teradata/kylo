@@ -1,15 +1,15 @@
 package com.thinkbiganalytics.spark.datavalidator;
 
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.AcceptsEmptyValues;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.DateTimeStandardizer;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.RemoveControlCharsStandardizer;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.CreditCardValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.EmailValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.IPAddressValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.LengthValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.LookupValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.TimestampValidator;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.validation.ValidationResult;
+import com.thinkbiganalytics.policy.standardization.AcceptsEmptyValues;
+import com.thinkbiganalytics.policy.standardization.DateTimeStandardizer;
+import com.thinkbiganalytics.policy.standardization.RemoveControlCharsStandardizer;
+import com.thinkbiganalytics.policy.validation.CreditCardValidator;
+import com.thinkbiganalytics.policy.validation.EmailValidator;
+import com.thinkbiganalytics.policy.validation.IPAddressValidator;
+import com.thinkbiganalytics.policy.validation.LengthValidator;
+import com.thinkbiganalytics.policy.validation.LookupValidator;
+import com.thinkbiganalytics.policy.validation.TimestampValidator;
+import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policy.FieldPolicy;
 import com.thinkbiganalytics.policy.FieldPolicyBuilder;
@@ -107,10 +107,12 @@ public class Validator implements Serializable {
         policyMap.put("ip_address", FieldPolicyBuilder.newBuilder().addValidator(IPAddressValidator.instance()).build());
         policyMap.put("cc", FieldPolicyBuilder.newBuilder().addValidator(CreditCardValidator.instance()).build());
         //policyMap.put("country", FieldPolicyBuilder.SKIP_VALIDATION);
-        policyMap.put("birthdate", FieldPolicyBuilder.newBuilder().addStandardizer(new DateTimeStandardizer("MM/dd/YYYY", DateTimeStandardizer.OutputFormats.DATE_ONLY)).build()); //addValidator(TimestampValidator.instance()).build());
+        policyMap.put("birthdate", FieldPolicyBuilder.newBuilder()
+            .addStandardizer(new DateTimeStandardizer("MM/dd/YYYY", DateTimeStandardizer.OutputFormats.DATE_ONLY)).build()); //addValidator(TimestampValidator.instance()).build());
         //policyMap.put("salary", FieldPolicyBuilder.SKIP_VALIDATION);
         //policyMap.put("title", FieldPolicyBuilder.SKIP_VALIDATION);
-        policyMap.put("comments", FieldPolicyBuilder.newBuilder().addStandardizer(RemoveControlCharsStandardizer.instance()).addValidator(new LengthValidator(0,255)).build());
+        policyMap.put("comments", FieldPolicyBuilder.newBuilder().addStandardizer(RemoveControlCharsStandardizer.instance())
+            .addValidator(new LengthValidator(0, 255)).build());
     }
 
 

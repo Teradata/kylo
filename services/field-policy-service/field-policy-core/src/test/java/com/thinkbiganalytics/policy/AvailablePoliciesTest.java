@@ -1,8 +1,5 @@
 package com.thinkbiganalytics.policy;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization.DateTimeStandardizer;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 

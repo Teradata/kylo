@@ -2,11 +2,8 @@
  * Copyright (c) 2016. Teradata Inc.
  */
 
-package com.thinkbiganalytics.com.thinkbiganalytics.policy.validation;
+package com.thinkbiganalytics.policy.validation;
 
-
-import com.thinkbiganalytics.policy.validation.Validator;
-import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 
 /**
  * Validates credit card number matches pattern

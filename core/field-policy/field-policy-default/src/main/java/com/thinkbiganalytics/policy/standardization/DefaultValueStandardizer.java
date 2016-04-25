@@ -2,12 +2,10 @@
  * Copyright (c) 2016. Teradata Inc.
  */
 
-package com.thinkbiganalytics.com.thinkbiganalytics.policy.standardization;
+package com.thinkbiganalytics.policy.standardization;
 
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
-import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
-import com.thinkbiganalytics.policy.standardization.Standardizer;
 
 import org.apache.commons.lang3.StringUtils;
 
