@@ -2,7 +2,7 @@
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>thinkbig-db-schema</artifactId>
+    <artifactId>thinkbig-schema-discovery</artifactId>
     <packaging>pom</packaging>
 
     <parent>
@@ -12,8 +12,8 @@
     </parent>
 
     <modules>
-        <module>db-schema-model</module>
-        <module>db-schema-parser</module>
+        <module>schema-discovery-model</module>
+        <module>schema-discovery-parser</module>
     </modules>
 
 

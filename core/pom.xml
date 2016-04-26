@@ -12,7 +12,7 @@
     <modules>
         <module>calendar</module>
         <module>alerts</module>
-        <module>db-schema</module>
+        <module>schema-discovery</module>
         <module>sla</module>
         <module>field-policy</module>
         <module>job-repository</module>

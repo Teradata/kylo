@@ -16,7 +16,7 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-db-schema-model</artifactId>
+      <artifactId>thinkbig-schema-discovery-model</artifactId>
       <version>0.1.0-SNAPSHOT</version>
     </dependency>
 
