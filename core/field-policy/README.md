@@ -10,7 +10,7 @@ Below is the mapping of the User Interface Object and its respective to Domain M
 | User Interface (UI) class | Domain Class |
 | ------------------------- | ------------ |
 | FieldStandardizationRule  | StandardizationPolicy |
-| FieldValidationRule       | Validator    |
+| FieldValidationRule       | ValidationPolicy    |
 
 To understand how the system uses the annotations to automatically transform the objects click here. 
 
@@ -18,7 +18,7 @@ To understand how the system uses the annotations to automatically transform the
 ### Requirements
 1. Policy Constructor rules
 
-    The StandardizationPolicy and Validator must follow *one* of the following rules
+    The StandardizationPolicy and ValidationPolicy must follow *one* of the following rules
 
       1. Have a no arg constructor
       2. or Have a constructor with parameters each annotated with **@PolicyPropertyRef** (See examples below)
@@ -169,6 +169,7 @@ Notice above the default constructor is private, but there is a static **instanc
 
 
 ### Validation
+To Be Documented.
 
 
 
@@ -196,5 +197,5 @@ com.thinkbiganalytics.policy.FieldPolicyTransfomer;
 com.thinkbiganalytics.policy.FieldPoliciesJsonTransfomer;
 ```
 
-The `com.thinkbiganalytics.policy.FieldPoliciesJsonTransfomer` is used by the **spark-job-validate-cleanse** module to convert a JSON string that has come from the User Interface and create Domain StandardizationPolicy and Validator Objects.
+The `com.thinkbiganalytics.policy.FieldPoliciesJsonTransfomer` is used by the **spark-validate-cleanse** module to convert a JSON string that has come from the User Interface and create Domain StandardizationPolicy and ValidationPolicy Objects.
  
