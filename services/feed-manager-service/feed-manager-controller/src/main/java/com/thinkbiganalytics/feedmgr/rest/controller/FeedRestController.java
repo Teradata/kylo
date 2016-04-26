@@ -36,9 +36,9 @@ import com.thinkbiganalytics.feedmgr.rest.model.GenericUIPrecondition;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
-import com.thinkbiganalytics.feedmgr.service.HiveService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.PreconditionFactory;
+import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
@@ -70,6 +70,12 @@ public class FeedRestController {
 
     @Autowired
     PreconditionFactory preconditionFactory;
+
+
+    //Profile needs hive service
+
+    @Autowired
+    HiveService hiveService;
 
     public FeedRestController() {
         int i = 0;
@@ -204,7 +210,7 @@ public class FeedRestController {
         FeedMetadata feedMetadata = getMetadataService().getFeed(new Long(feedId));
         String profileTable = feedMetadata.getProfileTableName();
         String query = "SELECT * from "+profileTable+" where columnname = '(ALL)'";
-        QueryResult results = HiveService.getInstance().getHiveRestClient().query(query);
+        QueryResult results = hiveService.query(query);
         List<Map<String,Object>> rows = new ArrayList<>();
         rows.addAll(results.getRows());
         //add in the archive date time fields if applicipable
@@ -218,7 +224,7 @@ public class FeedRestController {
                 }
                 query = "SELECT * from " + profileTable + " where metrictype IN('MIN_TIMESTAMP','MAX_TIMESTAMP') AND columnname = '" + field + "'";
 
-               QueryResult dateRows = HiveService.getInstance().getHiveRestClient().query(query);
+               QueryResult dateRows = hiveService.query(query);
                 if(dateRows != null && !dateRows.isEmpty()){
                     rows.addAll(dateRows.getRows());
                 }
@@ -236,7 +242,7 @@ public class FeedRestController {
         FeedMetadata feedMetadata = getMetadataService().getFeed(new Long(feedId));
         String profileTable = feedMetadata.getProfileTableName();
         String query = "SELECT * from "+profileTable+" where processing_dttm = '"+processingdttm+"'";
-        QueryResult rows = HiveService.getInstance().getHiveRestClient().query(query);
+        QueryResult rows = hiveService.query(query);
         return Response.ok(rows.getRows()).build();
     }
 
@@ -247,7 +253,7 @@ public class FeedRestController {
         FeedMetadata feedMetadata = getMetadataService().getFeed(new Long(feedId));
        String table = feedMetadata.getInvalidTableName();
         String query = "SELECT * from "+table+" where processing_dttm  = '"+processingdttm +"'";
-        QueryResult rows = HiveService.getInstance().getHiveRestClient().query(query);
+        QueryResult rows = hiveService.query(query);
         return Response.ok(rows.getRows()).build();
     }
 
@@ -258,7 +264,7 @@ public class FeedRestController {
         FeedMetadata feedMetadata = getMetadataService().getFeed(new Long(feedId));
         String table = feedMetadata.getValidTableName();
         String query = "SELECT * from "+table+" where processing_dttm  = '"+processingdttm +"'";
-        QueryResult rows = HiveService.getInstance().getHiveRestClient().query(query);
+        QueryResult rows =hiveService.query(query);
         return Response.ok(rows.getRows()).build();
     }
 
