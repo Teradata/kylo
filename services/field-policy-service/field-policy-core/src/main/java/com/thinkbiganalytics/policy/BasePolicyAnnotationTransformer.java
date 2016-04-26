@@ -8,6 +8,7 @@ import com.thinkbiganalytics.policy.rest.model.FieldRulePropertyBuilder;
 import com.thinkbiganalytics.rest.model.LabelValue;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
@@ -263,6 +264,8 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
       return Float.valueOf(value);
     } else if (Pattern.class.equals(type)) {
       return Pattern.compile(value);
+    }else if (Boolean.class.equals(type) || Boolean.TYPE.equals(type))  {
+      return BooleanUtils.toBoolean(value);
     } else {
       throw new IllegalArgumentException("Unable to convert the value " + value + " to an object of type " + type.getName());
     }

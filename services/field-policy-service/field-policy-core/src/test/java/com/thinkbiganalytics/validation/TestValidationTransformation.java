@@ -5,6 +5,7 @@ import com.thinkbiganalytics.policy.validation.EmailValidator;
 import com.thinkbiganalytics.policy.validation.IPAddressValidator;
 import com.thinkbiganalytics.policy.validation.LengthValidator;
 import com.thinkbiganalytics.policy.validation.LookupValidator;
+import com.thinkbiganalytics.policy.validation.NotNullValidator;
 import com.thinkbiganalytics.policy.validation.RangeValidator;
 import com.thinkbiganalytics.policy.validation.RegexValidator;
 import com.thinkbiganalytics.policy.validation.TimestampValidator;
@@ -117,6 +118,16 @@ public class TestValidationTransformation {
     FieldValidationRule uiModel = ValidatorAnnotationTransformer.instance().toUIModel(validator);
     USZipCodeValidator convertedValidator = fromUI(uiModel, USZipCodeValidator.class);
     Assert.assertEquals(validator, convertedValidator);
+  }
+
+  @Test
+  public void testNotNullValidator() {
+    NotNullValidator validator = new NotNullValidator(false,true);
+    FieldValidationRule uiModel = ValidatorAnnotationTransformer.instance().toUIModel(validator);
+    NotNullValidator convertedValidator = fromUI(uiModel, NotNullValidator.class);
+    Assert.assertFalse(convertedValidator.isAllowEmptyString());
+    Assert.assertFalse(convertedValidator.isTrimString());
+
   }
 
 
