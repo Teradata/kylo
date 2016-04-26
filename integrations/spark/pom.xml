@@ -11,6 +11,6 @@
 
   <modules>
     <module>spark-job-profiler</module>
-    <!--module>spark-validate-cleanse</module -->
+    <module>spark-validate-cleanse</module>
   </modules>
 </project>
