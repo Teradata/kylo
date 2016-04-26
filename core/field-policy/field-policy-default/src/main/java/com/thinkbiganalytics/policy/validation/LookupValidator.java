@@ -11,6 +11,8 @@ import com.thinkbiganalytics.policy.validation.Validator;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,6 +23,7 @@ import java.util.Set;
  */
 @Validator(name = "Lookup", description = "Must be contained in the list")
 public class LookupValidator implements ValidationPolicy<String> {
+  private static final Logger log = LoggerFactory.getLogger(LookupValidator.class);
 
   @PolicyProperty(name = "List", hint = "Comma separated list of values")
   private String lookupList;
@@ -32,8 +35,15 @@ public class LookupValidator implements ValidationPolicy<String> {
   }
 
   public LookupValidator(@PolicyPropertyRef(name = "List") String values) {
+    log.info("Lookup Validator for {} ",values);
     this.lookupList = values;
-    lookupValues = new HashSet<>(Arrays.asList(StringUtils.split(values, ",")));
+    String[] arr = StringUtils.split(values, ",");
+    if(arr != null) {
+      lookupValues = new HashSet<>(Arrays.asList(arr));
+    }
+    else {
+      log.error("Lookup Validator error NULL array ");
+    }
   }
 
 

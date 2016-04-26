@@ -13,6 +13,8 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.apache.commons.lang3.reflect.FieldUtils;
 import org.apache.commons.lang3.reflect.MethodUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
@@ -29,6 +31,7 @@ import java.util.regex.Pattern;
 public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule, P extends FieldPolicyItem, A extends Annotation>
     implements PolicyTransformer<U, P, A> {
 
+  private static final Logger log = LoggerFactory.getLogger(BasePolicyAnnotationTransformer.class);
 
   private List<FieldRuleProperty> getUiProperties(P policy) {
     AnnotationFieldNameResolver annotationFieldNameResolver = new AnnotationFieldNameResolver(PolicyProperty.class);
@@ -84,8 +87,6 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
   }
 
 
-
-
   public abstract U buildUiModel(A annotation, P policy, List<FieldRuleProperty> properties);
 
   public abstract Class<A> getAnnotationClass();
@@ -121,7 +122,6 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
   }
 
   private Object getPropertyValue(BaseUiPolicyRule rule, Class<P> standardizationPolicyClass, PolicyPropertyRef reference) {
-
     for (FieldRuleProperty property : rule.getProperties()) {
       String name = property.getName();
       if (name.equalsIgnoreCase(reference.name())) {
@@ -170,6 +170,10 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
           }
         }
         paramValues[p] = paramValue;
+      }
+      if (constructor != null) {
+        //exit once we find a constructor with @PropertyRef
+        break;
       }
 
     }

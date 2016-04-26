@@ -12,6 +12,8 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Date;
@@ -24,9 +26,9 @@ import java.util.Date;
 @Standardizer(name = "Date/Time", description = "Converts any date to ISO8601")
 public class DateTimeStandardizer implements StandardizationPolicy {
 
-  public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS}
+  public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS};
 
-  ;
+  private static final Logger log = LoggerFactory.getLogger(DateTimeStandardizer.class);
 
   @PolicyProperty(name = "Date Format", hint = "Format Example: MM/DD/YYYY")
   private String inputDateFormat;
@@ -46,6 +48,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
 
 
   public DateTimeStandardizer(OutputFormats outputFormat) {
+
     this(null, outputFormat);
   }
 

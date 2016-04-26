@@ -204,6 +204,7 @@ public class TableSetup {
             int idx = 0;
             for(FieldPolicy field: fieldPolicies){
                 field.setFieldName(tableSchema.getFields().get(idx).getName());
+                idx++;
             }
         }
     }
@@ -368,5 +369,13 @@ public class TableSetup {
 
     public void setPrimaryKeyFields(String primaryKeyFields) {
         this.primaryKeyFields = primaryKeyFields;
+    }
+
+    public String getFieldPoliciesJson() {
+        return fieldPoliciesJson;
+    }
+
+    public void setFieldPoliciesJson(String fieldPoliciesJson) {
+        this.fieldPoliciesJson = fieldPoliciesJson;
     }
 }
