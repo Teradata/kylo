@@ -73,7 +73,7 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
 
       for (AnnotatedFieldProperty<PolicyProperty> annotatedFieldProperty : list) {
         PolicyProperty prop = annotatedFieldProperty.getAnnotation();
-        String value = null;
+        String value = StringUtils.isBlank(prop.value())? null : prop.value();
         FieldRuleProperty rule = new FieldRulePropertyBuilder(prop.name()).displayName(
             StringUtils.isNotBlank(prop.displayName()) ? prop.displayName() : prop.name()).hint(prop.hint())
             .type(FieldRulePropertyBuilder.PROPERTY_TYPE.valueOf(prop.type().name())).value(prop.value())
