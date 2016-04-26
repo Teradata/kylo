@@ -18,9 +18,15 @@ import com.thinkbiganalytics.spark.metadata.TransformRequest;
 import com.thinkbiganalytics.spark.metadata.TransformResponse;
 import com.thinkbiganalytics.spark.service.TransformService;
 
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
+import io.swagger.annotations.ApiResponses;
+
 /**
  * Endpoint for executing Spark scripts on the server.
  */
+@Api(value = "spark-shell")
 @Path("/api/v1/spark/shell")
 public class SparkShellController {
 
@@ -40,12 +46,24 @@ public class SparkShellController {
      * @param request the transformation request
      * @return the result of the script
      */
+
     @POST
     @Path("/transform")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Queries a Hive table and applies a series of transformations on the rows.")
+    @ApiResponses(value = {
+            @io.swagger.annotations.ApiResponse(code = 200, message = "Returns the status from executing the script.",
+                                                response = TransformResponse.class),
+            @io.swagger.annotations.ApiResponse(code = 400, message = "The request could not be parsed.",
+                                                response = TransformResponse.class),
+            @io.swagger.annotations.ApiResponse(code = 500, message = "There was a problem processing the data.",
+                                                response = TransformResponse.class) })
     @Nonnull
-    public Response transform(@Nonnull final TransformRequest request) {
+    public Response transform(@ApiParam(value = "The request indicates the transformations to apply to the source table and how "
+                                                + "the user wishes the results to be displayed. Exactly one parent or source "
+                                                + "must be specified." , required=true)
+                                  @Nonnull final TransformRequest request) {
         // Validate request
         if (request.getScript() == null) {
             return error(Response.Status.BAD_REQUEST, "transform.missingScript");

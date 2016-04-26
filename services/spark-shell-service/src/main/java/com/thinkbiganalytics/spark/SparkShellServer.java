@@ -21,6 +21,8 @@ import com.thinkbiganalytics.spark.rest.SparkShellController;
 import com.thinkbiganalytics.spark.service.TransformService;
 import com.thinkbiganalytics.spark.util.ClassUtils;
 
+import io.swagger.jaxrs.listing.ApiListingResource;
+import io.swagger.jaxrs.listing.SwaggerSerializers;
 import scala.Function0;
 import scala.runtime.AbstractFunction0;
 import scala.runtime.BoxedUnit;
@@ -38,7 +40,8 @@ public class SparkShellServer {
      */
     public static void main(@Nonnull final String[] args) throws Exception {
         // Create configuration
-        ResourceConfig config = new ResourceConfig(CorsFilter.class, SparkShellController.class);
+        ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class, CorsFilter.class,
+                                                   SparkShellController.class);
 
         SparkConf conf = new SparkConf().setAppName("SparkShellServer");
         final ScriptEngine scriptEngine = ScriptEngineFactory.getScriptEngine(conf);

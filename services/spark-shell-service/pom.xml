@@ -13,7 +13,6 @@
     <description>Compiles and executes Scala code in a Spark context.</description>
 
     <properties>
-        <java.version>1.7</java.version>
         <scala.version>2.10.4</scala.version>  <!-- Require 2.10.4+ for Java 8 -->
         <spark.version>1.4.0</spark.version>
         <hamcrest.version>1.3</hamcrest.version>
@@ -76,6 +75,12 @@
             <scope>provided</scope>
         </dependency>
 
+        <!-- Swagger dependencies -->
+        <dependency>
+            <groupId>io.swagger</groupId>
+            <artifactId>swagger-jersey2-jaxrs</artifactId>
+        </dependency>
+
         <!-- Testing dependencies -->
         <dependency>
             <groupId>org.mockito</groupId>
@@ -126,23 +131,6 @@
                         <phase>process-test-resources</phase>
                         <goals>
                             <goal>testCompile</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
-                <configuration>
-                    <source>${java.version}</source>
-                    <target>${java.version}</target>
-                </configuration>
-                <executions>
-                    <execution>
-                        <phase>compile</phase>
-                        <goals>
-                            <goal>compile</goal>
                         </goals>
                     </execution>
                 </executions>
