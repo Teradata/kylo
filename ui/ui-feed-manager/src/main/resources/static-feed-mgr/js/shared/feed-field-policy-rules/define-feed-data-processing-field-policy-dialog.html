@@ -37,7 +37,7 @@
 
                 <div ng-repeat="property in editRule.properties">
                     <md-input-container class="md-block" ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' ">
-                        <label>{{property.name}}</label>
+                        <label>{{property.displayName}}</label>
                         <input type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"/>
                         <input ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder"/>
                         <md-select ng-model="property.value" ng-if="property.type == 'select' " >
