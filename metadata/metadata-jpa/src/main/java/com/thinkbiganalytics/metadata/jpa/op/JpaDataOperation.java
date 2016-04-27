@@ -47,9 +47,11 @@ public class JpaDataOperation implements DataOperation {
     private JpaDataset<Datasource, ChangeSet> dataset;
     
     @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
+    @Column(name="start_time")
     private DateTime startTime;
 
     @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
+    @Column(name="stop_time")
     private DateTime stopTime;
 
     private State state;
@@ -167,7 +169,7 @@ public class JpaDataOperation implements DataOperation {
         
         private static final long serialVersionUID = -8322308917629324338L;
 
-        @Column(name="id")
+        @Column(name="id", columnDefinition="binary(16)")
         private UUID uuid;
         
         public static OpId create() {

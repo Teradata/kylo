@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 
 import javax.persistence.CollectionTable;
+import javax.persistence.Column;
 import javax.persistence.ElementCollection;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -28,6 +29,7 @@ public class JpaHiveTableUpdate extends JpaChangeSet implements HiveTableUpdate 
 
     private static final long serialVersionUID = -521636184533464566L;
 
+    @Column(name="record_count")
     private int recourdCount;
     
     @ElementCollection

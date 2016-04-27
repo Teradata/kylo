@@ -52,11 +52,15 @@ public abstract class JpaDatasource implements Datasource, Serializable {
     @EmbeddedId
     private DatasourceId id;
     
+    @Column(name="name", length=100, unique=true)
     private String name;
+    
+    @Column(name="description", length=255)
     private String description;
     
     @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
-    private DateTime creationTime;
+    @Column(name="created_time")
+    private DateTime createdTime;
     
     @OneToMany(targetEntity=JpaFeedSource.class, mappedBy = "datasource", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<FeedSource> feedSources = new HashSet<>();
@@ -69,7 +73,7 @@ public abstract class JpaDatasource implements Datasource, Serializable {
 
     public JpaDatasource(String name, String descr) {
         this.id = DatasourceId.create();
-        this.creationTime = new DateTime();
+        this.createdTime = new DateTime();
         this.name = name;
         this.description = descr;
     }
@@ -86,8 +90,8 @@ public abstract class JpaDatasource implements Datasource, Serializable {
         return description;
     }
 
-    public DateTime getCreationTime() {
-        return creationTime;
+    public DateTime getCreatedTime() {
+        return createdTime;
     }
 
     public List<Dataset<? extends Datasource, ? extends ChangeSet>> getDatasets() {
@@ -132,7 +136,7 @@ public abstract class JpaDatasource implements Datasource, Serializable {
         
         private static final long serialVersionUID = 241001606640713117L;
         
-        @Column(name="id")
+        @Column(name="id", columnDefinition="binary(16)")
         private UUID uuid;
         
         public static DatasourceId create() {

@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -38,6 +39,7 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
 
     @Id
     @GeneratedValue
+    @Column(name="id", columnDefinition="binary(16)")
     private UUID id;
 
     @OneToOne(mappedBy="dataset")
@@ -51,7 +53,9 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
     private Set<C> changes = new HashSet<>();
     
     @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
-    private DateTime time;
+    @Column(name="created_time")
+    private DateTime createdTime;
+    
     private ChangeType type;
 
     public JpaDataset() {
@@ -65,8 +69,8 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
         getChanges().add(content);
     }
 
-    public DateTime getTime() {
-        return time;
+    public DateTime getCreatedTime() {
+        return createdTime;
     }
 
     public ChangeType getType() {
@@ -106,7 +110,7 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
     }
 
     public void setTime(DateTime time) {
-        this.time = time;
+        this.createdTime = time;
     }
 
     public void setType(ChangeType type) {

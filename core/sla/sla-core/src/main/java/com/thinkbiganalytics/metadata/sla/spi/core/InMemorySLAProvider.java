@@ -367,7 +367,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         }
 
         @Override
-        public DateTime getCreationTime() {
+        public DateTime getCreatedTime() {
             return this.creationTime;
         }
 

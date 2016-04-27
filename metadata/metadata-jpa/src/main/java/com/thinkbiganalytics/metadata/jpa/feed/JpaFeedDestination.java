@@ -78,7 +78,7 @@ public class JpaFeedDestination extends JpaFeedConnection implements FeedDestina
         
         private static final long serialVersionUID = 241001606640713117L;
         
-        @Column(name="id")
+        @Column(name="id", columnDefinition="binary(16)")
         private UUID uuid;
         
         public static DestinationId create() {

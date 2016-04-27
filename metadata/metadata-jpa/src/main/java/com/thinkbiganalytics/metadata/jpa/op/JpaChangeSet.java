@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.jpa.op;
 
 import java.util.UUID;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
@@ -32,13 +33,18 @@ public abstract class JpaChangeSet implements ChangeSet {
     
     @Id
     @GeneratedValue
+    @Column(name="id", columnDefinition="binary(16)")
     private UUID id;
 
     @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
+    @Column(name="intrinsic_time")
     private DateTime intrinsicTime;
+    
     @Type(type="org.joda.time.contrib.hibernate.PersistentPeriod")
+    @Column(name="intrinsic_period")
     private Period intrinsicPeriod;
     
+    @Column(name="completeness_factor")
     private int completenessFactor;
 
     @Override

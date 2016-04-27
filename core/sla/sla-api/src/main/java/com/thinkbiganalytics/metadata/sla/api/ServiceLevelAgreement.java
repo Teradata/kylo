@@ -29,7 +29,7 @@ public interface ServiceLevelAgreement {
     /**
      * @return the time when this SLA was created
      */
-    DateTime getCreationTime();
+    DateTime getCreatedTime();
     
     /**
      * @return a description of this SLA

@@ -339,7 +339,7 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
 
         private ServiceLevelAgreement.ID id;
         private String name;
-        private DateTime creationTime = DateTime.now();
+        private DateTime createdTime = DateTime.now();
         private String description;
         private ObligationGroupImpl defaultGroup;
         private List<ObligationGroup> obligationGroups;
@@ -367,8 +367,8 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
         }
 
         @Override
-        public DateTime getCreationTime() {
-            return this.creationTime;
+        public DateTime getCreatedTime() {
+            return this.createdTime;
         }
 
         @Override

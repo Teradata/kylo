@@ -35,12 +35,17 @@ public class JpaServiceLevelAgreement implements ServiceLevelAgreement, Serializ
     private static final long serialVersionUID = 2611479261936214396L;
 
     @EmbeddedId
+    @Column(name="id", columnDefinition="binary(16)")
     private SlaId id;
     
+    @Column(name="name", length=100, unique=true)
     private String name;
-    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
-    private DateTime creatingTime;
+    
     private String description;
+    
+    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
+    @Column(name="created_time")
+    private DateTime createdTime;
     
     @OneToMany(targetEntity=JpaObligationGroup.class, mappedBy = "agreement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ObligationGroup> obligationGroups;
@@ -75,11 +80,11 @@ public class JpaServiceLevelAgreement implements ServiceLevelAgreement, Serializ
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement#getCreationTime()
+     * @see com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement#getCreatedTime()
      */
     @Override
-    public DateTime getCreationTime() {
-        return this.creatingTime;
+    public DateTime getCreatedTime() {
+        return this.createdTime;
     }
 
     /* (non-Javadoc)
@@ -118,7 +123,7 @@ public class JpaServiceLevelAgreement implements ServiceLevelAgreement, Serializ
         
         private static final long serialVersionUID = 6965221468619613881L;
         
-        @Column(name="id")
+        @Column(name="id", columnDefinition="binary(16)")
         private UUID uuid;
         
         public static SlaId create() {

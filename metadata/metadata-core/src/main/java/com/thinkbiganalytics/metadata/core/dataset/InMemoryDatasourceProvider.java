@@ -180,15 +180,15 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
         public boolean apply(Datasource input) {
             if (this.type != null && ! this.type.isAssignableFrom(input.getClass())) return false;
             if (this.name != null && ! name.equals(input.getName())) return false;
-            if (this.createdOn != null && ! this.createdOn.equals(input.getCreationTime())) return false;
-            if (this.createdAfter != null && ! this.createdAfter.isBefore(input.getCreationTime())) return false;
-            if (this.createdBefore != null && ! this.createdBefore.isBefore(input.getCreationTime())) return false;
+            if (this.createdOn != null && ! this.createdOn.equals(input.getCreatedTime())) return false;
+            if (this.createdAfter != null && ! this.createdAfter.isBefore(input.getCreatedTime())) return false;
+            if (this.createdBefore != null && ! this.createdBefore.isBefore(input.getCreatedTime())) return false;
             return true;
         }
         
         @Override
         public int compare(Datasource o1, Datasource o2) {
-            return o2.getCreationTime().compareTo(o1.getCreationTime());
+            return o2.getCreatedTime().compareTo(o1.getCreatedTime());
         }
 
         @Override

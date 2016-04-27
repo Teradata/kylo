@@ -47,7 +47,7 @@ public class DatasourceUpdatedSinceAssessor extends MetadataMetricAssessor<Datas
             Collection<Dataset<Datasource, ChangeSet>> changes = getDataOperationsProvider().getDatasets(ds.getId());
             
             for (Dataset<Datasource, ChangeSet> cs : changes) {
-                if (cs.getTime().isBefore(schedTime)) {
+                if (cs.getCreatedTime().isBefore(schedTime)) {
                     break;
                 }
                 

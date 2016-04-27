@@ -14,6 +14,8 @@ import javax.persistence.Embeddable;
 @Embeddable
 public class HivePartitionValue implements Serializable {
 
+    private static final long serialVersionUID = 480477653958925616L;
+    
     private String name;
     private String value;
     

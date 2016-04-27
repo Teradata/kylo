@@ -45,7 +45,9 @@ public class JpaFeed implements Feed {
     @EmbeddedId
     private FeedId Id;
     
+    @Column(name="name", length=100, unique=true)
     private String name;
+
     private String description;
     
     @OneToMany(targetEntity=JpaFeedSource.class, mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -173,7 +175,7 @@ public class JpaFeed implements Feed {
         
         private static final long serialVersionUID = -8322308917629324338L;
 
-        @Column(name="id")
+        @Column(name="id", columnDefinition="binary(16)")
         private UUID uuid;
         
         public static FeedId create() {

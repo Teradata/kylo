@@ -18,7 +18,7 @@ public interface Dataset<D extends Datasource, C extends ChangeSet> extends Seri
     
     enum ChangeType { UPDATE, DELETE }
 
-    DateTime getTime();
+    DateTime getCreatedTime();
     
     ChangeType getType();
     

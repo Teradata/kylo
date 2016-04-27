@@ -25,7 +25,7 @@ public interface Datasource extends Serializable {
     
     String getDescription();
     
-    DateTime getCreationTime();
+    DateTime getCreatedTime();
     
     Set<FeedSource> getFeedSources();
     

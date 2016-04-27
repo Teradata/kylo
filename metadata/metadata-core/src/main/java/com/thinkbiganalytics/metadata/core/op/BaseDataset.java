@@ -33,7 +33,7 @@ public class BaseDataset<D extends Datasource, C extends ChangeSet> implements D
         this.changes.add(content); 
     }
 
-    public DateTime getTime() {
+    public DateTime getCreatedTime() {
         return time;
     }
 

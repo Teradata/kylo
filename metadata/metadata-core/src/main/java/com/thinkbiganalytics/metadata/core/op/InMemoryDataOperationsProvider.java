@@ -369,9 +369,9 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         
         @Override
         public boolean apply(Dataset<?, ?> input) {
-            if (this.changedOn != null && ! this.changedOn.equals(input.getTime())) return false;
-            if (this.changedAfter != null && ! this.changedAfter.isBefore(input.getTime())) return false;
-            if (this.changedBefore != null && ! this.changedBefore.isBefore(input.getTime())) return false;
+            if (this.changedOn != null && ! this.changedOn.equals(input.getCreatedTime())) return false;
+            if (this.changedAfter != null && ! this.changedAfter.isBefore(input.getCreatedTime())) return false;
+            if (this.changedBefore != null && ! this.changedBefore.isBefore(input.getCreatedTime())) return false;
             if (this.types.size() > 0 && ! this.types.contains(input.getType())) return false;
             return true;
         }
@@ -379,7 +379,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         @Override
         public int compare(Dataset<? extends Datasource, ? extends ChangeSet> o1,
                            Dataset<? extends Datasource, ? extends ChangeSet> o2) {
-            return o2.getTime().compareTo(o1.getTime());
+            return o2.getCreatedTime().compareTo(o1.getCreatedTime());
         }
 
         @Override

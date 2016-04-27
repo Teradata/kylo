@@ -52,7 +52,7 @@ public class BaseDatasource implements Datasource {
         return description;
     }
 
-    public DateTime getCreationTime() {
+    public DateTime getCreatedTime() {
         return creationTime;
     }
 

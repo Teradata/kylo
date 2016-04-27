@@ -38,6 +38,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-jpa</artifactId>
+            <exclusions>
+                <exclusion>
+                    <artifactId>logback-classic</artifactId>
+                    <groupId>ch.qos.logback</groupId>
+                </exclusion>
+                <exclusion>
+                    <artifactId>log4j-over-slf4j</artifactId>
+                    <groupId>org.slf4j</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <!-- 
         <dependency>
@@ -87,6 +97,8 @@
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
+        <!-- 
+         -->
         <dependency>
             <groupId>org.unitils</groupId>
             <artifactId>unitils-spring</artifactId>
@@ -104,6 +116,12 @@
             <version>1.4.191</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>5.1.6</version>
+            <scope>test</scope>
+        </dependency>
 
         <dependency>
             <groupId>org.testng</groupId>
@@ -118,7 +136,6 @@
 
     <build>
         <plugins>
-            <!-- 
             <plugin>
                 <groupId>de.juplo</groupId>
                 <artifactId>hibernate-maven-plugin</artifactId>
@@ -131,17 +148,24 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <dialect>org.hibernate.dialect.MySQL5InnoDBDialect</dialect>
+                    <url>jdbc:mysql://localhost:3306/pipeline_db</url>
+                    <driver>com.mysql.jdbc.Driver</driver>
+                    <username>root</username>
                     
+                    <!-- 
                     <dialect>org.hibernate.dialect.H2Dialect</dialect>
                     <url>jdbc:h2:file:./target/db</url>
                     <driver>org.h2.Driver</driver>
                     <username>sa</username> 
+                    -->
 
                     <export>false</export>
                     <skip>false</skip>
                     <scanDependencies>none</scanDependencies>
                 </configuration>
                 <dependencies>
+                    <!-- IN MEMORY Database and JDBC Driver -->
                     <dependency>
                         <groupId>com.h2database</groupId>
                         <artifactId>h2</artifactId>
@@ -154,7 +178,6 @@
                     </dependency>
                 </dependencies>
             </plugin>
-             -->
         </plugins>
         <pluginManagement>
             <plugins>

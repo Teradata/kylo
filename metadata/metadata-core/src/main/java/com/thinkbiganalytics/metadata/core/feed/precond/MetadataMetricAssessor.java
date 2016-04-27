@@ -56,7 +56,7 @@ public abstract class MetadataMetricAssessor<M extends Metric>
         for (DataOperation op : testedOps) {
             Dataset<Datasource, ChangeSet> cs = op.getDataset();
             
-            if (cs.getTime().isBefore(sinceTime)) {
+            if (cs.getCreatedTime().isBefore(sinceTime)) {
                 break;
             }
             
