@@ -150,6 +150,24 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         },
 
         /**
+         * Gets the Hive column label for the field with the specified name.
+         *
+         * @param {string} fieldName the field name
+         * @returns {string|null} the Hive column label if the column exists, or {@code null} otherwise
+         */
+        getColumnLabel: function(fieldName) {
+            var columns = (this.columns_.length !== 0) ? this.columns_[this.columns_.length - 1] : [];
+
+            for (var i=0; i < columns.length; ++i) {
+                if (columns[i].field == fieldName) {
+                    return columns[i].hiveColumnLabel;
+                }
+            }
+
+            return null;
+        },
+
+        /**
          * Gets the function definitions being used.
          *
          * @return {Object} the function definitions
@@ -704,8 +722,8 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 return toSpark(node.expression, sparkShellService);
 
             case "Identifier":
-                return new SparkExpression("new Column(\"" + StringUtils.quote(node.name) + "\")", SparkType.COLUMN, node.start,
-                        node.end);
+                var label = StringUtils.quote(sparkShellService.getColumnLabel(node.name));
+                return new SparkExpression("new Column(\"" + label + "\")", SparkType.COLUMN, node.start, node.end);
 
             case "Literal":
                 return new SparkExpression(node.raw, SparkType.LITERAL, node.start, node.end);

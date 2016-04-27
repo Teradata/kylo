@@ -12,7 +12,7 @@
     "DataFrame": {},
     "GroupedData": {
       "agg": {
-        "!type": "fn(expr1: Column, var_args: Column) -> DataFrame",
+        "!type": "fn(expr1: Column, var_args: Column)",
         "!doc": "Compute aggregates by specifying a series of aggregate columns.",
         "!spark": ".agg(%c%C)",
         "!sparkType": "dataframe"
@@ -68,6 +68,12 @@
     "!type": "fn(colName: string)",
     "!doc": "Drops the specified column.",
     "!spark": ".drop(%s)",
+    "!sparkType": "dataframe"
+  },
+  "select": {
+    "!type": "fn(var_args: Column)",
+    "!doc": "Selects a set of column based expressions.",
+    "!spark": ".select(%C)",
     "!sparkType": "dataframe"
   },
 
