@@ -35,6 +35,42 @@
     "!sparkType": "column"
   },
 
+  "!COMPARISON_FUNCTIONS": "Filtering and comparing functions.",
+
+  "equal": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Equality test.",
+    "!spark": "%c.equalTo(%c)",
+    "!sparkType": "column"
+  },
+  "filter": {
+    "!type": "fn(condition: Column)",
+    "!doc": "Filters rows using the given condition.",
+    "!spark": ".filter(%c)",
+    "!sparkType": "dataframe"
+  },
+  "greaterThan": {
+    "!type": "fn(left: Column, right:Column) -> Column",
+    "!doc": "Greater than.",
+    "!spark": "%c.gt(%c)",
+    "!sparkType": "column"
+  },
+  "lessThan": {
+    "!type": "fn(left: Column, right:Column) -> Column",
+    "!doc": "Less than.",
+    "!spark": "%c.lt(%c)",
+    "!sparkType": "column"
+  },
+
+  "!GENERAL_FUNCTIONS": "Miscellaneous functions.",
+
+  "drop": {
+    "!type": "fn(colName: string)",
+    "!doc": "Drops the specified column.",
+    "!spark": ".drop(%s)",
+    "!sparkType": "dataframe"
+  },
+
   "!MATH_FUNCTIONS": "These functions define mathematical operations on columns.",
 
   "add": {
@@ -59,6 +95,21 @@
     "!type": "fn(col1: Column, col2: Column) -> Column",
     "!doc": "Subtracts one number from another.",
     "!spark": "%c.minus(%c)",
+    "!sparkType": "column"
+  },
+
+  "!STRING_FUNCTIONS": "These functions define operations on string columns.",
+
+  "lower": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Converts a string column to lower case.",
+    "!spark": "functions.lower(%c)",
+    "!sparkType": "column"
+  },
+  "upper": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Converts a string column to upper case.",
+    "!spark": "functions.upper(%c)",
     "!sparkType": "column"
   }
 }

@@ -48,6 +48,112 @@
                      <div layout="row"><md-button class="md-primary md-raised" ng-click="vm.isShowSampleMenu = false; vm.query();">Update</md-button></div>
                  </md-subheader>
              </div>
+
+         <script type="text/ng-template" id="visual-query/grid-header-cell">
+             <div role="columnheader" ng-class="{ 'sortable': sortable }"
+                  ui-grid-one-bind-aria-labelledby-grid="col.uid + '-header-text ' + col.uid + '-sortdir-text'"
+                  aria-sort="{{col.sort.direction == asc ? 'ascending' : ( col.sort.direction == desc ? 'descending' : (!col.sort.direction ? 'none' : 'other'))}}">
+                <div role="button" tabindex="0" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus"
+                     col-index="renderIndex" title="TOOLTIP">
+                    <span class="ui-grid-header-cell-label" ui-grid-one-bind-id-grid="col.uid + '-header-text'">
+                        {{ col.displayName CUSTOM_FILTERS }}
+                    </span>
+                    <span ui-grid-one-bind-id-grid="col.uid + '-sortdir-text'" ui-grid-visible="col.sort.direction"
+                          aria-label="{{getSortDirectionAriaLabel()}}">
+                        <i ng-class="{ 'ui-grid-icon-up-dir': col.sort.direction == asc, 'ui-grid-icon-down-dir': col.sort.direction == desc, 'ui-grid-icon-blank': !col.sort.direction }"
+                           title="{{isSortPriorityVisible() ? i18n.headerCell.priority + ' ' + ( col.sort.priority + 1 )  : null}}"
+                           aria-hidden="true"></i>
+                        <sub ui-grid-visible="isSortPriorityVisible()" class="ui-grid-sort-priority-number">
+                            {{col.sort.priority + 1}}</sub>
+                    </span>
+                 </div>
+                 <md-menu ng-if="grid.options.enableColumnMenus && !col.isRowHeader && col.colDef.enableColumnMenu !== false"
+                          class="ui-grid-column-menu-button" md-position-mode="target-right target" md-offset="0 42"
+                          ng-init="delegate = col.colDef.delegate">
+                     <md-button aria-label="{{i18n.headerCell.aria.columnMenuButtonLabel}}" class="md-icon-button"
+                                ng-click="$mdOpenMenu()">
+                         <i class="ui-grid-icon-angle-down" aria-hidden="true">&nbsp;</i>
+                     </md-button>
+                     <md-menu-content class="visual-query-column-menu">
+                         <md-menu-item ng-if="col.sort.direction != 'asc'">
+                             <md-button ng-click="delegate.sortColumn('asc', col, grid)">
+                                 <i class="ui-grid-icon-sort-alt-up">&nbsp;</i> Sort Ascending
+                             </md-button>
+                         </md-menu-item>
+                         <md-menu-item ng-if="col.sort.direction != 'desc'">
+                             <md-button ng-click="delegate.sortColumn('desc', col, grid)">
+                                 <i class="ui-grid-icon-sort-alt-down">&nbsp;</i> Sort Descending
+                             </md-button>
+                         </md-menu-item>
+                         <md-menu-item ng-if="col.sort.direction != null">
+                             <md-button ng-click="delegate.removeSort(col, grid)">
+                                 <i class="ui-grid-icon-cancel">&nbsp;</i> Remove Sort
+                             </md-button>
+                         </md-menu-item>
+                         <md-menu-item>
+                             <md-button ng-click="delegate.hideColumn(col, grid);">
+                                 <i class="ui-grid-icon-cancel">&nbsp;</i> Hide Column
+                             </md-button>
+                         </md-menu-item>
+                         <md-menu-item>
+                             <md-menu>
+                                 <md-button ng-click="$mdOpenMenu()">
+                                     <i class="ui-grid-icon-filter">&nbsp;</i> Filter
+                                 </md-button>
+                                 <md-menu-content class="visual-query-column-menu">
+                                     <md-menu-item>
+                                         <div>
+                                             <i class="material-icons">keyboard_arrow_left</i>
+                                             <md-input-container>
+                                                 <label>Less than...</label>
+                                                 <input type="text" ng-model="delegate.filters[0].term">
+                                             </md-input-container>
+                                         </div>
+                                     </md-menu-item>
+                                     <md-menu-item>
+                                         <div>
+                                             <i class="material-icons">keyboard_arrow_right</i>
+                                             <md-input-container>
+                                                 <label>Greater than...</label>
+                                                 <input type="text" ng-model="delegate.filters[1].term">
+                                             </md-input-container>
+                                         </div>
+                                     </md-menu-item>
+                                     <md-menu-item>
+                                         <div>
+                                             <i class="material-icons icon-equals">&nbsp;</i>
+                                             <md-input-container>
+                                                 <label>Equal to...</label>
+                                                 <input type="text" ng-model="delegate.filters[2].term">
+                                             </md-input-container>
+                                         </div>
+                                     </md-menu-item>
+                                 </md-menu-content>
+                             </md-menu>
+                         </md-menu-item>
+                         <md-menu-item>
+                             <md-menu>
+                                 <md-button ng-click="$mdOpenMenu()">
+                                     <i class="material-icons">transform</i> Transform
+                                 </md-button>
+                                 <md-menu-content class="visual-query-column-menu">
+                                     <md-menu-item>
+                                         <md-button ng-click="delegate.transformColumn('upper', col, grid)">
+                                             <i class="material-icons">arrow_upward</i> Uppercase
+                                         </md-button>
+                                     </md-menu-item>
+                                     <md-menu-item>
+                                         <md-button ng-click="delegate.transformColumn('lower', col,grid)">
+                                             <i class="material-icons">arrow_downward</i> Lowercase
+                                         </md-button>
+                                     </md-menu-item>
+                                 </md-menu-content>
+                             </md-menu>
+                         </md-menu-item>
+                     </md-menu-content>
+                 </md-menu>
+             </div>
+         </script>
          <div  ui-grid-auto-resize style="width:100%;height:500px;" browser-height browser-height-scroll-y="false" browser-height-offset="450"
              ui-grid="vm.gridOptions"
              ></div>

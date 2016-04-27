@@ -21,9 +21,8 @@
         };
     };
 
-    var controller = function($scope, $log, $http, $mdToast, NifiService, VisualQueryService, HiveService, TableDataFunctions,
-                              SideNavService, SparkShellService) {
-
+    var controller = function($scope, $log, $http, $mdToast, RestUrlService, VisualQueryService, HiveService, TableDataFunctions,
+                              SideNavService, SparkShellService, VisualQueryColumnDelegate, uiGridConstants) {
         var self = this;
         //The model passed in from the previous step
         this.model = VisualQueryService.model;
@@ -68,8 +67,11 @@
             columnDefs: [],
             data: null,
             enableColumnResizing: true,
-            enableGridMenu: true,
-            flatEntityAccess: true
+            enableFiltering: true,
+            flatEntityAccess: true,
+            onRegisterApi: function(grid) {
+                self.gridApi = grid;
+            }
         };
 
         // Translates expressions into Spark code
@@ -241,8 +243,21 @@
             return self.sparkShellService.transform().then(function(response) {
                 //mark the query as finished
                 self.executingQuery = false;
+
+                // Clear previous filters
+                if (typeof(self.gridApi) !== "undefined") {
+                    self.gridApi.core.clearAllFilters();
+                }
+
                 //transform the result to the agGrid model
                 var result = HiveService.transformQueryResultsToUiGridModel({data: response.data.results});
+
+                angular.forEach(result.columns, function(column) {
+                    column.headerCellTemplate = "visual-query/grid-header-cell";
+                    column.delegate = new VisualQueryColumnDelegate(self);
+                    column.filters = column.delegate.filters;
+                });
+
                 //store the result for use in the commands
                 self.tableData = result;
                 //update the ag-grid
@@ -263,19 +278,58 @@
         }
 
         /**
+         * Adds formulas for column filters.
+         */
+        this.addFilters = function() {
+            angular.forEach(self.gridApi.grid.columns, function(column) {
+                angular.forEach(column.filters, function(filter) {
+                    if (filter.term) {
+                        if (filter.condition == uiGridConstants.filter.LESS_THAN) {
+                            self.pushFormula("filter(lessThan(" + column.field + ", " + StringUtils.quote(filter.term) + "))");
+                        } else if (filter.condition == uiGridConstants.filter.GREATER_THAN) {
+                            self.pushFormula("filter(greaterThan(" + column.field + ", " + StringUtils.quote(filter.term) + "))");
+                        } else if (filter.condition == uiGridConstants.filter.EXACT) {
+                            self.pushFormula("filter(equal(" + column.field + ", " + StringUtils.quote(filter.term) + "))");
+                        }
+                    }
+                });
+            });
+        };
+
+        /**
+         * Adds the specified formula to the current script and refreshes the table data.
+         *
+         * @param {string} formula the formula
+         */
+        this.addFunction = function(formula) {
+            var tableData = self.functionCommandHolder.executeStr(formula);
+            if (tableData != null && tableData != undefined) {
+                updateGrid(tableData);
+
+                self.addFilters();
+                self.pushFormula(formula);
+                self.query();
+            }
+        };
+
+        /**
+         * Appends the specified formula to the current script.
+         *
+         * @param {string} formula the formula
+         */
+        this.pushFormula = function(formula) {
+            self.functionHistory.push(formula);
+
+            self.ternServer.server.addFile("[doc]", formula);
+            var file = self.ternServer.server.findFile("[doc]");
+            self.sparkShellService.push(file.ast);
+        };
+
+        /**
          * Called when the user clicks Add on the function bar
          */
         this.onAddFunction = function() {
-            var tableData = self.functionCommandHolder.executeStr(self.currentFormula);
-            if (tableData != null && tableData != undefined) {
-                updateGrid(tableData);
-                self.functionHistory.push(self.currentFormula);
-
-                self.ternServer.server.addFile("[doc]", self.currentFormula);
-                var file = self.ternServer.server.findFile("[doc]");
-                self.sparkShellService.push(file.ast);
-                self.query();
-            }
+            self.addFunction(self.currentFormula);
         };
 
         //reference to the last command that was undone
