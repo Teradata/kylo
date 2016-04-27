@@ -76,4 +76,14 @@ public interface ExecutedStep {
   int getVersion();
 
   void setVersion(int version);
+
+  Long getRunTime();
+  void setRunTime(Long runtime);
+  Long getTimeSinceEndTime();
+  void setTimeSinceEndTime(Long timeSinceEndTime);
+
+  public boolean isRunning();
+  public void setRunning(boolean running);
+
+
 }

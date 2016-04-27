@@ -26,6 +26,10 @@ public class DefaultDatabaseQuerySubstitution implements DatabaseQuerySubstituti
     return null;
   }
 
+  public String getTimeSinceEndTimeSql(String tableAlias) {
+    return "NOW() - "+tableAlias+".END_TIME";
+  }
+
   @Override
   public String getFeedExecutionRunTimeSql() {
     return null;

@@ -6,6 +6,7 @@ import com.thinkbiganalytics.jobrepo.query.AbstractConstructedQuery;
 import com.thinkbiganalytics.jobrepo.query.builder.Query;
 import com.thinkbiganalytics.jobrepo.query.builder.QueryBuilder;
 import com.thinkbiganalytics.jobrepo.query.rowmapper.JobExecutionRowMapper;
+import com.thinkbiganalytics.jobrepo.query.substitution.DatabaseQuerySubstitutionFactory;
 import com.thinkbiganalytics.jobrepo.query.support.DatabaseType;
 
 import org.springframework.jdbc.core.RowMapper;
@@ -34,7 +35,8 @@ public class ChildJobsQuery extends AbstractConstructedQuery {
   public QueryBuilder getQueryBuilder() {
     return newQueryBuilder()
         .select(
-            "SELECT ji.JOB_INSTANCE_ID, ji.JOB_NAME, ji.JOB_KEY, e.JOB_EXECUTION_ID, e.START_TIME, e.END_TIME,  e.STATUS, e.EXIT_CODE, e.EXIT_MESSAGE, e.CREATE_TIME, e.LAST_UPDATED, e.VERSION, e.JOB_CONFIGURATION_LOCATION,UPPER( jobType.STRING_VAL) as JOB_TYPE ")
+            "SELECT ji.JOB_INSTANCE_ID, ji.JOB_NAME, ji.JOB_KEY, e.JOB_EXECUTION_ID, e.START_TIME, e.END_TIME, "+    DatabaseQuerySubstitutionFactory.JOB_EXECUTION_RUN_TIME_TEMPLATE_STRING + " as RUN_TIME, "
+            + DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).getTimeSinceEndTimeSql("e") +" as TIME_SINCE_END_TIME, e.STATUS, e.EXIT_CODE, e.EXIT_MESSAGE, e.CREATE_TIME, e.LAST_UPDATED, e.VERSION, e.JOB_CONFIGURATION_LOCATION,UPPER( jobType.STRING_VAL) as JOB_TYPE ")
         .from("from BATCH_JOB_EXECUTION e " +
               " INNER JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID " +
               "INNER JOIN BATCH_JOB_EXECUTION_PARAMS p on p.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +

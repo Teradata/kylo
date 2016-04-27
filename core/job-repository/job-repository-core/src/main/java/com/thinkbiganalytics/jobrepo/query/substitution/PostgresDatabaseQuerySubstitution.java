@@ -58,6 +58,10 @@ public class PostgresDatabaseQuerySubstitution implements DatabaseQuerySubstitut
     return "EXTRACT(EPOCH FROM (COALESCE(childJobs.END_TIME,COALESCE(e.END_TIME,NOW())) - e.START_TIME )) ";
   }
 
+  public String getTimeSinceEndTimeSql(String tableAlias) {
+    return  "EXTRACT(EPOCH FROM (NOW() - COALESCE("+tableAlias+".END_TIME,NOW()))) ";
+  }
+
   @Override
   public String limitAndOffset(Integer limit, Integer offset) {
     String limitString = "";

@@ -83,6 +83,12 @@ public class FeedRepositoryImpl implements FeedRepository {
       timeSinceEndTime = utcDateTimeCorrection((DateTime) null).getMillis() - endTime.getMillis();
     }
 
+
+    if (jobExecution instanceof TbaJobExecution) {
+     runTime = ((TbaJobExecution) jobExecution).getRunTime();
+     timeSinceEndTime = ((TbaJobExecution) jobExecution).getTimeSinceEndTime();
+    }
+
     JobInstance jobInstance = jobExecution.getJobInstance();
 
     ExecutedFeed executedFeed = new DefaultExecutedFeed();

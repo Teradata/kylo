@@ -29,6 +29,12 @@ public class MysqlDatabaseQuerySubstitution implements DatabaseQuerySubstitution
     return "TIMESTAMPDIFF(SECOND,e.START_TIME,COALESCE(e.END_TIME,NOW()))";
   }
 
+  public String getTimeSinceEndTimeSql(String tableAlias) {
+    return "TIMESTAMPDIFF(SECOND,COALESCE("+tableAlias+".END_TIME,NOW()),NOW())";
+  }
+
+
+
   @Override
   public String getFeedExecutionRunTimeSql() {
     return "TIMESTAMPDIFF(SECOND,e.START_TIME,COALESCE(childJobs.END_TIME,COALESCE(e.END_TIME,NOW())))";

@@ -33,7 +33,8 @@ public class CheckDataAllJobsQuery extends AbstractConstructedQuery implements J
   public QueryBuilder getQueryBuilder() {
     QueryBuilder q = newQueryBuilder()
         .select("SELECT ji.JOB_INSTANCE_ID, ji.JOB_NAME, ji.JOB_KEY, e.JOB_EXECUTION_ID, e.START_TIME, e.END_TIME as END_TIME, " +
-                DatabaseQuerySubstitutionFactory.JOB_EXECUTION_RUN_TIME_TEMPLATE_STRING + " as RUN_TIME, e.STATUS as STATUS," +
+                DatabaseQuerySubstitutionFactory.JOB_EXECUTION_RUN_TIME_TEMPLATE_STRING + " as RUN_TIME, e.STATUS as STATUS,"
+                + DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).getTimeSinceEndTimeSql("e") +" as TIME_SINCE_END_TIME, "+
                 "e.EXIT_CODE as EXIT_CODE, e.EXIT_MESSAGE, e.CREATE_TIME, e.LAST_UPDATED, e.VERSION, e.JOB_CONFIGURATION_LOCATION, "
                 +
                 "p2.STRING_VAL as FEED_NAME, '" + FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK + "' as JOB_TYPE, " +

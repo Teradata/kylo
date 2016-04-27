@@ -320,12 +320,14 @@ function cancelLoadJobDataTimeout(){
                 step.name = step.stepName;
                 step.running = false;
                 step.tabIcon = undefined;
-                if(step.endTime && step.startTime) {
+                if(step.runTime == undefined && step.endTime && step.startTime) {
                     step.runTime = step.endTime - step.startTime;
                 }
                 if(step.endTime == undefined && step.startTime) {
                     step.running = true;
-                    step.runTime = new Date().getTime() - step.startTime;
+                    if(step.runTime == undefined) {
+                        step.runTime = new Date().getTime() - step.startTime;
+                    }
                 }
                 step.displayStatus = step.exitCode;
 

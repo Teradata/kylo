@@ -31,6 +31,10 @@ public class DefaultExecutedStep implements Serializable, ExecutedStep {
   private long id;
   private int version;
 
+  private Long runTime;
+  private Long timeSinceEndTime;
+  private boolean running;
+
   @Override
   public String getStepName() {
     return stepName;
@@ -199,5 +203,36 @@ public class DefaultExecutedStep implements Serializable, ExecutedStep {
   @Override
   public void setVersion(final int version) {
     this.version = version;
+  }
+
+
+  @Override
+  public Long getRunTime() {
+    return runTime;
+  }
+
+  @Override
+  public void setRunTime(Long runTime) {
+    this.runTime = runTime;
+  }
+
+  @Override
+  public Long getTimeSinceEndTime() {
+    return timeSinceEndTime;
+  }
+
+  @Override
+  public void setTimeSinceEndTime(Long timeSinceEndTime) {
+    this.timeSinceEndTime = timeSinceEndTime;
+  }
+
+  @Override
+  public boolean isRunning() {
+    return running;
+  }
+
+  @Override
+  public void setRunning(boolean running) {
+    this.running = running;
   }
 }

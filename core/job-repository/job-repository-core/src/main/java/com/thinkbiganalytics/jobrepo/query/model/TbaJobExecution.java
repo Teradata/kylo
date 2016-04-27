@@ -12,9 +12,15 @@ public class TbaJobExecution extends JobExecution {
   private String jobType;
   private boolean isLatest;
   private String feedName;
+  private Long runTime;
+  private Long timeSinceEndTime;
 
   public TbaJobExecution(JobInstance job, Long id, JobParameters jobParameters, String jobConfigurationName) {
     super(job, id, jobParameters, jobConfigurationName);
+  }
+
+  public TbaJobExecution(JobExecution original) {
+    super(original);
   }
 
   public String getJobType() {
@@ -39,5 +45,21 @@ public class TbaJobExecution extends JobExecution {
 
   public void setFeedName(String feedName) {
     this.feedName = feedName;
+  }
+
+  public Long getRunTime() {
+    return runTime;
+  }
+
+  public void setRunTime(Long runTime) {
+    this.runTime = runTime;
+  }
+
+  public Long getTimeSinceEndTime() {
+    return timeSinceEndTime;
+  }
+
+  public void setTimeSinceEndTime(Long timeSinceEndTime) {
+    this.timeSinceEndTime = timeSinceEndTime;
   }
 }

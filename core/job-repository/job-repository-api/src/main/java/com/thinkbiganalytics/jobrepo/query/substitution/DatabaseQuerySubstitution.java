@@ -26,6 +26,8 @@ public interface DatabaseQuerySubstitution {
 
   public String getTimeAfterNow(DATE_PART datePart, Integer number);
 
+  public String getTimeSinceEndTimeSql(String tableAlias);
+
   public String getJobExecutionRunTimeSql();
 
   public String getFeedExecutionRunTimeSql();

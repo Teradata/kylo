@@ -1,12 +1,17 @@
 package com.thinkbiganalytics.jobrepo.repository;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
+import com.thinkbiganalytics.jobrepo.query.job.AugmentJobExecutionTimingDataQuery;
 import com.thinkbiganalytics.jobrepo.query.job.JobProgressQuery;
 import com.thinkbiganalytics.jobrepo.query.job.JobQueryConstants;
 import com.thinkbiganalytics.jobrepo.query.job.JobStatusCountByDayQuery;
 import com.thinkbiganalytics.jobrepo.query.job.JobStepQuery;
 import com.thinkbiganalytics.jobrepo.query.job.RelatedJobExecutionsQuery;
 import com.thinkbiganalytics.jobrepo.query.job.RunningOrFailedJobCountsQuery;
+import com.thinkbiganalytics.jobrepo.query.job.StepExecutionTimingQuery;
 import com.thinkbiganalytics.jobrepo.query.model.DailyJobStatusCount;
 import com.thinkbiganalytics.jobrepo.query.model.DailyJobStatusCountResult;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
@@ -19,6 +24,7 @@ import com.thinkbiganalytics.jobrepo.query.model.JobStepQueryRow;
 import com.thinkbiganalytics.jobrepo.query.model.RelatedJobExecution;
 import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
 import com.thinkbiganalytics.jobrepo.query.model.SearchResultImpl;
+import com.thinkbiganalytics.jobrepo.query.model.StepExecutionTiming;
 import com.thinkbiganalytics.jobrepo.query.model.TbaJobExecution;
 import com.thinkbiganalytics.jobrepo.query.substitution.DatabaseQuerySubstitution;
 import com.thinkbiganalytics.jobrepo.query.support.ColumnFilter;
@@ -109,6 +115,7 @@ public class JobRepositoryImpl implements JobRepository {
     step.setExitDescription(stepExecution.getExitStatus().getExitDescription());
     step.setId(stepExecution.getId());
     step.setVersion(stepExecution.getVersion());
+    step.setRunning(stepExecution.getEndTime() == null);
 
     return step;
   }
@@ -136,11 +143,14 @@ public class JobRepositoryImpl implements JobRepository {
     }
 
     ExecutedJob executedJob = new DefaultExecutedJob();
+    executedJob.setRunTime(runTime);
+    executedJob.setTimeSinceEndTime(timeSinceEndTime);
     if (jobExecution instanceof TbaJobExecution) {
       executedJob.setJobType(((TbaJobExecution) jobExecution).getJobType());
       executedJob.setIsLatest(((TbaJobExecution) jobExecution).isLatest());
       executedJob.setFeedName(((TbaJobExecution) jobExecution).getFeedName());
-      ;
+      executedJob.setRunTime(((TbaJobExecution) jobExecution).getRunTime());
+      executedJob.setTimeSinceEndTime(((TbaJobExecution) jobExecution).getTimeSinceEndTime());
     }
     executedJob.setInstanceId(jobInstance.getInstanceId());
     executedJob.setJobName(jobInstance.getJobName());
@@ -162,15 +172,14 @@ public class JobRepositoryImpl implements JobRepository {
     executedJob.setJobParameters(convertJobParameters(jobExecution.getJobParameters()));
     executedJob.setLastUpdated(utcDateTimeCorrection(jobExecution.getLastUpdated()));
     executedJob.setStartTime(startTime);
-    executedJob.setRunTime(runTime);
-    executedJob.setTimeSinceEndTime(timeSinceEndTime);
     executedJob.setStatus(convertBatchStatus(jobExecution.getStatus()));
     executedJob.setJobId(jobExecution.getJobId());
     executedJob.setExecutionId(jobExecution.getId());
 
     executedJob.setExecutedSteps(new ArrayList<ExecutedStep>());
     for (StepExecution step : jobExecution.getStepExecutions()) {
-      executedJob.getExecutedSteps().add(convertToExecutedStep(step));
+      ExecutedStep executedStep = convertToExecutedStep(step);
+      executedJob.getExecutedSteps().add(executedStep);
     }
 
     return executedJob;
@@ -312,6 +321,10 @@ public class JobRepositoryImpl implements JobRepository {
     JobInstance jobInstance = this.jobExplorer.getJobInstance(Long.valueOf(instanceId));
     List<JobExecution> executions = this.jobExplorer.getJobExecutions(jobInstance);
     for (JobExecution jobExecution : executions) {
+      List<TbaJobExecution> list =  jobDao.findList(new AugmentJobExecutionTimingDataQuery(jobDao.getDatabaseType(),jobExecution));
+      if(list != null){
+        jobExecution = list.get(0);
+      }
       executedJobs.add(convertToExecutedJob(jobInstance, jobExecution));
     }
     return executedJobs;
@@ -334,7 +347,30 @@ public class JobRepositoryImpl implements JobRepository {
       jobExecution = this.jobExplorer.getJobExecutions(jobInstance).get(0);
     }
     if (jobExecution != null) {
+      List<TbaJobExecution> list =  jobDao.findList(new AugmentJobExecutionTimingDataQuery(jobDao.getDatabaseType(),jobExecution));
+      if(list != null){
+        jobExecution = list.get(0);
+      }
       executedJob = convertToExecutedJob(jobExecution.getJobInstance(), jobExecution);
+
+      // if any steps are running we need to get the correct step timing info
+      if(executedJob.getExecutedSteps() != null) {
+        List<ExecutedStep> steps = Lists.newArrayList(Iterables.filter(executedJob.getExecutedSteps(), new Predicate<ExecutedStep>() {
+          @Override
+          public boolean apply(ExecutedStep executedStep) {
+            return executedStep.isRunning();
+
+          }
+        }));
+
+        if(steps != null){
+          for(ExecutedStep step: steps){
+            addStepTimingData(step);
+          }
+        }
+
+      }
+
       JobParameters jobParameters = jobExecution.getJobParameters();
       if (jobParameters != null) {
 
@@ -429,7 +465,9 @@ public class JobRepositoryImpl implements JobRepository {
         if (execution != null) {
           for (StepExecution step : execution.getStepExecutions()) {
             if (stepExecutionIds.contains(step.getId())) {
-              executedSteps.add(convertToExecutedStep(step));
+              ExecutedStep executedStep = convertToExecutedStep(step);
+             addStepTimingData(executedStep);
+              executedSteps.add(executedStep);
             }
           }
           fetchedJobs.put(jobExecutionId, execution);
@@ -437,6 +475,16 @@ public class JobRepositoryImpl implements JobRepository {
       }
     }
     return executedSteps;
+  }
+
+  public  void addStepTimingData(ExecutedStep executedStep) {
+    List<StepExecutionTiming> list = jobDao.findList(
+        new StepExecutionTimingQuery(jobDao.getDatabaseType(), executedStep.getId()));
+    if(list != null) {
+      executedStep.setRunTime(list.get(0).getRunTime());
+      executedStep.setTimeSinceEndTime(list.get(0).getTimeSinceEndTime());
+    }
+
   }
 
 

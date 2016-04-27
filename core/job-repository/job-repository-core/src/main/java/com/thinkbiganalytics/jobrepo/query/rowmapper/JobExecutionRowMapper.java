@@ -76,6 +76,15 @@ public class JobExecutionRowMapper implements RowMapper<TbaJobExecution> {
     Timestamp lastUpdated = rs.getTimestamp("LAST_UPDATED");
     Integer version = Integer.valueOf(rs.getInt("VERSION"));
     String jobConfigurationLocation = rs.getString("JOB_CONFIGURATION_LOCATION");
+    Long runTime = null;
+    Long timeSinceEndTime = null;
+    if (columnNames.contains("RUN_TIME")) {
+      runTime = rs.getLong("RUN_TIME") * 1000;
+    }
+    if (columnNames.contains("TIME_SINCE_END_TIME")) {
+      timeSinceEndTime = rs.getLong("TIME_SINCE_END_TIME") * 1000;
+    }
+
     boolean isLatestJobExecution = false;
     if (columnNames.contains("IS_LATEST")) {
       String isLatest = rs.getString("IS_LATEST");
@@ -98,6 +107,8 @@ public class JobExecutionRowMapper implements RowMapper<TbaJobExecution> {
     TbaJobExecution jobExecution = null;
     if (!jobExecutionMap.containsKey(jobExecutionId)) {
       jobExecution = new TbaJobExecution(jobInstance, jobExecutionId, jobParameters, jobConfigurationLocation);
+      jobExecution.setRunTime(runTime);
+      jobExecution.setTimeSinceEndTime(timeSinceEndTime);
       jobExecution.setStartTime(startTime);
       jobExecution.setEndTime(endTime);
       jobExecution.setStatus(BatchStatus.valueOf(status));

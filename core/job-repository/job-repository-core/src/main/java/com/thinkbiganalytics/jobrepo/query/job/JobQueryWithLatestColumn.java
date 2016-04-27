@@ -30,7 +30,8 @@ public class JobQueryWithLatestColumn extends AbstractConstructedQuery implement
   public QueryBuilder getQueryBuilder() {
     QueryBuilder q = newQueryBuilder()
         .select("SELECT ji.JOB_INSTANCE_ID, ji.JOB_NAME, ji.JOB_KEY, e.JOB_EXECUTION_ID, e.START_TIME, e.END_TIME," +
-                DatabaseQuerySubstitutionFactory.JOB_EXECUTION_RUN_TIME_TEMPLATE_STRING + " as RUN_TIME, e.STATUS, " +
+                DatabaseQuerySubstitutionFactory.JOB_EXECUTION_RUN_TIME_TEMPLATE_STRING + " as RUN_TIME, e.STATUS, "
+                + DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).getTimeSinceEndTimeSql("e") +" as TIME_SINCE_END_TIME, "+
                 "e.EXIT_CODE, e.EXIT_MESSAGE, e.CREATE_TIME, e.LAST_UPDATED, e.VERSION, e.JOB_CONFIGURATION_LOCATION, " +
                 "UPPER(jobType.STRING_VAL) as JOB_TYPE, " +
                 "CASE WHEN latestJobs.JOB_EXECUTION_ID is not null then 'true' else 'false' end as IS_LATEST ")

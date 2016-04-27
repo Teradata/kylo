@@ -30,6 +30,7 @@ public class FeedQuery extends AbstractConstructedQuery implements FeedQueryCons
         .select("SELECT ji.JOB_INSTANCE_ID, ji.JOB_NAME, ji.JOB_KEY, e.JOB_EXECUTION_ID, " +
                 "e.START_TIME, COALESCE(childJobs.END_TIME,e.END_TIME) as END_TIME, " +
                 DatabaseQuerySubstitutionFactory.FEED_EXECUTION_RUN_TIME_TEMPLATE_STRING + " as RUN_TIME, " +
+                DatabaseQuerySubstitutionFactory.getDatabaseSubstitution(getDatabaseType()).getTimeSinceEndTimeSql("e") +" as TIME_SINCE_END_TIME,"+
                 "COALESCE(childJobs.STATUS,e.STATUS) as STATUS, COALESCE(childJobs.EXIT_CODE,e.EXIT_CODE) as EXIT_CODE, " +
                 "e.EXIT_MESSAGE, e.CREATE_TIME, e.LAST_UPDATED, e.VERSION, e.JOB_CONFIGURATION_LOCATION, feed.STRING_VAL as FEED_NAME, "
                 +
