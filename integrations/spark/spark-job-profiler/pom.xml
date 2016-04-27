@@ -26,8 +26,11 @@
     </properties>
 
     <dependencies>
-
-
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-spark-validate-cleanse</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
