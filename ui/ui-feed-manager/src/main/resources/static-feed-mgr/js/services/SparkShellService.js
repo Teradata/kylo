@@ -143,7 +143,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
             var columns = (this.columns_.length !== 0) ? this.columns_[this.columns_.length - 1] : [];
 
             angular.forEach(columns, function(column) {
-                defs[column.displayName] = TERNJS_COLUMN_TYPE;
+                defs[column.field] = TERNJS_COLUMN_TYPE;
             });
 
             return defs;
@@ -284,10 +284,10 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          */
         shouldLimitBeforeSample: function(opt_value) {
             if (arguments.length !== 0) {
-                this.sample_ = opt_value;
+                this.limitBeforeSample_ = opt_value;
                 this.tables_ = [];
             }
-            return this.sample_;
+            return this.limitBeforeSample_;
         },
 
         /**
