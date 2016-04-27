@@ -1,6 +1,6 @@
 describe("VisualQueryBuilderController", function () {
     // Include dependencies
-    beforeEach(module("app"));
+    beforeEach(module(MODULE_FEED_MGR));
 
     // Setup tests
     beforeEach(inject(function ($injector) {

@@ -27,11 +27,16 @@
                     <groupId>com.github.searls</groupId>
                     <artifactId>jasmine-maven-plugin</artifactId>
                     <configuration>
+                        <additionalContexts>
+                            <context>
+                                <contextRoot>ui-common</contextRoot>
+                                <directory>${project.basedir}/../ui-common/src/main/resources/static-common</directory>
+                            </context>
+                        </additionalContexts>
                         <customRunnerTemplate>${project.basedir}/src/test/javascript/index.html</customRunnerTemplate>
-                        <jsSrcDir>${project.basedir}/src/main/resources/static/js</jsSrcDir>
+                        <jsSrcDir>${project.basedir}/src/main/resources/static-feed-mgr/js</jsSrcDir>
                         <preloadSources>
                             <source>vendor/angular/angular-mocks.js</source>
-                            <source>app.js</source>
                         </preloadSources>
                         <sourceIncludes>
                             <include>services/*.js</include>
@@ -40,6 +45,7 @@
                         </sourceIncludes>
                         <specIncludes>
                             <include>**/*.spec.js</include>
+                            <include>**/*Test.js</include>
                         </specIncludes>
                         <srcDirectoryName>js</srcDirectoryName>
                     </configuration>
