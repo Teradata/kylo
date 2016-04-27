@@ -21,8 +21,8 @@
         };
     };
 
-    var controller = function($scope, $log, $http, $mdToast, RestUrlService, VisualQueryService, HiveService, TableDataFunctions,
-                              SideNavService, SparkShellService, VisualQueryColumnDelegate, uiGridConstants) {
+    var controller = function($scope, $log, $http, $mdDialog, $mdToast, RestUrlService, VisualQueryService, HiveService,
+                              TableDataFunctions, SideNavService, SparkShellService, VisualQueryColumnDelegate, uiGridConstants) {
         var self = this;
         //The model passed in from the previous step
         this.model = VisualQueryService.model;
@@ -318,11 +318,27 @@
          * @param {string} formula the formula
          */
         this.pushFormula = function(formula) {
-            self.functionHistory.push(formula);
-
+            // Covert to a syntax tree
             self.ternServer.server.addFile("[doc]", formula);
             var file = self.ternServer.server.findFile("[doc]");
-            self.sparkShellService.push(file.ast);
+
+            // Add to the Spark script
+            try {
+                self.sparkShellService.push(file.ast);
+            } catch (e) {
+                var alert = $mdDialog.alert()
+                        .parent($('body'))
+                        .clickOutsideToClose(true)
+                        .title("Error executing the query")
+                        .textContent(e.message)
+                        .ariaLabel("error executing the query")
+                        .ok("Got it!");
+                $mdDialog.show(alert);
+                return;
+            }
+
+            // Add to function history
+            self.functionHistory.push(formula);
         };
 
         /**
