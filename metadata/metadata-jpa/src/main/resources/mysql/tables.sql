@@ -1,4 +1,79 @@
 
+-- PK on all tables
+-- Change UUID binary size
+-- No camel-case
+-- Index: <table name>_<1st 3 char of column>_FK1, <table name>_<1st 3 char of column>_UK1, <table name>_PK
+
+-- created_time
+-- modified_time
+
+-- Use UTC times
+-- Use datetime or timestamp or epoch-based (long)?  (Scott)
+
+
+create table if not exists FEED (
+    id binary(255) not null,
+    Description varchar(255),
+    Name varchar(255),
+    sla_id binary(255),
+    primary key (id)
+) ENGINE=InnoDB;
+
+create table if not exists FEED_DESTINATION (
+    id binary(255) not null,
+    datasource_id binary(255),
+    feed_id binary(255),
+    primary key (id)
+) ENGINE=InnoDB;
+
+create table if not exists FEED_SOURCE (
+    id binary(255) not null,
+    datasource_id binary(255),
+    feed_id binary(255),
+    agreement_id binary(255),
+    primary key (id)
+) ENGINE=InnoDB;
+
+-- TODO fix creationTime
+
+create table if not exists DATASOURCE (
+    TYPE varchar(31) not null,
+    id binary(255) not null,
+    creationTime datetime,
+    description varchar(255),
+    name varchar(255),
+    primary key (id)
+) ENGINE=InnoDB;
+
+create table if not exists SLA (
+    id binary(255) not null,
+    creatingTime datetime,
+    description varchar(255),
+    name varchar(255),
+    primary key (id)
+) ENGINE=InnoDB;
+
+create table if not exists SLA_METRIC (
+    id binary(255) not null,
+    metric varchar(255),
+    obligation_id binary(255),
+    primary key (id)
+) ENGINE=InnoDB;
+
+create table if not exists SLA_OBLIGATION_GROUP (
+    id binary(255) not null,
+    cond integer,
+    agreement_id binary(255),
+    primary key (id)
+) ENGINE=InnoDB;
+
+create table if not exists SLA_OBLIGATION (
+    id binary(255) not null,
+    description varchar(255),
+    group_id binary(255),
+    primary key (id)
+) ENGINE=InnoDB;
+
 create table if not exists CHANGE_SET (
     id binary(255) not null,
     completenessFactor integer not null,
@@ -46,67 +121,6 @@ create table if not exists DATASET (
     time datetime,
     type integer,
     datasource_id binary(255),
-    primary key (id)
-) ENGINE=InnoDB;
-
-create table if not exists DATASOURCE (
-    TYPE varchar(31) not null,
-    id binary(255) not null,
-    creationTime datetime,
-    description varchar(255),
-    name varchar(255),
-    primary key (id)
-) ENGINE=InnoDB;
-
-create table if not exists FEED (
-    id binary(255) not null,
-    Description varchar(255),
-    Name varchar(255),
-    sla_id binary(255),
-    primary key (id)
-) ENGINE=InnoDB;
-
-create table if not exists FEED_DESTINATION (
-    id binary(255) not null,
-    datasource_id binary(255),
-    feed_id binary(255),
-    primary key (id)
-) ENGINE=InnoDB;
-
-create table if not exists FEED_SOURCE (
-    id binary(255) not null,
-    datasource_id binary(255),
-    feed_id binary(255),
-    agreement_id binary(255),
-    primary key (id)
-) ENGINE=InnoDB;
-
-create table if not exists SLA (
-    id binary(255) not null,
-    creatingTime datetime,
-    description varchar(255),
-    name varchar(255),
-    primary key (id)
-) ENGINE=InnoDB;
-
-create table if not exists SLA_METRIC (
-    id binary(255) not null,
-    metric varchar(255),
-    obligation_id binary(255),
-    primary key (id)
-) ENGINE=InnoDB;
-
-create table if not exists SLA_OBLIGATION (
-    id binary(255) not null,
-    description varchar(255),
-    group_id binary(255),
-    primary key (id)
-) ENGINE=InnoDB;
-
-create table if not exists SLA_OBLIGATION_GROUP (
-    id binary(255) not null,
-    cond integer,
-    agreement_id binary(255),
     primary key (id)
 ) ENGINE=InnoDB;
 

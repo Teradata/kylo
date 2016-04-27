@@ -369,14 +369,12 @@ public class JpaFeedProvider implements FeedProvider {
         
         private void applyFilter(StringBuilder query) {
             if (this.name != null || ! this.sourceIds.isEmpty() || ! this.destIds.isEmpty()) {
-                StringBuilder filter = new StringBuilder();
-                
                 query.append("where ");
                 
-                if (this.name != null) filter.append("f.name = \"").append(this.name).append("\" ");
+                if (this.name != null) query.append("f.name = '").append(this.name).append("' ");
                 
-                applyIdClause(filter, this.sourceIds, "sources");
-                applyIdClause(filter, this.destIds, "destinations");
+                applyIdClause(query, this.sourceIds, "sources");
+                applyIdClause(query, this.destIds, "destinations");
             }
         }
         

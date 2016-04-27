@@ -13,7 +13,6 @@ import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -24,6 +23,8 @@ import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasourceProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedProvider;
 import com.thinkbiganalytics.metadata.jpa.op.JpaDataOperationsProvider;
+import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 /**
  *
@@ -58,21 +59,22 @@ public class JpaConfiguration {
     }
     
     @Bean
-    @Primary
     public FeedProvider feedProvider() {
         return new JpaFeedProvider();
     }
 
     @Bean
-    @Primary
     public DatasourceProvider datasetProvider() {
         return new JpaDatasourceProvider();
     }
     
     @Bean
-    @Primary
     public DataOperationsProvider dataOperationsProvider() {
         return new JpaDataOperationsProvider();
     }
 
+    @Bean
+    public ServiceLevelAgreementProvider slaProvider() {
+        return new JpaServiceLevelAgreementProvider();
+    }
 }

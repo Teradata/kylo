@@ -73,10 +73,52 @@
             <artifactId>jackson-datatype-hibernate5</artifactId>
             <version>2.7.3</version>
         </dependency>
+        
+        
+        <!-- Testing -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-sla-core</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.unitils</groupId>
+            <artifactId>unitils-spring</artifactId>
+            <version>3.4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.unitils</groupId>
+            <artifactId>unitils-dbunit</artifactId>
+            <version>3.4.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.4.191</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.testng</groupId>
+            <artifactId>testng</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.neo4j</groupId>
+            <artifactId>neo4j-cypher-compiler-2.2</artifactId>
+            <version>2.2.5</version>
+        </dependency>
     </dependencies>
 
     <build>
         <plugins>
+            <!-- 
             <plugin>
                 <groupId>de.juplo</groupId>
                 <artifactId>hibernate-maven-plugin</artifactId>
@@ -89,12 +131,6 @@
                     </execution>
                 </executions>
                 <configuration>
-                    <!-- 
-                    <dialect>org.hibernate.dialect.MySQL5InnoDBDialect</dialect>
-                    <url>jdbc:mysql://localhost:3306/pipeline_db</url>
-                    <driver>com.mysql.jdbc.Driver</driver>
-                    <username>root</username>
-                    -->
                     
                     <dialect>org.hibernate.dialect.H2Dialect</dialect>
                     <url>jdbc:h2:file:./target/db</url>
@@ -106,7 +142,6 @@
                     <scanDependencies>none</scanDependencies>
                 </configuration>
                 <dependencies>
-                    <!-- IN MEMORY Database and JDBC Driver -->
                     <dependency>
                         <groupId>com.h2database</groupId>
                         <artifactId>h2</artifactId>
@@ -119,6 +154,7 @@
                     </dependency>
                 </dependencies>
             </plugin>
+             -->
         </plugins>
         <pluginManagement>
             <plugins>

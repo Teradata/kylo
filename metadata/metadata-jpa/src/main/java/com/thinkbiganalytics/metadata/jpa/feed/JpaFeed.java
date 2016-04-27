@@ -45,8 +45,8 @@ public class JpaFeed implements Feed {
     @EmbeddedId
     private FeedId Id;
     
-    private String Name;
-    private String Description;
+    private String name;
+    private String description;
     
     @OneToMany(targetEntity=JpaFeedSource.class, mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedSource> sources = new ArrayList<>();
@@ -63,8 +63,8 @@ public class JpaFeed implements Feed {
     
     public JpaFeed(String name, String description) {
         this.Id = FeedId.create();
-        Name = name;
-        Description = description;
+        name = name;
+        description = description;
     }
 
     public ID getId() {
@@ -76,11 +76,11 @@ public class JpaFeed implements Feed {
     }
 
     public String getName() {
-        return Name;
+        return name;
     }
 
     public String getDescription() {
-        return Description;
+        return description;
     }
 
     public List<FeedSource> getSources() {

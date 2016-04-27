@@ -17,3 +17,4 @@ derby.log
 **/logs/
 **/node_modules/
 target/
+test-output/
