@@ -10,26 +10,26 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     var self = this;
 
     this.ROOT = "";
-    this.TEMPLATES_BASE_URL =this.ROOT+"/api/v1/feedmgr/templates";
-    this.FEEDS_BASE_URL = this.ROOT+"/api/v1/feedmgr/feeds";
-    this.CONTROLLER_SERVICES_BASE_URL = this.ROOT+"/api/v1/nifi/controller-services";
+    this.TEMPLATES_BASE_URL =this.ROOT+"/proxy/v1/feedmgr/templates";
+    this.FEEDS_BASE_URL = this.ROOT+"/proxy/v1/feedmgr/feeds";
+    this.CONTROLLER_SERVICES_BASE_URL = this.ROOT+"/proxy/v1/nifi/controller-services";
     this.GET_TEMPLATES_URL = self.TEMPLATES_BASE_URL;
     this.GET_UNREGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL+"/unregistered";
 
     this.UPLOAD_SAMPLE_TABLE_FILE = self.FEEDS_BASE_URL+"/table/sample-file";
 
-    this.VALIDATE_CRON_EXPRESSION_URL = this.ROOT+"/api/v1/feedmgr/util/cron-expression/validate";
+    this.VALIDATE_CRON_EXPRESSION_URL = this.ROOT+"/proxy/v1/feedmgr/util/cron-expression/validate";
 
-    this.PREVIEW_CRON_EXPRESSION_URL =this.ROOT+"/api/v1/feedmgr/util/cron-expression/preview";
+    this.PREVIEW_CRON_EXPRESSION_URL =this.ROOT+"/proxy/v1/feedmgr/util/cron-expression/preview";
 
-    this.CODE_MIRROR_TYPES_URL = this.ROOT+"/api/v1/feedmgr/util/codemirror-types";
+    this.CODE_MIRROR_TYPES_URL = this.ROOT+"/proxy/v1/feedmgr/util/codemirror-types";
 
 
-    this.CATEGORIES_URL =this.ROOT+"/api/v1/feedmgr/categories";
+    this.CATEGORIES_URL =this.ROOT+"/proxy/v1/feedmgr/categories";
 
-    this.ELASTIC_SEARCH_URL = this.ROOT+"/api/v1/feedmgr/search";
+    this.ELASTIC_SEARCH_URL = this.ROOT+"/proxy/v1/feedmgr/search";
 
-    this.HIVE_SERVICE_URL = this.ROOT+"/api/v1/hive";
+    this.HIVE_SERVICE_URL = this.ROOT+"/proxy/v1/hive";
 
     ///TEMPLATE REGISTRATION
 
@@ -48,8 +48,8 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
         return self.GET_REGISTERED_TEMPLATES_URL+"/"+templateId;
     }
 
-    this.CONFIGURATION_PROPERTIES_URL =this.ROOT+"/api/v1/feedmgr/nifi/configuration/properties";
-    this.METADATA_PROPERTY_NAMES_URL  =this.ROOT+"/api/v1/feedmgr/metadata-properties";
+    this.CONFIGURATION_PROPERTIES_URL =this.ROOT+"/proxy/v1/feedmgr/nifi/configuration/properties";
+    this.METADATA_PROPERTY_NAMES_URL  =this.ROOT+"/proxy/v1/feedmgr/metadata-properties";
 
 
 
@@ -92,6 +92,6 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
 
     //Field Policy Urls
 
-    this.AVAILABLE_STANDARDIZATION_POLICIES = this.ROOT+"/api/v1/field-policies/standardization";
-    this.AVAILABLE_VALIDATION_POLICIES = this.ROOT+"/api/v1/field-policies/validation";
+    this.AVAILABLE_STANDARDIZATION_POLICIES = this.ROOT+"/proxy/v1/field-policies/standardization";
+    this.AVAILABLE_VALIDATION_POLICIES = this.ROOT+"/proxy/v1/field-policies/validation";
 });

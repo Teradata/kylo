@@ -599,7 +599,7 @@ function DuplicateJobDialogController($scope, $mdDialog, $mdToast, $http, JobDat
             postData.jobName = $scope.jobName;
             postData.jobParameters =  $scope.jobParameters;
         postData.jobParameters.push({type: 'STRING', name:'Web Job',value:'Created from Web @ '+new Date()});
-        $http.post("/api/v1/jobs/", postData).success(function(data){
+        $http.post("/proxy/v1/jobs/", postData).success(function(data){
                 $scope.jobParameters = [];
                 $scope.selectedJobName = '';
 /*

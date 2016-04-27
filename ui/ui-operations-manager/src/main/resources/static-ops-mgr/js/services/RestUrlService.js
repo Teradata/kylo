@@ -4,8 +4,8 @@ angular.module(MODULE_OPERATIONS).service('RestUrlService', function () {
 
     this.ROOT = "";
 
-    this.FEEDS_BASE = "/api/v1/feeds";
-    this.JOBS_BASE = "/api/v1/jobs";
+    this.FEEDS_BASE = "/proxy/v1/feeds";
+    this.JOBS_BASE = "/proxy/v1/jobs";
     this.FEED_HEALTH_URL = this.FEEDS_BASE+"/health";
     this.FEED_NAMES_URL = this.FEEDS_BASE+"/names";
     this.FEED_HEALTH_COUNT_URL = this.FEEDS_BASE+"/health-count";
@@ -40,7 +40,7 @@ angular.module(MODULE_OPERATIONS).service('RestUrlService', function () {
     this.RUNNING_OR_FAILED_COUNTS_URL = this.JOBS_BASE+'/running-failed-counts';
 
 
-    this.DATA_CONFIDENCE_URL = "/api/v1/data-confidence/summary";
+    this.DATA_CONFIDENCE_URL = "/proxy/v1/data-confidence/summary";
 
 
     this.RESTART_JOB_URL = function (executionId) {
@@ -72,6 +72,6 @@ angular.module(MODULE_OPERATIONS).service('RestUrlService', function () {
     
 //Service monitoring
 
-this.SERVICES_URL = "/api/v1/service-monitor/";
+this.SERVICES_URL = "/proxy/v1/service-monitor/";
 
 });

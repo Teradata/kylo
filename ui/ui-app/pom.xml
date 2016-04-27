@@ -23,6 +23,13 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+          <dependency>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-dependencies</artifactId>
+            <version>Brixton.RC2</version>
+            <type>pom</type>
+            <scope>import</scope>
+          </dependency>
         </dependencies>
     </dependencyManagement>
 
@@ -51,71 +58,11 @@
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
 
-        <!-- Services monitoring code-->
 
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-service-monitor-ambari</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-service-monitor-pipeline-db</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-
-      <dependency>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-service-monitor-nifi</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
-      </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-service-monitor-controller</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
 
 
-        <!-- end service monitoring -->
 
-        <!-- Job Repo -->
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-job-repository-spring-batch</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-job-repository-controller</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-
-        <!-- end Job Repo -->
-
-
-        <!-- scheduler -->
-
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-scheduler-controller</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-scheduler-quartz</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-scheduler-rest-model</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -130,30 +77,7 @@
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
 
-        <!-- NIFI  -->
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-feed-manager-controller</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
 
-      <!-- Field Policies -->
-      <dependency>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-field-policy-controller</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
-      </dependency>
-      <dependency>
-        <groupId>com.thinkbiganalytics.datalake</groupId>
-        <artifactId>thinkbig-field-policy-default</artifactId>
-        <version>0.1.0-SNAPSHOT</version>
-      </dependency>
-        <!-- -->
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-thrift-proxy-controller</artifactId>
-            <version>0.1.0-SNAPSHOT</version>
-        </dependency>
 
       <dependency>
         <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -243,20 +167,24 @@
 
 
         <dependency>
-            <groupId>mysql</groupId>
-            <artifactId>mysql-connector-java</artifactId>
-            <version>5.1.32</version>
-        </dependency>
-        <dependency>
-            <groupId>postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-            <version>9.1-901-1.jdbc4</version>
-        </dependency>
-
-        <dependency>
             <groupId>javax.servlet</groupId>
             <artifactId>javax.servlet-api</artifactId>
         </dependency>
+
+      <dependency>
+        <groupId>org.springframework.cloud</groupId>
+        <artifactId>spring-cloud-starter-zuul</artifactId>
+        <exclusions>
+          <exclusion>
+            <groupId>com.sun.jersey</groupId>
+            <artifactId>jersey-client</artifactId>
+          </exclusion>
+          <exclusion>
+            <groupId>org.springframework.cloud</groupId>
+            <artifactId>spring-cloud-starter-archaius</artifactId>
+          </exclusion>
+        </exclusions>
+      </dependency>
 
     </dependencies>
 

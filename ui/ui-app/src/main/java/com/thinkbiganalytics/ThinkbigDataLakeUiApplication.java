@@ -10,6 +10,7 @@ import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -27,6 +28,7 @@ import java.util.concurrent.Executors;
 @EnableConfigurationProperties
 @Import({DatabaseConfiguration.class, SpringJerseyConfiguration.class})
 @ComponentScan("com.thinkbiganalytics")
+@EnableZuulProxy
 public class ThinkbigDataLakeUiApplication implements SchedulingConfigurer {
 
 

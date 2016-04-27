@@ -8,7 +8,7 @@
         this.jobMap = {};
         this.allMetadata = {};
         this.schedulerDetails = {};
-        var API_URL_BASE = '/api/v1/scheduler';
+        var API_URL_BASE = '/proxy/v1/scheduler';
 
         this.fetchingMetadata = false;
         this.fetchingJobs = false;
