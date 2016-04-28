@@ -190,6 +190,7 @@ public class JpaFeedProvider implements FeedProvider {
         }
         
         this.entityMgr.persist(feed);
+        this.entityMgr.flush();
         return feed;
     }
 

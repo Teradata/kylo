@@ -35,7 +35,7 @@ public class JpaServiceLevelAgreement implements ServiceLevelAgreement, Serializ
     private static final long serialVersionUID = 2611479261936214396L;
 
     @EmbeddedId
-    @Column(name="id", columnDefinition="binary(16)")
+    @Column(name="id", columnDefinition="binary(36)")
     private SlaId id;
     
     @Column(name="name", length=100, unique=true)
@@ -123,7 +123,8 @@ public class JpaServiceLevelAgreement implements ServiceLevelAgreement, Serializ
         
         private static final long serialVersionUID = 6965221468619613881L;
         
-        @Column(name="id", columnDefinition="binary(16)")
+        //@Column(name="id", columnDefinition="binary(36)")
+        @Column(name="id", columnDefinition="binary(16)", length = 16)
         private UUID uuid;
         
         public static SlaId create() {

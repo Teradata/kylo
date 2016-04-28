@@ -15,8 +15,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.hibernate5.HibernateTransactionManager;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
+import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
@@ -53,9 +56,18 @@ public class JpaConfiguration {
     
     @Bean(name="metadataTransactionManager")
     public PlatformTransactionManager transactionManager(@Named("metadataSessionFactory") SessionFactory sessFactory) {
-        HibernateTransactionManager xtnMgr = new HibernateTransactionManager();
-        xtnMgr.setSessionFactory(sessFactory);
+//        HibernateTransactionManager xtnMgr = new HibernateTransactionManager();
+//        xtnMgr.setSessionFactory(sessFactory);
+        JpaTransactionManager xtnMgr = new JpaTransactionManager();
+        xtnMgr.setDataSource(metadataDataSource());
+        xtnMgr.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ALWAYS);
+        
         return xtnMgr;
+    }
+    
+    @Bean
+    public MetadataAccess metadataAccess() {
+        return new TransactionTemplateMetadataAccess();
     }
     
     @Bean

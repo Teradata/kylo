@@ -66,7 +66,8 @@ public class JpaFeedSource extends JpaFeedConnection implements FeedSource {
         
         private static final long serialVersionUID = 241001606640713117L;
         
-        @Column(name="id", columnDefinition="binary(16)")
+        //@Column(name="id", columnDefinition="binary(36)")
+        @Column(name="id", columnDefinition="binary(16)", length = 16)
         private UUID uuid;
         
         public static SourceId create() {

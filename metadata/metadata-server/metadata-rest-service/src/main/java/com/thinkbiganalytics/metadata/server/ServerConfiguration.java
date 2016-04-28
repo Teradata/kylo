@@ -9,6 +9,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 
+import com.thinkbiganalytics.metadata.api.Command;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
@@ -58,6 +60,23 @@ public class ServerConfiguration {
     @Profile("metadata.memory-only")
     public DataOperationsProvider dataOperationsProvider() {
         return new InMemoryDataOperationsProvider();
+    }
+    
+    @Bean
+    @Profile("metadata.memory-only")
+    public MetadataAccess metadataAccess() {
+        // Transaction behavior not enforced in memory-only mode;
+        return new MetadataAccess() {
+            @Override
+            public <R> R commit(Command<R> cmd) {
+                return cmd.execute();
+            }
+
+            @Override
+            public <R> R read(Command<R> cmd) {
+                return cmd.execute();
+            }
+        };
     }
     
     @Bean

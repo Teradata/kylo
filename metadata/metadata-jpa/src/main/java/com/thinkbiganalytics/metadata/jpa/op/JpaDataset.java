@@ -39,7 +39,7 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
 
     @Id
     @GeneratedValue
-    @Column(name="id", columnDefinition="binary(16)")
+    @Column(name="id", columnDefinition="binary(36)")
     private UUID id;
 
     @OneToOne(mappedBy="dataset")

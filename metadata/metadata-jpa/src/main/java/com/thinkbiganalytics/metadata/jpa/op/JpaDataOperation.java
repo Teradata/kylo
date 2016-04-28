@@ -169,7 +169,8 @@ public class JpaDataOperation implements DataOperation {
         
         private static final long serialVersionUID = -8322308917629324338L;
 
-        @Column(name="id", columnDefinition="binary(16)")
+        //@Column(name="id", columnDefinition="binary(36)")
+        @Column(name="id", columnDefinition="binary(16)", length = 16)
         private UUID uuid;
         
         public static OpId create() {
