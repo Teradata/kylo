@@ -87,6 +87,7 @@ angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function(ui
                 }
             });
 
+            formula += ")";
             this.controller.addFunction(formula);
         }
     });
