@@ -10,8 +10,10 @@ import javax.annotation.Nonnull;
 import javax.script.ScriptException;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.spark.rdd.RDD;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
+import org.apache.spark.storage.RDDInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,7 +118,7 @@ public class TransformService extends AbstractScheduledService {
         response.setTable(table);
 
         if (request.isSendResults()) {
-            response.setResults((QueryResult) results);
+            response.setResults((QueryResult)results);
         }
 
         log.trace("exit with({})", response);
@@ -234,9 +236,15 @@ public class TransformService extends AbstractScheduledService {
      * @param context the SQL context
      */
     private void dropTable(@Nonnull final String name, @Nonnull final SQLContext context) {
-        String identifier = HiveUtils.quoteIdentifier(DATABASE, name);
-        log.debug("Dropping Hive table {}", identifier);
-        context.sql("DROP TABLE IF EXISTS " + identifier);
+        log.debug("Dropping cached table {}", name);
+
+        if (context.isCached(name)) {
+            context.uncacheTable(name);
+        }
+        else {
+            String identifier = HiveUtils.quoteIdentifier(DATABASE, name);
+            context.sql("DROP TABLE IF EXISTS " + identifier);
+        }
     }
 
     /**
@@ -246,24 +254,28 @@ public class TransformService extends AbstractScheduledService {
      * @param context the SQL context
      */
     private void updateWeight(@Nonnull final String table, @Nonnull final SQLContext context) {
-        // Select service database
-        context.sql("USE " + HiveUtils.quoteIdentifier(DATABASE));
-
-        // Find size of table
-        String identifier = HiveUtils.quoteIdentifier(table);
-        List<Row> properties = this.engine.getSQLContext().sql("SHOW TBLPROPERTIES " + identifier).collectAsList();
         int size = -1;
 
-        for (Row row : properties) {
-            String property = row.getString(0);
-            if (property.startsWith("totalSize\t")) {
-                int tabIndex = property.indexOf('\t') + 1;
-                size = Integer.parseInt(property.substring(tabIndex));
-            }
-        }
+        // Get size for Hive tables
+        if (!context.isCached(table)) {
+            // Select service database
+            context.sql("USE " + HiveUtils.quoteIdentifier(DATABASE));
 
-        if (size == -1) {
-            log.warn("Unknown table size for {}", identifier);
+            // Find size of table
+            String identifier = HiveUtils.quoteIdentifier(table);
+            List<Row> properties = this.engine.getSQLContext().sql("SHOW TBLPROPERTIES " + identifier).collectAsList();
+
+            for (Row row : properties) {
+                String property = row.getString(0);
+                if (property.startsWith("totalSize\t")) {
+                    int tabIndex = property.indexOf('\t') + 1;
+                    size = Integer.parseInt(property.substring(tabIndex));
+                }
+            }
+
+            if (size == -1) {
+                log.warn("Unknown table size for {}", identifier);
+            }
         }
 
         // Update cache
