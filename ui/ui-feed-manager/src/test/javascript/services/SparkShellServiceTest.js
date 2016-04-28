@@ -76,6 +76,29 @@ describe("SparkShellService", function() {
             ".select(new Column(\"*\"), new Column(\"commission\").divide(new Column(\"pricepaid\"))" +
             ".divide(new Column(\"qtysold\")).multiply(functions.lit(100)).as(\"overhead\"))");
     });
+    it("should generate script from a filter expression", function() {
+        // Create service
+        var service = new SparkShellService("SELECT * FROM invalid");
+        service.columns_ = [[
+            {field: "pricepaid", hiveColumnLabel: "pricepaid"},
+            {field: "commission", hiveColumnLabel: "commission"},
+            {field: "qtysold", hiveColumnLabel: "qtysold"}
+        ]];
+        service.setFunctionDefs({
+            "and": {"!spark": "%c.and(%c)", "!sparkType": "column"},
+            "equal": {"!spark": "%c.equalTo(%c)", "!sparkType": "column"},
+            "filter": {"!spark": ".filter(%c)", "!sparkType": "dataframe"},
+            "greaterThan": {"!spark": "%c.gt(%c)", "!sparkType": "column"},
+            "subtract": {"!spark": "%c.minus(%c)", "!sparkType": "column"}
+        });
+
+        // Test script
+        service.push(tern.parse("filter(qtysold == 2 && pricepaid - commission > 200)"));
+        expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
+                                         "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
+                                         ".filter(new Column(\"qtysold\").equalTo(functions.lit(2)).and(" +
+                                         "new Column(\"pricepaid\").minus(new Column(\"commission\")).gt(functions.lit(200))))");
+    });
 
     // limit
     it("should get and set limit", function() {
