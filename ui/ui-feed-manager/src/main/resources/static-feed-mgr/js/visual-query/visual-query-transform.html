@@ -11,9 +11,6 @@
              <thinkbig-step-buttons style="padding:inherit" can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
 
              </div>
-         <div layout="row" layout-sm="column" layout-align="space-around" style="background-color: rgba(255, 255, 255, 0.7); min-height: 100%; position: fixed; width: 100%; z-index: 1000;" ng-show="vm.executingQuery">
-             <md-progress-circular md-mode="indeterminate" style="margin-left: -25px;"></md-progress-circular>
-         </div>
          <div layout="row" layout-fill layout-align="center center" browser-height browser-height-scroll-y="false" browser-height-offset="410">
              <div class="visual-query-function-history"   layout="column" style="width:200px;height:500px;" ng-show="vm.isShowFunctionHistory" style="opacity: 0; transition: opacity 0.2s, border 0.2s;">
 

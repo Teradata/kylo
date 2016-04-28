@@ -77,7 +77,6 @@
         // Translates expressions into Spark code
         this.sparkShellService = new SparkShellService(this.sql);
 
-        this.executingQuery = false;
         //Code Mirror options.  Tern Server requires it be in javascript mode
         this.codemirrorOptions = {
             lineWrapping: false,
@@ -85,7 +84,7 @@
             smartIndent: false,
             lineNumbers: false,
             matchBrackets: false,
-            // autofocus: true,
+            autofocus: true,
             mode: 'javascript',
             scrollbarStyle: null
         };
@@ -364,10 +363,18 @@
         };
 
         this.canUndo = function() {
-            return true;
+            if (self.functionCommandHolder) {
+                return self.functionCommandHolder.canUndo();
+            } else {
+                return false;
+            }
         };
         this.canRedo = function() {
-            return true;
+            if (self.functionCommandHolder) {
+                return self.functionCommandHolder.canRedo();
+            } else {
+                return false;
+            }
         };
 
         //Hide the left side nav bar
