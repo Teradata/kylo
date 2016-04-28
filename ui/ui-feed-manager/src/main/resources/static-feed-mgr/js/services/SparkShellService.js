@@ -143,10 +143,28 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
             var columns = (this.columns_.length !== 0) ? this.columns_[this.columns_.length - 1] : [];
 
             angular.forEach(columns, function(column) {
-                defs[column.displayName] = TERNJS_COLUMN_TYPE;
+                defs[column.field] = TERNJS_COLUMN_TYPE;
             });
 
             return defs;
+        },
+
+        /**
+         * Gets the Hive column label for the field with the specified name.
+         *
+         * @param {string} fieldName the field name
+         * @returns {string|null} the Hive column label if the column exists, or {@code null} otherwise
+         */
+        getColumnLabel: function(fieldName) {
+            var columns = (this.columns_.length !== 0) ? this.columns_[this.columns_.length - 1] : [];
+
+            for (var i=0; i < columns.length; ++i) {
+                if (columns[i].field == fieldName) {
+                    return columns[i].hiveColumnLabel;
+                }
+            }
+
+            return null;
         },
 
         /**
@@ -266,10 +284,10 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          */
         shouldLimitBeforeSample: function(opt_value) {
             if (arguments.length !== 0) {
-                this.sample_ = opt_value;
+                this.limitBeforeSample_ = opt_value;
                 this.tables_ = [];
             }
-            return this.sample_;
+            return this.limitBeforeSample_;
         },
 
         /**
@@ -371,7 +389,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
      */
     function ParseException(message, opt_col) {
         this.name = "ParseException";
-        this.message = message + (opt_col ? opt_col : "");
+        this.message = message + (opt_col ? " at column number " + opt_col : "");
     }
 
     ParseException.prototype = Object.create(Error.prototype);
@@ -584,6 +602,30 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 def = sparkShellService.getFunctionDefs().divide;
                 break;
 
+            case "==":
+                def = sparkShellService.getFunctionDefs().equal;
+                break;
+
+            case "!=":
+                def = sparkShellService.getFunctionDefs().notEqual;
+                break;
+
+            case ">":
+                def = sparkShellService.getFunctionDefs().greaterThan;
+                break;
+
+            case ">=":
+                def = sparkShellService.getFunctionDefs().greaterThanOrEqual;
+                break;
+
+            case "<":
+                def = sparkShellService.getFunctionDefs().lessThan;
+                break;
+
+            case "<=":
+                def = sparkShellService.getFunctionDefs().lessThanOrEqual;
+                break;
+
             default:
         }
 
@@ -601,7 +643,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
      * Converts a call expression node to a Spark expression.
      *
      * @param {acorn.Node} node the call expression node
-     * @param {SparkShellService} sparkShellService the Spark shelll service
+     * @param {SparkShellService} sparkShellService the Spark shell service
      * @returns {SparkExpression} the Spark expression
      * @throws {Error} if the function definition is not valid
      * @throws {ParseException} if a function argument cannot be converted to the required type
@@ -648,6 +690,41 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
 
         var spark = SparkExpression.fromDefinition.apply(SparkExpression, args);
         return (parent !== null) ? new SparkExpression(parent.source + spark.source, spark.type, spark.start, spark.end) : spark;
+    }
+
+    /**
+     * TODO
+     *
+     * @param {acorn.Node} node the logical expression node
+     * @param {SparkShellService} sparkShellService the Spark shell service
+     * @returns {SparkExpression} the Spark expression
+     * @throws {Error} if the function definition is not valid
+     * @throws {ParseException} if a function argument cannot be converted to the required type
+     */
+    function parseLogicalExpression(node, sparkShellService) {
+        // Get the function definition
+        var def = null;
+
+        switch (node.operator) {
+            case "&&":
+                def = sparkShellService.getFunctionDefs().and;
+                break;
+
+            case "||":
+                def = sparkShellService.getFunctionDefs().or;
+                break;
+
+            default:
+        }
+
+        if (def == null) {
+            throw new ParseException("Logical operator not supported: " + node.operator, node.start);
+        }
+
+        // Convert to a Spark expression
+        var left = toSpark(node.left, sparkShellService);
+        var right = toSpark(node.right, sparkShellService);
+        return SparkExpression.fromDefinition(def, node, left, right);
     }
 
     /**
@@ -704,11 +781,14 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 return toSpark(node.expression, sparkShellService);
 
             case "Identifier":
-                return new SparkExpression("new Column(\"" + StringUtils.quote(node.name) + "\")", SparkType.COLUMN, node.start,
-                        node.end);
+                var label = StringUtils.quote(sparkShellService.getColumnLabel(node.name));
+                return new SparkExpression("new Column(\"" + label + "\")", SparkType.COLUMN, node.start, node.end);
 
             case "Literal":
                 return new SparkExpression(node.raw, SparkType.LITERAL, node.start, node.end);
+
+            case "LogicalExpression":
+                return parseLogicalExpression(node, sparkShellService);
 
             default:
                 throw new Error("Unsupported node type: " + node.type);

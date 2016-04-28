@@ -75,8 +75,20 @@ angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function(ui
          * @param {ui.grid.Grid} grid the grid with the column
          */
         transformColumn: function(operation, column, grid) {
-            this.controller.pushFormula(operation + "(" + column.field + ")");
-            this.hideColumn(column, grid);
+            var formula = "";
+
+            angular.forEach(grid.columns, function(item) {
+                formula += (formula.length == 0) ? "select(" : ", ";
+                if (item.field == column.field) {
+                    formula += operation + "(" + item.field + ").as(\"" + StringUtils.quote(item.field) + "\")";
+                }
+                else {
+                    formula += item.field;
+                }
+            });
+
+            formula += ")";
+            this.controller.addFunction(formula);
         }
     });
 

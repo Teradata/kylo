@@ -238,7 +238,13 @@ angular.module(MODULE_FEED_MGR).factory('HiveService', function ($q,$http, $mdDi
                     }
                     else {
                         displayColumns.push(displayName)
-                        columns.push({displayName:displayName,minWidth:150,name:col.displayName, queryResultColumn:col});
+                        columns.push({
+                            displayName: displayName,
+                            headerTooltip: col.hiveColumnLabel,
+                            minWidth: 150,
+                            name: col.displayName,
+                            queryResultColumn: col
+                        });
                         fields.push(col.field);
                     }
                 });

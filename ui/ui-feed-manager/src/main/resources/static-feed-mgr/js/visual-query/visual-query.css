@@ -56,6 +56,17 @@ table.md-table.visual-query-table {
     z-index: 9999;
 }
 
+/* Column headers */
+.ui-grid-header-cell-label {
+    color: grey;
+    margin-right: 1em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.ui-grid-header-cell-title {
+    color: black;
+}
+
 /* Column menu button */
 .ui-grid-column-menu-button {
     padding: 0;
