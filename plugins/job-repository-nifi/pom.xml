@@ -16,6 +16,11 @@
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-job-repository-spring-batch-common</artifactId>
+      <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-job-repository-core</artifactId>
       <version>0.1.0-SNAPSHOT</version>
     </dependency>
@@ -23,6 +28,17 @@
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-job-repository-api</artifactId>
       <version>0.1.0-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-nifi-jms</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-activemq-core</artifactId>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
@@ -70,17 +86,7 @@
     <!-- end spring batch deps -->
 
 
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-nifi-jms</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-activemq-core</artifactId>
-      <version>${project.version}</version>
-    </dependency>
 
 
   </dependencies>
