@@ -26,8 +26,8 @@ import scala.tools.nsc.interpreter.NamedParam;
 /**
  * Interface for an interpreter that compiles and evaluates Scala code containing a Spark job.
  *
- * <p>Scripts may access a {@link SparkContext} through the {@code sc} variable and a {@link SQLContext} through the {@code
- * sqlContext} variable.</p>
+ * <p>Scripts may access a {@link SparkContext} through the {@code sc} variable and a {@link SQLContext} through the
+ * {@code sqlContext} variable.</p>
  *
  * <p>This class is <i>thread-safe</i> and ensures that only one script </p>
  */
@@ -225,8 +225,7 @@ public abstract class ScriptEngine {
         byte[] outBytes = this.out.toByteArray();
 
         // Look for label
-        int labelIndex = ArrayUtils.indexOf(outBytes, 0, outBytes.length, LABEL, 0, LABEL.length,
-                                            0);
+        int labelIndex = ArrayUtils.indexOf(outBytes, 0, outBytes.length, LABEL, 0, LABEL.length, 0);
         if (labelIndex == -1) {
             return;
         }
@@ -262,7 +261,7 @@ public abstract class ScriptEngine {
             Throwables.propagateIfPossible(exception, ScriptException.class);
 
             if (exception instanceof Exception) {
-                throw new ScriptException((Exception) exception);
+                throw new ScriptException((Exception)exception);
             } else {
                 throw new ScriptException(exception.getMessage());
             }

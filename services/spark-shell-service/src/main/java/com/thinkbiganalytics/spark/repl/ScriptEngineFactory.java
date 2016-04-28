@@ -17,4 +17,13 @@ public class ScriptEngineFactory {
         }
         return INSTANCE;
     }
+
+    /**
+     * Instances of {@code ScriptEngineFactory} should not be constructed.
+     *
+     * @throws UnsupportedOperationException always
+     */
+    private ScriptEngineFactory () {
+        throw new UnsupportedOperationException();
+    }
 }
