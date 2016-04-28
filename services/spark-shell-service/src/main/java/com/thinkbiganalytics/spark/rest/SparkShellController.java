@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.spark.rest;
 
 import java.util.Map;
+import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
 import javax.annotation.Nonnull;
@@ -46,7 +47,6 @@ public class SparkShellController {
      * @param request the transformation request
      * @return the result of the script
      */
-
     @POST
     @Path("/transform")
     @Consumes(MediaType.APPLICATION_JSON)
@@ -73,7 +73,7 @@ public class SparkShellController {
                 return error(Response.Status.BAD_REQUEST, "transform.missingParentScript");
             }
             if (request.getParent().getTable() == null) {
-                return error(Response.Status.BAD_REQUEST, "transform.missingTableTable");
+                return error(Response.Status.BAD_REQUEST, "transform.missingParentTable");
             }
         }
 
@@ -97,15 +97,17 @@ public class SparkShellController {
         // Determine the error message
         String message = key;
 
-//        try {
-//            message = STRINGS.getString(key);
-//        }
-//        catch (NullPointerException e) {
-//            message = key;
-//        }
+        try {
+            message = STRINGS.getString(key);
+        }
+        catch (MissingResourceException e) {
+            message = key;
+        }
 
         // Generate the response
-        Map<String, String> entity = ImmutableMap.of(STATUS, "error", "message", message);
+        TransformResponse entity = new TransformResponse();
+        entity.setMessage(message);
+        entity.setStatus(TransformResponse.Status.ERROR);
         return Response.status(status).entity(entity).build();
     }
 }

@@ -23,6 +23,9 @@ public class TransformResponse {
         }
     }
 
+    /** Error message */
+    private String message;
+
     /** Result of a transformation */
     private QueryResult results;
 
@@ -31,6 +34,24 @@ public class TransformResponse {
 
     /** Table name with the results */
     private String table;
+
+    /**
+     * Gets the error message.
+     *
+     * @return the error message
+     */
+    public String getMessage() {
+        return message;
+    }
+
+    /**
+     * Sets the error message.
+     *
+     * @param message the error message
+     */
+    public void setMessage(String message) {
+        this.message = message;
+    }
 
     /**
      * Gets the results of this transformation.
