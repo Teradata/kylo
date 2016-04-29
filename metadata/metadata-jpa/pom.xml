@@ -108,6 +108,13 @@
             <groupId>org.unitils</groupId>
             <artifactId>unitils-spring</artifactId>
             <version>3.4.2</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <artifactId>hibernate</artifactId>
+                    <groupId>org.hibernate</groupId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.unitils</groupId>

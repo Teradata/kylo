@@ -52,15 +52,6 @@ public class JpaFeedProvider implements FeedProvider {
 //    @Inject 
 //    private FeedPreconditionService preconditionService;
 
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#asFeedId(java.lang.String)
-     */
-    @Override
-    public ID asFeedId(String feedIdStr) {
-        return new JpaFeed.FeedId(feedIdStr);
-    }
-
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID)
      */
@@ -177,6 +168,7 @@ public class JpaFeedProvider implements FeedProvider {
         
         if (feeds.isEmpty()) {
             feed = new JpaFeed(name, descr);
+            this.entityMgr.persist(feed);
         } else {
             feed = (JpaFeed) feeds.get(0);
         }
@@ -190,7 +182,7 @@ public class JpaFeedProvider implements FeedProvider {
         }
         
         this.entityMgr.persist(feed);
-        this.entityMgr.flush();
+//        this.entityMgr.flush();
         return feed;
     }
 
@@ -277,6 +269,7 @@ public class JpaFeedProvider implements FeedProvider {
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#getFeeds()
      */
     @Override
+    @SuppressWarnings("unchecked")
     public List<Feed> getFeeds() {
 //        return new ArrayList<Feed>(this.entityMgr.createQuery("select f from JpaFeed f", JpaFeed.class).getResultList());
         return new ArrayList<Feed>(this.entityMgr.createQuery("select f from JpaFeed f").getResultList());
@@ -354,18 +347,9 @@ public class JpaFeedProvider implements FeedProvider {
             StringBuilder query = new StringBuilder("select f from JpaFeed f ");
             
             applyFilter(query);
+            applyLimit(query);
             
             return emgr.createQuery(query.toString()).getResultList();
-//            return emgr.createQuery(query.toString(), JpaFeed.class).getResultList();
-            
-//            CriteriaBuilder builder = emgr.getCriteriaBuilder();
-//            CriteriaQuery<JpaFeed> query = builder.createQuery( JpaFeed.class );
-//            Root<JpaFeed> root = query.from( JpaFeed.class );
-//            
-//            root.fetch("JpaFeed", JoinType.LEFT);
-//            query.
-//            
-//            return emgr.createQuery( query ).getResultList();
         }
         
         private void applyFilter(StringBuilder query) {

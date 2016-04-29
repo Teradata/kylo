@@ -88,11 +88,6 @@ public class InMemoryFeedProvider implements FeedProvider {
     public void setDatasourceProvider(DatasourceProvider datasetProvider) {
         this.datasetProvider = datasetProvider;
     }
-    
-    @Override
-    public Feed.ID asFeedId(String feedIdStr) {
-        return new FeedId(feedIdStr);
-    }
 
     @Override
     public Feed.ID resolveFeed(Serializable fid) {

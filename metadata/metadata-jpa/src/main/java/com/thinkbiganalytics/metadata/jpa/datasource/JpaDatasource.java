@@ -44,8 +44,9 @@ import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedSource;
 @Entity
 @Table(name="DATASOURCE")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name="TYPE")
-public abstract class JpaDatasource implements Datasource, Serializable {
+@DiscriminatorColumn(name="type")
+//public abstract class JpaDatasource implements Datasource, Serializable {
+public class JpaDatasource implements Datasource, Serializable {
 
     private static final long serialVersionUID = -2805184157648437890L;
     
@@ -70,9 +71,11 @@ public abstract class JpaDatasource implements Datasource, Serializable {
     
     @Transient  // TODO implement
     private List<Dataset<? extends Datasource, ? extends ChangeSet>> datasets = new ArrayList<>();
+    
+    public JpaDatasource() {
+    }
 
     public JpaDatasource(String name, String descr) {
-        this.id = DatasourceId.create();
         this.createdTime = new DateTime();
         this.name = name;
         this.description = descr;

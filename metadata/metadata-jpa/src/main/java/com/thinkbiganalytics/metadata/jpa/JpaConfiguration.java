@@ -7,6 +7,8 @@ import javax.inject.Named;
 import javax.sql.DataSource;
 
 import org.hibernate.SessionFactory;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
@@ -37,6 +39,11 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 @EnableAutoConfiguration
 public class JpaConfiguration {
     
+    @Bean(name="metadataDateTimeFormatter")
+    public DateTimeFormatter dateTimeFormatter() {
+        return DateTimeFormat.forPattern("YYYY-MM-dd HH:mm:ss");
+    }
+    
     @Bean(name="metadataDatasource")
     @ConfigurationProperties(prefix = "metadata.datasource")
     public DataSource metadataDataSource() {
@@ -55,9 +62,9 @@ public class JpaConfiguration {
     }
     
     @Bean(name="metadataTransactionManager")
-    public PlatformTransactionManager transactionManager(@Named("metadataSessionFactory") SessionFactory sessFactory) {
+    public PlatformTransactionManager transactionManager() {
 //        HibernateTransactionManager xtnMgr = new HibernateTransactionManager();
-//        xtnMgr.setSessionFactory(sessFactory);
+//        xtnMgr.setSessionFactory(sessionFactory());
         JpaTransactionManager xtnMgr = new JpaTransactionManager();
         xtnMgr.setDataSource(metadataDataSource());
         xtnMgr.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ALWAYS);

@@ -5,13 +5,12 @@ package com.thinkbiganalytics.metadata.core.dataset;
 
 import java.io.Serializable;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.joda.time.DateTime;
@@ -20,9 +19,9 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
@@ -138,8 +137,8 @@ public class InMemoryDatasourceProvider implements DatasourceProvider {
     }
 
     @Override
-    public Set<Datasource> getDatasources() {
-        return new HashSet<Datasource>(this.datasets.values());
+    public List<Datasource> getDatasources() {
+        return new ArrayList<Datasource>(this.datasets.values());
     }
 
     @Override

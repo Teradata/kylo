@@ -41,6 +41,8 @@ public class JpaHiveTableUpdate extends JpaChangeSet implements HiveTableUpdate 
 //    @Column(name="part")
 //    private List<HivePartitionUpdate> partitions = new ArrayList<>();
 
+    public JpaHiveTableUpdate() {
+    }
     
     public JpaHiveTableUpdate(int count) {
         this.recourdCount = count;

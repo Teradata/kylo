@@ -35,6 +35,9 @@ public class JpaFeedSource extends JpaFeedConnection implements FeedSource {
     @OneToOne()
     private JpaServiceLevelAgreement agreement;
     
+    public JpaFeedSource() {
+    }
+    
     public JpaFeedSource(JpaFeed feed, JpaDatasource ds, JpaServiceLevelAgreement agreement) {
         super(feed, ds);
         this.id = SourceId.create();

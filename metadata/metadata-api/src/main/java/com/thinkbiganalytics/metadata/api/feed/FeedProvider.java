@@ -4,13 +4,10 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 public interface FeedProvider {
-
-    ID asFeedId(String feedIdStr);
 
     FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId);
     FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID id, ServiceLevelAgreement.ID slaId);

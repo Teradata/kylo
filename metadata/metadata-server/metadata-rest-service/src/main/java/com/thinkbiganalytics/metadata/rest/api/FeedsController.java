@@ -49,9 +49,9 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
  */
 @Component
 @Path("/feed")
-public class FeedsResource {
+public class FeedsController {
     
-    private static final Logger LOG = LoggerFactory.getLogger(FeedsResource.class);
+    private static final Logger LOG = LoggerFactory.getLogger(FeedsController.class);
     
     @Inject
     private FeedProvider feedProvider;
@@ -93,7 +93,7 @@ public class FeedsResource {
         return this.metadata.read(new Command<Feed>() {
             @Override
             public Feed execute() {
-                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.asFeedId(feedId);
+                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
                 com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
                 
                 return Model.DOMAIN_TO_FEED.apply(domain);
@@ -111,7 +111,7 @@ public class FeedsResource {
         return this.metadata.read(new Command<FeedDependency>() {
             @Override
             public FeedDependency execute() {
-                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.asFeedId(feedId);
+                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
                 com.thinkbiganalytics.metadata.api.feed.Feed startDomain = feedProvider.getFeed(domainId);
                 
                 if (startDomain != null) {
@@ -132,7 +132,7 @@ public class FeedsResource {
         return this.metadata.read(new Command<List<FeedSource>>() {
             @Override
             public List<FeedSource> execute() {
-                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.asFeedId(feedId);
+                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
                 com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
@@ -153,7 +153,7 @@ public class FeedsResource {
         return this.metadata.read(new Command<FeedSource>() {
             @Override
             public FeedSource execute() {
-                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.asFeedId(feedId);
+                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
                 com.thinkbiganalytics.metadata.api.feed.FeedSource.ID domainSrcId = feedProvider.resolveSource(srcId);
                 com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
                 
@@ -181,7 +181,7 @@ public class FeedsResource {
         return this.metadata.read(new Command<List<FeedDestination>>() {
             @Override
             public List<FeedDestination> execute() {
-                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.asFeedId(feedId);
+                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
                 com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
@@ -202,7 +202,7 @@ public class FeedsResource {
         return this.metadata.read(new Command<FeedDestination>() {
             @Override
             public FeedDestination execute() {
-                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.asFeedId(feedId);
+                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
                 com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID domainDestId = feedProvider.resolveDestination(destId);
                 com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
                 
@@ -230,7 +230,7 @@ public class FeedsResource {
         return this.metadata.read(new Command<FeedPrecondition>() {
             @Override
             public FeedPrecondition execute() {
-                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.asFeedId(feedId);
+                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
                 com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
@@ -251,7 +251,7 @@ public class FeedsResource {
         return this.metadata.read(new Command<ServiceLevelAssessment>() {
             @Override
             public ServiceLevelAssessment execute() {
-                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.asFeedId(feedId);
+                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
                 com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {

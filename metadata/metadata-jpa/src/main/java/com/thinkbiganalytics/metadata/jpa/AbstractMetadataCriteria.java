@@ -11,7 +11,7 @@ import com.thinkbiganalytics.metadata.api.MetadataCriteria;
  */
 public abstract class AbstractMetadataCriteria<C extends MetadataCriteria<C>> implements MetadataCriteria<C> {
 
-    private int limit = Integer.MAX_VALUE;
+    private int limit = -1;
     
     @Override
     public C limit(int size) {
@@ -26,5 +26,11 @@ public abstract class AbstractMetadataCriteria<C extends MetadataCriteria<C>> im
     
     public int getLimit() {
         return limit;
+    }
+
+    protected void applyLimit(StringBuilder query) {
+        if (getLimit() >= 0) {
+            query.append("limit ").append(getLimit());
+        }
     }
 }

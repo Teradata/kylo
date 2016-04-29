@@ -3,7 +3,6 @@ package com.thinkbiganalytics.metadata.api.datasource;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.List;
-import java.util.Set;
 
 import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
@@ -19,7 +18,7 @@ public interface DatasourceProvider {
     HiveTableDatasource asHiveTableDatasource(Datasource.ID dsId, String database, String table);
     
     Datasource getDatasource(Datasource.ID id);
-    Set<Datasource> getDatasources();
+    List<Datasource> getDatasources();
     List<Datasource> getDatasources(DatasourceCriteria criteria);
 
     Datasource.ID resolve(Serializable id);

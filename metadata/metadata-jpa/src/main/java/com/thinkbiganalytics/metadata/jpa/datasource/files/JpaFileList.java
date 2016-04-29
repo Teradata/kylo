@@ -35,6 +35,9 @@ public class JpaFileList extends JpaChangeSet implements FileList {
     @Column(name="path")
     private List<String> paths = new ArrayList<>();
     
+    public JpaFileList() {
+    }
+    
     public JpaFileList(List<Path> paths) {
         for (Path path : paths) {
             this.paths.add(path.toString());

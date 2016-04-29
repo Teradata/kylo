@@ -64,9 +64,8 @@ public class JpaFeed implements Feed {
     }
     
     public JpaFeed(String name, String description) {
-        this.Id = FeedId.create();
-        name = name;
-        description = description;
+        this.name = name;
+        this.description = description;
     }
 
     public ID getId() {
@@ -246,6 +245,9 @@ public class JpaFeed implements Feed {
         
         @OneToOne
         private JpaServiceLevelAgreement sla;
+        
+        public JpaFeedPrecondition() {
+        }
         
         public JpaFeedPrecondition(JpaServiceLevelAgreement sla) {
             this.sla = sla;
