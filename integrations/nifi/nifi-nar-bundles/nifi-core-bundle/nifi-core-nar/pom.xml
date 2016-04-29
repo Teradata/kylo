@@ -27,12 +27,6 @@
         </dependency>
 
         <dependency>
-            <groupId>com.thinkbiganalytics.nifi.core</groupId>
-            <artifactId>thinkbig-nifi-core-service</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
             <groupId>com.thinkbiganalytics.nifi.services</groupId>
             <artifactId>thinkbig-nifi-standard-services-nar</artifactId>
             <version>${project.version}</version>
