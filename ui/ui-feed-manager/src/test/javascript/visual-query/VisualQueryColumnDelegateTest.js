@@ -20,9 +20,20 @@ describe("VisualQueryColumnDelegate", function() {
                 done();
             }
         };
+        var grid = {
+            api: {
+                core: {
+                    notifyDataChange: function() {},
+                    raise: {
+                        columnVisibilityChanged: function() {}
+                    }
+                }
+            },
+            queueGridRefresh: function() {}
+        };
 
         var delegate = new VisualQueryColumnDelegate(controller);
-        delegate.hideColumn({colDef: {}, field: "col1"}, null);
+        delegate.hideColumn({colDef: {}, field: "col1"}, grid);
     });
 
     // transformColumn

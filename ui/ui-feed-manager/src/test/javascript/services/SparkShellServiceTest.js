@@ -18,15 +18,33 @@ describe("SparkShellService", function() {
         expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)");
     });
 
+    // canRedo
+    it("should indicate redo when possible", function() {
+        var service = new SparkShellService("SELECT * FROM invalid");
+        expect(service.canRedo()).toBe(false);
+
+        service.redo_.push(service.newState());
+        expect(service.canRedo()).toBe(true);
+    });
+
+    // canUndo
+    it("should indicate undo when possible", function() {
+        var service = new SparkShellService("SELECT * FROM invalid");
+        expect(service.canUndo()).toBe(false);
+
+        service.states_.push(service.newState());
+        expect(service.canUndo()).toBe(true);
+    });
+
     // getColumnDefs
     it("should generate column type definitions", function() {
         // Create service
         var service = new SparkShellService("SELECT * FROM invalid");
-        service.columns_ = [[
+        service.states_[0].columns = [
             {field: "pricepaid", hiveColumnLabel: "pricepaid"},
             {field: "commission", hiveColumnLabel: "commission"},
             {field: "qtysold", hiveColumnLabel: "qtysold"}
-        ]];
+        ];
 
         // Test column defs
         var defs = service.getColumnDefs();
@@ -45,9 +63,9 @@ describe("SparkShellService", function() {
     it("should get column label for field name", function() {
         // Create service
         var service = new SparkShellService("SELECT * FROM invalid");
-        service.columns_ = [[
+        service.states_[0].columns = [
             {field: "col1", hiveColumnLabel: "(pricepaid - commission)"}
-        ]];
+        ];
 
         // Test column labels
         expect(service.getColumnLabel("invalid")).toBe(null);
@@ -58,11 +76,11 @@ describe("SparkShellService", function() {
     it("should generate script from a column expression", function() {
         // Create service
         var service = new SparkShellService("SELECT * FROM invalid");
-        service.columns_ = [[
+        service.states_[0].columns = [
             {field: "pricepaid", hiveColumnLabel: "pricepaid"},
             {field: "commission", hiveColumnLabel: "commission"},
             {field: "qtysold", hiveColumnLabel: "qtysold"}
-        ]];
+        ];
         service.setFunctionDefs({
             "!define": {"Column": {"as": {"!spark": ".as(%s)", "!sparkType": "column"}}},
             "divide": {"!spark": "%c.divide(%c)", "!sparkType": "column"},
@@ -70,7 +88,8 @@ describe("SparkShellService", function() {
         });
 
         // Test script
-        service.push(tern.parse("(divide(divide(commission, pricepaid), qtysold) * 100).as(\"overhead\")"));
+        var formula = "(divide(divide(commission, pricepaid), qtysold) * 100).as(\"overhead\")";
+        service.push(formula, tern.parse(formula));
         expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
             "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
             ".select(new Column(\"*\"), new Column(\"commission\").divide(new Column(\"pricepaid\"))" +
@@ -79,11 +98,11 @@ describe("SparkShellService", function() {
     it("should generate script from a filter expression", function() {
         // Create service
         var service = new SparkShellService("SELECT * FROM invalid");
-        service.columns_ = [[
+        service.states_[0].columns = [
             {field: "pricepaid", hiveColumnLabel: "pricepaid"},
             {field: "commission", hiveColumnLabel: "commission"},
             {field: "qtysold", hiveColumnLabel: "qtysold"}
-        ]];
+        ];
         service.setFunctionDefs({
             "and": {"!spark": "%c.and(%c)", "!sparkType": "column"},
             "equal": {"!spark": "%c.equalTo(%c)", "!sparkType": "column"},
@@ -93,7 +112,8 @@ describe("SparkShellService", function() {
         });
 
         // Test script
-        service.push(tern.parse("filter(qtysold == 2 && pricepaid - commission > 200)"));
+        var formula = "filter(qtysold == 2 && pricepaid - commission > 200)";
+        service.push(formula, tern.parse(formula));
         expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
                                          "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
                                          ".filter(new Column(\"qtysold\").equalTo(functions.lit(2)).and(" +
@@ -108,6 +128,24 @@ describe("SparkShellService", function() {
         service.limit(5000);
         expect(service.limit()).toBe(5000);
         expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(5000)");
+    });
+
+    // redo
+    it("should redo the last undone transformation", function() {
+        // Initialize service
+        var service = new SparkShellService("SELECT * FROM invalid");
+
+        var state = service.newState();
+        state.formula = "42";
+        state.script = ".withColumn(\"col1\", functions.lit(42))";
+        service.redo_.push(state);
+
+        // Test redo
+        expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)");
+
+        expect(service.redo()).toBe("42");
+        expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
+                                         ".withColumn(\"col1\", functions.lit(42))");
     });
 
     // sample
@@ -131,5 +169,23 @@ describe("SparkShellService", function() {
         expect(service.shouldLimitBeforeSample()).toBe(true);
         expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
                                          ".sample(false, 0.01)");
+    });
+
+    // undo
+    it("should undo the last transformation", function() {
+        // Initialize service
+        var service = new SparkShellService("SELECT * FROM invalid");
+
+        var state = service.newState();
+        state.formula = "42";
+        state.script = ".withColumn(\"col1\", functions.lit(42))";
+        service.states_.push(state);
+
+        // Test redo
+        expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
+                                         ".withColumn(\"col1\", functions.lit(42))");
+
+        expect(service.undo()).toBe("42");
+        expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)");
     });
 });

@@ -16,7 +16,7 @@
  * @property {Object.<String, QueryResultColumn>} columnFieldMap maps field names to column details
  * @property {Array.<QueryResultColumn>} columns list of column details
  * @property {string} query the Spark script that was sent in the request
- * @property {Object.<String, *>} rows maps field names to values
+ * @property {Array.<Object.<String, *>>} rows maps field names to values
  */
 
 /**
@@ -52,20 +52,23 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
     var TYPE_DIRECTIVE = "!sparkType";
 
     /**
+     * Maintains the state of a Spark script for a single transformation.
+     *
+     * @typedef {Object} ScriptState
+     * @property {Array.<QueryResultColumn>|null} columns the columns as returned by the server
+     * @property {string} formula the transformation expression
+     * @property {Array.<Object.<string,*>>|null} rows the rows as returned by the server
+     * @property {string} script the Spark script
+     * @property {string|null} table the table containing the results
+     */
+
+    /**
      * Constructs a SparkShellService.
      *
      * @constructor
      * @param sql the source SQL for transformations
      */
     var SparkShellService = function(sql) {
-        /**
-         * Stack of the columns for each script as returned by the server.
-         *
-         * @private
-         * @type {Array.<Array.<QueryResultColumn>>}
-         */
-        this.columns_ = [[]];
-
         /**
          * Transformation function definitions.
          *
@@ -91,20 +94,20 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         this.limitBeforeSample_ = false;
 
         /**
+         * List of states that can be redone.
+         *
+         * @private
+         * @type {Array.<ScriptState>}
+         */
+        this.redo_ = [];
+
+        /**
          * Fraction of rows to include when sampling.
          *
          * @private
          * @type {number}
          */
         this.sample_ = 1.0;
-
-        /**
-         * Stack of the scripts for each transformation.
-         *
-         * @private
-         * @type {string[]}
-         */
-        this.script_ = [""];
 
         /**
          * The source SQL for transformations.
@@ -115,15 +118,33 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         this.source_ = sql;
 
         /**
-         * List of tables containing transformation results.
-         *
+         * List of states.
+         * 
          * @private
-         * @type {string[]}
+         * @type {Array.<ScriptState>}
          */
-        this.tables_ = [];
+        this.states_ = [this.newState()];
     };
 
     angular.extend(SparkShellService.prototype, {
+        /**
+         * Indicates if a previously undone transformation can be redone.
+         *
+         * @returns {boolean} {@code true} if the transformation can be restored
+         */
+        canRedo: function() {
+            return (this.redo_.length != 0);
+        },
+
+        /**
+         * Indicates if the current transformation can be undone.
+         *
+         * @returns {boolean} {@code true} if the current transformation can be undone
+         */
+        canUndo: function() {
+            return (this.states_.length > 1);
+        },
+
         /**
          * Gets the type definitions for the output columns of the current script. These definitions are only available after
          * receiving a {@link SparkShellService#transform} response.
@@ -140,11 +161,13 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
             defs[DEFINE_DIRECTIVE][TERNJS_COLUMN_TYPE] = {};
 
             // Add column names
-            var columns = (this.columns_.length !== 0) ? this.columns_[this.columns_.length - 1] : [];
+            var columns = this.getState().columns;
 
-            angular.forEach(columns, function(column) {
-                defs[column.field] = TERNJS_COLUMN_TYPE;
-            });
+            if (columns !== null) {
+                angular.forEach(columns, function(column) {
+                    defs[column.field] = TERNJS_COLUMN_TYPE;
+                });
+            }
 
             return defs;
         },
@@ -156,15 +179,26 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          * @returns {string|null} the Hive column label if the column exists, or {@code null} otherwise
          */
         getColumnLabel: function(fieldName) {
-            var columns = (this.columns_.length !== 0) ? this.columns_[this.columns_.length - 1] : [];
+            var columns = this.getState().columns;
 
-            for (var i=0; i < columns.length; ++i) {
-                if (columns[i].field == fieldName) {
-                    return columns[i].hiveColumnLabel;
+            if (columns !== null) {
+                for (var i = 0; i < columns.length; ++i) {
+                    if (columns[i].field == fieldName) {
+                        return columns[i].hiveColumnLabel;
+                    }
                 }
             }
 
             return null;
+        },
+
+        /**
+         * Gets the columns after applying the current transformation.
+         * 
+         * @returns {Array.<QueryResultColumn>|null} the columns or {@code null} if the transformation has not been applied
+         */
+        getColumns: function() {
+            return this.getState().columns;
         },
 
         /**
@@ -177,6 +211,15 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         },
 
         /**
+         * Gets the rows after applying the current transformation.
+         * 
+         * @returns {Array.<Object.<string,*>>|null} the rows or {@code null} if the transformation has not been applied
+         */
+        getRows: function() {
+            return this.getState().rows;
+        },
+
+        /**
          * Gets the Spark script.
          *
          * @param {number} [opt_start] the index of the first transformation
@@ -186,7 +229,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         getScript: function(opt_start, opt_end) {
             // Determine start and end indexes
             var start = (typeof(opt_start) !== "undefined") ? opt_start : 0;
-            var end = (typeof(opt_end) !== "undefined") ? opt_end + 1 : this.script_.length;
+            var end = (typeof(opt_end) !== "undefined") ? opt_end + 1 : this.states_.length;
 
             // Build script
             var sparkScript = "import org.apache.spark.sql._\n";
@@ -207,7 +250,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
             }
 
             for (var i = start; i < end; ++i) {
-                sparkScript += this.script_[i];
+                sparkScript += this.states_[i].script;
             }
 
             return sparkScript;
@@ -221,36 +264,56 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          */
         limit: function(opt_value) {
             if (arguments.length !== 0) {
+                this.clearTableState();
                 this.limit_ = opt_value;
-                this.tables_ = [];
             }
             return this.limit_;
         },
 
         /**
-         * Removes the last transformation from the stack.
+         * Removes the last transformation from the stack. This action cannot be undone.
+         *
+         * @see #undo()
          */
         pop: function() {
-            if (this.script_.length > 1) {
-                this.script_.pop();
-
-                while (this.columns_.length > this.script_.length) {
-                    this.columns_.pop();
-                }
-
-                while (this.tables_.length > this.script_.length) {
-                    this.tables_.pop();
-                }
+            if (this.states_.length > 1) {
+                this.states_.pop();
             }
         },
 
         /**
          * Adds a transformation expression to the stack.
          *
+         * @param {string} formula the transformation expression
          * @param {acorn.Node} tree the abstract syntax tree for the expression
          */
-        push: function(tree) {
-            this.script_.push(toScript(tree, this));
+        push: function(formula, tree) {
+            // Add new state
+            var state = this.newState();
+            state.formula = formula;
+            state.script = toScript(tree, this);
+            this.states_.push(state);
+
+            // Clear redo states
+            this.redo_ = [];
+        },
+
+        /**
+         * Restores the last transformation that was undone.
+         *
+         * @see #undo()
+         * @returns {string} the formula for the restored transformation
+         * @throws {Error} if there are no transformations to redo
+         */
+        redo: function() {
+            if (this.redo_.length > 0) {
+                var state = this.redo_.pop();
+                this.states_.push(state);
+                return state.formula;
+            }
+            else {
+                throw new Error("No states to redo");
+            }
         },
 
         /**
@@ -261,8 +324,8 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          */
         sample: function(opt_value) {
             if (arguments.length !== 0) {
+                this.clearTableState();
                 this.sample_ = opt_value;
-                this.tables_ = [];
             }
             return this.sample_;
         },
@@ -284,8 +347,8 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          */
         shouldLimitBeforeSample: function(opt_value) {
             if (arguments.length !== 0) {
+                this.clearTableState();
                 this.limitBeforeSample_ = opt_value;
-                this.tables_ = [];
             }
             return this.limitBeforeSample_;
         },
@@ -298,12 +361,12 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         transform: function() {
             // Build the request body
             var body = {sendResults: true};
-            var index = this.script_.length - 1;
+            var index = this.states_.length - 1;
 
-            if (index > 0 && typeof(this.tables_[index - 1]) !== "undefined") {
+            if (index > 0 && this.states_[index - 1].table !== null) {
                 body["script"] = this.getScript(index, index);
                 body["parent"] = {
-                    table: this.tables_[index - 1],
+                    table: this.states_[index - 1].table,
                     script: this.getScript(0, index - 1)
                 };
             }
@@ -314,8 +377,10 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
             // Create the response handlers
             var self = this;
             var successCallback = function(response) {
-                self.columns_[index] = response.data.results.columns;
-                self.tables_[index] = response.data.table;
+                var state = self.states_[index];
+                state.columns = response.data.results.columns;
+                state.rows = response.data.results.rows;
+                state.table = response.data.table;
             };
             var errorCallback = function(response) {
                 var alert = $mdDialog.alert()
@@ -338,6 +403,60 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
             });
             promise.then(successCallback, errorCallback);
             return promise;
+        },
+
+        /**
+         * Reverts to the previous transformation. The current transformation is remembered and may be restored.
+         *
+         * @see #pop()
+         * @see #redo()
+         * @returns {string} the formula for the undone transformation
+         * @throws {Error} if there are no transformations to undo
+         */
+        undo: function() {
+            if (this.states_.length > 1) {
+                var state = this.states_.pop();
+                this.redo_.push(state);
+                return state.formula;
+            }
+            else {
+                throw new Error("No states to undo");
+            }
+        },
+
+        /**
+         * Clears table data from all states. This doesn't affect column information that doesn't change with the limit or sample
+         * properties.
+         */
+        clearTableState: function() {
+            angular.forEach(this.redo_, function(state) {
+                state.rows = null;
+                state.table = null;
+            });
+            angular.forEach(this.states_, function(state) {
+                state.rows = null;
+                state.table = null;
+            });
+        },
+
+        /**
+         * Gets the current state.
+         *
+         * @private
+         * @returns {ScriptState} the current state
+         */
+        getState: function() {
+            return this.states_.length > 0 ? this.states_[this.states_.length - 1] : {};
+        },
+
+        /**
+         * Creates a new script state.
+         *
+         * @private
+         * @returns {ScriptState} a new script state
+         */
+        newState: function() {
+            return {columns: null, formula: "", rows: null, script: "", table: null};
         }
     });
 

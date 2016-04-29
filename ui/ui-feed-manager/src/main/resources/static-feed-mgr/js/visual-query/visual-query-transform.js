@@ -249,32 +249,41 @@
                     self.gridApi.core.clearAllFilters();
                 }
 
-                //transform the result to the agGrid model
-                var result = HiveService.transformQueryResultsToUiGridModel({data: response.data.results});
-
-                angular.forEach(result.columns, function(column) {
-                    column.headerCellTemplate = "visual-query/grid-header-cell";
-                    column.delegate = new VisualQueryColumnDelegate(self);
-                    column.filters = column.delegate.filters;
-                });
-
-                //store the result for use in the commands
-                self.tableData = result;
-                //update the ag-grid
-                self.gridOptions.columnDefs = result.columns;
-                self.gridOptions.data = result.rows;
                 //mark the flag to indicate Hive is loaded
                 self.hiveDataLoaded = true;
-                self.updateCodeMirrorAutoComplete();
+
+                //store the result for use in the commands
+                self.tableData = {rows: self.sparkShellService.getRows(), columns: self.sparkShellService.getColumns()};
+                updateGrid(self.tableData);
 
                 //Initialize the Command function holder
-                self.functionCommandHolder = TableDataFunctions.newCommandHolder({rows: result.rows, columns: result.columns});
+                self.functionCommandHolder = TableDataFunctions.newCommandHolder(self.tableData);
             });
         };
 
         function updateGrid(tableData) {
-            self.gridOptions.columnDefs = tableData.columns;
+            //transform the result to the agGrid model
+            var columns = [];
+
+            angular.forEach(tableData.columns, function(col) {
+                var delegate = new VisualQueryColumnDelegate(self);
+                columns.push({
+                    delegate: delegate,
+                    displayName: col.displayName,
+                    filters: delegate.filters,
+                    headerCellTemplate: "visual-query/grid-header-cell",
+                    headerTooltip: col.hiveColumnLabel,
+                    minWidth: 150,
+                    name: col.displayName,
+                    queryResultColumn: col
+                });
+            });
+
+            //update the ag-grid
+            self.gridOptions.columnDefs = columns;
             self.gridOptions.data = tableData.rows;
+
+            self.updateCodeMirrorAutoComplete();
         }
 
         /**
@@ -324,7 +333,7 @@
 
             // Add to the Spark script
             try {
-                self.sparkShellService.push(file.ast);
+                self.sparkShellService.push(formula, file.ast);
             } catch (e) {
                 var alert = $mdDialog.alert()
                         .parent($('body'))
@@ -348,33 +357,37 @@
             self.addFunction(self.currentFormula);
         };
 
-        //reference to the last command that was undone
-        var lastUndo = '';
+        /**
+         * Refreshes the grid. Used after undo and redo.
+         */
+        this.refreshGrid = function() {
+            var columns = self.sparkShellService.getColumns();
+            var rows = self.sparkShellService.getRows();
+
+            if (columns === null || rows === null) {
+                self.query();
+            }
+            else {
+                updateGrid({columns: self.sparkShellService.getColumns(), rows: self.sparkShellService.getRows()});
+            }
+        };
 
         this.onUndo = function() {
-            var tableData = self.functionCommandHolder.undo();
-            updateGrid(tableData);
-            lastUndo = self.functionHistory.pop();
+            self.sparkShellService.undo();
+            self.functionHistory.pop();
+            this.refreshGrid();
         };
         this.onRedo = function() {
-            var tableData = self.functionCommandHolder.redo();
-            updateGrid(tableData);
-            self.functionHistory.push(lastUndo);
+            var formula = this.sparkShellService.redo();
+            self.functionHistory.push(formula);
+            this.refreshGrid();
         };
 
         this.canUndo = function() {
-            if (self.functionCommandHolder) {
-                return self.functionCommandHolder.canUndo();
-            } else {
-                return false;
-            }
+            return this.sparkShellService.canUndo();
         };
         this.canRedo = function() {
-            if (self.functionCommandHolder) {
-                return self.functionCommandHolder.canRedo();
-            } else {
-                return false;
-            }
+            return this.sparkShellService.canRedo();
         };
 
         //Listen for when the next step is active
