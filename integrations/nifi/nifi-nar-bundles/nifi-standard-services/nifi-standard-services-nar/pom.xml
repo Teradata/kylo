@@ -21,14 +21,14 @@
     <dependencies>
 
         <dependency>
-            <groupId>com.thinkbiganalytics.nifi.core</groupId>
+            <groupId>com.thinkbiganalytics.nifi.services</groupId>
             <artifactId>thinkbig-nifi-core-service-api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
         </dependency>
 
         <dependency>
-            <groupId>com.thinkbiganalytics.nifi.hadoop</groupId>
+            <groupId>com.thinkbiganalytics.nifi.services</groupId>
             <artifactId>thinkbig-nifi-hadoop-service-api</artifactId>
             <version>${project.version}</version>
             <scope>compile</scope>
