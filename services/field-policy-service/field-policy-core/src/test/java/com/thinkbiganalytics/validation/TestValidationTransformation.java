@@ -126,7 +126,7 @@ public class TestValidationTransformation {
     FieldValidationRule uiModel = ValidatorAnnotationTransformer.instance().toUIModel(validator);
     NotNullValidator convertedValidator = fromUI(uiModel, NotNullValidator.class);
     Assert.assertFalse(convertedValidator.isAllowEmptyString());
-    Assert.assertFalse(convertedValidator.isTrimString());
+    Assert.assertTrue(convertedValidator.isTrimString());
 
   }
 
