@@ -129,7 +129,6 @@ public class NifiRestClient extends JerseyRestClient {
    * Return a template, populated along with its Flow snippet
    */
   public TemplateDTO getTemplateById(String templateId) throws JerseyClientException {
-    String xml = getTemplateXml(templateId);
     TemplateDTO dto = get("/controller/templates/" + templateId, null, TemplateDTO.class);
     return dto;
   }
@@ -173,6 +172,34 @@ public class NifiRestClient extends JerseyRestClient {
     return NifiPropertyUtil.getPropertiesForTemplate(rootProcessGroup.getProcessGroup(), dto);
   }
 
+
+  public Set<PortDTO> getPortsForTemplate(String templateId) throws JerseyClientException {
+    Set<PortDTO> ports = new HashSet<>();
+    TemplateDTO dto = getTemplateById(templateId);
+    Set<PortDTO> inputPorts = dto.getSnippet().getInputPorts();
+    if(inputPorts != null){
+      ports.addAll(inputPorts);
+    }
+    Set<PortDTO> outputPorts = dto.getSnippet().getOutputPorts();
+    if(outputPorts != null){
+      ports.addAll(outputPorts);
+    }
+   return ports;
+  }
+
+  public Set<PortDTO> getPortsForProcessGroup(String processGroupId) throws JerseyClientException {
+    Set<PortDTO> ports = new HashSet<>();
+    ProcessGroupEntity processGroupEntity = getProcessGroup(processGroupId, false, true);
+    Set<PortDTO> inputPorts = processGroupEntity.getProcessGroup().getContents().getInputPorts();
+    if(inputPorts != null){
+      ports.addAll(inputPorts);
+    }
+    Set<PortDTO> outputPorts = processGroupEntity.getProcessGroup().getContents().getOutputPorts();
+    if(outputPorts != null){
+      ports.addAll(outputPorts);
+    }
+    return ports;
+  }
 
   /**
    * Expose all Properties for a given Template as parameters for external use
@@ -268,6 +295,10 @@ public class NifiRestClient extends JerseyRestClient {
                                                                NifiProcessorSchedule feedSchedule) throws JerseyClientException {
     return CreateFeedBuilder.newFeed(this, category, feedName, templateId).inputProcessorType(inputProcessorType)
         .feedSchedule(feedSchedule).properties(properties).build();
+  }
+
+  public CreateFeedBuilder newFeedBuilder(String templateId, String category, String feedName) {
+    return CreateFeedBuilder.newFeed(this, category, feedName, templateId);
   }
 
 

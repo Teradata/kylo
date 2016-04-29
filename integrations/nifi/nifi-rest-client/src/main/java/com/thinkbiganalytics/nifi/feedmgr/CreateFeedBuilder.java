@@ -46,7 +46,7 @@ public class CreateFeedBuilder {
   private String feedName;
   private String inputProcessorType;
   private String reusableTemplateCategoryName = "Reusable Templates";
-  private String reusableTemplateName;
+  private String reusableTemplateFeedName;
   private String feedOutputPortName;
   private String reusableTemplateInputPortName;
   private boolean isReusableTemplate;
@@ -83,8 +83,8 @@ public class CreateFeedBuilder {
   }
 
 
-  public CreateFeedBuilder reusableTemplateName(String reusableTemplateName) {
-    this.reusableTemplateName = reusableTemplateName;
+  public CreateFeedBuilder reusableTemplateFeedName(String reusableTemplateFeedName) {
+    this.reusableTemplateFeedName = reusableTemplateFeedName;
     return this;
   }
 
@@ -154,7 +154,7 @@ public class CreateFeedBuilder {
   private void connectFeedToReusableTemplate(String feedGroupId) throws JerseyClientException {
     ProcessGroupDTO reusableTemplateCategory = restClient.getProcessGroupByName("root", reusableTemplateCategoryName);
     ProcessGroupDTO reusableTemplate = restClient.getProcessGroupByName(reusableTemplateCategory.getId(),
-                                                                        reusableTemplateName);
+                                                                        reusableTemplateFeedName);
     ProcessGroupEntity feedProcessGroup = restClient.getProcessGroup(feedGroupId, false, false);
     String feedCategoryId = feedProcessGroup.getProcessGroup().getParentGroupId();
     String reusableTemplateCategoryGroupId = reusableTemplateCategory.getId();
@@ -187,7 +187,7 @@ public class CreateFeedBuilder {
         instantiateFlowFromTemplate(processGroupId);
 
         //if the feed has an outputPort that should go to a reusable Flow then make those connections
-        if (reusableTemplateName != null) {
+        if (reusableTemplateFeedName != null) {
           connectFeedToReusableTemplate(processGroupId);
         }
         if (isReusableTemplate) {

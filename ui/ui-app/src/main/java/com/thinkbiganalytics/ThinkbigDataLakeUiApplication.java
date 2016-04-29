@@ -1,13 +1,16 @@
 package com.thinkbiganalytics;
 
 
-import com.thinkbiganalytics.ui.config.DatabaseConfiguration;
+
 import com.thinkbiganalytics.ui.config.SpringJerseyConfiguration;
 
 import org.springframework.beans.factory.config.PropertyOverrideConfigurer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceTransactionManagerAutoConfiguration;
+import org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration;
 import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
@@ -23,10 +26,11 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 @Configuration
-@SpringBootApplication
-@EnableAutoConfiguration(exclude = {VelocityAutoConfiguration.class})
+@SpringBootApplication(exclude = {VelocityAutoConfiguration.class, DataSourceAutoConfiguration.class,HibernateJpaAutoConfiguration.class,
+                                  DataSourceTransactionManagerAutoConfiguration.class })
+//@EnableAutoConfiguration(exclude = {VelocityAutoConfiguration.class, DataSourceAutoConfiguration.class })
 @EnableConfigurationProperties
-@Import({DatabaseConfiguration.class, SpringJerseyConfiguration.class})
+@Import({SpringJerseyConfiguration.class})
 @ComponentScan("com.thinkbiganalytics")
 @EnableZuulProxy
 public class ThinkbigDataLakeUiApplication implements SchedulingConfigurer {
