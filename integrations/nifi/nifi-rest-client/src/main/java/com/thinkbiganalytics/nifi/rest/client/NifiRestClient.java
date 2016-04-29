@@ -8,20 +8,23 @@ import com.thinkbiganalytics.nifi.feedmgr.CreateFeedBuilder;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.nifi.rest.model.visitor.NifiConnectionOrderVisitor;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiTemplateUtil;
+import com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitor;
 import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyClientException;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
@@ -35,7 +38,11 @@ import org.apache.nifi.web.api.entity.ControllerServicesEntity;
 import org.apache.nifi.web.api.entity.ControllerStatusEntity;
 import org.apache.nifi.web.api.entity.DropRequestEntity;
 import org.apache.nifi.web.api.entity.Entity;
+import org.apache.nifi.web.api.entity.InputPortEntity;
+import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.apache.nifi.web.api.entity.LineageEntity;
+import org.apache.nifi.web.api.entity.OutputPortEntity;
+import org.apache.nifi.web.api.entity.OutputPortsEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupsEntity;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
@@ -122,6 +129,7 @@ public class NifiRestClient extends JerseyRestClient {
    * Return a template, populated along with its Flow snippet
    */
   public TemplateDTO getTemplateById(String templateId) throws JerseyClientException {
+    String xml = getTemplateXml(templateId);
     TemplateDTO dto = get("/controller/templates/" + templateId, null, TemplateDTO.class);
     return dto;
   }
@@ -826,16 +834,245 @@ public class NifiRestClient extends JerseyRestClient {
     }
 */
 
+  public InputPortEntity getInputPort(String groupId, String portId) throws JerseyClientException {
+    return get("/controller/process-groups/" + groupId + "/input-ports/" + portId, null, InputPortEntity.class);
+  }
+
+  public InputPortsEntity getInputPorts(String groupId) throws JerseyClientException {
+    return get("/controller/process-groups/" + groupId + "/input-ports/", null, InputPortsEntity.class);
+  }
+
+  public OutputPortEntity getOutputPort(String groupId, String portId) throws JerseyClientException {
+    return get("/controller/process-groups/" + groupId + "/output-ports/" + portId, null, OutputPortEntity.class);
+  }
+
+  public OutputPortsEntity getOutputPorts(String groupId) throws JerseyClientException {
+    return get("/controller/process-groups/" + groupId + "/output-ports", null, OutputPortsEntity.class);
+  }
+
+  public List<ConnectionDTO> findAllConnectionsMatchingDestinationId(String parentGroupId, String destinationId)
+      throws JerseyClientException {
+    //get this parentGroup and find all connections under this parent that relate to this inputPortId
+    //1. get this processgroup
+    ProcessGroupEntity parentGroup = getProcessGroup(parentGroupId, false, false);
+    //2 get the parent
+    String parent = parentGroup.getProcessGroup().getParentGroupId();
+    Set<ConnectionDTO> connectionDTOs = findConnectionsForParent(parent);
+    List<ConnectionDTO> matchingConnections = NifiConnectionUtil.findConnectionsMatchingDestinationId(connectionDTOs,
+                                                                                                      destinationId);
+
+    return matchingConnections;
+
+  }
+
+  public void createReusableTemplateInputPort(String reusableTemplateCategoryGroupId, String reusableTemplateGroupId)
+      throws JerseyClientException {
+    ProcessGroupEntity reusableTemplateGroup = getProcessGroup(reusableTemplateGroupId, false, false);
+    ProcessGroupEntity reusableTemplateCategoryGroup = getProcessGroup(reusableTemplateCategoryGroupId, false, false);
+    InputPortsEntity inputPortsEntity = getInputPorts(reusableTemplateGroupId);
+    if (inputPortsEntity != null) {
+      for (PortDTO inputPort : inputPortsEntity.getInputPorts()) {
+        createReusableTemplateInputPort(reusableTemplateCategoryGroupId, reusableTemplateGroupId, inputPort.getName());
+      }
+    }
+  }
+
+  /**
+   * Creates an INPUT Port and verifys/creates the connection from it to the child processgroup input port
+   */
+  public void createReusableTemplateInputPort(String reusableTemplateCategoryGroupId, String reusableTemplateGroupId,
+                                              String inputPortName)
+      throws JerseyClientException {
+    // ProcessGroupEntity reusableTemplateGroup = getProcessGroup(reusableTemplateGroupId, false, false);
+    InputPortsEntity inputPortsEntity = getInputPorts(reusableTemplateCategoryGroupId);
+    PortDTO inputPort = NifiConnectionUtil.findPortMatchingName(inputPortsEntity.getInputPorts(), inputPortName);
+    if (inputPort == null) {
+
+      //1 create the inputPort on the Category Group
+      InputPortEntity inputPortEntity = new InputPortEntity();
+      PortDTO portDTO = new PortDTO();
+      portDTO.setParentGroupId(reusableTemplateCategoryGroupId);
+      portDTO.setName(inputPortName);
+      inputPortEntity.setInputPort(portDTO);
+      updateEntityForSave(inputPortEntity);
+      inputPortEntity =
+          post("/controller/process-groups/" + reusableTemplateCategoryGroupId + "/input-ports", inputPortEntity,
+               InputPortEntity.class);
+      inputPort = inputPortEntity.getInputPort();
+    }
+    //2 check and create the connection frmo the inputPort to the actual templateGroup
+    PortDTO templateInputPort = null;
+    InputPortsEntity templatePorts = getInputPorts(reusableTemplateGroupId);
+    templateInputPort = NifiConnectionUtil.findPortMatchingName(templatePorts.getInputPorts(), inputPortName);
+
+    ConnectionDTO
+        inputToTemplateConnection =
+        NifiConnectionUtil.findConnection(findConnectionsForParent(reusableTemplateCategoryGroupId), inputPort.getId(),
+                                          templateInputPort.getId());
+    if (inputToTemplateConnection == null) {
+      //create the connection
+      ConnectableDTO source = new ConnectableDTO();
+      source.setGroupId(reusableTemplateCategoryGroupId);
+      source.setId(inputPort.getId());
+      source.setName(inputPortName);
+      source.setType(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
+      ConnectableDTO dest = new ConnectableDTO();
+      dest.setGroupId(reusableTemplateGroupId);
+      //  dest.setName(reusableTemplateGroup.getProcessGroup().getName());
+      dest.setId(templateInputPort.getId());
+      dest.setType(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
+      createConnection(reusableTemplateCategoryGroupId, source, dest);
+    }
+
+
+  }
+
+  /**
+   * Connect a Feed to a reusable Template
+   */
+  public void connectFeedToGlobalTemplate(final String feedProcessGroupId, final String feedOutputName,
+                                          final String categoryProcessGroupId, String reusableTemplateCategoryGroupId,
+                                          String reusableTemplateGroupId, String inputPortName) throws JerseyClientException {
+    ProcessGroupEntity categoryProcessGroup = getProcessGroup(categoryProcessGroupId, false, false);
+    ProcessGroupEntity feedProcessGroup = getProcessGroup(feedProcessGroupId, false, false);
+    ProcessGroupEntity categoryParent = getProcessGroup(categoryProcessGroup.getProcessGroup().getParentGroupId(), false, false);
+    ProcessGroupEntity reusableTemplateGroup = getProcessGroup(reusableTemplateGroupId, false, false);
+    ProcessGroupEntity reusableTemplateCategoryGroup = getProcessGroup(reusableTemplateCategoryGroupId, false, false);
+
+    //Go into the Feed and find the output port that is to be associated with the global template
+    OutputPortsEntity outputPortsEntity = getOutputPorts(feedProcessGroupId);
+    PortDTO feedOutputPort = null;
+    if (outputPortsEntity != null) {
+      feedOutputPort = NifiConnectionUtil.findPortMatchingName(outputPortsEntity.getOutputPorts(), feedOutputName);
+    }
+    if (feedOutputPort == null) {
+      //ERROR  This feed needs to have an output port assigned on it to make the connection
+    }
+
+    InputPortsEntity inputPortsEntity = getInputPorts(reusableTemplateCategoryGroupId);
+    PortDTO inputPort = NifiConnectionUtil.findPortMatchingName(inputPortsEntity.getInputPorts(), inputPortName);
+    String inputPortId = inputPort.getId();
+
+    final String categoryOutputPortName = categoryProcessGroup.getProcessGroup().getName() + " to " + inputPort.getName();
+
+    //Find or create the output port that will join to the globabl template at the Category Level
+
+    OutputPortsEntity categoryOutputPortsEntity = getOutputPorts(categoryProcessGroupId);
+    PortDTO categoryOutputPort = null;
+    if (categoryOutputPortsEntity != null) {
+      categoryOutputPort =
+          NifiConnectionUtil.findPortMatchingName(categoryOutputPortsEntity.getOutputPorts(), categoryOutputPortName);
+    }
+    if (categoryOutputPort == null) {
+      //create it
+      OutputPortEntity outputPortEntity = new OutputPortEntity();
+      PortDTO portDTO = new PortDTO();
+      portDTO.setParentGroupId(categoryProcessGroupId);
+      portDTO.setName(categoryOutputPortName);
+      outputPortEntity.setOutputPort(portDTO);
+      updateEntityForSave(outputPortEntity);
+      outputPortEntity =
+          post("/controller/process-groups/" + categoryProcessGroupId + "/output-ports", outputPortEntity,
+               OutputPortEntity.class);
+      categoryOutputPort = outputPortEntity.getOutputPort();
+    }
+    //Now create a connection from the Feed PRocessGroup to this outputPortEntity
+
+    ConnectionDTO
+        feedOutputToCategoryOutputConnection =
+        NifiConnectionUtil.findConnection(findConnectionsForParent(categoryProcessGroupId), feedOutputPort.getId(),
+                                          categoryOutputPort.getId());
+    if (feedOutputToCategoryOutputConnection == null) {
+      //CONNECT FEED OUTPUT PORT TO THE Category output port
+      ConnectableDTO source = new ConnectableDTO();
+      source.setGroupId(feedProcessGroupId);
+      source.setId(feedOutputPort.getId());
+      source.setName(feedProcessGroup.getProcessGroup().getName());
+      source.setType(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
+      ConnectableDTO dest = new ConnectableDTO();
+      dest.setGroupId(categoryProcessGroupId);
+      dest.setName(categoryOutputPort.getName());
+      dest.setId(categoryOutputPort.getId());
+      dest.setType(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
+      createConnection(categoryProcessGroup.getProcessGroup().getId(), source, dest);
+    }
+
+    ConnectionDTO
+        categoryToReusableTemplateConnection =
+        NifiConnectionUtil
+            .findConnection(findConnectionsForParent(categoryParent.getProcessGroup().getId()), categoryOutputPort.getId(),
+                            inputPortId);
+
+    //Now connect the category PRocessGroup to the global template
+    if (categoryToReusableTemplateConnection == null) {
+      ConnectableDTO categorySource = new ConnectableDTO();
+      categorySource.setGroupId(categoryProcessGroupId);
+      categorySource.setId(categoryOutputPort.getId());
+      categorySource.setName(categoryOutputPortName);
+      categorySource.setType(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
+      ConnectableDTO categoryToGlobalTemplate = new ConnectableDTO();
+      categoryToGlobalTemplate.setGroupId(reusableTemplateCategoryGroupId);
+      categoryToGlobalTemplate.setId(inputPortId);
+      categoryToGlobalTemplate.setName(inputPortName);
+      categoryToGlobalTemplate.setType(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
+      createConnection(categoryParent.getProcessGroup().getId(), categorySource, categoryToGlobalTemplate);
+    }
+
+  }
+
+
+  public Set<ConnectionDTO> findConnectionsForParent(String parentProcessGroupId) throws JerseyClientException {
+    Set<ConnectionDTO> connections = new HashSet<>();
+    //get all connections under parent group
+    ConnectionsEntity connectionsEntity = getProcessGroupConnections(parentProcessGroupId);
+    if (connectionsEntity != null) {
+      connections = connectionsEntity.getConnections();
+    }
+    return connections;
+  }
+
+
+  public ConnectionDTO findConnection(String parentProcessGroupId, final String sourceProcessGroupId,
+                                      final String destProcessGroupId)
+      throws JerseyClientException {
+    return NifiConnectionUtil.findConnection(findConnectionsForParent(parentProcessGroupId), sourceProcessGroupId,
+                                             parentProcessGroupId);
+  }
+
+
+  public ConnectionEntity createConnection(String processGroupId, ConnectableDTO source, ConnectableDTO dest)
+      throws JerseyClientException {
+    ConnectionDTO connectionDTO = new ConnectionDTO();
+    connectionDTO.setSource(source);
+    connectionDTO.setDestination(dest);
+    connectionDTO.setName(source.getName() + " - " + dest.getName());
+    ConnectionEntity connectionEntity = new ConnectionEntity();
+    connectionEntity.setConnection(connectionDTO);
+    updateEntityForSave(connectionEntity);
+    return post("/controller/process-groups/" + processGroupId + "/connections", connectionEntity, ConnectionEntity.class);
+  }
+
+
   public NifiVisitableProcessGroup getFlowOrder(String processGroupId) throws JerseyClientException {
     NifiVisitableProcessGroup group = null;
     ProcessGroupEntity processGroupEntity = getProcessGroup(processGroupId, true, true);
     if (processGroupEntity != null) {
       group = new NifiVisitableProcessGroup(processGroupEntity.getProcessGroup());
-      NifiConnectionOrderVisitor orderVisitor = new NifiConnectionOrderVisitor(group);
+      NifiConnectionOrderVisitor orderVisitor = new NifiConnectionOrderVisitor(this, group);
       group.accept(orderVisitor);
+      orderVisitor.printOrder();
+      ;
     }
     return group;
+  }
 
+  public Set<ProcessorDTO> getProcessorsForFlow(String processGroupId) throws JerseyClientException {
+    NifiVisitableProcessGroup group = getFlowOrder(processGroupId);
+    Set<ProcessorDTO> processors = new HashSet<>();
+    for (NifiVisitableProcessor p : group.getStartingProcessors()) {
+      processors.addAll(p.getProcessors());
+    }
+    return processors;
   }
 
   /**

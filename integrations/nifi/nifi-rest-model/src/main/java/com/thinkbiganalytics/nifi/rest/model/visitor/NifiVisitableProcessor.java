@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.nifi.rest.model.visitor;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 
 import java.util.HashSet;
@@ -98,20 +101,52 @@ public class NifiVisitableProcessor implements  NifiVisitable {
     public void print(){
         System.out.println(getDto().getName());
         for(NifiVisitableProcessor child: getDestinations()){
-           child.print();
+            if(!child.containsDestination(this)){
+                child.print();
+            }
+
         }
     }
     //used for connections with input/output ports
 
+    public boolean containsDestination(NifiVisitableProcessor parent){
+        final String thisId = getDto().getId();
+        final String parentId = parent.getDto().getId();
+        NifiVisitableProcessor p = Iterables.tryFind(getDestinations(), new Predicate<NifiVisitableProcessor>() {
+            @Override
+            public boolean apply(NifiVisitableProcessor nifiVisitableProcessor) {
+                return nifiVisitableProcessor.getDto().getId().equalsIgnoreCase(thisId) || nifiVisitableProcessor.getDto().getId()
+                    .equalsIgnoreCase(parentId);
+            }
+        }).orNull();
+        return p != null;
+    }
+
     public Set<ProcessorDTO> getFailureProcessors(){
         Set<ProcessorDTO> failureProcessors = new HashSet<ProcessorDTO>();
+
         if(this.isFailureProcessor()){
             failureProcessors.add(this.getDto());
         }
         for(NifiVisitableProcessor child: getDestinations()){
-            failureProcessors.addAll(child.getFailureProcessors());
+            if(!failureProcessors.contains(this.getDto())) {
+                failureProcessors.addAll(child.getFailureProcessors());
+            }
         }
         return failureProcessors;
+    }
+
+    public Set<ProcessorDTO> getProcessors(){
+        Set<ProcessorDTO> processors = new HashSet<ProcessorDTO>();
+
+        processors.add(this.getDto());
+
+        for(NifiVisitableProcessor child: getDestinations()) {
+            if (!processors.contains(child.getDto())) {
+                processors.addAll(child.getProcessors());
+            }
+        }
+        return processors;
     }
 
 

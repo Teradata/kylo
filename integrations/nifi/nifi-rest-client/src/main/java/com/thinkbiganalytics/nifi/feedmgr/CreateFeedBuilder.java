@@ -45,6 +45,13 @@ public class CreateFeedBuilder {
   private String category;
   private String feedName;
   private String inputProcessorType;
+  private String reusableTemplateCategoryName = "Reusable Templates";
+  private String reusableTemplateName;
+  private String feedOutputPortName;
+  private String reusableTemplateInputPortName;
+  private boolean isReusableTemplate;
+
+
   private String version;
 
   private List<NifiProperty> properties;
@@ -76,6 +83,26 @@ public class CreateFeedBuilder {
   }
 
 
+  public CreateFeedBuilder reusableTemplateName(String reusableTemplateName) {
+    this.reusableTemplateName = reusableTemplateName;
+    return this;
+  }
+
+  public CreateFeedBuilder reusableTemplateCategoryName(String reusableTemplateCategoryName) {
+    this.reusableTemplateCategoryName = reusableTemplateCategoryName;
+    return this;
+  }
+
+  public CreateFeedBuilder feedOutputPortName(String feedOutputPortName) {
+    this.feedOutputPortName = feedOutputPortName;
+    return this;
+  }
+
+  public CreateFeedBuilder reusableTemplateInputPortName(String reusableTemplateInputPortName) {
+    this.reusableTemplateInputPortName = reusableTemplateInputPortName;
+    return this;
+  }
+
   public CreateFeedBuilder inputProcessorType(String inputProcessorType) {
     this.inputProcessorType = inputProcessorType;
     return this;
@@ -91,7 +118,12 @@ public class CreateFeedBuilder {
     return this;
   }
 
-  public void cleanupControllerServices() {
+  public CreateFeedBuilder setReusableTemplate(boolean isReusableTemplate) {
+    this.isReusableTemplate = isReusableTemplate;
+    return this;
+  }
+
+  private void cleanupControllerServices() {
     //only delete the services that were created if none of them with that type existed in the system before
     // only keep them if they are the first of their kind
     if (snapshotControllerServices != null && !snapshotControllerServices.isEmpty()) {
@@ -119,6 +151,27 @@ public class CreateFeedBuilder {
     }
   }
 
+  private void connectFeedToReusableTemplate(String feedGroupId) throws JerseyClientException {
+    ProcessGroupDTO reusableTemplateCategory = restClient.getProcessGroupByName("root", reusableTemplateCategoryName);
+    ProcessGroupDTO reusableTemplate = restClient.getProcessGroupByName(reusableTemplateCategory.getId(),
+                                                                        reusableTemplateName);
+    ProcessGroupEntity feedProcessGroup = restClient.getProcessGroup(feedGroupId, false, false);
+    String feedCategoryId = feedProcessGroup.getProcessGroup().getParentGroupId();
+    String reusableTemplateCategoryGroupId = reusableTemplateCategory.getId();
+    String templateGroupId = reusableTemplate.getId();
+    String inputPortName = reusableTemplateInputPortName;
+    restClient
+        .connectFeedToGlobalTemplate(feedGroupId, feedOutputPortName, feedCategoryId, reusableTemplateCategoryGroupId,
+                                     templateGroupId, inputPortName);
+  }
+
+  private void ensureInputPortsForReuseableTemplate(String feedGroupId) throws JerseyClientException {
+    ProcessGroupEntity template = restClient.getProcessGroup(feedGroupId, false, false);
+    String categoryId = template.getProcessGroup().getParentGroupId();
+    restClient.createReusableTemplateInputPort(categoryId, feedGroupId);
+
+  }
+
 
   public NifiProcessGroup build() throws JerseyClientException {
     NifiProcessGroup newProcessGroup = null;
@@ -132,6 +185,15 @@ public class CreateFeedBuilder {
         snapshotControllerServiceReferences();
         //create the flow from the template
         instantiateFlowFromTemplate(processGroupId);
+
+        //if the feed has an outputPort that should go to a reusable Flow then make those connections
+        if (reusableTemplateName != null) {
+          connectFeedToReusableTemplate(processGroupId);
+        }
+        if (isReusableTemplate) {
+          ensureInputPortsForReuseableTemplate(processGroupId);
+        }
+
         //mark the new services that were created as a result of creating the new flow from the template
         identifyNewlyCreatedControllerServiceReferences();
 
@@ -143,11 +205,12 @@ public class CreateFeedBuilder {
 
         //identify the various processors (first level initial processors)
         List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity.getProcessGroup());
+
         ProcessorDTO input = NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType);
         List<ProcessorDTO> nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity.getProcessGroup());
 
         //if the input is null attempt to get the first input available on the template
-        if (input == null) {
+        if (input == null && inputProcessors != null && !inputProcessors.isEmpty()) {
           input = inputProcessors.get(0);
         }
 
@@ -163,9 +226,13 @@ public class CreateFeedBuilder {
           //update the input schedule
           updateFeedSchedule(newProcessGroup, input);
           //update any references to the controller services and try to assign the value to an enabled service if it is not already
-          updateControllerServiceReferences(Lists.newArrayList(input));
+          if (input != null) {
+            updateControllerServiceReferences(Lists.newArrayList(input));
+          }
           updateControllerServiceReferences(nonInputProcessors);
-          markInputAsRunning(newProcessGroup, input);
+          if (input != null) {
+            markInputAsRunning(newProcessGroup, input);
+          }
 
           markProcessorsAsRunning(newProcessGroup, nonInputProcessors);
           if (newProcessGroup.hasFatalErrors()) {

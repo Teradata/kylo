@@ -35,39 +35,45 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
         startingProcessors = new HashSet<>();
         endingProcessors = new HashSet<>();
         processors = new HashSet<>();
-        this.connections = dto.getContents().getConnections();
+        if(dto.getContents() != null) {
+            this.connections = dto.getContents().getConnections();
+        }
 
     }
 
     @Override
     public void accept(NifiFlowVisitor nifiVisitor) {
-        //GET DATA IN THIS ORDER
-        //1. Get Processor Info
-        //2. get Process Group info
-        //3. get Connections and make relationships between processors
+        if(dto.getContents()!= null) {
+            //GET DATA IN THIS ORDER
+            //1. Get Processor Info
+            //2. get Process Group info
+            //3. get Connections and make relationships between processors
 
-        if(dto.getContents().getProcessors() != null){
-            for(ProcessorDTO processorDTO : dto.getContents().getProcessors()) {
-                NifiVisitableProcessor processor = new NifiVisitableProcessor(processorDTO);
-                addProcessor(processor);
-                nifiVisitor.visitProcessor(processor);
+            if (dto.getContents().getProcessors() != null) {
+                for (ProcessorDTO processorDTO : dto.getContents().getProcessors()) {
+                    NifiVisitableProcessor processor = new NifiVisitableProcessor(processorDTO);
+                    addProcessor(processor);
+                    nifiVisitor.visitProcessor(processor);
 
+                }
             }
-        }
 
-        if(dto.getContents().getProcessGroups() != null){
-            for(ProcessGroupDTO processGroupDTO : dto.getContents().getProcessGroups()) {
-                nifiVisitor.visitProcessGroup(new NifiVisitableProcessGroup(processGroupDTO));
+            if (dto.getContents().getProcessGroups() != null) {
+                for (ProcessGroupDTO processGroupDTO : dto.getContents().getProcessGroups()) {
+                    if (processGroupDTO != null) {
+                        nifiVisitor.visitProcessGroup(new NifiVisitableProcessGroup(processGroupDTO));
+                    }
+                }
             }
-        }
 
-        if(dto.getContents().getConnections() != null){
-            for(ConnectionDTO connectionDTO : dto.getContents().getConnections()) {
-                nifiVisitor.visitConnection(new NifiVisitableConnection(connectionDTO));
+            if (dto.getContents().getConnections() != null) {
+                for (ConnectionDTO connectionDTO : dto.getContents().getConnections()) {
+                    nifiVisitor.visitConnection(new NifiVisitableConnection(this, connectionDTO));
+                }
             }
-        }
 
-        populateStartingAndEndingProcessors();
+            populateStartingAndEndingProcessors();
+        }
 
     }
 
@@ -95,6 +101,10 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
                 return processor.getDto().getId().equals(processorId);
             }
         }).orNull();
+    }
+
+    public boolean containsProcessor(String processorId){
+        return getProcessorMatchingId(processorId) != null;
     }
 
     public ConnectionDTO getConnectionMatchingSourceId(final String connectionId){

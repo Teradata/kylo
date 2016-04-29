@@ -8,8 +8,10 @@ import org.apache.nifi.web.api.dto.ConnectionDTO;
 public class NifiVisitableConnection implements  NifiVisitable{
 
     private ConnectionDTO dto;
+    private NifiVisitableProcessGroup group;
 
-    public NifiVisitableConnection(ConnectionDTO dto ){
+    public NifiVisitableConnection(NifiVisitableProcessGroup group,ConnectionDTO dto ){
+        this.group = group;
         this.dto = dto;
     }
 
@@ -26,5 +28,9 @@ public class NifiVisitableConnection implements  NifiVisitable{
 
     public ConnectionDTO getDto() {
         return dto;
+    }
+
+    public NifiVisitableProcessGroup getGroup() {
+        return group;
     }
 }

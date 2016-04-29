@@ -1,6 +1,13 @@
 package com.thinkbiganalytics.nifi.rest.support;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+
 import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.PortDTO;
+import org.apache.nifi.web.api.entity.ConnectionsEntity;
+import org.apache.nifi.web.api.entity.OutputPortsEntity;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,4 +66,62 @@ public class NifiConnectionUtil {
         }
         return processorIds;
     }
+
+  public static List<ConnectionDTO> findConnectionsMatchingSourceGroupId(Collection<ConnectionDTO> connections, final String sourceProcessGroupId){
+   return Lists.newArrayList(Iterables.filter(connections, new Predicate<ConnectionDTO>() {
+      @Override
+      public boolean apply(ConnectionDTO connectionDTO) {
+        return connectionDTO.getSource().getGroupId().equals(sourceProcessGroupId);
+      }
+    }));
+  }
+
+  public static List<ConnectionDTO> findConnectionsMatchingDestinationGroupId(Collection<ConnectionDTO> connections, final String destProcessGroupId){
+    return Lists.newArrayList(Iterables.filter(connections, new Predicate<ConnectionDTO>() {
+      @Override
+      public boolean apply(ConnectionDTO connectionDTO) {
+        return connectionDTO.getDestination().getGroupId().equals(destProcessGroupId);
+      }
+    }));
+  }
+
+  public static List<ConnectionDTO> findConnectionsMatchingDestinationId(Collection<ConnectionDTO> connections, final String destId){
+    return Lists.newArrayList(Iterables.filter(connections, new Predicate<ConnectionDTO>() {
+      @Override
+      public boolean apply(ConnectionDTO connectionDTO) {
+        return connectionDTO.getDestination().getId().equals(destId);
+      }
+    }));
+  }
+
+
+  public static ConnectionDTO findConnection(Collection<ConnectionDTO> connections, final String sourceId, final String destId){
+    ConnectionDTO connection = null;
+      connection = Iterables.tryFind(connections, new Predicate<ConnectionDTO>() {
+        @Override
+        public boolean apply(ConnectionDTO connectionDTO) {
+          return connectionDTO.getSource().getId().equals(sourceId) && connectionDTO.getDestination()
+              .getId().equalsIgnoreCase(destId);
+        }
+      }).orNull();
+
+    return connection;
+
+  }
+
+
+  public static PortDTO findPortMatchingName(Collection<PortDTO> ports, final String name) {
+
+    return Iterables.tryFind(ports, new Predicate<PortDTO>() {
+      @Override
+      public boolean apply(PortDTO portDTO) {
+        return portDTO.getName().equalsIgnoreCase(name);
+      }
+    }).orNull();
+  }
+
+
+
+
+
 }

@@ -172,29 +172,30 @@ public class NifiPropertyUtil {
         List<NifiProperty> modifiedProperties = new ArrayList<>();
         //copy the properites to modify them
 
+if(properties != null) {
+    for (NifiProperty property : properties) {
+        //copy off the template property and save it so its snapshotted
+        NifiProperty templateProperty = new NifiProperty(property);
+        property.setTemplateProperty(templateProperty);
 
-        for(NifiProperty property : properties) {
-            //copy off the template property and save it so its snapshotted
-            NifiProperty templateProperty = new NifiProperty(property);
-            property.setTemplateProperty(templateProperty);
-
-            //if this properties processGroup == the root template, change it so it matches this new processgroup
-            if(property.getProcessGroupName().equalsIgnoreCase(rootProcesGroupName)){
-                property.setProcessGroupName(activeProcessGroupName);
-            }
-
-            NifiProperty propertyToUpdate = idMap.get(property.getIdKey());
-            if(propertyToUpdate == null){
-                propertyToUpdate = nameMap.get(property.getNameKey());
-            }
-            if(propertyToUpdate != null) {
-                property.setProcessorId(processorIdMap.get(propertyToUpdate.getProcessorName()));
-                property.setProcessGroupId(processGroupIdMap.get(propertyToUpdate.getProcessGroupName()));
-                propertyToUpdate.setValue(property.getValue());
-                modifiedProperties.add(propertyToUpdate);
-            }
-
+        //if this properties processGroup == the root template, change it so it matches this new processgroup
+        if (property.getProcessGroupName().equalsIgnoreCase(rootProcesGroupName)) {
+            property.setProcessGroupName(activeProcessGroupName);
         }
+
+        NifiProperty propertyToUpdate = idMap.get(property.getIdKey());
+        if (propertyToUpdate == null) {
+            propertyToUpdate = nameMap.get(property.getNameKey());
+        }
+        if (propertyToUpdate != null) {
+            property.setProcessorId(processorIdMap.get(propertyToUpdate.getProcessorName()));
+            property.setProcessGroupId(processGroupIdMap.get(propertyToUpdate.getProcessGroupName()));
+            propertyToUpdate.setValue(property.getValue());
+            modifiedProperties.add(propertyToUpdate);
+        }
+
+    }
+}
         return modifiedProperties;
 
     }

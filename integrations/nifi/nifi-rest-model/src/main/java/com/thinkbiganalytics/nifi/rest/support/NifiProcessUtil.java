@@ -96,9 +96,11 @@ public class NifiProcessUtil {
     }
 
     public static ProcessorDTO findFirstProcessorsByType(Collection<ProcessorDTO> processors, String type){
-        List<ProcessorDTO> list = findProcessorsByType(processors,type);
-        if(list != null && !list.isEmpty()){
-            return list.get(0);
+        if(type != null) {
+            List<ProcessorDTO> list = findProcessorsByType(processors, type);
+            if (list != null && !list.isEmpty()) {
+                return list.get(0);
+            }
         }
         return null;
     }
