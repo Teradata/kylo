@@ -1,15 +1,18 @@
 package com.thinkbiganalytics.jobrepo.nifi.provenance;
 
+
 import com.thinkbiganalytics.jobrepo.nifi.model.FlowFileComponent;
 import com.thinkbiganalytics.jobrepo.nifi.model.FlowFileEvents;
 import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,11 +35,11 @@ public class ProvenanceEventListener {
 
 
     public ProvenanceEventListener(){
-
-     }
+        int i =0;
+    }
 
     @Autowired
-    private  ProvenanceFeedManager provenanceFeedManager;
+    private ProvenanceFeedManager provenanceFeedManager;
 
     private Map<String,FlowFileEvents> flowFileMap = new HashMap<>();
     private Set<ProvenanceEventRecordDTO> events = new HashSet<>();
@@ -55,6 +58,10 @@ public class ProvenanceEventListener {
 
         FlowFileEvents flowFile = addFlowFile(flowFileId);
 
+        //find the Group Id associated with this event
+        provenanceFeedManager.populateGroupIdForEvent(event);
+        LOG.info("EVENT "+event+" for "+event.getGroupId()+", "+provenanceFeedManager.getProcessor(event.getComponentId()).getName());
+
         flowFile.addEvent(event);
         if(event.getParentUuids() != null && ! event.getParentUuids().isEmpty()) {
             for (String parent: event.getParentUuids()) {
@@ -72,12 +79,14 @@ public class ProvenanceEventListener {
             }
         }
         events.add(event);
-       setJobExecutionToComponent(event);
+        setJobExecutionToComponent(event);
+        provenanceFeedManager.setComponentName(event);
 
         //Trigger the start of the flow if it is the first one in the chain of events
         if(flowFile.isRootEvent(event)){
             provenanceFeedManager.feedStart(event);
         }
+
 
 
         //only update if the event has a Job execution on it
@@ -87,7 +96,7 @@ public class ProvenanceEventListener {
             provenanceFeedManager.feedEvent(event);
         }
         else {
-           LOG.info("Skipping event "+event.getEventId()+", "+event.getEventType()+".  No Job Execution exists for it");
+            LOG.info("Skipping event "+event.getEventId()+", "+event.getEventType()+".  No Job Execution exists for it");
         }
 
     }
@@ -102,64 +111,86 @@ public class ProvenanceEventListener {
         }
     }
 
+    private void setFeedToFlowFiles(FlowFileEvents flowFileEvents){
+        FlowFileEvents root = flowFileEvents.getRoot();
+        //    provenanceFeedManager.getFeedProcessGroupIdForFlowFile(root.getFirstEvent())
+    }
+
+    private DateTime getStepStartTime(ProvenanceEventRecordDTO event){
+        String flowFileId = event.getFlowFileUuid();
+        FlowFileEvents flowFile = flowFileMap.get(flowFileId);
+        ProvenanceEventRecordDTO previousEvent = flowFile.getPreviousEventInCurrentFlowFile(event);
+        //assume if we get to the next Event in the chain than the previous event is Complete
+        if(previousEvent == null){
+            previousEvent = flowFile.getPreviousEvent(event);
+        }
+        if(previousEvent != null) {
+            LOG.info("Getting StartTime for {} from previous EndTime of {} ({})",event.getFlowFileComponent(),previousEvent.getFlowFileComponent().getEndTime(),previousEvent.getFlowFileComponent());
+            return new DateTime(previousEvent.getFlowFileComponent().getEndTime());
+        }
+        else {
+            LOG.info("Cant Find Previous Event to get Start Time for ", event.getFlowFileComponent());
+            return new DateTime();
+        }
+    }
+
+    private void markEventComplete(ProvenanceEventRecordDTO event) {
+        //mark the component as complete
+        FlowFileEvents eventFlowFile = flowFileMap.get(event.getFlowFileUuid());
+        if(eventFlowFile.markComponentComplete(event.getComponentId(), new DateTime())){
+            LOG.info("COMPLETING Component Event {} ",event.getFlowFileComponent());
+            //if the current Event is a failure Processor that means the previous component failed.
+            //mark the previous event as failed
+            if(provenanceFeedManager.isFailureProcessor(event)){
+                //get or create the event and component for failure
+                //lookup bulletins for failure events
+                boolean addedFailure = provenanceFeedManager.processBulletinsAndFailComponents(event);
+                if(addedFailure){
+                    LOG.info("Added Failure for bulletins for {} ({}) ",event.getFlowFileComponent().getComponetName(),event.getComponentId());
+                    provenanceFeedManager.componentFailed(event);
+                }
+                else {
+                    provenanceFeedManager.componentCompleted(event);
+                }
+            }
+            else {
+                provenanceFeedManager.componentCompleted(event);
+            }
+            componentCounter.decrementAndGet();
+            startedComponents.remove(event.getComponentId());
+        }
+    }
+
+    private boolean isCompletionEvent(ProvenanceEventRecordDTO event){
+        String[] nonCompletionEvents = {"SEND","CLONE","ROUTE"};
+
+        return !Arrays.asList(nonCompletionEvents).contains(event.getEventType());
+    }
 
     private void updateEventRunContext(ProvenanceEventRecordDTO event){
         String flowFileId = event.getFlowFileUuid();
         FlowFileEvents flowFile = flowFileMap.get(flowFileId);
 
 
+
         ProvenanceEventRecordDTO previousEvent = flowFile.getPreviousEventInCurrentFlowFile(event);
-        //assume if we get to the next Event in the chain than the previous event is Complete
-        if(previousEvent != null) {
-            if(previousEvent.markCompleted()) {
-                eventCounter.decrementAndGet();
-            }
-        }
 
 
-        //if the previous Event is for a different Component then mark the previous one as complete
-        if(previousEvent != null && !previousEvent.getComponentId().equalsIgnoreCase(event.getComponentId())) {
-            //mark the component as complete
-            FlowFileEvents previousEventFlowFile = flowFileMap.get(previousEvent.getFlowFileUuid());
-            if(previousEventFlowFile.markComponentComplete(previousEvent.getComponentId())){
-                //if the current Event is a failure Processor that means the previous component failed.
-                //mark the previous event as failed
-                if(provenanceFeedManager.isFailureProcessor(event.getComponentId())){
-                    //get or create the event and component for failure
-                    //lookup bulletins for failure events
-                    boolean addedFailure = provenanceFeedManager.processBulletinsAndFailComponents(event);
-                    if(!addedFailure){
-                        provenanceFeedManager.componentFailed(previousEvent);
-                    }
-                    else {
-                        provenanceFeedManager.componentCompleted(previousEvent);
-                    }
-                }
-                else {
-                    provenanceFeedManager.componentCompleted(previousEvent);
-                }
-                componentCounter.decrementAndGet();
-                startedComponents.remove(previousEvent.getComponentId());
-            }
-
-        }
-
-
-
-
+        //We get the events after they actual complete, so the Start Time is really the previous event in the flowfile
+        DateTime startTime = getStepStartTime(event);
 
         //mark the flow file as running if it is not already
-        flowFile.markRunning();
+        flowFile.markRunning(startTime);
         //mark the event as running
-         if(event.markRunning()) {
-             eventCounter.incrementAndGet();
-         }
+        if(event.markRunning()) {
+            eventCounter.incrementAndGet();
+        }
 
         //mark the component as running
-        if(flowFile.markComponentRunning(event.getComponentId())){
-
+        if(flowFile.markComponentRunning(event.getComponentId(), startTime)){
+            LOG.info("Starting Component IDS: FF ID: {}, Comp ID: {}, Component: {} in flowfile: {}, Flow File Component: {}, RUN_STATUS: {} ",System.identityHashCode(flowFile), System.identityHashCode(flowFile.getComponent(event.getComponentId())),event.getFlowFileComponent(), flowFile, flowFile.getComponent(event.getComponentId()), flowFile.getComponent(event.getComponentId()).getRunStatus());
             //if we start a failure processor check bulletins for other events
-            if(provenanceFeedManager.isFailureProcessor(event.getComponentId())) {
+            if(provenanceFeedManager.isFailureProcessor(event)) {
                 //get or create the event and component for failure
                 //lookup bulletins for failure events
                 boolean addedFailure = provenanceFeedManager.processBulletinsAndFailComponents(event);
@@ -171,13 +202,24 @@ public class ProvenanceEventListener {
             startedComponents.add(event.getComponentId());
         }
 
+        //if the previous Event is the first in the flow file or if is for a different Component then mark the this one as complete
+        if((previousEvent != null && !previousEvent.getComponentId().equalsIgnoreCase(event.getComponentId()))) {
+            if(previousEvent.markCompleted()) {
+                eventCounter.decrementAndGet();
+                LOG.info("MARKING PREVIOUS EVENT {} as Complete . EndTime of: {}",previousEvent);
+                markEventComplete(previousEvent);
+            }
+            if(isCompletionEvent(event)) {
+                markEventComplete(event);
+            }
+        }
 
 
 
         if(previousEvent != null && !previousEvent.getFlowFileUuid().equalsIgnoreCase(event.getFlowFileUuid())) {
-            //mark flow file as complete?
+            //mark flow file as complete
             FlowFileEvents previousEventFlowFile = flowFileMap.get(previousEvent.getFlowFileUuid());
-           previousEventFlowFile.updateCompletedStatus();
+            previousEventFlowFile.updateCompletedStatus();
 
         }
 
@@ -188,7 +230,7 @@ public class ProvenanceEventListener {
                 eventCounter.decrementAndGet();
             }
             //mark the component as complete
-            if(flowFile.markComponentComplete(event.getComponentId())){
+            if(flowFile.markComponentComplete(event.getComponentId(), new DateTime())){
                 provenanceFeedManager.componentCompleted(event);
                 componentCounter.decrementAndGet();
                 startedComponents.remove(event.getComponentId());
@@ -197,14 +239,14 @@ public class ProvenanceEventListener {
             flowFile.updateCompletedStatus();
             //if(flowFile.markCompleted() && !flowFile.isParent()){
             //    flowFile.getRoot().removeRunningFlowFile(flowFile);
-           // }
+            // }
         }
 
         //update parent flow file status
         //loop through the child flow files and if they are all complete then mark parent as complete.
-         if(flowFile.getRoot().areAllComponentsComplete() && !flowFile.getRoot().hasInitialFlowFiles() && flowFile.getRoot().getRunningFlowFiles().size() ==0){
+        if(flowFile.getRoot().areAllComponentsComplete() && !flowFile.getRoot().hasInitialFlowFiles() && flowFile.getRoot().getRunningFlowFiles().size() ==0){
             provenanceFeedManager.feedCompleted(event);
-         }
+        }
 
 
     }

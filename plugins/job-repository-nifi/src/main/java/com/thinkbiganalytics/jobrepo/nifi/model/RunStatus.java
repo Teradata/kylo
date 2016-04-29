@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.jobrepo.nifi.model;
 
+import org.joda.time.DateTime;
+
 import java.util.Date;
 
 /**
@@ -7,25 +9,32 @@ import java.util.Date;
  */
 public interface RunStatus {
 
-  boolean markRunning();
+    public boolean isInitial();
 
-  boolean markCompleted();
+    boolean isRunning();
 
-  boolean markFailed();
+    boolean isComplete();
 
-  public boolean isInitial();
+    RunStatusContext.RUN_STATUS getRunStatus();
 
-  boolean isRunning();
+    Date getStartTime();
 
-  boolean isComplete();
+    Date getEndTime();
 
-  RunStatusContext.RUN_STATUS getRunStatus();
+    Date getUTCStartTime();
 
-  Date getStartTime();
+    Date getUTCEndTime();
 
-  Date getEndTime();
 
-  Date getUTCStartTime();
+    boolean markRunning(DateTime dateTime);
 
-  Date getUTCEndTime();
+    boolean markCompleted(DateTime dateTime);
+
+   boolean markFailed(DateTime dateTime);
+
+    boolean markRunning();
+
+    boolean markCompleted();
+
+    boolean markFailed();
 }

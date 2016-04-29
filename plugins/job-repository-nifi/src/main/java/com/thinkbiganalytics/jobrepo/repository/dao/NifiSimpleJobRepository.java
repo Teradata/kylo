@@ -36,11 +36,10 @@ import java.util.Set;
  * Created by sr186054 on 3/2/16.
  */
 public class NifiSimpleJobRepository implements NifiJobRepository {
-
   private static final Logger LOG = LoggerFactory.getLogger(NifiSimpleJobRepository.class);
 
 
-  private Map<Long, JobExecution> jobExecutionMap = new HashMap<>();
+  private Map<Long,JobExecution> jobExecutionMap = new HashMap<>();
 
   private JobInstanceDao jobInstanceDao;
   private JobExecutionDao jobExecutionDao;
@@ -53,10 +52,7 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
 
   private NifiPipelineControllerDao nifiPipelineControllerDao;
 
-  public NifiSimpleJobRepository(JobInstanceDao jobInstanceDao, JobExecutionDao jobExecutionDao,
-                                 StepExecutionDao stepExecutionDao, ExecutionContextDao ecDao, JobParametersDao jobParametersDao,
-                                 NifiPipelineControllerDao nifiPipelineControllerDao,
-                                 ExecutionContextValuesService executionContextValuesService) {
+  public NifiSimpleJobRepository(JobInstanceDao jobInstanceDao, JobExecutionDao jobExecutionDao, StepExecutionDao stepExecutionDao, ExecutionContextDao ecDao, JobParametersDao jobParametersDao,NifiPipelineControllerDao nifiPipelineControllerDao, ExecutionContextValuesService executionContextValuesService) {
     this.jobInstanceDao = jobInstanceDao;
     this.jobExecutionDao = jobExecutionDao;
     this.stepExecutionDao = stepExecutionDao;
@@ -75,49 +71,51 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
     this.executionContextValuesService = executionContextValuesService;
   }
 
-  public Long createJobInstance(NifiJobExecution nifiJobExecution) {
+  public Long createJobInstance(NifiJobExecution nifiJobExecution){
     JobInstance jobInstance = getOrCreateJobInstance(nifiJobExecution);
     nifiJobExecution.setJobInstanceId(jobInstance.getInstanceId());
     return jobInstance.getInstanceId();
   }
 
-  private JobInstance getOrCreateJobInstance(NifiJobExecution nifiJobExecution) {
-    if (nifiJobExecution.getJobInstanceId() != null) {
+  private JobInstance getOrCreateJobInstance(NifiJobExecution nifiJobExecution){
+    if(nifiJobExecution.getJobInstanceId() != null){
       return jobInstanceDao.getJobInstance(nifiJobExecution.getJobInstanceId());
-    } else {
-      Map<String, JobParameter> params = new HashMap<>();
+    }
+    else {
+      Map<String,JobParameter> params = new HashMap<>();
       JobParameter jobParameter = new JobParameter(nifiJobExecution.getFlowFile().getUuid());
       params.put("flowFileUUID", jobParameter);
       params.put("createDate", new JobParameter(new Date().getTime()));
 
       JobParameters jobParameters = new JobParameters(params);
       //store job parameters on nifiJobExecution????
-      JobInstance jobInstance = jobInstanceDao.createJobInstance(nifiJobExecution.getFeedName(), jobParameters);
+      JobInstance jobInstance = jobInstanceDao.createJobInstance(nifiJobExecution.getFeedName(),jobParameters);
       nifiJobExecution.setJobInstanceId(jobInstance.getInstanceId());
       return jobInstance;
     }
   }
 
 
-  public Long saveJobExecution(NifiJobExecution nifiJobExecution) {
-    JobExecution jobExecution = getOrCreateJobExecution(nifiJobExecution);
+  public Long saveJobExecution(NifiJobExecution nifiJobExecution){
+    JobExecution jobExecution =getOrCreateJobExecution(nifiJobExecution);
     //save the mappings so we can correlate the Nifi Flow to the Spring Batch flow later if needed
     nifiPipelineControllerDao.saveJobExecution(nifiJobExecution);
     return jobExecution.getId();
   }
 
-  private JobExecution getOrCreateJobExecution(NifiJobExecution nifiJobExecution) {
+  private JobExecution getOrCreateJobExecution(NifiJobExecution nifiJobExecution){
     JobExecution jobExecution = null;
-    if (nifiJobExecution.getJobExecutionId() != null) {
+    if(nifiJobExecution.getJobExecutionId() != null) {
       if (jobExecutionMap.containsKey(nifiJobExecution.getJobExecutionId())) {
         jobExecution = jobExecutionMap.get(nifiJobExecution.getJobExecutionId());
       } else {
         JobInstance jobInstance = getOrCreateJobInstance(nifiJobExecution);
-        jobExecution = jobExecutionDao.getJobExecution(nifiJobExecution.getJobExecutionId());
+        jobExecution= jobExecutionDao.getJobExecution(nifiJobExecution.getJobExecutionId());
         jobExecution.setJobInstance(jobInstance);
         jobExecutionMap.put(jobExecution.getId(), jobExecution);
       }
-    } else {
+    }
+    else {
       jobExecution = NifiSpringBatchTransformer.getJobExecution(nifiJobExecution);
       jobExecution.setJobInstance(getOrCreateJobInstance(nifiJobExecution));
 
@@ -132,7 +130,7 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
   }
 
 
-  public void completeJobExecution(NifiJobExecution nifiJobExecution) {
+  public void completeJobExecution(NifiJobExecution nifiJobExecution){
     JobExecution jobExecution = getOrCreateJobExecution(nifiJobExecution);
     jobExecution.setStatus(BatchStatus.COMPLETED);
     jobExecution.setExitStatus(ExitStatus.COMPLETED);
@@ -143,31 +141,32 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
   }
 
 
-  public void failJobExecution(NifiJobExecution nifiJobExecution) {
-    JobExecution jobExecution = getOrCreateJobExecution(nifiJobExecution);
+  public void failJobExecution(NifiJobExecution nifiJobExecution){
+    JobExecution jobExecution =getOrCreateJobExecution(nifiJobExecution);
     jobExecution.setStatus(BatchStatus.FAILED);
     jobExecution.setExitStatus(ExitStatus.FAILED);
     jobExecution.setLastUpdated(DateTimeUtil.getUTCTime());
     jobExecution.setEndTime(DateTimeUtil.getUTCTime());
-    StringBuffer sb = new StringBuffer();
+    StringBuffer sb  = new StringBuffer();
     Set<FlowFileComponent> failedComponents = nifiJobExecution.getFailedComponents();
     List<FlowFileComponent> allComponents = nifiJobExecution.getComponentOrder();
     //order the components to get the step number
 
-    if (failedComponents != null && !failedComponents.isEmpty()) {
+    if(failedComponents != null && !failedComponents.isEmpty()){
 
       sb.append(failedComponents.size() + " steps failed in the flow. The failed Components are:");
 
-      for (FlowFileComponent failedComponent : failedComponents) {
+      for(FlowFileComponent failedComponent:failedComponents){
         sb.append("\n");
         int index = allComponents.indexOf(failedComponent);
         String msg = "";
-        if (index >= 0) {
-          msg += " Failed Step #" + (index + 1) + ": ";
-        } else {
-          msg += " Failed Step: ";
+        if(index >=0){
+          msg +=" Failed Step #"+(index+1)+": ";
         }
-        sb.append(msg + failedComponent.getComponetName());
+        else {
+          msg +=" Failed Step: ";
+        }
+        sb.append(msg+failedComponent.getComponetName());
       }
     }
     ExitStatus exitStatus = jobExecution.getExitStatus().addExitDescription(sb.toString());
@@ -176,16 +175,13 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
     jobExecutionDao.updateJobExecution(jobExecution);
   }
 
-  public Long saveStepExecution(FlowFileComponent flowFileComponent) {
+  public Long saveStepExecution(FlowFileComponent flowFileComponent){
     JobExecution jobExecution = getOrCreateJobExecution(flowFileComponent.getJobExecution());
     Assert.notNull(jobExecution, "A JobExecution must be set on this component. " + flowFileComponent.getComponetName());
 
     StepExecution stepExecution = jobExecution.createStepExecution(flowFileComponent.getComponetName());
     NifiSpringBatchTransformer.populateStepExecution(stepExecution, flowFileComponent);
     Long stepExecId = stepExecution.getId();
-    if (stepExecId != null) {
-      int i = 0;
-    }
     stepExecutionDao.saveStepExecution(stepExecution);
     flowFileComponent.setStepExecutionId(stepExecution.getId());
     //save the mappings so we can correlate the Nifi Flow to the Spring Batch flow later if needed
@@ -194,7 +190,9 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
     return stepExecution.getId();
   }
 
-  private StepExecution getStepExecution(FlowFileComponent flowFileComponent) {
+
+
+  private StepExecution getStepExecution(FlowFileComponent flowFileComponent){
     JobExecution jobExecution = getOrCreateJobExecution(flowFileComponent.getJobExecution());
     Assert.notNull(jobExecution, "A JobExecution must be set on this component. " + flowFileComponent.getComponetName());
 
@@ -208,13 +206,13 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
 
   }
 
-  public void completeStep(FlowFileComponent flowFileComponent) {
+  public void completeStep(FlowFileComponent flowFileComponent){
     StepExecution stepExecution = getStepExecution(flowFileComponent);
     NifiSpringBatchTransformer.populateStepExecution(stepExecution, flowFileComponent);
     stepExecution.setExitStatus(ExitStatus.COMPLETED);
     stepExecution.setStatus(BatchStatus.COMPLETED);
     ProvenanceEventRecordDTO lastEvent = flowFileComponent.getLastEvent();
-    if (lastEvent != null && lastEvent.getDetails() != null) {
+    if(lastEvent != null && lastEvent.getDetails() != null) {
       ExitStatus exitStatus = ExitStatus.COMPLETED.addExitDescription(lastEvent.getDetails());
       stepExecution.setExitStatus(exitStatus);
     }
@@ -225,14 +223,14 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
 
   }
 
-  public void failStep(FlowFileComponent flowFileComponent) {
-    LOG.info("FAILING STEP " + flowFileComponent);
+  public void failStep(FlowFileComponent flowFileComponent){
+    LOG.info("FAILING STEP "+flowFileComponent);
     StepExecution stepExecution = getStepExecution(flowFileComponent);
-    NifiSpringBatchTransformer.populateStepExecution(stepExecution, flowFileComponent);
+    NifiSpringBatchTransformer.populateStepExecution(stepExecution,flowFileComponent);
     stepExecution.setExitStatus(ExitStatus.FAILED);
     stepExecution.setStatus(BatchStatus.FAILED);
     ProvenanceEventRecordDTO lastEvent = flowFileComponent.getLastEvent();
-    if (lastEvent != null && lastEvent.getDetails() != null) {
+    if(lastEvent != null && lastEvent.getDetails() != null) {
       ExitStatus exitStatus = ExitStatus.FAILED.addExitDescription(lastEvent.getDetails());
       stepExecution.setExitStatus(exitStatus);
       LOG.info("FAILING STEP " + flowFileComponent + " with details " + lastEvent.getDetails());
@@ -244,16 +242,19 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
   }
 
 
+
+
   public void saveStepExecutionContext(FlowFileComponent flowFileComponent, Map<String, Object> attrs) {
-    Map<String, Object> allAttrs = new HashMap<>();
+    Map<String,Object> allAttrs = new HashMap<>();
     allAttrs.putAll(flowFileComponent.getExecutionContextMap());
     allAttrs.putAll(attrs);
     StepExecution stepExecution = getStepExecution(flowFileComponent);
     ExecutionContext executionContext = new ExecutionContext(allAttrs);
     stepExecution.setExecutionContext(executionContext);
-    if (flowFileComponent.isExecutionContextSet()) {
+    if(flowFileComponent.isExecutionContextSet()) {
       ecDao.updateExecutionContext(stepExecution);
-    } else {
+    }
+    else {
       ecDao.saveExecutionContext(stepExecution);
       flowFileComponent.setExecutionContextSet(true);
     }
@@ -262,15 +263,16 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
 
   public void saveJobExecutionContext(NifiJobExecution nifiJobExecution, Map<String, Object> attrs) {
 
-    Map<String, Object> allAttrs = new HashMap<>();
+    Map<String,Object> allAttrs = new HashMap<>();
     JobExecution jobExecution = getOrCreateJobExecution(nifiJobExecution);
     allAttrs.putAll(nifiJobExecution.getJobExecutionContextMap());
     allAttrs.putAll(attrs);
     ExecutionContext executionContext = new ExecutionContext(allAttrs);
     jobExecution.setExecutionContext(executionContext);
-    if (nifiJobExecution.isJobExecutionContextSet()) {
+    if(nifiJobExecution.isJobExecutionContextSet()) {
       ecDao.updateExecutionContext(jobExecution);
-    } else {
+    }
+    else {
       ecDao.saveExecutionContext(jobExecution);
       nifiJobExecution.setJobExecutionContextSet(true);
     }
@@ -279,20 +281,17 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
 
 
   public void setAsCheckDataJob(Long jobExecutionId, String feedName) {
-    jobParametersDao
-        .updateJobParameter(jobExecutionId, FeedConstants.PARAM__FEED_NAME, feedName, JobParameter.ParameterType.STRING);
-    jobParametersDao.updateJobParameter(jobExecutionId, FeedConstants.PARAM__JOB_TYPE, FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK,
-                                        JobParameter.ParameterType.STRING);
+    jobParametersDao.updateJobParameter(jobExecutionId,FeedConstants.PARAM__FEED_NAME,feedName, JobParameter.ParameterType.STRING);
+    jobParametersDao.updateJobParameter(jobExecutionId, FeedConstants.PARAM__JOB_TYPE,FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK, JobParameter.ParameterType.STRING);
   }
-
-  public void updateJobType(Long jobExecutionId, String value) {
-    if (value != null) {
+  public void updateJobType(Long jobExecutionId, String value){
+    if(value != null){
       value = value.toUpperCase();
 
     }
   }
 
-  public Long getLastEventIdProcessedByPipelineController() {
+  public Long getLastEventIdProcessedByPipelineController(){
     return nifiPipelineControllerDao.getMaxEventId();
   }
 }

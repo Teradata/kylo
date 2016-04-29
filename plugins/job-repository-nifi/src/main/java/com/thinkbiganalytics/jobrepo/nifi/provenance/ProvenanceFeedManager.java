@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.jobrepo.nifi.provenance;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
 import com.thinkbiganalytics.jobrepo.common.constants.CheckDataStepConstants;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
@@ -45,40 +47,57 @@ public class ProvenanceFeedManager {
         objectMapperSerializer = new ObjectMapperSerializer();
     }
 
-    public String getFeedNameForComponentId(String componentId) {
-        return nifiComponentFlowData.getFeedNameForComponentId(componentId);
+
+    public ProcessorDTO getProcessor(String id){
+        return nifiComponentFlowData.getProcessor(id);
     }
 
-    public ProcessorDTO getFeedProcessor(String componentId) {
-        return nifiComponentFlowData.getFeedProcessor(componentId);
+    public String getFeedNameForComponentId(ProvenanceEventRecordDTO event) {
+        return nifiComponentFlowData.getFeedNameForComponentId(event);
     }
 
-    public ProcessGroupDTO getFeedProcessGroup(String componentId) {
-        return nifiComponentFlowData.getFeedProcessGroup(componentId);
+    public ProcessorDTO getFeedProcessor(ProvenanceEventRecordDTO event) {
+        return nifiComponentFlowData.getFeedProcessor(event);
     }
 
-    public boolean isFailureProcessor(String componentId) {
-        return nifiComponentFlowData.isFailureProcessor(componentId);
+    public ProcessGroupDTO getFeedProcessGroup(ProvenanceEventRecordDTO event) {
+        return nifiComponentFlowData.getFeedProcessGroup(event);
     }
 
-    public Integer getEndingProcessorCount(String componentId) {
-        return nifiComponentFlowData.getEndingProcessorCount(componentId);
+    public boolean isFailureProcessor(ProvenanceEventRecordDTO event) {
+        return nifiComponentFlowData.isFailureProcessor(event);
     }
 
-    public Set<String> getEndingProcessorIds(String componentId) {
-        return nifiComponentFlowData.getEndingProcessorIds(componentId);
+    public Integer getEndingProcessorCount(ProvenanceEventRecordDTO event) {
+        return nifiComponentFlowData.getEndingProcessorCount(event);
     }
+
+    public Set<String> getEndingProcessorIds(ProvenanceEventRecordDTO event) {
+        return nifiComponentFlowData.getEndingProcessorIds(event);
+    }
+
+
+    public void populateGroupIdForEvent(ProvenanceEventRecordDTO event){
+        nifiComponentFlowData.populateGroupIdForEvent(event);
+    }
+
 
     public List<BulletinDTO> getBulletins(ProvenanceEventRecordDTO event) {
         return nifiComponentFlowData.getBulletinsNotYetProcessed(event);
     }
 
-    public List<BulletinDTO> getBulletinForEvent(ProvenanceEventRecordDTO event) {
-        return nifiComponentFlowData.getBulletinsNotYetProcessed(event);
+
+
+    public void registerFlowFileWithFeed(String flowfileUUID, String feedGroupId){
+        nifiComponentFlowData.registerFlowFileWithFeed(flowfileUUID,feedGroupId);
     }
 
-    public List<BulletinDTO> getBulletinForOtherEvents(ProvenanceEventRecordDTO event) {
-        return nifiComponentFlowData.getBulletinsNotYetProcessed(event);
+    public boolean isFlowFileRegisteredWithFeed(String flowfileUUID){
+        return nifiComponentFlowData.isFlowFileRegisteredForFeed(flowfileUUID);
+    }
+
+    public String getFeedProcessGroupIdForFlowFile(String flowFileUUID){
+        return nifiComponentFlowData.getFeedGroupIdForFlowFileUUID(flowFileUUID);
     }
 
     public void updateJobType(ProvenanceEventRecordDTO event)
@@ -95,6 +114,17 @@ public class ProvenanceFeedManager {
         }
     }
 
+
+
+
+
+
+
+
+
+
+
+
     /**
      * If a processor throws a runtime exception a ProvenanceEvent may not be recorded.
      * The Processor will log the error to the BulletinBoard.
@@ -108,18 +138,25 @@ public class ProvenanceFeedManager {
         boolean failedStep = false;
         NifiJobExecution jobExecution = event.getFlowFileComponent().getJobExecution();
         Map<String, Set<BulletinDTO>> otherErrors = new HashMap<>();
+
+        Set<BulletinDTO>warnings = new HashSet<>();
         //Get any bulletins that have not been processed and dont match the current component
         //if this happens it is because the processor failed and didnt get registered in the PRovenance event list.
         //we need to create a new  Component and Event with the bulletin id and add it in the correct place in the event history
 
         List<BulletinDTO> bulletins = nifiComponentFlowData.getBulletinsNotYetProcessedForOtherComponents(event);
+
         if (bulletins != null && !bulletins.isEmpty()) {
+            LOG.info("Checking for Bulletins... found {} for {}", bulletins.size(),event.getComponentName());
             for (BulletinDTO dto : bulletins) {
                 if (dto != null && dto.getSourceId() != null) {
                     if (!otherErrors.containsKey(dto.getSourceId())) {
                         otherErrors.put(dto.getSourceId(), new HashSet<BulletinDTO>());
                     }
                     otherErrors.get(dto.getSourceId()).add(dto);
+                }
+                if("WARNING".equalsIgnoreCase(dto.getLevel())){
+                    warnings.add(dto);
                 }
             }
         }
@@ -137,27 +174,43 @@ public class ProvenanceFeedManager {
                 jobRepository.saveStepExecution(failedEventAndComponent.getFlowFileComponent());
                 saveStepExecutionContext(failedEventAndComponent);
                 jobExecution.addComponentToOrder(failedEventAndComponent.getFlowFileComponent());
-                if (failedEventAndComponent.getFlowFileComponent().isRunning() || failedEventAndComponent.getFlowFileComponent().getEndTime() == null) {
-                    failedEventAndComponent.markFailed();
-                    failedEventAndComponent.getFlowFileComponent().markFailed();
+                if(!warnings.containsAll(otherBulletins)) {
+                    if (failedEventAndComponent.getFlowFileComponent().isRunning()
+                        || failedEventAndComponent.getFlowFileComponent().getEndTime() == null) {
+                        failedEventAndComponent.markFailed();
+                        failedEventAndComponent.getFlowFileComponent().markFailed();
+                    }
+                    LOG.info("Fail Step due to other bulletins {}",failedEventAndComponent.getFlowFileComponent());
+                    jobRepository.failStep(failedEventAndComponent.getFlowFileComponent());
+                    jobExecution.addFailedComponent(failedEventAndComponent.getFlowFileComponent());
+                    failedStep = true;
                 }
-                jobRepository.failStep(failedEventAndComponent.getFlowFileComponent());
-                jobExecution.addFailedComponent(failedEventAndComponent.getFlowFileComponent());
-                failedStep = true;
+                else {
+                    // this is just a warning, complete the step
+                    failedEventAndComponent.markCompleted();
+                    failedEventAndComponent.getFlowFileComponent().markCompleted();
+                    jobRepository.completeStep(failedEventAndComponent.getFlowFileComponent());
+                }
+                jobExecution.addBulletinErrors(otherBulletins);
 
             } else {
                 FlowFileComponent component = jobExecution.getComponent(componentId);
                 if (component.getStepExecutionId() != null && !component.isStepFinished()) {
                     String details = nifiComponentFlowData.getBulletinDetails(otherBulletins);
                     component.getLastEvent().setDetails(details);
-                    if (component.isRunning() || component.getEndTime() == null) {
-                        component.markFailed();
+                    for(BulletinDTO b: otherBulletins){
+                        LOG.info("BULLETIN LEVEL {}",b.getLevel());
                     }
-                    LOG.info("About to fail step for  for other component that was already in flow " + component);
-                    jobRepository.failStep(component);
-                    failedStep = true;
-                    jobExecution.addBulletinErrors(otherBulletins);
-                    jobExecution.addFailedComponent(component);
+                    if(!warnings.containsAll(otherBulletins)) {
+                        if (component.isRunning() || component.getEndTime() == null) {
+                            component.markFailed();
+                        }
+                        LOG.info("About to fail step for  for other component that was already in flow " + component);
+                        jobRepository.failStep(component);
+                        //failedStep = false;
+                        jobExecution.addBulletinErrors(otherBulletins);
+                        jobExecution.addFailedComponent(component);
+                    }
 
                 } else {
                     //We should never get to this block but if we do
@@ -165,7 +218,8 @@ public class ProvenanceFeedManager {
                     LOG.error("Additional Bulletin Exceptions found " + componentId + ", " + otherBulletins);
                     if (event.hasJobExecution()) {
                         Map<String, Object> details = new HashMap<>();
-                        details.put("Additional Bulletin Messages", "Bulletin messages were found for components in the flow that were already completed.");
+                        details.put("Additional Bulletin Messages",
+                                    "Bulletin messages were found for components in the flow that were already completed.");
                         for (BulletinDTO bulletinDTO : otherBulletins) {
                             String json = objectMapperSerializer.serialize(bulletinDTO);
                             details.put("Bulletin Id:" + bulletinDTO.getId(), json);
@@ -184,12 +238,14 @@ public class ProvenanceFeedManager {
 
     public NifiJobExecution feedStart(ProvenanceEventRecordDTO event) {
         //get the Feed Name associated with this events component
-        String feedName = getFeedNameForComponentId(event.getComponentId());
+        registerFlowFileWithFeed(event.getFlowFile().getUuid(),event.getComponentId());
+
+        String feedName = getFeedNameForComponentId(event);
 
         //TODO figure out how to deal with Restarts reusing the same Job Instance
         NifiJobExecution jobExecution = new NifiJobExecution(feedName, event);
-        jobExecution.setEndingProcessorCount(getEndingProcessorCount(event.getComponentId()));
-        jobExecution.setEndingProcessorComponentIds(getEndingProcessorIds(event.getComponentId()));
+        jobExecution.setEndingProcessorCount(getEndingProcessorCount(event));
+        jobExecution.setEndingProcessorComponentIds(getEndingProcessorIds(event));
         jobExecution.markStarted();
         //add the new Job to the map for lookup later
         flowFileJobExecutions.put(event.getFlowFileUuid(), jobExecution);
@@ -204,8 +260,8 @@ public class ProvenanceFeedManager {
         //write some attrs to the job execution context
 
         Map<String, Object> executionContext = new HashMap<>();
-        ProcessorDTO feedProcessor = getFeedProcessor(event.getComponentId());
-        ProcessGroupDTO feedGroup = getFeedProcessGroup(event.getComponentId());
+        ProcessorDTO feedProcessor = getFeedProcessor(event);
+        ProcessGroupDTO feedGroup = getFeedProcessGroup(event);
         executionContext.put("Feed Process Group Id", feedGroup.getId());
         executionContext.put("Feed Name", feedName);
         jobRepository.saveJobExecutionContext(jobExecution,executionContext);
@@ -216,7 +272,10 @@ public class ProvenanceFeedManager {
 
     private void saveStepExecutionContext(ProvenanceEventRecordDTO event){
         Map<String,Object> attrs = new HashMap<>();
-        attrs.put("Group Id", getFeedProcessor(event.getComponentId()).getParentGroupId());
+        ProcessorDTO processorDTO = getProcessor(event.getComponentId());
+        if(processorDTO != null) {
+            attrs.put("Group Id", processorDTO.getParentGroupId());
+        }
         attrs.put("Component Id", event.getFlowFileComponent().getComponentId());
         attrs.put("Event Id", event.getEventId().toString());
         attrs.put("Flow File Id", event.getFlowFileUuid());
@@ -224,17 +283,23 @@ public class ProvenanceFeedManager {
         jobRepository.saveStepExecutionContext(event.getFlowFileComponent(),attrs);
     }
 
-
-    public void componentStarted(ProvenanceEventRecordDTO event) {
-        if (hasJobExecution(event)) {
-            //set the componentName
-            ProcessorDTO dto = getFeedProcessor(event.getComponentId());
+    public void setComponentName(ProvenanceEventRecordDTO event) {
+        if(event.getFlowFileComponent().getComponetName() == null) {
+            ProcessorDTO dto = getFeedProcessor(event);
             if (dto != null) {
                 event.getFlowFileComponent().setComponetName(dto.getName());
             } else {
                 //add a unique name
                 event.getFlowFileComponent().setComponetName(event.getComponentType());
             }
+        }
+    }
+
+
+    public void componentStarted(ProvenanceEventRecordDTO event) {
+        if (hasJobExecution(event)) {
+            //set the componentName
+            setComponentName(event);
             Long stepId = jobRepository.saveStepExecution(event.getFlowFileComponent());
             saveStepExecutionContext(event);
 
@@ -253,18 +318,39 @@ public class ProvenanceFeedManager {
         if (hasJobExecution(event)) {
 
             List<BulletinDTO> bulletins = nifiComponentFlowData.getBulletinsNotYetProcessedForComponent(event);
+
             if (bulletins != null && !bulletins.isEmpty() && event.getFlowFileComponent().getStepExecutionId() != null) {
+                LOG.info("componentCompleted.  Checking for Bulletins... found {} for {}", bulletins.size(),event.getComponentName());
                 String details = nifiComponentFlowData.getBulletinDetails(bulletins);
                 event.setDetails(details);
-                if (event.getFlowFileComponent().isRunning() || event.getFlowFileComponent().getEndTime() == null) {
-                    event.getFlowFileComponent().markFailed();
+
+                //fail if Bulletin is not Warning
+                boolean justWarnings = Iterables.all(bulletins, new Predicate<BulletinDTO>() {
+                    @Override
+                    public boolean apply(BulletinDTO bulletinDTO) {
+                        return "WARNING".equalsIgnoreCase(bulletinDTO.getLevel());
+                    }
+                });
+
+                if(!justWarnings) {
+                    if (event.getFlowFileComponent().isRunning() || event.getFlowFileComponent().getEndTime() == null) {
+                        event.getFlowFileComponent().markFailed();
+                    }
+                    LOG.info("Fail Step due to bulletin errors that were not all WARNING {}, {}, {}",
+                             event.getFlowFileComponent(), bulletins.size(), bulletins);
+                    jobRepository.failStep(event.getFlowFileComponent());
+                    event.getFlowFileComponent().getJobExecution().addFailedComponent(event.getFlowFileComponent());
                 }
-                jobRepository.failStep(event.getFlowFileComponent());
-                event.getFlowFileComponent().getJobExecution().addFailedComponent(event.getFlowFileComponent());
+                else {
+                    LOG.info("Completing Component {} ({}) with WARNINGS", event.getFlowFileComponent().getComponetName(),
+                             event.getId());
+                    jobRepository.completeStep(event.getFlowFileComponent());
+
+                }
                 event.getFlowFileComponent().getJobExecution().addBulletinErrors(bulletins);
             } else {
 
-                    jobRepository.completeStep(event.getFlowFileComponent());
+                jobRepository.completeStep(event.getFlowFileComponent());
 
             }
             event.getFlowFileComponent().getJobExecution().componentComplete(event.getComponentId());
@@ -275,6 +361,7 @@ public class ProvenanceFeedManager {
 
     public void componentFailed(ProvenanceEventRecordDTO event) {
         if (hasJobExecution(event)) {
+            LOG.info("Fail Step due to componentFailed {}",event.getFlowFileComponent());
             jobRepository.failStep(event.getFlowFileComponent());
             event.getFlowFileComponent().getJobExecution().addFailedComponent(event.getFlowFileComponent());
         } else {
@@ -306,7 +393,7 @@ public class ProvenanceFeedManager {
                         event.getFlowFileComponent().getJobExecution().addFailedComponent(event.getFlowFileComponent());
                         LOG.info("Failing Check DAta  Job " + jobExecution.getJobExecutionId() + ", " + jobExecution.getFailedComponents().size() + ".");
                     }
-                   else {
+                    else {
                         jobRepository.completeJobExecution(jobExecution);
                         LOG.info("Completing Job " + jobExecution.getJobExecutionId() + ", " + jobExecution.getFailedComponents().size() + "."+" jobExecutionAttrs: "+jobExecutionAttrs);
                     }
@@ -318,7 +405,7 @@ public class ProvenanceFeedManager {
 
             }
         } else {
-            String feedName = getFeedNameForComponentId(event.getComponentId());
+            String feedName = getFeedNameForComponentId(event);
             LOG.error(" Not Completing Feed. " + feedName + "  NifiJobExecution is null");
         }
 
