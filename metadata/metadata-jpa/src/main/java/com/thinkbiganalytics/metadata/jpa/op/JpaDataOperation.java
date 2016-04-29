@@ -46,11 +46,11 @@ public class JpaDataOperation implements DataOperation {
     @OneToOne
     private JpaDataset<Datasource, ChangeSet> dataset;
     
-    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
+    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name="start_time")
     private DateTime startTime;
 
-    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
+    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name="stop_time")
     private DateTime stopTime;
 

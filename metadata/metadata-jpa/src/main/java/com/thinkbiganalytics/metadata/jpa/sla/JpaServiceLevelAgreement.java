@@ -43,7 +43,7 @@ public class JpaServiceLevelAgreement implements ServiceLevelAgreement, Serializ
     
     private String description;
     
-    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
+    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name="created_time")
     private DateTime createdTime;
     

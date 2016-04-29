@@ -52,7 +52,7 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
     @JoinColumn(name="dataset_id")
     private Set<C> changes = new HashSet<>();
     
-    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
+    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name="created_time")
     private DateTime createdTime;
     

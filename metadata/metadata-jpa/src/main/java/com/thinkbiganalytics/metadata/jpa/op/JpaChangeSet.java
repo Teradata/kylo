@@ -36,11 +36,11 @@ public abstract class JpaChangeSet implements ChangeSet {
     @Column(name="id", columnDefinition="binary(36)")
     private UUID id;
 
-    @Type(type="org.joda.time.contrib.hibernate.PersistentDateTime")
+    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name="intrinsic_time")
     private DateTime intrinsicTime;
     
-    @Type(type="org.joda.time.contrib.hibernate.PersistentPeriod")
+    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentPeriodAsString")
     @Column(name="intrinsic_period")
     private Period intrinsicPeriod;
     
