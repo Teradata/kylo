@@ -21,7 +21,7 @@
     <dependencies>
 
         <dependency>
-            <groupId>com.thinkbiganalytics.nifi.core</groupId>
+            <groupId>com.thinkbiganalytics.nifi.services</groupId>
             <artifactId>thinkbig-nifi-core-service</artifactId>
             <version>${project.version}</version>
         </dependency>
