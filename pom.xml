@@ -62,10 +62,6 @@
             </snapshots>
         </repository>
         <repository>
-            <id>central</id>
-            <url>http://repo1.maven.org/maven2</url>
-        </repository>
-        <repository>
             <id>thinkbig-snapshot</id>
             <name>think big snapshot</name>
             <url>http://54.152.98.43:8080/artifactory/libs-snapshot-local</url>
