@@ -1,0 +1,506 @@
+[
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "birthdate",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "cc",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "comments",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "country",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "email",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "first_name",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "gender",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "id",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "ip_address",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "last_name",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "registration_dttm",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "salary",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972164,
+    "TBL_NAME": "userdata_feed",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "title",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "birthdate",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "cc",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "comments",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "country",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "dlp_reject_reason",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "email",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "first_name",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "gender",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "id",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "ip_address",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "last_name",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "registration_dttm",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "salary",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972167,
+    "TBL_NAME": "userdata_invalid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "title",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "birthdate",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "cc",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "comments",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "country",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "email",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "first_name",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "gender",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "id",
+    "TYPE_NAME": "bigint"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "ip_address",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "last_name",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "registration_dttm",
+    "TYPE_NAME": "timestamp"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "salary",
+    "TYPE_NAME": "decimal(8,2)"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972170,
+    "TBL_NAME": "userdata_valid",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "title",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "birthdate",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "cc",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "comments",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "country",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "email",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "first_name",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "gender",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "id",
+    "TYPE_NAME": "bigint"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "ip_address",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "last_name",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "registration_dttm",
+    "TYPE_NAME": "timestamp"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "salary",
+    "TYPE_NAME": "decimal(8,2)"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972174,
+    "TBL_NAME": "userdata",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "title",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972176,
+    "TBL_NAME": "userdata_profile",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "columnname",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972176,
+    "TBL_NAME": "userdata_profile",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "metrictype",
+    "TYPE_NAME": "string"
+  },
+  {
+    "NAME": "userdata_1",
+    "OWNER_NAME": "nifi",
+    "CREATE_TIME": 1454972176,
+    "TBL_NAME": "userdata_profile",
+    "TBL_TYPE": "EXTERNAL_TABLE",
+    "COLUMN_NAME": "metricvalue",
+    "TYPE_NAME": "string"
+  }
+]

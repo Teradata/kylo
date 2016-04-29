@@ -1,7 +1,8 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
+    <groupId>com.thinkbiganalytics.nifi</groupId>
     <artifactId>thinkbig-nifi-nar-bundles</artifactId>
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -9,9 +10,214 @@
         <version>0.1.0-SNAPSHOT</version>
     </parent>
     <packaging>pom</packaging>
-    
+
     <modules>
-        <module>nifi-components-bundle</module>
-        <module>nifi-provenance-bundle</module>
+        <module>nifi-standard-services</module>
+        <module>nifi-provenance-repo-bundle</module>
+        <module>nifi-hadoop-bundle</module>
+        <module>nifi-spark-bundle</module>
+        <module>nifi-elasticsearch-bundle</module>
+        <module>nifi-core-bundle</module>
     </modules>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-api</artifactId>
+                <version>${nifi.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-framework-core</artifactId>
+                <version>${nifi.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-bootstrap</artifactId>
+                <version>${nifi.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <!-- API -->
+
+           <dependency>
+                <groupId>com.thinkbiganalytics.nifi.services</groupId>
+                <artifactId>thinkbig-nifi-hadoop-service-api</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.thinkbiganalytics.nifi.services</groupId>
+                <artifactId>thinkbig-nifi-core-service-api</artifactId>
+                <version>${project.version}</version>
+                <scope>provided</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>com.thinkbiganalytics.nifi.services</groupId>
+                <artifactId>thinkbig-nifi-standard-services-nar</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+
+            <!-- Nifi Cannot be provided -->
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-processor-utils</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-hdfs-processors</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-persistent-provenance-repository</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-write-ahead-log</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-utils</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-data-provenance-utils</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-properties</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-dbcp-service-api</artifactId>
+                <version>${nifi.version}</version>
+            </dependency>
+
+            <!-- end non-provided NiFi -->
+
+            <dependency>
+                <groupId>org.apache.avro</groupId>
+                <artifactId>avro</artifactId>
+                <version>${avro.version}</version>
+            </dependency>
+
+            <!-- older version required due to Hive compatibility -->
+            <dependency>
+                <groupId>commons-dbcp</groupId>
+                <artifactId>commons-dbcp</artifactId>
+                <version>${commons.dbcp}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-pool2</artifactId>
+                <version>${commons.pool2}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-lang3</artifactId>
+                <version>${commons.lang3.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>2.5</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${spring.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-common</artifactId>
+                <version>${hadoop.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>httpclient</artifactId>
+                        <groupId>org.apache.httpcomponents</groupId>
+                    </exclusion>
+                    <exclusion>
+                        <artifactId>jersey-core</artifactId>
+                        <groupId>com.sun.jersey</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <dependency>
+                <groupId>com.thinkbiganalytics.metadata</groupId>
+                <artifactId>thinkbig-metadata-rest-model</artifactId>
+                <version>${project.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <artifactId>jackson-dataformat-xml</artifactId>
+                        <groupId>com.fasterxml.jackson.dataformat</groupId>
+                    </exclusion>
+                </exclusions>
+            </dependency>
+
+            <!-- Testing -->
+
+            <dependency>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-mock</artifactId>
+                <version>${nifi.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-core</artifactId>
+                <version>${mockito.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.assertj</groupId>
+                <artifactId>assertj-core</artifactId>
+                <version>${assertj.version}</version>
+                <scope>test</scope>
+            </dependency>
+
+            <!-- End testing -->
+
+        </dependencies>
+
+    </dependencyManagement>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.nifi</groupId>
+                <artifactId>nifi-nar-maven-plugin</artifactId>
+                <version>1.1.0</version>
+                <extensions>true</extensions>
+            </plugin>
+        </plugins>
+    </build>
 </project>

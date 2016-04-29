@@ -1,0 +1,271 @@
+[
+  {
+    "databaseName": "customers",
+    "databaseOwner": "nifi",
+    "tableCreateTime": "1456435821",
+    "tableName": "test_4_feed",
+    "tableType": "EXTERNAL_TABLE",
+    "hiveColumns": [
+      {
+        "columnName": "birthdate",
+        "columnType": "string"
+      },
+      {
+        "columnName": "cc",
+        "columnType": "string"
+      },
+      {
+        "columnName": "comments",
+        "columnType": "string"
+      },
+      {
+        "columnName": "country",
+        "columnType": "string"
+      },
+      {
+        "columnName": "email",
+        "columnType": "string"
+      },
+      {
+        "columnName": "first_name",
+        "columnType": "string"
+      },
+      {
+        "columnName": "gender",
+        "columnType": "string"
+      },
+      {
+        "columnName": "id",
+        "columnType": "string"
+      },
+      {
+        "columnName": "ip_address",
+        "columnType": "string"
+      },
+      {
+        "columnName": "last_name",
+        "columnType": "string"
+      },
+      {
+        "columnName": "registration_dttm",
+        "columnType": "string"
+      },
+      {
+        "columnName": "salary",
+        "columnType": "string"
+      },
+      {
+        "columnName": "title",
+        "columnType": "string"
+      }
+    ]
+  },
+  {
+    "databaseName": "customers",
+    "databaseOwner": "nifi",
+    "tableCreateTime": "1456435824",
+    "tableName": "test_4_valid",
+    "tableType": "EXTERNAL_TABLE",
+    "hiveColumns": [
+      {
+        "columnName": "birthdate",
+        "columnType": "string"
+      },
+      {
+        "columnName": "cc",
+        "columnType": "string"
+      },
+      {
+        "columnName": "comments",
+        "columnType": "string"
+      },
+      {
+        "columnName": "country",
+        "columnType": "string"
+      },
+      {
+        "columnName": "email",
+        "columnType": "string"
+      },
+      {
+        "columnName": "first_name",
+        "columnType": "string"
+      },
+      {
+        "columnName": "gender",
+        "columnType": "string"
+      },
+      {
+        "columnName": "id",
+        "columnType": "int"
+      },
+      {
+        "columnName": "ip_address",
+        "columnType": "string"
+      },
+      {
+        "columnName": "last_name",
+        "columnType": "string"
+      },
+      {
+        "columnName": "registration_dttm",
+        "columnType": "timestamp"
+      },
+      {
+        "columnName": "salary",
+        "columnType": "double"
+      },
+      {
+        "columnName": "title",
+        "columnType": "string"
+      }
+    ]
+  },
+  {
+    "databaseName": "customers",
+    "databaseOwner": "nifi",
+    "tableCreateTime": "1456435828",
+    "tableName": "test_4_profile",
+    "tableType": "EXTERNAL_TABLE",
+    "hiveColumns": [
+      {
+        "columnName": "columnname",
+        "columnType": "string"
+      },
+      {
+        "columnName": "metrictype",
+        "columnType": "string"
+      },
+      {
+        "columnName": "metricvalue",
+        "columnType": "string"
+      }
+    ]
+  },
+  {
+    "databaseName": "customers",
+    "databaseOwner": "nifi",
+    "tableCreateTime": "1456435826",
+    "tableName": "test_4",
+    "tableType": "EXTERNAL_TABLE",
+    "hiveColumns": [
+      {
+        "columnName": "birthdate",
+        "columnType": "string"
+      },
+      {
+        "columnName": "cc",
+        "columnType": "string"
+      },
+      {
+        "columnName": "comments",
+        "columnType": "string"
+      },
+      {
+        "columnName": "country",
+        "columnType": "string"
+      },
+      {
+        "columnName": "email",
+        "columnType": "string"
+      },
+      {
+        "columnName": "first_name",
+        "columnType": "string"
+      },
+      {
+        "columnName": "gender",
+        "columnType": "string"
+      },
+      {
+        "columnName": "id",
+        "columnType": "int"
+      },
+      {
+        "columnName": "ip_address",
+        "columnType": "string"
+      },
+      {
+        "columnName": "last_name",
+        "columnType": "string"
+      },
+      {
+        "columnName": "registration_dttm",
+        "columnType": "timestamp"
+      },
+      {
+        "columnName": "salary",
+        "columnType": "double"
+      },
+      {
+        "columnName": "title",
+        "columnType": "string"
+      }
+    ]
+  },
+  {
+    "databaseName": "customers",
+    "databaseOwner": "nifi",
+    "tableCreateTime": "1456435823",
+    "tableName": "test_4_invalid",
+    "tableType": "EXTERNAL_TABLE",
+    "hiveColumns": [
+      {
+        "columnName": "birthdate",
+        "columnType": "string"
+      },
+      {
+        "columnName": "cc",
+        "columnType": "string"
+      },
+      {
+        "columnName": "comments",
+        "columnType": "string"
+      },
+      {
+        "columnName": "country",
+        "columnType": "string"
+      },
+      {
+        "columnName": "dlp_reject_reason",
+        "columnType": "string"
+      },
+      {
+        "columnName": "email",
+        "columnType": "string"
+      },
+      {
+        "columnName": "first_name",
+        "columnType": "string"
+      },
+      {
+        "columnName": "gender",
+        "columnType": "string"
+      },
+      {
+        "columnName": "id",
+        "columnType": "string"
+      },
+      {
+        "columnName": "ip_address",
+        "columnType": "string"
+      },
+      {
+        "columnName": "last_name",
+        "columnType": "string"
+      },
+      {
+        "columnName": "registration_dttm",
+        "columnType": "string"
+      },
+      {
+        "columnName": "salary",
+        "columnType": "string"
+      },
+      {
+        "columnName": "title",
+        "columnType": "string"
+      }
+    ]
+  }
+]
