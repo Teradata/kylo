@@ -32,7 +32,7 @@ public class JpaObligationGroup implements ObligationGroup, Serializable {
 
     @Id
     @GeneratedValue
-    @Column(name="id", columnDefinition="binary(36)")
+    @Column(name="id", columnDefinition="binary(16)")
     private UUID id;
 
     @Column(name="cond")

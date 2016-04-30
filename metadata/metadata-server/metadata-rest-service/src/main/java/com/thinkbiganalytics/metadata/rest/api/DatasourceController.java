@@ -52,7 +52,8 @@ public class DatasourceController {
             @Override
             public List<Datasource> execute() {
                 com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = createDatasourceCriteria(name, owner, on, after, before, type);
-                List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(criteria);
+                List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources();
+//                List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(criteria);
                 
                 return new ArrayList<>(Collections2.transform(existing, Model.DOMAIN_TO_DS));
             }

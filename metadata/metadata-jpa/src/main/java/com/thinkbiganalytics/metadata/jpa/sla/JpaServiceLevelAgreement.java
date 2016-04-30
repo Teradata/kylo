@@ -35,7 +35,6 @@ public class JpaServiceLevelAgreement implements ServiceLevelAgreement, Serializ
     private static final long serialVersionUID = 2611479261936214396L;
 
     @EmbeddedId
-    @Column(name="id", columnDefinition="binary(36)")
     private SlaId id;
     
     @Column(name="name", length=100, unique=true)

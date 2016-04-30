@@ -33,7 +33,7 @@ public abstract class JpaChangeSet implements ChangeSet {
     
     @Id
     @GeneratedValue
-    @Column(name="id", columnDefinition="binary(36)")
+    @Column(name="id", columnDefinition="binary(16)")
     private UUID id;
 
     @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
