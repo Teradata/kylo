@@ -50,11 +50,6 @@
                         row[columns[_index]] = newVal;
                         }
                     }
-                    else {
-                        if( row[columns[_index]].indexOf('script') >=0){
-                            console.log('****** FOUND IT!!!!******',row)
-                        }
-                    }
 
                 };
                 var data = HiveService.transformResults2(response,['processing_dttm'],transformFn);

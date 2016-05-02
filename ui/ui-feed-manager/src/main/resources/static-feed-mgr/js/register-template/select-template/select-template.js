@@ -136,7 +136,6 @@
                     property.processor.groupId = property.processGroupId;
                     property.processor.groupName = property.processGroupName;
                 }
-                console.log('pppp',property.processorName,property);
 
                 if(property.selected == undefined){
                     property.selected = false;
@@ -200,7 +199,6 @@
                 var successFn = function (response) {
                 //    self.templateCache[self.model.templateId]= response;
                     var templateData = response.data;
-                    console.log('TEMPLATE DATA ',templateData)
                     $timeout(function() {
                         transformPropertiesToArray(templateData.properties);
                         if(self.stepperController) {
@@ -209,7 +207,6 @@
                         }
                     },10);
 
-                    console.log('SELECTED TEMPLATE ',templateData,templateData.nifiTemplateId)
                     self.model.nifiTemplateId = templateData.nifiTemplateId;
                     self.model.templateName = templateData.templateName;
                     self.model.defineTable = templateData.defineTable;
@@ -221,7 +218,6 @@
                     self.model.reusableTemplate = templateData.reusableTemplate;
                     self.model.reusableTemplateConnections = templateData.reusableTemplateConnections;
                     self.model.needsReusableTemplate = templateData.reusableTemplateConnections != undefined && templateData.reusableTemplateConnections.length>0;
-                    console.log('TEMPLATE DATA MODEL IS ',self.model)
                 }
                 var errorFn = function (err) {
 

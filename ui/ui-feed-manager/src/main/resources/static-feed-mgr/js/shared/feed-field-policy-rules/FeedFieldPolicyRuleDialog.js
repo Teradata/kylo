@@ -5,7 +5,6 @@
     $scope.field = field;
         $scope.options = [];
     FieldPolicyRuleOptionsFactory.getOptionsForType(policyParameter).then(function(response){
-        console.log('RESPONSE',response)
         $scope.options =response.data;
     });
 

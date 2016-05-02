@@ -104,7 +104,6 @@
             else {
                 self.showJobParameters = false;
             }
-            console.log('TOGGLE ',name, self.showJobParameters)
         }
 
         function selectFirstTab(){
@@ -229,7 +228,6 @@ function cancelLoadJobDataTimeout(){
 
 
         function changeRelatedJob(relatedJob){
-            console.log('CHANGING RELATED JOB ',relatedJob, self.relatedJob, self.jobExecutionId)
           //remove animation for load
             disableTabAnimation();
             loadJobExecution(relatedJob)

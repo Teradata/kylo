@@ -88,7 +88,6 @@
 
                             var nonInputProcessors = [];
                             angular.forEach(self.model.properties, function (property) {
-                                console.log('ppp ',property)
                                 if (property.userEditable) {
 
                                     if (processors[property.processorId] === undefined) {

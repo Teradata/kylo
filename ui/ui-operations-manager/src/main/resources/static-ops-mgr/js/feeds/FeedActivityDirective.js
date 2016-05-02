@@ -108,7 +108,6 @@
                 if(self.fixChartWidthTimeout){
                     $timeout.cancel(self.fixChartWidthTimeout);
                 }
-                console.log('FIXED WIDTH,', self.fixChartWidthCounter)
                 self.fixChartWidthCounter = 0;
             }
         }

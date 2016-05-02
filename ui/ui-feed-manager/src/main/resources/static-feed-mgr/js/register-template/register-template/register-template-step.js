@@ -68,13 +68,10 @@
         self.connectionMap = {};
         self.inputPortList = [];
         if(self.model.needsReusableTemplate){
-
-            console.log("Needs Template!!! ",self.model);
             RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then(function(response){
                 var arr= [];
 
                 if(response.data) {
-                    console.log('RESPONSE.data',response.data)
                     angular.forEach(response.data,function(ports,feedName) {
                         angular.forEach(ports,function(port) {
                             arr.push({label:feedName+" - "+port.name,value:feedName+" - "+port.name});
@@ -83,7 +80,6 @@
                         });
                     });
                     self.inputPortList = arr;
-                    console.log('LIST ', self.inputPortList)
                 }
             });
         }
@@ -95,7 +91,6 @@
          var port = self.connectionMap[connection.inputPortDisplayName];
             connection.reusableTemplateFeedName = port.feedName;
             connection.reusableTemplateInputPortName = port.name;
-            console.log('CHANGED CONN = ',connection);
         }
 
 
@@ -155,7 +150,6 @@
 
             //get all properties that are selected
            var savedTemplate = RegisterTemplateService.getModelForSave();
-            console.log('SAVING TEMPLATE ',savedTemplate)
             var promise = $http({
                 url: RestUrlService.REGISTER_TEMPLATE_URL(),
                 method: "POST",
