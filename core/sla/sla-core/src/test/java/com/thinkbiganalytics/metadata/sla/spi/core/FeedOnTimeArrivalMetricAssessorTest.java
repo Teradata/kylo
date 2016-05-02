@@ -187,8 +187,12 @@ public class FeedOnTimeArrivalMetricAssessorTest {
 
     @Test
     public void testMinuteAfterLate() throws ParseException {
+        DateTime now = this.lateTime.plusMinutes(2);
         DateTime feedEnd = this.lateTime.plusMinutes(1);
         ExecutedFeed feed = createExecutedFeed(feedEnd);
+        
+        PowerMockito.mockStatic(DateTime.class);
+        BDDMockito.given(DateTime.now()).willReturn(now);
         when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(feed);
         when(this.calendar.isTimeIncluded(anyLong())).thenReturn(true);
 
@@ -199,8 +203,12 @@ public class FeedOnTimeArrivalMetricAssessorTest {
 
     @Test
     public void testLateButHoliday() throws ParseException {
+        DateTime now = this.lateTime.plusMinutes(2);
         DateTime feedEnd = this.lateTime.plusMinutes(1);
         ExecutedFeed feed = createExecutedFeed(feedEnd);
+        
+        PowerMockito.mockStatic(DateTime.class);
+        BDDMockito.given(DateTime.now()).willReturn(now);
         when(this.feedRepository.findLastCompletedFeed("feed")).thenReturn(feed);
         when(this.calendar.isTimeIncluded(anyLong())).thenReturn(false);
 
