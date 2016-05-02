@@ -48,6 +48,20 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
         return self.GET_REGISTERED_TEMPLATES_URL+"/"+templateId;
     }
 
+    this.REGISTERED_TEMPLATE_NIFI_INPUT_PORTS = function(nifiTemplateId){
+        return self.TEMPLATES_BASE_URL+"/nifi/"+nifiTemplateId+"/input-ports";
+    }
+
+    this.REGISTERED_TEMPLATE_NIFI_OUTPUT_PORTS = function(nifiTemplateId){
+        return self.TEMPLATES_BASE_URL+"/nifi/"+nifiTemplateId+"/output-ports";
+    }
+
+    this.REGISTERED_TEMPLATE_NIFI_ALL_PORTS = function(nifiTemplateId){
+        return self.TEMPLATES_BASE_URL+"/nifi/"+nifiTemplateId+"/ports";
+    }
+
+    this.ALL_REUSABLE_FEED_INPUT_PORTS = self.FEEDS_BASE_URL+"/reusable-feed-input-ports";
+
     this.CONFIGURATION_PROPERTIES_URL =this.ROOT+"/proxy/v1/feedmgr/nifi/configuration/properties";
     this.METADATA_PROPERTY_NAMES_URL  =this.ROOT+"/proxy/v1/feedmgr/metadata-properties";
 

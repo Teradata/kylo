@@ -34,7 +34,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $mdToast
         createFeedModel : {},
         editFeedModel : {},
         getNewCreateFeedModel : function(){
-            return  {id:null,version:null,templateId:'',feedName:'',description:null,systemFeedName:'',inputProcessorType:'',inputProcessor:null,nonInputProcessors:[],properties:[], schedule:{schedulingPeriod:'* * * * * ?',schedulingStrategy:'CRON_DRIVEN', concurrentTasks:1},defineTable:false,allowPreconditions:false,dataTransformation:false,table:{tableSchema:{name:null,fields:[]},sourceTableSchema:{name:null,fields:[]},method:'MANUAL',existingTableName:null,tableType:'DELTA',recordFormat:'DELIMITED',fieldPolicies:[],partitions:[],options:{compress:false,compressionFormat:null,auditLogging:true,encrypt:false,trackHistory:false}, securityGroups:[], incrementalDateField:null}, category:{id:null,name:null},  dataOwner:'',tags:[]};
+            return  {id:null,version:null,templateId:'',feedName:'',description:null,systemFeedName:'',inputProcessorType:'',inputProcessor:null,nonInputProcessors:[],properties:[], schedule:{schedulingPeriod:'* * * * * ?',schedulingStrategy:'CRON_DRIVEN', concurrentTasks:1},defineTable:false,allowPreconditions:false,dataTransformation:false,table:{tableSchema:{name:null,fields:[]},sourceTableSchema:{name:null,fields:[]},method:'MANUAL',existingTableName:null,tableType:'DELTA',recordFormat:'DELIMITED',fieldPolicies:[],partitions:[],options:{compress:false,compressionFormat:null,auditLogging:true,encrypt:false,trackHistory:false}, securityGroups:[], incrementalDateField:null}, category:{id:null,name:null},  dataOwner:'',tags:[], reusableFeed:false};
         },
         newCreateFeed:function(){
             this.createFeedModel = this.getNewCreateFeedModel();
@@ -44,9 +44,11 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $mdToast
             angular.extend(this.editFeedModel,feedModel);
 
             //set the field name to the policy name attribute
-            angular.forEach(this.editFeedModel.table.fieldPolicies,function(policy,i) {
-                policy.name = self.editFeedModel.table.tableSchema.fields[i].name
-            })
+            if(this.editFeedModel.table != null && this.editFeedModel.table.fieldPolicies != null) {
+                angular.forEach(this.editFeedModel.table.fieldPolicies, function (policy, i) {
+                    policy.name = self.editFeedModel.table.tableSchema.fields[i].name
+                });
+            }
 
         },
         resetFeed : function(){

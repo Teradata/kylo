@@ -35,6 +35,10 @@
             else if(this.model.dataTransformation) {
                this.templateTableOption = 'DATA_TRANSFORMATION'
             }
+            else if(this.model.reusableTemplate)
+            {
+                self.templateTableOption = 'COMMON_REUSABLE_TEMPLATE'
+            }
             else {
                 this.templateTableOption = 'NO_TABLE'
             }
@@ -59,6 +63,42 @@
                 self.model.dataTransformation = false;
             }
         }
+
+
+        self.connectionMap = {};
+        self.inputPortList = [];
+        if(self.model.needsReusableTemplate){
+
+            console.log("Needs Template!!! ",self.model);
+            RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then(function(response){
+                var arr= [];
+
+                if(response.data) {
+                    console.log('RESPONSE.data',response.data)
+                    angular.forEach(response.data,function(ports,feedName) {
+                        angular.forEach(ports,function(port) {
+                            arr.push({label:feedName+" - "+port.name,value:feedName+" - "+port.name});
+                            self.connectionMap[feedName+" - "+port.name] = port;
+                            port.feedName = feedName;
+                        });
+                    });
+                    self.inputPortList = arr;
+                    console.log('LIST ', self.inputPortList)
+                }
+            });
+        }
+
+
+
+
+        this.onNeedsReusableTemplateConnectionChange = function(connection){
+         var port = self.connectionMap[connection.inputPortDisplayName];
+            connection.reusableTemplateFeedName = port.feedName;
+            connection.reusableTemplateInputPortName = port.name;
+            console.log('CHANGED CONN = ',connection);
+        }
+
+
 
         this.showIconPicker= function() {
             var iconModel = {icon:self.model.icon.title,iconColor:self.model.icon.color};
@@ -115,6 +155,7 @@
 
             //get all properties that are selected
            var savedTemplate = RegisterTemplateService.getModelForSave();
+            console.log('SAVING TEMPLATE ',savedTemplate)
             var promise = $http({
                 url: RestUrlService.REGISTER_TEMPLATE_URL(),
                 method: "POST",
@@ -127,7 +168,7 @@
         }
 
         $scope.$watch(function() {
-            return self.model.templateId;
+            return self.model.nifiTemplateId;
         },function(newVal){
             if(newVal != null) {
                 self.isValid = true;
@@ -145,7 +186,7 @@
                 clickOutsideToClose:false,
                 fullscreen: true,
                 locals : {
-                    templateId : self.model.templateId,
+                    nifiTemplateId : self.model.nifiTemplateId,
                     templateName:self.model.templateName,
                     message: self.message,
                     registrationSuccess:self.registrationSuccess
@@ -159,7 +200,7 @@
                         StateService.navigateToRegisterTemplate();
                     }
                     if(msg == 'newFeed') {
-                        StateService.navigateToDefineFeed(self.model.templateId);
+                        StateService.navigateToDefineFeed(self.model.nifiTemplateId);
                     }
 
                 }, function() {
@@ -181,10 +222,10 @@
 })();
 
 
-function RegistrationCompleteDialogController($scope, $mdDialog, $mdToast, $http, StateService, templateId,templateName,message, registrationSuccess ){
+function RegistrationCompleteDialogController($scope, $mdDialog, $mdToast, $http, StateService, nifiTemplateId,templateName,message, registrationSuccess ){
     var self = this;
 
-    $scope.templateId = templateId;
+    $scope.nifiTemplateId = nifiTemplateId;
     $scope.templateName = templateName;
     $scope.message =message;
     $scope.registrationSuccess = registrationSuccess;

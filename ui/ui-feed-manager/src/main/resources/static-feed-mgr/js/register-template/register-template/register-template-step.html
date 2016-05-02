@@ -16,7 +16,7 @@
             </md-input-container>
 
 
-            <div layout="column">
+            <div layout="column" ng-if="!vm.model.reusableTemplate">
                 <md-subheader class="md-subhead left-aligned layout-padding-bottom">Feed Destination Table Options</md-subheader>
 
                 <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" >
@@ -31,7 +31,12 @@
                 </md-input-container>
             </div>
 
-            <div layout="column">
+             <div layout="column" ng-if="vm.model.reusableTemplate">
+               <md-subheader class="md-subhead left-aligned">Reusable Template</md-subheader>
+               <span> This template is to be used as a reusable component.  It cannot be used to create a new feed, but rather other feed templates can be registered to reference this template </span>
+            </div>
+
+            <div layout="column" ng-if="!vm.model.reusableTemplate">
                 <md-subheader class="md-subhead left-aligned">Feed Scheduling Options</md-subheader>
             <md-checkbox ng-model="vm.model.allowPreconditions" aria-label=" ">
                 Allow for Feed Preconditions
@@ -39,6 +44,25 @@
             </md-checkbox>
 
             </div>
+
+             <div layout="column" ng-if="vm.model.needsReusableTemplate">
+               <md-subheader class="md-subhead left-aligned">Connection Options</md-subheader>
+               <div layout="row" ng-repeat="connection in vm.model.reusableTemplateConnections">
+                 <div layout="column" flex="50">
+                        <span>Connect From: {{connection.feedOutputPortName}}</span>
+                 </div>
+                 <div layout="column" flex="50">
+                   <md-input-container class="md-block condensed">
+                     <md-select ng-model="connection.inputPortDisplayName" ng-change="vm.onNeedsReusableTemplateConnectionChange(connection)">
+                       <md-option ng-repeat="inputPort in vm.inputPortList" value="{{inputPort.value}}">
+                         {{inputPort.label}}
+                       </md-option>
+                     </md-select>
+                     </md-input-container>
+                 </div>
+               </div>
+             </div>
+
 
             <div layout="column">
                 <md-subheader class="md-subhead left-aligned">Display Options</md-subheader>

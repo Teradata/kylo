@@ -88,19 +88,20 @@
 
                             var nonInputProcessors = [];
                             angular.forEach(self.model.properties, function (property) {
+                                console.log('ppp ',property)
                                 if (property.userEditable) {
 
                                     if (processors[property.processorId] === undefined) {
                                         processors[property.processorId] = {
-                                            name: property.processor.name,
+                                            name: property.processorName,
                                             properties: [],
                                             processorId: property.processorId,
                                             inputProcessor: property.inputProperty,
-                                            type: property.processor.type
+                                            type: property.processorType
                                         }
                                         if (property.inputProperty) {
                                             inputProcessors.push(processors[property.processorId]);
-                                            if (self.model.inputProcessorType == property.processor.type) {
+                                            if (self.model.inputProcessorType == property.processorType) {
                                                 self.model.inputProcessor = processors[property.processorId];
                                             }
                                         }
