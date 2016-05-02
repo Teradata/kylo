@@ -11,3 +11,8 @@ assets.  Some features:
 
 <https://wiki.thinkbiganalytics.com/display/RD/Pipeline+Controller+-+Next+Generation/>
 
+=== Deployment Guide
+
+To get started, please follow the deployment guide
+
+    * link:./docs/latest/deployment-guide.adoc[Deployment Guide]
