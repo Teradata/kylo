@@ -1,0 +1,209 @@
+= Pipeline Controller Deployment Guide
+Think Big Analytics
+May 2016
+
+:toc:
+:toclevels: 2
+:toc-title: Contents
+
+== System Requirements
+
+=== Dependencies
+
+Pipeline Controller should be installed on an edge node.  The following should be available prior to the installing the Data Lake Starter.
+
+.Dependencies
+|===
+|Redhat/GNU/Linux distributions
+|RPM (for install)
+|Java 1.7 (or greater)
+|Hadoop 2.4+
+|Spark 1.5.x+
+|Apache NiFi 0.5+ (or Hortonworks DataFlow)
+|Hive
+|MySql
+|===
+
+== Installation
+
+=== Procedure
+
+Follow the steps below to install the Pipeline Controller Service
+
+
+1. Find and download the RPM file from artifactory and place on the host linux machine
+
+           http://54.152.98.43:8080/artifactory/webapp/search/artifact?q=data-lake   (requires VPN)
+
+
+2. Login to the the host using root or sudo access
+3. Run RPM install
+
+           $ rpm -ivh pipeline-controller-<version>.noarch.rpm
+
+
+Note: If needed you can remove or un-install using the command below
+
+           $ rpm -e pipeline-controller-<version>
+
+
+<<<
+
+== Configuration
+
+=== Configuration File
+
+Configuration for the Pipeline Controller Service is located under the following files:
+
+    /opt/tba/pipeline-application/conf/application.properties
+
+<<<
+
+=== Configuration Properties
+
+Below is a list of the properties provided by the Pipeline Controller that can be used in the application.properties
+file.  You can use externalized configuration from command line arguments, for example '--spring.config.location=classpath:/override.properties'.
+See http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html for details.
+
+
+.Server Configuration Properties
+|===
+|Configuration Property|Required|Example
+
+|server.port||8282
+|||
+|===
+
+==== Database Setup
+
+Pipeline Controller can be configured to work with Postgres or MySQL. Database and permission setup scripts are provided to assist in the initial configuration process.   The script names relevant to setup are below:
+
+==== My SQL
+|===
+|Script Name|Description
+|/opt/tba/pipeline-application/conf/setup/mysql/setup-mysql.sh|Create tables used by pipeline controller
+|/opt/tba/pipeline-application/conf/setup/mysql/drop-mysql.sh DROP|Used to remove pipeline controller tables
+|===
+
+
+==== Postgres
+|===
+|Script Name|Description
+|/opt/tba/pipeline-application/conf/setup/postgres/setup-postgres.sh|Create tables used by pipeline controller
+|/opt/tba/pipeline-application/conf/setup/postgres/drop-postgres.sh DROP|PUsed to remove pipeline controller tables
+|===
+
+==== Airline Example Install
+
+Setup script for aircraft example is:
+
+           cd /opt/tba/pipeline-application/conf/setup/
+           ./setup-examples.sh
+
+The setup-examples.sh script will copy the required JARs into the /opt/tba/pipeline-application/plugins folder and append additional application properties to the application.properties file.
+
+<<<
+    
+
+<<<
+
+=== Optimizing Performance
+
+You can adjust the memory setting of the Pipeline Controller Service using the PIPELINE_APPLICATION_OPTS environment variable.  
+
+    export PIPELINE_APPLICATION_OPTS=Xmx4g
+    
+The setting above would set the Java maximum heap size to 4 GB.    
+    
+<<<
+
+== Starting the Pipeline Application Service
+
+1. To Start
+
+    $ /etc/init.d/pipeline-application start
+              
+2. To Stop
+
+    $ /etc/init.d/pipeline-application stop
+              
+3.  To get Status
+
+    $ /etc/init.d/pipeline-application status
+
+<<<
+
+== Viewing Service Output
+
+=== General Log Output
+
+Log output for the Pipeline Application is configured at
+
+			/opt/tba/pipeline-application/conf/log4j.properties
+			
+You may place logs where desired according to the 'log4j.appender.file.File' property.  Note the configuration line:
+
+			log4j.appender.file.File=/var/log/pipeline-application/pipeline-application.log
+
+To view output logs for the Pipeline Application simply view this file:
+
+            tail -f pipeline-application.log
+
+
+=== Pipeline Application Web Console
+
+After you start the service you can view running jobs, job history and other details using the Pipeline Application Web Console.
+
+    http://127.0.0.1:8282
+    username: dladmin
+	password: thinkbig
+
+.Application Pipeline Job View
+image::images/PipelineControllerJobView.png[Log]
+
+
+== Appendix: Postgres Integration
+
+It's also possible to use Postgresql instead of mySql. To install it, run the following commands (RedHat)
+
+1. Forward port 5432 to host OS, if required.
+
+2. login as root
+
+    $ su - root
+
+3. Install postgres using yum:
+
+    yum install -y postgresql postgresql-devel postgresql-server postgresql-libs postgresql-contrib
+
+4. Initiate and start the database
+    
+    $ service postgresql initdb
+    $ service postgresql start
+
+5. Add a password to postgres user
+
+    $ su - postgres
+    $ psql postgres -c "alter user postgres with password 'postgres';"
+    $ exit
+
+6. Change configuration files as required and restart the database:
+
+    $ sed -i 's/    ident/    md5/g' /var/lib/pgsql/data/pg_hba.conf
+    $ sed -i 's_127.0.0.1/32_pipeline-controller-1.0.0-10.0.0.0/0_g' /var/lib/pgsql/data/pg_hba.conf
+    $ sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /var/lib/pgsql/data/postgresql.conf
+    $ service postgresql restart
+
+7. Create pipeline_application_db database and a user that will own it:
+
+    $ su - postgres
+    $ psql postgres -c "create user pguser with password 'thinkbig';"
+    $ psql postgres -c "create database pipeline_db owner=pguser;"
+
+8. Update application.properties entries:
+
+	spring.datasource.url=jdbc:postgresql://localhost:5432/pipeline_db
+	spring.datasource.username=pguser
+	spring.datasource.password=thinkbig
+	spring.datasource.driverClassName=org.postgresql.Driver
+	
