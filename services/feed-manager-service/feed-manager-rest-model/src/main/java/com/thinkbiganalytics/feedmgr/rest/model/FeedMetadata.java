@@ -2,6 +2,7 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
@@ -15,7 +16,7 @@ import java.util.List;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedMetadata implements UIFeed{
-    private Long id;
+    private String id;
 
     @MetadataField(description = "The unique feed GUID")
     private String feedId;
@@ -54,12 +55,17 @@ public class FeedMetadata implements UIFeed{
 
     private boolean active = true;
 
+    private String nifiProcessGroupId;
+
+    //indicates this feed has inputPorts and is a "reusable template" for other feeds
+    @JsonProperty("reusableFeed")
+    private boolean isReusableFeed;
 
 
     private Long version;
 
 
-    private NifiProcessGroup nifiProcessGroup;
+   // private NifiProcessGroup nifiProcessGroup;
 
     private RegisteredTemplate registeredTemplate;
 
@@ -70,11 +76,12 @@ public class FeedMetadata implements UIFeed{
 
     }
 
-    public Long getId() {
+    @Override
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -171,14 +178,14 @@ public class FeedMetadata implements UIFeed{
         this.table = table;
     }
 
-    public NifiProcessGroup getNifiProcessGroup() {
+ /*   public NifiProcessGroup getNifiProcessGroup() {
         return nifiProcessGroup;
     }
 
     public void setNifiProcessGroup(NifiProcessGroup nifiProcessGroup) {
         this.nifiProcessGroup = nifiProcessGroup;
     }
-
+*/
     public Date getCreateDate() {
         return createDate;
     }
@@ -255,7 +262,7 @@ public class FeedMetadata implements UIFeed{
     }
 
     @Override
-    public Long getCategoryId() {
+    public String getCategoryId() {
         return this.category.getId();
     }
 
@@ -277,5 +284,22 @@ public class FeedMetadata implements UIFeed{
     @Override
     public String getCategoryIconColor() {
         return this.category.getIconColor();
+    }
+
+    public String getNifiProcessGroupId() {
+        return nifiProcessGroupId;
+    }
+
+    public void setNifiProcessGroupId(String nifiProcessGroupId) {
+        this.nifiProcessGroupId = nifiProcessGroupId;
+    }
+
+    @JsonProperty("reusableFeed")
+    public boolean isReusableFeed() {
+        return isReusableFeed;
+    }
+    @JsonProperty("reusableFeed")
+    public void setIsReusableFeed(boolean isReusableFeed) {
+        this.isReusableFeed = isReusableFeed;
     }
 }

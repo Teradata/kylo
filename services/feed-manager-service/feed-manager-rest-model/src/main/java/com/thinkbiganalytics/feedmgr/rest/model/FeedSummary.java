@@ -13,10 +13,10 @@ public class FeedSummary implements UIFeed {
 
     private String categoryName;
     private String systemCategoryName;
-    private Long categoryId;
+    private String categoryId;
     private String categoryIcon;
     private String categoryIconColor;
-    private Long id;
+    private String id;
     private String feedId;
     private String feedName;
     private String systemFeedName;
@@ -50,20 +50,20 @@ public class FeedSummary implements UIFeed {
     }
 
     @Override
-    public Long getCategoryId() {
+    public String getCategoryId() {
         return categoryId;
     }
 
-    public void setCategoryId(Long categoryId) {
+    public void setCategoryId(String categoryId) {
         this.categoryId = categoryId;
     }
 
     @Override
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 

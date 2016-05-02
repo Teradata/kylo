@@ -10,6 +10,12 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
+import com.thinkbiganalytics.feedmgr.service.FeedManagerCategoryProvider;
+import com.thinkbiganalytics.feedmgr.service.FeedManagerFeedProvider;
+import com.thinkbiganalytics.feedmgr.service.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.feedmgr.service.InMemoryFeedManagerCategoryProvider;
+import com.thinkbiganalytics.feedmgr.service.InMemoryFeedManagerFeedProvider;
+import com.thinkbiganalytics.feedmgr.service.InMemoryFeedManagerTemplateProvider;
 import com.thinkbiganalytics.feedmgr.service.InMemoryMetadataService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
@@ -35,6 +41,26 @@ public class FeedManagerConfiguration {
     public MetadataClient metadataClient(){
         return new MetadataClient(URI.create("http://localhost:8077/api/metadata/"));
     }
+
+
+    @Bean
+    public FeedManagerFeedProvider feedManagerFeedProvider(){
+        return new InMemoryFeedManagerFeedProvider();
+    }
+
+    @Bean
+    public FeedManagerCategoryProvider feedManagerCategoryProvider(){
+        return new InMemoryFeedManagerCategoryProvider();
+    }
+
+
+    @Bean
+    public FeedManagerTemplateProvider feedManagerTemplateProvider(){
+        return new InMemoryFeedManagerTemplateProvider();
+    }
+
+
+
 
     @Bean
     public MetadataService metadataService(){

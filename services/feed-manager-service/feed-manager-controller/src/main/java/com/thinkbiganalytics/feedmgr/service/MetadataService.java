@@ -9,6 +9,7 @@ import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -34,6 +35,8 @@ public interface MetadataService {
 
     List<RegisteredTemplate> getRegisteredTemplates();
 
+    NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException;
+
     void saveFeed(FeedMetadata feed);
 
     Collection<FeedMetadata> getFeeds();
@@ -42,15 +45,21 @@ public interface MetadataService {
 
     List<FeedSummary> getFeedSummaryData();
 
-    List<FeedSummary> getFeedSummaryForCategory(Long categoryId);
+    List<FeedSummary> getFeedSummaryForCategory(String categoryId);
 
-    FeedMetadata getFeed(String feedName);
+    FeedMetadata getFeedByName(String feedName);
 
-    FeedMetadata getFeed(Long feedId);
+    FeedMetadata getFeedById(String feedId);
+
+    List<FeedMetadata> getReusableFeeds();
 
     Collection<FeedCategory> getCategories();
 
+    FeedCategory getCategoryByName(String name);
+
+    FeedCategory getCategoryBySystemName(final String name);
+
     void saveCategory(FeedCategory category);
 
-    boolean deleteCategory(Long categoryId) throws InvalidOperationException;
+    boolean deleteCategory(String categoryId) throws InvalidOperationException;
 }
