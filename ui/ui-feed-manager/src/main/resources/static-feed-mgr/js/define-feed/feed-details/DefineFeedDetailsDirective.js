@@ -77,11 +77,11 @@
                     property.selected = false;
                     if (processors[property.processorId] === undefined) {
                         processors[property.processorId] = {
-                            name: property.processor.name,
+                            name: property.processorName,
                             properties: [],
                             processorId: property.processorId,
                             inputProcessor: property.inputProcessor,
-                            type: property.processor.type
+                            type: property.processorType
                         }
                     }
 

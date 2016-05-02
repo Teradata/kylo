@@ -5,6 +5,7 @@ import java.util.List;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.entity.ControllerServiceEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -24,24 +25,17 @@ public class DBCPConnectionPoolTableInfo {
     @Autowired
     NifiRestClient nifiRestClient;
 
-    //type = org.apache.nifi.dbcp.DBCPConnectionPool
-    //properties
-    //Database Connection URL
-    //Database Driver Class Name
-    //Database Driver Jar Url
-    //Database User
-    //Password
-    //Max Wait Time
-    //Max Total Connections
- public  List<String> getTableNamesForControllerService(String serviceId, String schema) throws JerseyClientException {
-     ControllerServiceEntity entity = nifiRestClient.getControllerService("NODE", serviceId);
-     if(entity != null && entity.getControllerService() != null) {
-         String type = entity.getControllerService().getType();
+
+ public  List<String> getTableNamesForControllerService(String serviceId,String serviceName, String schema) throws JerseyClientException {
+     ControllerServiceDTO controllerService = getControllerService(serviceId,serviceName);
+
+     if(controllerService != null) {
+         String type = controllerService.getType();
          if("org.apache.nifi.dbcp.DBCPConnectionPool".equalsIgnoreCase(type)){
-             String uri = entity.getControllerService().getProperties().get("Database Connection URL");
+             String uri = controllerService.getProperties().get("Database Connection URL");
              uri = StringUtils.replace(uri, "3306", "3307");
-             String user = entity.getControllerService().getProperties().get("Database User");
-             String password = entity.getControllerService().getProperties().get("Password");
+             String user = controllerService.getProperties().get("Database User");
+             String password = controllerService.getProperties().get("Password");
 
              DataSource dataSource = PoolingDataSourceService.getDataSource(uri, user, password);
              DBSchemaParser schemaParser = new DBSchemaParser(dataSource);
@@ -51,16 +45,38 @@ public class DBCPConnectionPoolTableInfo {
      return null;
  }
 
-    public TableSchema describeTableForControllerService(String serviceId, String schema,String tableName) throws
+    private ControllerServiceDTO getControllerService(String serviceId, String serviceName) {
+        ControllerServiceDTO controllerService = null;
+        try {
+            ControllerServiceEntity entity = nifiRestClient.getControllerService("NODE", serviceId);
+            if (entity != null && entity.getControllerService() != null) {
+                controllerService = entity.getControllerService();
+            }
+        }catch(JerseyClientException e) {
+
+        }
+        if (controllerService == null) {
+            try {
+                controllerService = nifiRestClient.getControllerServiceByName("NODE", serviceName);
+            }catch (JerseyClientException e) {
+
+            }
+        }
+return controllerService;
+    }
+
+
+    public TableSchema describeTableForControllerService(String serviceId, String serviceName,String schema,String tableName) throws
                                                                                                            JerseyClientException {
-        ControllerServiceEntity entity = nifiRestClient.getControllerService("NODE", serviceId);
-        if(entity != null && entity.getControllerService() != null) {
-            String type = entity.getControllerService().getType();
+
+        ControllerServiceDTO controllerService = getControllerService(serviceId, serviceName);
+        if(controllerService != null) {
+            String type = controllerService.getType();
             if("org.apache.nifi.dbcp.DBCPConnectionPool".equalsIgnoreCase(type)){
-                String uri = entity.getControllerService().getProperties().get("Database Connection URL");
+                String uri = controllerService.getProperties().get("Database Connection URL");
                 uri = StringUtils.replace(uri, "3306", "3307");
-                String user = entity.getControllerService().getProperties().get("Database User");
-                String password = entity.getControllerService().getProperties().get("Password");
+                String user = controllerService.getProperties().get("Database User");
+                String password = controllerService.getProperties().get("Password");
 
                 DataSource dataSource = PoolingDataSourceService.getDataSource(uri, user, password);
                 DBSchemaParser schemaParser = new DBSchemaParser(dataSource);

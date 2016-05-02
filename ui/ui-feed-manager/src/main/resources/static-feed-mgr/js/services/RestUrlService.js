@@ -12,7 +12,7 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     this.ROOT = "";
     this.TEMPLATES_BASE_URL =this.ROOT+"/proxy/v1/feedmgr/templates";
     this.FEEDS_BASE_URL = this.ROOT+"/proxy/v1/feedmgr/feeds";
-    this.CONTROLLER_SERVICES_BASE_URL = this.ROOT+"/proxy/v1/nifi/controller-services";
+    this.CONTROLLER_SERVICES_BASE_URL = this.ROOT+"/proxy/v1/feedmgr/nifi/controller-services";
     this.GET_TEMPLATES_URL = self.TEMPLATES_BASE_URL;
     this.GET_UNREGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL+"/unregistered";
 
@@ -60,7 +60,7 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
         return self.TEMPLATES_BASE_URL+"/nifi/"+nifiTemplateId+"/ports";
     }
 
-    this.ALL_REUSABLE_FEED_INPUT_PORTS = self.FEEDS_BASE_URL+"/reusable-feed-input-ports";
+    this.ALL_REUSABLE_FEED_INPUT_PORTS = this.ROOT+"/proxy/v1/feedmgr/nifi/reusable-input-ports";
 
     this.CONFIGURATION_PROPERTIES_URL =this.ROOT+"/proxy/v1/feedmgr/nifi/configuration/properties";
     this.METADATA_PROPERTY_NAMES_URL  =this.ROOT+"/proxy/v1/feedmgr/metadata-properties";

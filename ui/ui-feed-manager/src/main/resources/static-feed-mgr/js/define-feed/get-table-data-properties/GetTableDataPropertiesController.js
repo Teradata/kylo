@@ -144,10 +144,14 @@
             var dbcpProperty = self.dbConnectionProperty;
            if(dbcpProperty != null && dbcpProperty.value != null) {
                var serviceId = dbcpProperty.value;
+               var serviceNameValue = _.find(dbcpProperty.propertyDescriptor.allowableValues,function(allowableValue) {
+                  return allowableValue.value = serviceId;
+               });
+               var serviceName = serviceNameValue != null && serviceNameValue != undefined ?serviceNameValue.displayName : '';
 
                if (self.allTables[serviceId] == undefined) {
                    var deferred = $q.defer();
-                   var tables = $http.get(DBCPTableSchemaService.LIST_TABLES_URL(serviceId)).then(function (response) {
+                   var tables = $http.get(DBCPTableSchemaService.LIST_TABLES_URL(serviceId),{params:{serviceName:serviceName}}).then(function (response) {
                       self.allTables[serviceId] = parseTableResponse(response.data);
                        var results = query ?  self.allTables[serviceId].filter(createFilterForTable(query)) : self.allTables;
                        deferred.resolve(results);
@@ -245,7 +249,11 @@
                 }
 
                 var serviceId = dbcpProperty.value;
-                var promise = $http.get(DBCPTableSchemaService.DESCRIBE_TABLE_URL(serviceId,self.selectedTable.tableName),{params:{schema:self.selectedTable.schema}})
+                var serviceNameValue = _.find(dbcpProperty.propertyDescriptor.allowableValues,function(allowableValue) {
+                    return allowableValue.value = serviceId;
+                });
+                var serviceName = serviceNameValue != null && serviceNameValue != undefined ?serviceNameValue.displayName : '';
+                var promise = $http.get(DBCPTableSchemaService.DESCRIBE_TABLE_URL(serviceId,self.selectedTable.tableName),{params:{schema:self.selectedTable.schema, serviceName:serviceName}})
                 promise.then(successFn,function(err){});
                 return promise;
 
