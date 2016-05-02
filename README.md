@@ -15,4 +15,4 @@ assets.  Some features:
 
 To get started, please follow the deployment guide
 
-    * link:./blob/master/docs/latest/deployment-guide.adoc[Deployment Guide]
+    [Deployment Guide](docs/latest/deployment-guide.adoc)
