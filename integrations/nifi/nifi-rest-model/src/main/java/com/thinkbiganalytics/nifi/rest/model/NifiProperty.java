@@ -31,7 +31,7 @@ public class NifiProperty {
     private boolean userEditable;
     private List<String> expressionProperties;
     private PropertyDescriptorDTO propertyDescriptor;
-    private ProcessorDTO processor;
+   //private ProcessorDTO processor;
 
     private String renderType; // checkbox, input, editor-hive, editor-sql, editor-pig, etc
 
@@ -65,7 +65,7 @@ public class NifiProperty {
         this.userEditable = property.isUserEditable();
         this.expressionProperties = property.getExpressionProperties();
         this.propertyDescriptor = property.getPropertyDescriptor();
-        this.processor = property.getProcessor();
+       // this.processor = property.getProcessor();
         this.renderType = property.getRenderType();
         this.selected = property.isSelected();
         this.inputProperty = property.isInputProperty();
@@ -143,14 +143,14 @@ public class NifiProperty {
         this.propertyDescriptor = propertyDescriptor;
     }
 
-    public ProcessorDTO getProcessor() {
+  /*  public ProcessorDTO getProcessor() {
         return processor;
     }
 
     public void setProcessor(ProcessorDTO processor) {
         this.processor = processor;
     }
-
+*/
     public String getIdKey() {
         return this.getProcessGroupId()+"-"+this.getProcessorId()+"-"+this.getKey();
     }

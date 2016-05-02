@@ -312,22 +312,44 @@ public class NifiRestClient extends JerseyRestClient {
 
 
   public void stopAllProcessors(ProcessGroupDTO groupDTO) throws JerseyClientException {
-    for (ProcessorDTO dto : groupDTO.getContents().getProcessors()) {
-      dto.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-      ProcessorEntity entity = new ProcessorEntity();
-      entity.setProcessor(dto);
-      updateEntityForSave(entity);
-      try {
-        entity = updateProcessor(entity);
-      } catch (JerseyClientException e) {
-        e.printStackTrace();
-      }
-    }
-    if (groupDTO.getContents().getProcessGroups() != null) {
-      for (ProcessGroupDTO dto : groupDTO.getContents().getProcessGroups()) {
-        stopAllProcessors(dto);
-      }
-    }
+   stopAllProcessors(groupDTO.getId(), groupDTO.getParentGroupId());
+  }
+
+  public ProcessGroupEntity stopAllProcessors(String processGroupId, String parentProcessGroupId) throws JerseyClientException {
+    ProcessGroupEntity entity = getProcessGroup(processGroupId,false,false);
+    entity.getProcessGroup().setRunning(false);
+    updateEntityForSave(entity);
+    return put("/controller/process-groups/" + parentProcessGroupId + "/process-group-references/" + processGroupId,
+               entity, ProcessGroupEntity.class);
+  }
+
+
+  public InputPortEntity stopInputPort(String groupId, String portId) throws JerseyClientException {
+    InputPortEntity portEntity = getInputPort(groupId, portId);
+    portEntity.getInputPort().setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+    updateEntityForSave(portEntity);
+    return put("/controller/process-groups/"+groupId+"/input-ports/"+portId,portEntity,InputPortEntity.class);
+  }
+
+  public OutputPortEntity stopOutputPort(String groupId, String portId) throws JerseyClientException {
+    OutputPortEntity portEntity = getOutputPort(groupId, portId);
+    portEntity.getOutputPort().setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+    updateEntityForSave(portEntity);
+    return put("/controller/process-groups/"+groupId+"/output-ports/"+portId,portEntity,OutputPortEntity.class);
+  }
+
+  public InputPortEntity startInputPort(String groupId, String portId) throws JerseyClientException {
+    InputPortEntity portEntity = getInputPort(groupId, portId);
+    portEntity.getInputPort().setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+    updateEntityForSave(portEntity);
+    return put("/controller/process-groups/"+groupId+"/input-ports/"+portId,portEntity,InputPortEntity.class);
+  }
+
+  public OutputPortEntity startOutputPort(String groupId, String portId) throws JerseyClientException {
+    OutputPortEntity portEntity = getOutputPort(groupId, portId);
+    portEntity.getOutputPort().setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+    updateEntityForSave(portEntity);
+    return put("/controller/process-groups/"+groupId+"/output-ports/"+portId,portEntity,OutputPortEntity.class);
   }
 
   public ProcessGroupEntity deleteProcessGroup(ProcessGroupDTO groupDTO) throws JerseyClientException {
@@ -384,20 +406,7 @@ public class NifiRestClient extends JerseyRestClient {
       for (ConnectionDTO connection : group.getContents().getConnections()) {
         Map<String, Object> params = getUpdateParams();
         try {
-          //empty connection Queue
-          DropRequestEntity
-              dropRequestEntity =
-              delete("/controller/process-groups/" + group.getId() + "/connections/" + connection.getId() + "/contents", params,
-                     DropRequestEntity.class);
-          if (dropRequestEntity != null && dropRequestEntity.getDropRequest() != null) {
-            params = getUpdateParams();
-            delete("/controller/process-groups/" + group.getId() + "/connections/" + connection.getId() + "/drop-requests/"
-                   + dropRequestEntity.getDropRequest().getId(), params, DropRequestEntity.class);
-          }
-          //http://localhost:8079/nifi-api/controller/process-groups/39014aee-5556-481d-91a1-d5052e0e332a/connections/296b80d4-ee1c-4878-ab29-888f7514952a/contents
-          //http://localhost:8079/nifi-api/controller/process-groups/39014aee-5556-481d-91a1-d5052e0e332a/connections/296b80d4-ee1c-4878-ab29-888f7514952a/drop-requests/1fddf3ac-9337-475a-876a-cf7df2037c18
-          delete("/controller/process-groups/" + group.getId() + "/connections/" + connection.getId(), params,
-                 ConnectionEntity.class);
+          deleteConnection(connection);
         } catch (JerseyClientException e) {
           e.printStackTrace();
         }
@@ -408,6 +417,28 @@ public class NifiRestClient extends JerseyRestClient {
         deleteConnections(groupDTO);
       }
     }
+  }
+
+  public void deleteConnection(ConnectionDTO connection) throws JerseyClientException {
+
+        Map<String, Object> params = getUpdateParams();
+        try {
+          //empty connection Queue
+          DropRequestEntity
+              dropRequestEntity =
+              delete("/controller/process-groups/" + connection.getParentGroupId() + "/connections/" + connection.getId() + "/contents", params,
+                     DropRequestEntity.class);
+          if (dropRequestEntity != null && dropRequestEntity.getDropRequest() != null) {
+            params = getUpdateParams();
+            delete("/controller/process-groups/" + connection.getParentGroupId() + "/connections/" + connection.getId() + "/drop-requests/"
+                   + dropRequestEntity.getDropRequest().getId(), params, DropRequestEntity.class);
+          }
+             delete("/controller/process-groups/" + connection.getParentGroupId() + "/connections/" + connection.getId(), params,
+                 ConnectionEntity.class);
+        } catch (JerseyClientException e) {
+          e.printStackTrace();
+        }
+
   }
 
   public void deleteControllerService(String controllerServiceId) throws JerseyClientException {

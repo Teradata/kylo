@@ -88,7 +88,7 @@ public class NifiPropertyUtil {
         List<NifiProperty> properties = new ArrayList<NifiProperty>();
         for(Map.Entry<String,String> entry : processor.getConfig().getProperties().entrySet()) {
             NifiProperty property = new NifiProperty(processor.getParentGroupId(),processor.getId(),entry.getKey(),entry.getValue(),processor.getConfig().getDescriptors().get(entry.getKey()));
-            property.setProcessor(processor);
+           // property.setProcessor(processor);
             property.setProcessGroupName(processGroup.getName());
             property.setProcessorName(processor.getName());
             property.setProcessorType(processor.getType());
