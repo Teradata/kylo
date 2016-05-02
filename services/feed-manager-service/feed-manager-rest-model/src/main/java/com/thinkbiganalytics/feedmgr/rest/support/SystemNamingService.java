@@ -15,7 +15,6 @@ public class SystemNamingService {
     String  systemName = name.toLowerCase().trim().replaceAll(" +","_");
     systemName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN, systemName);
     systemName = CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_UNDERSCORE, systemName);
-
     for(String controlChar: controlChars){
       systemName = StringUtils.remove(systemName, controlChar);
     }
