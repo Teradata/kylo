@@ -64,6 +64,7 @@ public class JpaFeed implements Feed {
     }
     
     public JpaFeed(String name, String description) {
+        this.Id = FeedId.create();
         this.name = name;
         this.description = description;
     }

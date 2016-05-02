@@ -182,7 +182,7 @@ public class JpaFeedProvider implements FeedProvider {
             ensureFeedDestination(feed, destId);
         }
         
-        this.entityMgr.persist(feed);
+        this.entityMgr.merge(feed);
 //        this.entityMgr.flush();
         return feed;
     }
@@ -345,24 +345,37 @@ public class JpaFeedProvider implements FeedProvider {
         private Set<Datasource.ID> destIds = new HashSet<>();
         
         @Override
-        protected void applyFilter(StringBuilder query, HashMap<String, Object> params) {
-            if (this.name != null || ! this.sourceIds.isEmpty() || ! this.destIds.isEmpty()) {
-                query.append("where ");
-                
-                if (this.name != null) query.append("f.name = '").append(this.name).append("' ");
-                
-                applyIdClause(query, this.sourceIds, "sources");
-                applyIdClause(query, this.destIds, "destinations");
+        protected void applyFilter(StringBuilder queryStr, HashMap<String, Object> params) {
+            StringBuilder cond = new StringBuilder();
+            StringBuilder join = new StringBuilder();
+            
+            if (this.name != null) {
+                cond.append("name = :name");
+                params.put("name", this.name);
+            }
+            
+            applyIdFilter(cond, join, this.sourceIds, "sources", params);
+            applyIdFilter(cond, join, this.destIds, "destinations", params);
+            
+            if (join.length() > 0) {
+                queryStr.append(join.toString());
+            }
+            
+            if (cond.length() > 0) {
+                queryStr.append(" where ").append(cond.toString());
             }
         }
         
-        private void applyIdClause(StringBuilder filter, Set<Datasource.ID> idSet, String relation) {
+        private void applyIdFilter(StringBuilder cond, StringBuilder join, Set<Datasource.ID> idSet, String relation, HashMap<String, Object> params) {
             if (! idSet.isEmpty()) {
-                String ids = idSet.toString().replace('[', '(').replace(']',  ')');
+                if (cond.length() > 0) {
+                    cond.append("and ");
+                }
                 
-                if (! filter.toString().isEmpty()) filter.append(" and ");
-                
-                filter.append("f.").append(relation).append(".datasource.id in ").append(ids).append(" ");
+                String alias = relation.substring(0, 1);
+                join.append("join e.").append(relation).append(" ").append(alias).append(" ");
+                cond.append(alias).append(".datasource.id in :").append(relation).append(" ");
+                params.put(relation, idSet);
             }
         }
 

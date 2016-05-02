@@ -76,6 +76,7 @@ public class JpaDatasource implements Datasource, Serializable {
     }
 
     public JpaDatasource(String name, String descr) {
+        this.id = DatasourceId.create();
         this.createdTime = new DateTime();
         this.name = name;
         this.description = descr;

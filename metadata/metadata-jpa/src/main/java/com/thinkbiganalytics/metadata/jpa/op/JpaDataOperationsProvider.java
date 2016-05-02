@@ -272,25 +272,25 @@ public class JpaDataOperationsProvider implements DataOperationsProvider {
             StringBuilder cond = new StringBuilder();
             
             if (this.feedId != null) {
-                cond.append("o.producer.feed.id = :feedId ");
+                cond.append("e.producer.feed.id = :feedId ");
                 params.put("feedId", this.feedId);
             }
             
             if (this.datasourceId != null) {
                 if (cond.length() > 0) cond.append("and ");
-                cond.append("o.producer.dataource.id = :dsId " );
+                cond.append("e.producer.dataource.id = :dsId " );
                 params.put("dsId", this.datasourceId);
             }
             
             if (! this.states.isEmpty()) {
                 if (cond.length() > 0) cond.append("and ");
-                cond.append("o.state in :states");
+                cond.append("e.state in :states");
                 params.put("states", this.states);
             }
             
             if (! this.types.isEmpty()) {
                 if (cond.length() > 0) cond.append("and ");
-                cond.append("type(o) in :types");
+                cond.append("type(e) in :types");
                 params.put("types", this.types);
             }
             

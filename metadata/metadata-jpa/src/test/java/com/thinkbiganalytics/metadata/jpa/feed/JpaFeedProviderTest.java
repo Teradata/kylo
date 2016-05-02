@@ -17,7 +17,6 @@ import javax.sql.DataSource;
 
 import org.neo4j.cypher.internal.compiler.v2_2.planner.logical.steps.applyOptional;
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.ResultSetExtractor;
@@ -69,9 +68,10 @@ public class JpaFeedProviderTest extends AbstractTransactionalTestNGSpringContex
     @Transactional
     @Commit
     public void testCreateFeed() {
+        @SuppressWarnings("unused")
         Feed feed = this.feedProvider.ensureFeed("test"+System.currentTimeMillis(), "test descr");
         
-        String result = this.jdbcTemplate.query("select id from feed", new ResultSetExtractor<String>() {
+        String result = this.jdbcTemplate.query("select name from feed", new ResultSetExtractor<String>() {
             @Override
             public String extractData(ResultSet rs) throws SQLException, DataAccessException {
                 StringBuilder result = new StringBuilder();
@@ -87,9 +87,8 @@ public class JpaFeedProviderTest extends AbstractTransactionalTestNGSpringContex
         //        assertThat(JdbcTestUtils.countRowsInTable(this.jdbcTemplate, "FEED")).isEqualTo(1);
     }
     
-    @Test
+    @Test(dependsOnMethods="testCreateFeed")
     @Transactional
-    @DependsOn("testCreateFeed")
     public void testGetFeeds() {
         List<Feed> list = this.feedProvider.getFeeds();
         
