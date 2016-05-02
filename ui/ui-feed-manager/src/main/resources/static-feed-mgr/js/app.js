@@ -15,6 +15,7 @@ var app = angular.module(MODULE_FEED_MGR, [
     'ui.grid',
     'ui.grid.resizeColumns',
     'ui.grid.autoResize',
+    'ui.grid.moveColumns',
     'templates.navigate-before.html', 'templates.navigate-first.html', 'templates.navigate-last.html', 'templates.navigate-next.html',
     'datalakeui.common'
     ]);

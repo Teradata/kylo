@@ -71,6 +71,7 @@
             flatEntityAccess: true,
             onRegisterApi: function(grid) {
                 self.gridApi = grid;
+                grid.colMovable.on.columnPositionChanged($scope, angular.bind(self, self.onColumnMove));
             }
         };
 
@@ -355,6 +356,21 @@
          */
         this.onAddFunction = function() {
             self.addFunction(self.currentFormula);
+        };
+
+        /**
+         * Called when the column ordering changes.
+         */
+        this.onColumnMove = function() {
+            var formula = "";
+
+            angular.forEach(self.gridApi.grid.columns, function(column) {
+                formula += (formula.length === 0) ? "select(" : ", ";
+                formula += column.field;
+            });
+
+            formula += ")";
+            self.pushFormula(formula);
         };
 
         /**
