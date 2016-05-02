@@ -35,7 +35,7 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
     private TreeSet<ProvenanceEventDTO> unprocessedEvents = new TreeSet<ProvenanceEventDTO>(new Comparator<ProvenanceEventDTO>() {
         @Override
         public int compare(ProvenanceEventDTO o1, ProvenanceEventDTO o2) {
-            if (o1 == null && o1 == null) {
+            if (o1 == null && o2 == null) {
                 return 0;
             } else if (o1 == null && o2 != null) {
                 return 1;
