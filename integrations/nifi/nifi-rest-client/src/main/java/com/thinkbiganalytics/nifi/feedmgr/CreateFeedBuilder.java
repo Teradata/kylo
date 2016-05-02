@@ -17,6 +17,7 @@ import com.thinkbiganalytics.rest.JerseyClientException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
@@ -26,6 +27,7 @@ import org.apache.nifi.web.api.entity.ControllerServiceEntity;
 import org.apache.nifi.web.api.entity.ControllerServicesEntity;
 import org.apache.nifi.web.api.entity.Entity;
 import org.apache.nifi.web.api.entity.FlowSnippetEntity;
+import org.apache.nifi.web.api.entity.InputPortEntity;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 
@@ -177,6 +179,47 @@ public class CreateFeedBuilder {
 
   }
 
+  private void markConnectionPortsAsRunning(ProcessGroupEntity feedProcessGroup){
+    //1 startAll
+    try {
+      restClient.startAll(feedProcessGroup.getProcessGroup().getId(),feedProcessGroup.getProcessGroup().getParentGroupId());
+    } catch (JerseyClientException e) {
+      e.printStackTrace();
+    }
+
+    Set<PortDTO> ports = null;
+    try {
+      ports = restClient.getPortsForProcessGroup(feedProcessGroup.getProcessGroup().getParentGroupId());
+    } catch (JerseyClientException e) {
+      e.printStackTrace();
+    }
+    if(ports != null && !ports.isEmpty()) {
+     for(PortDTO port: ports){
+       port.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+       if(port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())) {
+         try {
+           restClient.startInputPort(feedProcessGroup.getProcessGroup().getParentGroupId(),port.getId());
+         } catch (JerseyClientException e) {
+           e.printStackTrace();
+         }
+       }
+       else if(port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name())) {
+         try {
+           restClient.startOutputPort(feedProcessGroup.getProcessGroup().getParentGroupId(), port.getId());
+         } catch (JerseyClientException e) {
+           e.printStackTrace();
+         }
+       }
+     }
+
+    }
+
+  }
+
+  private boolean hasConnectionPorts(){
+    return reusableTemplateFeedName != null || isReusableTemplate;
+  }
+
 
   public NifiProcessGroup build() throws JerseyClientException {
     NifiProcessGroup newProcessGroup = null;
@@ -243,8 +286,10 @@ public class CreateFeedBuilder {
           markProcessorsAsRunning(newProcessGroup, nonInputProcessors);
 
           ///make the input/output ports in the category group as running
-          //TODO
-
+          if(hasConnectionPorts())
+          {
+            markConnectionPortsAsRunning(entity);
+          }
 
           if (newProcessGroup.hasFatalErrors()) {
             restClient.deleteProcessGroup(entity.getProcessGroup());
@@ -307,7 +352,7 @@ public class CreateFeedBuilder {
               String type = connection.getSource().getType();
               if(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)){
                 //stop the port
-                restClient.stopInputPort(connection.getParentGroupId(),connection.getSource().getId());
+                restClient.stopInputPort(connection.getParentGroupId(), connection.getSource().getId());
               }
               restClient.deleteConnection(connection);
             }

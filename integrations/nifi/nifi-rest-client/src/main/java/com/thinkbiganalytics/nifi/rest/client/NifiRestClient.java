@@ -324,6 +324,14 @@ public class NifiRestClient extends JerseyRestClient {
   }
 
 
+  public ProcessGroupEntity startAll(String processGroupId, String parentProcessGroupId) throws JerseyClientException {
+    ProcessGroupEntity entity = getProcessGroup(processGroupId,false,false);
+    entity.getProcessGroup().setRunning(true);
+    updateEntityForSave(entity);
+    return put("/controller/process-groups/" + parentProcessGroupId + "/process-group-references/" + processGroupId,
+               entity, ProcessGroupEntity.class);
+  }
+
   public InputPortEntity stopInputPort(String groupId, String portId) throws JerseyClientException {
     InputPortEntity portEntity = getInputPort(groupId, portId);
     portEntity.getInputPort().setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
