@@ -45,14 +45,6 @@ public class ExecuteSparkJob extends AbstractProcessor {
             .description("Spark execution failed. Incoming FlowFile will be penalized and routed to this relationship")
             .build();
     private final Set<Relationship> relationships;
-/*
-    public static final PropertyDescriptor DBCP_SERVICE = new PropertyDescriptor.Builder()
-            .name("Database Connection Pooling Service")
-            .description("The Controller Service that is used to obtain connection to database")
-            .required(true)
-            .identifiesControllerService(DBCPService.class)
-            .build();
-*/
 
     public static final PropertyDescriptor APPLICATION_JAR = new PropertyDescriptor.Builder()
             .name("ApplicationJAR")
@@ -207,9 +199,9 @@ public class ExecuteSparkJob extends AbstractProcessor {
 
         try {
               /* Configuration parameters for spark launcher */
-            String appJar = context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(outgoing).getValue(); //"target/spark-launcher-demo-0.0.1-SNAPSHOT-jar-with-dependencies.jar";
-            String mainClass = context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(outgoing).getValue();
-            String sparkMaster = context.getProperty(SPARK_MASTER).evaluateAttributeExpressions(outgoing).getValue();
+            String appJar = context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(outgoing).getValue().trim();
+            String mainClass = context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(outgoing).getValue().trim();
+            String sparkMaster = context.getProperty(SPARK_MASTER).evaluateAttributeExpressions(outgoing).getValue().trim();
             String appArgs = context.getProperty(MAIN_ARGS).evaluateAttributeExpressions(outgoing).getValue();
             String driverMemory = context.getProperty(DRIVER_MEMORY).evaluateAttributeExpressions(outgoing).getValue();
             String executorMemory = context.getProperty(EXECUTOR_MEMORY).evaluateAttributeExpressions(outgoing).getValue();
@@ -269,7 +261,6 @@ public class ExecuteSparkJob extends AbstractProcessor {
                 session.transfer(outgoing, REL_SUCCESS);
             }
         } catch (final IOException | InterruptedException e) {
-            e.printStackTrace();
             logger.error("Unable to execute Spark job", new Object[]{incoming, e});
             session.transfer(incoming, REL_FAILURE);
         }

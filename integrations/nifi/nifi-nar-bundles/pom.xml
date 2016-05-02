@@ -171,6 +171,18 @@
             </dependency>
 
             <dependency>
+                <groupId>org.apache.hive</groupId>
+                <artifactId>hive-jdbc</artifactId>
+                <version>${hive.jdbc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.hadoop</groupId>
+                <artifactId>hadoop-client</artifactId>
+                <version>${hadoop.version}</version>
+            </dependency>
+
+            <dependency>
                 <groupId>com.thinkbiganalytics.metadata</groupId>
                 <artifactId>thinkbig-metadata-rest-model</artifactId>
                 <version>${project.version}</version>
