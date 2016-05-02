@@ -2,6 +2,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import java.util.List;
 
+import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -57,17 +58,18 @@ public class NifiControllerServicesRestController {
     @GET
     @Path("/{serviceId}/tables")
     @Produces({MediaType.APPLICATION_JSON })
-    public Response getTableNames(@PathParam("serviceId") String serviceId,@QueryParam("schema") String schema) throws JerseyClientException {
-        List<String> tables = dbcpConnectionPoolTableInfo.getTableNamesForControllerService(serviceId, schema);
+    public Response getTableNames(@PathParam("serviceId") String serviceId,@QueryParam("serviceName")  @DefaultValue("") String serviceName, @QueryParam("schema") String schema) throws JerseyClientException {
+        List<String> tables = dbcpConnectionPoolTableInfo.getTableNamesForControllerService(serviceId,serviceName, schema);
+
         return Response.ok(tables).build();
     }
 
     @GET
     @Path("/{serviceId}/tables/{tableName}")
     @Produces({MediaType.APPLICATION_JSON })
-    public Response getTableNames(@PathParam("serviceId") String serviceId,@PathParam("tableName") String tableName,@QueryParam("schema") String schema) throws JerseyClientException {
+    public Response describeTable(@PathParam("serviceId") String serviceId,@PathParam("tableName") String tableName,@QueryParam("serviceName") @DefaultValue("") String serviceName,@QueryParam("schema") String schema) throws JerseyClientException {
 
-       TableSchema tableSchema = dbcpConnectionPoolTableInfo.describeTableForControllerService(serviceId,schema,tableName);
+       TableSchema tableSchema = dbcpConnectionPoolTableInfo.describeTableForControllerService(serviceId,serviceName,schema,tableName);
         return Response.ok(tableSchema).build();
     }
 

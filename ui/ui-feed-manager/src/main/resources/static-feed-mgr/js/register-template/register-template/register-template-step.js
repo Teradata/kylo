@@ -72,13 +72,10 @@
                 var arr= [];
 
                 if(response.data) {
-                    angular.forEach(response.data,function(ports,feedName) {
-                        angular.forEach(ports,function(port) {
-                            arr.push({label:feedName+" - "+port.name,value:feedName+" - "+port.name});
-                            self.connectionMap[feedName+" - "+port.name] = port;
-                            port.feedName = feedName;
+                    angular.forEach(response.data,function(port,i) {
+                            arr.push({label:port.name,value:port.name});
+                            self.connectionMap[port.name] = port;
                         });
-                    });
                     self.inputPortList = arr;
                 }
             });
@@ -89,7 +86,6 @@
 
         this.onNeedsReusableTemplateConnectionChange = function(connection){
          var port = self.connectionMap[connection.inputPortDisplayName];
-            connection.reusableTemplateFeedName = port.feedName;
             connection.reusableTemplateInputPortName = port.name;
         }
 

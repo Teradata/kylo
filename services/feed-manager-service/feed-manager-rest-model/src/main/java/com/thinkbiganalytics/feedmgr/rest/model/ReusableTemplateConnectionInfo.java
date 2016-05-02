@@ -5,7 +5,7 @@ package com.thinkbiganalytics.feedmgr.rest.model;
  */
 public class ReusableTemplateConnectionInfo {
 
-  private String reusableTemplateFeedName;
+  //private String reusableTemplateFeedName;
   private String feedOutputPortName;
   private String reusableTemplateInputPortName;
   private String inputPortDisplayName;
@@ -28,13 +28,13 @@ public class ReusableTemplateConnectionInfo {
     this.reusableTemplateInputPortName = reusableTemplateInputPortName;
   }
 
-  public String getReusableTemplateFeedName() {
-    return reusableTemplateFeedName;
-  }
+ // public String getReusableTemplateFeedName() {
+ //   return reusableTemplateFeedName;
+ // }
 
-  public void setReusableTemplateFeedName(String reusableTemplateFeedName) {
-    this.reusableTemplateFeedName = reusableTemplateFeedName;
-  }
+//  public void setReusableTemplateFeedName(String reusableTemplateFeedName) {
+ //   this.reusableTemplateFeedName = reusableTemplateFeedName;
+ // }
 
   public String getInputPortDisplayName() {
     return inputPortDisplayName;

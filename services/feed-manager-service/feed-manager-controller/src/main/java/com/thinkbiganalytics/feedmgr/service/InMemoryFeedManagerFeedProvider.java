@@ -258,7 +258,7 @@ public class InMemoryFeedManagerFeedProvider implements FeedManagerFeedProvider 
       {
         ReusableTemplateConnectionInfo reusableInfo = registeredTemplate.getReusableTemplateConnections().get(0);
         //TODO change FeedBuilder to accept a List of ReusableTemplateConnectionInfo objects
-        feedBuilder.reusableTemplateFeedName(reusableInfo.getReusableTemplateFeedName()).reusableTemplateInputPortName(reusableInfo.getReusableTemplateInputPortName()).feedOutputPortName(reusableInfo.getFeedOutputPortName());
+        feedBuilder.reusableTemplateInputPortName(reusableInfo.getReusableTemplateInputPortName()).feedOutputPortName(reusableInfo.getFeedOutputPortName());
       }
     }
     NifiProcessGroup

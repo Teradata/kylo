@@ -733,6 +733,34 @@ public class NifiRestClient extends JerseyRestClient {
     return get("/controller/controller-services/" + type + "/" + id, null, ControllerServiceEntity.class);
   }
 
+  public ControllerServiceDTO getControllerServiceByName(String type, final String serviceName) throws JerseyClientException {
+    ControllerServiceDTO controllerService = null;
+
+   ControllerServicesEntity entity = getControllerServices(type);
+    if(entity != null) {
+     List<ControllerServiceDTO> services = Lists.newArrayList(Iterables.filter(entity.getControllerServices(), new Predicate<ControllerServiceDTO>() {
+        @Override
+        public boolean apply(ControllerServiceDTO controllerServiceDTO) {
+          return controllerServiceDTO.getName().equalsIgnoreCase(serviceName);
+        }
+      }));
+
+      if(services != null) {
+
+        for(ControllerServiceDTO controllerServiceDTO : services) {
+          if(controllerService == null){
+            controllerService = controllerServiceDTO;
+          }
+          if(controllerServiceDTO.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())){
+            controllerService = controllerServiceDTO;
+            break;
+          }
+        }
+      }
+    }
+    return controllerService;
+  }
+
   //http://localhost:8079/nifi-api/controller/controller-services/node/edfe9a53-4fde-4437-a798-1305830c15ac
   public ControllerServiceEntity enableControllerService(String id) throws JerseyClientException {
     ControllerServiceEntity entity = new ControllerServiceEntity();
@@ -1002,11 +1030,10 @@ public class NifiRestClient extends JerseyRestClient {
    */
   public void connectFeedToGlobalTemplate(final String feedProcessGroupId, final String feedOutputName,
                                           final String categoryProcessGroupId, String reusableTemplateCategoryGroupId,
-                                          String reusableTemplateGroupId, String inputPortName) throws JerseyClientException {
+                                           String inputPortName) throws JerseyClientException {
     ProcessGroupEntity categoryProcessGroup = getProcessGroup(categoryProcessGroupId, false, false);
     ProcessGroupEntity feedProcessGroup = getProcessGroup(feedProcessGroupId, false, false);
     ProcessGroupEntity categoryParent = getProcessGroup(categoryProcessGroup.getProcessGroup().getParentGroupId(), false, false);
-    ProcessGroupEntity reusableTemplateGroup = getProcessGroup(reusableTemplateGroupId, false, false);
     ProcessGroupEntity reusableTemplateCategoryGroup = getProcessGroup(reusableTemplateCategoryGroupId, false, false);
 
     //Go into the Feed and find the output port that is to be associated with the global template

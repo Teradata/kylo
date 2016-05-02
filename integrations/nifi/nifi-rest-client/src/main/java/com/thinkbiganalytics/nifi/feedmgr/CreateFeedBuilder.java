@@ -53,7 +53,6 @@ public class CreateFeedBuilder {
   private String feedName;
   private String inputProcessorType;
   private String reusableTemplateCategoryName = "reusable_templates";
-  private String reusableTemplateFeedName;
   private String feedOutputPortName;
   private String reusableTemplateInputPortName;
   private boolean isReusableTemplate;
@@ -86,12 +85,6 @@ public class CreateFeedBuilder {
 
   public CreateFeedBuilder feedSchedule(NifiProcessorSchedule feedSchedule) {
     this.feedSchedule = feedSchedule;
-    return this;
-  }
-
-
-  public CreateFeedBuilder reusableTemplateFeedName(String reusableTemplateFeedName) {
-    this.reusableTemplateFeedName = reusableTemplateFeedName;
     return this;
   }
 
@@ -160,16 +153,13 @@ public class CreateFeedBuilder {
 
   private void connectFeedToReusableTemplate(String feedGroupId) throws JerseyClientException {
     ProcessGroupDTO reusableTemplateCategory = restClient.getProcessGroupByName("root", reusableTemplateCategoryName);
-    ProcessGroupDTO reusableTemplate = restClient.getProcessGroupByName(reusableTemplateCategory.getId(),
-                                                                        reusableTemplateFeedName);
-    ProcessGroupEntity feedProcessGroup = restClient.getProcessGroup(feedGroupId, false, false);
+     ProcessGroupEntity feedProcessGroup = restClient.getProcessGroup(feedGroupId, false, false);
     String feedCategoryId = feedProcessGroup.getProcessGroup().getParentGroupId();
     String reusableTemplateCategoryGroupId = reusableTemplateCategory.getId();
-    String templateGroupId = reusableTemplate.getId();
     String inputPortName = reusableTemplateInputPortName;
     restClient
         .connectFeedToGlobalTemplate(feedGroupId, feedOutputPortName, feedCategoryId, reusableTemplateCategoryGroupId,
-                                     templateGroupId, inputPortName);
+                                      inputPortName);
   }
 
   private void ensureInputPortsForReuseableTemplate(String feedGroupId) throws JerseyClientException {
@@ -217,7 +207,7 @@ public class CreateFeedBuilder {
   }
 
   private boolean hasConnectionPorts(){
-    return reusableTemplateFeedName != null || isReusableTemplate;
+    return reusableTemplateInputPortName != null || isReusableTemplate;
   }
 
 
@@ -235,7 +225,7 @@ public class CreateFeedBuilder {
         instantiateFlowFromTemplate(processGroupId);
 
         //if the feed has an outputPort that should go to a reusable Flow then make those connections
-        if (reusableTemplateFeedName != null) {
+        if (reusableTemplateInputPortName != null) {
           connectFeedToReusableTemplate(processGroupId);
 
         }
@@ -324,11 +314,11 @@ public class CreateFeedBuilder {
 
     }
     //delete all connections
-    if (reusableTemplateFeedName != null || isReusableTemplate) {
+    if (hasConnectionPorts()) {
       ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(feedGroup.getParentGroupId());
       if(connectionsEntity != null) {
         List<ConnectionDTO> connections = null;
-        if(reusableTemplateFeedName != null) {
+        if(reusableTemplateInputPortName != null) {
           //delete the output Port connections (matching this source)
           connections =
               NifiConnectionUtil.findConnectionsMatchingSourceGroupId(connectionsEntity.getConnections(), feedGroup.getId());
