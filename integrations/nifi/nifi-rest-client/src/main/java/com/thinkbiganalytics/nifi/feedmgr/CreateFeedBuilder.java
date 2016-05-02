@@ -338,9 +338,17 @@ public class CreateFeedBuilder {
               String type = connection.getDestination().getType();
               if(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)){
                 //stop the port
-                restClient.stopOutputPort(connection.getParentGroupId(), connection.getDestination().getId());
+                try {
+                  restClient.stopOutputPort(connection.getParentGroupId(), connection.getDestination().getId());
+                }catch (JerseyClientException e) {
+                  e.printStackTrace();
+                }
               }
+              try {
               restClient.deleteConnection(connection);
+              }catch (JerseyClientException e) {
+                e.printStackTrace();
+              }
             }
           }
         }
@@ -352,9 +360,17 @@ public class CreateFeedBuilder {
               String type = connection.getSource().getType();
               if(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)){
                 //stop the port
-                restClient.stopInputPort(connection.getParentGroupId(), connection.getSource().getId());
+                try {
+                  restClient.stopInputPort(connection.getParentGroupId(), connection.getSource().getId());
+              }catch (JerseyClientException e) {
+                e.printStackTrace();
               }
+              }
+              try {
               restClient.deleteConnection(connection);
+              }catch (JerseyClientException e) {
+                e.printStackTrace();
+              }
             }
           }
         }
