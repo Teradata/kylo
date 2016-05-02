@@ -1,4 +1,4 @@
-angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function(uiGridConstants) {
+angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function($mdDialog, uiGridConstants) {
 
     /**
      * Handles operations on columns.
@@ -56,6 +56,30 @@ angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function(ui
         },
 
         /**
+         * Displays a dialog prompt to rename the specified column.
+         *
+         * @param {ui.grid.GridColumn} column the column to be renamed
+         * @param {ui.grid.Grid} grid the grid with the column
+         */
+        renameColumn: function(column, grid) {
+            var self = this;
+            var prompt = $mdDialog.prompt({
+                title: "Rename Column",
+                textContent: "Enter a new name for the " + column.displayName + " column:",
+                placeholder: "Column name",
+                ok: "OK",
+                cancel: "Cancel"
+            });
+            $mdDialog.show(prompt).then(function (name) {
+                column.displayName = name;
+
+                var script = column.field + ".as(\"" + StringUtils.quote(name) + "\")";
+                var formula = self.toFormula(script, column, grid);
+                self.controller.pushFormula(formula);
+            });
+        },
+
+        /**
          * Sorts the specified column.
          *
          * @param {string} direction "ASC" to sort ascending, or "DESC" to sort descending
@@ -75,20 +99,30 @@ angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function(ui
          * @param {ui.grid.Grid} grid the grid with the column
          */
         transformColumn: function(operation, column, grid) {
+            var script = operation + "(" + column.field + ").as(\"" + StringUtils.quote(column.field) + "\")";
+            var formula = this.toFormula(script, column, grid);
+            this.controller.addFunction(formula);
+        },
+
+        /**
+         * Creates a formula that replaces the specified column with the specified script.
+         *
+         * @private
+         * @param {string} script the expression for the column
+         * @param {ui.grid.GridColumn} column the column to be replaced
+         * @param {ui.grid.Grid} grid the grid with the column
+         * @returns {string} a formula that replaces the column
+         */
+        toFormula: function(script, column, grid) {
             var formula = "";
 
             angular.forEach(grid.columns, function(item) {
                 formula += (formula.length == 0) ? "select(" : ", ";
-                if (item.field == column.field) {
-                    formula += operation + "(" + item.field + ").as(\"" + StringUtils.quote(item.field) + "\")";
-                }
-                else {
-                    formula += item.field;
-                }
+                formula += (item.field === column.field) ? script : item.field;
             });
 
             formula += ")";
-            this.controller.addFunction(formula);
+            return formula;
         }
     });
 
