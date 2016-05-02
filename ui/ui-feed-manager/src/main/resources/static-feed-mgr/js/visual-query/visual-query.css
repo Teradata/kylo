@@ -130,13 +130,10 @@ md-menu-item > .md-menu > .md-button span {
     font-size: 20px;
     vertical-align: sub;
 }
-.visual-query-column-menu .material-icons.icon-equals {
+.visual-query-column-menu .material-icons.custom-icon {
     font-weight: bold;
     text-align: right;
     vertical-align: super;
-}
-.visual-query-column-menu .material-icons.icon-equals:before {
-    content: "="
 }
 
 /** Column menu text inputs */

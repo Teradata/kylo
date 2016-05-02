@@ -22,7 +22,8 @@ angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function($m
         this.filters = [
             {condition: uiGridConstants.filter.LESS_THAN},
             {condition: uiGridConstants.filter.GREATER_THAN},
-            {condition: uiGridConstants.filter.EXACT}
+            {condition: uiGridConstants.filter.EXACT},
+            {condition: uiGridConstants.filter.CONTAINS}
         ];
     }
 

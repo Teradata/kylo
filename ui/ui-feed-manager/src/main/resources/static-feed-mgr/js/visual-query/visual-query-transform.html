@@ -107,6 +107,15 @@
                                      <i class="ui-grid-icon-filter">&nbsp;</i> Filter
                                  </md-button>
                                  <md-menu-content class="visual-query-column-menu">
+                                     <md-menu-item ng-if="col.colDef.dataType == 'string'">
+                                         <div>
+                                             <i class="material-icons">search</i>
+                                             <md-input-container>
+                                                 <label>Contains...</label>
+                                                 <input type="text" ng-model="delegate.filters[3].term">
+                                             </md-input-container>
+                                         </div>
+                                     </md-menu-item>
                                      <md-menu-item>
                                          <div>
                                              <i class="material-icons">keyboard_arrow_left</i>
@@ -127,7 +136,7 @@
                                      </md-menu-item>
                                      <md-menu-item>
                                          <div>
-                                             <i class="material-icons icon-equals">&nbsp;</i>
+                                             <i class="material-icons custom-icon">=</i>
                                              <md-input-container>
                                                  <label>Equal to...</label>
                                                  <input type="text" ng-model="delegate.filters[2].term">

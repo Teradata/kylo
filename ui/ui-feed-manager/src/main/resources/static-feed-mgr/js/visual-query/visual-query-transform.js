@@ -269,6 +269,7 @@
             angular.forEach(tableData.columns, function(col) {
                 var delegate = new VisualQueryColumnDelegate(self);
                 columns.push({
+                    dataType: col.dataType,
                     delegate: delegate,
                     displayName: col.displayName,
                     filters: delegate.filters,
@@ -295,11 +296,16 @@
                 angular.forEach(column.filters, function(filter) {
                     if (filter.term) {
                         if (filter.condition == uiGridConstants.filter.LESS_THAN) {
-                            self.pushFormula("filter(lessThan(" + column.field + ", " + StringUtils.quote(filter.term) + "))");
+                            self.pushFormula("filter(lessThan(" + column.field + ", \"" + StringUtils.quote(filter.term)
+                                    + "\"))");
                         } else if (filter.condition == uiGridConstants.filter.GREATER_THAN) {
-                            self.pushFormula("filter(greaterThan(" + column.field + ", " + StringUtils.quote(filter.term) + "))");
+                            self.pushFormula("filter(greaterThan(" + column.field + ", \"" + StringUtils.quote(filter.term)
+                                    + "\"))");
                         } else if (filter.condition == uiGridConstants.filter.EXACT) {
-                            self.pushFormula("filter(equal(" + column.field + ", " + StringUtils.quote(filter.term) + "))");
+                            self.pushFormula("filter(equal(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))");
+                        } else if (filter.condition == uiGridConstants.filter.CONTAINS) {
+                            var query = "%" + filter.term.replace("%", "%%") + "%";
+                            self.pushFormula("filter(like(" + column.field + ", \"" + StringUtils.quote(query) + "\"))");
                         }
                     }
                 });
