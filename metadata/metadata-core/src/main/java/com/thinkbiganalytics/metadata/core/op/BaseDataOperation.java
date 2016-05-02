@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.core.op;
 
+import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -11,9 +12,9 @@ import org.springframework.util.StringUtils;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 
 /**
  *
@@ -111,8 +112,8 @@ public class BaseDataOperation implements DataOperation {
             this.uuid = UUID.randomUUID();
         }
         
-        public OpId(String idStr) {
-            this.uuid = UUID.fromString(idStr);
+        public OpId(Serializable ser) {
+            this.uuid = UUID.fromString(ser.toString());
         }
         
         @Override

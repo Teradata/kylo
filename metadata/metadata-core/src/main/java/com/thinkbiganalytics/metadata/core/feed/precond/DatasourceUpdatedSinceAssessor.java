@@ -4,7 +4,6 @@
 package com.thinkbiganalytics.metadata.core.feed.precond;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -12,9 +11,9 @@ import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
+import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceSchedule;
-import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
@@ -44,7 +43,7 @@ public class DatasourceUpdatedSinceAssessor extends MetadataMetricAssessor<Datas
         
         if (list.size() > 0) {
             Datasource ds = list.get(0);
-            Collection<Dataset<Datasource, ChangeSet>> changes = getDataOperationsProvider().getDatasets(ds.getId());
+            List<Dataset<Datasource, ChangeSet>> changes = getDataOperationsProvider().getDatasets(ds.getId());
             
             for (Dataset<Datasource, ChangeSet> cs : changes) {
                 if (cs.getCreatedTime().isBefore(schedTime)) {
@@ -60,7 +59,7 @@ public class DatasourceUpdatedSinceAssessor extends MetadataMetricAssessor<Datas
         }
         
         builder.metric(metric);
-
+        
         if (result.size() > 0) {
             builder
                 .message(result.size() + " change sets found since the scheduled time of " + schedTime)

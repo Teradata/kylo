@@ -81,7 +81,7 @@ public class DataOperationsController {
         return this.metadata.read(new Command<DataOperation>() {
             @Override
             public DataOperation execute() {
-                com.thinkbiganalytics.metadata.api.op.DataOperation.ID domainId = operationsProvider.asOperationId(opid);
+                com.thinkbiganalytics.metadata.api.op.DataOperation.ID domainId = operationsProvider.resolve(opid);
                 com.thinkbiganalytics.metadata.api.op.DataOperation domainOp = operationsProvider.getDataOperation(domainId);
                 
                 if (domainOp != null) {
@@ -126,7 +126,7 @@ public class DataOperationsController {
         return this.metadata.read(new Command<DataOperation>() {
             @Override
             public DataOperation execute() {
-                com.thinkbiganalytics.metadata.api.op.DataOperation.ID domainId = operationsProvider.asOperationId(opid);
+                com.thinkbiganalytics.metadata.api.op.DataOperation.ID domainId = operationsProvider.resolve(opid);
                 com.thinkbiganalytics.metadata.api.op.DataOperation domainOp = operationsProvider.getDataOperation(domainId);
                 Datasource domainDs = domainOp.getProducer().getDatasource();
                 com.thinkbiganalytics.metadata.api.op.DataOperation resultOp;

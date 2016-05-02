@@ -54,51 +54,24 @@ public class JpaDataOperation implements DataOperation {
     @Column(name="stop_time")
     private DateTime stopTime;
 
+    @Column(name="status", length=2048)
+    private String status;
+    
+    @Column(name="state")
     private State state;
-
-    private String status = "";
-
-    public void setId(OpId id) {
-        this.id = id;
-    }
-
-    public void setProducer(JpaFeedDestination producer) {
-        this.producer = producer;
-    }
-
-    public void setDataset(JpaDataset<Datasource, ChangeSet> dataset) {
-        this.dataset = dataset;
-    }
-
-    public void setStartTime(DateTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public void setStopTime(DateTime stopTime) {
-        this.stopTime = stopTime;
-    }
-
-    public void setState(State state) {
-        this.state = state;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
 
     public JpaDataOperation() {
     }
 
-    public JpaDataOperation(JpaDatasource ds, JpaFeedDestination feedDest) {
-        this(ds, feedDest, "Operation in progress", new DateTime());
+    public JpaDataOperation(JpaFeedDestination feedDest) {
+        this(feedDest, "Operation in progress", new DateTime());
     }
     
-    public JpaDataOperation(JpaDatasource ds, JpaFeedDestination feedDest, DateTime time) {
-        this(ds, feedDest, "Operation in progress", time);
+    public JpaDataOperation(JpaFeedDestination feedDest, DateTime time) {
+        this(feedDest, "Operation in progress", time);
     }
     
-    public JpaDataOperation(JpaDatasource ds, JpaFeedDestination feedDest, String status, DateTime time) {
+    public JpaDataOperation(JpaFeedDestination feedDest, String status, DateTime time) {
         this.id = OpId.create();
         this.state = State.IN_PROGRESS;
         this.producer = feedDest;
@@ -165,6 +138,35 @@ public class JpaDataOperation implements DataOperation {
     }
     
     
+    public void setId(OpId id) {
+        this.id = id;
+    }
+
+    public void setProducer(JpaFeedDestination producer) {
+        this.producer = producer;
+    }
+
+    public void setDataset(JpaDataset<Datasource, ChangeSet> dataset) {
+        this.dataset = dataset;
+    }
+
+    public void setStartTime(DateTime startTime) {
+        this.startTime = startTime;
+    }
+
+    public void setStopTime(DateTime stopTime) {
+        this.stopTime = stopTime;
+    }
+
+    public void setState(State state) {
+        this.state = state;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+
     protected static class OpId implements ID {
         
         private static final long serialVersionUID = -8322308917629324338L;

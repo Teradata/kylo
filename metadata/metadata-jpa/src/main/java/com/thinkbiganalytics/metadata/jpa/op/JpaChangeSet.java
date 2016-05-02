@@ -23,7 +23,6 @@ import com.thinkbiganalytics.metadata.api.op.ChangeSet;
  *
  * @author Sean Felten
  */
-//@MappedSuperclass
 @Entity
 @Table(name="CHANGE_SET")
 @Inheritance(strategy = InheritanceType.JOINED)

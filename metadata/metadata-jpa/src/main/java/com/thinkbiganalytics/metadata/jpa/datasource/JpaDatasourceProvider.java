@@ -6,11 +6,14 @@ package com.thinkbiganalytics.metadata.jpa.datasource;
 import java.io.Serializable;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -148,7 +151,7 @@ public class JpaDatasourceProvider implements DatasourceProvider {
     @Override
     public List<Datasource> getDatasources(DatasourceCriteria criteria) {
         Criteria critImpl = (Criteria) criteria; 
-        return new ArrayList<Datasource>(critImpl.select(this.entityMgr));
+        return new ArrayList<Datasource>(critImpl.select(this.entityMgr, JpaDatasource.class));
     }
 
     /* (non-Javadoc)
@@ -189,38 +192,25 @@ public class JpaDatasourceProvider implements DatasourceProvider {
             return true;
         }
         
-        
-        @SuppressWarnings("unchecked")
-        protected List<JpaDatasource> select(EntityManager emgr) {
-            StringBuilder query = new StringBuilder("select d from ");;
-            
-            if (this.type != null) {
-                query.append("Jpa").append(this.type.getSimpleName()).append(" d ");
-            } else {
-                query.append("JpaDatasource d ");
-            }
-            
-            applyFilter(query);
-            applyLimit(query);
-            
-            return emgr.createQuery(query.toString()).getResultList();
-        }
-    
-        private void applyFilter(StringBuilder query) {
+        @Override
+        protected void applyFilter(StringBuilder query, HashMap<String, Object> params) {
             StringBuilder cond = new StringBuilder();
             
-            if (this.name != null) cond.append(" d.name = '").append(this.name).append("' ");
+            if (this.name != null) cond.append("e.name = '").append(this.name).append("' ");
             if (this.createdOn != null) {
-                if (cond.length() > 0) cond.append(" and ");
-                cond.append(" d.created_time = ").append(dateTimeFormatter.print(this.createdOn)).append(" ");
+                if (cond.length() > 0) cond.append("and ");
+                cond.append("e.created_time = :createdOn");
+                params.put("createdOn", this.createdOn);
             }
             if (this.createdAfter != null) {
-                if (cond.length() > 0) cond.append(" and ");
-                cond.append(" d.created_time > ").append(dateTimeFormatter.print(this.createdOn)).append(" ");
+                if (cond.length() > 0) cond.append("and ");
+                cond.append("e.created_time > :createdAfter");
+                params.put("createdAfter", this.createdAfter);
             }
             if (this.createdBefore != null) {
-                if (cond.length() > 0) cond.append(" and ");
-                cond.append(" d.created_time < ").append(dateTimeFormatter.print(this.createdOn)).append(" ");
+                if (cond.length() > 0) cond.append("and ");
+                cond.append("e.created_time < :createdBefore");
+                params.put("createdBefore", this.createdBefore);
             }
             
             if (cond.length() > 0) {

@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -281,7 +282,7 @@ public class JpaFeedProvider implements FeedProvider {
     @Override
     public List<Feed> getFeeds(FeedCriteria criteria) {
         Criteria critImpl = (Criteria) criteria;
-        return new ArrayList<Feed>(critImpl.select(this.entityMgr));
+        return new ArrayList<Feed>(critImpl.select(this.entityMgr, JpaFeed.class));
     }
 
     /* (non-Javadoc)
@@ -343,16 +344,8 @@ public class JpaFeedProvider implements FeedProvider {
         private Set<Datasource.ID> sourceIds = new HashSet<>();
         private Set<Datasource.ID> destIds = new HashSet<>();
         
-        protected List<JpaFeed> select(EntityManager emgr) {
-            StringBuilder query = new StringBuilder("select f from JpaFeed f ");
-            
-            applyFilter(query);
-            applyLimit(query);
-            
-            return emgr.createQuery(query.toString()).getResultList();
-        }
-        
-        private void applyFilter(StringBuilder query) {
+        @Override
+        protected void applyFilter(StringBuilder query, HashMap<String, Object> params) {
             if (this.name != null || ! this.sourceIds.isEmpty() || ! this.destIds.isEmpty()) {
                 query.append("where ");
                 

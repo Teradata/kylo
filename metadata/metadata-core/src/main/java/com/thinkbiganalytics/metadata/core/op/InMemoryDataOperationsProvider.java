@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.core.op;
 
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -37,14 +38,14 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
-import com.thinkbiganalytics.metadata.api.op.Dataset.ChangeType;
-import com.thinkbiganalytics.metadata.api.op.DatasetCriteria;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
 import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
 import com.thinkbiganalytics.metadata.api.op.DataOperationCriteria;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
+import com.thinkbiganalytics.metadata.api.op.Dataset.ChangeType;
+import com.thinkbiganalytics.metadata.api.op.DatasetCriteria;
 import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.core.dataset.files.BaseFileList;
 import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableUpdate;
@@ -63,7 +64,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     };
     
     private static final ChangeCriteria ALL_CHANGES = new ChangeCriteria() {
-        public boolean apply(com.thinkbiganalytics.metadata.api.op.Dataset<?,?> input) {
+        public boolean apply(Dataset<Datasource, ChangeSet> input) {
             return true;
         }
     };
@@ -76,7 +77,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     private ChangeEventDispatcher dispatcher;
     
     private Map<DataOperation.ID, DataOperation> operations = new ConcurrentHashMap<>();
-    private Map<Datasource.ID, List<Dataset<? extends Datasource, ? extends ChangeSet>>> changeSets = new ConcurrentHashMap<>();
+    private Map<Datasource.ID, List<Dataset<Datasource, ChangeSet>>> changeSets = new ConcurrentHashMap<>();
     
     public InMemoryDataOperationsProvider() {
         super();
@@ -109,7 +110,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#asOperationId(java.lang.String)
      */
     @Override
-    public DataOperation.ID asOperationId(String opIdStr) {
+    public DataOperation.ID resolve(Serializable opIdStr) {
         return new BaseDataOperation.OpId(opIdStr);
     }
     
@@ -246,7 +247,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#changeSetCriteria()
      */
-    public DatasetCriteria DatasetCriteria() {
+    public DatasetCriteria datasetCriteria() {
         return new ChangeCriteria();
     }
 
@@ -254,24 +255,28 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#getChangeSets(Datasource.ID)
      */
     @SuppressWarnings("unchecked")
-    public List<Dataset<? extends Datasource, ? extends ChangeSet>> getDatasets(Datasource.ID dsId) {
-        return getDatasets(dsId, ALL_CHANGES);
+    public List<Dataset<Datasource, ChangeSet>> getDatasets(Datasource.ID dsId) {
+        return getDatasets(ALL_CHANGES);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#getChangeSets(Datasource.ID, com.thinkbiganalytics.metadata.api.op.DatasetCriteria)
      */
     @SuppressWarnings("unchecked")
-    public List<Dataset<? extends Datasource, ? extends ChangeSet>> getDatasets(Datasource.ID dsId, DatasetCriteria criteria) {
+    public List<Dataset<Datasource, ChangeSet>> getDatasets(DatasetCriteria criteria) {
         ChangeCriteria critImpl = (ChangeCriteria) criteria;
-        Iterator<Dataset<? extends Datasource, ? extends ChangeSet>> filtered 
-            = Iterators.filter(this.changeSets.get(dsId).iterator(), critImpl);
-        Iterator<Dataset<? extends Datasource, ? extends ChangeSet>> limited 
-            = Iterators.limit(filtered, critImpl.getLimit());
-        ArrayList<Dataset<? extends Datasource, ? extends ChangeSet>> list = Lists.newArrayList(limited);
+        List<Dataset<Datasource, ChangeSet>> dList = new ArrayList<>();
+        
+        for (List<Dataset<Datasource, ChangeSet>> list : this.changeSets.values()) {
+            dList.addAll(list);
+        }
+        
+        Iterator<Dataset<Datasource, ChangeSet>> filtered = Iterators.filter(dList.iterator(), critImpl);
+        Iterator<Dataset<Datasource, ChangeSet>> limited = Iterators.limit(filtered, critImpl.getLimit());
+        List<Dataset<Datasource, ChangeSet>> resultList = Lists.newArrayList(limited);
 
-        Collections.sort(list, critImpl);
-        return list;
+        Collections.sort(resultList, critImpl);
+        return resultList;
     }
 
     /* (non-Javadoc)
@@ -359,27 +364,37 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     }
     
     private static class ChangeCriteria extends AbstractMetadataCriteria<DatasetCriteria> 
-        implements DatasetCriteria, Predicate<Dataset<? extends Datasource, ? extends ChangeSet>>,
-                   Comparator<Dataset<? extends Datasource, ? extends ChangeSet>> {
+        implements DatasetCriteria, Predicate<Dataset<Datasource, ChangeSet>>, Comparator<Dataset<Datasource, ChangeSet>> {
 
+        private Set<Datasource.ID> datasourceIds = new HashSet<>();
         private Set<ChangeType> types = new HashSet<>();
         private DateTime changedOn;
         private DateTime changedAfter;
         private DateTime changedBefore;
         
         @Override
-        public boolean apply(Dataset<?, ?> input) {
+        public boolean apply(Dataset<Datasource, ChangeSet> input) {
             if (this.changedOn != null && ! this.changedOn.equals(input.getCreatedTime())) return false;
             if (this.changedAfter != null && ! this.changedAfter.isBefore(input.getCreatedTime())) return false;
             if (this.changedBefore != null && ! this.changedBefore.isBefore(input.getCreatedTime())) return false;
             if (this.types.size() > 0 && ! this.types.contains(input.getType())) return false;
+            if (this.datasourceIds.size() > 0 && ! this.datasourceIds.contains(input.getDatasource().getId())) return false;
+
             return true;
         }
         
         @Override
-        public int compare(Dataset<? extends Datasource, ? extends ChangeSet> o1,
-                           Dataset<? extends Datasource, ? extends ChangeSet> o2) {
+        public int compare(Dataset<Datasource, ChangeSet> o1,
+                           Dataset<Datasource, ChangeSet> o2) {
             return o2.getCreatedTime().compareTo(o1.getCreatedTime());
+        }
+        
+        @Override
+        public DatasetCriteria datasource(Datasource.ID... dsIds) {
+            for (Datasource.ID id : dsIds) {
+                this.datasourceIds.add(id);
+            }
+            return this;
         }
 
         @Override
@@ -387,7 +402,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
             for (ChangeType type : types) {
                 this.types.add(type);
             }
-            return null;
+            return this;
         }
 
         @Override

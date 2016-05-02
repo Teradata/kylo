@@ -3,8 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.api.op;
 
+import java.io.Serializable;
 import java.nio.file.Path;
-import java.util.Collection;
 import java.util.List;
 
 import org.joda.time.DateTime;
@@ -26,7 +26,7 @@ import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
  */
 public interface DataOperationsProvider {
     
-    ID asOperationId(String opIdStr);
+    ID resolve(Serializable opIdStr);
 
     DataOperation beginOperation(FeedDestination dest, DateTime start);
     DataOperation beginOperation(Feed.ID feedId, Datasource.ID dsId, DateTime start);
@@ -44,10 +44,10 @@ public interface DataOperationsProvider {
     List<DataOperation> getDataOperations();
     List<DataOperation> getDataOperations(DataOperationCriteria criteria);
     
-    DatasetCriteria DatasetCriteria();
+    DatasetCriteria datasetCriteria();
     
-    <D extends Datasource, C extends ChangeSet> Collection<Dataset<D, C>> getDatasets(Datasource.ID dsId);
-    <D extends Datasource, C extends ChangeSet> Collection<Dataset<D, C>> getDatasets(Datasource.ID dsId, DatasetCriteria criteria);
+    List<Dataset<Datasource, ChangeSet>> getDatasets(Datasource.ID dsId);
+    List<Dataset<Datasource, ChangeSet>> getDatasets(DatasetCriteria criteria);
 
     void addListener(DataChangeEventListener<Datasource, ChangeSet> listener);
     void addListener(DirectoryDatasource ds, DataChangeEventListener<DirectoryDatasource, FileList> listener);
