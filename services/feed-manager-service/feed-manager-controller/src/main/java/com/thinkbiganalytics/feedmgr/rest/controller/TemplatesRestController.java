@@ -15,16 +15,26 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.entity.TemplatesEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
+import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.feedmgr.support.Constants;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
 
@@ -91,6 +101,43 @@ public class TemplatesRestController {
     }
 
 
+    @GET
+    @Path("/nifi/{templateId}/ports")
+    @Produces({MediaType.APPLICATION_JSON })
+    public Response getPortsForNifiTemplate(@PathParam("templateId")String nifiTemplateId) throws JerseyClientException {
+        Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(nifiTemplateId);
+        return Response.ok(ports).build();
+    }
+
+    @GET
+    @Path("/nifi/{templateId}/input-ports")
+    @Produces({MediaType.APPLICATION_JSON })
+    public Response getInputPortsForNifiTemplate(@PathParam("templateId")String nifiTemplateId) throws JerseyClientException {
+        Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(nifiTemplateId);
+        List<PortDTO> list = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
+            @Override
+            public boolean apply(PortDTO portDTO) {
+                return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
+            }
+        }));
+        return Response.ok(list).build();
+    }
+
+
+    @GET
+    @Path("/nifi/{templateId}/out-ports")
+    @Produces({MediaType.APPLICATION_JSON })
+    public Response getOutputPortsForNifiTemplate(@PathParam("templateId")String nifiTemplateId) throws JerseyClientException {
+        Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(nifiTemplateId);
+        List<PortDTO> list = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
+            @Override
+            public boolean apply(PortDTO portDTO) {
+                return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
+            }
+        }));
+        return Response.ok(list).build();
+    }
+
 
     /**
      * Get a Nifi TemplateDTO for a given templateId
@@ -136,6 +183,8 @@ public class TemplatesRestController {
     }
 
 
+
+
     /**
      * get a given Registered Templates properties
      * @param templateId
@@ -169,7 +218,7 @@ public class TemplatesRestController {
 
         //if savedFeedId is passed in merge the properties with the saved values
 
-        FeedMetadata feedMetadata = getMetadataService().getFeed(feedName);
+        FeedMetadata feedMetadata = getMetadataService().getFeedByName(feedName);
 
         if(feedMetadata != null) {
             List<NifiProperty> list = new ArrayList<>();
@@ -180,28 +229,55 @@ public class TemplatesRestController {
             NifiPropertyUtil.matchAndSetTemplatePropertiesWithSavedProperties(registeredTemplate.getProperties(),
                                                                               feedMetadata.getProperties());
         }
+
+        // fetch ports for this template
+        Set<PortDTO> ports = nifiRestClient.getPortsForTemplate(registeredTemplate.getNifiTemplateId());
+        List<PortDTO> outputPorts = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
+            @Override
+            public boolean apply(PortDTO portDTO) {
+                return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name());
+            }
+        }));
+
+        List<PortDTO> inputPorts = Lists.newArrayList(Iterables.filter(ports, new Predicate<PortDTO>() {
+            @Override
+            public boolean apply(PortDTO portDTO) {
+                return portDTO.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name());
+            }
+        }));
+        registeredTemplate.setReusableTemplate(inputPorts != null && !inputPorts.isEmpty());
+        List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = registeredTemplate.getReusableTemplateConnections();
+        List<ReusableTemplateConnectionInfo> updatedConnectionInfo = new ArrayList<>();
+
+            for (final PortDTO port : outputPorts) {
+
+               ReusableTemplateConnectionInfo reusableTemplateConnectionInfo = null;
+                if(reusableTemplateConnectionInfos != null && !reusableTemplateConnectionInfos.isEmpty()) {
+                    reusableTemplateConnectionInfo = Iterables.tryFind(reusableTemplateConnectionInfos,
+                                                                       new Predicate<ReusableTemplateConnectionInfo>() {
+                                                                           @Override
+                                                                           public boolean apply(
+                                                                               ReusableTemplateConnectionInfo reusableTemplateConnectionInfo) {
+                                                                               return reusableTemplateConnectionInfo
+                                                                                   .getFeedOutputPortName()
+                                                                                   .equalsIgnoreCase(port.getName());
+                                                                           }
+                                                                       }).orNull();
+                }
+                if(reusableTemplateConnectionInfo == null) {
+                    reusableTemplateConnectionInfo = new ReusableTemplateConnectionInfo();
+                    reusableTemplateConnectionInfo.setFeedOutputPortName(port.getName());
+                }
+                updatedConnectionInfo.add(reusableTemplateConnectionInfo);
+
+            }
+
+
+        registeredTemplate.setReusableTemplateConnections(updatedConnectionInfo);
+
         return Response.ok(registeredTemplate).build();
     }
 
-    /**
-     * get a Templates Properties from the Nifi REST api, merged with any saved registered properties for a given templateId
-     * @param templateId
-     * @return
-     * @throws JerseyClientException
-
-    @GET
-    @Path("/{templateId}/properties")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response getTemplateProperties(@PathParam("templateId")String templateId) throws JerseyClientException{
-        //get the
-        List<NifiProperty> properties = nifiRestClient.getPropertiesForTemplate(templateId);
-        //merge with the registered properties
-        List<NifiProperty> registeredProperties = getMetadataService().getTemplateProperties(templateId);
-        NifiPropertyUtil.matchAndSetPropertyByIdKey(properties,registeredProperties);
-        return Response.ok(properties).build();
-    }
-
-     */
 
     /**
      * Register and save a given template and its properties
@@ -216,6 +292,27 @@ public class TemplatesRestController {
     public Response registerTemplate(RegisteredTemplate registeredTemplate) throws JerseyClientException{
 
         getMetadataService().registerTemplate(registeredTemplate);
+        if(registeredTemplate.isReusableTemplate()){
+            //attempt to auto create the Feed using this template
+            FeedMetadata metadata = metadataService.getFeedByName(registeredTemplate.getTemplateName());
+            if(metadata == null) {
+                metadata = new FeedMetadata();
+
+                FeedCategory category = metadataService.getCategoryByName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME);
+                if(category == null){
+                    category = new FeedCategory();
+                    category.setName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME);
+                    metadataService.saveCategory(category);
+                }
+                metadata.setCategory(category);
+                metadata.setTemplateId(registeredTemplate.getId());
+                metadata.setFeedName(registeredTemplate.getTemplateName());
+                metadata.setSystemFeedName(SystemNamingService.generateSystemName(registeredTemplate.getTemplateName()));
+            }
+            metadata.setRegisteredTemplate(registeredTemplate);
+            NifiFeed feed = getMetadataService().createFeed(metadata);
+            int i = 0;
+        }
         return Response.ok(registeredTemplate).build();
     }
 

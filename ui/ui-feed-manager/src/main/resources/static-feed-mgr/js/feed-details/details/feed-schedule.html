@@ -1,7 +1,7 @@
-<vertical-section-layout section-title="Schedule" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()">
+<vertical-section-layout section-title="Schedule" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allowEdit="!vm.model.reusableFeed">
 
     <readonly-section>
-
+        <div ng-if="vm.model.reusableFeed == false">
         <div layout="row" class="layout-padding-top-bottom">
             <span flex="25" class="property-name">Strategy</span>
 
@@ -24,6 +24,10 @@
             </div>
         </div>
 
+        </div>
+        <div ng-if="vm.model.reusableFeed == true">
+            This is an abstract Reusable Feed. No Schedule is applied to this Feed.  Other Templates that reference this feed will supply their schedule
+        </div>
     </readonly-section>
     <editable-section>
 

@@ -74,6 +74,8 @@
       <artifactId>thinkbig-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>thinkbig-metadata-core</artifactId>

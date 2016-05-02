@@ -128,6 +128,14 @@
             var inputProcessors  = [];
             var additionalProcessors = [];
             angular.forEach(properties, function (property, i) {
+                if(property.processor == undefined){
+                    property.processor = {};
+                    property.processor.id = property.processorId;
+                    property.processor.name = property.processorName;
+                    property.processor.type = property.processorType;
+                    property.processor.groupId = property.processGroupId;
+                    property.processor.groupName = property.processGroupName;
+                }
 
                 if(property.selected == undefined){
                     property.selected = false;
@@ -142,10 +150,10 @@
                 property.userEditable = (property.userEditable == undefined || property.userEditable == null) ? true : property.userEditable ;
 
                 if(property.inputProperty){
-                    property.mentioId='inputProperty'+property.processor.name+'_'+i;
+                    property.mentioId='inputProperty'+property.processorName+'_'+i;
                 }
                 else {
-                    property.mentioId='processorProperty_'+property.processor.name+'_'+i;
+                    property.mentioId='processorProperty_'+property.processorName+'_'+i;
                 }
 
 
@@ -182,11 +190,12 @@
 
 
 
+
         this.getTemplateProperties = function() {
             if(self.stepperController) {
                 self.stepperController.showProgress = true;
             }
-            if(self.model.templateId != null) {
+            if(self.model.nifiTemplateId != null) {
                 var successFn = function (response) {
                 //    self.templateCache[self.model.templateId]= response;
                     var templateData = response.data;
@@ -198,7 +207,7 @@
                         }
                     },10);
 
-                    self.model.templateId = templateData.templateId;
+                    self.model.nifiTemplateId = templateData.nifiTemplateId;
                     self.model.templateName = templateData.templateName;
                     self.model.defineTable = templateData.defineTable;
                     self.model.allowPreconditions = templateData.allowPreconditions;
@@ -206,21 +215,22 @@
                     self.model.description = templateData.description;
                     self.model.icon.title = templateData.icon;
                     self.model.icon.color = templateData.iconColor;
+                    self.model.reusableTemplate = templateData.reusableTemplate;
+                    self.model.reusableTemplateConnections = templateData.reusableTemplateConnections;
+                    self.model.needsReusableTemplate = templateData.reusableTemplateConnections != undefined && templateData.reusableTemplateConnections.length>0;
                 }
                 var errorFn = function (err) {
 
                 }
-                if(self.templateCache[self.model.templateId] != undefined){
-                    successFn(self.templateCache[self.model.templateId] );
-                }
-                else {
-                     var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(self.model.templateId), {params: {allProperties: true}});
+                     var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(self.model.nifiTemplateId), {params: {allProperties: true}});
                     promise.then(successFn, errorFn);
                     return promise;
-                }
             }
             else {
+                var deferred = $q.defer();
                 self.properties = [];
+                deferred.resolve(self.properties);
+                return deferred.promise;
             }
         }
 
@@ -232,14 +242,14 @@
                 self.model.id = self.registeredTemplateId;
             }
             if(self.nifiTemplateId != null) {
-                self.model.templateId = self.nifiTemplateId;
+                self.model.nifiTemplateId = self.nifiTemplateId;
             }
-            if(self.model.templateId != null) {
+            if(self.model.nifiTemplateId != null) {
                 self.controllerServiceNeededProperties = [];
-                  self.getTemplateProperties();
-                setTimeout(function(){
-                    self.isValid = true;
-                },30)
+                //Wait for the properties to come back before allowing hte user to go to the next step
+                  self.getTemplateProperties().then(function(properties) {
+                      self.isValid = true;
+                  });
 
             }
 

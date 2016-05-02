@@ -8,20 +8,27 @@ import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.apache.nifi.web.api.entity.ConnectionsEntity;
 import org.apache.nifi.web.api.entity.ControllerServiceEntity;
 import org.apache.nifi.web.api.entity.ControllerServicesEntity;
 import org.apache.nifi.web.api.entity.Entity;
 import org.apache.nifi.web.api.entity.FlowSnippetEntity;
+import org.apache.nifi.web.api.entity.InputPortEntity;
+import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 
 import java.util.ArrayList;
@@ -45,7 +52,7 @@ public class CreateFeedBuilder {
   private String category;
   private String feedName;
   private String inputProcessorType;
-  private String reusableTemplateCategoryName = "Reusable Templates";
+  private String reusableTemplateCategoryName = "reusable_templates";
   private String reusableTemplateFeedName;
   private String feedOutputPortName;
   private String reusableTemplateInputPortName;
@@ -172,6 +179,47 @@ public class CreateFeedBuilder {
 
   }
 
+  private void markConnectionPortsAsRunning(ProcessGroupEntity feedProcessGroup){
+    //1 startAll
+    try {
+      restClient.startAll(feedProcessGroup.getProcessGroup().getId(),feedProcessGroup.getProcessGroup().getParentGroupId());
+    } catch (JerseyClientException e) {
+      e.printStackTrace();
+    }
+
+    Set<PortDTO> ports = null;
+    try {
+      ports = restClient.getPortsForProcessGroup(feedProcessGroup.getProcessGroup().getParentGroupId());
+    } catch (JerseyClientException e) {
+      e.printStackTrace();
+    }
+    if(ports != null && !ports.isEmpty()) {
+     for(PortDTO port: ports){
+       port.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+       if(port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())) {
+         try {
+           restClient.startInputPort(feedProcessGroup.getProcessGroup().getParentGroupId(),port.getId());
+         } catch (JerseyClientException e) {
+           e.printStackTrace();
+         }
+       }
+       else if(port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name())) {
+         try {
+           restClient.startOutputPort(feedProcessGroup.getProcessGroup().getParentGroupId(), port.getId());
+         } catch (JerseyClientException e) {
+           e.printStackTrace();
+         }
+       }
+     }
+
+    }
+
+  }
+
+  private boolean hasConnectionPorts(){
+    return reusableTemplateFeedName != null || isReusableTemplate;
+  }
+
 
   public NifiProcessGroup build() throws JerseyClientException {
     NifiProcessGroup newProcessGroup = null;
@@ -189,6 +237,7 @@ public class CreateFeedBuilder {
         //if the feed has an outputPort that should go to a reusable Flow then make those connections
         if (reusableTemplateFeedName != null) {
           connectFeedToReusableTemplate(processGroupId);
+
         }
         if (isReusableTemplate) {
           ensureInputPortsForReuseableTemplate(processGroupId);
@@ -235,6 +284,13 @@ public class CreateFeedBuilder {
           }
 
           markProcessorsAsRunning(newProcessGroup, nonInputProcessors);
+
+          ///make the input/output ports in the category group as running
+          if(hasConnectionPorts())
+          {
+            markConnectionPortsAsRunning(entity);
+          }
+
           if (newProcessGroup.hasFatalErrors()) {
             restClient.deleteProcessGroup(entity.getProcessGroup());
             //  cleanupControllerServices();
@@ -260,6 +316,69 @@ public class CreateFeedBuilder {
 
   private void versionFeed(ProcessGroupDTO feedGroup) throws JerseyClientException {
     restClient.disableAllInputProcessors(feedGroup.getId());
+    //attempt to stop all processors
+    try {
+      restClient.stopAllProcessors(feedGroup);
+    }catch (JerseyClientException e)
+    {
+
+    }
+    //delete all connections
+    if (reusableTemplateFeedName != null || isReusableTemplate) {
+      ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(feedGroup.getParentGroupId());
+      if(connectionsEntity != null) {
+        List<ConnectionDTO> connections = null;
+        if(reusableTemplateFeedName != null) {
+          //delete the output Port connections (matching this source)
+          connections =
+              NifiConnectionUtil.findConnectionsMatchingSourceGroupId(connectionsEntity.getConnections(), feedGroup.getId());
+
+          if(connections != null) {
+            for(ConnectionDTO connection: connections){
+              String type = connection.getDestination().getType();
+              if(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)){
+                //stop the port
+                try {
+                  restClient.stopOutputPort(connection.getParentGroupId(), connection.getDestination().getId());
+                }catch (JerseyClientException e) {
+                  e.printStackTrace();
+                }
+              }
+              try {
+              restClient.deleteConnection(connection);
+              }catch (JerseyClientException e) {
+                e.printStackTrace();
+              }
+            }
+          }
+        }
+        else if(isReusableTemplate){
+          //delete the input port connections (matching this dest)
+          connections = NifiConnectionUtil.findConnectionsMatchingDestinationGroupId(connectionsEntity.getConnections(),feedGroup.getId());
+          if(connections != null) {
+            for(ConnectionDTO connection: connections){
+              String type = connection.getSource().getType();
+              if(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)){
+                //stop the port
+                try {
+                  restClient.stopInputPort(connection.getParentGroupId(), connection.getSource().getId());
+              }catch (JerseyClientException e) {
+                e.printStackTrace();
+              }
+              }
+              try {
+              restClient.deleteConnection(connection);
+              }catch (JerseyClientException e) {
+                e.printStackTrace();
+              }
+            }
+          }
+        }
+
+      }
+    }
+
+
     //rename the feedGroup to be name+timestamp
     //TODO change to work with known version passed in (get the rename to current version -1 or something.
     feedGroup.setName(feedName + new Date().getTime());

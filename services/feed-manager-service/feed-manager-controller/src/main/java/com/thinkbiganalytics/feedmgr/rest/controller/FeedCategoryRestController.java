@@ -62,7 +62,7 @@ public class FeedCategoryRestController {
     @DELETE
     @Path("/{categoryId}")
     @Produces({MediaType.APPLICATION_JSON })
-    public Response deleteCategory(@PathParam("categoryId")Long categoryId) throws JerseyClientException,
+    public Response deleteCategory(@PathParam("categoryId")String categoryId) throws JerseyClientException,
                                                                                    InvalidOperationException {
         getMetadataService().deleteCategory(categoryId);
         return Response.ok().build();
@@ -71,7 +71,7 @@ public class FeedCategoryRestController {
     @GET
     @Path("/{categoryId}/feeds")
     @Produces({MediaType.APPLICATION_JSON })
-    public Response getCategory(@PathParam("categoryId")Long categoryId) throws JerseyClientException{
+    public Response getCategory(@PathParam("categoryId")String categoryId) throws JerseyClientException{
         List<FeedSummary> summaryList  = getMetadataService().getFeedSummaryForCategory(categoryId);
         return Response.ok(summaryList).build();
     }

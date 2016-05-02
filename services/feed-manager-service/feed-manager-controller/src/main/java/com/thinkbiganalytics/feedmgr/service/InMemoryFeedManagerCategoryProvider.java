@@ -1,0 +1,159 @@
+package com.thinkbiganalytics.feedmgr.service;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.feedmgr.InvalidOperationException;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedCategoryBuilder;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
+import javax.annotation.PostConstruct;
+
+/**
+ * Created by sr186054 on 5/1/16.
+ */
+public class InMemoryFeedManagerCategoryProvider implements FeedManagerCategoryProvider {
+
+  private Map<String, FeedCategory> categories = new HashMap<>();
+
+  @PostConstruct
+  private void loadCategories(){
+    Collection<FeedCategory>savedCategories = FileObjectPersistence.getInstance().getCategoriesFromFile();
+    if(savedCategories != null){
+      for(FeedCategory c: savedCategories){
+        categories.put(c.getId(),c);
+      }
+    }
+    if(categories.isEmpty()){
+      bootstrapCategories();
+    }
+
+  }
+
+
+
+  private void bootstrapCategories() {
+
+    List<FeedCategory> feedCategoryList = new ArrayList<>();
+    feedCategoryList.add(
+        new FeedCategoryBuilder("Employees").description("Employee profile data and records").icon("people").iconColor("#F06292")
+            .build());
+    feedCategoryList.add(
+        new FeedCategoryBuilder("Sales").description("Sales data including opportunities and leads").icon("phone_android")
+            .iconColor("#90A4AE").build());
+    feedCategoryList.add(
+        new FeedCategoryBuilder("Online").description("Web traffic data and reports of online activity").icon("web")
+            .iconColor("#66BB6A").build());
+    feedCategoryList.add(
+        new FeedCategoryBuilder("Payroll").description("Payroll records for employees").icon("attach_money").iconColor("#FFCA28")
+            .build());
+    feedCategoryList.add(new FeedCategoryBuilder("Travel").description("Employee travel records including all expense reports")
+                             .icon("local_airport").iconColor("#FFF176").build());
+    feedCategoryList.add(new FeedCategoryBuilder("Data").description("General Data ").icon("cloud").iconColor("#AB47BC").build());
+    feedCategoryList.add(
+        new FeedCategoryBuilder("Emails").description("All email traffic data archived for the last 5 years").icon("email")
+            .iconColor("#FF5252").build());
+    feedCategoryList.add(new FeedCategoryBuilder("Customers").description("All customer data for various companies").icon("face")
+                             .iconColor("#FF5252").build());
+
+    for (FeedCategory category : feedCategoryList) {
+      category.setId(UUID.randomUUID().toString());
+      categories.put(category.getId(), category);
+    }
+
+  }
+
+
+  @Override
+  public Collection<FeedCategory> getCategories() {
+    return categories.values();
+  }
+
+  @Override
+  public FeedCategory getCategoryByName(final String name) {
+    return Iterables.tryFind(categories.values(), new Predicate<FeedCategory>() {
+      @Override
+      public boolean apply(FeedCategory feedCategory) {
+        return feedCategory.getName().equalsIgnoreCase(name);
+      }
+    }).orNull();
+  }
+
+  @Override
+  public FeedCategory getCategoryBySystemName(final String name) {
+    return Iterables.tryFind(categories.values(), new Predicate<FeedCategory>() {
+      @Override
+      public boolean apply(FeedCategory feedCategory) {
+        return feedCategory.getSystemName().equalsIgnoreCase(name);
+      }
+    }).orNull();
+  }
+
+  @Override
+  public FeedCategory getCategoryById(final String id) {
+    return Iterables.tryFind(categories.values(), new Predicate<FeedCategory>() {
+      @Override
+      public boolean apply(FeedCategory feedCategory) {
+        return feedCategory.getId().equalsIgnoreCase(id);
+      }
+    }).orNull();
+  }
+
+
+
+  @Override
+  public void saveCategory(final FeedCategory category) {
+    if (category.getId() == null) {
+      category.setId(UUID.randomUUID().toString());
+      category.generateSystemName();
+    } else {
+      FeedCategory oldCategory = categories.get(category.getId());
+
+      if (oldCategory != null && !oldCategory.getName().equalsIgnoreCase(category.getName())) {
+        ///names have changed
+        //only regenerate the system name if there are no related feeds
+        if (oldCategory.getRelatedFeeds() == 0) {
+          category.generateSystemName();
+        }
+      }
+      List<FeedMetadata> feeds = categories.get(category.getId()).getFeeds();
+
+      category.setFeeds(feeds);
+      if (feeds != null) {
+        category.setRelatedFeeds(feeds.size());
+      }
+    }
+    categories.put(category.getId(), category);
+
+    FileObjectPersistence.getInstance().writeCategoriesToFile(categories.values());
+  }
+
+
+  @Override
+  public boolean deleteCategory(String categoryId) throws InvalidOperationException {
+    FeedCategory category = categories.get(categoryId);
+    if (category != null) {
+      //dont allow if category has feeds on it
+      if (category.getRelatedFeeds() > 0) {
+        throw new InvalidOperationException(
+            "Unable to delete Category " + category.getName() + ".  This category has " + category.getRelatedFeeds()
+            + " feeds associated to it.");
+      } else {
+        categories.remove(categoryId);
+        FileObjectPersistence.getInstance().writeCategoriesToFile(categories.values());
+        return true;
+      }
+    }
+    return false;
+
+  }
+
+
+}

@@ -17,7 +17,7 @@ public class RegisteredTemplate {
 
     private String id;
 
-    private String templateId;
+    private String nifiTemplateId;
     private String templateName;
     private Date updateDate;
     private Date createDate;
@@ -31,13 +31,17 @@ public class RegisteredTemplate {
     @JsonProperty("dataTransformation")
     private boolean dataTransformation;
 
+    private boolean reusableTemplate;
+
+    private List<ReusableTemplateConnectionInfo> reusableTemplateConnections;
+
     public RegisteredTemplate(){
 
     }
 
     public RegisteredTemplate(RegisteredTemplate registeredTemplate){
         this.id = registeredTemplate.getId();
-        this.templateId = registeredTemplate.getTemplateId();
+        this.nifiTemplateId = registeredTemplate.getNifiTemplateId();
         this.templateName = registeredTemplate.getTemplateName();
         this.defineTable = registeredTemplate.isDefineTable();
         this.updateDate = registeredTemplate.getUpdateDate();
@@ -51,6 +55,10 @@ public class RegisteredTemplate {
         if(registeredTemplate.getProperties() != null) {
             this.properties = new ArrayList<>(registeredTemplate.getProperties());
         }
+        this.reusableTemplate = registeredTemplate.isReusableTemplate();
+        if(registeredTemplate.getReusableTemplateConnections() != null) {
+            this.reusableTemplateConnections = new ArrayList<>(registeredTemplate.getReusableTemplateConnections());
+        }
     }
 
     public List<NifiProperty> getProperties() {
@@ -61,12 +69,12 @@ public class RegisteredTemplate {
         this.properties = properties;
     }
 
-    public String getTemplateId() {
-        return templateId;
+    public String getNifiTemplateId() {
+        return nifiTemplateId;
     }
 
-    public void setTemplateId(String templateId) {
-        this.templateId = templateId;
+    public void setNifiTemplateId(String nifiTemplateId) {
+        this.nifiTemplateId = nifiTemplateId;
     }
 
     public String getTemplateName() {
@@ -149,5 +157,27 @@ public class RegisteredTemplate {
 
     public void setId(String id){
         this.id = id;
+    }
+
+
+    public boolean isReusableTemplate() {
+        return reusableTemplate;
+    }
+
+    public void setReusableTemplate(boolean reusableTemplate) {
+        this.reusableTemplate = reusableTemplate;
+    }
+
+    public List<ReusableTemplateConnectionInfo> getReusableTemplateConnections() {
+        return reusableTemplateConnections;
+    }
+
+    public void setReusableTemplateConnections(
+        List<ReusableTemplateConnectionInfo> reusableTemplateConnections) {
+        this.reusableTemplateConnections = reusableTemplateConnections;
+    }
+
+    public boolean usesReusableTemplate(){
+        return getReusableTemplateConnections() != null && !getReusableTemplateConnections().isEmpty();
     }
 }

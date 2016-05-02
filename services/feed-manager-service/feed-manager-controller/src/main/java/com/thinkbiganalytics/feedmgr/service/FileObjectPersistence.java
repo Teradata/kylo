@@ -17,9 +17,9 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 public class FileObjectPersistence {
 
     private static String filePath = "/tmp";
-    private static String FEED_METADATA_FILENAME = "feed-metadata.json";
-    private static String FEED_CATEGORIES_FILENAME = "feed-categories.json";
-    private static String TEMPLATE_METADATA_FILENAME = "registered-templates.json";
+    private static String FEED_METADATA_FILENAME = "feed-metadata2.json";
+    private static String FEED_CATEGORIES_FILENAME = "feed-categories2.json";
+    private static String TEMPLATE_METADATA_FILENAME = "registered-templates2.json";
 
     private static class LazyHolder {
         static final FileObjectPersistence INSTANCE = new FileObjectPersistence();

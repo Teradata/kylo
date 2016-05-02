@@ -70,7 +70,7 @@
 
         this.templateDetails = function(event,template){
             RegisterTemplateService.resetModel();
-            StateService.navigateToRegisteredTemplate(template.id, template.templateId);
+            StateService.navigateToRegisteredTemplate(template.id, template.nifiTemplateId);
         }
 
 
@@ -90,6 +90,11 @@
             return promise;
 
         }
+
+
+
+
+
         getRegisteredTemplates();
     };
 

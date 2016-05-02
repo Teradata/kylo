@@ -8,9 +8,9 @@ import java.util.Date;
 public interface UIFeed {
     String getCategoryName();
 
-    Long getCategoryId();
+    String getCategoryId();
 
-    Long getId();
+    String getId();
 
     String getFeedName();
 

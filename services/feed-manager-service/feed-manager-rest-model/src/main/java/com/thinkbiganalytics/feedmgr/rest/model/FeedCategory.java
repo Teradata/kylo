@@ -7,6 +7,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
+import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -19,7 +20,7 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedCategory {
 
-    private Long id;
+    private String id;
     @MetadataField
     private String name;
     @MetadataField
@@ -32,11 +33,11 @@ public class FeedCategory {
 
     private int relatedFeeds;
 
-    public Long getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(Long id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -132,16 +133,8 @@ public class FeedCategory {
 
     @JsonIgnore
     public void generateSystemName(){
-        String[] controlChars = {"\"","'","!","@","#","$","%","^","&","*","(",")"};
-        //lower and remove double spaces
-        String  systemName = this.name.toLowerCase().trim().replaceAll(" +","_");
-        systemName = CaseFormat.LOWER_CAMEL.to(CaseFormat.LOWER_HYPHEN,systemName);
-        systemName = CaseFormat.LOWER_HYPHEN.to(CaseFormat.LOWER_UNDERSCORE,systemName);
 
-        for(String controlChar: controlChars){
-            systemName = StringUtils.remove(systemName, controlChar);
-        }
-        this.systemName =systemName;
+        this.systemName = SystemNamingService.generateSystemName(name);
     }
 
 

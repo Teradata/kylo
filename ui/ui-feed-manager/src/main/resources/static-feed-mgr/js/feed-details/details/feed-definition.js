@@ -46,7 +46,6 @@
 
         this.onEdit = function(){
             //copy the model
-            console.log('edit clicked')
             var copy = FeedService.editFeedModel;
             self.editModel= {};
             self.editModel.feedName = copy.feedName;
