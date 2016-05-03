@@ -10,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
+import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerFeedProvider;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerTemplateProvider;
@@ -29,7 +30,6 @@ import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 public class FeedManagerConfiguration {
 
     public FeedManagerConfiguration(){
-
     }
 
     @Autowired
@@ -59,8 +59,10 @@ public class FeedManagerConfiguration {
         return new InMemoryFeedManagerTemplateProvider();
     }
 
-
-
+    @Bean
+    public SpringEnvironmentProperties springEnvironmentProperties() {
+        return new SpringEnvironmentProperties();
+    }
 
     @Bean
     public MetadataService metadataService(){
