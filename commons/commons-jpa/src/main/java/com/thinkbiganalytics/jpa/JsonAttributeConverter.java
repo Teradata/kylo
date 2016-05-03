@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.jpa;
+package com.thinkbiganalytics.jpa;
 
 import java.io.IOException;
 

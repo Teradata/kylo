@@ -10,13 +10,18 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-api</artifactId>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-commons-jpa</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-sla-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.metadata</groupId>
+            <artifactId>thinkbig-metadata-api</artifactId>
             <version>${project.version}</version>
         </dependency>
 
@@ -159,17 +164,17 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <!-- 
                     <dialect>org.hibernate.dialect.MySQL5InnoDBDialect</dialect>
                     <url>jdbc:mysql://localhost:3306/pipeline_db</url>
                     <driver>com.mysql.jdbc.Driver</driver>
                     <username>root</username>
-                    <!-- 
+                    -->
                     
                     <dialect>org.hibernate.dialect.H2Dialect</dialect>
                     <url>jdbc:h2:file:./target/db</url>
                     <driver>org.h2.Driver</driver>
                     <username>sa</username> 
-                    -->
 
                     <export>false</export>
                     <skip>false</skip>

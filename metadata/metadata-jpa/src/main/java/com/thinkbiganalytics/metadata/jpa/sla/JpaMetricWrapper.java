@@ -12,7 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
-import com.thinkbiganalytics.metadata.jpa.JsonAttributeConverter;
+import com.thinkbiganalytics.jpa.JsonAttributeConverter;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**

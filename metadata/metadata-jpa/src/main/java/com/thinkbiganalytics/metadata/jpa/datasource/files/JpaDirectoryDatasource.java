@@ -10,8 +10,8 @@ import javax.persistence.Convert;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
 
+import com.thinkbiganalytics.jpa.PathAttributeConverter;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
-import com.thinkbiganalytics.metadata.jpa.PathAttributeConverter;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 
 /**
