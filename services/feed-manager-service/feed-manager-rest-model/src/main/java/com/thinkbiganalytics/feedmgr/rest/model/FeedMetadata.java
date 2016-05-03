@@ -53,6 +53,10 @@ public class FeedMetadata implements UIFeed{
     @MetadataField
     private Date updateDate;
 
+
+    @MetadataField(description = "The Data Transformation Spark Script")
+    private String dataTransformationScript;
+
     private boolean active = true;
 
     private String nifiProcessGroupId;
@@ -301,5 +305,14 @@ public class FeedMetadata implements UIFeed{
     @JsonProperty("reusableFeed")
     public void setIsReusableFeed(boolean isReusableFeed) {
         this.isReusableFeed = isReusableFeed;
+    }
+
+
+    public String getDataTransformationScript() {
+        return dataTransformationScript;
+    }
+
+    public void setDataTransformationScript(String dataTransformationScript) {
+        this.dataTransformationScript = dataTransformationScript;
     }
 }

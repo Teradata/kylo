@@ -22,7 +22,7 @@
     };
 
     var controller = function($scope, $log, $http, $mdDialog, $mdToast, RestUrlService, VisualQueryService, HiveService,
-                              TableDataFunctions, SideNavService, SparkShellService, VisualQueryColumnDelegate, uiGridConstants) {
+                              TableDataFunctions, SideNavService, SparkShellService, VisualQueryColumnDelegate, uiGridConstants, FeedService) {
         var self = this;
         //The model passed in from the previous step
         this.model = VisualQueryService.model;
@@ -376,6 +376,28 @@
                 return false;
             }
         };
+
+        /**
+         * TODO CAll this function at end of Transformation
+         */
+        function saveToFeedModel(){
+            var feedModel = FeedService.createFeedModel;
+            feedModel.dataTransformationScript = 'SPARK SCRIPT String';
+                var tableSchema = {schemaName:'',name:'',fields:[]};//need to get data in a com.thinkbiganalytics.db.model.schema.TableSchema
+
+                FeedService.setTableFields(self.tableSchema.fields);
+                feedModel.table.method = 'EXISTING_TABLE';
+                if(tableSchema.schemaName != null){
+                    feedModel.table.existingTableName = tableSchema.schemaName+"."+tableSchema.name;
+                }
+                else {
+                    feedModel.table.existingTableName = tableSchema.name;
+                }
+                feedModel.table.sourceTableSchema.name=feedModel.table.existingTableName;
+
+
+
+        }
 
         //Hide the left side nav bar
         SideNavService.hideSideNav();

@@ -1,1 +1,70 @@
-data transform stepper
+<div > <form name="defineFeedForm">
+    <md-tabs md-dynamic-height md-center-tabs="true" md-border-bottom md-selected="vm.selectedStepIndex" md-on-select="vm.onStepSelect()" md-no-ink-bar="true" md-no-ink="true" sticky-tabs>
+        <md-tab  >
+            <md-tab-label>
+                <div class="{{vm.steps[0].type}} step-label"><ng-md-icon md-icon icon="{{vm.steps[0].icon}}" size="{{vm.steps[0].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[0].iconStyle}}" ></ng-md-icon> General Info</div>
+            </md-tab-label>
+            <md-tab-body>
+                <thinkbig-define-feed-general-info step-index="0"></thinkbig-define-feed-general-info>
+            </md-tab-body>
+        </md-tab>
+        <md-tab ng-disabled="vm.steps[1].disabled">
+            <md-tab-label>
+                <div class="{{vm.steps[1].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[1].icon}}" size="{{vm.steps[1].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[1].iconStyle}}"></ng-md-icon> Feed Details</div>
+            </md-tab-label>
+            <md-tab-body>
+                <thinkbig-define-feed-details step-index="1" ></thinkbig-define-feed-details>
+            </md-tab-body>
+        </md-tab>
+        <md-tab ng-disabled="vm.steps[2].disabled">
+            <md-tab-label>
+                <div class="{{vm.steps[2].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[2].icon}}" size="{{vm.steps[2].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[0].iconStyle}}"></ng-md-icon> Build Query</div>
+            </md-tab-label>
+            <md-tab-body>
+                <thinkbig-visual-query-builder step-index="2" ng-if="vm.selectedStepIndex == 2" ></thinkbig-visual-query-builder>
+            </md-tab-body>
+        </md-tab>
+        <md-tab ng-disabled="vm.steps[3].disabled">
+            <md-tab-label>
+                <div class="{{vm.steps[3].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[3].icon}}" size="{{vm.steps[3].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[1].iconStyle}}"></ng-md-icon>Transform Data</div>
+            </md-tab-label>
+            <md-tab-body>
+                <thinkbig-visual-query-transform step-index="3" ng-if="vm.selectedStepIndex == 3 " ></thinkbig-visual-query-transform>
+            </md-tab-body>
+        </md-tab>
+        <md-tab ng-disabled="vm.steps[4].disabled">
+            <md-tab-label>
+                <div class="{{vm.steps[4].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[4].icon}}" size="{{vm.steps[4].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[4].iconStyle}}"></ng-md-icon> Table</div>
+            </md-tab-label>
+            <md-tab-body>
+                <thinkbig-define-feed-table step-index="4" ng-if="vm.selectedStepIndex == 4" ></thinkbig-define-feed-table>
+            </md-tab-body>
+        </md-tab>
+        <md-tab ng-disabled="vm.steps[5].disabled">
+            <md-tab-label>
+                <div class="{{vm.steps[5].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[5].icon}}" size="{{vm.steps[5].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[5].iconStyle}}"></ng-md-icon> Data Processing</div>
+            </md-tab-label>
+            <md-tab-body>
+                <thinkbig-define-feed-data-processing step-index="5" ></thinkbig-define-feed-data-processing>
+            </md-tab-body>
+        </md-tab>
+        <md-tab ng-disabled="vm.steps[6].disabled">
+            <md-tab-label>
+                <div class="{{vm.steps[6].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[6].icon}}" size="{{vm.steps[6].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[6].iconStyle}}"></ng-md-icon> Properties</div>
+            </md-tab-label>
+            <md-tab-body>
+                <thinkbig-define-feed-properties step-index="6"></thinkbig-define-feed-properties>
+            </md-tab-body>
+        </md-tab>
+        <md-tab ng-disabled="vm.steps[7].disabled">
+            <md-tab-label>
+                <div class="{{vm.steps[7].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[7].icon}}" size="{{vm.steps[7].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[7].iconStyle}}"></ng-md-icon> Schedule</div>
+            </md-tab-label>
+            <md-tab-body>
+                <thinkbig-define-feed-schedule step-index="7" ></thinkbig-define-feed-schedule>
+            </md-tab-body>
+        </md-tab>
+
+    </md-tabs>
+</form>
+</div>
