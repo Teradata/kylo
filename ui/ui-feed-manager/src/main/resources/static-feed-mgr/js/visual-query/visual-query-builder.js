@@ -23,7 +23,7 @@
     /** Prefix for table aliases */
     var TABLE_PREFIX = "tbl";
 
-    var controller =  function($scope,$log, $http,$mdToast,$mdDialog,$document,Utils,RestUrlService,HiveService, SideNavService, StateService, VisualQueryService) {
+    var controller =  function($scope,$log, $http,$mdToast,$mdDialog,$document,Utils,RestUrlService,HiveService, SideNavService, StateService, VisualQueryService, FeedService) {
 
         //Allow for SQL editing
         this.advancedMode = false;
@@ -164,6 +164,11 @@
             var sql = getSQLModel();
             self.model.visualQuerySql = sql ;
             self.model.selectedColumnsAndTables = self.selectedColumnsAndTables;
+            var feedModel = FeedService.createFeedModel;
+            feedModel.dataTransformation.visualQuery.sql = sql;
+            feedModel.dataTransformation.visualQuery.selectedColumnsAndTablesJson = angular.toJson(self.selectedColumnsAndTables);
+            feedModel.dataTransformation.visualQuery.chartViewModelJson = angular.toJson(self.selectedColumnsAndTables);
+
         }
 
         function getNewXYCoord(){

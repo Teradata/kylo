@@ -72,7 +72,7 @@
             //setup some initial data points for the template
             self.model.defineTable = template.defineTable;
             self.model.allowPreconditions = template.allowPreconditions;
-            self.model.dataTransformation = template.dataTransformation;
+            self.model.dataTransformationFeed = template.dataTransformation;
             if(template.defineTable){
                 self.totalSteps = 6;
                 self.stepperUrl = 'js/define-feed/define-feed-stepper.html'

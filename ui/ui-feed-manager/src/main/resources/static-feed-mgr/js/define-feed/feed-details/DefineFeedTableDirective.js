@@ -21,13 +21,8 @@
         };
     }
 
-    var controller =  function($scope, $http,$mdToast,RestUrlService, FeedService, FileUpload) {
+    var controller =  function($scope, $http,$mdToast,RestUrlService, FeedService, FileUpload, BroadcastService) {
 
-
-        function DefineFeedTableController() {
-        }
-
-        this.__tag = new DefineFeedTableController();
 
         var self = this;
         this.stepNumber = parseInt(this.stepIndex)+1
@@ -38,6 +33,12 @@
         this.tableCreateMethods = [{type:'MANUAL',name:'Manual'},{type:'SAMPLE_TABLE',name:'Sample Table'},{type:'SAMPLE_FILE',name:'Sample File'}];
         this.tableRecordFormats = [{type:'DELIMITED',name:'Delimited',hint:'Data Files use delimiters like commas (CSV) or tabs'},{type:'SERDE',name:'Serde',hint:'Enter a specialized serialization implementation'}]
         this.columnDefinitionDataTypes = ['string','int','bigint','tinyint','double','float','date','timestamp','boolean','binary'];
+
+
+        BroadcastService.subscribe($scope,'DATA_TRANSFORM_SCHEMA_LOADED',onDataTransformSchemaLoaded);
+
+        function onDataTransformSchemaLoaded(){
+        }
 
         this.uploadBtnDisabled = false;
         function newColumnDefinition() {

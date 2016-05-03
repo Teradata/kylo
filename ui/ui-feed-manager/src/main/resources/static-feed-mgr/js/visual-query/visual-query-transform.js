@@ -22,7 +22,7 @@
     };
 
     var controller = function($scope, $log, $http, $q, $mdDialog, $mdToast, RestUrlService, VisualQueryService, HiveService,
-                              TableDataFunctions, SideNavService, SparkShellService, VisualQueryColumnDelegate, uiGridConstants, FeedService) {
+                              TableDataFunctions, SideNavService, SparkShellService, VisualQueryColumnDelegate, uiGridConstants, FeedService, BroadcastService,StepperService) {
         var self = this;
         //The model passed in from the previous step
         this.model = VisualQueryService.model;
@@ -377,12 +377,22 @@
             }
         };
 
-        /**
-         * TODO CAll this function at end of Transformation
-         */
+        //Listen for when the next step is active
+        BroadcastService.subscribe($scope,StepperService.ACTIVE_STEP_EVENT,onNextStepActive)
+
+        function onNextStepActive(event,index){
+            var thisIndex = parseInt(self.stepIndex);
+            //if we are on the next step then call out to get the model
+            if(index == thisIndex +1) {
+              saveToFeedModel().then(function(){
+                  BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED','SCHEMA_LOADED');
+              });
+            }
+        }
+
+
         function saveToFeedModel(){
             var feedModel = FeedService.createFeedModel;
-
             //Populate Feed Model from the Visual Query Model
             feedModel.dataTransformation.transformScript = '';
             feedModel.dataTransformation.formulas = [];
@@ -390,7 +400,7 @@
 
 
 
-                FeedService.setTableFields(self.tableSchema.fields);
+                FeedService.setTableFields(tableSchema.fields);
                 feedModel.table.method = 'EXISTING_TABLE';
                 if(tableSchema.schemaName != null){
                     feedModel.table.existingTableName = tableSchema.schemaName+"."+tableSchema.name;
@@ -399,6 +409,9 @@
                     feedModel.table.existingTableName = tableSchema.name;
                 }
                 feedModel.table.sourceTableSchema.name=feedModel.table.existingTableName;
+            var deferred = $q.defer();
+            deferred.resolve([]);
+            return deferred.promise;
 
         }
 
