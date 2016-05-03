@@ -21,7 +21,11 @@
     <dependencies>
 
         <!-- Services monitoring code -->
-
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-service-monitor-nifi</artifactId>
+            <version>0.1.0-SNAPSHOT</version>
+        </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
