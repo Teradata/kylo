@@ -6,7 +6,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedInputProcessorOptionsFactory', func
     var data = {
 
         templateForProcessor:function(processor,mode){
-               if(processor.type == "com.thinkbiganalytics.nifi.GetTableData") {
+               if(processor.type == "com.thinkbiganalytics.nifi.GetTableData" || processor.type == "com.thinkbiganalytics.nifi.v2.ingest.GetTableData") {
                    if(mode =='create') {
                         return 'js/define-feed/get-table-data-properties/get-table-data-create.html'
                    }
