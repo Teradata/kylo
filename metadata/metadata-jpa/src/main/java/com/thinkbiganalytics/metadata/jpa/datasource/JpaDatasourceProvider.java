@@ -8,12 +8,10 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
-import javax.persistence.Query;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;

@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.rest.model.feed;
 
 import java.io.Serializable;
 import java.util.HashSet;
+import java.util.Properties;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -33,6 +34,7 @@ public class Feed implements Serializable {
     private FeedPrecondition precondition;
     private Set<FeedSource> sources = new HashSet<>();
     private Set<FeedDestination> destinations = new HashSet<>();
+    private Properties properties = new Properties();
 
     public Feed() {
         super();
@@ -44,6 +46,14 @@ public class Feed implements Serializable {
 
     public void setId(String id) {
         this.id = id;
+    }
+    
+    public Properties getProperties() {
+        return properties;
+    }
+    
+    public void setProperties(Properties properties) {
+        this.properties = properties;
     }
 
     public String getSystemName() {

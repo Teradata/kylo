@@ -10,6 +10,8 @@ import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
@@ -35,8 +37,9 @@ public class JpaObligationGroup implements ObligationGroup, Serializable {
     @Column(name="id", columnDefinition="binary(16)")
     private UUID id;
 
-    @Column(name="cond")
-    private Condition condition;
+    @Enumerated(EnumType.STRING)
+    @Column(name="cond", length=10)
+    private Condition condition = Condition.REQUIRED;
     
     @ManyToOne
     private JpaServiceLevelAgreement agreement;

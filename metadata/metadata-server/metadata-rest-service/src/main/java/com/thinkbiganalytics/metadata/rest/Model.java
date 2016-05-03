@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import javax.ws.rs.WebApplicationException;
@@ -209,10 +210,14 @@ public class Model {
                 feed.setDisplayName(domain.getName());
                 feed.setDescription(domain.getDescription());
                 feed.setDisplayName(domain.getName());
+                feed.setState(Feed.State.valueOf(domain.getState().name()));
 //                feed.setOwner();
-//                feed.setTrigger();
                 feed.setSources(new HashSet<>(Collections2.transform(domain.getSources(), DOMAIN_TO_FEED_SOURCE)));
                 feed.setDestinations(new HashSet<>(Collections2.transform(domain.getDestinations(), DOMAIN_TO_FEED_DESTINATION)));
+                
+                for (Entry<String, String> entry : domain.getProperties().entrySet()) {
+                    feed.getProperties().setProperty(entry.getKey(), entry.getValue());
+                }
                 
                 return feed;
             }

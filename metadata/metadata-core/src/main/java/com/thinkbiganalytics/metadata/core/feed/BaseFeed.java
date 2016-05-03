@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
@@ -30,17 +31,49 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 public class BaseFeed implements Feed {
 
     private ID Id;
-    private String Name;
-    private String Description;
+    private String name;
+    private String displayName;
+    private String description;
+    private State state;
     private Map<FeedSource.ID, FeedSource> sources = new HashMap<>();
     private Map<FeedDestination.ID, FeedDestination> destinations = new HashMap<>();
     private FeedPreconditionImpl precondition;
+    private Map<String, String> properties;
     
 
     public BaseFeed(String name, String description) {
         this.Id = new FeedId();
-        Name = name;
-        Description = description;
+        this.name = name;
+        this.displayName = name;
+        this.description = description;
+    }
+
+    @Override
+    public Map<String, String> getProperties() {
+        return this.properties;
+    }
+
+    @Override
+    public void setProperties(Map<String, String> props) {
+        this.properties = props;
+    }
+
+    @Override
+    public Map<String, String> mergeProperties(Map<String, String> props) {
+        for (Entry<String, String> entry : props.entrySet()) {
+            this.properties.put(entry.getKey(), entry.getValue());
+        }
+        return this.properties;
+    }
+
+    @Override
+    public String setProperty(String key, String value) {
+        return this.properties.put(key, value);
+    }
+
+    @Override
+    public String removeProperty(String key) {
+        return this.properties.remove(key);
     }
 
     public ID getId() {
@@ -48,11 +81,25 @@ public class BaseFeed implements Feed {
     }
 
     public String getName() {
-        return Name;
+        return name;
+    }
+    
+    @Override
+    public String getDisplayName() {
+        return this.displayName;
     }
 
     public String getDescription() {
-        return Description;
+        return description;
+    }
+    
+    @Override
+    public State getState() {
+        return this.state;
+    }
+    
+    public void setState(State state) {
+        this.state = state;
     }
 
     public List<FeedSource> getSources() {

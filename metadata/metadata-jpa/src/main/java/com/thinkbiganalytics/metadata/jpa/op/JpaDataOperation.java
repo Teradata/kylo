@@ -10,6 +10,8 @@ import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -23,7 +25,6 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
 import com.thinkbiganalytics.metadata.api.op.Dataset;
-import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed.FeedId;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
 
@@ -57,8 +58,9 @@ public class JpaDataOperation implements DataOperation {
     @Column(name="status", length=2048)
     private String status;
     
-    @Column(name="state")
-    private State state;
+    @Enumerated(EnumType.STRING)
+    @Column(name="state", length=15)
+    private State state = State.PENDING;
 
     public JpaDataOperation() {
     }

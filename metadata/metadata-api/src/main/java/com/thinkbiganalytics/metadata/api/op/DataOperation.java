@@ -18,7 +18,7 @@ public interface DataOperation extends Serializable {
     
     interface ID extends Serializable {};
     
-    enum State { IN_PROGRESS, SUCCESS, FAILURE, CANCELED }
+    enum State { PENDING, IN_PROGRESS, SUCCESS, FAILURE, CANCELED }
     
     ID getId();
     

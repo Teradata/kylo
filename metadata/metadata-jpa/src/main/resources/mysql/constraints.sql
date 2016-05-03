@@ -7,10 +7,12 @@ alter table DATA_OPERATION add constraint FKcxlae96uggnhy2sh7najjxu7d foreign ke
 alter table DATA_OPERATION add constraint FKd6xpyscn8jfghycm3b3sv1wq2 foreign key (producer_id) references FEED_DESTINATION (id);
 alter table DATASET add constraint FKfcan42ycg3hs53y2wuevue6bl foreign key (datasource_id) references DATASOURCE (id);
 alter table DATASOURCE add constraint UK_jij3o7a4n3wrawxo45vmoobqf unique (name);
+alter table FEED add constraint UK_j4px0sd8c2k3ycpw6uvqpl1c6 unique (display_name);
 alter table FEED add constraint UK_m3uusi4w4t57ey2153r1pw7t2 unique (name);
 alter table FEED add constraint FKi6tlfq6nytlrb8429acoovlay foreign key (sla_id) references SLA (id);
 alter table FEED_DESTINATION add constraint FKm91lqsf5q7b3jltbb3h23upqy foreign key (datasource_id) references DATASOURCE (id);
 alter table FEED_DESTINATION add constraint FKq7fugjfa8oliwli38vf8amdr2 foreign key (feed_id) references FEED (id);
+alter table FEED_PROPERTIES add constraint FK67wcouxn6tab9gxv2u00gcn43 foreign key (JpaFeed_id) references FEED (id);
 alter table FEED_SOURCE add constraint FKmf5yjhbgipi4ufuxj0wmme6gx foreign key (datasource_id) references DATASOURCE (id);
 alter table FEED_SOURCE add constraint FK7cu1dl0vf0haaasfvshdsf4g7 foreign key (feed_id) references FEED (id);
 alter table FEED_SOURCE add constraint FK5c9kcq5r4qunp058v6smsprb1 foreign key (agreement_id) references SLA (id);

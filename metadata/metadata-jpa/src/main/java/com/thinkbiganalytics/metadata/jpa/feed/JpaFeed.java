@@ -7,16 +7,24 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
 import javax.persistence.Column;
+import javax.persistence.ElementCollection;
 import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
@@ -45,16 +53,30 @@ public class JpaFeed implements Feed {
     @EmbeddedId
     private FeedId Id;
     
-    @Column(name="name", length=100, unique=true)
+    @Column(name="name", length=100, unique=true, nullable=false)
     private String name;
+    
+    @Column(name="display_name", length=100, unique=true)
+    private String displayName;
 
+    @Column(name="description", length=255)
     private String description;
     
-    @OneToMany(targetEntity=JpaFeedSource.class, mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Enumerated(EnumType.STRING)
+    @Column(name="state", length=10, nullable=false)
+    private State state = State.ENABLED;
+    
+    @OneToMany(targetEntity=JpaFeedSource.class, mappedBy = "feed", fetch=FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedSource> sources = new ArrayList<>();
     
-    @OneToMany(targetEntity=JpaFeedDestination.class, mappedBy = "feed", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity=JpaFeedDestination.class, mappedBy = "feed", fetch=FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<FeedDestination> destinations = new ArrayList<>();
+    
+    @ElementCollection
+    @MapKeyColumn(name="prop_key", length=100)
+    @Column(name="prop_value")
+    @CollectionTable(name="FEED_PROPERTIES")
+    private Map<String, String> properties;
     
     @Embedded
     private JpaFeedPrecondition precondition;
@@ -69,6 +91,37 @@ public class JpaFeed implements Feed {
         this.description = description;
     }
 
+    @Override
+    public Map<String, String> getProperties() {
+        return this.properties;
+    }
+
+    @Override
+    public void setProperties(Map<String, String> props) {
+        this.properties.clear();
+        for (Entry<String, String> entry : props.entrySet()) {
+            this.properties.put(entry.getKey(), entry.getValue());
+        }
+    }
+
+    @Override
+    public Map<String, String> mergeProperties(Map<String, String> props) {
+        for (Entry<String, String> entry : props.entrySet()) {
+            this.properties.put(entry.getKey(), entry.getValue());
+        }
+        return this.properties;
+    }
+
+    @Override
+    public String setProperty(String key, String value) {
+        return this.properties.put(key, value);
+    }
+
+    @Override
+    public String removeProperty(String key) {
+        return this.properties.remove(key);
+    }
+
     public ID getId() {
         return Id;
     }
@@ -81,6 +134,30 @@ public class JpaFeed implements Feed {
         return name;
     }
 
+    public String getDisplayName() {
+        if (this.displayName != null) {
+            return this.displayName;
+        } else {
+            return getName();
+        }
+    }
+
+    public void setDisplayName(String displayName) {
+        this.displayName = displayName;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setPrecondition(JpaFeedPrecondition precondition) {
+        this.precondition = precondition;
+    }
+
     public String getDescription() {
         return description;
     }
@@ -91,6 +168,14 @@ public class JpaFeed implements Feed {
 
     public List<FeedDestination> getDestinations() {
         return this.destinations;
+    }
+    
+    public State getState() {
+        return state;
+    }
+    
+    public void setState(State state) {
+        this.state = state;
     }
     
     @Override
@@ -244,7 +329,7 @@ public class JpaFeed implements Feed {
     @Embeddable
     public static class JpaFeedPrecondition implements FeedPrecondition {
         
-        @OneToOne
+        @OneToOne(fetch=FetchType.EAGER)
         private JpaServiceLevelAgreement sla;
         
         public JpaFeedPrecondition() {

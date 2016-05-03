@@ -10,6 +10,8 @@ import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.JoinColumn;
@@ -56,6 +58,8 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
     @Column(name="created_time")
     private DateTime createdTime;
     
+    @Enumerated(EnumType.STRING)
+    @Column(name="type", length=10)
     private ChangeType type;
 
     public JpaDataset() {
