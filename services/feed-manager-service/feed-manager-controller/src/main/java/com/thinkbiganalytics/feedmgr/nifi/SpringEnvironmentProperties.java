@@ -1,18 +1,9 @@
 package com.thinkbiganalytics.feedmgr.nifi;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.CompositePropertySource;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.EnumerablePropertySource;
-import org.springframework.core.env.PropertySource;
+import org.springframework.core.env.*;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.NavigableMap;
-import java.util.SortedMap;
-import java.util.TreeMap;
-import java.util.function.Consumer;
+import java.util.*;
 
 /**
  * Created by sr186054 on 5/3/16.
@@ -52,12 +43,11 @@ public class SpringEnvironmentProperties {
     {
         if(properties == null) {
             final Map<String, Object> result = new HashMap<>();
-            environment.getPropertySources().forEach(new Consumer<PropertySource<?>>() {
-                @Override
-                public void accept(PropertySource<?> propertySource) {
-                    addAll(result, getAllProperties(propertySource));
-                }
-            });
+           MutablePropertySources sources = environment.getPropertySources();
+            while(sources.iterator().hasNext()){
+                PropertySource propertySource = sources.iterator().next();
+                addAll(result, getAllProperties(propertySource));
+            }
             properties = result;
         }
         return properties;
@@ -70,24 +60,22 @@ public class SpringEnvironmentProperties {
         if ( aPropSource instanceof CompositePropertySource)
         {
             CompositePropertySource cps = (CompositePropertySource) aPropSource;
-            cps.getPropertySources().forEach(new Consumer<PropertySource<?>>() {
-                @Override
-                public void accept(PropertySource<?> propertySource) {
-                    addAll(result, getAllProperties(propertySource));
-                }
-            });
+            for(PropertySource propertySource: cps.getPropertySources()){
+                addAll(result, getAllProperties(propertySource));
+            }
+
             return result;
         }
 
         if ( aPropSource instanceof EnumerablePropertySource<?>)
         {
-           final  EnumerablePropertySource<?> ps = (EnumerablePropertySource<?>) aPropSource;
-            Arrays.asList(ps.getPropertyNames()).forEach(new Consumer<String>() {
-                @Override
-                public void accept(String key) {
+            EnumerablePropertySource<?> ps = (EnumerablePropertySource<?>) aPropSource;
+            if(ps != null && ps.getPropertyNames() != null) {
+                List<String> keys = Arrays.asList(ps.getPropertyNames());
+                for (String key : keys) {
                     result.put(key, ps.getProperty(key));
                 }
-            });
+            }
             return result;
         }
         return result;
