@@ -26,7 +26,16 @@ public class JerseyConfig extends ResourceConfig {
     resources.add(io.swagger.jaxrs.listing.SwaggerSerializers.class);
     registerClasses(resources);
 
-    packages("com.thinkbiganalytics");
+    //TODO uncomment once we move away from Spring boot single app.
+    //Spring Boot Jar plugin requires you to unpack all Jersey Controller jars
+    //and also forces you to do package scanning at a more detailed level
+    //TODO: either make the packages driven by a property, or change and uncomment the top level com.thinkbiganalytics package
+
+    //packages("com.thinkbiganalytics");
+    packages("com.thinkbiganalytics.ui.rest.controller","com.thinkbiganalytics.servicemonitor.rest.controller", "com.thinkbiganalytics.scheduler.rest.controller",
+             "com.thinkbiganalytics.jobrepo.rest.controller", "com.thinkbiganalytics.hive.rest.controller",
+             "com.thinkbiganalytics.feedmgr.rest.controller");
+
     register(JacksonFeature.class);
     register(MultiPartFeature.class);
     register(WadlResource.class);

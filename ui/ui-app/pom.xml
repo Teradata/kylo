@@ -195,9 +195,29 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
                 <configuration>
-                    <mainClass>com.thinkbiganalytics.ui.ThinkbigDataLakeUiApplication</mainClass>
+                    <mainClass>com.thinkbiganalytics.ThinkbigDataLakeUiApplication</mainClass>
                     <layout>ZIP</layout>
                     <requiresUnpack>
+                      <dependency>
+                        <artifactId>thinkbig-ui-common</artifactId>
+                        <groupId>com.thinkbiganalytics.datalake</groupId>
+                      </dependency>
+<!--
+                      <dependency>
+                        <artifactId>thinkbig-feed-manager</artifactId>
+                        <groupId>com.thinkbiganalytics.datalake</groupId>
+                      </dependency>
+
+                      <dependency>
+                        <artifactId>thinkbig-ui-operations-manager</artifactId>
+                        <groupId>com.thinkbiganalytics.datalake</groupId>
+                      </dependency>
+                      -->
+                      <dependency>
+                        <artifactId>swagger-jaxrs</artifactId>
+                        <groupId>io.swagger</groupId>
+                      </dependency>
+
                         <dependency>
                             <groupId>org.glassfish.jersey</groupId>
                             <artifactId>jersey-server</artifactId>

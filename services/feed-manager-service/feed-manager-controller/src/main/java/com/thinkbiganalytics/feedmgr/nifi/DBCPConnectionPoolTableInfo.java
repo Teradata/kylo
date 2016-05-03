@@ -33,7 +33,7 @@ public class DBCPConnectionPoolTableInfo {
          String type = controllerService.getType();
          if("org.apache.nifi.dbcp.DBCPConnectionPool".equalsIgnoreCase(type)){
              String uri = controllerService.getProperties().get("Database Connection URL");
-             uri = StringUtils.replace(uri, "3306", "3307");
+            // uri = StringUtils.replace(uri, "3306", "3307");
              String user = controllerService.getProperties().get("Database User");
              String password = controllerService.getProperties().get("Password");
 
@@ -74,7 +74,7 @@ return controllerService;
             String type = controllerService.getType();
             if("org.apache.nifi.dbcp.DBCPConnectionPool".equalsIgnoreCase(type)){
                 String uri = controllerService.getProperties().get("Database Connection URL");
-                uri = StringUtils.replace(uri, "3306", "3307");
+               // uri = StringUtils.replace(uri, "3306", "3307");
                 String user = controllerService.getProperties().get("Database User");
                 String password = controllerService.getProperties().get("Password");
 
