@@ -125,8 +125,8 @@ public class HCatDataType implements Cloneable, Serializable {
     private HCatDataType(Class clazz) {
         this.isnumeric = true;
         this.convertibleType = clazz;
-        BigDecimal minDecimal = new BigDecimal("-9.2E18");
-        BigDecimal maxDecimal = new BigDecimal("9.2E18");
+        BigDecimal minDecimal = new BigDecimal(Long.MIN_VALUE);
+        BigDecimal maxDecimal = new BigDecimal(Long.MAX_VALUE);
         if (clazz == BigInteger.class) {
             this.min = minDecimal.toBigInteger();
             this.max = maxDecimal.toBigInteger();

@@ -138,5 +138,39 @@ public class HCatDataTypeTest {
         assertFalse(type.isValueConvertibleToType(StringUtils.leftPad("X", 256)));
     }
 
+    @Test
+    public void testIsValueConvertibleToBigDecimal() throws Exception {
+
+        HCatDataType type = HCatDataType.getDataTypes().get("decimal");
+
+        assertTrue(type.isValueConvertibleToType("0"));
+        assertTrue(type.isValueConvertibleToType(Double.MAX_VALUE+""));
+        assertTrue(type.isValueConvertibleToType("12712"));
+        assertTrue(type.isValueConvertibleToType("-12812"));
+        assertTrue(type.isValueConvertibleToType("-12812.204154"));
+        assertTrue(type.isValueConvertibleToType("-12812.1234"));
+        assertTrue(type.isValueConvertibleToType("-128.12E8"));
+
+        assertTrue(type.isValueConvertibleToType(null));
+        assertTrue(type.isValueConvertibleToType(""));
+        assertFalse(type.isValueConvertibleToType("No number"));
+    }
+
+    @Test
+    public void testIsValueConvertibleToBigInteger() throws Exception {
+
+        HCatDataType type = HCatDataType.getDataTypes().get("bigint");
+
+        assertTrue(type.isValueConvertibleToType("0"));
+        assertTrue(type.isValueConvertibleToType(Long.MAX_VALUE + ""));
+        assertTrue(type.isValueConvertibleToType(Long.MIN_VALUE + ""));
+
+        assertTrue(type.isValueConvertibleToType(null));
+        assertTrue(type.isValueConvertibleToType(""));
+
+        assertFalse(type.isValueConvertibleToType("21.1"));
+        assertFalse(type.isValueConvertibleToType("-20.001"));
+
+    }
 
 }
