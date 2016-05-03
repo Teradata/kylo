@@ -12,30 +12,29 @@
 
              </div>
          <div layout="row" layout-fill layout-align="center center" browser-height browser-height-scroll-y="false" browser-height-offset="410">
-             <div class="visual-query-function-history"   layout="column" style="width:200px;height:500px;" ng-show="vm.isShowFunctionHistory" style="opacity: 0; transition: opacity 0.2s, border 0.2s;">
-
-                 <md-list flex>
-                     <md-subheader class="md-no-sticky">Function History
-                         <div layout="row">
-                             <md-button class="md-icon-button " ng-click="vm.onUndo()" ng-disabled="vm.canUndo() == false">
-                                 <ng-md-icon icon="undo"></ng-md-icon>
-                             </md-button>
-                             <md-button class="md-icon-button " ng-click="vm.onRedo()" ng-disabled="vm.canRedo() == false">
-                                 <ng-md-icon icon="redo"></ng-md-icon>
-                             </md-button>
-                         </div>
-                     </md-subheader>
-                     <md-list-item  ng-repeat="history in vm.functionHistory" ng-click="vm.executHistoryItem(history)">
-                         <div class="md-list-item-text" layout="column" >
-                             {{history}}
-                         </div>
-                         <md-divider ></md-divider>
+             <div class="visual-query-function-history" layout="column" ng-show="vm.isShowFunctionHistory">
+                 <md-subheader class="md-no-sticky">Function History
+                     <div layout="row">
+                         <md-button class="md-icon-button " ng-click="vm.onUndo()" ng-disabled="vm.canUndo() == false">
+                             <ng-md-icon icon="undo"></ng-md-icon>
+                         </md-button>
+                         <md-button class="md-icon-button " ng-click="vm.onRedo()" ng-disabled="vm.canRedo() == false">
+                             <ng-md-icon icon="redo"></ng-md-icon>
+                         </md-button>
+                     </div>
+                 </md-subheader>
+                 <md-list>
+                     <md-list-item ng-repeat-start="history in vm.functionHistory">
+                         <md-icon>{{history.icon}}</md-icon>
+                         <p title="{{history.name}}">{{history.name}}</p>
+                         <md-icon ng-click="vm.dropHistory($index)" class="md-secondary">delete</md-icon>
                      </md-list-item>
-                     </md-list>
+                     <md-divider ng-repeat-end></md-divider>
+                 </md-list>
              </div>
              <div class="visual-query-sample-menu" layout="column" ng-show="vm.isShowSampleMenu">
                  <md-subheader class="md-no-sticky">
-                     Sampling
+                     Sampling</md-subheader>
                      <md-input-container layout="row">
                          <label>Fraction</label>
                          <input type="number" ng-model="vm.sparkShellService.sample" ng-model-options="{getterSetter: true}">
@@ -46,7 +45,7 @@
                      </md-input-container>
                      <md-checkbox layout="row" ng-model="vm.sparkShellService.shouldLimitBeforeSample" ng-model-options="{getterSetter: true}" aria-label="Should sample?">Limit before sampling</md-checkbox>
                      <div layout="row"><md-button class="md-primary md-raised" ng-click="vm.isShowSampleMenu = false; vm.query();">Update</md-button></div>
-                 </md-subheader>
+
              </div>
 
          <script type="text/ng-template" id="visual-query/grid-header-cell">
@@ -93,7 +92,7 @@
                          </md-menu-item>
                          <md-menu-item>
                              <md-button ng-click="delegate.hideColumn(col, grid);">
-                                 <i class="ui-grid-icon-cancel">&nbsp;</i> Hide Column
+                                 <i class="material-icons">remove_circle</i> Hide Column
                              </md-button>
                          </md-menu-item>
                          <md-menu-item>
@@ -153,12 +152,12 @@
                                  </md-button>
                                  <md-menu-content class="visual-query-column-menu">
                                      <md-menu-item>
-                                         <md-button ng-click="delegate.transformColumn('upper', col, grid)">
+                                         <md-button ng-click="delegate.transformColumn('Uppercase', 'arrow_upward', 'upper', col, grid)">
                                              <i class="material-icons">arrow_upward</i> Uppercase
                                          </md-button>
                                      </md-menu-item>
                                      <md-menu-item>
-                                         <md-button ng-click="delegate.transformColumn('lower', col,grid)">
+                                         <md-button ng-click="delegate.transformColumn('Lowercase', 'arrow_downward', 'lower', col,grid)">
                                              <i class="material-icons">arrow_downward</i> Lowercase
                                          </md-button>
                                      </md-menu-item>

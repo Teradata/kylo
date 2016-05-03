@@ -95,6 +95,7 @@
          */
         this.toggleFunctionHistory = function() {
             self.isShowFunctionHistory = !self.isShowFunctionHistory;
+            self.isShowSampleMenu = false;
         };
 
         /**
@@ -102,6 +103,7 @@
          */
         this.toggleSampleMenu = function() {
             self.isShowSampleMenu = !self.isShowSampleMenu;
+            self.isShowFunctionHistory = false;
         };
 
         //Callback when Codemirror has been loaded (reference is in the html page at:
@@ -315,15 +317,17 @@
         /**
          * Adds the specified formula to the current script and refreshes the table data.
          *
+         * @param {string} name the name of the transformation
+         * @param {string} icon the icon for the transformation
          * @param {string} formula the formula
          */
-        this.addFunction = function(formula) {
+        this.addFunction = function(name, icon, formula) {
             var tableData = self.functionCommandHolder.executeStr(formula);
             if (tableData != null && tableData != undefined) {
                 updateGrid(tableData);
 
                 self.addFilters();
-                self.pushFormula(formula);
+                self.pushFormula(name, icon, formula);
                 self.query();
             }
         };
@@ -331,16 +335,18 @@
         /**
          * Appends the specified formula to the current script.
          *
+         * @param {string} name the name of the transformation
+         * @param {string} icon the icon for the transformation
          * @param {string} formula the formula
          */
-        this.pushFormula = function(formula) {
+        this.pushFormula = function(name, icon, formula) {
             // Covert to a syntax tree
             self.ternServer.server.addFile("[doc]", formula);
             var file = self.ternServer.server.findFile("[doc]");
 
             // Add to the Spark script
             try {
-                self.sparkShellService.push(formula, file.ast);
+                self.sparkShellService.push(name, icon, file.ast);
             } catch (e) {
                 var alert = $mdDialog.alert()
                         .parent($('body'))
@@ -354,14 +360,14 @@
             }
 
             // Add to function history
-            self.functionHistory.push(formula);
+            self.functionHistory.push({icon: icon, name: name});
         };
 
         /**
          * Called when the user clicks Add on the function bar
          */
         this.onAddFunction = function() {
-            self.addFunction(self.currentFormula);
+            self.addFunction(self.currentFormula, "code", self.currentFormula);
         };
 
         /**
@@ -400,8 +406,8 @@
             this.refreshGrid();
         };
         this.onRedo = function() {
-            var formula = this.sparkShellService.redo();
-            self.functionHistory.push(formula);
+            var func = this.sparkShellService.redo();
+            self.functionHistory.push(func);
             this.refreshGrid();
         };
 
@@ -410,6 +416,17 @@
         };
         this.canRedo = function() {
             return this.sparkShellService.canRedo();
+        };
+
+        /**
+         * Drops the function in the history at the specified index.
+         *
+         * @param {number} index the index of the function to drop
+         */
+        this.dropHistory = function(index) {
+            self.sparkShellService.splice(index + 1, 1);
+            self.functionHistory.splice(index, 1);
+            this.refreshGrid();
         };
 
         //Listen for when the next step is active

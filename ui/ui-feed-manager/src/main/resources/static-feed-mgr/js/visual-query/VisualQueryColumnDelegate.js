@@ -38,7 +38,8 @@ angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function($m
             column.colDef.visible = false;
             column.visible = false;
 
-            this.controller.addFunction("drop(\"" + StringUtils.quote(column.field) + "\")");
+            this.controller.addFunction("Hide " + column.displayName, "remove_circle", "drop(\"" + StringUtils.quote(column.field)
+                    + "\")");
 
             grid.queueGridRefresh();
             grid.api.core.notifyDataChange("column");
@@ -72,11 +73,11 @@ angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function($m
                 cancel: "Cancel"
             });
             $mdDialog.show(prompt).then(function (name) {
-                column.displayName = name;
-
                 var script = column.field + ".as(\"" + StringUtils.quote(name) + "\")";
                 var formula = self.toFormula(script, column, grid);
-                self.controller.pushFormula(formula);
+                self.controller.pushFormula("Rename " + column.displayName + " to " + name, "mode_edit", formula);
+
+                column.displayName = name;
             });
         },
 
@@ -95,14 +96,16 @@ angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function($m
         /**
          * Executes the specified operation on the column.
          *
+         * @param {string} name the name for the transformation
+         * @param {string} icon the icon for the transformation
          * @param {string} operation the operation to be executed
          * @param {ui.grid.GridColumn} column the column to be transformed
          * @param {ui.grid.Grid} grid the grid with the column
          */
-        transformColumn: function(operation, column, grid) {
+        transformColumn: function(name, icon, operation, column, grid) {
             var script = operation + "(" + column.field + ").as(\"" + StringUtils.quote(column.field) + "\")";
             var formula = this.toFormula(script, column, grid);
-            this.controller.addFunction(formula);
+            this.controller.addFunction(name + " " + column.displayName, icon, formula);
         },
 
         /**
