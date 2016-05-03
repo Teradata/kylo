@@ -31,6 +31,8 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
 
     this.HIVE_SERVICE_URL = this.ROOT+"/proxy/v1/hive";
 
+    this.SPARK_SHELL_SERVICE_URL = this.ROOT + "/proxy/v1/spark/shell"
+
     ///TEMPLATE REGISTRATION
 
     this.REGISTER_TEMPLATE_URL = function() {

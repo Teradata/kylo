@@ -44,9 +44,9 @@
  * @property {string|null} table the table containing the results
  */
 
-angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $mdDialog) {
+angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $mdDialog, RestUrlService) {
     // URL to the API server
-    var API_URL = "http://" + window.location.hostname + ":8076/api/v1/spark/shell";
+    var API_URL = RestUrlService.SPARK_SHELL_SERVICE_URL;
 
     /** TernJS directive for defined types */
     var DEFINE_DIRECTIVE = "!define";

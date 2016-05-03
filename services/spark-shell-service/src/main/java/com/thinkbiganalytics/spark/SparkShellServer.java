@@ -1,9 +1,10 @@
 package com.thinkbiganalytics.spark;
 
-import java.net.URI;
-
-import javax.annotation.Nonnull;
-import javax.ws.rs.core.UriBuilder;
+import com.thinkbiganalytics.spark.repl.ScriptEngine;
+import com.thinkbiganalytics.spark.repl.ScriptEngineFactory;
+import com.thinkbiganalytics.spark.rest.SparkShellController;
+import com.thinkbiganalytics.spark.service.TransformService;
+import com.thinkbiganalytics.spark.util.ClassUtils;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.util.Utils;
@@ -14,12 +15,10 @@ import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
 
-import com.thinkbiganalytics.spark.repl.ScriptEngine;
-import com.thinkbiganalytics.spark.repl.ScriptEngineFactory;
-import com.thinkbiganalytics.spark.rest.CorsFilter;
-import com.thinkbiganalytics.spark.rest.SparkShellController;
-import com.thinkbiganalytics.spark.service.TransformService;
-import com.thinkbiganalytics.spark.util.ClassUtils;
+import java.net.URI;
+
+import javax.annotation.Nonnull;
+import javax.ws.rs.core.UriBuilder;
 
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
@@ -40,7 +39,7 @@ public class SparkShellServer {
      */
     public static void main(@Nonnull final String[] args) throws Exception {
         // Create configuration
-        ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class, CorsFilter.class,
+        ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class,
                                                    SparkShellController.class);
 
         SparkConf conf = new SparkConf().setAppName("SparkShellServer");
