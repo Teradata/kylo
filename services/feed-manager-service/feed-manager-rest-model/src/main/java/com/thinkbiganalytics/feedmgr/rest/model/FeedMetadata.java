@@ -54,8 +54,8 @@ public class FeedMetadata implements UIFeed{
     private Date updateDate;
 
 
-    @MetadataField(description = "The Data Transformation Spark Script")
-    private String dataTransformationScript;
+
+    private FeedDataTransformation dataTransformation;
 
     private boolean active = true;
 
@@ -307,12 +307,11 @@ public class FeedMetadata implements UIFeed{
         this.isReusableFeed = isReusableFeed;
     }
 
-
-    public String getDataTransformationScript() {
-        return dataTransformationScript;
+    public FeedDataTransformation getDataTransformation() {
+        return dataTransformation;
     }
 
-    public void setDataTransformationScript(String dataTransformationScript) {
-        this.dataTransformationScript = dataTransformationScript;
+    public void setDataTransformation(FeedDataTransformation dataTransformation) {
+        this.dataTransformation = dataTransformation;
     }
 }
