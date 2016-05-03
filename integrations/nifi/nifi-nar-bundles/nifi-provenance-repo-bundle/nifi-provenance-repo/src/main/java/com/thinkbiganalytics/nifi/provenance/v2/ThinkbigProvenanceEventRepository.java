@@ -62,7 +62,7 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
 
     @Override
     public void registerEvent(ProvenanceEventRecord provenanceEventRecord) {
-        System.out.println("REGISTER SINGLE EVENT : " + provenanceEventRecord.getComponentId() + ", " + provenanceEventRecord.getComponentType());
+        System.out.println("ThinkbigProvenanceEventRepository recording 1 single provenance event: " + provenanceEventRecord.getComponentId() + ", " + provenanceEventRecord.getComponentType());
         repository.registerEvent(provenanceEventRecord);
         provenanceEventRecordWriter.checkAndSetMaxEventId(getMaxEventId());
         provenanceEventRecordWriter.writeEvent(provenanceEventRecord);
@@ -73,8 +73,8 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
         List<ProvenanceEventRecord> events = Lists.newArrayList(iterable);
         provenanceEventRecordWriter.checkAndSetMaxEventId(getMaxEventId());
         repository.registerEvents(events);
-        if (events != null) {
-            System.out.println("REGISTER Multiple EVENTs : " + events.size());
+        if (events != null && events.size() >0) {
+            System.out.println("ThinkbigProvenanceEventRepository recording " + events.size()+" provenance events ");
             for (ProvenanceEventRecord event : events) {
                 provenanceEventRecordWriter.writeEvent(event);
             }

@@ -30,7 +30,7 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO implements RunS
     }
 
     public ProvenanceEventRecordDTO(ProvenanceEventRecordDTO other) {
-        this((ProvenanceEventDTO)other);
+        this(other.getEventId(),(ProvenanceEventDTO)other);
         this.nifiEventId = other.nifiEventId;
         this.runStatusContext = other.runStatusContext;
         this.flowFileComponent = other.flowFileComponent;
@@ -50,10 +50,11 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO implements RunS
         }
         return changed;
     }
-    public ProvenanceEventRecordDTO(ProvenanceEventDTO other){
+    public ProvenanceEventRecordDTO(Long tbEventId, ProvenanceEventDTO other){
         this();
     this.setId(other.getId());
-    this.setEventId(other.getEventId());
+    this.setEventId(tbEventId);
+    this.setNifiEventId(other.getEventId());
     this.setEventTime(other.getEventTime());
     this.setEventDuration(other.getEventDuration());
     this.setLineageDuration(other.getLineageDuration());

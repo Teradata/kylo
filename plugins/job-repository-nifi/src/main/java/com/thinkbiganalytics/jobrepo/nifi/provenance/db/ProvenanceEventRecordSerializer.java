@@ -1,9 +1,8 @@
-package com.thinkbiganalytics.nifi.provenance.v2;
+package com.thinkbiganalytics.jobrepo.nifi.provenance.db;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 
 /**
@@ -20,27 +19,6 @@ public class ProvenanceEventRecordSerializer {
 
     }
 
-    public String getAttributesAsJSON(ProvenanceEventRecord event) {
-        String json = null;
-        try {
-            if (event.getAttributes() != null) {
-                json = mapper.writeValueAsString(event.getAttributes());
-            }
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return json;
-    }
-
-    public String getAsJSON(ProvenanceEventRecord event) {
-        String json = null;
-        try {
-            json = mapper.writeValueAsString(event);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        return json;
-    }
 
 
     public String getAttributesAsJSON(ProvenanceEventDTO event) {
