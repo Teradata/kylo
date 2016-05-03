@@ -22,7 +22,7 @@ import java.util.Map;
 @Service
 public class NifiControllerServiceProperties {
 
-    private static String ENVIRONMENT_PROPERTY_SERVICE_PREFIX = "nifi.service.";
+    public static String ENVIRONMENT_PROPERTY_SERVICE_PREFIX = "nifi.service.";
 
     @Autowired
     SpringEnvironmentProperties environmentProperties;
@@ -98,7 +98,7 @@ public class NifiControllerServiceProperties {
         return null;
     }
 
-    private String getEnvironmentControllerServicePropertyPrefix(String serviceName){
+    public String getEnvironmentControllerServicePropertyPrefix(String serviceName){
         return ENVIRONMENT_PROPERTY_SERVICE_PREFIX+nifiPropertyToEnvironmentProperty(serviceName);
     }
 

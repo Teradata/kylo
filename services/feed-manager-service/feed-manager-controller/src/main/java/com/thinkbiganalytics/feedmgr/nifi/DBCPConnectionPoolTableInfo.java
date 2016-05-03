@@ -48,7 +48,12 @@ public class DBCPConnectionPoolTableInfo {
             // uri = StringUtils.replace(uri, "3306", "3307");
              String user = properties.get("Database User");
              String password = properties.get("Password");
-             log.info("Search For Tables against Controller Service: {} ({}) with uri of {}. Login Info: {}/{} ",controllerService.getName(),controllerService.getId(),uri, user,password);
+             if(StringUtils.isNotBlank(password) && password.startsWith("**")){
+                 String propertyKey = nifiControllerServiceProperties.getEnvironmentControllerServicePropertyPrefix(controllerService.getName())+".password";
+                 String example = propertyKey+"=PASSWORD";
+                 log.error("Unable to connect to Controller Service {}, {}.  You need to specifiy a configuration property as {} with the password for user: {}. ",controllerService.getName(),controllerService.getId(),example,user);
+             }
+             log.info("Search For Tables against Controller Service: {} ({}) with uri of {}.  ",controllerService.getName(),controllerService.getId(),uri);
              DataSource dataSource = PoolingDataSourceService.getDataSource(uri, user, password);
              DBSchemaParser schemaParser = new DBSchemaParser(dataSource);
              return schemaParser.listTables(schema);
