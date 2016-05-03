@@ -2,6 +2,7 @@ package com.thinkbiganalytics.server;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.fasterxml.jackson.jaxrs.json.JacksonJaxbJsonProvider;
 
 import org.glassfish.jersey.jackson.JacksonFeature;
@@ -34,13 +35,15 @@ public class JerseyConfig extends ResourceConfig {
     //packages("com.thinkbiganalytics");
     packages("com.thinkbiganalytics.ui.rest.controller","com.thinkbiganalytics.servicemonitor.rest.controller", "com.thinkbiganalytics.scheduler.rest.controller",
              "com.thinkbiganalytics.jobrepo.rest.controller", "com.thinkbiganalytics.hive.rest.controller",
-             "com.thinkbiganalytics.feedmgr.rest.controller");
+             "com.thinkbiganalytics.feedmgr.rest.controller","com.thinkbiganalytics.policy.rest.controller");
 
     register(JacksonFeature.class);
     register(MultiPartFeature.class);
     register(WadlResource.class);
 
     ObjectMapper om = new ObjectMapper();
+    om.registerModule(new JodaModule());
+    om.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
     om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
     JacksonJaxbJsonProvider provider = new JacksonJaxbJsonProvider();
     provider.setMapper(om);
