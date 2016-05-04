@@ -7,9 +7,34 @@
         "!doc": "Gives the column an alias.",
         "!spark": ".as(%s)",
         "!sparkType": "column"
+      },
+      "cast": {
+        "!type": "fn(to: string) -> Column",
+        "!doc": "Casts the column to a different type.",
+        "!spark": ".cast(%s)",
+        "!sparkType": "column"
+      },
+      "over": {
+        "!type": "fn(window: WindowSpec) -> Column",
+        "!doc": "Define a windowing column.",
+        "!spark": ".over(%w)",
+        "!sparkType": "column"
       }
     },
-    "DataFrame": {},
+    "ConditionChain": {
+      "otherwise": {
+        "!type": "fn(value: Column) -> Column",
+        "!doc": "Evaluates a list of conditions and returns one of multiple possible result expressions.",
+        "!spark": ".otherwise(%c)",
+        "!sparkType": "column"
+      },
+      "when": {
+        "!type": "fn(condition: Column, value: Column) -> ConditionChain",
+        "!doc": "Evaluates a list of conditions and returns one of multiple possible result expressions.",
+        "!spark": ".when(%c, %c)",
+        "!sparkType": "conditionchain"
+      }
+    },
     "GroupedData": {
       "agg": {
         "!type": "fn(expr1: Column, var_args: Column)",
@@ -17,30 +42,221 @@
         "!spark": ".agg(%c%C)",
         "!sparkType": "dataframe"
       }
+    },
+    "WindowSpec": {
+      "orderBy": {
+        "!type": "fn(var_args: Column) -> WindowSpec",
+        "!doc": "Defines the ordering columns in a WindowSpec.",
+        "!spark": ".orderBy(%C)",
+        "!sparkType": "windowspec"
+      },
+      "partitionBy": {
+        "!type": "fn(var_args: Column) -> WindowSpec",
+        "!doc": "Defines the partitioning columns in a WindowSpec.",
+        "!spark": ".partitionBy(%C)",
+        "!sparkType": "windowspec"
+      },
+      "rangeBetween": {
+        "!type": "fn(start: number, end: number) -> WindowSpec",
+        "!doc": "Defines the frame boundaries, from start (inclusive) to end (inclusive).",
+        "!spark": ".rangeBetween(%d, %d)",
+        "!sparkType": "windowspec"
+      },
+      "rowsBetween": {
+        "!type": "fn(start: number, end: number) -> WindowSpec",
+        "!doc": "Defines the frame boundaries, from start (inclusive) to end (inclusive).",
+        "!spark": ".rowsBetween(%d, %d)",
+        "!sparkType": "windowspec"
+      }
     }
   },
 
   "!AGGREGATE_FUNCTIONS": "Grouping and aggregating functions.",
 
+  "approxCountDistinct": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the approximate number of distinct items in a group.",
+    "!spark": "functions.approxCountDistinct(%c)",
+    "!sparkType": "column"
+  },
+  "avg": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the average of the values in a group.",
+    "!spark": "functions.avg(%c)",
+    "!sparkType": "column"
+  },
+  "collect_list": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns a list of objects with duplicates.",
+    "!spark": "functions.collect_list(%c)",
+    "!sparkType": "column"
+  },
+  "collect_set": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns a set of objects with duplicate elements eliminated.",
+    "!spark": "functions.collect_set(%c)",
+    "!sparkType": "column"
+  },
+  "corr": {
+    "!type": "fn(column1: Column, column2: Column) -> Column",
+    "!doc": "Aggregate function: returns the Pearson Correlation Coefficient for two columns.",
+    "!spark": "functions.corr(%c, %c)",
+    "!sparkType": "column"
+  },
+  "count": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the number of items in a group.",
+    "!spark": "functions.count(%c)",
+    "!sparkType": "column"
+  },
+  "countDistinct": {
+    "!type": "fn(e: Column, var_args: Column) -> Column",
+    "!doc": "Aggregate function: returns the number of distinct items in a group.",
+    "!spark": "functions.countDistinct(%c%C)",
+    "!sparkType": "column"
+  },
+  "first": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the first value in a group.",
+    "!spark": "functions.first(%c)",
+    "!sparkType": "column"
+  },
   "groupBy": {
     "!type": "fn(col1: Column, var_args: Column) -> GroupedData",
     "!doc": "Groups using the specified columns.",
     "!spark": ".groupBy(%C)",
     "!sparkType": "groupeddata"
   },
+  "kurtosis": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the kurtosis of the values in a group.",
+    "!spark": "functions.kurtosis(%c)",
+    "!sparkType": "column"
+  },
+  "last": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the last value in a group.",
+    "!spark": "functions.last(%c)",
+    "!sparkType": "column"
+  },
+  "max": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the maximum value of the expression in the group.",
+    "!spark": "functions.max(%c)",
+    "!sparkType": "column"
+  },
+  "mean": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the average of the values in a group.",
+    "!spark": "functions.mean(%c)",
+    "!sparkType": "column"
+  },
+  "min": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the minimum value of the expression in a group.",
+    "!spark": "functions.min(%c)",
+    "!sparkType": "column"
+  },
+  "skewness": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the skewness of the values in a group.",
+    "!spark": "functions.skewness(%c)",
+    "!sparkType": "column"
+  },
+  "stddev_pop": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the population standard deviation of the expression in a group.",
+    "!spark": "functions.stddev_pop(%c)",
+    "!sparkType": "column"
+  },
+  "stddev_samp": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the sample standard deviation of the expression in a group.",
+    "!spark": "functions.stddev_samp(%c)",
+    "!sparkType": "column"
+  },
   "sum": {
     "!type": "fn(e: Column) -> Column",
-    "!doc": "Returns the sum of all values.",
+    "!doc": "Aggregate function: returns the sum of all values.",
     "!spark": "functions.sum(%c)",
+    "!sparkType": "column"
+  },
+  "sumDistinct": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the sum of distinct values in the expression.",
+    "!spark": "functions.sumDistinct(%c)",
+    "!sparkType": "column"
+  },
+  "var_pop": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the population variance of the values in a group.",
+    "!spark": "functions.var_pop(%c)",
+    "!sparkType": "column"
+  },
+  "var_samp": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Aggregate function: returns the unbiased variance of the values in a group.",
+    "!spark": "functions.var_samp(%c)",
+    "!sparkType": "column"
+  },
+
+  "!ARRAY_FUNCTIONS": "Functions for array columns.",
+
+  "array": {
+    "!type": "fn(var_args: Column) -> Column",
+    "!doc": "Creates a new array column.",
+    "!spark": "functions.array(%C)",
+    "!sparkType": "column"
+  },
+  "explode": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Creates a new row for each element in the given array or map column.",
+    "!spark": "functions.explode(%c)",
+    "!sparkType": "column"
+  },
+  "getItem": {
+    "!type": "fn(e: Column, key: Column) -> Column",
+    "!doc": "Gets at item out of an array or a map.",
+    "!spark": "%c.getItem(%c)",
     "!sparkType": "column"
   },
 
   "!COMPARISON_FUNCTIONS": "Filtering and comparing functions.",
 
+  "and": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Boolean AND.",
+    "!spark": "%c.and(%c)",
+    "!sparkType": "column"
+  },
+  "between": {
+    "!type": "fn(e: Column, lowerBound: Column, upperBound: Column) -> Column",
+    "!doc": "True if column is between the lower bound and upper bound, inclusive",
+    "!spark": "%c.between(%c, %c)",
+    "!sparkType": "column"
+  },
+  "contains": {
+    "!type": "fn(e: Column, other: Column) -> Column",
+    "!doc": "Contains the other column.",
+    "!spark": "%c.contains(%c)",
+    "!sparkType": "column"
+  },
+  "endsWith": {
+    "!type": "fn(e: Column, other: Column) -> Column",
+    "!doc": "String ends with.",
+    "!spark": "%c.endsWith(%s)",
+    "!sparkType": "column"
+  },
   "equal": {
     "!type": "fn(left: Column, right: Column) -> Column",
     "!doc": "Equality test.",
     "!spark": "%c.equalTo(%c)",
+    "!sparkType": "column"
+  },
+  "equalNullSafe": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Equality test that is safe for null values.",
+    "!spark": "%c.eqNullSafe(%c)",
     "!sparkType": "column"
   },
   "filter": {
@@ -50,25 +266,127 @@
     "!sparkType": "dataframe"
   },
   "greaterThan": {
-    "!type": "fn(left: Column, right:Column) -> Column",
+    "!type": "fn(left: Column, right: Column) -> Column",
     "!doc": "Greater than.",
     "!spark": "%c.gt(%c)",
     "!sparkType": "column"
   },
+  "greaterThanOrEqual": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Greater than or equal to.",
+    "!spark": "%c.geq(%c)",
+    "!sparkType": "column"
+  },
+  "!in": {
+    "!type": "fn(value: Column, var_args: Column) -> Column",
+    "!doc":"Determines if the value is contained in the list.",
+    "!spark": "TransformFunctions.isin(%c%C)",
+    "!sparkType": "column"
+  },
+  "isNotNull": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "True if the column is NOT null.",
+    "!spark": "%c.isNotNull()",
+    "!sparkType": "column"
+  },
+  "isNull": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "True if the column is null.",
+    "!spark": "%c.isNull()",
+    "!sparkType": "column"
+  },
   "lessThan": {
-    "!type": "fn(left: Column, right:Column) -> Column",
+    "!type": "fn(left: Column, right: Column) -> Column",
     "!doc": "Less than.",
     "!spark": "%c.lt(%c)",
     "!sparkType": "column"
   },
+  "lessThanOrEqual": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Less than or equal to.",
+    "!spark": "%c.leq(%c)",
+    "!sparkType": "column"
+  },
+  "like": {
+    "!type": "fn(e: Column, literal: string) -> Column",
+    "!doc": "SQL like expression.",
+    "!spark": "%c.like(%s)",
+    "!sparkType": "column"
+  },
+  "not": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Inversion of boolean expression.",
+    "!spark": "functions.net(%c)",
+    "!sparkType": "column"
+  },
+  "notEqual": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Inequality test.",
+    "!spark": "%c.notEqual(%c)",
+    "!sparkType": "column"
+  },
+  "or": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Boolean OR.",
+    "!spark": "%c.or(%c)",
+    "!sparkType": "column"
+  },
+  "rlike": {
+    "!type": "fn(e: Column, literal: string) -> Column",
+    "!doc": "LIKE with Regex.",
+    "!spark": "%c.rlike(%s)",
+    "!sparkType": "column"
+  },
+  "startsWith": {
+    "!type": "fn(e: Column, other: Column) -> Column",
+    "!doc": "String starts with.",
+    "!spark": "%c.startsWith(%c)",
+    "!sparkType": "column"
+  },
+  "when": {
+    "!type": "fn(condition: Column, value: Column) -> ConditionChain",
+    "!doc": "Evaluates a list of conditions and returns one of multiple values.",
+    "!spark": "functions.when(%c, %c)",
+    "!sparkType": "conditionchain"
+  },
 
   "!GENERAL_FUNCTIONS": "Miscellaneous functions.",
 
+  "coalesce": {
+    "!type": "fn(var_args: Column) -> Column",
+    "!doc": "Returns the first column that is not null.",
+    "!spark": "functions.coalesce(%C)",
+    "!sparkType": "column"
+  },
   "drop": {
     "!type": "fn(colName: string)",
     "!doc": "Drops the specified column.",
     "!spark": ".drop(%s)",
     "!sparkType": "dataframe"
+  },
+  "monotonicallyIncreasingId": {
+    "!type": "fn() -> Column",
+    "!doc": "Generates monotonically increasing 64-bit integers.",
+    "!spark": "functions.monotonicallyIncreasingId()",
+    "!sparkType": "column"
+  },
+  "rand": {
+    "!type": "fn() -> Column",
+    "!doc": "Generate a random column with i.i.d. samples from U[0.0, 1.0].",
+    "!spark": "functions.rand()",
+    "!sparkType": "column"
+  },
+  "randn": {
+    "!type": "fn() -> Column",
+    "!doc": "Generate a column with i.i.d. samples from the standard normal distribution.",
+    "!spark": "functions.randn()",
+    "!sparkType": "column"
+  },
+  "randn1": {
+    "!type": "fn(seed: number) -> Column",
+    "!doc": "Generate a column with i.i.d. samples from the standard normal distribution.",
+    "!spark": "functions.randn(%d)",
+    "!sparkType": "column"
   },
   "select": {
     "!type": "fn(var_args: Column)",
@@ -76,13 +394,97 @@
     "!spark": ".select(%C)",
     "!sparkType": "dataframe"
   },
+  "sparkPartitionId": {
+    "!type": "fn()",
+    "!doc": "Partition ID of the Spark task.",
+    "!spark": "functions.sparkPartitionId()",
+    "!sparkType": "column"
+  },
 
   "!MATH_FUNCTIONS": "These functions define mathematical operations on columns.",
 
+  "abs": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the absolute value.",
+    "!spark": "functions.abs(%c)",
+    "!sparkType": "column"
+  },
+  "acos": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the cosine inverse.",
+    "!spark": "functions.acos(%c)",
+    "!sparkType": "column"
+  },
   "add": {
     "!type": "fn(col1: Column, col2: Column) -> Column",
     "!doc": "Add two numbers together.",
     "!spark": "%c.plus(%c)",
+    "!sparkType": "column"
+  },
+  "asin": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the sine inverse.",
+    "!spark": "functions.asin(%c)",
+    "!sparkType": "column"
+  },
+  "atan": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the tangent inverse.",
+    "!spark": "functions.atan(%c)",
+    "!sparkType": "column"
+  },
+  "atan2": {
+    "!type": "fn(l: Column, r: Column) -> Column",
+    "!doc": "Returns the angle theta from the conversion of rectangular coordinates to polar.",
+    "!spark": "functions.atan2(%c, %c)",
+    "!sparkType": "column"
+  },
+  "bitwiseAnd": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Compute bitwise AND of two expressions.",
+    "!spark": "%c.bitwiseAND(%c)",
+    "!sparkType": "column"
+  },
+  "bitwiseNot": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes bitwise NOT.",
+    "!spark": "functions.bitwiseNOT(%c)",
+    "!sparkType": "column"
+  },
+  "bitwiseOr": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Compute bitwise OR of two expressions.",
+    "!spark": "%c.bitwiseOR(%c)",
+    "!sparkType": "column"
+  },
+  "bitwiseXor": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Compute bitwise XOR of two expressions.",
+    "!spark": "%c.bitwiseXOR(%c)",
+    "!sparkType": "column"
+  },
+  "cbrt": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the cube-root of the given value.",
+    "!spark": "functions.cbrt(%c)",
+    "!sparkType": "column"
+  },
+  "ceil": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the ceiling of the given value.",
+    "!spark": "functions.ceil(%c)",
+    "!sparkType": "column"
+  },
+  "cos": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the cosine of the given value.",
+    "!spark": "functions.cos(%c)",
+    "!sparkType": "column"
+  },
+  "cosh": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the hyerbolic cosine of the given value.",
+    "!spark": "functions.cosh(%c)",
     "!sparkType": "column"
   },
   "divide": {
@@ -91,16 +493,145 @@
     "!spark": "%c.divide(%c)",
     "!sparkType": "column"
   },
+  "exp": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the exponential of the given value.",
+    "!spark": "functions.exp(%c)",
+    "!sparkType": "column"
+  },
+  "expm1": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the exponential of the given value minus one.",
+    "!spark": "functions.expm1(%c)",
+    "!sparkType": "column"
+  },
+  "floor": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the floor of the given value.",
+    "!spark": "functions.floor(%c)",
+    "!sparkType": "column"
+  },
+  "hypot": {
+    "!type": "fn(l: Column, r: Column) -> Column",
+    "!doc": "Computes sqrt(a^2^ + b^2^) without intermediate overflow or underflow.",
+    "!spark": "functions.hypot(%c, %c)",
+    "!sparkType": "column"
+  },
+  "log": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the natural logarithm of the given value.",
+    "!spark": "functions.log(%c)",
+    "!sparkType": "column"
+  },
+  "log10": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the logarithm of the given value in Base 10.",
+    "!spark": "functions.log10(%c)",
+    "!sparkType": "column"
+  },
+  "log1p": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the natural logarithm of the given value plus one.",
+    "!spark": "functions.log1p(%c)",
+    "!sparkType": "column"
+  },
+  "modulo": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Remainder.",
+    "!spark": "%c.mod(%c)",
+    "!sparkType": "column"
+  },
   "multiply": {
     "!type": "fn(col1: Column, col2: Column) -> Column",
     "!doc": "Multiplies one column by another.",
     "!spark": "%c.multiply(%c)",
     "!sparkType": "column"
   },
+  "negate": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Unary minus.",
+    "!spark": "functions.negate(%c)",
+    "!sparkType": "column"
+  },
+  "pow": {
+    "!type": "fn(left: Column, right: Column) -> Column",
+    "!doc": "Returns the value of the first argument raised to the power of the second.",
+    "!spark": "functions.pow(%c, %c)",
+    "!sparkType": "column"
+  },
+  "rint": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Returns the double value that is closest in value to the argument and is equal to a mathematical integer.",
+    "!spark": "functions.rint(%c)",
+    "!sparkType": "column"
+  },
+  "signum": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the signum of the given value.",
+    "!spark": "functions.signum(%c)",
+    "!sparkType": "column"
+  },
+  "sin": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the sine of the given value.",
+    "!spark": "functions.sin(%c)",
+    "!sparkType": "column"
+  },
+  "sinh": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the hyperbolic sine of the given value.",
+    "!spark": "functions.sinh(%c)",
+    "!sparkType": "column"
+  },
+  "sqrt": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the square root of the specified float value.",
+    "!spark": "functions.sqrt(%c)",
+    "!sparkType": "colum"
+  },
   "subtract": {
     "!type": "fn(col1: Column, col2: Column) -> Column",
     "!doc": "Subtracts one number from another.",
     "!spark": "%c.minus(%c)",
+    "!sparkType": "column"
+  },
+  "tan": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the tangent of the given value.",
+    "!spark": "functions.tan(%c)",
+    "!sparkType": "column"
+  },
+  "tanh": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Computes the hyperbolic tangent of the given value.",
+    "!spark": "fn(e: Column) -> Column",
+    "!sparkType": "column"
+  },
+  "toDegrees": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Converts an angle measured in radians to an approximately equivalent angle measured in degrees.",
+    "!spark": "functions.toDegrees(%c)",
+    "!sparkType": "column"
+  },
+  "toRadians": {
+    "!type": "fn(e: Column) -> Column",
+    "!doc": "Converts an angle measured in degrees to an approximately equivalent angle measured in radians.",
+    "!spark": "functions.toRadians(%c)",
+    "!sparkType": "column"
+  },
+
+  "!SORTING_FUNCTIONS": "Functions for sorting columns.",
+
+  "asc": {
+    "!type": "fn(columnName: string) -> Column",
+    "!doc": "Returns a sort expression based on ascending order of the column.",
+    "!spark": "functions.asc(%c)",
+    "!sparkType": "column"
+  },
+  "desc": {
+    "!type": "fn(columnName: string) -> Column",
+    "!doc": "Returns a sort expression based on descending order of the column.",
+    "!spark": "functions.desc(%c)",
     "!sparkType": "column"
   },
 
@@ -112,10 +643,94 @@
     "!spark": "functions.lower(%c)",
     "!sparkType": "column"
   },
+  "substr": {
+    "!type": "fn(e: Column, startPos: Column, len: Column) -> Column",
+    "!doc": "An expression that returns a substring.",
+    "!spark": "%c.substr(%c, %c)",
+    "!sparkType": "column"
+  },
   "upper": {
     "!type": "fn(e: Column) -> Column",
     "!doc": "Converts a string column to upper case.",
     "!spark": "functions.upper(%c)",
+    "!sparkType": "column"
+  },
+
+  "!STRUCT_FUNCTIONS": "Functions on StructType columns.",
+
+  "getField": {
+    "!type": "fn(e: Column, fieldName: string) -> Column",
+    "!doc": "Gets a field by name in a struct.",
+    "!spark": "%c.getField(%s)",
+    "!sparkType": "column"
+  },
+  "struct": {
+    "!type": "fn(var_args: Column) -> Column",
+    "!doc": "Creates a new struct column.",
+    "!spark": "functions.struct(%C)",
+    "!sparkType": "column"
+  },
+
+  "!WINDOW_FUNCTIONS": "Functions over windows.",
+
+  "!cumeDist": {
+    "!type": "fn() -> Column",
+    "!doc": "Window function: returns the cumulative distribution of values within a window partition",
+    "!spark": "TransformFunctions.cume_dist()",
+    "!sparkType": "column"
+  },
+  "!denseRank": {
+    "!type": "fn() -> Column",
+    "!doc": "Window function: returns the rank of rows within a window partition, without any gaps.",
+    "!spark": "TransformFunctions.dense_rank()",
+    "!sparkType": "column"
+  },
+  "lag": {
+    "!type": "fn(e: Column, offset: number, defaultValue: Column) -> Column",
+    "!doc": "Window function: returns the value that is offset rows before the current row, and defaultValue if there is less than offset rows before the current row.",
+    "!spark": "functions.lag(%c, %d, %c)",
+    "!sparkType": "column"
+  },
+  "lead": {
+    "!type": "fn(e: Column, offset: number, defaultValue: Column) -> Column",
+    "!doc": "Window function: returns the value that is offset rows after the current row, and defaultValue if there is less than offset rows after the current row.",
+    "!spark": "functions.lead(%c, %d, %c)",
+    "!sparkType": "column"
+  },
+  "ntile": {
+    "!type": "fn(n: number) -> Column",
+    "!doc": "Window function: returns the ntile group id (from 1 to n inclusive) in an ordered window partition.",
+    "!spark": "functions.ntile(%d)",
+    "!sparkType": "column"
+  },
+  "orderBy": {
+    "!type": "fn(var_args: Column) -> WindowSpec",
+    "!doc": "Creates a WindowSpec with the ordering defined.",
+    "!spark": "org.apache.spark.sql.expressions.Window.orderBy(%C)",
+    "!sparkType": "windowspec"
+  },
+  "partitionBy": {
+    "!type": "fn(var_args: Column) -> WindowSpec",
+    "!doc": "Creates a WindowSpec with the partitioning defined.",
+    "!spark": "org.apache.spark.sql.expressions.Window.partitionBy(%C)",
+    "!sparkType": "windowspec"
+  },
+  "!percentRank": {
+    "!type": "fn()",
+    "!doc": "Window function: returns the relative rank (i.e. percentile) of rows within a window partition.",
+    "!spark": "TransformFunctions.percent_rank(%n)",
+    "!sparkType": "column"
+  },
+  "rank": {
+    "!type": "fn()",
+    "!doc": "Window function: returns the rank of rows within a window partition.",
+    "!spark": "functions.rank()",
+    "!sparkType": "column"
+  },
+  "rowNumber": {
+    "!type": "fn()",
+    "!doc": "Window function: returns a sequential number starting at 1 within a window partition.",
+    "!spark": "functions.row_number()",
     "!sparkType": "column"
   }
 }

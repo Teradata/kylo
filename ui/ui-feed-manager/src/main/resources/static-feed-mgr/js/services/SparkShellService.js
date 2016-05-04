@@ -64,7 +64,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
     var DEFINE_DIRECTIVE = "!define";
 
     /** Regular expression for conversion strings */
-    var FORMAT_REGEX = /%([cCdfs])/g;
+    var FORMAT_REGEX = /%([cCdfsw])/g;
 
     /** TernJS directive for the Spark code */
     var SPARK_DIRECTIVE = "!spark";
@@ -531,6 +531,9 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         /** Represents a Spark SQL Column */
         COLUMN: "column",
 
+        /** Represents a chain of {@code when} function calls */
+        CONDITION_CHAIN: "conditionchain",
+
         /** Represents a Spark SQL DataFrame */
         DATA_FRAME: "dataframe",
 
@@ -539,6 +542,9 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
 
         /** Represents a Scala number or string literal */
         LITERAL: "literal",
+
+        /** Represents a Spark SQL WindowSpec */
+        WINDOW_SPEC: "windowspec",
 
         /**
          * Gets the TernJS definition name for the specified type.
@@ -551,8 +557,14 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 case SparkType.COLUMN:
                     return TERNJS_COLUMN_TYPE;
 
+                case SparkType.CONDITION_CHAIN:
+                    return "ConditionChain";
+
                 case SparkType.GROUPED_DATA:
                     return "GroupedData";
+
+                case SparkType.WINDOW_SPEC:
+                    return "WindowSpec";
 
                 default:
                     return null;
@@ -684,8 +696,14 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 case "C":
                     return SparkExpression.toColumnArgs(context);
 
+                case "d":
+                    return SparkExpression.toInteger(context.args[context.index++]);
+
                 case "s":
                     return SparkExpression.toString(context.args[context.index++]);
+
+                case "w":
+                    return SparkExpression.toWindowSpec(context.args[context.index++]);
 
                 default:
                     throw new Error("Not a recognized type specifier: " + match);
@@ -717,6 +735,8 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         /**
          * Converts the specified Spark expressions to a list of function arguments.
          *
+         * @private
+         * @static
          * @param {FormatContext} context the format context
          * @returns {string} the Spark code for the function arguments
          * @throws {ParseException} if any expression cannot be converted to a column
@@ -735,6 +755,23 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         },
 
         /**
+         * Converts the specified Spark expression to a number.
+         *
+         * @private
+         * @static
+         * @param {SparkExpression} expression the Spark expression
+         * @returns {number} the Spark code for the number
+         * @throws {ParseException} if the expression cannot be converted to a number
+         */
+        toInteger: function(expression) {
+            if (expression.type === SparkType.LITERAL && expression.source.match(/^(0|-?[1-9][0-9]*)$/) !== null) {
+                return expression.source;
+            } else {
+                throw new ParseException("Expression cannot be converted to an integer: " + expression.type, expression.start);
+            }
+        },
+
+        /**
          * Converts the specified Spark expression to a string literal.
          *
          * @private
@@ -744,10 +781,27 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          * @throws {ParseException} if the expression cannot be converted to a string
          */
         toString: function(expression) {
-            if (SparkType.LITERAL) {
+            if (expression.type === SparkType.LITERAL) {
                 return (expression.source.charAt(0) === "\"") ? expression.source : "\"" + expression.source + "\"";
             } else {
                 throw new ParseException("Expression cannot be converted to a string: " + expression.type, expression.start);
+            }
+        },
+
+        /**
+         * Converts the specified Spark expression to a window spec.
+         *
+         * @private
+         * @static
+         * @param {SparkExpression} expression the Spark expression
+         * @returns {string} the Spark code for the window spec
+         * @throws {ParseException} if the expression cannot be converted to a window spec
+         */
+        toWindowSpec: function(expression) {
+            if (expression.type === SparkType.WINDOW_SPEC) {
+                return expression.source;
+            } else {
+                throw new ParseException("Expression cannot be converted to a window spec: " + expression.type, expression.start);
             }
         }
     });
@@ -873,7 +927,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
     }
 
     /**
-     * TODO
+     * Converts a logical expression node to a Spark expression.
      *
      * @param {acorn.Node} node the logical expression node
      * @param {SparkShellService} sparkShellService the Spark shell service
@@ -908,6 +962,40 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
     }
 
     /**
+     * Converts a unary expression node to a Spark expression.
+     *
+     * @param {acorn.Node} node the unary expression node
+     * @param {SparkShellService} sparkShellService the Spark shell service
+     * @returns {SparkExpression} the Spark expression
+     * @throws {Error} if the function definition is not valid
+     * @throws {ParseException} if a function argument cannot be converted to the required type
+     */
+    function parseUnaryExpression(node, sparkShellService) {
+        // Get the function definition
+        var arg = toSpark(node.argument, sparkShellService);
+        var def = null;
+
+        switch (node.operator) {
+            case "-":
+                if (arg.type === SparkType.COLUMN) {
+                    def = sparkShellService.getFunctionDefs().negate;
+                } else if (arg.type === SparkType.LITERAL) {
+                    return new SparkExpression("-" + arg.source, SparkType.LITERAL, arg.start, node.end);
+                }
+                break;
+
+            default:
+        }
+
+        if (def === null) {
+            throw new ParseException("Unary operator not supported: " + node.operator, node.start);
+        }
+
+        // Convert to a Spark expression
+        return SparkExpression.fromDefinition(def, node, arg);
+    }
+
+    /**
      * Converts the specified abstract syntax tree to a Scala expression for a Spark script.
      *
      * @param {acorn.Node} program the program node
@@ -930,6 +1018,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
 
         switch (spark.type) {
             case SparkType.COLUMN:
+            case SparkType.CONDITION_CHAIN:
                 return ".select(new Column(\"*\"), " + spark.source + ")";
 
             case SparkType.DATA_FRAME:
@@ -973,6 +1062,9 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
 
             case "LogicalExpression":
                 return parseLogicalExpression(node, sparkShellService);
+
+            case "UnaryExpression":
+                return parseUnaryExpression(node, sparkShellService);
 
             default:
                 throw new Error("Unsupported node type: " + node.type);
