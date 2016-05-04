@@ -144,7 +144,7 @@ public class HCatDataTypeTest {
         HCatDataType type = HCatDataType.getDataTypes().get("decimal");
 
         assertTrue(type.isValueConvertibleToType("0"));
-        assertTrue(type.isValueConvertibleToType(Double.MAX_VALUE+""));
+        assertTrue(type.isValueConvertibleToType(Double.MAX_VALUE + ""));
         assertTrue(type.isValueConvertibleToType("12712"));
         assertTrue(type.isValueConvertibleToType("-12812"));
         assertTrue(type.isValueConvertibleToType("-12812.204154"));

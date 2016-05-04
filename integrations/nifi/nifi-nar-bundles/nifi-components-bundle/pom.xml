@@ -11,13 +11,6 @@
     </parent>
     <packaging>nar</packaging>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <sparkcore.version>1.4.1</sparkcore.version>
-        <hadoop.version>2.7.1</hadoop.version>
-        <hive.version>0.14.0</hive.version>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>

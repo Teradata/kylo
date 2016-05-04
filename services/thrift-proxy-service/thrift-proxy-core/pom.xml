@@ -11,13 +11,6 @@
     <version>0.1.0-SNAPSHOT</version>
   </parent>
 
-  <properties>
-    <hadoop.version>2.7.1</hadoop.version>
-    <hive.version>0.14.0</hive.version>
-
-  </properties>
-
-
   <dependencies>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -61,7 +54,6 @@
 
     <!-- Hive JDBC connection jars -->
 
-
     <dependency>
       <groupId>org.apache.hadoop</groupId>
       <artifactId>hadoop-common</artifactId>
@@ -100,16 +92,16 @@
           <artifactId>jersey-server</artifactId>
         </exclusion>
         <exclusion>
-        	<artifactId>htrace-core</artifactId>
-        	<groupId>org.apache.htrace</groupId>
+          <artifactId>htrace-core</artifactId>
+          <groupId>org.apache.htrace</groupId>
         </exclusion>
         <exclusion>
-        	<artifactId>commons-httpclient</artifactId>
-        	<groupId>commons-httpclient</groupId>
+          <artifactId>commons-httpclient</artifactId>
+          <groupId>commons-httpclient</groupId>
         </exclusion>
         <exclusion>
-        	<artifactId>httpcore</artifactId>
-        	<groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
+          <groupId>org.apache.httpcomponents</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -139,8 +131,8 @@
           <artifactId>servlet-api</artifactId>
         </exclusion>
         <exclusion>
-        	<artifactId>htrace-core</artifactId>
-        	<groupId>org.apache.htrace</groupId>
+          <artifactId>htrace-core</artifactId>
+          <groupId>org.apache.htrace</groupId>
         </exclusion>
       </exclusions>
     </dependency>
@@ -188,12 +180,12 @@
           <groupId>org.apache.httpcomponents</groupId>
         </exclusion>
         <exclusion>
-        	<artifactId>httpclient</artifactId>
-        	<groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpclient</artifactId>
+          <groupId>org.apache.httpcomponents</groupId>
         </exclusion>
         <exclusion>
-        	<artifactId>httpcore</artifactId>
-        	<groupId>org.apache.httpcomponents</groupId>
+          <artifactId>httpcore</artifactId>
+          <groupId>org.apache.httpcomponents</groupId>
         </exclusion>
       </exclusions>
     </dependency>
