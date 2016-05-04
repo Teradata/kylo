@@ -36,7 +36,7 @@ public class RestConfiguration {
         JodaModule m = new JodaModule();
 //        m.
         om.registerModule(m);
-        om.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, true);
+        om.configure(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS, false);
         om.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         
         JacksonJaxbJsonProvider provider = new JacksonJaxbJsonProvider();

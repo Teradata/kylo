@@ -10,14 +10,9 @@ import java.util.Set;
 
 import org.joda.time.DateTime;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import com.fasterxml.jackson.datatype.joda.deser.DateTimeDeserializer;
-import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
 
 /**
  *
@@ -36,6 +31,7 @@ public class Feed implements Serializable {
     private String description;
     private String owner;
     private State state;
+    private DateTime createdTime;
     private boolean initialized;
     // TODO versions
     private FeedPrecondition precondition;
@@ -43,10 +39,6 @@ public class Feed implements Serializable {
     private Set<FeedDestination> destinations = new HashSet<>();
     private Properties properties = new Properties();
 
-//    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd'T'HH:mm:ss.SSSZ")
-//    @JsonSerialize(using = DateTimeSerializer.class)
-//    @JsonDeserialize(using = DateTimeDeserializer.class)
-    private DateTime createdTime;
 
     public Feed() {
         super();
