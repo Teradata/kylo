@@ -441,16 +441,6 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 state.rows = response.data.results.rows;
                 state.table = response.data.table;
             };
-            var errorCallback = function(response) {
-                var alert = $mdDialog.alert()
-                        .parent($('body'))
-                        .clickOutsideToClose(true)
-                        .title("Error executing the query")
-                        .textContent(response.data.message)
-                        .ariaLabel("error executing the query")
-                        .ok("Got it!");
-                $mdDialog.show(alert);
-            };
 
             // Send the request
             var promise = $http({
@@ -460,7 +450,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 headers: {"Content-Type": "application/json"},
                 responseType: "json"
             });
-            promise.then(successCallback, errorCallback);
+            promise.then(successCallback);
             return promise;
         },
 

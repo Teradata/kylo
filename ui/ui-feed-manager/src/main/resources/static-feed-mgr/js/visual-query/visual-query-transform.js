@@ -243,7 +243,8 @@
             //flag to indicate query is running
             this.executingQuery = true;
 
-            return self.sparkShellService.transform().then(function(response) {
+            // Query Spark shell service
+            var successCallback = function(response) {
                 //mark the query as finished
                 self.executingQuery = false;
 
@@ -261,7 +262,26 @@
 
                 //Initialize the Command function holder
                 self.functionCommandHolder = TableDataFunctions.newCommandHolder(self.tableData);
-            });
+            };
+            var errorCallback = function(response) {
+                // Display error message
+                var alert = $mdDialog.alert()
+                        .parent($('body'))
+                        .clickOutsideToClose(true)
+                        .title("Error executing the query")
+                        .textContent(response.data.message)
+                        .ariaLabel("error executing the query")
+                        .ok("Got it!");
+                $mdDialog.show(alert);
+
+                // Reset state
+                self.executingQuery = false;
+                self.sparkShellService.pop();
+                self.functionHistory.pop();
+                self.refreshGrid();
+            };
+
+            return self.sparkShellService.transform().then(successCallback, errorCallback);
         };
 
         function updateGrid(tableData) {
