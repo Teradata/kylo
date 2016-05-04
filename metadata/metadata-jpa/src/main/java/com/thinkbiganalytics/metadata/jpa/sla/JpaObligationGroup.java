@@ -18,6 +18,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -28,7 +29,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 @Entity
 @Table(name="SLA_OBLIGATION_GROUP")
-public class JpaObligationGroup implements ObligationGroup, Serializable {
+public class JpaObligationGroup extends AbstractAuditedEntity implements ObligationGroup, Serializable {
     
     private static final long serialVersionUID = 3948150775928992180L;
 

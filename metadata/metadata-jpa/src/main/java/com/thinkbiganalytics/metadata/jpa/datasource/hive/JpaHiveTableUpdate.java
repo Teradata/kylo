@@ -36,7 +36,7 @@ public class JpaHiveTableUpdate extends JpaChangeSet implements HiveTableUpdate 
     @CollectionTable(name="CHANGE_SET_HIVE_TABLE_PART_VALUE", joinColumns=@JoinColumn(name="change_set_hive_table_id"))
     private List<HivePartitionValue> partitionValues = new ArrayList<>();
     
-//    @ElementCollection(targetClass=HivePartitionUpdateImpl.class)
+//    @ElementCollection(targetClass=DefaultHivePartitionUpdate.class)
 //    @CollectionTable(name="CHANGE_SET_HIVE_TABLE_PART", joinColumns=@JoinColumn(name="change_set_hive_table_id"))
 //    @Column(name="part")
 //    private List<HivePartitionUpdate> partitions = new ArrayList<>();
@@ -59,13 +59,13 @@ public class JpaHiveTableUpdate extends JpaChangeSet implements HiveTableUpdate 
      * @see com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate#getPartitions()
      */
     public List<HivePartitionUpdate> getPartitions() {
-        Map<String, HivePartitionUpdateImpl> map = new HashMap<>();
+        Map<String, DefaultHivePartitionUpdate> map = new HashMap<>();
         
         for (HivePartitionValue part : getPartitionValues()) {
-            HivePartitionUpdateImpl update = map.get(part.getName());
+            DefaultHivePartitionUpdate update = map.get(part.getName());
             
             if (update == null) {
-                update = new HivePartitionUpdateImpl(part.getName());
+                update = new DefaultHivePartitionUpdate(part.getName());
             }
             
             update.getPartitionValues().add(part.getValue());

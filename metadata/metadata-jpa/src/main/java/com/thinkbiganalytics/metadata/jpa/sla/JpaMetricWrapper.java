@@ -12,6 +12,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.jpa.JsonAttributeConverter;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 
@@ -21,7 +22,7 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  */
 @Entity
 @Table(name = "SLA_METRIC")
-public class JpaMetricWrapper implements Serializable {
+public class JpaMetricWrapper extends AbstractAuditedEntity implements Serializable {
 
     private static final long serialVersionUID = 3241658544122855509L;
 

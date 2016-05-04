@@ -28,6 +28,7 @@ import org.joda.time.DateTime;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
@@ -46,7 +47,7 @@ import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedSource;
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name="type")
 //public abstract class JpaDatasource implements Datasource, Serializable {
-public class JpaDatasource implements Datasource, Serializable {
+public class JpaDatasource extends AbstractAuditedEntity implements Datasource, Serializable {
 
     private static final long serialVersionUID = -2805184157648437890L;
     
@@ -58,10 +59,6 @@ public class JpaDatasource implements Datasource, Serializable {
     
     @Column(name="description", length=255)
     private String description;
-    
-    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    @Column(name="created_time")
-    private DateTime createdTime;
     
     @OneToMany(targetEntity=JpaFeedSource.class, mappedBy = "datasource", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<FeedSource> feedSources = new HashSet<>();
@@ -77,7 +74,6 @@ public class JpaDatasource implements Datasource, Serializable {
 
     public JpaDatasource(String name, String descr) {
         this.id = DatasourceId.create();
-        this.createdTime = new DateTime();
         this.name = name;
         this.description = descr;
     }
@@ -92,10 +88,6 @@ public class JpaDatasource implements Datasource, Serializable {
 
     public String getDescription() {
         return description;
-    }
-
-    public DateTime getCreatedTime() {
-        return createdTime;
     }
 
     public List<Dataset<? extends Datasource, ? extends ChangeSet>> getDatasets() {

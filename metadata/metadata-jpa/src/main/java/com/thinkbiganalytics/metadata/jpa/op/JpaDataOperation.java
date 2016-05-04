@@ -20,6 +20,7 @@ import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 import org.springframework.util.StringUtils;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
@@ -34,7 +35,7 @@ import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
  */
 @Entity
 @Table(name="DATA_OPERATION")
-public class JpaDataOperation implements DataOperation {
+public class JpaDataOperation extends AbstractAuditedEntity implements DataOperation {
 
     private static final long serialVersionUID = 4869637300972732879L;
 

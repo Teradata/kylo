@@ -6,6 +6,8 @@ package com.thinkbiganalytics.metadata.api.feed;
 import java.io.Serializable;
 import java.util.List;
 
+import org.joda.time.DateTime;
+
 import com.thinkbiganalytics.metadata.api.Propertied;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 
@@ -29,6 +31,8 @@ public interface Feed extends Propertied, Serializable {
     String getDescription();
     
     State getState();
+    
+    DateTime getCreatedTime();
     
     FeedPrecondition getPrecondition();
     

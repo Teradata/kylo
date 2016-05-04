@@ -13,7 +13,7 @@ import com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate;
  *
  * @author Sean Felten
  */
-public class HivePartitionUpdateImpl implements HivePartitionUpdate {
+public class DefaultHivePartitionUpdate implements HivePartitionUpdate {
 
     private static final long serialVersionUID = 8505876587865483987L;
 
@@ -21,7 +21,7 @@ public class HivePartitionUpdateImpl implements HivePartitionUpdate {
     private List<String> partitionValues = new ArrayList<>();
     
     
-    public HivePartitionUpdateImpl(String columnName) {
+    public DefaultHivePartitionUpdate(String columnName) {
         super();
         this.columnName = columnName;
     }

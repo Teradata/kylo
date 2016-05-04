@@ -20,6 +20,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -30,7 +31,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 @Entity
 @Table(name="SLA")
-public class JpaServiceLevelAgreement implements ServiceLevelAgreement, Serializable {
+public class JpaServiceLevelAgreement extends AbstractAuditedEntity implements ServiceLevelAgreement, Serializable {
 
     private static final long serialVersionUID = 2611479261936214396L;
 
@@ -40,11 +41,8 @@ public class JpaServiceLevelAgreement implements ServiceLevelAgreement, Serializ
     @Column(name="name", length=100, unique=true)
     private String name;
     
+    @Column(name="description", length=255)
     private String description;
-    
-    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    @Column(name="created_time")
-    private DateTime createdTime;
     
     @OneToMany(targetEntity=JpaObligationGroup.class, mappedBy = "agreement", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ObligationGroup> obligationGroups;
@@ -76,14 +74,6 @@ public class JpaServiceLevelAgreement implements ServiceLevelAgreement, Serializ
     @Override
     public String getName() {
         return this.name;
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement#getCreatedTime()
-     */
-    @Override
-    public DateTime getCreatedTime() {
-        return this.createdTime;
     }
 
     /* (non-Javadoc)

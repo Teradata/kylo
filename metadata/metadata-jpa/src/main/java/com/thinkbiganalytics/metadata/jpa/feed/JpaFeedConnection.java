@@ -6,6 +6,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 import javax.persistence.ManyToOne;
 import javax.persistence.MappedSuperclass;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
@@ -16,7 +17,7 @@ import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
  * @author Sean Felten
  */
 @MappedSuperclass
-public abstract class JpaFeedConnection implements FeedConnection {
+public abstract class JpaFeedConnection extends AbstractAuditedEntity implements FeedConnection {
 
     private static final long serialVersionUID = -1752094328137424635L;
 

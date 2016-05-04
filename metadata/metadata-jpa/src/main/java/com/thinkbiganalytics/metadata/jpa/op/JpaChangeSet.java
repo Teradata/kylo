@@ -17,6 +17,7 @@ import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 import org.joda.time.Period;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 
 /**
@@ -26,7 +27,7 @@ import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 @Entity
 @Table(name="CHANGE_SET")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class JpaChangeSet implements ChangeSet {
+public abstract class JpaChangeSet extends AbstractAuditedEntity implements ChangeSet {
 
     private static final long serialVersionUID = -5427878851793245525L;
     

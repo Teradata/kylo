@@ -211,6 +211,7 @@ public class Model {
                 feed.setDescription(domain.getDescription());
                 feed.setDisplayName(domain.getName());
                 feed.setState(Feed.State.valueOf(domain.getState().name()));
+                feed.setCreatedTime(domain.getCreatedTime());
 //                feed.setOwner();
                 feed.setSources(new HashSet<>(Collections2.transform(domain.getSources(), DOMAIN_TO_FEED_SOURCE)));
                 feed.setDestinations(new HashSet<>(Collections2.transform(domain.getDestinations(), DOMAIN_TO_FEED_DESTINATION)));

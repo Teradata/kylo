@@ -14,6 +14,8 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import org.joda.time.DateTime;
+
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
@@ -35,6 +37,7 @@ public class BaseFeed implements Feed {
     private String displayName;
     private String description;
     private State state;
+    private DateTime createdTime;
     private Map<FeedSource.ID, FeedSource> sources = new HashMap<>();
     private Map<FeedDestination.ID, FeedDestination> destinations = new HashMap<>();
     private FeedPreconditionImpl precondition;
@@ -46,6 +49,7 @@ public class BaseFeed implements Feed {
         this.name = name;
         this.displayName = name;
         this.description = description;
+        this.createdTime = DateTime.now();
     }
 
     @Override
@@ -64,6 +68,11 @@ public class BaseFeed implements Feed {
             this.properties.put(entry.getKey(), entry.getValue());
         }
         return this.properties;
+    }
+    
+    @Override
+    public DateTime getCreatedTime() {
+        return this.createdTime;
     }
 
     @Override

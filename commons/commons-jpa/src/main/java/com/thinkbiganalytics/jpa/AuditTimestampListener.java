@@ -16,13 +16,13 @@ public class AuditTimestampListener {
 
     @PrePersist
     public void setCreatedTime(AuditedEntity entity) {
-        
-        entity.setCreatedTime(DateTime.now());
+        DateTime now = DateTime.now();
+        entity.setCreatedTime(now);
+        entity.setModifiedTime(now);
     }
 
     @PreUpdate
     public void setModifiedTime(AuditedEntity entity) {
-        
         entity.setModifiedTime(DateTime.now());
     }
     

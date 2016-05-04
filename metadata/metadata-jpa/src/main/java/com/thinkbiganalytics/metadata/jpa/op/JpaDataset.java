@@ -20,9 +20,7 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Type;
-import org.joda.time.DateTime;
-
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
@@ -35,7 +33,7 @@ import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
  */
 @Entity
 @Table(name="DATASET")
-public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Dataset<D, C> {
+public class JpaDataset<D extends Datasource, C extends ChangeSet> extends AbstractAuditedEntity implements Dataset<D, C> {
 
     private static final long serialVersionUID = 2087060566515660478L;
 
@@ -54,10 +52,6 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
     @JoinColumn(name="dataset_id")
     private Set<C> changes = new HashSet<>();
     
-    @Type(type="org.jadira.usertype.dateandtime.joda.PersistentDateTime")
-    @Column(name="created_time")
-    private DateTime createdTime;
-    
     @Enumerated(EnumType.STRING)
     @Column(name="type", length=10)
     private ChangeType type;
@@ -66,15 +60,10 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
     }
     
     public JpaDataset(D dataset, C content) {
-        setTime(DateTime.now());
         setType(ChangeType.UPDATE);
 //        setDataOperation(dataOperation);
         setDatasource(dataset);
         getChanges().add(content);
-    }
-
-    public DateTime getCreatedTime() {
-        return createdTime;
     }
 
     public ChangeType getType() {
@@ -111,10 +100,6 @@ public class JpaDataset<D extends Datasource, C extends ChangeSet> implements Da
 
     public void setChanges(Set<C> changes) {
         this.changes = changes;
-    }
-
-    public void setTime(DateTime time) {
-        this.createdTime = time;
     }
 
     public void setType(ChangeType type) {

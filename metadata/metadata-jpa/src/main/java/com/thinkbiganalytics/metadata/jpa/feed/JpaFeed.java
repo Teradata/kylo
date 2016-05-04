@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -21,6 +22,7 @@ import javax.persistence.Embeddable;
 import javax.persistence.Embedded;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
@@ -29,6 +31,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
+import com.thinkbiganalytics.jpa.AuditTimestampListener;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
@@ -46,7 +50,8 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 @Entity
 @Table(name="FEED")
-public class JpaFeed implements Feed {
+@EntityListeners(AuditTimestampListener.class)
+public class JpaFeed extends AbstractAuditedEntity implements Feed {
 
     private static final long serialVersionUID = 404021578157775507L;
 
@@ -76,7 +81,7 @@ public class JpaFeed implements Feed {
     @MapKeyColumn(name="prop_key", length=100)
     @Column(name="prop_value")
     @CollectionTable(name="FEED_PROPERTIES")
-    private Map<String, String> properties;
+    private Map<String, String> properties = new HashMap<>();
     
     @Embedded
     private JpaFeedPrecondition precondition;
