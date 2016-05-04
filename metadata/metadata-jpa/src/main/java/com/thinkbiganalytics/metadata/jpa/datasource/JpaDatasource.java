@@ -7,7 +7,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -23,9 +22,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
-import org.hibernate.annotations.Type;
-import org.joda.time.DateTime;
-
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
@@ -35,6 +31,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.Dataset;
+import com.thinkbiganalytics.metadata.jpa.BaseId;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedSource;
 
@@ -128,11 +125,10 @@ public class JpaDatasource extends AbstractAuditedEntity implements Datasource, 
 
 
     @Embeddable
-    protected static class DatasourceId implements ID {
+    protected static class DatasourceId extends BaseId implements ID {
         
         private static final long serialVersionUID = 241001606640713117L;
         
-        //@Column(name="id", columnDefinition="binary(36)")
         @Column(name="id", columnDefinition="binary(16)", length = 16)
         private UUID uuid;
         
@@ -143,42 +139,18 @@ public class JpaDatasource extends AbstractAuditedEntity implements Datasource, 
         public DatasourceId() {
         }
         
-        public UUID getUuid() {
-            return uuid;
+        public DatasourceId(Serializable ser) {
+            super(ser);
         }
         
+        @Override
+        public UUID getUuid() {
+            return this.uuid;
+        }
+        
+        @Override
         public void setUuid(UUID uuid) {
             this.uuid = uuid;
-        }
-        
-        public DatasourceId(Serializable ser) {
-            if (ser instanceof String) {
-                this.uuid = UUID.fromString((String) ser);
-            } else if (ser instanceof UUID) {
-                this.uuid = (UUID) ser;
-            } else {
-                throw new IllegalArgumentException("Unknown ID value: " + ser);
-            }
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof DatasourceId) {
-                DatasourceId that = (DatasourceId) obj;
-                return Objects.equals(this.uuid, that.uuid);
-            } else {
-                return false;
-            }
-        }
-        
-        @Override
-        public int hashCode() {
-            return Objects.hash(getClass(), this.uuid);
-        }
-        
-        @Override
-        public String toString() {
-            return this.uuid.toString();
         }
     }
 }

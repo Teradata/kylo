@@ -7,18 +7,13 @@ import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
 
-import javax.persistence.Embeddable;
-
 /**
  *
  * @author Sean Felten
  */
-@Embeddable
 public abstract class BaseId implements Serializable {
     
     private static final long serialVersionUID = 7625329514504205283L;
-    
-    private UUID uuid;
     
     public BaseId() {
         super();
@@ -26,27 +21,23 @@ public abstract class BaseId implements Serializable {
 
     public BaseId(Serializable ser) {
         if (ser instanceof String) {
-            this.uuid = UUID.fromString((String) ser);
+            setUuid(UUID.fromString((String) ser));
         } else if (ser instanceof UUID) {
-            this.uuid = (UUID) ser;
+            setUuid((UUID) ser);
         } else {
             throw new IllegalArgumentException("Unknown ID value: " + ser);
         }
     }
     
-    public UUID getUuid() {
-        return uuid;
-    }
+    public abstract UUID getUuid();
     
-    public void setUuid(UUID uuid) {
-        this.uuid = uuid;
-    }
+    public abstract void setUuid(UUID uuid);
     
     @Override
     public boolean equals(Object obj) {
         if (getClass().isAssignableFrom(obj.getClass())) {
             BaseId that = (BaseId) obj;
-            return Objects.equals(this.uuid, that.uuid);
+            return Objects.equals(getUuid(), that.getUuid());
         } else {
             return false;
         }
@@ -54,11 +45,11 @@ public abstract class BaseId implements Serializable {
     
     @Override
     public int hashCode() {
-        return Objects.hash(getClass(), this.uuid);
+        return Objects.hash(getClass(), getUuid());
     }
     
     @Override
     public String toString() {
-        return this.uuid.toString();
+        return getUuid().toString();
     }
 }

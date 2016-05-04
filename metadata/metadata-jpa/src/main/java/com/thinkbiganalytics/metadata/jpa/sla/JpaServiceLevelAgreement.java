@@ -6,7 +6,6 @@ package com.thinkbiganalytics.metadata.jpa.sla;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -17,10 +16,8 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Type;
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
+import com.thinkbiganalytics.metadata.jpa.BaseId;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -108,11 +105,10 @@ public class JpaServiceLevelAgreement extends AbstractAuditedEntity implements S
 
     
     @Embeddable
-    public static class SlaId implements ServiceLevelAgreement.ID, Serializable {
+    public static class SlaId extends BaseId implements ServiceLevelAgreement.ID, Serializable {
         
         private static final long serialVersionUID = 6965221468619613881L;
         
-        //@Column(name="id", columnDefinition="binary(36)")
         @Column(name="id", columnDefinition="binary(16)", length = 16)
         private UUID uuid;
         
@@ -123,55 +119,18 @@ public class JpaServiceLevelAgreement extends AbstractAuditedEntity implements S
         public SlaId() {
         }
         
-        public UUID getUuid() {
-            return uuid;
+        public SlaId(Serializable ser) {
+            super(ser);
         }
         
+        @Override
+        public UUID getUuid() {
+            return this.uuid;
+        }
+        
+        @Override
         public void setUuid(UUID uuid) {
             this.uuid = uuid;
         }
-        
-        public SlaId(Serializable ser) {
-            if (ser instanceof String) {
-                this.uuid = UUID.fromString((String) ser);
-            } else if (ser instanceof UUID) {
-                this.uuid = (UUID) ser;
-            } else {
-                throw new IllegalArgumentException("Unknown ID value: " + ser);
-            }
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof SlaId) {
-                SlaId that = (SlaId) obj;
-                return Objects.equals(this.uuid, that.uuid);
-            } else {
-                return false;
-            }
-        }
-        
-        @Override
-        public int hashCode() {
-            return Objects.hash(getClass(), this.uuid);
-        }
-        
-        @Override
-        public String toString() {
-            return this.uuid.toString();
-        }
     }
-//    
-//    
-//    @Embeddable
-//    public static class SlaId extends BaseId implements ServiceLevelAgreement.ID, Serializable {
-//        
-//        public SlaId() {
-//            super();
-//        }
-//        
-//        public SlaId(Serializable ser) {
-//            super(ser);
-//        }
-//    }
 }

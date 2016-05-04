@@ -4,7 +4,6 @@
 package com.thinkbiganalytics.metadata.jpa.op;
 
 import java.io.Serializable;
-import java.util.Objects;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -26,7 +25,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
 import com.thinkbiganalytics.metadata.api.op.Dataset;
-import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed.FeedId;
+import com.thinkbiganalytics.metadata.jpa.BaseId;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
 
 /**
@@ -170,11 +169,10 @@ public class JpaDataOperation extends AbstractAuditedEntity implements DataOpera
     }
 
 
-    protected static class OpId implements ID {
+    protected static class OpId extends BaseId implements DataOperation.ID {
         
         private static final long serialVersionUID = -8322308917629324338L;
 
-        //@Column(name="id", columnDefinition="binary(36)")
         @Column(name="id", columnDefinition="binary(16)", length = 16)
         private UUID uuid;
         
@@ -185,42 +183,18 @@ public class JpaDataOperation extends AbstractAuditedEntity implements DataOpera
         public OpId() {
         }
         
-        public UUID getUuid() {
-            return uuid;
+        public OpId(Serializable ser) {
+            super(ser);
         }
         
+        @Override
+        public UUID getUuid() {
+            return this.uuid;
+        }
+        
+        @Override
         public void setUuid(UUID uuid) {
             this.uuid = uuid;
-        }
-        
-        public OpId(Serializable ser) {
-            if (ser instanceof String) {
-                this.uuid = UUID.fromString((String) ser);
-            } else if (ser instanceof UUID) {
-                this.uuid = (UUID) ser;
-            } else {
-                throw new IllegalArgumentException("Unknown ID value: " + ser);
-            }
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof FeedId) {
-                OpId that = (OpId) obj;
-                return Objects.equals(this.uuid, that.uuid);
-            } else {
-                return false;
-            }
-        }
-        
-        @Override
-        public int hashCode() {
-            return Objects.hash(getClass(), this.uuid);
-        }
-        
-        @Override
-        public String toString() {
-            return this.uuid.toString();
         }
     }
 

@@ -5,7 +5,6 @@ package com.thinkbiganalytics.metadata.jpa.feed;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -18,6 +17,7 @@ import javax.persistence.Table;
 
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
+import com.thinkbiganalytics.metadata.jpa.BaseId;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 import com.thinkbiganalytics.metadata.jpa.op.JpaDataOperation;
 
@@ -74,11 +74,10 @@ public class JpaFeedDestination extends JpaFeedConnection implements FeedDestina
 
 
     @Embeddable
-    public static class DestinationId implements FeedDestination.ID {
+    public static class DestinationId extends BaseId implements FeedDestination.ID {
         
         private static final long serialVersionUID = 241001606640713117L;
         
-        //@Column(name="id", columnDefinition="binary(36)")
         @Column(name="id", columnDefinition="binary(16)", length = 16)
         private UUID uuid;
         
@@ -89,42 +88,18 @@ public class JpaFeedDestination extends JpaFeedConnection implements FeedDestina
         public DestinationId() {
         }
         
-        public UUID getUuid() {
-            return uuid;
+        public DestinationId(Serializable ser) {
+            super(ser);
         }
         
+        @Override
+        public UUID getUuid() {
+            return this.uuid;
+        }
+        
+        @Override
         public void setUuid(UUID uuid) {
             this.uuid = uuid;
-        }
-        
-        public DestinationId(Serializable ser) {
-            if (ser instanceof String) {
-                this.uuid = UUID.fromString((String) ser);
-            } else if (ser instanceof UUID) {
-                this.uuid = (UUID) ser;
-            } else {
-                throw new IllegalArgumentException("Unknown ID value: " + ser);
-            }
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof DestinationId) {
-                DestinationId that = (DestinationId) obj;
-                return Objects.equals(this.uuid, that.uuid);
-            } else {
-                return false;
-            }
-        }
-        
-        @Override
-        public int hashCode() {
-            return Objects.hash(getClass(), this.uuid);
-        }
-        
-        @Override
-        public String toString() {
-            return this.uuid.toString();
         }
     }
 

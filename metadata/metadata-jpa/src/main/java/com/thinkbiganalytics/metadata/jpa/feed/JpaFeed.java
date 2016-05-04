@@ -38,6 +38,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.jpa.BaseId;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -261,11 +262,10 @@ public class JpaFeed extends AbstractAuditedEntity implements Feed {
 
     
     @Embeddable
-    public static class FeedId implements Feed.ID {
+    public static class FeedId extends BaseId implements Feed.ID {
         
         private static final long serialVersionUID = -8322308917629324338L;
-
-        //@Column(name="id", columnDefinition="binary(36)")
+      
         @Column(name="id", columnDefinition="binary(16)", length = 16)
         private UUID uuid;
         
@@ -276,59 +276,20 @@ public class JpaFeed extends AbstractAuditedEntity implements Feed {
         public FeedId() {
         }
         
-        public UUID getUuid() {
-            return uuid;
+        public FeedId(Serializable ser) {
+            super(ser);
         }
         
+        @Override
+        public UUID getUuid() {
+            return this.uuid;
+        }
+        
+        @Override
         public void setUuid(UUID uuid) {
             this.uuid = uuid;
         }
-        
-        public FeedId(Serializable ser) {
-            if (ser instanceof String) {
-                this.uuid = UUID.fromString((String) ser);
-            } else if (ser instanceof UUID) {
-                this.uuid = (UUID) ser;
-            } else {
-                throw new IllegalArgumentException("Unknown ID value: " + ser);
-            }
-        }
-        
-        @Override
-        public boolean equals(Object obj) {
-            if (obj instanceof FeedId) {
-                FeedId that = (FeedId) obj;
-                return Objects.equals(this.uuid, that.uuid);
-            } else {
-                return false;
-            }
-        }
-        
-        @Override
-        public int hashCode() {
-            return Objects.hash(getClass(), this.uuid);
-        }
-        
-        @Override
-        public String toString() {
-            return this.uuid.toString();
-        }
     }
-//    
-//    
-//    @Embeddable
-//    public static class FeedId extends BaseId implements Feed.ID {
-//        
-//        private static final long serialVersionUID = -8322308917629324338L;
-//        
-//        public FeedId() {
-//            super();
-//        }
-//        
-//        public FeedId(Serializable ser) {
-//            super(ser);
-//        }
-//    }
 
     
     @Embeddable
