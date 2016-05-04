@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.jpa.sla;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -21,6 +22,7 @@ import javax.persistence.Table;
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
@@ -46,9 +48,14 @@ public class JpaObligationGroup extends AbstractAuditedEntity implements Obligat
     private JpaServiceLevelAgreement agreement;
     
     @OneToMany(targetEntity=JpaObligation.class, mappedBy = "group", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Obligation> obligations;
+    private List<Obligation> obligations = new ArrayList<>();
     
     public JpaObligationGroup() {
+    }
+
+    public JpaObligationGroup(JpaServiceLevelAgreement sla, Condition cond) {
+        sla.addGroup(this);
+        setCondition(cond);
     }
 
     /* (non-Javadoc)
@@ -75,4 +82,13 @@ public class JpaObligationGroup extends AbstractAuditedEntity implements Obligat
         return this.agreement;
     }
 
+    public void setCondition(Condition condition) {
+        this.condition = condition;
+    }
+
+    public void setAgreement(JpaServiceLevelAgreement agreement) {
+        this.agreement = agreement;
+    }
+
+    
 }

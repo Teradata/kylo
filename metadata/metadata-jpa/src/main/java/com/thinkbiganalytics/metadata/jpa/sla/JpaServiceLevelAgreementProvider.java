@@ -6,21 +6,19 @@ package com.thinkbiganalytics.metadata.jpa.sla;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.UUID;
 
-import org.joda.time.DateTime;
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 
+import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement.SlaId;
+import com.thinkbiganalytics.metadata.sla.api.AgreementNotFoundException;
 import com.thinkbiganalytics.metadata.sla.api.DuplicateAgreementNameException;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
-import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID;
@@ -35,56 +33,52 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
  */
 public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementProvider {
 
-    private Map<SLAID, ServiceLevelAgreement> slas;
-    private Map<String, ID> nameToSlas;
-
-    /**
-     * 
-     */
-    public JpaServiceLevelAgreementProvider() {
-        this.slas = Collections.synchronizedMap(new HashMap<SLAID, ServiceLevelAgreement>());
-        this.nameToSlas = Collections.synchronizedMap(new HashMap<String, ID>());
-    }
+    @Inject
+    private EntityManager entityMgr;
 
     @Override
-    public ID resolve(Serializable ser) {
-        return resolveImpl(ser);
-    }
-
-    @Override
-    public List<ServiceLevelAgreement> getAgreements() {
-        synchronized (this.slas) {
-            return new ArrayList<ServiceLevelAgreement>(this.slas.values());
+    public ID resolve(Serializable id) {
+        if (id instanceof JpaServiceLevelAgreement.SlaId) {
+            return (JpaServiceLevelAgreement.SlaId) id;
+        } else {
+            return new JpaServiceLevelAgreement.SlaId(id);
         }
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<ServiceLevelAgreement> getAgreements() {
+        return new ArrayList<ServiceLevelAgreement>(this.entityMgr.createQuery("select f from JpaServiceLevelAgreement f").getResultList());
     }
 
     @Override
     public ServiceLevelAgreement getAgreement(ID id) {
-        return this.slas.get(id);
+        return this.entityMgr.find(JpaServiceLevelAgreement.class, id); 
     }
 
     @Override
     public ServiceLevelAgreement findAgreementByName(String slaName) {
-        ID id = this.nameToSlas.get(slaName);
-
-        if (id != null) {
-            return this.slas.get(id);
-        } else {
+        Query query = this.entityMgr.createQuery("select s from JpaServiceLevelAgreement s where s.name = :slaName", JpaServiceLevelAgreement.class);
+        query.setParameter("slaName", slaName);
+        @SuppressWarnings("unchecked")
+        List<JpaServiceLevelAgreement> list = query.getResultList();
+        
+        if (list.isEmpty()) {
             return null;
+        } else {
+            return list.get(0);
         }
     }
 
     @Override
-    public ServiceLevelAgreement removeAgreement(ID id) {
-        synchronized (this.slas) {
-            ServiceLevelAgreement sla = this.slas.remove(id);
-
-            if (sla != null) {
-                this.nameToSlas.remove(sla.getName());
-                return sla;
-            } else {
-                return null;
-            }
+    public boolean removeAgreement(ID id) {
+        JpaServiceLevelAgreement sla = this.entityMgr.find(JpaServiceLevelAgreement.class, id);
+        
+        if (sla != null) {
+            this.entityMgr.remove(sla);
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -95,64 +89,48 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
 
     @Override
     public ServiceLevelAgreementBuilder builder(ID id) {
-        return new SLABuilderImpl(resolveImpl(id));
+        SlaId slaId = (SlaId) id;
+        return new SLABuilderImpl(slaId);
     }
 
-    private SLAImpl addSLA(SLAImpl sla) {
-        synchronized (this.slas) {
-            SLAID id = new SLAID();
-
-            if (this.nameToSlas.containsKey(sla.getName())) {
-                throw new DuplicateAgreementNameException(sla.getName());
-            } else {
-                sla.setId(id);
-                this.slas.put(id, sla);
-                this.nameToSlas.put(sla.getName(), id);
-                return sla;
-            }
-        }
-    }
-
-    private SLAImpl replaceSLA(SLAID id, SLAImpl sla) {
-        ServiceLevelAgreement oldSla = this.slas.get(id);
-        ServiceLevelAgreement.ID namedId = this.nameToSlas.get(sla.getName());
-
-        // Make sure the name of the new SLA does not match that of another SLA
-        // besides the one being replaced.
-        if (namedId == null || oldSla.getId().equals(namedId)) {
-            sla.setId(id);
-            this.slas.put(id, sla);
-            return sla;
+    private ServiceLevelAgreement createAgreement(JpaServiceLevelAgreement sla) {
+        JpaServiceLevelAgreement slaImpl = (JpaServiceLevelAgreement) findAgreementByName(sla.getName());
+        
+        if (slaImpl == null) {
+            this.entityMgr.persist(slaImpl);
+            return slaImpl;
         } else {
             throw new DuplicateAgreementNameException(sla.getName());
         }
     }
 
-    private SLAID resolveImpl(Serializable ser) {
-        // TODO: throw unknown ID exception?
-        if (ser instanceof String) {
-            return new SLAID((String) ser);
-        } else if (ser instanceof UUID) {
-            return new SLAID((UUID) ser);
-        } else if (ser instanceof SLAID) {
-            return (SLAID) ser;
+    private ServiceLevelAgreement replaceAgreement(SlaId id, JpaServiceLevelAgreement update) {
+        JpaServiceLevelAgreement existing = this.entityMgr.find(JpaServiceLevelAgreement.class, id);
+        
+        if (existing != null) {
+            update.setId(id);
+            this.entityMgr.merge(update);
+            return update;
         } else {
-            throw new IllegalArgumentException("Invalid ID source format: " + ser.getClass());
+            throw new AgreementNotFoundException(update.getId());
         }
     }
 
+
+
+
     private class SLABuilderImpl implements ServiceLevelAgreementBuilder {
 
-        private SLAID id;
+        private JpaServiceLevelAgreement.SlaId id;
         private String name;
         private String descrtion;
-        private SLAImpl sla = new SLAImpl();
+        private JpaServiceLevelAgreement sla = new JpaServiceLevelAgreement();
 
         public SLABuilderImpl() {
             this(null);
         }
 
-        public SLABuilderImpl(SLAID id) {
+        public SLABuilderImpl(JpaServiceLevelAgreement.SlaId id) {
             this.id = id;
         }
 
@@ -176,13 +154,13 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
 
         @Override
         public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder() {
-            return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(this.sla.defaultGroup, this);
+            return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(this.sla.getDefaultGroup(), this);
         }
         
         @Override
         public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder(Condition condition) {
-            ObligationGroupImpl group = new ObligationGroupImpl(this.sla, condition);
-            this.sla.obligationGroups.add(group);
+            JpaObligationGroup group = new JpaObligationGroup(this.sla, condition);
+            this.sla.getObligationGroups().add(group);
             return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(group, this);
         }
 
@@ -197,9 +175,9 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
             this.sla.setDescription(this.descrtion);
 
             if (this.id == null) {
-                return addSLA(sla);
+                return createAgreement(sla);
             } else {
-                return replaceSLA(this.id, sla);
+                return replaceAgreement(this.id, sla);
             }
         }
     }
@@ -208,16 +186,16 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
 
         private SLABuilderImpl slaBuilder;
         private ObligationGroupBuilderImpl groupBuilder;
-        private ObligationGroupImpl group;
+        private JpaObligationGroup group;
         private String description;
         private Set<Metric> metrics = new HashSet<Metric>();
 
-        public ObligationBuilderImpl(ObligationGroupImpl group, SLABuilderImpl bldr) {
+        public ObligationBuilderImpl(JpaObligationGroup group, SLABuilderImpl bldr) {
             this.slaBuilder = bldr;
             this.group = group;
         }
         
-        public ObligationBuilderImpl(ObligationGroupImpl group, ObligationGroupBuilderImpl bldr) {
+        public ObligationBuilderImpl(JpaObligationGroup group, ObligationGroupBuilderImpl bldr) {
             this.groupBuilder = bldr;
             this.group = group;
         }
@@ -245,17 +223,17 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
 
         @Override
         public Obligation build() {
-            ObligationImpl ob = new ObligationImpl();
-            ob.description = this.description;
-            ob.metrics = this.metrics;
-            ob.group = this.group;
+            JpaObligation ob = new JpaObligation();
+            ob.setDescription(this.description);
+            ob.setMetrics(this.metrics);
+            ob.setGroup(this.group);
             return ob;
         }
 
         @Override
         @SuppressWarnings("unchecked")
         public B add() {
-            ObligationImpl ob = (ObligationImpl) build();
+            JpaObligation ob = (JpaObligation) build();
             this.group.getObligations().add(ob);
             if (this.groupBuilder != null) {
                 return (B) this.groupBuilder;
@@ -268,11 +246,11 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
     private static class ObligationGroupBuilderImpl implements ObligationGroupBuilder {
 
         private SLABuilderImpl slaBuilder;
-        private ObligationGroupImpl group;
+        private JpaObligationGroup group;
         
         public ObligationGroupBuilderImpl(SLABuilderImpl slaBuilder, Condition cond) {
             this.slaBuilder = slaBuilder;
-            this.group = new ObligationGroupImpl(this.slaBuilder.sla, cond);
+            this.group = new JpaObligationGroup(this.slaBuilder.sla, cond);
         }
 
         @Override
@@ -288,174 +266,9 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
 
         @Override
         public ServiceLevelAgreementBuilder build() {
-            this.slaBuilder.sla.obligationGroups.add(this.group);
+            this.slaBuilder.sla.getObligationGroups().add(this.group);
             return this.slaBuilder;
         }
     }
 
-    private static class SLAID implements ServiceLevelAgreement.ID {
-
-        private static final long serialVersionUID = 8914036758972637669L;
-
-        private final UUID uuid;
-
-        public SLAID() {
-            this(UUID.randomUUID());
-        }
-
-        public SLAID(String str) {
-            this(UUID.fromString(str));
-        }
-
-        public SLAID(UUID id) {
-            this.uuid = id;
-        }
-
-        @Override
-        public String toString() {
-            return this.uuid.toString();
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (!this.getClass().equals(obj.getClass()))
-                return false;
-
-            return Objects.equals(this.uuid, ((SLAID) obj).uuid);
-        }
-
-        @Override
-        public int hashCode() {
-            return Objects.hash(getClass(), this.uuid);
-        }
-
-    }
-
-    private static class SLAImpl implements ServiceLevelAgreement {
-
-        private ServiceLevelAgreement.ID id;
-        private String name;
-        private DateTime createdTime = DateTime.now();
-        private String description;
-        private ObligationGroupImpl defaultGroup;
-        private List<ObligationGroup> obligationGroups;
-
-        public SLAImpl() {
-            this.defaultGroup = new ObligationGroupImpl(this, Condition.REQUIRED);
-            this.obligationGroups = new ArrayList<ObligationGroup>();
-        }
-
-        public ServiceLevelAgreement.ID getId() {
-            return id;
-        }
-
-        protected void setId(ServiceLevelAgreement.ID id) {
-            this.id = id;
-        }
-
-        @Override
-        public String getName() {
-            return name;
-        }
-
-        protected void setName(String name) {
-            this.name = name;
-        }
-
-        @Override
-        public DateTime getCreatedTime() {
-            return this.createdTime;
-        }
-
-        @Override
-        public String getDescription() {
-            return description;
-        }
-
-        protected void setDescription(String description) {
-            this.description = description;
-        }
-
-        @Override
-        public List<ObligationGroup> getObligationGroups() {
-            if (this.defaultGroup.getObligations().isEmpty()) {
-                return this.obligationGroups;
-            } else {
-                ArrayList<ObligationGroup> list = new ArrayList<>();
-                list.add(this.defaultGroup);
-                list.addAll(this.obligationGroups);
-                return list;
-            }
-        }
-
-        @Override
-        public List<Obligation> getObligations() {
-            List<Obligation> list = new ArrayList<>();
-            
-            list.addAll(this.defaultGroup.getObligations());
-            for (ObligationGroup group : this.obligationGroups) {
-                list.addAll(group.getObligations());
-            }
-            
-            return list;
-        }
-    }
-
-    private static class ObligationImpl implements Obligation {
-
-        private ObligationGroupImpl group;
-        private String description;
-        private Set<Metric> metrics = new HashSet<Metric>();
-
-        @Override
-        public String getDescription() {
-            return this.description;
-        }
-
-        @Override
-        public ServiceLevelAgreement getAgreement() {
-            return this.group.getAgreement();
-        }
-        
-        @Override
-        public ObligationGroup getGroup() {
-            return this.group;
-        }
-
-        @Override
-        public Set<Metric> getMetrics() {
-            return Collections.unmodifiableSet(this.metrics);
-        }
-    }
-
-    private static class ObligationGroupImpl implements ObligationGroup {
-    
-        private SLAImpl sla;
-        private Condition condition;
-        private List<Obligation> obligations = new ArrayList<>();
-        
-        public ObligationGroupImpl(SLAImpl sla, Condition condition) {
-            this.sla = sla;
-            this.condition = condition;
-        }
-    
-        @Override
-        public ServiceLevelAgreement getAgreement() {
-            return this.sla;
-        }
-
-        @Override
-        public Condition getCondition() {
-            return this.condition;
-        }
-    
-        @Override
-        public List<Obligation> getObligations() {
-            return this.obligations;
-        }
-    }
 }

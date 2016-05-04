@@ -75,15 +75,15 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
     }
 
     @Override
-    public ServiceLevelAgreement removeAgreement(ID id) {
+    public boolean removeAgreement(ID id) {
         synchronized (this.slas) {
             ServiceLevelAgreement sla = this.slas.remove(id);
 
             if (sla != null) {
                 this.nameToSlas.remove(sla.getName());
-                return sla;
+                return true;
             } else {
-                return null;
+                return false;
             }
         }
     }

@@ -46,9 +46,9 @@ public interface ServiceLevelAgreementProvider {
     /**
      * Removes an SLA with the given ID.
      * @param id the ID of an SLA
-     * @return the SLA that was removed, or null if the SLA no longer existed
+     * @return true of the SLA existed and was SLA, otherwise false
      */
-    ServiceLevelAgreement removeAgreement(ServiceLevelAgreement.ID id);
+    boolean removeAgreement(ServiceLevelAgreement.ID id);
 
     /**
      * Produces a new builder for creating a new SLA.

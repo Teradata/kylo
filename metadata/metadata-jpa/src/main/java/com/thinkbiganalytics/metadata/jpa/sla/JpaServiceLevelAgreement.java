@@ -15,6 +15,7 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.jpa.BaseId;
@@ -42,7 +43,10 @@ public class JpaServiceLevelAgreement extends AbstractAuditedEntity implements S
     private String description;
     
     @OneToMany(targetEntity=JpaObligationGroup.class, mappedBy = "agreement", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ObligationGroup> obligationGroups;
+    private List<ObligationGroup> obligationGroups = new ArrayList<>();
+    
+    @Transient
+    private JpaObligationGroup defaultGroup;
     
     /**
      * 
@@ -55,6 +59,9 @@ public class JpaServiceLevelAgreement extends AbstractAuditedEntity implements S
         this.id = SlaId.create();
         this.name = name;
         this.description = description;
+        this.defaultGroup = new JpaObligationGroup();
+        
+        addGroup(this.defaultGroup);
     }
 
     /* (non-Javadoc)
@@ -102,8 +109,33 @@ public class JpaServiceLevelAgreement extends AbstractAuditedEntity implements S
         
         return list;
     }
-
     
+    public JpaObligationGroup getDefaultGroup() {
+        return defaultGroup;
+    }
+
+    public void addGroup(JpaObligationGroup group) {
+        getObligationGroups().add(group);
+        group.setAgreement(this);
+    }
+
+    public void setId(SlaId id) {
+        this.id = id;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setObligationGroups(List<ObligationGroup> obligationGroups) {
+        this.obligationGroups = obligationGroups;
+    }
+
+
     @Embeddable
     public static class SlaId extends BaseId implements ServiceLevelAgreement.ID, Serializable {
         
