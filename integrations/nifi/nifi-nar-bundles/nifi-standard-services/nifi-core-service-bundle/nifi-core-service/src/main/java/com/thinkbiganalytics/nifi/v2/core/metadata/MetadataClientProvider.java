@@ -167,27 +167,27 @@ public class MetadataClientProvider implements MetadataProvider {
         return this.client.updateDataOperation(op);
     }
 
-    @Override
-    // TODO: Sean to remove after refactor
-    public void recordLastSuccessfulLoad(String categoryName, String feedName, BatchLoadStatus newStatus) {
-        legacy.recordLastSuccessfulLoad(categoryName, feedName, newStatus);
-    }
-
-    @Override
-    // TODO: Sean to remove after refactor
-    public BatchLoadStatus getLastLoad(String categoryName, String feedName) {
-        return legacy.getLastLoad(categoryName, feedName);
-    }
-
-    @Override
-    // TODO: Sean to remove after refactor
-    public boolean isRegistrationRequired(String categoryName, String feedName) {
-        return legacy.isRegistrationRequired(categoryName, feedName);
-    }
-
-    @Override
-    // TODO: Sean to remove after refactor
-    public void recordRegistration(String category, String feed, boolean result) {
-        legacy.recordRegistration(category, feed, result);
-    }
+//    @Override
+//    // TODO: Sean to remove after refactor
+//    public void recordLastSuccessfulLoad(String categoryName, String feedName, BatchLoadStatus newStatus) {
+//        legacy.recordLastSuccessfulLoad(categoryName, feedName, newStatus);
+//    }
+//
+//    @Override
+//    // TODO: Sean to remove after refactor
+//    public BatchLoadStatus getLastLoad(String categoryName, String feedName) {
+//        return legacy.getLastLoad(categoryName, feedName);
+//    }
+//
+//    @Override
+//    // TODO: Sean to remove after refactor
+//    public boolean isRegistrationRequired(String categoryName, String feedName) {
+//        return legacy.isRegistrationRequired(categoryName, feedName);
+//    }
+//
+//    @Override
+//    // TODO: Sean to remove after refactor
+//    public void recordRegistration(String category, String feed, boolean result) {
+//        legacy.recordRegistration(category, feed, result);
+//    }
 }
