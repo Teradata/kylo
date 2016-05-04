@@ -298,21 +298,52 @@
             angular.forEach(self.gridApi.grid.columns, function(column) {
                 angular.forEach(column.filters, function(filter) {
                     if (filter.term) {
-                        if (filter.condition == uiGridConstants.filter.LESS_THAN) {
-                            self.pushFormula("filter(lessThan(" + column.field + ", \"" + StringUtils.quote(filter.term)
-                                    + "\"))");
-                        } else if (filter.condition == uiGridConstants.filter.GREATER_THAN) {
-                            self.pushFormula("filter(greaterThan(" + column.field + ", \"" + StringUtils.quote(filter.term)
-                                    + "\"))");
-                        } else if (filter.condition == uiGridConstants.filter.EXACT) {
-                            self.pushFormula("filter(equal(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))");
-                        } else if (filter.condition == uiGridConstants.filter.CONTAINS) {
-                            var query = "%" + filter.term.replace("%", "%%") + "%";
-                            self.pushFormula("filter(like(" + column.field + ", \"" + StringUtils.quote(query) + "\"))");
-                        }
+                        self.addColumnFilter(filter, column);
                     }
                 });
             });
+        };
+
+        /**
+         * Add formula for a column filter.
+         *
+         * @param {Object} filter the filter
+         * @param {ui.grid.GridColumn} column the column
+         */
+        this.addColumnFilter = function(filter, column) {
+            // Generate formula for filter
+            var formula;
+            var verb;
+
+            switch (filter.condition) {
+                case uiGridConstants.filter.LESS_THAN:
+                    formula = "filter(lessThan(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                    verb = "less than";
+                    break;
+
+                case uiGridConstants.filter.GREATER_THAN:
+                    formula = "filter(greaterThan(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                    verb = "greater than";
+                    break;
+
+                case uiGridConstants.filter.EXACT:
+                    formula = "filter(equal(" + column.field + ", \"" + StringUtils.quote(filter.term) + "\"))";
+                    verb = "equal to";
+                    break;
+
+                case uiGridConstants.filter.CONTAINS:
+                    var query = "%" + filter.term.replace("%", "%%") + "%";
+                    formula = "filter(like(" + column.field + ", \"" + StringUtils.quote(query) + "\"))";
+                    verb = "containing";
+                    break;
+
+                default:
+                    throw new Error("Unsupported filter condition: " + filter.condition);
+            }
+
+            // Add formula
+            var name = "Find " + column.displayName + " " + verb + " " + filter.term;
+            self.pushFormula(name, "filter_list", formula);
         };
 
         /**
@@ -357,6 +388,7 @@
                         .ariaLabel("error executing the query")
                         .ok("Got it!");
                 $mdDialog.show(alert);
+                console.log(e);
                 return;
             }
 

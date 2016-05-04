@@ -192,16 +192,16 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          * @returns {string|null} the Hive column label if the column exists, or {@code null} otherwise
          */
         getColumnLabel: function(fieldName) {
-            var columns = this.getState().columns;
-
-            if (columns !== null) {
-                for (var i = 0; i < columns.length; ++i) {
-                    if (columns[i].field == fieldName) {
-                        return columns[i].hiveColumnLabel;
+            for (var i=this.states_.length-1; i >= 0; --i) {
+                var columns = this.states_[i].columns;
+                if (columns !== null) {
+                    for (var j = 0; j < columns.length; ++j) {
+                        if (columns[j].field === fieldName) {
+                            return columns[j].hiveColumnLabel;
+                        }
                     }
                 }
             }
-
             return null;
         },
 
