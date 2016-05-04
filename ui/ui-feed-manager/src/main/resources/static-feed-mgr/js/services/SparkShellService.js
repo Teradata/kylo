@@ -33,6 +33,18 @@
  */
 
 /**
+ * A field in a database table.
+ *
+ * @typedef {Object} SchemaField
+ * @property {string} dataType name of the data type
+ * @property {string} description a description for the field contents
+ * @property {string} name field name
+ * @property {boolean} nullable {@code true} if the field can contain {@code null} values
+ * @property {boolean} primaryKey {@code true} if the field is a part of the primary key
+ * @property {string[]} sampleValues sample values of the field
+ */
+
+/**
  * Maintains the state of a Spark script for a single transformation.
  *
  * @typedef {Object} ScriptState
@@ -200,6 +212,26 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          */
         getColumns: function() {
             return this.getState().columns;
+        },
+
+        /**
+         * Gets the schema fields for the the current transformation. The transformation must have been applied first.
+         *
+         * @returns {Array.<SchemaField>} the schema fields
+         */
+        getFields: function() {
+            return _.map(this.getColumns(), function(col) {
+                var dataType;
+                if (col.dataType.startsWith("decimal")) {
+                    dataType = "double";
+                } else if (col.dataType === "smallint") {
+                    dataType = "int";
+                } else {
+                    dataType = col.dataType;
+                }
+                return {name: col.hiveColumnLabel, description: "", dataType: dataType, primaryKey: false, nullable: false,
+                    sampleValues: []};
+            });
         },
 
         /**

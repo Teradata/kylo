@@ -72,6 +72,20 @@ describe("SparkShellService", function() {
         expect(service.getColumnLabel("col1")).toBe("(pricepaid - commission)")
     });
 
+    // getFields
+    it("should get a list of fields", function() {
+        var service = new SparkShellService("SELECT * FROM invalid");
+        service.states_[0].columns = [
+            {dataType: "string", hiveColumnLabel: "username"},
+            {dataType: "decimal(8,2)", hiveColumnLabel: "(pricepaid - commission) / qtysold"}
+        ];
+        expect(service.getFields()).toEqual([
+            {name: "username", description: "", dataType: "string", primaryKey: false, nullable: false, sampleValues: []},
+            {name: "(pricepaid - commission) / qtysold", description: "", dataType: "double", primaryKey: false, nullable: false,
+                sampleValues: []}
+        ]);
+    });
+
     // getScript
     describe("get script", function() {
         it("from a column expression", function() {
