@@ -57,7 +57,7 @@ table.md-table.visual-query-table {
     margin-right: 16px;
 }
 .visual-query-function-history md-list-item > p {
-    margin-right: 40px;
+    /*margin-right: 40px;*/
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
