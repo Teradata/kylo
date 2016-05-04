@@ -1,0 +1,13 @@
+Import project into IDE
+mvn clean install
+set maven plugin to offline mode
+
+Download and run HDP sandbox or demo sandbox (If demo sandbox then NiFI and JMS will be running)
+run install script for NiFi (TODO add script)
+run install script for ActiveMQ standalone (TODO add script)
+Note: wget will not work for activemq because of redirect - need to figure out or put it in S3
+/opt/activemq/apache-activemq-5.13.2/bin/activemq start
+
+Optional: run JMS broker locally from services/jms-service/activemq-broker
+
+Fire up UI and service apps in IDE

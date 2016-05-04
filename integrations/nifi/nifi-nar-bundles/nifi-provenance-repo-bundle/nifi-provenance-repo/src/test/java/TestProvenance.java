@@ -2,6 +2,7 @@ import com.thinkbiganalytics.activemq.config.ActiveMqConfig;
 import com.thinkbiganalytics.nifi.activemq.NifiActiveMqConfig;
 import com.thinkbiganalytics.nifi.config.NifiProvenanceConfig;
 import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventActiveMqWriter;
+
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;
 import org.apache.nifi.provenance.StandardProvenanceEventRecord;
@@ -28,7 +29,7 @@ public class TestProvenance {
     @Autowired
     private ProvenanceEventActiveMqWriter activeMqWriter;
 
-    @Test
+    //@Test
     public void sendSimpleMessage() throws InterruptedException, JMSException {
 
         Thread runner = new Thread(new TestProducer());

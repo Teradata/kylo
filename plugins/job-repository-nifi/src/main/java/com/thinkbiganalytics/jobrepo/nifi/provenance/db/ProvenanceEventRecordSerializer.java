@@ -5,6 +5,8 @@ import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 
+import java.io.IOException;
+
 /**
  * Serialize the ProvenanceEventRecord
  * delegates to Jackson to turn it into a JSON object

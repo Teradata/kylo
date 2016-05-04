@@ -5,6 +5,7 @@
 package com.thinkbiganalytics.jobrepo.nifi.provenance;
 
 import com.thinkbiganalytics.jobrepo.nifi.provenance.db.ProvenanceEventReceiverDatabaseWriter;
+
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,7 @@ import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
 import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.activemq.Subscriptions;
 import com.thinkbiganalytics.nifi.activemq.Topics;
 
 /**
@@ -23,7 +25,7 @@ import com.thinkbiganalytics.nifi.activemq.Topics;
 @Component
 public class ProvenanceEventReceiver {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ProvenanceEventReceiver.class);
+    private static final Logger logger = LoggerFactory.getLogger(ProvenanceEventReceiver.class);
 
 
     @Autowired
@@ -32,23 +34,23 @@ public class ProvenanceEventReceiver {
     @Autowired
     private ProvenanceEventReceiverDatabaseWriter databaseWriter;
 
-    public ProvenanceEventReceiver(){
+    public ProvenanceEventReceiver() {
 
     }
 
-    @JmsListener(destination = Topics.THINKBIG_NIFI_EVENT_TOPIC, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
-    public void receiveTopic(ProvenanceEventDTO message){
-        LOG.info("Received ProvenanceEvent with Nifi Event Id of " + message.getEventId() + " <" + message + ">");
+    @JmsListener(destination = Topics.THINKBIG_NIFI_EVENT_TOPIC, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY,
+                 subscription = Subscriptions.FEED_MANAGER_NIFI_PROVENANCE)
+    public void receiveTopic(ProvenanceEventDTO message) {
+        logger.info("Received ProvenanceEvent with Nifi Event Id of " + message.getEventId() + " <" + message + ">");
         Long eventId = message.getEventId();
         try {
-           eventId =  databaseWriter.writeEvent(message);
-        }catch (Exception e){
-            e.printStackTrace();
+            eventId = databaseWriter.writeEvent(message);
+        } catch (Exception e) {
+            logger.error("Error writing database event");
         }
-        ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO(eventId,message);
+        ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO(eventId, message);
         provenanceEventListener.receiveEvent(dto);
     }
-
 
 
 }

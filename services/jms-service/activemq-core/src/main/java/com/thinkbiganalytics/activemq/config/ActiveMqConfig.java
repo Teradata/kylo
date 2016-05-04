@@ -35,6 +35,8 @@ public class ActiveMqConfig {
 
     @Value("${jms.activemq.broker.url:tcp://localhost:61616}")
     private String activeMqBrokerUrl;
+    @Value("${jms.client.id:thinkbig.feedmgr}")
+    private String jmsClientId;
 
     @Bean
     public ConnectionFactory connectionFactory() {
@@ -52,6 +54,8 @@ public class ActiveMqConfig {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
         factory.setPubSubDomain(true);
         factory.setConnectionFactory(connectionFactory);
+        factory.setSubscriptionDurable(true);
+        factory.setClientId(jmsClientId);
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
         converter.setTargetType(MessageType.TEXT);
         converter.setTypeIdPropertyName("jms_javatype");
