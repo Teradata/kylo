@@ -284,6 +284,7 @@
             });
 
             //update the ag-grid
+            self.gridApi.grid.moveColumns.orderCache = [];
             self.gridOptions.columnDefs = columns;
             self.gridOptions.data = tableData.rows;
 
@@ -382,7 +383,7 @@
             });
 
             formula += ")";
-            self.pushFormula(formula);
+            self.pushFormula("Reorder columns", "reorder", formula);
         };
 
         /**
