@@ -22,7 +22,7 @@ public interface MetadataRecorder {
     
     boolean isFeedInitialized(FlowFile ff);
     
-    void recoredFeedInitialization(ProcessSession session, FlowFile ff, boolean flag);
+    void recordFeedInitialization(ProcessSession session, FlowFile ff, boolean flag);
     
     void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg);
 

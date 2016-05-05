@@ -114,7 +114,7 @@ public class UpdateRegistration extends AbstractProcessor {
         final String result = context.getProperty(RESULT).getValue();
         try {
             final MetadataRecorder client = metadataService.getRecorder();
-            client.recoredFeedInitialization(session, incoming, true);
+            client.recordFeedInitialization(session, incoming, true);
 
         } catch (final Exception e) {
             logger.error("Failed to update registration due to {}", new Object[]{incoming, e});

@@ -148,8 +148,8 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
 
         final String dburl = context.getProperty(DATABASE_URL).getValue();
 
-        // dataSource.setMaxWait(maxWaitMillis);
-        // dataSource.setMaxActive(maxTotal);
+        //dataSource.setMaxWait(maxWaitMillis);
+        //dataSource.setMaxActive(maxTotal);
 
         dataSource.setUrl(dburl);
         dataSource.setUsername(user);

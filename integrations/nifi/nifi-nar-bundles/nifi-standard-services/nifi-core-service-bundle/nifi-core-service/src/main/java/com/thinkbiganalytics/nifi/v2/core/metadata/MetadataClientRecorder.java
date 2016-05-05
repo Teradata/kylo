@@ -77,7 +77,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
     }
 
     @Override
-    public void recoredFeedInitialization(ProcessSession session, FlowFile ff, boolean flag) {
+    public void recordFeedInitialization(ProcessSession session, FlowFile ff, boolean flag) {
         String feedId = ff.getAttribute(MetadataConstants.FEED_ID_PROP);
         
         if (feedId != null) {
