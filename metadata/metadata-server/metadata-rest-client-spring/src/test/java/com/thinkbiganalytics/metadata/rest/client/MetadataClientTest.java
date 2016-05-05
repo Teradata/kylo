@@ -67,7 +67,7 @@ public class MetadataClientTest {
         assertThat(result).isNotNull().hasSize(2).containsEntry("testKey", "testValue");
     }
     
-    @Test
+//    @Test
     public void testUpdateFeed() throws ParseException {
         Feed feed = buildFeed("feed1").post();
         
