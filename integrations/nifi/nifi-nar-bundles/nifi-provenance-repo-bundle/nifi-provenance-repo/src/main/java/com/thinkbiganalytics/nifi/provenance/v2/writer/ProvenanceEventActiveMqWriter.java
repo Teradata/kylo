@@ -69,7 +69,7 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
     ProvenanceEventReceiverDatabaseWriter databaseWriter;
 
 
-    @Value("${thinkbig.provenance.h2.databaseName:/opt/tba/tmp/thinkbig-nifi}")
+    @Value("${thinkbig.provenance.h2.databaseName:/opt/tba/nifi/h2/thinkbig-nifi}")
     private String h2DatabaseName;
 
     @Value("${thinkbig.provenance.h2.showWebConsole:false}")
@@ -116,7 +116,7 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
     }
 
     private void initializeTemporaryDatabase() throws Exception {
-        logger.info("Starting H2 database");
+        logger.info("Starting H2 database. The database name is:  " + h2DatabaseName );
         db = new EmbeddedDatabaseBuilder()
             .generateUniqueName(false)
             .setType(EmbeddedDatabaseType.H2)
