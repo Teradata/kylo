@@ -6,6 +6,8 @@ package com.thinkbiganalytics.metadata.rest.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -13,6 +15,7 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.FormParam;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -304,6 +307,109 @@ public class FeedsController {
             }
         });
     }
+    
+    @PUT
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Feed updateFeed(@PathParam("id") final String feedId, 
+                           final Feed feed) {
+        LOG.debug("Update feed: {}", feed);
+        
+        Model.validateCreate(feed);
+        
+        return this.metadata.commit(new Command<Feed>() {
+            @Override
+            public Feed execute() {
+                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
+                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                
+                if (domain != null) {
+                    return Model.updateDomain(feed, domain);
+                } else {
+                    throw new WebApplicationException("No feed exist with the ID: " + feed.getId(), Status.NOT_FOUND);
+                }
+            }
+        });
+    }
+    
+    @GET
+    @Path("{id}/props")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Properties getFeedProperties(@PathParam("id") final String feedId) {
+        LOG.debug("Get feed properties ID: {}", feedId);
+        
+        return this.metadata.commit(new Command<Properties>() {
+            @Override
+            public Properties execute() {
+                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
+                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                
+                if (domain != null) {
+                    Map<String, String> domainProps = domain.getProperties();
+                    Properties newProps = new Properties();
+                    
+                    newProps.putAll(domainProps);
+                    return newProps;
+                } else {
+                    throw new WebApplicationException("No feed exist with the ID: " + feedId, Status.NOT_FOUND);
+                }
+            }
+        });
+    }
+    
+    @POST
+    @Path("{id}/props")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Properties mergeFeedProperties(@PathParam("id") final String feedId, 
+                                          final Properties props) {
+        LOG.debug("Merge feed properties ID: {}, properties: {}", feedId, props);
+        
+        return this.metadata.commit(new Command<Properties>() {
+            @Override
+            public Properties execute() {
+                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
+                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                
+                if (domain != null) {
+                    Map<String, String> domainProps = updateProperties(props, domain, false);
+                    Properties newProps = new Properties();
+                    
+                    newProps.putAll(domainProps);
+                    return newProps;
+                } else {
+                    throw new WebApplicationException("No feed exist with the ID: " + feedId, Status.NOT_FOUND);
+                }
+            }
+
+        });
+    }
+    
+    @PUT
+    @Path("{id}/props")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Properties replaceFeedProperties(@PathParam("id") final String feedId, 
+                                            final Properties props) {
+        LOG.debug("Replace feed properties ID: {}, properties: {}", feedId, props);
+        
+        return this.metadata.commit(new Command<Properties>() {
+            @Override
+            public Properties execute() {
+                com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
+                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                
+                if (domain != null) {
+                    Map<String, String> domainProps = updateProperties(props, domain, true);
+                    Properties newProps = new Properties();
+                    
+                    newProps.putAll(domainProps);
+                    return newProps;
+                } else {
+                    throw new WebApplicationException("No feed exist with the ID: " + feedId, Status.NOT_FOUND);
+                }
+            }
+
+        });
+    }
 
     @POST
     @Path("{feedId}/source")
@@ -370,6 +476,22 @@ public class FeedsController {
                 return Model.DOMAIN_TO_FEED.apply(domainFeed);
             }
         });
+    }
+
+    private Map<String, String> updateProperties(final Properties props,
+                                                 com.thinkbiganalytics.metadata.api.feed.Feed domain,
+                                                 boolean replace) {
+        Map<String, String> domainProps = domain.getProperties();
+        
+        if (replace) {
+            domainProps.clear();
+        }
+        
+        for (String name : props.stringPropertyNames()) {
+            domainProps.put(name, props.getProperty(name));
+        }
+        
+        return domainProps;
     }
 
     private ServiceLevelAssessment generateModelAssessment(com.thinkbiganalytics.metadata.api.feed.FeedPrecondition precond) {

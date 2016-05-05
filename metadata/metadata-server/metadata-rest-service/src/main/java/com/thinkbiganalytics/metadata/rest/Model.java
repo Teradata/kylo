@@ -499,6 +499,11 @@ public class Model {
         if (deep) ob.setMetrics(toModelMetrics(domainOb.getMetrics()));
         return ob;
     }
+
+    public static Feed updateDomain(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domain) {
+        // TODO implement
+        throw new WebApplicationException("Not supported at this time");
+    }
         
     public static void validateCreate(Feed feed) {
         // TODO Auto-generated method stub

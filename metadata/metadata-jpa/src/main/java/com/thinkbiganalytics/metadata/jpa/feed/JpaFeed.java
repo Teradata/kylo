@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -26,10 +25,13 @@ import javax.persistence.EntityListeners;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
 import javax.persistence.MapKeyColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+
+import org.hibernate.annotations.GenericGenerator;
 
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.jpa.AuditTimestampListener;
@@ -266,7 +268,9 @@ public class JpaFeed extends AbstractAuditedEntity implements Feed {
         
         private static final long serialVersionUID = -8322308917629324338L;
       
-        @Column(name="id", columnDefinition="binary(16)", length = 16)
+        @GeneratedValue(generator = "uuid")
+        @GenericGenerator(name = "uuid", strategy = "uuid")
+        @Column(name="id", columnDefinition="binary(16)")
         private UUID uuid;
         
         public static FeedId create() {

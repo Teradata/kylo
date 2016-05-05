@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.joda.time.DateTime;
@@ -20,7 +21,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -133,6 +133,18 @@ public class MetadataClient {
     
     public FeedDependency getFeedDependency(String id) {
         return get(Paths.get("feed", id, "depfeeds"), FeedDependency.class);
+    }
+
+    public void updateFeed(Feed feed) {
+        put(Paths.get("feed", feed.getId()), feed, Feed.class);
+    }
+    
+    public Properties mergeFeedProperties(String id, Properties props) {
+        return post(Paths.get("feed", id), props, Properties.class);
+    }
+    
+    public Properties replaceFeedProperties(String id, Properties props) {
+        return put(Paths.get("feed", id), props, Properties.class);
     }
 
     public DirectoryDatasourceBuilder buildDirectoryDatasource(String name) {
