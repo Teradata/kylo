@@ -37,7 +37,7 @@ public class SparkScriptEngineTest {
     public void testWithCompileError() throws Exception {
         // Configure expected exception
         thrown.expect(ScriptException.class);
-        thrown.expectMessage(CoreMatchers.equalTo("error: not found: value Method in <console> at line number 11"));
+        thrown.expectMessage(CoreMatchers.equalTo("error: not found: value Method in <console> at line number 17"));
 
         // Test evaluating
         SparkScriptEngine engine = new SparkScriptEngine(CONF);

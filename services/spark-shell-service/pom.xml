@@ -12,11 +12,6 @@
   <name>Interactive Spark Shell Server</name>
   <description>Compiles and executes Scala code in a Spark context.</description>
 
-  <properties>
-    <!-- TODO: Remove this entry and support newer Spark versions -->
-    <spark.version>1.4.0</spark.version>
-  </properties>
-
   <dependencies>
 
     <!-- Core dependencies -->
@@ -28,8 +23,6 @@
     <dependency>
       <groupId>com.google.code.findbugs</groupId>
       <artifactId>jsr305</artifactId>
-      <version>2.0.3</version>
-      <scope>provided</scope>
     </dependency>
 
     <!-- Jersey dependencies -->
@@ -46,13 +39,11 @@
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-compiler</artifactId>
-      <version>${scala.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.scala-lang</groupId>
       <artifactId>scala-reflect</artifactId>
-      <version>${scala.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -60,19 +51,16 @@
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-core_2.10</artifactId>
-      <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-hive_2.10</artifactId>
-      <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
       <groupId>org.apache.spark</groupId>
       <artifactId>spark-repl_2.10</artifactId>
-      <version>${spark.version}</version>
       <scope>provided</scope>
     </dependency>
 
@@ -84,6 +72,11 @@
 
     <!-- Testing dependencies -->
     <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-all</artifactId>
       <scope>test</scope>
@@ -91,13 +84,6 @@
     <dependency>
       <groupId>org.specs</groupId>
       <artifactId>specs</artifactId>
-      <version>1.2.5</version>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.hamcrest</groupId>
-      <artifactId>hamcrest-all</artifactId>
-      <version>${hamcrest.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -114,7 +100,6 @@
       <plugin>
         <groupId>org.scala-tools</groupId>
         <artifactId>maven-scala-plugin</artifactId>
-        <version>2.15.2</version>
         <configuration>
           <checkMultipleScalaVersions>false</checkMultipleScalaVersions>
         </configuration>
@@ -139,7 +124,6 @@
       <!-- create single distribution file -->
       <plugin>
         <artifactId>maven-assembly-plugin</artifactId>
-        <version>2.3</version>
         <configuration>
           <descriptors>
             <descriptor>src/main/assembly/descriptor.xml</descriptor>

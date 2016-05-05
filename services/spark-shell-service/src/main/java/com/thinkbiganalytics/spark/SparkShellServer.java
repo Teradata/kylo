@@ -4,10 +4,9 @@ import com.thinkbiganalytics.spark.repl.ScriptEngine;
 import com.thinkbiganalytics.spark.repl.ScriptEngineFactory;
 import com.thinkbiganalytics.spark.rest.SparkShellController;
 import com.thinkbiganalytics.spark.service.TransformService;
-import com.thinkbiganalytics.spark.util.ClassUtils;
 
 import org.apache.spark.SparkConf;
-import org.apache.spark.util.Utils;
+import org.apache.spark.util.ShutdownHookManager;
 import org.eclipse.jetty.server.Server;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -90,13 +89,7 @@ public class SparkShellServer {
                 return BoxedUnit.UNIT;
             }
         };
-
-        try {
-            Class<?> cls = Class.forName("com.apache.spark.util.ShutdownHookManager");
-            ClassUtils.invoke(cls, "addShutdownHook", hook);
-        } catch (ClassNotFoundException e) {
-            Utils.addShutdownHook(hook);
-        }
+        ShutdownHookManager.addShutdownHook(hook);
 
         // Wait for service to start
         service.awaitRunning();

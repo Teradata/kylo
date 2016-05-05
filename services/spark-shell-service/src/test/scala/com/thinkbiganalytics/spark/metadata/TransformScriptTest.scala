@@ -77,8 +77,8 @@ class TransformScriptTest {
 
         val largeDecimalType = new DecimalType(Option.empty)
         val largeDecimalInspector = script.toInspector(largeDecimalType).asInstanceOf[JavaHiveDecimalObjectInspector]
-        Assert.assertEquals(HiveDecimal.MAX_PRECISION, largeDecimalInspector.precision())
-        Assert.assertEquals(HiveDecimal.MAX_SCALE, largeDecimalInspector.scale())
+        Assert.assertEquals(10, largeDecimalInspector.precision())
+        Assert.assertEquals(0, largeDecimalInspector.scale())
 
         // Test struct type conversion
         val dataType = StructType(Array(StructField("id", IntegerType)))
