@@ -30,7 +30,7 @@ public class Feed implements Serializable {
     private String displayName;
     private String description;
     private String owner;
-    private State state;
+    private State state = State.ENABLED;
     private DateTime createdTime;
     private boolean initialized;
     // TODO versions

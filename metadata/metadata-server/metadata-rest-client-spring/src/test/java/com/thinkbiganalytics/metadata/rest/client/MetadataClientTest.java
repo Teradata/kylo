@@ -67,6 +67,26 @@ public class MetadataClientTest {
         assertThat(result).isNotNull().hasSize(2).containsEntry("testKey", "testValue");
     }
     
+    @Test
+    public void testUpdateFeed() throws ParseException {
+        Feed feed = buildFeed("feed1").post();
+        
+        assertThat(feed.getDescription()).isEqualTo("feed1 feed");
+        assertThat(feed.getState()).isEqualTo(Feed.State.ENABLED);
+        assertThat(feed.isInitialized()).isFalse();
+        
+        feed.setDescription("Description changed");
+        feed.setState(Feed.State.DISABLED);
+        feed.setInitialized(true);
+        
+        Feed result = client.updateFeed(feed);
+        
+        assertThat(result).isNotNull();
+        assertThat(result.getDescription()).isEqualTo("Description changed");
+        assertThat(result.getState()).isEqualTo(Feed.State.DISABLED);
+        assertThat(feed.isInitialized()).isTrue();
+    }
+    
 //    @Test
     public void testAddFeedSource() throws ParseException {
         Feed feed = buildFeed("feed1").post();

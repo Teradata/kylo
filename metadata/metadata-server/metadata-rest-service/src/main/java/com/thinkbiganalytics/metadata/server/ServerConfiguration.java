@@ -92,6 +92,7 @@ public class ServerConfiguration {
     
     // SLA config
     @Bean
+    @Profile("metadata.memory-only")
     public ServiceLevelAgreementProvider slaProvider() {
         return new InMemorySLAProvider();
     }

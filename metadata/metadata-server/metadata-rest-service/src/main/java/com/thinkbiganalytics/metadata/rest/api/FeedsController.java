@@ -309,7 +309,11 @@ public class FeedsController {
         });
     }
     
-    @PUT
+    /**
+     * Updates an existing feed.  Note that POST is used here rather than PUT since it behaves more 
+     * like a PATCH; which isn't supported in Jersey.
+     */
+    @POST
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public Feed updateFeed(@PathParam("id") final String feedId, 
@@ -325,7 +329,8 @@ public class FeedsController {
                 com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
-                    return Model.updateDomain(feed, domain);
+                    domain = Model.updateDomain(feed, domain);
+                    return Model.DOMAIN_TO_FEED.apply(domain);
                 } else {
                     throw new WebApplicationException("No feed exist with the ID: " + feed.getId(), Status.NOT_FOUND);
                 }

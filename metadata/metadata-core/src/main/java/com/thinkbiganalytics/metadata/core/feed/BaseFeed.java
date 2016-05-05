@@ -37,6 +37,7 @@ public class BaseFeed implements Feed {
     private String displayName;
     private String description;
     private State state;
+    private boolean initialized;
     private DateTime createdTime;
     private Map<FeedSource.ID, FeedSource> sources = new HashMap<>();
     private Map<FeedDestination.ID, FeedDestination> destinations = new HashMap<>();
@@ -93,6 +94,14 @@ public class BaseFeed implements Feed {
         return name;
     }
     
+    public boolean isInitialized() {
+        return initialized;
+    }
+    
+    public void setInitialized(boolean initialized) {
+        this.initialized = initialized;
+    }
+    
     @Override
     public String getDisplayName() {
         return this.displayName;
@@ -101,7 +110,17 @@ public class BaseFeed implements Feed {
     public String getDescription() {
         return description;
     }
-    
+
+    @Override
+    public void setDisplayName(String name) {
+        this.displayName = name;
+    }
+
+    @Override
+    public void setDescription(String descr) {
+        this.description = descr;
+    }
+
     @Override
     public State getState() {
         return this.state;

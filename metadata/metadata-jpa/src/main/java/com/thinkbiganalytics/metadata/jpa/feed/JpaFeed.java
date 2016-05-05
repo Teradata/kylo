@@ -70,6 +70,10 @@ public class JpaFeed extends AbstractAuditedEntity implements Feed {
     @Column(name="description", length=255)
     private String description;
     
+    @Column(name="initialized", length=1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean initialized;
+    
     @Enumerated(EnumType.STRING)
     @Column(name="state", length=10, nullable=false)
     private State state = State.ENABLED;
@@ -136,6 +140,14 @@ public class JpaFeed extends AbstractAuditedEntity implements Feed {
     
     public void setId(FeedId id) {
         Id = id;
+    }
+    
+    public boolean isInitialized() {
+        return initialized;
+    }
+    
+    public void setInitialized(boolean initialized) {
+        this.initialized = initialized;
     }
 
     public String getName() {

@@ -135,8 +135,9 @@ public class MetadataClient {
         return get(Paths.get("feed", id, "depfeeds"), FeedDependency.class);
     }
 
-    public void updateFeed(Feed feed) {
-        put(Paths.get("feed", feed.getId()), feed, Feed.class);
+    public Feed updateFeed(Feed feed) {
+        // Using POST here in since it behaves more like a PATCH than a PUT, and PATCH is not supported in jersey.
+        return post(Paths.get("feed", feed.getId()), feed, Feed.class);
     }
     
     public Properties mergeFeedProperties(String id, Properties props) {

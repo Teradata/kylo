@@ -34,6 +34,8 @@ public interface Feed extends Propertied, Serializable {
     
     DateTime getCreatedTime();
     
+    boolean isInitialized();
+    
     FeedPrecondition getPrecondition();
     
     List<FeedSource> getSources();
@@ -47,5 +49,13 @@ public interface Feed extends Propertied, Serializable {
     FeedDestination getDestination(Datasource.ID id);
 
     FeedDestination getDestination(FeedDestination.ID id);
+    
 
+    void setInitialized(boolean flag);
+    
+    void setDisplayName(String name);
+    
+    void setDescription(String descr);
+    
+    void setState(State state);
 }

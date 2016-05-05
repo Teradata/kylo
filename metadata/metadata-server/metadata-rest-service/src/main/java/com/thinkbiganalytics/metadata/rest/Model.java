@@ -26,6 +26,7 @@ import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
+import com.thinkbiganalytics.metadata.api.feed.Feed.State;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceSchedule;
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
@@ -207,11 +208,12 @@ public class Model {
                 Feed feed = new Feed();
                 feed.setId(domain.getId().toString());
                 feed.setSystemName(domain.getName());
-                feed.setDisplayName(domain.getName());
+                feed.setDisplayName(domain.getDisplayName());
                 feed.setDescription(domain.getDescription());
-                feed.setDisplayName(domain.getName());
                 feed.setState(Feed.State.valueOf(domain.getState().name()));
                 feed.setCreatedTime(domain.getCreatedTime());
+                feed.setInitialized(domain.isInitialized());
+//                feed.setPrecondition();
 //                feed.setOwner();
                 feed.setSources(new HashSet<>(Collections2.transform(domain.getSources(), DOMAIN_TO_FEED_SOURCE)));
                 feed.setDestinations(new HashSet<>(Collections2.transform(domain.getDestinations(), DOMAIN_TO_FEED_DESTINATION)));
@@ -500,9 +502,12 @@ public class Model {
         return ob;
     }
 
-    public static Feed updateDomain(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domain) {
-        // TODO implement
-        throw new WebApplicationException("Not supported at this time");
+    public static com.thinkbiganalytics.metadata.api.feed.Feed updateDomain(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domain) {
+        domain.setDisplayName(feed.getDisplayName());
+        domain.setDescription(feed.getDescription());
+        domain.setState(State.valueOf(feed.getState().name()));
+        domain.setInitialized(feed.isInitialized());
+        return domain;
     }
         
     public static void validateCreate(Feed feed) {
