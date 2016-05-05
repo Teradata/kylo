@@ -134,6 +134,45 @@ describe("SparkShellService", function() {
                     ".filter(new Column(\"qtysold\").equalTo(functions.lit(2)).and(new Column(\"pricepaid\")" +
                     ".minus(new Column(\"commission\")).gt(functions.lit(200))))");
         });
+        it("from an optional expression", function() {
+            // Create service
+            var service = new SparkShellService("SELECT * FROM invalid");
+            service.setFunctionDefs({
+                "rand": {"!spark": "functions.rand(%?d)", "!sparkType": "column"}
+            });
+
+            // Test script
+            var formula = "rand()";
+            service.push("random", "code", tern.parse(formula));
+            expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
+                    "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
+                    ".select(new Column(\"*\"), functions.rand())");
+        });
+        it("from a vararg expression", function() {
+            // Create service
+            var service = new SparkShellService("SELECT * FROM invalid");
+            service.states_[0].columns = [
+                {field: "username", hiveColumnLabel: "username"},
+                {field: "eventname", hiveColumnLabel: "eventname"},
+                {field: "qtysold", hiveColumnLabel: "qtysold"},
+                {field: "pricepaid", hiveColumnLabel: "pricepaid"}
+            ];
+            service.setFunctionDefs({
+                "!define": {
+                    "GroupedData": {
+                        "sum": {"!spark": ".sum(%s%,*s)", "!sparkType": "dataframe"}
+                    }
+                },
+                "groupBy": {"!spark": ".groupBy(%*c)", "!sparkType": "groupeddata"}
+            });
+            
+            // Test script
+            var formula = "groupBy(username, eventname).sum(\"qtysold\", \"pricepaid\")";
+            service.push("aggregation", "code", tern.parse(formula));
+            expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
+                    "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
+                    ".groupBy(new Column(\"username\"), new Column(\"eventname\")).sum(\"qtysold\", \"pricepaid\")");
+        });
     });
 
     // limit

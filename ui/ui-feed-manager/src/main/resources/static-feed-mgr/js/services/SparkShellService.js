@@ -64,7 +64,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
     var DEFINE_DIRECTIVE = "!define";
 
     /** Regular expression for conversion strings */
-    var FORMAT_REGEX = /%([cCdfsw])/g;
+    var FORMAT_REGEX = /%([?*,]*)([bcdfsw])/g;
 
     /** TernJS directive for the Spark code */
     var SPARK_DIRECTIVE = "!spark";
@@ -631,11 +631,19 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          * @throws {ParseException} if a format parameter cannot be converted to the specified type
          */
         format: function(str, var_args) {
+            // Convert arguments
             var context = {
                 args: Array.prototype.slice.call(arguments, 1),
                 index: 0
             };
-            return str.replace(FORMAT_REGEX, angular.bind(str, SparkExpression.replace, context));
+            var result = str.replace(FORMAT_REGEX, angular.bind(str, SparkExpression.replace, context));
+
+            // Verify all arguments converted
+            if (context.index >= context.args.length) {
+                return result;
+            } else {
+                throw new ParseException("Too many arguments for conversion.");
+            }
         },
 
         /**
@@ -667,36 +675,103 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          * @static
          * @param {FormatContext} context the format context
          * @param {string} match the conversion specification
+         * @param {string} flags the conversion flags
          * @param {string} type the type specifier
          * @returns {string} the converted Spark code
          * @throws {Error} if the type specifier is not supported
          * @throws {ParseException} if the format parameter cannot be converted to the specified type
          */
-        replace: function(context, match, type) {
+        replace: function(context, match, flags, type) {
+            // Parse flags
+            var comma = false;
+            var end = context.index + 1;
+
+            for (var i=0; i < flags.length; ++i) {
+                switch (flags.charAt(i)) {
+                    case ",":
+                        comma = true;
+                        break;
+
+                    case "?":
+                        end = (context.index < context.args.length) ? end : 0;
+                        break;
+
+                    case "*":
+                        end = context.args.length;
+                        break;
+
+                    default:
+                        throw new Error("Unsupported conversion flag: " + flags.charAt(i));
+                }
+            }
+
             // Validate arguments
-            if (context.args.length <= context.index) {
+            if (end > context.args.length) {
                 throw new ParseException("Not enough arguments for conversion");
             }
 
             // Convert to requested type
-            switch (type) {
-                case "c":
-                    return SparkExpression.toColumn(context.args[context.index++]);
+            var first = true;
+            var result = "";
 
-                case "C":
-                    return SparkExpression.toColumnArgs(context);
+            for (; context.index < end; ++context.index) {
+                // Argument separator
+                if (comma || !first) {
+                    result += ", ";
+                } else {
+                    first = false;
+                }
 
-                case "d":
-                    return SparkExpression.toInteger(context.args[context.index++]);
+                // Conversion
+                var arg = context.args[context.index];
 
-                case "s":
-                    return SparkExpression.toString(context.args[context.index++]);
+                switch (type) {
+                    case "b":
+                        result += SparkExpression.toBoolean(arg);
+                        break;
 
-                case "w":
-                    return SparkExpression.toWindowSpec(context.args[context.index++]);
+                    case "c":
+                        result += SparkExpression.toColumn(arg);
+                        break;
 
-                default:
-                    throw new Error("Not a recognized type specifier: " + match);
+                    case "d":
+                        result += SparkExpression.toInteger(arg);
+                        break;
+
+                    case "f":
+                        result += SparkExpression.toDouble(arg);
+                        break;
+
+                    case "s":
+                        result += SparkExpression.toString(arg);
+                        break;
+
+                    case "w":
+                        result += SparkExpression.toWindowSpec(arg);
+                        break;
+
+                    default:
+                        throw new Error("Not a recognized conversion type: " + type);
+                }
+            }
+
+            return result;
+        },
+
+        /**
+         * Converts the specified Spark expression to a boolean literal.
+         *
+         * @private
+         * @static
+         * @param {SparkExpression} expression the Spark expression
+         * @returns {string} the Spark code for the boolean
+         * @throws {ParseException} if the expression cannot be converted to a boolean
+         */
+        toBoolean: function(expression) {
+            if (expression.type === SparkType.LITERAL && (expression.source === "true" || expression.source === "false")) {
+                return expression.source;
+            } else {
+                throw new ParseException("Expression cannot be converted to a boolean: " + expression.type, expression.start);
             }
         },
 
@@ -723,34 +798,29 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         },
 
         /**
-         * Converts the specified Spark expressions to a list of function arguments.
-         *
-         * @private
-         * @static
-         * @param {FormatContext} context the format context
-         * @returns {string} the Spark code for the function arguments
-         * @throws {ParseException} if any expression cannot be converted to a column
-         */
-        toColumnArgs: function(context) {
-            var result = "";
-
-            for (; context.index < context.args.length; ++context.index) {
-                if (context.index !== 0) {
-                    result += ", ";
-                }
-                result += SparkExpression.toColumn(context.args[context.index]);
-            }
-
-            return result;
-        },
-
-        /**
-         * Converts the specified Spark expression to a number.
+         * Converts the specified Spark expression to a double.
          *
          * @private
          * @static
          * @param {SparkExpression} expression the Spark expression
-         * @returns {number} the Spark code for the number
+         * @returns {string} the Spark code for the double
+         * @throws {ParseException} if the expression cannot be converted to a double
+         */
+        toDouble: function(expression) {
+            if (expression.type === SparkType.LITERAL && expression.source.match(/^(0|-?[1-9][0-9]*)(\.[0-9]+)?$/) !== null) {
+                return expression.source;
+            } else {
+                throw new ParseException("Expression cannot be converted to an integer: " + expression.type, expression.start);
+            }
+        },
+
+        /**
+         * Converts the specified Spark expression to an integer.
+         *
+         * @private
+         * @static
+         * @param {SparkExpression} expression the Spark expression
+         * @returns {string} the Spark code for the integer
          * @throws {ParseException} if the expression cannot be converted to a number
          */
         toInteger: function(expression) {
@@ -972,6 +1042,10 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 } else if (arg.type === SparkType.LITERAL) {
                     return new SparkExpression("-" + arg.source, SparkType.LITERAL, arg.start, node.end);
                 }
+                break;
+
+            case "!":
+                def = sparkShellService.getFunctionDefs().not;
                 break;
 
             default:
