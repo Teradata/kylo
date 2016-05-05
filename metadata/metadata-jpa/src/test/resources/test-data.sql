@@ -1,3 +1,6 @@
+--
+-- mysqldump -u root -t --compact --hex-blob --skip-extended-insert --complete-insert metadata
+--
 INSERT INTO `DATASOURCE` (`type`, `id`, `created_time`, `description`, `name`, `database_name`, `table_name`, `path`) VALUES ('directory',0x85AC5EFC0E7711E6BE09F1C2F9960556,'2016-04-29 19:01:58','Dummy dir datasource','dir-ds1',NULL,NULL,'file:/tmp/dir');
 INSERT INTO `DATASOURCE` (`type`, `id`, `created_time`, `description`, `name`, `database_name`, `table_name`, `path`) VALUES ('hivetable',0xA5EBAB3C0E7711E6BE09F1C2F9960556,'2016-04-29 19:02:52','Dummy dir datasource','table-ds1','dummydb','dummytable1',NULL);
 INSERT INTO `DATASOURCE` (`type`, `id`, `created_time`, `description`, `name`, `database_name`, `table_name`, `path`) VALUES ('hivetable',0xE763E524103511E6BE09F1C2F9960556,'2016-05-02 00:17:18','Table 2','table-ds2','dummydb','dummytable2',NULL);

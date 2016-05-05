@@ -6,11 +6,11 @@ import java.net.URI;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Properties;
 
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
@@ -50,6 +50,21 @@ public class MetadataClientTest {
         feed = client.getFeed(feed.getId());
         
         assertThat(feed).isNotNull();
+    }
+    
+//    @Test
+    public void testMergeFeedProperties() throws ParseException {
+        Feed feed = buildFeed("feed1").post();
+        
+        assertThat(feed).isNotNull();
+        assertThat(feed.getProperties()).isNotNull().hasSize(1).containsEntry("key1", "value1");
+        
+        Properties props = new Properties();
+        props.setProperty("testKey", "testValue");
+        
+        Properties result = client.mergeFeedProperties(feed.getId(), props);
+        
+        assertThat(result).isNotNull().hasSize(2).containsEntry("testKey", "testValue");
     }
     
 //    @Test
@@ -158,7 +173,8 @@ public class MetadataClientTest {
         return client.buildFeed(name)
                 .description(name + " feed")
                 .owner("ownder")
-                .displayName(name);
+                .displayName(name)
+                .property("key1", "value1");
 //                .preconditionMetric(FeedExecutedSinceScheduleMetric.named(name, "0 0 6 * * ? *"));
     }
     
@@ -167,6 +183,7 @@ public class MetadataClientTest {
                 .description(name + " feed")
                 .owner("ownder")
                 .displayName(name)
+                .property("key1", "value1")
                 .preconditionMetric(FeedExecutedSinceFeedMetric.named(dependent, name));
     }
     

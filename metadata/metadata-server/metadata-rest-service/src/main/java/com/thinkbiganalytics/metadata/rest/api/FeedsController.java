@@ -297,6 +297,7 @@ public class FeedsController {
                     
                     ensureDependentDatasources(feed, domainFeed);
                     ensurePrecondition(feed, domainFeed);
+                    ensureProperties(feed, domainFeed);
                     
                     return Model.DOMAIN_TO_FEED.apply(feedProvider.getFeed(domainFeed.getId()));
                 } else if (ensure) {
@@ -526,6 +527,15 @@ public class FeedsController {
         }
     }
     
+    private void ensureProperties(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
+        Map<String, String> domainProps = domainFeed.getProperties();
+        Properties props = feed.getProperties();
+        
+        for (String key : feed.getProperties().stringPropertyNames()) {
+            domainProps.put(key, props.getProperty(key));
+        }
+    }
+
     private com.thinkbiganalytics.metadata.api.feed.FeedCriteria createFeedCriteria(String name,
                                             String srcId,
                                             String destId) {

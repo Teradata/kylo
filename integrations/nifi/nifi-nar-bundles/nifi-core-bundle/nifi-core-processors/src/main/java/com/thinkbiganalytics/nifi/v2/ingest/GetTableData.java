@@ -4,14 +4,21 @@
 
 package com.thinkbiganalytics.nifi.v2.ingest;
 
-import com.thinkbiganalytics.ingest.GetTableDataSupport;
-import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
-import com.thinkbiganalytics.nifi.core.api.metadata.BatchLoadStatus;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.util.BatchLoadStatusImpl;
-import com.thinkbiganalytics.util.ComponentAttributes;
-import com.thinkbiganalytics.util.JdbcCommon;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -32,15 +39,17 @@ import org.apache.nifi.processor.io.OutputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.LongHolder;
 import org.apache.nifi.util.StopWatch;
+import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
+import com.thinkbiganalytics.ingest.GetTableDataSupport;
+import com.thinkbiganalytics.nifi.core.api.metadata.BatchLoadStatus;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
+import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
+import com.thinkbiganalytics.util.BatchLoadStatusImpl;
+import com.thinkbiganalytics.util.ComponentAttributes;
+import com.thinkbiganalytics.util.JdbcCommon;
 
 @TriggerWhenEmpty
 @InputRequirement(Requirement.INPUT_FORBIDDEN)
@@ -222,18 +231,19 @@ public class GetTableData extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        FlowFile incoming = null;
+        FlowFile flowFile = null;
         if (context.hasIncomingConnection()) {
-            incoming = session.get();
+            flowFile = session.get();
 
             // If we have no FlowFile, and all incoming connections are self-loops then we can continue on.
             // However, if we have no FlowFile and we have connections coming from other Processors, then
             // we know that we should run only if we have a FlowFile.
-            if (incoming == null && context.hasNonLoopConnection()) {
+            if (flowFile == null && context.hasNonLoopConnection()) {
                 return;
             }
         }
 
+        final FlowFile incoming = flowFile;
         final ProcessorLog logger = getLogger();
 
         final DBCPService dbcpService = context.getProperty(JDBC_SERVICE).asControllerService(DBCPService.class);
@@ -250,11 +260,11 @@ public class GetTableData extends AbstractProcessor {
         final String unitSize = context.getProperty(UNIT_SIZE).evaluateAttributeExpressions(incoming).getValue();
 
         final String[] selectFields = parseFields(fieldSpecs);
-        final MetadataProvider client = metadataService.getProvider();
+        final MetadataRecorder recorder = metadataService.getRecorder();
 
         final LoadStrategy strategy = LoadStrategy.valueOf(loadStrategy);
         final StopWatch stopWatch = new StopWatch(true);
-        final Map<String, Object> metadata = new HashMap();
+        final Map<String, Object> metadata = new HashMap<>();
 
         try (final Connection conn = dbcpService.getConnection()) {
 
@@ -273,8 +283,7 @@ public class GetTableData extends AbstractProcessor {
                             rs = support.selectFullLoad(tableName, selectFields);
                         } else if (strategy == LoadStrategy.INCREMENTAL) {
 
-                            BatchLoadStatus status = client.getLastLoad(categoryName, feedName);
-                            lastLoadDate = (status != null ? status.getLastLoadDate() : null);
+                            lastLoadDate = recorder.getLastLoadTime(session, incoming, categoryName).toDate();
                             visitor = new LastFieldVisitor(dateField, lastLoadDate);
                             rs = support.selectIncremental(tableName, selectFields, dateField, overlapTime, lastLoadDate, backoffTime, GetTableDataSupport.UnitSizes.valueOf(unitSize));
                         } else {
@@ -322,9 +331,8 @@ public class GetTableData extends AbstractProcessor {
                     Date newHighwater = (Date) metadata.get(ComponentAttributes.NEW_HIGHWATER_DATE.key());
                     outgoing = session.putAttribute(outgoing, ComponentAttributes.PREVIOUS_HIGHWATER_DATE.key(), prettyDate(previousHighwater));
                     outgoing = session.putAttribute(outgoing, ComponentAttributes.NEW_HIGHWATER_DATE.key(), prettyDate(newHighwater));
-                    BatchLoadStatus newStatus = new BatchLoadStatusImpl();
-                    newStatus.setLastLoadDate(newHighwater);
-                    client.recordLastSuccessfulLoad(categoryName, feedName, newStatus);
+                    
+                    recorder.recordLastLoadTime(session, incoming, categoryName, new DateTime(newHighwater));
 
                     logger.info("Recorded load status feed {} date {}", new Object[]{feedName, newHighwater});
                 }

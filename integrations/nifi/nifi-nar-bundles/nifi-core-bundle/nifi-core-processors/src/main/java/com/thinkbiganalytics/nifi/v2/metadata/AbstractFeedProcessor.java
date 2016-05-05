@@ -3,31 +3,26 @@
  */
 package com.thinkbiganalytics.nifi.v2.metadata;
 
-import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 
-import java.util.*;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 
 /**
  * @author Sean Felten
  */
 public abstract class AbstractFeedProcessor extends AbstractProcessor {
-
-    public static final DateTimeFormatter TIME_FORMATTER = ISODateTimeFormat.dateTime();
-
-    public static final String FEED_ID_PROP = "feed.id";
-    public static final String SRC_DATASET_ID_PROP = "src.dataset.id";
-    public static final String DEST_DATASET_ID_PROP = "dest.dataset.id";
-    public static final String OPERATON_START_PROP = "operation.start.time";
-    public static final String OPERATON_STOP_PROP = "operation.stop.time";
 
     public static final PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
             .name("Metadata Provider Service")

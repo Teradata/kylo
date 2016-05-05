@@ -3,12 +3,17 @@
  */
 package com.thinkbiganalytics.nifi.v2.metadata;
 
-import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
-import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.DEST_DATASET_ID_PROP;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.FEED_ID_PROP;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_STOP_PROP;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Properties;
+import java.util.Set;
+
 import org.apache.nifi.annotation.lifecycle.OnScheduled;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
@@ -19,18 +24,19 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
-import java.util.List;
-import java.util.Set;
+import com.thinkbiganalytics.metadata.rest.model.Formatters;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 
 /**
  * @author Sean Felten
  */
 public abstract class AbstractTerminateFeed extends AbstractFeedProcessor {
-
-    // TODO re-enable caching when we do more intelligent handling when the feed and datasource info has been
-    // removed from the metadata store.
-//    private AtomicReference<Datasource> destinationDatasource = new AtomicReference<>();
-//    private AtomicReference<FeedDestination> feedDestination = new AtomicReference<>();
 
     public static final PropertyDescriptor DEST_DATASET_NAME = new PropertyDescriptor.Builder()
             .name(DEST_DATASET_ID_PROP)
@@ -90,12 +96,14 @@ public abstract class AbstractTerminateFeed extends AbstractFeedProcessor {
 //                }
 
                 String timeStr = flowFile.getAttribute(OPERATON_START_PROP);
-                DateTime opStart = timeStr != null ? TIME_FORMATTER.parseDateTime(timeStr) : new DateTime();
+                DateTime opStart = timeStr != null ? Formatters.TIME_FORMATTER.parseDateTime(timeStr) : new DateTime();
 
                 DataOperation op = provider.beginOperation(destination, opStart);
                 op = completeOperation(context, flowFile, ds, op, getState(context, op));
+                
+                updateFeedState(context, flowFile);
 
-                flowFile = session.putAttribute(flowFile, OPERATON_STOP_PROP, TIME_FORMATTER.print(new DateTime()));
+                flowFile = session.putAttribute(flowFile, OPERATON_STOP_PROP, Formatters.TIME_FORMATTER.print(new DateTime()));
 
                 session.remove(flowFile);
 //            session.transfer(flowFile, SUCCESS);
@@ -108,6 +116,29 @@ public abstract class AbstractTerminateFeed extends AbstractFeedProcessor {
             getLogger().error("Unexpected error processing feed completion", e);
             throw new ProcessException(e);
         }
+    }
+
+    private void updateFeedState(ProcessContext context, FlowFile flowFile) {
+        MetadataProvider provider = getProviderService(context).getProvider();
+        String feedId = flowFile.getAttribute(FEED_ID_PROP);
+
+        if (feedId != null) {
+            Properties props = deriveFeedProperties(flowFile);
+            provider.updateFeedProperties(feedId, props);
+        }
+    }
+
+    private Properties deriveFeedProperties(FlowFile flowFile) {
+        Properties props = new Properties();
+        Map<String, String> attrs = flowFile.getAttributes();
+        
+        for (Entry<String, String> entry : attrs.entrySet()) {
+            if (entry.getKey().startsWith(MetadataConstants.LAST_LOAD_TIME_PROP)) {
+                props.setProperty(entry.getKey(), entry.getValue());
+            }
+        }
+        
+        return props;
     }
 
     protected State getState(ProcessContext context, DataOperation op) {

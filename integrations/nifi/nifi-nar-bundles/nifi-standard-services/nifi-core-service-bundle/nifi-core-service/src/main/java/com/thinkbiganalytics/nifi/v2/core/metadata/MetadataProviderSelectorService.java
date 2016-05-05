@@ -7,8 +7,11 @@
  */
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
@@ -18,10 +21,9 @@ import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 
 /**
  * @author Sean Felten
@@ -64,6 +66,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
 
 
     private volatile MetadataProvider provider;
+    private volatile MetadataRecorder recorder;
 
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
@@ -86,6 +89,10 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     public MetadataProvider getProvider() {
         return this.provider;
     }
-
+ 
+    @Override
+    public MetadataRecorder getRecorder() {
+        return recorder;
+    }
 
 }

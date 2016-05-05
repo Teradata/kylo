@@ -20,4 +20,6 @@ import org.apache.nifi.controller.ControllerService;
 public interface MetadataProviderService extends ControllerService {
 
     MetadataProvider getProvider();
+    
+    MetadataRecorder getRecorder();
 }

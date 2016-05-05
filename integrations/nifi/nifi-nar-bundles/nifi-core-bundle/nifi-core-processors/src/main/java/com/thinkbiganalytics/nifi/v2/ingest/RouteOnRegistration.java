@@ -5,8 +5,12 @@
 package com.thinkbiganalytics.nifi.v2.ingest;
 
 
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.behavior.InputRequirement.Requirement;
@@ -22,7 +26,8 @@ import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 
-import java.util.*;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 
 @EventDriven
 @InputRequirement(Requirement.INPUT_REQUIRED)
@@ -106,8 +111,8 @@ public class RouteOnRegistration extends AbstractProcessor {
         final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(outgoing).getValue();
 
         try {
-            final MetadataProvider client = metadataService.getProvider();
-            boolean required = client.isRegistrationRequired(categoryName, feedName);
+            final MetadataRecorder recorder = metadataService.getRecorder();
+            boolean required = recorder.isFeedInitialized(incoming);
 
             if (required) {
                 session.transfer(outgoing, REL_REGISTRATION_REQ);

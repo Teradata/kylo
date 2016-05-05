@@ -3,6 +3,15 @@
  */
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
+import java.net.URI;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Properties;
+
+import org.joda.time.DateTime;
+
 import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
@@ -18,23 +27,12 @@ import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ContentType;
 import com.thinkbiganalytics.metadata.rest.model.op.FileList;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
-import com.thinkbiganalytics.nifi.core.api.metadata.BatchLoadStatus;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
-import org.joda.time.DateTime;
-
-import java.net.URI;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 
 /**
  * @author Sean Felten
  */
 public class MetadataClientProvider implements MetadataProvider {
-
-    // TODO: Sean to remove after refactor
-    private InMemoryLegacyMetadataProvider legacy = new InMemoryLegacyMetadataProvider();
 
     private MetadataClient client;
 
@@ -86,6 +84,11 @@ public class MetadataClientProvider implements MetadataProvider {
     @Override
     public Feed ensureFeedDestination(String feedId, String datasourceId) {
         return this.client.addDestination(feedId, datasourceId);
+    }
+    
+    @Override
+    public Properties updateFeedProperties(String feedId, Properties props) {
+        return this.client.mergeFeedProperties(feedId, props);
     }
 
     @Override
@@ -166,28 +169,4 @@ public class MetadataClientProvider implements MetadataProvider {
 
         return this.client.updateDataOperation(op);
     }
-
-//    @Override
-//    // TODO: Sean to remove after refactor
-//    public void recordLastSuccessfulLoad(String categoryName, String feedName, BatchLoadStatus newStatus) {
-//        legacy.recordLastSuccessfulLoad(categoryName, feedName, newStatus);
-//    }
-//
-//    @Override
-//    // TODO: Sean to remove after refactor
-//    public BatchLoadStatus getLastLoad(String categoryName, String feedName) {
-//        return legacy.getLastLoad(categoryName, feedName);
-//    }
-//
-//    @Override
-//    // TODO: Sean to remove after refactor
-//    public boolean isRegistrationRequired(String categoryName, String feedName) {
-//        return legacy.isRegistrationRequired(categoryName, feedName);
-//    }
-//
-//    @Override
-//    // TODO: Sean to remove after refactor
-//    public void recordRegistration(String category, String feed, boolean result) {
-//        legacy.recordRegistration(category, feed, result);
-//    }
 }

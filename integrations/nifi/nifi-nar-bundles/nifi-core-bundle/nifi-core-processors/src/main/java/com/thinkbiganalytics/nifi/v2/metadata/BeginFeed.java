@@ -3,15 +3,13 @@
  */
 package com.thinkbiganalytics.nifi.v2.metadata;
 
-import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
-import com.thinkbiganalytics.metadata.rest.model.event.DatasourceChangeEvent;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
-import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
-import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
-import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
-import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.*;
+
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -28,10 +26,17 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
+import com.thinkbiganalytics.metadata.rest.model.Formatters;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.event.DatasourceChangeEvent;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
+import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
+import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
+import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
 
 /**
  * @author Sean Felten
@@ -135,8 +140,8 @@ public class BeginFeed extends AbstractFeedProcessor {
             // removed from the metadata store.
             Feed feed = ensureFeedMetadata(context);
 
-            flowFile = session.putAttribute(flowFile, FEED_ID_PROP, feed.getId().toString());
-            flowFile = session.putAttribute(flowFile, OPERATON_START_PROP, TIME_FORMATTER.print(new DateTime()));
+            flowFile = session.putAttribute(flowFile, MetadataConstants.FEED_ID_PROP, feed.getId().toString());
+            flowFile = session.putAttribute(flowFile, OPERATON_START_PROP, Formatters.TIME_FORMATTER.print(new DateTime()));
 
             session.transfer(flowFile, SUCCESS);
 

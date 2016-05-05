@@ -16,6 +16,7 @@ public interface FeedBuilder {
     FeedBuilder description(String descr);
     FeedBuilder owner(String owner);
     FeedBuilder preconditionMetric(Metric... metrics);
+    FeedBuilder property(String key, String value);
     
     Feed build();
     Feed post();

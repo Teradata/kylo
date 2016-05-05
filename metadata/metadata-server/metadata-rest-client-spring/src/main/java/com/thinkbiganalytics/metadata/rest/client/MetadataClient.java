@@ -140,7 +140,7 @@ public class MetadataClient {
     }
     
     public Properties mergeFeedProperties(String id, Properties props) {
-        return post(Paths.get("feed", id), props, Properties.class);
+        return post(Paths.get("feed", id, "props"), props, Properties.class);
     }
     
     public Properties replaceFeedProperties(String id, Properties props) {
@@ -289,6 +289,7 @@ public class MetadataClient {
         private String description;
         private String owner;
         private List<Metric> preconditionMetrics = new ArrayList<>();
+        private Properties properties = new Properties();
     
         public FeedBuilderImpl(String name) {
             this.systemName = name;
@@ -319,6 +320,12 @@ public class MetadataClient {
             }
             return this;
         }
+        
+        @Override
+        public FeedBuilder property(String key, String value) {
+            this.properties.setProperty(key, value);
+            return this;
+        }
     
         @Override
         public Feed build() {
@@ -328,6 +335,7 @@ public class MetadataClient {
             feed.setDescription(this.description);
             feed.setOwner(this.owner);
             feed.setPrecondition(createTrigger(this.preconditionMetrics));
+            feed.setProperties(properties);
             
             return feed;
         }
