@@ -8,6 +8,7 @@ import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
+
 import org.apache.commons.lang.StringUtils;
 import org.apache.spark.Accumulator;
 import org.apache.spark.SparkContext;
@@ -29,7 +30,11 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Vector;
 
 /**
  * Cleanses and validates a table of strings according to defined field-level policies. Records are split into good and bad. <p>
@@ -69,8 +74,8 @@ public class Validator implements Serializable {
     private Map<String, FieldPolicy> policyMap = new HashMap<>();
 
     /**
-     * Path to the file containing the JSON for the Field Policies. If called from NIFI it will pass it in as a command argument in
-     * the Validate processor The JSON should conform to the array of FieldPolicy objects found in the
+     * Path to the file containing the JSON for the Field Policies. If called from NIFI it will pass it in as a command argument
+     * in the Validate processor The JSON should conform to the array of FieldPolicy objects found in the
      * thinkbig-field-policy-rest-model module
      */
     private String fieldPolicyJsonPath;
@@ -130,7 +135,7 @@ public class Validator implements Serializable {
         String fieldPolicyJson = readFieldPolicyJsonFile();
         policyMap = new FieldPoliciesJsonTransformer(fieldPolicyJson).buildPolicies();
         log.info("Finished building FieldPolicies for JSON file: {} with entity that has {} fields ", fieldPolicyJsonPath,
-                policyMap.size());
+                 policyMap.size());
     }
 
 
@@ -141,7 +146,9 @@ public class Validator implements Serializable {
             this.schema = resolveDataTypes(fields);
             this.policies = resolvePolicies(fields);
 
-            DataFrame dataFrame = hiveContext.sql("SELECT * FROM " + feedTablename + " WHERE processing_dttm = '" + partition + "'");
+            DataFrame
+                dataFrame =
+                hiveContext.sql("SELECT * FROM " + feedTablename + " WHERE processing_dttm = '" + partition + "'");
             JavaRDD<Row> rddData = dataFrame.javaRDD().cache();
 
             // Extract schema from the source table
@@ -169,8 +176,8 @@ public class Validator implements Serializable {
 
             // Write out the valid records (dropping our two columns)
             DataFrame
-                    validDF =
-                    validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").toDF();
+                validDF =
+                validatedDF.filter(VALID_INVALID_COL + " = '1'").drop(VALID_INVALID_COL).drop("dlp_reject_reason").toDF();
             writeToTargetTable(validDF, validTableName);
 
             long invalidCount = invalidDF.count();
@@ -190,8 +197,6 @@ public class Validator implements Serializable {
     private void writeStatsToProfileTable(long validCount, long invalidCount) {
 
         try {
-
-            System.out.println("VALIDATION STATS");
             // Create a temporary table we can use to copy data from. Writing directly to our partition from a spark dataframe doesn't work.
             String tempTable = profileTableName + "_" + System.currentTimeMillis();
 
@@ -216,19 +221,19 @@ public class Validator implements Serializable {
 
             JavaSparkContext jsc = new JavaSparkContext(SparkContext.getOrCreate());
             JavaRDD<Row> statsRDD = jsc.parallelize(csvRows)
-                    .map(new Function<String, Row>() {
-                        @Override
-                        public Row call(String s) throws Exception {
-                            return RowFactory.create(s.split("\\,"));
-                        }
-                    });
+                .map(new Function<String, Row>() {
+                    @Override
+                    public Row call(String s) throws Exception {
+                        return RowFactory.create(s.split("\\,"));
+                    }
+                });
 
             DataFrame df = hiveContext.createDataFrame(statsRDD, statsSchema);
             df.registerTempTable(tempTable);
 
             String insertSQL = "INSERT OVERWRITE TABLE " + qualifiedProfileName
-                    + " PARTITION (processing_dttm='" + partition + "')"
-                    + " SELECT columnname, metrictype, metricvalue FROM " + tempTable;
+                               + " PARTITION (processing_dttm='" + partition + "')"
+                               + " SELECT columnname, metrictype, metricvalue FROM " + tempTable;
 
             hiveContext.sql(insertSQL);
         } catch (Exception e) {
@@ -265,8 +270,9 @@ public class Validator implements Serializable {
 
         // Insert the data into our partition
         String qualifiedTable = targetDatabase + "." + targetTable;
-        hiveContext.sql("INSERT OVERWRITE TABLE " + qualifiedTable + " PARTITION (processing_dttm='" + partition + "') SELECT * FROM "
-                + tempTable);
+        hiveContext
+            .sql("INSERT OVERWRITE TABLE " + qualifiedTable + " PARTITION (processing_dttm='" + partition + "') SELECT * FROM "
+                 + tempTable);
     }
 
     /**
@@ -359,7 +365,8 @@ public class Validator implements Serializable {
             if (!fieldPolicy.shouldSkipSchemaValidation()) {
                 if (!fieldDataType.isValueConvertibleToType(fieldValue)) {
                     return ValidationResult
-                            .failField("incompatible", fieldDataType.getName(), "Not convertible to " + fieldDataType.getNativeType());
+                        .failField("incompatible", fieldDataType.getName(),
+                                   "Not convertible to " + fieldDataType.getNativeType());
                 }
             }
 
@@ -369,7 +376,8 @@ public class Validator implements Serializable {
                 for (ValidationPolicy validator : validators) {
                     if (!validator.validate(fieldValue)) {
                         return ValidationResult
-                                .failFieldRule("rule", fieldDataType.getName(), validator.getClass().getSimpleName(), "Rule violation");
+                            .failFieldRule("rule", fieldDataType.getName(), validator.getClass().getSimpleName(),
+                                           "Rule violation");
                     }
                 }
             }
@@ -404,7 +412,6 @@ public class Validator implements Serializable {
         for (StructField field : fields) {
             String colName = field.name();
             String dataType = field.dataType().simpleString();
-            // System.out.println("Table [" + refTablename + "] Field [" + colName + "] dataType [" + dataType + "]");
             cols.add(HCatDataType.createFromDataType(colName, dataType));
         }
         return cols.toArray(new HCatDataType[0]);
@@ -431,23 +438,6 @@ public class Validator implements Serializable {
         }
         return pols.toArray(new FieldPolicy[0]);
     }
-
-    // Spark function that performs standardization of the values based on the cleansing policy
-/*
-    public Row cleanseRow(Row row) {
-        String[] newValues = new String[schema.length];
-        for (int idx = 0; idx < schema.length; idx++) {
-
-            FieldPolicy fieldPolicy = policies[idx];
-            newValues[idx] = null;
-            if (idx < row.length()) {
-                newValues[idx] = (row.isNullAt(idx) ? null : row.getString(idx));
-                newValues[idx] = standardizeField(fieldPolicy, newValues[idx]);
-            }
-        }
-        return RowFactory.create(newValues);
-    }
-*/
 
     public static void main(String[] args) {
 
