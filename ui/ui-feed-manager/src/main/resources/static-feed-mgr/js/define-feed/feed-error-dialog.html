@@ -16,7 +16,7 @@
         <md-dialog-content layout="column" flex style="min-width:500px;" layout-padding>
             <div ng-if="!isValid && feedErrorsData != null">
                 <div>{{::message}}</div>
-                            <md-list class="padding-left" ng-repeat="(severity,errors)  in ::feedErrorsData">
+                            <md-list class="padding-left" ng-repeat="(severity,errors)  in feedErrorsData">
                                 <md-subheader class="md-warn" ng-if="errors.length >0">{{::severity}} errors</md-subheader>
                                 <md-list-item class="md-2-line" ng-repeat="error in errors track by $index" >
                                     <div class="md-list-item-text" >

@@ -253,6 +253,16 @@ public class CreateFeedBuilder {
           input = inputProcessors.get(0);
         }
 
+        //update any references to the controller services and try to assign the value to an enabled service if it is not already
+        if (input != null) {
+          updateControllerServiceReferences(Lists.newArrayList(input));
+        }
+        updateControllerServiceReferences(nonInputProcessors);
+        //refetch processors for updated errors
+        entity = restClient.getProcessGroup(processGroupId, true, true);
+        input = NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType);
+        nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity.getProcessGroup());
+
         newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
 
         //Validate and if invalid Delete the process group
@@ -264,11 +274,7 @@ public class CreateFeedBuilder {
 
           //update the input schedule
           updateFeedSchedule(newProcessGroup, input);
-          //update any references to the controller services and try to assign the value to an enabled service if it is not already
-          if (input != null) {
-            updateControllerServiceReferences(Lists.newArrayList(input));
-          }
-          updateControllerServiceReferences(nonInputProcessors);
+
           if (input != null) {
             markInputAsRunning(newProcessGroup, input);
           }

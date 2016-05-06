@@ -136,27 +136,26 @@
                 StateService.navigateToDefineFeedComplete(self.createdFeed,null);
 
               //  self.showCompleteDialog();
-            }, function(err){
-                console.log('error!',err);
+            }, function(response){
+                self.createdFeed = response.data;
                // CategoriesService.reload();
               //  StateService.navigateToDefineFeedComplete(self.createdFeed,err)
-                self.showCompleteDialog(err);
+                self.showErrorDialog();
             });
         }
 
-        this.showCompleteDialog = function(ajaxError) {
+        this.showErrorDialog = function() {
             hideProgress();
 
             $mdDialog.show({
-                controller: FeedCompleteDialogController,
-                templateUrl: 'js/define-feed/feed-complete-dialog.html',
+                controller: FeedErrorDialogController,
+                templateUrl: 'js/define-feed/feed-error-dialog.html',
                 parent: angular.element(document.body),
                 clickOutsideToClose:false,
                 fullscreen: true,
                 locals : {
                     feedName:self.model.feedName,
-                    createdFeed : self.createdFeed,
-                    ajaxError: ajaxError
+                    createdFeed : self.createdFeed
                 }
             })
                 .then(function(msg) {
@@ -227,17 +226,26 @@
 })();
 
 
-function FeedCompleteDialogController($scope, $mdDialog, $mdToast, $http, StateService,CategoriesService, feedName, createdFeed ){
+function FeedErrorDialogController($scope, $mdDialog, $mdToast, $http, StateService,CategoriesService, feedName, createdFeed ){
     var self = this;
 
     $scope.feedName = feedName;
     $scope.createdFeed = createdFeed;
     $scope.isValid = false;
     $scope.message = '';
+    $scope.feedErrorsData = {};
+    $scope.feedErrorsCount = 0;
 
     function groupAndCountErrorsBySeverity(){
         var count = 0;
         var errorMap = {"FATAL":[],"WARN":[]};
+
+        if(createdFeed.errorMessages != null && createdFeed.errorMessages.length >0){
+            angular.forEach(createdFeed.errorMessages,function(msg){
+                errorMap['FATAL'].push({category:'General',message:msg});
+            })
+        }
+
         angular.forEach(createdFeed.feedProcessGroup.errors,function(processor){
             if(processor.validationErrors){
                 angular.forEach(processor.validationErrors,function(error){
@@ -256,11 +264,9 @@ function FeedCompleteDialogController($scope, $mdDialog, $mdToast, $http, StateS
     if(createdFeed != null){
         groupAndCountErrorsBySeverity();
 
-        var message = "Successfully created the feed ";
         if($scope.feedErrorsCount >0){
 
-            var fatalErrors = $scope.feedErrorsData['FATAL']
-            if(fatalErrors.length >0) {
+             if($scope.feedErrorsCount >0) {
                 message = "Error creating the feed, " + feedName;
                 message += " " + $scope.feedErrorsCount + " invalid items.";
                 $scope.isValid = false;
@@ -280,27 +286,6 @@ function FeedCompleteDialogController($scope, $mdDialog, $mdToast, $http, StateS
     else {
         $scope.message = 'Error creating feed.'
     }
-
-    $scope.defineSla = function(){
-        $mdDialog.hide('sla');
-
-    }
-    $scope.defineNewFeedLike = function(){
-        $mdDialog.hide('newFeedLike');
-    }
-
-    $scope.defineNewFeed = function(){
-        $mdDialog.hide('newFeed');
-    }
-    $scope.fixErrors = function(){
-        $mdDialog.hide('fixErrors');
-    }
-
-    $scope.viewFeeds = function(){
-        $mdDialog.hide('viewFeeds');
-    }
-
-
 
 
     $scope.hide = function() {
