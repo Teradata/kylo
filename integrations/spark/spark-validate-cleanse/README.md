@@ -9,9 +9,9 @@ A Spark job capable of performing data validation and cleansing/standardization 
 
 This Spark job assumes Hive table naming conventions following Think Big ingest processing standards.  
 
-. Data is read from a source table <entity>-feed and partition
-. Standardization policies are applied to the data
-. Validation is performed and data inserted into two different tables <entity>-valid and <entity>-invalid with a new partition matching the source (typically a processing timestamp).   
+1. Data is read from a source table <entity>-feed and partition
+2. Standardization policies are applied to the data
+3. Validation is performed and data inserted into two different tables <entity>-valid and <entity>-invalid with a new partition matching the source (typically a processing timestamp).   
 
 The policies for standardization and validation are supplied externally via a JSON field-policies file (see /core/field-policy).
 

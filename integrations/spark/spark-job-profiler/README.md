@@ -7,9 +7,9 @@ A Spark job capable of performing generating profile statistics against a source
 
 ### How it works
 
-. Data is typically read from a source table such as <entity>-valid and a given partition
-. Profile statistics are generated
-. Profiler statistics is written to <entity>-profile
+1. Data is typically read from a source table such as <entity>-valid and a given partition
+2. Profile statistics are generated
+3. Profiler statistics is written to <entity>-profile
 
 ### Execution
 
