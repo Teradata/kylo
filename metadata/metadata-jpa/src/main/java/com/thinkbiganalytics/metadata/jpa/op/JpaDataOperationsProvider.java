@@ -48,6 +48,7 @@ import com.thinkbiganalytics.metadata.jpa.datasource.hive.JpaHiveTableDatasource
 import com.thinkbiganalytics.metadata.jpa.datasource.hive.JpaHiveTableUpdate;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  *
@@ -63,6 +64,7 @@ public class JpaDataOperationsProvider implements DataOperationsProvider {
     private FeedProvider feedProvider;
 
     @Inject
+    @Qualifier("metadataEntityManager")
     private EntityManager entityMgr;
 
     /* (non-Javadoc)

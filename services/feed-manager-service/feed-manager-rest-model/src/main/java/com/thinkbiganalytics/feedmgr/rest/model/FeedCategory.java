@@ -29,7 +29,7 @@ public class FeedCategory {
     private String iconColor;
     private String description;
     @JsonIgnore
-    private List<FeedMetadata> feeds;
+    private List<FeedSummary> feeds;
 
     private int relatedFeeds;
 
@@ -81,26 +81,21 @@ public class FeedCategory {
         this.description = description;
     }
 
-    public List<FeedMetadata> getFeeds() {
+    public List<FeedSummary> getFeeds() {
         if(feeds == null){
             feeds = new ArrayList<>();
         }
         return feeds;
     }
 
-    //TODO remove after POC.
-    public void setRelatedFeeds(int relatedFeeds) {
-        this.relatedFeeds = relatedFeeds;
-    }
-
-    public void setFeeds(List<FeedMetadata> feeds) {
+    public void setFeeds(List<FeedSummary> feeds) {
         this.feeds = feeds;
     }
     @JsonIgnore
     public void removeRelatedFeed(final FeedMetadata feed){
-        FeedMetadata match = Iterables.tryFind(feeds, new Predicate<FeedMetadata>() {
+        FeedSummary match = Iterables.tryFind(feeds, new Predicate<FeedSummary>() {
             @Override
-            public boolean apply(FeedMetadata metadata) {
+            public boolean apply(FeedSummary metadata) {
                 return feed.getFeedName().equalsIgnoreCase(metadata.getFeedName());
             }
         }).orNull();
@@ -109,12 +104,12 @@ public class FeedCategory {
         }
     }
     @JsonIgnore
-    public void addRelatedFeed(final FeedMetadata feed){
+    public void addRelatedFeed(final FeedSummary feed){
         if(feeds != null) {
-            List<FeedMetadata> arr = Lists.newArrayList(feeds);
-            FeedMetadata match = Iterables.tryFind(arr, new Predicate<FeedMetadata>() {
+            List<FeedSummary> arr = Lists.newArrayList(feeds);
+            FeedSummary match = Iterables.tryFind(arr, new Predicate<FeedSummary>() {
                 @Override
-                public boolean apply(FeedMetadata metadata) {
+                public boolean apply(FeedSummary metadata) {
                     return feed.getFeedName().equalsIgnoreCase(metadata.getFeedName());
                 }
             }).orNull();

@@ -34,6 +34,7 @@ import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  *
@@ -42,6 +43,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 public class JpaFeedProvider implements FeedProvider {
 
     @Inject
+    @Qualifier("metadataEntityManager")
     private EntityManager entityMgr;
     
     @Inject
@@ -265,6 +267,8 @@ public class JpaFeedProvider implements FeedProvider {
     public Feed getFeed(ID id) {
         return this.entityMgr.find(JpaFeed.class, id);
     }
+
+
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#getFeeds()

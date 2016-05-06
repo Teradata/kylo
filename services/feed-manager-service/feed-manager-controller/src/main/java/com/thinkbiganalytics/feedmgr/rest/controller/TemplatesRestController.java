@@ -217,17 +217,18 @@ public class TemplatesRestController {
         }
 
         //if savedFeedId is passed in merge the properties with the saved values
+        if(feedName != null) {
+            FeedMetadata feedMetadata = getMetadataService().getFeedByName(feedName);
 
-        FeedMetadata feedMetadata = getMetadataService().getFeedByName(feedName);
-
-        if(feedMetadata != null) {
-            List<NifiProperty> list = new ArrayList<>();
-            for(NifiProperty p: registeredTemplate.getProperties()){
-                list.add(new NifiProperty(p));
+            if (feedMetadata != null) {
+                List<NifiProperty> list = new ArrayList<>();
+                for (NifiProperty p : registeredTemplate.getProperties()) {
+                    list.add(new NifiProperty(p));
+                }
+                registeredTemplate.setProperties(list);
+                NifiPropertyUtil.matchAndSetTemplatePropertiesWithSavedProperties(registeredTemplate.getProperties(),
+                        feedMetadata.getProperties());
             }
-            registeredTemplate.setProperties(list);
-            NifiPropertyUtil.matchAndSetTemplatePropertiesWithSavedProperties(registeredTemplate.getProperties(),
-                                                                              feedMetadata.getProperties());
         }
 
         // fetch ports for this template

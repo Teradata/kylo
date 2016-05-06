@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.jpa;
 
 import javax.inject.Inject;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.TransactionCallback;
@@ -22,7 +23,7 @@ public class TransactionTemplateMetadataAccess implements MetadataAccess {
     private TransactionTemplate template;
     
     @Inject
-    public void setTransactionManager(PlatformTransactionManager transactionMgr) {
+    public void setTransactionManager(@Qualifier("metadataTransactionManager")PlatformTransactionManager transactionMgr) {
         this.template = new TransactionTemplate(transactionMgr);
     }
 

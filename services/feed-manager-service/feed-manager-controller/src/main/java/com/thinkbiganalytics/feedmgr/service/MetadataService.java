@@ -31,7 +31,7 @@ public interface MetadataService {
 
     RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName);
 
-    List<String> getRegisteredTemplateIds();
+   // List<String> getRegisteredTemplateIds();
 
     List<RegisteredTemplate> getRegisteredTemplates();
 

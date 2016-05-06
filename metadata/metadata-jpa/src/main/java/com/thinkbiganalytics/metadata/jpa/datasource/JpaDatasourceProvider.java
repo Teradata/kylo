@@ -27,6 +27,7 @@ import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.jpa.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.jpa.datasource.files.JpaDirectoryDatasource;
 import com.thinkbiganalytics.metadata.jpa.datasource.hive.JpaHiveTableDatasource;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  *
@@ -39,6 +40,7 @@ public class JpaDatasourceProvider implements DatasourceProvider {
     private DateTimeFormatter dateTimeFormatter;
 
     @Inject
+    @Qualifier("metadataEntityManager")
     private EntityManager entityMgr;
 
     /* (non-Javadoc)

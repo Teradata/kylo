@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.service;
+package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Created by sr186054 on 5/1/16.
  */
-public interface FeedManagerFeedProvider {
+public interface FeedManagerFeedService {
 
   List<FeedMetadata> getReusableFeeds();
 

@@ -99,7 +99,7 @@ public class FeedSummary implements UIFeed {
         return this.categoryName+"."+this.feedName;
     }
 
-    public String getCategoryAndFeedDSystemName(){
+    public String getCategoryAndFeedSystemName(){
         return this.systemCategoryName+"."+this.systemFeedName;
     }
 

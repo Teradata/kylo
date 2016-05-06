@@ -14,3 +14,49 @@ create table SLA (id binary(16) not null, created_time datetime, modified_time d
 create table SLA_METRIC (id binary(255) not null, created_time datetime, modified_time datetime, metric varchar(255), obligation_id binary(16), primary key (id)) ENGINE=InnoDB;
 create table SLA_OBLIGATION (id binary(16) not null, created_time datetime, modified_time datetime, description varchar(255), group_id binary(16), primary key (id)) ENGINE=InnoDB;
 create table SLA_OBLIGATION_GROUP (id binary(16) not null, created_time datetime, modified_time datetime, cond varchar(10), agreement_id binary(16), primary key (id)) ENGINE=InnoDB;
+
+CREATE TABLE `FM_CATEGORY` (
+  `id` binary(16) NOT NULL,
+  `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `description` varchar(255) DEFAULT NULL,
+  `system_name` varchar(100) NOT NULL,
+  `display_name` varchar(100) DEFAULT NULL,
+  `json` mediumtext,
+  `state` varchar(45) DEFAULT 'ENABLED',
+  `icon` varchar(45) DEFAULT NULL,
+  `icon_color` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB;
+
+
+CREATE TABLE `FM_FEED` (
+  `id` binary(16) NOT NULL,
+  `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `feed_id` binary(16) NOT NULL,
+  `json` mediumtext,
+  `category_id` binary(16) NOT NULL,
+  `template_id` binary(16) NOT NULL,
+  `state` varchar(45) DEFAULT 'ENABLED',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `feed_id_UNIQUE` (`feed_id`),
+  UNIQUE KEY `id_UNIQUE` (`id`)
+) ENGINE=InnoDB;
+
+CREATE TABLE `FM_TEMPLATE` (
+  `id` binary(16) NOT NULL,
+  `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `modified_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `description` varchar(255) DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
+  `state` varchar(10) DEFAULT 'ACTIVE',
+  `is_define_table` varchar(1) DEFAULT NULL,
+  `is_data_transform` varchar(1) DEFAULT NULL,
+  `allow_preconditions` varchar(1) DEFAULT NULL,
+  `json` mediumtext NOT NULL,
+  `nifi_template_id` varchar(45) DEFAULT NULL,
+  `icon` varchar(45) DEFAULT NULL,
+  `icon_color` varchar(45) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;

@@ -26,6 +26,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  *
@@ -34,6 +35,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementProvider {
 
     @Inject
+    @Qualifier("metadataEntityManager")
     private EntityManager entityMgr;
 
     @Override

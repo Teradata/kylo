@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.jpa;
 
+import org.apache.commons.lang.StringUtils;
+
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.UUID;
@@ -21,7 +23,12 @@ public abstract class BaseId implements Serializable {
 
     public BaseId(Serializable ser) {
         if (ser instanceof String) {
-            setUuid(UUID.fromString((String) ser));
+            String uuid = (String)ser;
+                if(!StringUtils.contains(uuid,"-")){
+                   uuid =  ((String)ser).replaceFirst( "([0-9a-fA-F]{8})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]+)", "$1-$2-$3-$4-$5" );
+                }
+                setUuid(UUID.fromString(uuid));
+
         } else if (ser instanceof UUID) {
             setUuid((UUID) ser);
         } else {

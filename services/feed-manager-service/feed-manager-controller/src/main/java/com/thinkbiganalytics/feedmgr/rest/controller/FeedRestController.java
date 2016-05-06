@@ -3,9 +3,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -21,9 +19,9 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
-import org.apache.nifi.web.api.entity.InputPortEntity;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -33,21 +31,15 @@ import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.db.model.query.QueryResult;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
-import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.GenericUIPrecondition;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
-import com.thinkbiganalytics.feedmgr.service.PreconditionFactory;
 import com.thinkbiganalytics.hive.service.HiveService;
-import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
-import com.thinkbiganalytics.nifi.feedmgr.CreateFeedBuilder;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
@@ -67,21 +59,18 @@ public class FeedRestController {
     @Qualifier("nifiRestClient")
     NifiRestClient nifiRestClient;
 
-    @Autowired
-    @Qualifier("metadataClient")
-    MetadataClient metadataClient;
 
     @Autowired
     MetadataService metadataService;
-
-    @Autowired
-    PreconditionFactory preconditionFactory;
 
 
     //Profile needs hive service
 
     @Autowired
     HiveService hiveService;
+
+    @Autowired
+    FeedManagerPreconditionService feedManagerPreconditionService;
 
     public FeedRestController() {
         int i = 0;
@@ -265,7 +254,7 @@ public class FeedRestController {
     @Path("/possible-preconditions")
     @Produces({MediaType.APPLICATION_JSON })
     public Response getPossiblePreconditions(){
-        List<GenericUIPrecondition> conditions = preconditionFactory.getPossiblePreconditions();
+        List<GenericUIPrecondition> conditions = feedManagerPreconditionService.getPossiblePreconditions();
         return Response.ok(conditions).build();
     }
 }

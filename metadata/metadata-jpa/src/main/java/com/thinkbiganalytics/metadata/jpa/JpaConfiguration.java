@@ -3,8 +3,17 @@
  */
 package com.thinkbiganalytics.metadata.jpa;
 
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
 
+import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategoryProvider;
+import com.thinkbiganalytics.metadata.jpa.feedmgr.feed.JpaFeedManagerFeedProvider;
+import com.thinkbiganalytics.metadata.jpa.feedmgr.template.JpaFeedManagerTemplateProvider;
+import org.hibernate.MultiTenancyStrategy;
 import org.hibernate.SessionFactory;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -16,6 +25,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.orm.hibernate5.LocalSessionFactoryBean;
 import org.springframework.orm.jpa.JpaTransactionManager;
+import org.springframework.orm.jpa.JpaVendorAdapter;
+import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
+import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 
@@ -49,7 +61,7 @@ public class JpaConfiguration {
         
         return ds;
     }
-    
+    /*
     @Bean(name="metadataSessionFactory")
     @ConfigurationProperties(prefix = "metadata.sessionfactory")
     public FactoryBean<SessionFactory> sessionFactory() {
@@ -58,17 +70,40 @@ public class JpaConfiguration {
         factory.setPackagesToScan("com.thinkbiganalytics.metadata.jpa");
         return factory;
     }
+    */
+@Bean(name="metadataEntityManager")
+    public EntityManager entityManager() {
+    return entityManagerFactory().createEntityManager();
+    }
     
     @Bean(name="metadataTransactionManager")
     public PlatformTransactionManager transactionManager() {
 //        HibernateTransactionManager xtnMgr = new HibernateTransactionManager();
 //        xtnMgr.setSessionFactory(sessionFactory());
-        JpaTransactionManager xtnMgr = new JpaTransactionManager();
+        JpaTransactionManager xtnMgr = new JpaTransactionManager(entityManagerFactory());
         xtnMgr.setDataSource(metadataDataSource());
         xtnMgr.setTransactionSynchronization(AbstractPlatformTransactionManager.SYNCHRONIZATION_ALWAYS);
         
         return xtnMgr;
     }
+
+    @Bean
+    public JpaVendorAdapter jpaVendorAdapter(){
+        return new HibernateJpaVendorAdapter();
+    }
+
+
+        @Bean(name="metadataEntityManagerFactory")
+    public EntityManagerFactory entityManagerFactory() {
+        LocalContainerEntityManagerFactoryBean emfBean = new LocalContainerEntityManagerFactoryBean();
+        emfBean.setDataSource(metadataDataSource());
+        emfBean.setDataSource(metadataDataSource());
+        emfBean.setPackagesToScan("com.thinkbiganalytics.metadata.jpa");
+        emfBean.setJpaVendorAdapter(jpaVendorAdapter());
+            emfBean.afterPropertiesSet();
+        return emfBean.getObject();
+    }
+
     
     @Bean
     public MetadataAccess metadataAccess() {
@@ -94,4 +129,22 @@ public class JpaConfiguration {
     public ServiceLevelAgreementProvider slaProvider() {
         return new JpaServiceLevelAgreementProvider();
     }
+
+
+    @Bean
+    public FeedManagerFeedProvider jpaFeedManagerFeedProvider() {
+        return new JpaFeedManagerFeedProvider();
+    }
+
+    @Bean
+    public FeedManagerCategoryProvider jpaFeedManagerCategoryProvider() {
+        return new JpaFeedManagerCategoryProvider();
+    }
+
+
+    @Bean
+    public FeedManagerTemplateProvider jpaFeedManagerTemplateProvider() {
+        return new JpaFeedManagerTemplateProvider();
+    }
+
 }

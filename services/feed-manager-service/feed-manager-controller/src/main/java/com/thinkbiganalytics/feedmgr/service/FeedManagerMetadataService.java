@@ -1,19 +1,9 @@
 package com.thinkbiganalytics.feedmgr.service;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicLong;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-
-import org.apache.nifi.web.api.dto.PortDTO;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
@@ -22,27 +12,29 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
-import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
+import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
+import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.rest.JerseyClientException;
 
 /**
  * Created by sr186054 on 1/13/16.
  */
-public class InMemoryMetadataService implements MetadataService {
+public class FeedManagerMetadataService implements MetadataService {
 
   @Inject
-  FeedManagerCategoryProvider categoryProvider;
+  FeedManagerCategoryService categoryProvider;
 
   @Inject
-  FeedManagerTemplateProvider templateProvider;
+  FeedManagerTemplateService templateProvider;
 
   @Inject
-  FeedManagerFeedProvider feedProvider;
+  FeedManagerFeedService feedProvider;
 
 
 
-    public InMemoryMetadataService(){
+    public FeedManagerMetadataService(){
 
 
     }
@@ -77,10 +69,7 @@ public class InMemoryMetadataService implements MetadataService {
     return templateProvider.getRegisteredTemplateForNifiProperties(nifiTemplateId,nifiTemplateName);
   }
 
-  @Override
-  public List<String> getRegisteredTemplateIds() {
-    return templateProvider.getRegisteredTemplateIds();
-  }
+
 
   @Override
   public List<RegisteredTemplate> getRegisteredTemplates() {

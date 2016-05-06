@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.service;
+package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by sr186054 on 5/1/16.
  */
-public interface FeedManagerTemplateProvider {
+public interface FeedManagerTemplateService {
 
   String templateIdForTemplateName(String templateName);
 
@@ -27,6 +27,5 @@ public interface FeedManagerTemplateProvider {
 
   List<RegisteredTemplate> getRegisteredTemplates();
 
-  List<String> getRegisteredTemplateIds();
 
 }

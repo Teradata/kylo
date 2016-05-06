@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
 import java.util.Date;

@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.service;
+package com.thinkbiganalytics.feedmgr.service.category;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
@@ -6,6 +6,8 @@ import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategoryBuilder;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -19,7 +21,7 @@ import javax.annotation.PostConstruct;
 /**
  * Created by sr186054 on 5/1/16.
  */
-public class InMemoryFeedManagerCategoryProvider implements FeedManagerCategoryProvider {
+public class InMemoryFeedManagerCategoryService implements FeedManagerCategoryService {
 
   private Map<String, FeedCategory> categories = new HashMap<>();
 
@@ -123,12 +125,10 @@ public class InMemoryFeedManagerCategoryProvider implements FeedManagerCategoryP
           category.generateSystemName();
         }
       }
-      List<FeedMetadata> feeds = categories.get(category.getId()).getFeeds();
+      List<FeedSummary> feeds = categories.get(category.getId()).getFeeds();
 
       category.setFeeds(feeds);
-      if (feeds != null) {
-        category.setRelatedFeeds(feeds.size());
-      }
+
     }
     categories.put(category.getId(), category);
 

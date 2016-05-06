@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.service;
+package com.thinkbiganalytics.feedmgr.service.category;
 
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
@@ -8,7 +8,7 @@ import java.util.Collection;
 /**
  * Created by sr186054 on 5/1/16.
  */
-public interface FeedManagerCategoryProvider {
+public interface FeedManagerCategoryService {
 
   Collection<FeedCategory> getCategories();
 

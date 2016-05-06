@@ -19,5 +19,6 @@
         <module>metadata-rest-client1</module>
         <module>metadata-jms</module>
         <module>metadata-rest-client-spring</module>
+        <module>metadata-server-app</module>
     </modules>
 </project>

@@ -3,6 +3,10 @@ package com.thinkbiganalytics.feedmgr.config;
 
 import java.net.URI;
 
+import com.thinkbiganalytics.feedmgr.service.category.JpaFeedManagerCategoryService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
+import com.thinkbiganalytics.feedmgr.service.feed.JpaFeedManagerFeedService;
+import com.thinkbiganalytics.feedmgr.service.template.JpaFeedManagerTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -11,15 +15,11 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
-import com.thinkbiganalytics.feedmgr.service.FeedManagerCategoryProvider;
-import com.thinkbiganalytics.feedmgr.service.FeedManagerFeedProvider;
-import com.thinkbiganalytics.feedmgr.service.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.feedmgr.service.InMemoryFeedManagerCategoryProvider;
-import com.thinkbiganalytics.feedmgr.service.InMemoryFeedManagerFeedProvider;
-import com.thinkbiganalytics.feedmgr.service.InMemoryFeedManagerTemplateProvider;
-import com.thinkbiganalytics.feedmgr.service.InMemoryMetadataService;
+import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
+import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
-import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
 
 /**
  * Created by sr186054 on 2/26/16.
@@ -36,27 +36,25 @@ public class FeedManagerConfiguration {
     private Environment env;
 
 
+    @Bean
+    public FeedManagerFeedService feedManagerFeedService(){
+        return new JpaFeedManagerFeedService();
+    }
 
-    @Bean(name="metadataClient")
-    public MetadataClient metadataClient(){
-        return new MetadataClient(URI.create("http://localhost:8077/api/metadata/"));
+    @Bean
+    public FeedManagerCategoryService feedManagerCategoryService(){
+        return new JpaFeedManagerCategoryService();
     }
 
 
     @Bean
-    public FeedManagerFeedProvider feedManagerFeedProvider(){
-        return new InMemoryFeedManagerFeedProvider();
+    public FeedManagerTemplateService feedManagerTemplateService(){
+        return new JpaFeedManagerTemplateService();
     }
 
     @Bean
-    public FeedManagerCategoryProvider feedManagerCategoryProvider(){
-        return new InMemoryFeedManagerCategoryProvider();
-    }
-
-
-    @Bean
-    public FeedManagerTemplateProvider feedManagerTemplateProvider(){
-        return new InMemoryFeedManagerTemplateProvider();
+    public FeedManagerPreconditionService feedManagerPreconditionService() {
+        return new FeedManagerPreconditionService();
     }
 
     @Bean
@@ -66,7 +64,7 @@ public class FeedManagerConfiguration {
 
     @Bean
     public MetadataService metadataService(){
-        return new InMemoryMetadataService();
+        return new FeedManagerMetadataService();
     }
 
 
