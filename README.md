@@ -9,10 +9,12 @@ assets.  Some features:
     * Users can create "data feeds" through our UI (no-code!)
     * Powerful ingest pipeline template that implements Think Big best practices
 
-<https://wiki.thinkbiganalytics.com/display/RD/Pipeline+Controller+-+Next+Generation/>
+## Wiki
 
-=== Deployment Guide
+[R&D Wiki](https://wiki.thinkbiganalytics.com/display/RD/Pipeline+Controller+-+Next+Generation/)
 
-To get started, please follow the deployment guide
+## Deployment Guide
 
-    [Deployment Guide](docs/latest/deployment-guide.adoc)
+To get started, please follow the [deployment guide](docs/latest/deployment-guide.adoc)
+
+   
