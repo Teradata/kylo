@@ -15,7 +15,6 @@ Below is the mapping of the User Interface Object and its respective to Domain M
 To understand how the system uses the annotations to automatically transform the objects click here. 
 
 ### Requirements
-### Requirements
 1. Policy Constructor rules
 
     The StandardizationPolicy and ValidationPolicy must follow *one* of the following rules

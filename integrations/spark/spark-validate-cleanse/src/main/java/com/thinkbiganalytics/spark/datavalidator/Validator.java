@@ -443,7 +443,7 @@ public class Validator implements Serializable {
 
         // Check how many arguments were passed in
         if (args.length != 4) {
-            System.out.println("Proper Usage is: <targetDatabase> <entity> <partition>");
+            System.out.println("Proper Usage is: <targetDatabase> <entity> <partition> <path-to-policy-file>");
             System.exit(1);
         }
         try {
