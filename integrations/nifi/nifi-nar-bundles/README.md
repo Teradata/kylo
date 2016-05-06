@@ -1,4 +1,4 @@
-NiFi NAR bundles
+Apache NiFi NAR bundles
 ==========
 
 ### Overview
@@ -14,6 +14,9 @@ The organization structure for NAR files follows the Apache NiFi convention.  Ea
 in its own "bundle" subproject.  The bundle contains a processors or services project and a corresponding nar project which
 creates the NAR packaging.
 
+### Deployment
+
+Only the generated NAR files should be deployed to the NiFi /lib folder. 
 
 ### More information
 

@@ -4,7 +4,6 @@
 package com.thinkbiganalytics.nifi.v2.thrift;
 
 
-import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -23,7 +22,11 @@ import org.apache.nifi.util.StopWatch;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 
