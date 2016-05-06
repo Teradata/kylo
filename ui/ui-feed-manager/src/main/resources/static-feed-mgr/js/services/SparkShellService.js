@@ -441,6 +441,11 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 state.rows = response.data.results.rows;
                 state.table = response.data.table;
             };
+            var errorCallback = function() {
+                var state = self.states_[index];
+                state.columns = [];
+                state.rows = [];
+            };
 
             // Send the request
             var promise = $http({
@@ -450,7 +455,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 headers: {"Content-Type": "application/json"},
                 responseType: "json"
             });
-            promise.then(successCallback);
+            promise.then(successCallback, errorCallback());
             return promise;
         },
 
