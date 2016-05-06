@@ -41,6 +41,7 @@ CREATE TABLE `FM_FEED` (
   `category_id` binary(16) NOT NULL,
   `template_id` binary(16) NOT NULL,
   `state` varchar(45) DEFAULT 'ENABLED',
+  `version` int(11) DEFAULT '1',
   PRIMARY KEY (`id`),
   UNIQUE KEY `feed_id_UNIQUE` (`feed_id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
