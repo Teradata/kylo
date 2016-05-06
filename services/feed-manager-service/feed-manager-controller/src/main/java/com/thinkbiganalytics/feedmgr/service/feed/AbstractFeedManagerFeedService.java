@@ -97,6 +97,9 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
             }
 
         }
+        else {
+            feed.setSuccess(false);
+        }
         return feed;
 
 
