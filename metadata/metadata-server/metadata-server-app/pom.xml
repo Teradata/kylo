@@ -28,7 +28,7 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-server</artifactId>
+            <artifactId>thinkbig-metadata-rest-service</artifactId>
             <version>0.1.0-SNAPSHOT</version>
         </dependency>
 
