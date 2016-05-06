@@ -6,6 +6,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.*;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.feedmgr.support.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
@@ -57,6 +58,8 @@ public class FeedModelTransform {
                         FeedCategory feedCategory = CategoryModelTransform.DOMAIN_TO_FEED_CATEGORY_SIMPLE.apply(category);
                         feed.setCategory(feedCategory);
                     }
+                    feed.setState(domain.getState());
+                    feed.setVersion(domain.getVersion().longValue());
                     return feed;
                 }
             };
@@ -76,6 +79,7 @@ public class FeedModelTransform {
             feedSummary.setUpdateDate(feedManagerFeed.getModifiedTime().toDate());
             feedSummary.setFeedName(feedManagerFeed.getFeed().getDisplayName());
             feedSummary.setSystemFeedName(feedManagerFeed.getFeed().getName());
+            feedSummary.setActive(feedManagerFeed.getState().equalsIgnoreCase("enabled"));
             return feedSummary;
         }
     };
@@ -89,13 +93,20 @@ public class FeedModelTransform {
                     //resolve the id
                     boolean isNew = feed.getId() == null;
                     JpaFeedManagerFeed.FeedManagerFeedId domainId = feed.getId() != null ? new JpaFeedManagerFeed.FeedManagerFeedId(feed.getId()): JpaFeedManagerFeed.FeedManagerFeedId.create();
-                    FeedManagerFeed
+                    JpaFeedManagerFeed
                             domain = new JpaFeedManagerFeed(domainId);
                     if(isNew){
                         domain.setFeed( new JpaFeed(feed.getSystemFeedName(),feed.getDescription()));
                         feed.setFeedId(domain.getFeed().getId().toString());
+                        feed.setState(FeedMetadata.STATE.ENABLED.name());
+                    }
+                    else {
+                        JpaFeed existingFeed = new JpaFeed();
+                        existingFeed.setId(new JpaFeed.FeedId(feed.getFeedId()));
+                        domain.setFeed(existingFeed);
                     }
                     feed.setId(domain.getId().toString());
+
                     FeedCategory category = feed.getCategory();
                     if(category != null){
                         FeedManagerCategory domainCategory = CategoryModelTransform.FEED_CATEGORY_TO_DOMAIN.apply(category);
@@ -107,10 +118,19 @@ public class FeedModelTransform {
                         FeedManagerTemplate domainTemplate = TemplateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(template);
                         domain.setTemplate(domainTemplate);
                     }
+                    domain.setState(feed.getState());
+
                     domain.setJson(ObjectMapperSerializer.serialize(feed));
+                    domain.setVersion(feed.getVersion().intValue());
                     return domain;
                 }
             };
+
+
+
+
+
+
 
     public static List<FeedMetadata> domainToFeedMetadata(Collection<FeedManagerFeed> domain) {
         return new ArrayList<>(Collections2.transform(domain, DOMAIN_TO_FEED));

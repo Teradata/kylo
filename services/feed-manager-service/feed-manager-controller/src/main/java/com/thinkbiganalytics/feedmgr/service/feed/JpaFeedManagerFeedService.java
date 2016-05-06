@@ -1,7 +1,9 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.thinkbiganalytics.feedmgr.rest.model.*;
+import com.thinkbiganalytics.feedmgr.service.feed.datasource.NifiFeedDatasourceFactory;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
@@ -11,6 +13,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.template.JpaFeedManagerTemplate;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.rest.JerseyClientException;
@@ -136,7 +139,13 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
        return templateRestProvider.getRegisteredTemplate(templateId);
     }
 
+    @Transactional(transactionManager = "metadataTransactionManager")
+    public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
+        return super.createFeed(feedMetadata);
+    }
+
     @Override
+    @Transactional(transactionManager = "metadataTransactionManager")
     public void saveFeed(FeedMetadata feed) {
         //if this is the first time saving this feed create a new one
         FeedManagerFeed domainFeed = FeedModelTransform.FEED_TO_DOMAIN.apply(feed);
@@ -150,6 +159,9 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
             baseFeed = new JpaFeed(feed.getCategoryAndFeedName(),feed.getDescription());
             domainFeed.setFeed(baseFeed);
             feed.setFeedId(baseFeed.getId().toString());
+
+            //TODO Write the Feed Sources and Destinations
+            Datasource datasource = NifiFeedDatasourceFactory.transform(feed);
         }
         else {
             //attach the latest Feed data to this object
@@ -157,6 +169,7 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
             domainFeed.setFeed(baseFeed);
         }
         domainFeed = feedManagerFeedProvider.update(domainFeed);
+
         //merge in preconditions if they exist
         List<GenericUIPrecondition> preconditions = feed.getSchedule().getPreconditions();
         if (preconditions != null) {

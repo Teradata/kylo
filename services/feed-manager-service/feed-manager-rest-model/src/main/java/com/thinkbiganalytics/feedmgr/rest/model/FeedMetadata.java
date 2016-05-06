@@ -15,6 +15,11 @@ import java.util.List;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedMetadata implements UIFeed{
+
+    public static enum STATE {
+        ENABLED,DISABLED
+    }
+
     private String id;
 
     @MetadataField(description = "The unique feed GUID")
@@ -57,6 +62,8 @@ public class FeedMetadata implements UIFeed{
     private FeedDataTransformation dataTransformation;
 
     private boolean active = true;
+
+    private String state;
 
     private String nifiProcessGroupId;
 
@@ -312,5 +319,13 @@ public class FeedMetadata implements UIFeed{
 
     public void setDataTransformation(FeedDataTransformation dataTransformation) {
         this.dataTransformation = dataTransformation;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }
