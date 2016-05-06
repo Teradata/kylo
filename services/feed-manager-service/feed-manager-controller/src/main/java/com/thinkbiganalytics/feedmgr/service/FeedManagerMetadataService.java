@@ -78,7 +78,14 @@ public class FeedManagerMetadataService implements MetadataService {
 
   @Override
   public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
-    return feedProvider.createFeed(feedMetadata);
+    NifiFeed feed = feedProvider.createFeed(feedMetadata);
+    if(feed.isSuccess()){
+      //requery to get the latest version
+      FeedMetadata updatedFeed = getFeedById(feed.getFeedMetadata().getId());
+      feed.setFeedMetadata(updatedFeed);
+    }
+    return feed;
+
   }
 
   @Override

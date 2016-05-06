@@ -5,7 +5,7 @@
 /**
  *
  */
-angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $mdToast, RestUrlService) {
+angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdToast, RestUrlService) {
 
 
     function trim(str) {
@@ -34,7 +34,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $mdToast
         createFeedModel : {},
         editFeedModel : {},
         getNewCreateFeedModel : function(){
-            return  {id:null,version:null,templateId:'',feedName:'',description:null,systemFeedName:'',inputProcessorType:'',inputProcessor:null,nonInputProcessors:[],properties:[], schedule:{schedulingPeriod:'* * * * * ?',schedulingStrategy:'CRON_DRIVEN', concurrentTasks:1},defineTable:false,allowPreconditions:false,dataTransformationFeed:false,table:{tableSchema:{name:null,fields:[]},sourceTableSchema:{name:null,fields:[]},method:'MANUAL',existingTableName:null,tableType:'DELTA',recordFormat:'DELIMITED',fieldPolicies:[],partitions:[],options:{compress:false,compressionFormat:null,auditLogging:true,encrypt:false,trackHistory:false}, securityGroups:[], incrementalDateField:null}, category:{id:null,name:null},  dataOwner:'',tags:[], reusableFeed:false, dataTransformation:{visualQuery:{sql:null,selectedColumnsAndTablesJson:null,chartViewModelJson:null},dataTransformScript:null,formulas:[]}};
+            return  {id:null,version:null,templateId:'',feedName:'',description:null,systemFeedName:'',inputProcessorType:'',inputProcessor:null,nonInputProcessors:[],properties:[], schedule:{schedulingPeriod:'* * * * * ?',schedulingStrategy:'CRON_DRIVEN', concurrentTasks:1},defineTable:false,allowPreconditions:false,dataTransformationFeed:false,table:{tableSchema:{name:null,fields:[]},sourceTableSchema:{name:null,fields:[]},method:'MANUAL',existingTableName:null,tableType:'DELTA',recordFormat:'DELIMITED',fieldPolicies:[],partitions:[],options:{compress:false,compressionFormat:null,auditLogging:true,encrypt:false,trackHistory:false}, securityGroups:[], incrementalDateField:null}, category:{id:null,name:null},  dataOwner:'',tags:[], reusableFeed:false, dataTransformation:{visualQuery:{sql:null,selectedColumnsAndTablesJson:null,chartViewModelJson:null},dataTransformScript:null,formulas:[],state:'NEW'}};
         },
         newCreateFeed:function(){
             this.createFeedModel = this.getNewCreateFeedModel();
@@ -122,10 +122,12 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $mdToast
         saveFeedModel:function(model){
             var self = this;
             self.prepareModelForSave(model);
+            var deferred = $q.defer();
             var successFn = function (response) {
                 var invalidCount = 0;
 
-                if(response.data){
+                if(response.data && response.data.success){
+
                     //update the feed versionId and internal id upon save
                     model.id = response.data.feedMetadata.id;
                     model.version = response.data.feedMetadata.version;
@@ -135,14 +137,17 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $mdToast
                             .textContent('Saved the Feed, version '+model.version)
                             .hideDelay(3000)
                     );
-
-                    return response;
+                    deferred.resolve(response);
                 }
+                else {
+                    deferred.reject(response);
+                }
+
             }
             var errorFn = function (err) {
-                console.log('error!',err)
-                return err;
+               deferred.reject(err);
             }
+
 
             var promise = $http({
                 url: RestUrlService.CREATE_FEED_FROM_TEMPLATE_URL,
@@ -154,7 +159,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $mdToast
             }).then(successFn, errorFn);
 
 
-            return promise;
+            return deferred.promise;
         },
         getSystemName: function (feedName) {
 

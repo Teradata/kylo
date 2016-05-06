@@ -136,7 +136,13 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
        return templateRestProvider.getRegisteredTemplate(templateId);
     }
 
+    @Transactional(transactionManager = "metadataTransactionManager")
+    public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
+        return super.createFeed(feedMetadata);
+    }
+
     @Override
+    @Transactional(transactionManager = "metadataTransactionManager")
     public void saveFeed(FeedMetadata feed) {
         //if this is the first time saving this feed create a new one
         FeedManagerFeed domainFeed = FeedModelTransform.FEED_TO_DOMAIN.apply(feed);
@@ -147,9 +153,15 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
         }
         Feed baseFeed = null;
         if(domainFeed.isNew()) {
+
             baseFeed = new JpaFeed(feed.getCategoryAndFeedName(),feed.getDescription());
             domainFeed.setFeed(baseFeed);
             feed.setFeedId(baseFeed.getId().toString());
+            //change the state to ENABLED
+            domainFeed.setState(FeedMetadata.STATE.ENABLED.name());
+            feed.setState(FeedMetadata.STATE.ENABLED.name());
+            //TODO Write the Feed Sources and Destinations
+           // Datasource datasource = NifiFeedDatasourceFactory.transform(feed);
         }
         else {
             //attach the latest Feed data to this object
@@ -157,6 +169,7 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
             domainFeed.setFeed(baseFeed);
         }
         domainFeed = feedManagerFeedProvider.update(domainFeed);
+
         //merge in preconditions if they exist
         List<GenericUIPrecondition> preconditions = feed.getSchedule().getPreconditions();
         if (preconditions != null) {

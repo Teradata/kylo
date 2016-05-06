@@ -40,4 +40,6 @@ public interface FeedManagerFeed {
     DateTime getCreatedTime();
 
     DateTime getModifiedTime();
+
+    Integer getVersion();
 }

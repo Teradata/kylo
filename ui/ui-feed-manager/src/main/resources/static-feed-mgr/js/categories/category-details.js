@@ -71,7 +71,7 @@
 
 
         this.canDelete = function(){
-            if(this.model.relatedFeedSummaries) {
+            if(this.model != null && this.model != undefined && this.model.relatedFeedSummaries) {
                 return this.model.relatedFeedSummaries.length <= 0;
             }
             return false ;

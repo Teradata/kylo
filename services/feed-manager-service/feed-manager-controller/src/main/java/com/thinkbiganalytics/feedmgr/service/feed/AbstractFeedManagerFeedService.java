@@ -27,7 +27,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
     protected abstract RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException;
 
 
-    @Transactional(transactionManager = "metadataTransactionManager")
+
     public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
         NifiFeed feed = null;
         //replace expressions with values
@@ -83,20 +83,26 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
                 entity = feedBuilder.build();
 
 
+        feed = new NifiFeed(feedMetadata, entity);
         if (entity.isSuccess()) {
             feedMetadata.setNifiProcessGroupId(entity.getProcessGroupEntity().getProcessGroup().getId());
-            // feedMetadata.setNifiProcessGroup(entity);
-            Date createDate = new Date();
-            feedMetadata.setCreateDate(createDate);
-            feedMetadata.setUpdateDate(createDate);
 
-            saveFeed(feedMetadata);
+
+            try {
+             saveFeed(feedMetadata);
+                feed.setSuccess(true);
+            }catch (Exception e){
+                feed.setSuccess(false);
+                feed.addErrorMessage(e);
+            }
+
         }
         else {
-            //rollback feed
+            feed.setSuccess(false);
         }
-        feed = new NifiFeed(feedMetadata, entity);
         return feed;
+
+
     }
 
 }

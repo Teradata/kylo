@@ -297,6 +297,30 @@ if(properties != null) {
 
     }
 
+    public static List<NifiProperty> findInputPropertyMatchingType(Collection<NifiProperty> properties, final String processorType){
+
+        return Lists.newArrayList(Iterables.filter(properties, new Predicate<NifiProperty>() {
+            @Override
+            public boolean apply(NifiProperty property) {
+                return property.isInputProperty() && property.getProcessorType().equalsIgnoreCase(processorType);
+            }
+        }));
+    }
+
+    public static NifiProperty findFirstPropertyMatchingKey(Collection<NifiProperty> properties, final String propertyKey){
+        if(properties != null) {
+            return Iterables.tryFind(properties, new Predicate<NifiProperty>() {
+                @Override
+                public boolean apply(NifiProperty property) {
+                    return property.getKey().equalsIgnoreCase(propertyKey);
+                }
+            }).orNull();
+        }
+        else {
+            return null;
+        }
+    }
+
     public static List<NifiProperty> findProperties(Collection<NifiProperty> list1,Predicate<NifiProperty> predicate){
      return  Lists.newArrayList(Iterables.filter(list1, predicate));
     }
