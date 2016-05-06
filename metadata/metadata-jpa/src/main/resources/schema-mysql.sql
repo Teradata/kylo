@@ -1,3 +1,5 @@
+create database if not exists metadata;
+use metadata;
 create table CHANGE_SET (id binary(16) not null, created_time datetime, modified_time datetime, completeness_factor integer, intrinsic_period varchar(255), intrinsic_time datetime, dataset_id binary(16), primary key (id)) ENGINE=InnoDB;
 create table CHANGE_SET_FILES (id binary(16) not null, primary key (id)) ENGINE=InnoDB;
 create table CHANGE_SET_FILES_PATH (change_set_files_id binary(16) not null, path varchar(255)) ENGINE=InnoDB;
