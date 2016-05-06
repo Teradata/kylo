@@ -98,7 +98,7 @@ public class FeedModelTransform {
                     if(isNew){
                         domain.setFeed( new JpaFeed(feed.getSystemFeedName(),feed.getDescription()));
                         feed.setFeedId(domain.getFeed().getId().toString());
-                        feed.setState(FeedMetadata.STATE.ENABLED.name());
+                        feed.setState(FeedMetadata.STATE.NEW.name());
                     }
                     else {
                         JpaFeed existingFeed = new JpaFeed();
@@ -121,6 +121,9 @@ public class FeedModelTransform {
                     domain.setState(feed.getState());
 
                     domain.setJson(ObjectMapperSerializer.serialize(feed));
+                    if(feed.getVersion() == null){
+                        feed.setVersion(1L);
+                    }
                     domain.setVersion(feed.getVersion().intValue());
                     return domain;
                 }

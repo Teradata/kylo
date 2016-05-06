@@ -17,7 +17,7 @@ import java.util.List;
 public class FeedMetadata implements UIFeed{
 
     public static enum STATE {
-        ENABLED,DISABLED
+        NEW,ENABLED,DISABLED
     }
 
     private String id;

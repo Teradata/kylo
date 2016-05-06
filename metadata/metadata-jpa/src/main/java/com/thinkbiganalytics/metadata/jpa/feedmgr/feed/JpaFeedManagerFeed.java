@@ -60,7 +60,7 @@ public class JpaFeedManagerFeed extends AbstractAuditedEntity implements com.thi
 
     @Version
     @Column(name = "VERSION")
-    private Integer version;
+    private Integer version = 1;
 
     public JpaFeedManagerFeed(FeedManagerFeedId id) {
         this.id = id;

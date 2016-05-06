@@ -156,10 +156,13 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
         }
         Feed baseFeed = null;
         if(domainFeed.isNew()) {
+
             baseFeed = new JpaFeed(feed.getCategoryAndFeedName(),feed.getDescription());
             domainFeed.setFeed(baseFeed);
             feed.setFeedId(baseFeed.getId().toString());
-
+            //change the state to ENABLED
+            domainFeed.setState(FeedMetadata.STATE.ENABLED.name());
+            feed.setState(FeedMetadata.STATE.ENABLED.name());
             //TODO Write the Feed Sources and Destinations
             Datasource datasource = NifiFeedDatasourceFactory.transform(feed);
         }

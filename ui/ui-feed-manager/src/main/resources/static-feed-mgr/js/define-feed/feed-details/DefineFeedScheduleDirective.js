@@ -138,9 +138,9 @@
               //  self.showCompleteDialog();
             }, function(err){
                 console.log('error!',err);
-                CategoriesService.reload();
-                StateService.navigateToDefineFeedComplete(self.createdFeed,err)
-               // self.showCompleteDialog(err);
+               // CategoriesService.reload();
+              //  StateService.navigateToDefineFeedComplete(self.createdFeed,err)
+                self.showCompleteDialog(err);
             });
         }
 

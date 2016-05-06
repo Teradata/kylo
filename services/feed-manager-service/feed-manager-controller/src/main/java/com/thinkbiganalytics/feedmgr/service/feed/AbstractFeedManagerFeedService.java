@@ -90,9 +90,6 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
             try {
              saveFeed(feedMetadata);
-                //requery to get the lastest data
-                feedMetadata = getFeedById(feedMetadata.getId());
-                feed.setFeedMetadata(feedMetadata);
                 feed.setSuccess(true);
             }catch (Exception e){
                 feed.setSuccess(false);
