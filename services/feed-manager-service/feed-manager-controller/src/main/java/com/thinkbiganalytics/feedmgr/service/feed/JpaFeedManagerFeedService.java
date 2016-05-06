@@ -1,9 +1,7 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.thinkbiganalytics.feedmgr.rest.model.*;
-import com.thinkbiganalytics.feedmgr.service.feed.datasource.NifiFeedDatasourceFactory;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
@@ -13,7 +11,6 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
-import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.template.JpaFeedManagerTemplate;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.rest.JerseyClientException;
@@ -164,7 +161,7 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
             domainFeed.setState(FeedMetadata.STATE.ENABLED.name());
             feed.setState(FeedMetadata.STATE.ENABLED.name());
             //TODO Write the Feed Sources and Destinations
-            Datasource datasource = NifiFeedDatasourceFactory.transform(feed);
+           // Datasource datasource = NifiFeedDatasourceFactory.transform(feed);
         }
         else {
             //attach the latest Feed data to this object
