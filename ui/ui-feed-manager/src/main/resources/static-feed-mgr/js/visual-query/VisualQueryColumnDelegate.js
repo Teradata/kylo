@@ -38,7 +38,7 @@ angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function($m
             column.colDef.visible = false;
             column.visible = false;
 
-            this.controller.addFunction("Hide " + column.displayName, "remove_circle", "drop(\"" + StringUtils.quote(column.field)
+            this.controller.pushFormula("Hide " + column.displayName, "remove_circle", "drop(\"" + StringUtils.quote(column.field)
                     + "\")");
 
             grid.queueGridRefresh();

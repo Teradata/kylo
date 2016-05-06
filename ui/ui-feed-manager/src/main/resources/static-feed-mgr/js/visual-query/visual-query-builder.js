@@ -485,17 +485,19 @@
             });
 
             // Build SELECT statement
+            var columnSet = {};
             var select = "";
 
             angular.forEach(self.chartViewModel.data.nodes, function (node) {
                 var table = TABLE_PREFIX + node.id;
                 angular.forEach(node.nodeAttributes.attributes, function (attr) {
-                    if (attr.selected) {
+                    if (attr.selected && !columnSet[attr.name]) {
                         select += (select.length === 0) ? "SELECT " : ", ";
                         select += table + ".`" + StringUtils.quoteSql(attr.name) + "`";
                         self.selectedColumnsAndTables.push({column: attr.name,
                             alias: TABLE_PREFIX + node.id, tableName: node.name,
                             tableColumn: attr.name, dataType: attr.dataType});
+                        columnSet[attr.name] = true;
                     }
                 });
             });
