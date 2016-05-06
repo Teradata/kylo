@@ -610,7 +610,7 @@ angular.module('mentio', [])
                     var menuItem = (menuEl.querySelector('[mentio-menu-item].active') || 
                         menuEl.querySelector('[data-mentio-menu-item].active'));
 
-                    if(menuItemsList != unedfined && menuItemsList != null) {
+                    if(menuItemsList != undefined && menuItemsList != null) {
                         if (scope.isFirstItemActive()) {
                             return menuItemsList.scrollTop = 0;
                         } else if (scope.isLastItemActive()) {

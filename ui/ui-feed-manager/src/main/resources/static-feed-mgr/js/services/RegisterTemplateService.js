@@ -103,7 +103,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
       var propertiesAndProcessors = {properties: [], processors: []};
 
       //sort them by processor name and property key
-      var arr = _.chain(properties).sortBy('name').sortBy('processorName').value();
+      var arr = _.chain(properties).sortBy('key').sortBy('processorName').value();
       propertiesAndProcessors.properties = arr;
       //set the initial processor flag for the heading to print
       var lastProcessor = null;
