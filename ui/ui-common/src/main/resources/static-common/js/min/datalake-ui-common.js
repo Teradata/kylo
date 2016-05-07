@@ -395,7 +395,6 @@ angular.module(COMMON_APP_MODULE_NAME).service('FileUpload', ['$http', function 
                 fd.append(key,val);
             })
         }
-        console.log('FD ',fd,'params',params)
         $http.post(uploadUrl, fd, {
             transformRequest: angular.identity,
             headers: {'Content-Type': undefined}
