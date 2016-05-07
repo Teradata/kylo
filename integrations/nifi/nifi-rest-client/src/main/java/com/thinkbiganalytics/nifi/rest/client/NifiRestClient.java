@@ -4,7 +4,9 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.io.Files;
 import com.thinkbiganalytics.nifi.feedmgr.CreateFeedBuilder;
+import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -20,6 +22,7 @@ import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyClientException;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
@@ -28,28 +31,13 @@ import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.apache.nifi.web.api.entity.AboutEntity;
-import org.apache.nifi.web.api.entity.BulletinBoardEntity;
-import org.apache.nifi.web.api.entity.ConnectionEntity;
-import org.apache.nifi.web.api.entity.ConnectionsEntity;
-import org.apache.nifi.web.api.entity.ControllerServiceEntity;
-import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
-import org.apache.nifi.web.api.entity.ControllerServicesEntity;
-import org.apache.nifi.web.api.entity.ControllerStatusEntity;
-import org.apache.nifi.web.api.entity.DropRequestEntity;
-import org.apache.nifi.web.api.entity.Entity;
-import org.apache.nifi.web.api.entity.InputPortEntity;
-import org.apache.nifi.web.api.entity.InputPortsEntity;
-import org.apache.nifi.web.api.entity.LineageEntity;
-import org.apache.nifi.web.api.entity.OutputPortEntity;
-import org.apache.nifi.web.api.entity.OutputPortsEntity;
-import org.apache.nifi.web.api.entity.ProcessGroupEntity;
-import org.apache.nifi.web.api.entity.ProcessGroupsEntity;
-import org.apache.nifi.web.api.entity.ProcessorEntity;
-import org.apache.nifi.web.api.entity.ProvenanceEntity;
-import org.apache.nifi.web.api.entity.TemplatesEntity;
+import org.apache.nifi.web.api.entity.*;
+import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -59,6 +47,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.MediaType;
 
 /**
  * Created by sr186054 on 1/9/16.
@@ -98,6 +88,29 @@ public class NifiRestClient extends JerseyRestClient {
     }
     return nifiTemplatesEntity;
 
+  }
+
+  public TemplateEntity deleteTemplate(String templateId) throws JerseyClientException {
+    return delete("/controller/templates/"+templateId,null,TemplateEntity.class);
+  }
+
+  public TemplateDTO importTemplate(String templateName,String templateXml) throws JerseyClientException, IOException {
+
+    MultiPart multiPart = new MultiPart();
+    multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+    File tmpFile = File.createTempFile(templateName,".xml");
+    FileUtils.writeStringToFile(tmpFile,templateXml);
+
+    FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("template",tmpFile,
+            MediaType.APPLICATION_OCTET_STREAM_TYPE);
+    multiPart.bodyPart(fileDataBodyPart);
+    multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+    TemplateEntity templateEntity = postMultiPart("/controller/templates",multiPart, TemplateEntity.class);
+     if(templateEntity != null){
+       return templateEntity.getTemplate();
+     }
+    return null;
   }
 
   /**
@@ -150,6 +163,27 @@ public class NifiRestClient extends JerseyRestClient {
     return templateDTO;
   }
 
+  public FlowSnippetEntity instantiateFlowFromTemplate(String processGroupId, String templateId) throws JerseyClientException {
+    Entity status = getControllerRevision();
+    String clientId = status.getRevision().getClientId();
+    String originX = "10";
+    String originY = "10";
+    Form form = new Form();
+    form.param("templateId", templateId);
+    form.param("clientId", clientId);
+    form.param("originX", originX);
+    form.param("originY", originY);
+    form.param("version", status.getRevision().getVersion().toString());
+    FlowSnippetEntity
+            response =
+            postForm("/controller/process-groups/" + processGroupId + "/template-instance", form, FlowSnippetEntity.class);
+    return response;
+  }
+
+  public NifiProcessGroup createNewTemplateInstance(String templateId) throws JerseyClientException {
+    TemplateInstanceCreator creator = new TemplateInstanceCreator(this,templateId);
+    return creator.createTemplate();
+  }
 
   public ControllerStatusEntity getControllerStatus() throws JerseyClientException {
     return get("/controller/status", null, ControllerStatusEntity.class);

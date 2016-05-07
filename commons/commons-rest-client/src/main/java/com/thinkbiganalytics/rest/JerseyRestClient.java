@@ -22,6 +22,9 @@ import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.*;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.glassfish.jersey.jackson.JacksonFeature;
+import org.glassfish.jersey.media.multipart.Boundary;
+import org.glassfish.jersey.media.multipart.MultiPart;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -138,6 +141,7 @@ public class JerseyRestClient {
 
         }
         client.register(JacksonFeature.class);
+        client.register(MultiPartFeature.class);
 
         if(StringUtils.isNotBlank(getUsername())) {
             HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), config.getPassword());
@@ -240,6 +244,20 @@ public class JerseyRestClient {
         WebTarget target = buildTarget(path, null);
         try {
             return target.request().post(Entity.entity(o, MediaType.APPLICATION_JSON_TYPE));
+        } catch (ClientErrorException e) {
+            String msg = "Post Error for " + target.getUri().toString();
+            LOG.error(msg);
+            throw new JerseyClientException(msg, e);
+        }
+    }
+
+    public <T> T postMultiPart(String path, MultiPart object, Class<T> returnType) throws JerseyClientException {
+        WebTarget target = buildTarget(path, null);
+        try {
+            MediaType contentType = MediaType.MULTIPART_FORM_DATA_TYPE;
+            contentType = Boundary.addBoundary(contentType);
+
+            return target.request().post(Entity.entity(object, contentType), returnType);
         } catch (ClientErrorException e) {
             String msg = "Post Error for " + target.getUri().toString();
             LOG.error(msg);

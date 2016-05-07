@@ -3,6 +3,7 @@ package com.thinkbiganalytics.feedmgr.config;
 
 import java.net.URI;
 
+import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.category.JpaFeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.service.feed.JpaFeedManagerFeedService;
@@ -67,7 +68,10 @@ public class FeedManagerConfiguration {
         return new FeedManagerMetadataService();
     }
 
-
+    @Bean
+    public ExportImportTemplateService exportImportTemplateService() {
+        return new ExportImportTemplateService();
+    }
 
 
 }

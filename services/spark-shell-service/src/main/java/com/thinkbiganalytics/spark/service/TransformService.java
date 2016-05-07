@@ -1,22 +1,5 @@
 package com.thinkbiganalytics.spark.service;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.Queue;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
-import javax.script.ScriptException;
-
-import org.apache.commons.lang3.StringEscapeUtils;
-import org.apache.spark.rdd.RDD;
-import org.apache.spark.sql.Row;
-import org.apache.spark.sql.SQLContext;
-import org.apache.spark.storage.RDDInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.RemovalListener;
@@ -32,6 +15,21 @@ import com.thinkbiganalytics.spark.metadata.TransformRequest;
 import com.thinkbiganalytics.spark.metadata.TransformResponse;
 import com.thinkbiganalytics.spark.repl.ScriptEngine;
 import com.thinkbiganalytics.spark.util.HiveUtils;
+
+import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SQLContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.Queue;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nonnull;
+import javax.script.ScriptException;
 
 import scala.tools.nsc.interpreter.NamedParam;
 import scala.tools.nsc.interpreter.NamedParamClass;
@@ -238,7 +236,17 @@ public class TransformService extends AbstractScheduledService {
     private void dropTable(@Nonnull final String name, @Nonnull final SQLContext context) {
         log.debug("Dropping cached table {}", name);
 
-        if (context.isCached(name)) {
+        // Check if table is cached
+        boolean isCached = false;
+
+        try {
+            isCached = context.isCached(name);
+        } catch (Exception e) {
+            // ignored
+        }
+
+        // Drop table
+        if (isCached) {
             context.uncacheTable(name);
         }
         else {

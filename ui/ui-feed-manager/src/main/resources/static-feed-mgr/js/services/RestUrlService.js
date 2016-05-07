@@ -10,6 +10,7 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     var self = this;
 
     this.ROOT = "";
+    this.ADMIN_BASE_URL =this.ROOT+"/proxy/v1/feedmgr/admin";
     this.TEMPLATES_BASE_URL =this.ROOT+"/proxy/v1/feedmgr/templates";
     this.FEEDS_BASE_URL = this.ROOT+"/proxy/v1/feedmgr/feeds";
     this.CONTROLLER_SERVICES_BASE_URL = this.ROOT+"/proxy/v1/feedmgr/nifi/controller-services";
@@ -110,4 +111,10 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
 
     this.AVAILABLE_STANDARDIZATION_POLICIES = this.ROOT+"/proxy/v1/field-policies/standardization";
     this.AVAILABLE_VALIDATION_POLICIES = this.ROOT+"/proxy/v1/field-policies/validation";
+
+
+    this.ADMIN_IMPORT_TEMPLATE_URL = self.ADMIN_BASE_URL+"/import-template";
+
+    this.ADMIN_EXPORT_TEMPLATE_URL = self.ADMIN_BASE_URL+"/export-template";
+
 });

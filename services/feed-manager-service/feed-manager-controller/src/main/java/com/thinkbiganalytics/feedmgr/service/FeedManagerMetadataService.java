@@ -66,9 +66,12 @@ public class FeedManagerMetadataService implements MetadataService {
 
   @Override
   public RegisteredTemplate getRegisteredTemplateForNifiProperties(String nifiTemplateId, String nifiTemplateName) {
-    return templateProvider.getRegisteredTemplateForNifiProperties(nifiTemplateId,nifiTemplateName);
+    return templateProvider.getRegisteredTemplateForNifiProperties(nifiTemplateId, nifiTemplateName);
   }
 
+  public void deleteRegisteredTemplate(String templateId) {
+    templateProvider.deleteRegisteredTemplate(templateId);
+  }
 
 
   @Override

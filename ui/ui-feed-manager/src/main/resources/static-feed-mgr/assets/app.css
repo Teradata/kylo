@@ -78,7 +78,7 @@ md-list md-datepicker .md-button.md-icon-button {
   padding-bottom: 25px;
 }
 
-#content.define-feed, #content.register-template { /*.feeds, #content.home */
+#content.define-feed, #content.register-nifi-template { /*.feeds, #content.home */
   padding:0 !important;
 }
 
@@ -203,7 +203,7 @@ card-layout .card-toolbar {
   max-height: 60px;
 }
 
-card-layout .register-template-header {
+card-layout .register-nifi-template-header {
   height:inherit !important;;
   max-height: inherit !important;
 }
@@ -1057,6 +1057,10 @@ table.hive-table th:last-child,table.hive-table td:last-child {
   background-color:#eeeeee;
 }
 
+.registered-templates md-list-item:hover {
+  background-color:#ECECEC;
+  cursor:pointer;
+}
 
 card-layout.visual-query-canvas section:first-child {
   align-self: auto;
@@ -1096,7 +1100,7 @@ card-layout.visual-query-canvas section:first-child {
   font-weight: 400;
   letter-spacing: .010em;
   margin: 0;
-  line-height: 1.2em;
+  line-height: 1.5em;
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;

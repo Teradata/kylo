@@ -24,11 +24,19 @@ angular.module(MODULE_FEED_MGR).service('StateService', function ($state) {
     }
 
     this.navigateToRegisterTemplate = function(){
-        $state.go('register-template',{registeredTemplateId:null,nifiTemplateId:null});
+        $state.go('register-template');
+    }
+
+    this.navigateToImportTemplate = function(){
+        $state.go('import-template');
+    }
+
+    this.navigateToRegisterNifiTemplate = function(){
+        $state.go('register-nifi-template',{registeredTemplateId:null,nifiTemplateId:null});
     }
 
     this.navigateToRegisteredTemplate = function(templateId, nifiTemplateId){
-        $state.go('register-template',{registeredTemplateId:templateId,nifiTemplateId:nifiTemplateId});
+        $state.go('register-nifi-template',{registeredTemplateId:templateId,nifiTemplateId:nifiTemplateId});
     }
 
     this.navigateToServiceLevelAgreements = function(){

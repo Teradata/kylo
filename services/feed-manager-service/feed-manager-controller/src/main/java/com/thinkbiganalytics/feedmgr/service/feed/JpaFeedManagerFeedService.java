@@ -1,7 +1,9 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.thinkbiganalytics.feedmgr.rest.model.*;
+import com.thinkbiganalytics.feedmgr.service.feed.datasource.NifiFeedDatasourceFactory;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
