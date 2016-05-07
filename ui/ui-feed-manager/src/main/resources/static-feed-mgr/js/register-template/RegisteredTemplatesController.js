@@ -79,6 +79,11 @@
 
             var successFn = function (response) {
                 self.loading = false;
+                if(response.data){
+                    angular.forEach(response.data,function(template){
+                        template.exportUrl = RestUrlService.ADMIN_EXPORT_TEMPLATE_URL+"/"+template.id;
+                    });
+                }
                  self.registeredTemplates = response.data;
             }
             var errorFn = function (err) {
@@ -89,6 +94,11 @@
             promise.then(successFn, errorFn);
             return promise;
 
+        }
+
+        this.exportTemplate = function(event,template){
+            console.log('exportTemplate',template,RestUrlService.ADMIN_EXPORT_TEMPLATE_URL+"/"+template.id)
+            var promise = $http.get( RestUrlService.ADMIN_EXPORT_TEMPLATE_URL+"/"+template.id);
         }
 
 

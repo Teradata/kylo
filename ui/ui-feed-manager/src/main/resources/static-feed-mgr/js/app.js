@@ -78,13 +78,37 @@ app.config(function($stateProvider,$urlRouterProvider) {
         }
     }).state('register-template',{
         url:'/register-template',
+        views: {
+            'content': {
+                templateUrl: 'js/register-template/register-template.html'
+            }
+        },
+        data:{
+            breadcrumbRoot:false,
+            displayName:'Register Template'
+        }
+    }).state('import-template',{
+        url:'/import-template',
+        params: {
+        },
+        views: {
+            'content': {
+                templateUrl: 'js/register-template/import-template.html'
+            }
+        },
+        data:{
+            breadcrumbRoot:false,
+            displayName:'Template Manager'
+        }
+    }).state('register-nifi-template',{
+        url:'/register-nifi-template',
         params: {
             registeredTemplateId: null,
             nifiTemplateId:null
         },
         views: {
             'content': {
-                templateUrl: 'js/register-template/register-template.html'
+                templateUrl: 'js/register-template/register-nifi-template.html'
             }
         },
         data:{
@@ -254,19 +278,6 @@ app.config(function($stateProvider,$urlRouterProvider) {
         data:{
             breadcrumbRoot:true,
             displayName:'Visual Query'
-        }
-    }).state('admin-template-mgr',{
-        url:'/admin/template-mgr',
-        params: {
-        },
-        views: {
-            'content': {
-                templateUrl: 'js/admin/template-mgr.html'
-            }
-        },
-        data:{
-            breadcrumbRoot:true,
-            displayName:'Template Manager'
         }
     })
 

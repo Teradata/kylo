@@ -9,10 +9,10 @@
 
         <body-section>
 
-            <md-list flex layout-fill class="list-item-table">
-                <md-list-item  class="md-secondary" dir-paginate="template in vm.registeredTemplates |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId"  ng-click="vm.templateDetails($event,template)">
+            <md-list flex layout-fill class="list-item-table registered-templates">
+                <md-list-item  class="md-secondary" dir-paginate="template in vm.registeredTemplates |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId"  >
                     <div layout="row" layout-fill>
-                        <div flex="40" layout="column" class="item-column md-list-item-text ">
+                        <div flex="40" layout="column" class="item-column md-list-item-text " title="{{template.properties.length}} properties configured" ng-click="vm.templateDetails($event,template)">
                                      <span class="item-title" title="{{template.templateName}}">
                                       {{template.templateName}}
                                    </span>
@@ -21,13 +21,6 @@
                                           </ng-md-icon>
                                     Template Name
                                    </span>
-
-                        </div>
-
-                        <div flex="20" layout="column" class="item-column md-list-item-text ">
-                                   <span class="item-title">{{template.properties.length}}
-                                   </span>
-                            <span class="column-title column-title-bottom"># of properties</span>
                         </div>
                         <div flex="40" layout="column" class="item-column md-list-item-text ">
 
@@ -37,6 +30,12 @@
                                      Last Updated
                                    </span>
                         </div>
+                        <div flex="20" layout="column" class="item-column md-list-item-text " >
+                            <md-button href="{{template.exportUrl}}" class="md-raised">
+                                Export
+                            </md-button>
+                        </div>
+
                     </div>
                     <md-divider ng-if="!$last"></md-divider>
                 </md-list-item>
