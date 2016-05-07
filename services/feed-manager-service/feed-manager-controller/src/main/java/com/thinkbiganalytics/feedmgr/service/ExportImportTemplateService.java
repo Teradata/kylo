@@ -10,6 +10,7 @@ import com.thinkbiganalytics.rest.JerseyClientException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -168,6 +169,7 @@ public class ExportImportTemplateService {
         return baos.toByteArray();
     }
 
+    @Transactional(transactionManager = "metadataTransactionManager")
     public ImportTemplate importTemplate(InputStream inputStream, boolean overwrite) throws IOException {
         ImportTemplate importTemplate = openZip(inputStream);
         RegisteredTemplate template = ObjectMapperSerializer.deserialize(importTemplate.getTemplateJson(), RegisteredTemplate.class);
@@ -206,6 +208,9 @@ public class ExportImportTemplateService {
             } else {
                 //delete this template
                 importTemplate.setSuccess(false);
+                //TODO DELETE THE TEMPLATE FROM THE DB
+                //if it doesnt have any feeds delete it
+                metadataService.deleteRegisteredTemplate(template.getId());
             }
             importTemplate.setTemplateResults(newTemplateInstance);
             //delete processgroup

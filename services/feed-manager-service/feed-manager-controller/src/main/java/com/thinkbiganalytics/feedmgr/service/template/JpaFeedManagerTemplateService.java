@@ -56,6 +56,15 @@ public class JpaFeedManagerTemplateService extends AbstractFeedManagerTemplateSe
         return registeredTemplate;
     }
 
+    public void deleteRegisteredTemplate(String templateId)
+    {
+        FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
+        FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
+        //only allow deletion if there are no feeds
+        if(domainTemplate != null && (domainTemplate.getFeeds() == null || domainTemplate.getFeeds().size() ==0)) {
+            templateProvider.deleteById(domainId);
+        }
+    }
     @Override
     public RegisteredTemplate getRegisteredTemplateByName(String templateName) {
         RegisteredTemplate registeredTemplate = null;

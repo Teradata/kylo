@@ -25,6 +25,8 @@ public interface FeedManagerTemplateService {
 
   RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException;
 
+  public void deleteRegisteredTemplate(String templateId);
+
   List<RegisteredTemplate> getRegisteredTemplates();
 
 
