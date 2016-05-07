@@ -5,21 +5,59 @@
 package com.thinkbiganalytics.policy.validation;
 
 
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
- * Validates ISO8601 format
+ * Validates format
  */
-@Validator(name = "Timestamp", description = "Validate ISO8601 format")
-public class TimestampValidator extends RegexValidator implements ValidationPolicy<String> {
+@Validator(name = "Timestamp", description = "Validate Hive-friendly timstamp format")
+public class TimestampValidator implements ValidationPolicy<String> {
 
-  private static final TimestampValidator instance = new TimestampValidator();
+    private static Logger log = LoggerFactory.getLogger(TimestampValidator.class);
 
-  private TimestampValidator() {
-    super(
-        "((\\d\\d\\d\\d)-?(\\d\\d)-?(\\d\\d)(T|\\s)?(\\d\\d):?(\\d\\d)(?::?(\\d\\d)(\\.\\d+)*?)?(Z|[+-])(?:(\\d\\d):?(\\d\\d))?|20\\d{2}(-|\\/)((0[1-9])|(1[0-2]))(-|\\/)((0[1-9])|([1-2][0-9])|(3[0-1]))(T|\\s)(([0-1][0-9])|(2[0-3])):([0-5][0-9]):([0-5][0-9]))");
-  }
+    private static final TimestampValidator instance = new TimestampValidator();
 
-  public static TimestampValidator instance() {
-    return instance;
-  }
+    private static final DateTimeFormatter DATETIME_NANOS = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
+    private static final DateTimeFormatter DATETIME_MILLIS = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS");
+    private static final DateTimeFormatter DATETIME_NOMILLIS = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+    private static final int MIN_LENGTH = 19;
+    private static final int MAX_LENGTH = 29;
 
+    private TimestampValidator() {
+        super();
+    }
+
+    public static TimestampValidator instance() {
+        return instance;
+    }
+
+    @Override
+    public boolean validate(String value) {
+        if (!StringUtils.isEmpty(value)) {
+            try {
+                int cnt = value.length();
+                if (cnt < MIN_LENGTH || cnt > MAX_LENGTH) {
+                    return false;
+                }
+
+                if (cnt == MIN_LENGTH) {
+                    DATETIME_NOMILLIS.parseDateTime(value);
+                } else if (cnt == MAX_LENGTH) {
+                    DATETIME_NANOS.parseDateTime(value);
+                } else {
+                    DATETIME_MILLIS.parseDateTime(value);
+                }
+                return true;
+
+            } catch (IllegalArgumentException e) {
+                log.debug("Invalid timestamp format [{}]", value);
+                return false;
+            }
+        }
+        return false;
+    }
 }

@@ -15,24 +15,21 @@ import org.apache.commons.lang3.StringUtils;
 @Standardizer(name = "Default Value", description = "Applies a default value if null")
 public class DefaultValueStandardizer implements StandardizationPolicy, AcceptsEmptyValues {
 
-  @PolicyProperty(name = "Default Value", hint = "If the value is null it will use this supplied value")
-  private String defaultStr;
+    @PolicyProperty(name = "Default Value", hint = "If the value is null it will use this supplied value")
+    private String defaultStr;
 
 
-  public DefaultValueStandardizer(@PolicyPropertyRef(name = "Default Value") String defaultStr) {
-    this.defaultStr = defaultStr;
-  }
+    public DefaultValueStandardizer(@PolicyPropertyRef(name = "Default Value") String defaultStr) {
+        this.defaultStr = defaultStr;
+    }
 
-  @Override
-  public String convertValue(String value) {
-    return StringUtils.defaultString(value, defaultStr);
-  }
+    @Override
+    public String convertValue(String value) {
+        return (StringUtils.isEmpty(value) ? defaultStr : value);
+    }
 
-  public String getDefaultStr() {
-    return defaultStr;
-  }
+    public String getDefaultStr() {
+        return defaultStr;
+    }
 
-  public void setDefaultStr(String defaultStr) {
-    this.defaultStr = defaultStr;
-  }
 }

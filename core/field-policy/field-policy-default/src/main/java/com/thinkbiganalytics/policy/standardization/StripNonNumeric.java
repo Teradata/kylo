@@ -11,18 +11,18 @@ package com.thinkbiganalytics.policy.standardization;
 @Standardizer(name = "Strip Non Numeric", description = "Remove any characters that are not numeric")
 public class StripNonNumeric extends SimpleRegexReplacer {
 
-  private static final StripNonNumeric instance = new StripNonNumeric();
+    private static final StripNonNumeric instance = new StripNonNumeric();
 
-  private StripNonNumeric() {
-    super("[^\\d.]", "");
-  }
+    private StripNonNumeric() {
+        super("[^\\d.]", "");
+    }
 
-  @Override
-  public String convertValue(String value) {
-    return super.convertValue(value);
-  }
+    @Override
+    public String convertValue(String value) {
+        return super.convertValue(value);
+    }
 
-  public static StripNonNumeric instance() {
-    return instance;
-  }
+    public static StripNonNumeric instance() {
+        return instance;
+    }
 }

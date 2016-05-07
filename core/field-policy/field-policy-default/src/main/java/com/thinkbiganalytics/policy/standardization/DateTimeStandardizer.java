@@ -7,141 +7,210 @@ package com.thinkbiganalytics.policy.standardization;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
-import java.util.Date;
-
+import java.util.TimeZone;
 
 /**
  * Convert date time by a provided input format to an ISO8601 format used by Hive.  If the input format is null, the date is
- * assumed to be epoch time, otherwise the formatting pattern is used to convert the date.
+ * assumed to be Java epoch time, otherwise the formatting pattern is used to convert the date.
  */
-@Standardizer(name = "Date/Time", description = "Converts any date to ISO8601")
+@Standardizer(name = "Date/Time", description = "Converts any date to Hive-friendly format with optional timezone conversion")
 public class DateTimeStandardizer implements StandardizationPolicy {
 
-  public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS};
+    private static final Logger log = LoggerFactory.getLogger(DateTimeStandardizer.class);
 
-  private static final Logger log = LoggerFactory.getLogger(DateTimeStandardizer.class);
+    public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS}
 
-  @PolicyProperty(name = "Date Format", hint = "Format Example: MM/DD/YYYY")
-  private String inputDateFormat;
+    @PolicyProperty(name = "Date Format", hint = "Format Example: MM/DD/YYYY")
+    private String inputDateFormat;
 
-  @PolicyProperty(name = "Output Format", hint = "Choose an output format", type = PolicyProperty.PROPERTY_TYPE.select,
-                  selectableValues = {"DATE_ONLY", "DATETIME", "DATETIME_NOMILLIS"})
-  private OutputFormats outputFormat;
+    @PolicyProperty(name = "Output Format", hint = "Choose an output format", type = PolicyProperty.PROPERTY_TYPE.select,
+                    selectableValues = {"DATE_ONLY", "DATETIME", "DATETIME_NOMILLIS"})
+    private OutputFormats outputFormat;
 
-  private transient DateTimeFormatter outputFormatter;
+    /**
+     * Whether the reference timezone is encoded in the ISO8601 date or specified as configuration
+     */
+    @PolicyProperty(name = "Input timezone", hint = "Input timezone (optional)", type = PolicyProperty.PROPERTY_TYPE.select,
+                    selectableValues = {"ACT",
+                                        "AET",
+                                        "AGT",
+                                        "ART",
+                                        "AST",
+                                        "BET",
+                                        "BST",
+                                        "CAT",
+                                        "CNT",
+                                        "CST",
+                                        "CTT",
+                                        "EAT",
+                                        "ECT",
+                                        "IET",
+                                        "IST",
+                                        "JST",
+                                        "MIT",
+                                        "NET",
+                                        "NST",
+                                        "PLT",
+                                        "PNT",
+                                        "PRT",
+                                        "PST",
+                                        "SST",
+                                        "UTC",
+                                        "VST",
+                                        "EST",
+                                        "MST",
+                                        "HST"}, value = "")
+    private String inputTimezone;
 
-  private transient DateTimeFormatter inputFormatter;
+    /**
+     * Whether the reference timezone is encoded in the ISO8601 date or specified as configuration
+     */
+    @PolicyProperty(name = "Output timezone", hint = "Targeted timezone (optional)", type = PolicyProperty.PROPERTY_TYPE.select,
+                    selectableValues = {"ACT",
+                                        "AET",
+                                        "AGT",
+                                        "ART",
+                                        "AST",
+                                        "BET",
+                                        "BST",
+                                        "CAT",
+                                        "CNT",
+                                        "CST",
+                                        "CTT",
+                                        "EAT",
+                                        "ECT",
+                                        "IET",
+                                        "IST",
+                                        "JST",
+                                        "MIT",
+                                        "NET",
+                                        "NST",
+                                        "PLT",
+                                        "PNT",
+                                        "PRT",
+                                        "PST",
+                                        "SST",
+                                        "UTC",
+                                        "VST",
+                                        "EST",
+                                        "MST",
+                                        "HST"}, value = "")
+    private String outputTimezone;
 
+    private transient DateTimeFormatter outputFormatter;
 
-  private boolean valid;
+    private transient DateTimeFormatter inputFormatter;
 
-  private int errCount = 0;
+    private boolean valid;
 
-
-  public DateTimeStandardizer(OutputFormats outputFormat) {
-
-    this(null, outputFormat);
-  }
-
-  public DateTimeStandardizer(@PolicyPropertyRef(name = "Date Format") String inputDateFormat,
-                              @PolicyPropertyRef(name = "Output Format") OutputFormats outputFormat) {
-
-    Validate.notNull(outputFormat);
-    this.inputDateFormat = inputDateFormat;
-    this.outputFormat = outputFormat;
-    initializeFormatters();
-  }
-
-  @Override
-  public String convertValue(String value) {
-    if (!valid) {
-      return value;
+    public DateTimeStandardizer(OutputFormats outputFormat) {
+        this(null, outputFormat, null, null);
     }
-    try {
-      if (inputFormatter != null) {
-        DateTime dt = inputFormatter.parseDateTime(value);
-        return outputFormatter.withZoneUTC().print(dt);
-      }
-      // epoch time
-      long lValue = Long.parseLong(value);
-      return outputFormatter.withZoneUTC().print(lValue);
 
-    } catch (IllegalArgumentException e) {
-      // Don't overload logs with errors
-      if (errCount++ < 10) {
-        System.out.println("Failed to convert string [" + value + "] to date pattern [" + inputDateFormat + "]");
-      }
+    public DateTimeStandardizer(String inputDateFormat, OutputFormats outputFormat) {
+        this(inputDateFormat, outputFormat, null, null);
     }
-    return value;
-  }
 
-  private void initializeFormatters() {
-    try {
-      valid = false;
-      switch (outputFormat) {
-        case DATE_ONLY:
-          this.outputFormatter = ISODateTimeFormat.date();
-          break;
-        case DATETIME:
-          this.outputFormatter = ISODateTimeFormat.dateTime();
-          break;
+    public DateTimeStandardizer(@PolicyPropertyRef(name = "Date Format") String inputDateFormat,
+                                @PolicyPropertyRef(name = "Output Format") OutputFormats outputFormat,
+                                @PolicyPropertyRef(name = "Input Timezone") String inputTimezone,
+                                @PolicyPropertyRef(name = "Output Timezone") String outputTimezone) {
 
-        case DATETIME_NOMILLIS:
-          this.outputFormatter = ISODateTimeFormat.dateTimeNoMillis();
-          break;
-      }
-      if (inputDateFormat != null) {
-        this.inputFormatter = DateTimeFormat.forPattern(this.inputDateFormat);
-      }
-      valid = true;
-    } catch (IllegalArgumentException e) {
-      System.out.println("Illegal date parser format [" + inputDateFormat + "]. Standardizer will be skipped.");
+        Validate.notNull(outputFormat);
+        this.inputDateFormat = inputDateFormat;
+        this.outputFormat = outputFormat;
+        this.inputTimezone = inputTimezone;
+        this.outputTimezone = outputTimezone;
+        initializeFormatters();
     }
-  }
 
-  private void readObject(java.io.ObjectInputStream in)
-      throws IOException, ClassNotFoundException {
-    in.defaultReadObject();
-    initializeFormatters();
-  }
+    @Override
+    public String convertValue(String value) {
+        if (valid) {
+            try {
+                if (inputFormatter == null) {
+                    long lValue = Long.parseLong(value);
+                    return outputFormatter.print(lValue);
+                }
 
-  public String getInputDateFormat() {
-    return inputDateFormat;
-  }
+                DateTime dt = inputFormatter.parseDateTime(value);
+                return outputFormatter.print(dt);
 
-  public OutputFormats getOutputFormat() {
-    return outputFormat;
-  }
+            } catch (IllegalArgumentException e) {
+                log.debug("Failed to convert string [{}] to date pattern [{}], value, inputDateFormat");
+            }
+        }
+        return value;
+    }
 
-  public static void main(String[] args) {
-    DateTimeStandardizer epochStandardizer = new DateTimeStandardizer(OutputFormats.DATETIME);
-    System.out.println(epochStandardizer.convertValue((new Date().getTime()) + ""));
+    /**
+     * Returns a time formatter for the specified timezone
+     *
+     * @param format   the current formatter
+     * @param timezone the timezone string
+     * @return a time formatter for the specified timezone
+     */
+    protected DateTimeFormatter formatterForTimezone(DateTimeFormatter format, String timezone) {
 
-    DateTimeStandardizer standardizer = new DateTimeStandardizer("MM/dd/YYYY", OutputFormats.DATE_ONLY);
+        if (StringUtils.isEmpty(timezone)) {
+            return format;
+        }
+        if ("UTC".equals(timezone) || "GMT".equals(timezone)) {
+            return format.withZoneUTC();
+        }
+        return format.withZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(timezone)));
 
-    System.out.println(standardizer.convertValue("1/14/1974"));
-    System.out.println(standardizer.convertValue("1/1/1974"));
-    System.out.println(standardizer.convertValue("12/01/2014"));
-    System.out.println(standardizer.convertValue("1/14/1974"));
+    }
 
-    standardizer = new DateTimeStandardizer("MM/dd/YYYY HH:mm:ss", OutputFormats.DATETIME_NOMILLIS);
-    System.out.println(standardizer.convertValue("1/14/1974 6:00:00"));
+    protected void initializeFormatters() {
+        try {
+            valid = false;
+            switch (outputFormat) {
+                case DATE_ONLY:
+                    this.outputFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+                    break;
+                case DATETIME:
+                    this.outputFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS");
+                    break;
 
-    standardizer = new DateTimeStandardizer("MM/dd/YYYY HH:mm:ss", OutputFormats.DATETIME);
-    System.out.println(standardizer.convertValue("1/14/1974 6:00:00"));
-    standardizer = new DateTimeStandardizer("MM/dd/YYYY HH:mm:ss Z", OutputFormats.DATETIME);
-    System.out.println(standardizer.convertValue("1/14/1974 6:25:12 -0800"));
-    standardizer = new DateTimeStandardizer("MM/dd/YYYY HH:mm:ss Z", OutputFormats.DATETIME);
-    System.out.println(standardizer.convertValue("1/14/1974 6:00:00 -0800"));
-  }
+                case DATETIME_NOMILLIS:
+                    this.outputFormatter = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+                    break;
+            }
+            this.outputFormatter = formatterForTimezone(this.outputFormatter, outputTimezone);
+            if (inputDateFormat != null) {
+                this.inputFormatter = DateTimeFormat.forPattern(this.inputDateFormat);
+                this.inputFormatter = formatterForTimezone(this.inputFormatter, inputTimezone);
+            }
+            valid = true;
+        } catch (IllegalArgumentException e) {
+            log.warn("Illegal configuration input format [{}], tz [{}] Output format  [{}], tz [{}]"
+                      + "]. Standardizer will be skipped.", inputDateFormat, inputTimezone, outputFormat, outputTimezone);
+        }
+    }
+
+    private void readObject(java.io.ObjectInputStream in)
+        throws IOException, ClassNotFoundException {
+        in.defaultReadObject();
+        initializeFormatters();
+    }
+
+    public String getInputDateFormat() {
+        return inputDateFormat;
+    }
+
+    public OutputFormats getOutputFormat() {
+        return outputFormat;
+    }
 
 }

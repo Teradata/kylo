@@ -7,8 +7,6 @@ package com.thinkbiganalytics.policy.validation;
 
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
-import com.thinkbiganalytics.policy.validation.Validator;
-import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -23,41 +21,41 @@ import java.util.Set;
  */
 @Validator(name = "Lookup", description = "Must be contained in the list")
 public class LookupValidator implements ValidationPolicy<String> {
-  private static final Logger log = LoggerFactory.getLogger(LookupValidator.class);
 
-  @PolicyProperty(name = "List", hint = "Comma separated list of values")
-  private String lookupList;
+    private static final Logger log = LoggerFactory.getLogger(LookupValidator.class);
 
-  private Set<String> lookupValues = new HashSet<>();
+    @PolicyProperty(name = "List", hint = "Comma separated list of values")
+    private String lookupList;
 
-  public LookupValidator(String... values) {
-    lookupValues = new HashSet<>(Arrays.asList(values));
-  }
+    private Set<String> lookupValues = new HashSet<>();
 
-  public LookupValidator(@PolicyPropertyRef(name = "List") String values) {
-    log.info("Lookup Validator for {} ",values);
-    this.lookupList = values;
-    String[] arr = StringUtils.split(values, ",");
-    if(arr != null) {
-      lookupValues = new HashSet<>(Arrays.asList(arr));
+    public LookupValidator(String... values) {
+        lookupValues = new HashSet<>(Arrays.asList(values));
     }
-    else {
-      log.error("Lookup Validator error NULL array ");
+
+    public LookupValidator(@PolicyPropertyRef(name = "List") String values) {
+        log.info("Lookup Validator for {} ", values);
+        this.lookupList = values;
+        String[] arr = StringUtils.split(values, ",");
+        if (arr != null) {
+            lookupValues = new HashSet<>(Arrays.asList(arr));
+        } else {
+            log.error("Lookup Validator error NULL array ");
+        }
     }
-  }
 
 
-  @Override
-  public boolean validate(String value) {
-    return lookupValues.contains(value);
-  }
+    @Override
+    public boolean validate(String value) {
+        return lookupValues.contains(value);
+    }
 
-  public String getLookupList() {
-    return lookupList;
-  }
+    public String getLookupList() {
+        return lookupList;
+    }
 
-  public Set<String> getLookupValues() {
-    return lookupValues;
-  }
+    public Set<String> getLookupValues() {
+        return lookupValues;
+    }
 }
 
