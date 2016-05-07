@@ -255,6 +255,19 @@ app.config(function($stateProvider,$urlRouterProvider) {
             breadcrumbRoot:true,
             displayName:'Visual Query'
         }
+    }).state('admin-template-mgr',{
+        url:'/admin/template-mgr',
+        params: {
+        },
+        views: {
+            'content': {
+                templateUrl: 'js/admin/template-mgr.html'
+            }
+        },
+        data:{
+            breadcrumbRoot:true,
+            displayName:'Template Manager'
+        }
     })
 
 

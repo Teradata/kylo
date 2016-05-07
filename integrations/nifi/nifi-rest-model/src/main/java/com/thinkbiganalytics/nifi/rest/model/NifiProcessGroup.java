@@ -101,6 +101,10 @@ public class NifiProcessGroup {
         return errors;
     }
 
+    public boolean hasErrors(){
+        return this.errors != null && !this.errors.isEmpty();
+    }
+
     public boolean hasFatalErrors() {
         List<NifiProcessorDTO> fatalErrors = new ArrayList<>();
         if(errors != null && !errors.isEmpty()) {

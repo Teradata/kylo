@@ -63,6 +63,7 @@
         function buildAdminMenu(){
             var menu = [];
             menu.push({sref:"registered-templates",icon:"folder_special",text:"Register Template",defaultActive:false});
+            menu.push({sref:"admin-template-mgr",icon:"folder_special",text:"Template Manager",defaultActive:false});
             self.adminMenu = menu;
         }
 

@@ -16,9 +16,15 @@ angular.module(COMMON_APP_MODULE_NAME).directive('fileModel', ['$parse', functio
 }]);
 
 angular.module(COMMON_APP_MODULE_NAME).service('FileUpload', ['$http', function ($http) {
-    this.uploadFileToUrl = function(file, uploadUrl, successFn, errorFn){
+    this.uploadFileToUrl = function(file, uploadUrl, successFn, errorFn,params){
         var fd = new FormData();
         fd.append('file', file);
+        if(params){
+            angular.forEach(params,function(val,key){
+                fd.append(key,val);
+            })
+        }
+        console.log('FD ',fd,'params',params)
         $http.post(uploadUrl, fd, {
             transformRequest: angular.identity,
             headers: {'Content-Type': undefined}

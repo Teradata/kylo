@@ -1,0 +1,132 @@
+<div ng-controller="AdminTemplateManagerController as vm">
+
+    <md-tabs md-dynamic-height md-border-bottom>
+        <md-tab label="Export Template">
+            <md-content class="md-padding">
+                <card-layout  header-css="filter-header" class="centered">
+
+                    <header-section tba-card-filter-header transclude-to="head" flex layout card-title="vm.exportCardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions" on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
+
+                    </header-section>
+
+
+                    <body-section>
+
+                        <md-list flex layout-fill class="list-item-table">
+                            <md-list-item  class="md-secondary" dir-paginate="template in vm.registeredTemplates |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId"  >
+                                <div layout="row" layout-fill>
+                                    <div flex="40" layout="column" class="item-column md-list-item-text ">
+                                     <span class="item-title" title="{{template.templateName}}">
+                                      {{template.templateName}}
+                                   </span>
+                                   <span class="column-title column-title-bottom">
+                                          <ng-md-icon icon="{{template.icon}}" size="20" hide-xs style="fill:{{template.iconColor}}">
+                                          </ng-md-icon>
+                                    Template Name
+                                   </span>
+
+                                    </div>
+
+
+                                    <div flex="40" layout="column" class="item-column md-list-item-text ">
+
+                                   <span  class="item-title" title="{{feed.active}}" >
+                                     {{template.updateDate | date: 'MM/dd/yyyy @ h:mm:ssa'}}</span>
+                                     <span class="column-title column-title-bottom">
+                                     Last Updated
+                                   </span>
+                                    </div>
+
+                                    <div flex="20" layout="column" class="item-column md-list-item-text ">
+                                        <md-button href="{{template.exportUrl}}" class="md-raised">
+                                            Export
+                                        </md-button>
+                                    </div>
+                                </div>
+                                <md-divider ng-if="!$last"></md-divider>
+                            </md-list-item>
+                            <md-list-item  ng-show="vm.loading == false && vm.feedData.length ==0">
+                                No results found
+                            </md-list-item >
+                            <md-divider></md-divider>
+                            <md-list-item   layout-align="end center"  layout-row class="pagination-list-item">
+                                <dir-pagination-controls pagination-id="vm.paginationId"
+                                                         auto-hide="false"
+                                                         max-size="5"
+                                                         direction-links="true"
+                                                         boundary-links="false"
+                                                         template-url="js/vendor/dirPagination/dirPagination.tpl.html"
+                                                         current-page="vm.currentPage()"
+                                                         on-page-change="vm.onPaginationChange(newPageNumber)"
+                                                         label="Rows per page"
+                                                         rows-per-page="vm.paginationData.rowsPerPage"
+                                                         rows-per-page-options="vm.paginationData.rowsPerPageOptions"
+                                                         class="pagination-row">
+                                </dir-pagination-controls>
+                            </md-list-item>
+                        </md-list>
+
+                    </body-section>
+
+                </card-layout>
+                </md-content>
+            </md-tab>
+        <md-tab label="Import Template">
+            <md-content class="md-padding">
+
+                <card-layout  header-css="filter-header" class="centered">
+
+                    <header-section >
+                        <div layout="row" layout-align="center start">
+                            <h2 class="md-title">Import a Template</h2>
+                            <span flex></span>
+                            <ng-md-icon icon="file_upload" style="fill:#F08C38;padding-right:16px;" size="30"></ng-md-icon>
+                        </div>
+                    </header-section>
+
+
+                    <body-section>
+
+
+
+
+
+                <div layout="column" flex>
+                     <div  layout="row" layout-align="center center" style="padding-left:25px;">
+                        <input type="file"  file-model="vm.templateFile"/>
+                        <md-checkbox ng-model="vm.overwrite" aria-label="Overwrite if exists">
+                            Overwrite Template if it already exists
+                        </md-checkbox>
+                        <md-button class="md-raised" ng-click="vm.importTemplate();" ng-if="vm.templateFile != null" ng-disabled="vm.importBtnDisabled">
+                            Import Template
+                        </md-button>
+                    </div>
+
+
+                    <div ng-if="vm.importResult != null && vm.importResult.success == false">
+                        <div>Errors were found attempting to register the template: {{vm.importResult.templateName}}</div>
+                        <md-list class="padding-left" ng-repeat="(severity,errors)  in vm.errorMap">
+                            <md-subheader class="md-warn" ng-if="errors.length >0">{{::severity}} errors</md-subheader>
+                            <md-list-item class="md-2-line" ng-repeat="error in errors track by $index" >
+                                <div class="md-list-item-text" >
+                                    <div ng-if="error.processorName != null && error.processorName != '' " style="color:grey">Processor: {{::error.processorName}}</div>
+                                    <div class="md-warn-text">{{::error.message}}</div>
+                                </div>
+                                <md-divider ng-if="!$last"></md-divider>
+                            </md-list-item>
+                        </md-list>
+                    </div>
+                    <div ng-if="vm.importResult != null && vm.importResult.success == true">
+                        <div> Successfully imported and Registered the template: {{vm.importResult.templateName}}</div>
+                    </div>
+                    </div>
+            </md-content>
+        </md-tab>
+</md-tabs>
+
+
+
+
+
+
+</div>
