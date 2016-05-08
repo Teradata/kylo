@@ -284,6 +284,7 @@ this.fileName = fileName;
             String templateName = null;
             try {
                 templateName = NifiTemplateParser.getTemplateName(xmlTemplate);
+                importTemplate.setTemplateName(templateName);
                 TemplateDTO templateDTO = nifiRestClient.getTemplateByName(templateName);
                 if (templateDTO != null) {
                     if (overwrite) {
