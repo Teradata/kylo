@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.spark.validation;
 
+import com.thinkbiganalytics.policy.validation.DateValidator;
+import com.thinkbiganalytics.policy.validation.TimestampValidator;
 import com.thinkbiganalytics.spark.util.InvalidFormatException;
 
 import org.apache.commons.lang3.StringUtils;
@@ -10,6 +12,8 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Date;
+import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -36,6 +40,8 @@ public class HCatDataType implements Cloneable, Serializable {
         dataTypes.put("float", new HCatDataType(-Float.MAX_VALUE, Float.MAX_VALUE));
         dataTypes.put("double", new HCatDataType(-Double.MAX_VALUE, Double.MAX_VALUE));
         dataTypes.put("real", new HCatDataType(-Double.MAX_VALUE, Double.MAX_VALUE));
+        dataTypes.put("date", new HCatDataType(Date.class));
+        dataTypes.put("timestamp", new HCatDataType(Timestamp.class));
 
     }
 
@@ -123,20 +129,26 @@ public class HCatDataType implements Cloneable, Serializable {
     }
 
     private HCatDataType(Class clazz) {
-        this.isnumeric = true;
+
         this.convertibleType = clazz;
-        BigDecimal minDecimal = new BigDecimal(Long.MIN_VALUE);
-        BigDecimal maxDecimal = new BigDecimal(Long.MAX_VALUE);
-        if (clazz == BigInteger.class) {
-            this.min = minDecimal.toBigInteger();
-            this.max = maxDecimal.toBigInteger();
-        } else if (clazz == BigDecimal.class) {
-            // Note: Not sure what to set this to. for now it is not validated anyway
-            this.min = null;
-            this.max = null;
+        if (clazz == Date.class || clazz == Timestamp.class) {
+            this.isnumeric = false;
         } else {
-            throw new RuntimeException("Invalid class for constructor " + clazz.getCanonicalName());
+            this.isnumeric = true;
+            BigDecimal minDecimal = new BigDecimal(Long.MIN_VALUE);
+            BigDecimal maxDecimal = new BigDecimal(Long.MAX_VALUE);
+            if (clazz == BigInteger.class) {
+                this.min = minDecimal.toBigInteger();
+                this.max = maxDecimal.toBigInteger();
+            } else if (clazz == BigDecimal.class) {
+                // Note: Not sure what to set this to. for now it is not validated anyway
+                this.min = null;
+                this.max = null;
+            } else {
+                throw new RuntimeException("Invalid class for constructor " + clazz.getCanonicalName());
+            }
         }
+
     }
 
     /**
@@ -244,6 +256,14 @@ public class HCatDataType implements Cloneable, Serializable {
      */
     public boolean isValueConvertibleToType(String val) {
         try {
+            if (val != null  && !isnumeric) {
+                if (convertibleType == Timestamp.class) {
+                    return TimestampValidator.instance().validate(val);
+                } else if (convertibleType == Date.class) {
+                    return DateValidator.instance().validate(val);
+                }
+            }
+
             Comparable nativeValue = toNativeValue(val);
             if (nativeValue != null) {
                 if (isnumeric) {
@@ -264,7 +284,7 @@ public class HCatDataType implements Cloneable, Serializable {
                 }
             }
 
-        } catch (InvalidFormatException | ClassCastException e) {
+        } catch (InvalidFormatException | ClassCastException | IllegalArgumentException e) {
             return false;
         }
         return true;

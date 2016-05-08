@@ -205,7 +205,7 @@ public class Validator implements Serializable {
             fields.add(DataTypes.createStructField("columnname", DataTypes.StringType, true));
             fields.add(DataTypes.createStructField("metrictype", DataTypes.StringType, true));
             fields.add(DataTypes.createStructField("metricvalue", DataTypes.StringType, true));
-            //fields.add(DataTypes.createStructField("processing_dttm", DataTypes.StringType, true));
+
             StructType statsSchema = DataTypes.createStructType(fields);
 
             final ArrayList<String> csvRows = new ArrayList<>();

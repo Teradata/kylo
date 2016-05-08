@@ -173,4 +173,23 @@ public class HCatDataTypeTest {
 
     }
 
+    @Test
+    public void testIsValueConvertibletoDate() throws Exception {
+        HCatDataType type = HCatDataType.createFromDataType("mydate", "date");
+        assertTrue(type.isValueConvertibleToType("2016-05-10"));
+        assertFalse(type.isValueConvertibleToType("05-10-2015"));
+    }
+
+    @Test
+    public void testIsValueConvertibletoTS() throws Exception {
+        HCatDataType type = HCatDataType.createFromDataType("myts", "timestamp");
+        assertTrue(type.isValueConvertibleToType("2015-01-15 11:10:20.333"));
+        assertTrue(type.isValueConvertibleToType("2015-01-15 11:10:20"));
+        assertTrue(type.isValueConvertibleToType("2015-01-15 11:10:20.333444555"));
+
+        assertFalse(type.isValueConvertibleToType("2015/01/15 11:10:20"));
+        assertFalse(type.isValueConvertibleToType("2016-05-10"));
+        assertFalse(type.isValueConvertibleToType("05-10-2015"));
+    }
+
 }

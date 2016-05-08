@@ -14,26 +14,23 @@ import static org.junit.Assert.fail;
 /**
  * Created by matthutton on 5/7/16.
  */
-public class TimestampValidatorTest {
+public class DateValidatorTest {
 
     @Test
     public void testInstance() throws Exception {
-        TimestampValidator ts = TimestampValidator.instance();
-        assertTrue(ts.validate("2015-01-15 11:10:20.333"));
-        assertTrue(ts.validate("2015-01-15 11:10:20"));
-        assertTrue(ts.validate("2015-01-15 11:10:20.333444555"));
-
+        DateValidator ts = DateValidator.instance();
+        assertTrue(ts.validate("2015-01-15"));
         assertFalse(ts.validate("2015/01/15 11:10:20"));
-        assertFalse(ts.validate("2015-01-15"));
+        assertFalse(ts.validate("12/01/2015"));
+        assertFalse(ts.validate("13/01/2015"));
     }
 
     @Test
     public void testParse() throws Exception {
-        TimestampValidator ts = TimestampValidator.instance();
-        assertNotNull(ts.parseTimestamp("2015-01-15 11:10:20.333"));
-        assertNotNull(ts.parseTimestamp("2015-01-15 11:10:20"));
+        DateValidator ts = DateValidator.instance();
+        assertNotNull(ts.parseDate("2015-01-15"));
         try {
-            ts.parseTimestamp("2015-01-15");
+            ts.parseDate("1/1/2015");
             fail();
         } catch (IllegalArgumentException e) {
             // good
