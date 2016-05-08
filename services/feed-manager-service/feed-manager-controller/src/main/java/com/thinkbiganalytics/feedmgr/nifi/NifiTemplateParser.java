@@ -25,15 +25,12 @@ public class NifiTemplateParser {
 
 
     public static String getTemplateName(String nifiTemplate) throws ParserConfigurationException, XPathExpressionException, IOException, SAXException {
-        int j = 0;
-
 
         XPathFactory xpathFactory = XPathFactory.newInstance();
         XPath xpath = xpathFactory.newXPath();
 
         InputSource source = new InputSource(new StringReader(nifiTemplate));
         String name = (String) xpath.evaluate("/template/name", source,XPathConstants.STRING);
-        int i = 0;
         return name;
     }
 }
