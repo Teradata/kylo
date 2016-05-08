@@ -54,7 +54,8 @@ public class AdminController {
     @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite) throws Exception
     {
 
-        ExportImportTemplateService.ImportTemplate importTemplate = exportImportTemplateService.importTemplate(fileInputStream,overwrite);
+
+        ExportImportTemplateService.ImportTemplate importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(),fileInputStream,overwrite);
         return Response.ok(importTemplate).build();
     }
 

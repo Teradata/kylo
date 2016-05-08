@@ -2,6 +2,8 @@ package com.thinkbiganalytics.nifi.feedmgr;
 
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.ControllerServicePropertyHolder;
+import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
@@ -68,8 +70,18 @@ public class TemplateInstanceCreator {
 
                 newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
 
-                templateCreationHelper.cleanupControllerServices();
-                newProcessGroup.setSuccess(!newProcessGroup.hasErrors());
+                 templateCreationHelper.cleanupControllerServices();
+                List<NifiError> errors = templateCreationHelper.getErrors();
+                    //add any global errors to the object
+                    if (errors != null && !errors.isEmpty()) {
+                        for (NifiError error : errors) {
+                            newProcessGroup.addError(error);
+                        }
+                    }
+
+
+
+                newProcessGroup.setSuccess(!newProcessGroup.hasFatalErrors());
 
                 return newProcessGroup;
 

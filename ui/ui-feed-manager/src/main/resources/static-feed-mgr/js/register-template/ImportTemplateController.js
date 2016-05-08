@@ -8,7 +8,11 @@
         this.overwrite = false;
 
         self.importResult = null;
+        self.importResultIcon = "check_circle";
+        self.importResultIconColor="#009933";
+
         self.errorMap = null;
+        self.errorCount = 0;
         this.importTemplate = function(){
             self.importBtnDisabled = true;
             self.importResult = null;
@@ -20,8 +24,10 @@
                 var count = 0;
                 var errorMap = {"FATAL":[],"WARN":[]};
                 self.importResult = response;
-                if(!response.success) {
-                    angular.forEach(response.templateResults.errors, function (processor) {
+                //if(response.templateResults.errors) {
+                if(response.controllerServiceErrors) {
+                    //angular.forEach(response.templateResults.errors, function (processor) {
+                    angular.forEach(response.controllerServiceErrors, function (processor) {
                         if (processor.validationErrors) {
                             angular.forEach(processor.validationErrors, function (error) {
                                 var copy = {};
@@ -34,8 +40,33 @@
                         }
                     });
                     self.errorMap = errorMap;
+                    self.errorCount = count;
                 }
                 hideProgress();
+
+                if(count ==0){
+                    self.importResultIcon = "check_circle";
+                    self.importResultIconColor="#009933";
+                    if(response.zipFile == true)
+                    {
+                        self.message = "Successfully imported and registered the template "+response.templateName;
+                    }
+                    else {
+                        self.message = "Successfully imported the template "+response.templateName+" into Nifi"
+                    }
+                }
+                else {
+                    if(response.success){
+                        self.message = "Successfully imported "+(response.zipFile == true ? "and registered " : "")+" the template "+response.templateName+" but some errors were found. Please review these errors";
+                        self.importResultIcon = "warning";
+                        self.importResultIconColor="#FF9901";
+                    }
+                    else {
+                        self.importResultIcon = "error";
+                        self.importResultIconColor="#FF0000";
+                        self.message = "Unable to import "+(response.zipFile == true ? "and register " : "")+" the template "+response.templateName+".  Errors were found.  You may need to fix the template or go to Nifi to fix the Controller Services and then try to import again.";
+                    }
+                }
 
                 self.importBtnDisabled = false;
             }

@@ -94,7 +94,15 @@ public class NifiRestClient extends JerseyRestClient {
     return delete("/controller/templates/"+templateId,null,TemplateEntity.class);
   }
 
+
+  public TemplateDTO importTemplate(String templateXml) throws JerseyClientException, IOException {
+    return importTemplate(null,templateXml);
+  }
+
   public TemplateDTO importTemplate(String templateName,String templateXml) throws JerseyClientException, IOException {
+  if(templateName == null){
+    templateName= "import_template_"+System.currentTimeMillis();
+  }
 
     MultiPart multiPart = new MultiPart();
     multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);

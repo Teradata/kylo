@@ -130,7 +130,7 @@ public class CreateFeedBuilder {
     String inputPortName = reusableTemplateInputPortName;
     restClient
         .connectFeedToGlobalTemplate(feedGroupId, feedOutputPortName, feedCategoryId, reusableTemplateCategoryGroupId,
-                                      inputPortName);
+                inputPortName);
   }
 
   private void ensureInputPortsForReuseableTemplate(String feedGroupId) throws JerseyClientException {
@@ -263,6 +263,10 @@ public class CreateFeedBuilder {
             restClient.deleteProcessGroup(entity.getProcessGroup());
             //  cleanupControllerServices();
             newProcessGroup.setSuccess(false);
+          }
+          List<NifiError> helperErrors = templateCreationHelper.getErrors();
+          if(helperErrors != null){
+            errors.addAll(helperErrors);
           }
 
           //add any global errors to the object

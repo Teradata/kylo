@@ -386,6 +386,51 @@ angular.module(COMMON_APP_MODULE_NAME).directive('fileModel', ['$parse', functio
     };
 }]);
 
+
+
+
+function uploadFile($parse) {
+    var directive = {
+        restrict: 'EA',
+        template: '<input id="fileInput" type="file" class="ng-hide"> <md-button id="uploadButton" class="md-raised md-primary" aria-label="attach_file">    Choose file </md-button><md-input-container  md-no-float>    <input id="textInput" ng-model="fileName" type="text" placeholder="No file chosen" ng-readonly="true"></md-input-container>',
+        link: function(scope, element, attrs) {
+            var input = $(element[0].querySelector('#fileInput'));
+            var button = $(element[0].querySelector('#uploadButton'));
+            var textInput = $(element[0].querySelector('#textInput'));
+
+            var model = $parse(attrs.uploadFileModel);
+            var modelSetter = model.assign;
+
+            if (input.length && button.length && textInput.length) {
+                button.click(function(e) {
+                    input.click();
+                });
+                textInput.click(function(e) {
+                    input.click();
+                });
+            }
+
+            input.on('change', function(e) {
+                var files = e.target.files;
+                if (files[0]) {
+                    scope.fileName = files[0].name;
+                } else {
+                    scope.fileName = null;
+                }
+                scope.$apply(function(){
+                    modelSetter(scope, files[0]);
+                });
+            });
+        }
+    };
+    return directive;
+}
+
+
+
+angular.module(COMMON_APP_MODULE_NAME).directive('uploadFile',['$parse', uploadFile]);
+
+
 angular.module(COMMON_APP_MODULE_NAME).service('FileUpload', ['$http', function ($http) {
     this.uploadFileToUrl = function(file, uploadUrl, successFn, errorFn,params){
         var fd = new FormData();

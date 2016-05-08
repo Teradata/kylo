@@ -4,8 +4,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.nifi.rest.model.NifiError;
-import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.*;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
@@ -48,6 +47,81 @@ public class TemplateCreationHelper {
             snapshotControllerServices = controllerServiceEntity.getControllerServices();
         }
     }
+
+    public List<NifiError> getErrors() {
+        return errors;
+    }
+
+    /**
+     * Try to see if there are processors that use process groups and then
+     * @param processGroupDTO
+     */
+    public ControllerServicePropertyHolder validatePropertiesWithControllerServices(ProcessGroupDTO processGroupDTO) throws JerseyClientException {
+        List<ControllerServiceProperty> controllerServiceProperties = new ArrayList<>();
+
+        Map<String,ProcessorDTO> processors = NifiProcessUtil.getProcessorsMap(processGroupDTO);
+        if(processors != null && !processors.isEmpty()){
+            for(ProcessorDTO processor: processors.values()){
+               List<PropertyDescriptorDTO> propertyDescriptors = Lists.newArrayList(Iterables.filter(processor.getConfig().getDescriptors().values(), new Predicate<PropertyDescriptorDTO>() {
+                   @Override
+                   public boolean apply(PropertyDescriptorDTO propertyDescriptorDTO) {
+                       return StringUtils.isNotBlank(propertyDescriptorDTO.getIdentifiesControllerService());
+                   }
+               }));
+                if(propertyDescriptors != null){
+                    for(PropertyDescriptorDTO propertyDescriptor : propertyDescriptors){
+                        String value = processor.getConfig().getProperties().get(propertyDescriptor.getName());
+                        ControllerServiceProperty controllerServiceProperty = new ControllerServiceProperty();
+                        controllerServiceProperty.setProcessorId(processor.getId());
+                        controllerServiceProperty.setProcessorGroupId(processor.getParentGroupId());
+                        controllerServiceProperty.setProcessorName(processor.getName());
+                        controllerServiceProperty.setPropertyValue(value);
+                        controllerServiceProperty.setPropertyName(propertyDescriptor.getName());
+                        controllerServiceProperties.add(controllerServiceProperty);
+                    }
+                }
+            }
+        }
+
+        if(!controllerServiceProperties.isEmpty()){
+            ControllerServicesEntity controllerServicesEntity = restClient.getControllerServices();
+            Map<String,ControllerServiceDTO> controllerServices = new HashMap<>();
+            for(ControllerServiceDTO controllerServiceDTO : controllerServicesEntity.getControllerServices()){
+                controllerServices.put(controllerServiceDTO.getId(), controllerServiceDTO);
+            }
+
+            for(ControllerServiceProperty controllerServiceProperty: controllerServiceProperties){
+              ControllerServiceDTO controllerServiceDTO = controllerServices.get(controllerServiceProperty.getPropertyValue());
+                String message = "The Controller Service assigned to Processor: "+controllerServiceProperty.getProcessorName()+"["+controllerServiceProperty.getProcessorId()+"] - "+controllerServiceProperty.getPropertyName();
+                if(controllerServiceDTO == null){
+                    controllerServiceProperty.setValid(false);
+                    controllerServiceProperty.setValidationMessage(message+" doesn't exist ");
+                }
+                else if(controllerServiceDTO.getState().equalsIgnoreCase(NifiProcessUtil.SERVICE_STATE.DISABLED.name())) {
+                    controllerServiceProperty.setValid(false);
+                    controllerServiceProperty.setValidationMessage(message+" is DISABLED. ");
+                }
+                else {
+                    controllerServiceProperty.setValid(true);
+                }
+
+                if(!controllerServiceProperty.isValid()) {
+                    errors.add(new NifiError(NifiError.SEVERITY.FATAL,
+                            controllerServiceProperty.getValidationMessage(),
+                            NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
+
+                }
+
+
+            }
+
+        }
+      return new ControllerServicePropertyHolder(controllerServiceProperties);
+
+
+
+    }
+
 
     /**
      * Compare the services in Nifi with the ones from the snapshot and return any that are not in the snapshot
@@ -169,12 +243,12 @@ public class TemplateCreationHelper {
                             restClient.updateProcessorProperty(property.getProcessGroupId(), property.getProcessorId(), property);
                         }
                         if (!controllerServiceSet) {
-                            errors.add(new NifiError(NifiError.SEVERITY.WARN,
+                            errors.add(new NifiError(NifiError.SEVERITY.FATAL,
                                     "Error trying to enable Controller Service " + controllerServiceName
                                             + " on referencing Processor: " + property.getProcessorName() + " and field " + property
                                             .getKey()
-                                            + ". Please go to Nifi and configure and enable this Service before creating this feed.",
-                                    "Controller Services"));
+                                            + ". Please go to Nifi and configure and enable this Service.",
+                                    NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
                         }
 
                     }
@@ -183,7 +257,7 @@ public class TemplateCreationHelper {
 
         } catch (JerseyClientException e) {
             errors.add(new NifiError(NifiError.SEVERITY.FATAL, "Error trying to identify Controller Services. " + e.getMessage(),
-                    "Controller Services"));
+                     NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
         }
     }
 
