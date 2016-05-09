@@ -20,3 +20,31 @@ alter table SLA add constraint UK_9hpi9lvo1tco0r1cuos6i4c0x unique (name);
 alter table SLA_METRIC add constraint FK6nabgra4jm6p63me7qkqg8pev foreign key (obligation_id) references SLA_OBLIGATION (id);
 alter table SLA_OBLIGATION add constraint FKn1t5kx4s83yu0sth86xawrixh foreign key (group_id) references SLA_OBLIGATION_GROUP (id);
 alter table SLA_OBLIGATION_GROUP add constraint FKowk48beqvytrqxdxoejj1mjrb foreign key (agreement_id) references SLA (id);
+
+/* FEED MANAGER TABLE FK Constraints */
+
+ALTER TABLE `metadata`.`FM_FEED`
+ADD INDEX `FM_TEMPLATE_ID_FK_idx` (`template_id` ASC)  COMMENT '';
+ALTER TABLE `metadata`.`FM_FEED`
+ADD CONSTRAINT `FM_TEMPLATE_ID_FK`
+  FOREIGN KEY (`template_id`)
+  REFERENCES `metadata`.`FM_TEMPLATE` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+ALTER TABLE `metadata`.`FM_FEED`
+ADD INDEX `FM_CATEGORY_ID_FK_idx` (`category_id` ASC)  COMMENT '';
+ALTER TABLE `metadata`.`FM_FEED`
+ADD CONSTRAINT `FM_CATEGORY_ID_FK`
+  FOREIGN KEY (`category_id`)
+  REFERENCES `metadata`.`FM_CATEGORY` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+
+ALTER TABLE `metadata`.`FM_FEED`
+ADD CONSTRAINT `FM_FEED_ID_FK`
+  FOREIGN KEY (`feed_id`)
+  REFERENCES `metadata`.`FEED` (`id`)
+  ON DELETE NO ACTION
+  ON UPDATE NO ACTION;
+/* END FEED MANAGER TABLE FK Constraints */
