@@ -499,7 +499,7 @@
         function saveToFeedModel(){
             var feedModel = FeedService.createFeedModel;
             //Populate Feed Model from the Visual Query Model
-            feedModel.dataTransformation.transformScript = self.sparkShellService.getScript();
+            feedModel.dataTransformation.dataTransformScript = self.sparkShellService.getScript();
             feedModel.dataTransformation.formulas = [];
             var tableSchema = {schemaName:'',name:'',fields: self.sparkShellService.getFields()};//need to get data in a com.thinkbiganalytics.db.model.schema.TableSchema
 
