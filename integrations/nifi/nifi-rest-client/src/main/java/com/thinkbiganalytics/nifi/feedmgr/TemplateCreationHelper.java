@@ -5,17 +5,14 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.*;
+import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.web.api.dto.ControllerServiceDTO;
-import org.apache.nifi.web.api.dto.ProcessGroupDTO;
-import org.apache.nifi.web.api.dto.ProcessorDTO;
-import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
-import org.apache.nifi.web.api.entity.ControllerServiceEntity;
-import org.apache.nifi.web.api.entity.ControllerServicesEntity;
-import org.apache.nifi.web.api.entity.FlowSnippetEntity;
+import org.apache.nifi.web.api.dto.*;
+import org.apache.nifi.web.api.entity.*;
 
 import java.util.*;
 
@@ -23,6 +20,8 @@ import java.util.*;
  * Created by sr186054 on 5/6/16.
  */
 public class TemplateCreationHelper {
+
+    public static String REUSABLE_TEMPLATES_PROCESS_GROUP_NAME = "reusable_templates";
 
     private List<NifiError> errors = new ArrayList<>();
 
@@ -288,4 +287,123 @@ public class TemplateCreationHelper {
             }
         }
     }
+
+
+
+    public void versionProcessGroup(ProcessGroupDTO processGroup) throws JerseyClientException {
+        restClient.disableAllInputProcessors(processGroup.getId());
+        //attempt to stop all processors
+        try {
+            restClient.stopAllProcessors(processGroup);
+        }catch (JerseyClientException e)
+        {
+
+        }
+        //delete all connections
+            ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(processGroup.getParentGroupId());
+            if(connectionsEntity != null) {
+                List<ConnectionDTO> connections =                 NifiConnectionUtil.findConnectionsMatchingSourceGroupId(connectionsEntity.getConnections(), processGroup.getId());
+
+                    if(connections != null) {
+                        for(ConnectionDTO connection: connections){
+                            String type = connection.getDestination().getType();
+                            if(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)){
+                                //stop the port
+                                try {
+                                    restClient.stopOutputPort(connection.getParentGroupId(), connection.getDestination().getId());
+                                }catch (JerseyClientException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            try {
+                                restClient.deleteConnection(connection);
+                            }catch (JerseyClientException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+                    connections = NifiConnectionUtil.findConnectionsMatchingDestinationGroupId(connectionsEntity.getConnections(), processGroup.getId());
+                    if(connections != null) {
+                        for(ConnectionDTO connection: connections){
+                            String type = connection.getSource().getType();
+                            if(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)){
+                                //stop the port
+                                try {
+                                    restClient.stopInputPort(connection.getParentGroupId(), connection.getSource().getId());
+                                }catch (JerseyClientException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+                            try {
+                                restClient.deleteConnection(connection);
+                            }catch (JerseyClientException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+
+            }
+
+
+
+        //rename the feedGroup to be name+timestamp
+        //TODO change to work with known version passed in (get the rename to current version -1 or something.
+        processGroup.setName(processGroup.getName() +" - "+ new Date().getTime());
+        ProcessGroupEntity entity = new ProcessGroupEntity();
+        entity.setProcessGroup(processGroup);
+        restClient.updateProcessGroup(entity);
+    }
+
+    public void markProcessorsAsRunning(NifiProcessGroup newProcessGroup) {
+        if (newProcessGroup.isSuccess()) {
+            try {
+                restClient.markProcessorGroupAsRunning(newProcessGroup.getProcessGroupEntity().getProcessGroup());
+            } catch (JerseyClientException e) {
+                String errorMsg = "Unable to mark feed as " + NifiProcessUtil.PROCESS_STATE.RUNNING + ".";
+                newProcessGroup
+                        .addError(newProcessGroup.getProcessGroupEntity().getProcessGroup().getId(), "", NifiError.SEVERITY.WARN, errorMsg,
+                                "Process State");
+                newProcessGroup.setSuccess(false);
+            }
+        }
+    }
+
+    public void markConnectionPortsAsRunning(ProcessGroupEntity feedProcessGroup){
+        //1 startAll
+        try {
+            restClient.startAll(feedProcessGroup.getProcessGroup().getId(),feedProcessGroup.getProcessGroup().getParentGroupId());
+        } catch (JerseyClientException e) {
+            e.printStackTrace();
+        }
+
+        Set<PortDTO> ports = null;
+        try {
+            ports = restClient.getPortsForProcessGroup(feedProcessGroup.getProcessGroup().getParentGroupId());
+        } catch (JerseyClientException e) {
+            e.printStackTrace();
+        }
+        if(ports != null && !ports.isEmpty()) {
+            for(PortDTO port: ports){
+                port.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+                if(port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())) {
+                    try {
+                        restClient.startInputPort(feedProcessGroup.getProcessGroup().getParentGroupId(),port.getId());
+                    } catch (JerseyClientException e) {
+                        e.printStackTrace();
+                    }
+                }
+                else if(port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name())) {
+                    try {
+                        restClient.startOutputPort(feedProcessGroup.getProcessGroup().getParentGroupId(), port.getId());
+                    } catch (JerseyClientException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        }
+
+    }
+
 }

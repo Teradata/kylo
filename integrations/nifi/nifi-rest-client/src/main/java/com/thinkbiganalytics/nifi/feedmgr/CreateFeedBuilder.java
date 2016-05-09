@@ -140,42 +140,7 @@ public class CreateFeedBuilder {
 
   }
 
-  private void markConnectionPortsAsRunning(ProcessGroupEntity feedProcessGroup){
-    //1 startAll
-    try {
-      restClient.startAll(feedProcessGroup.getProcessGroup().getId(),feedProcessGroup.getProcessGroup().getParentGroupId());
-    } catch (JerseyClientException e) {
-      e.printStackTrace();
-    }
 
-    Set<PortDTO> ports = null;
-    try {
-      ports = restClient.getPortsForProcessGroup(feedProcessGroup.getProcessGroup().getParentGroupId());
-    } catch (JerseyClientException e) {
-      e.printStackTrace();
-    }
-    if(ports != null && !ports.isEmpty()) {
-     for(PortDTO port: ports){
-       port.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-       if(port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())) {
-         try {
-           restClient.startInputPort(feedProcessGroup.getProcessGroup().getParentGroupId(),port.getId());
-         } catch (JerseyClientException e) {
-           e.printStackTrace();
-         }
-       }
-       else if(port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name())) {
-         try {
-           restClient.startOutputPort(feedProcessGroup.getProcessGroup().getParentGroupId(), port.getId());
-         } catch (JerseyClientException e) {
-           e.printStackTrace();
-         }
-       }
-     }
-
-    }
-
-  }
 
   private boolean hasConnectionPorts(){
     return reusableTemplateInputPortName != null || isReusableTemplate;
@@ -251,12 +216,12 @@ public class CreateFeedBuilder {
             markInputAsRunning(newProcessGroup, input);
           }
 
-          markProcessorsAsRunning(newProcessGroup, nonInputProcessors);
+          templateCreationHelper.markProcessorsAsRunning(newProcessGroup);
 
           ///make the input/output ports in the category group as running
           if(hasConnectionPorts())
           {
-            markConnectionPortsAsRunning(entity);
+            templateCreationHelper.markConnectionPortsAsRunning(entity);
           }
 
           if (newProcessGroup.hasFatalErrors()) {
@@ -418,19 +383,6 @@ public class CreateFeedBuilder {
 
 
 
-  private void markProcessorsAsRunning(NifiProcessGroup newProcessGroup, List<ProcessorDTO> nonInputProcessors) {
-    if (newProcessGroup.isSuccess()) {
-      try {
-        restClient.markProcessorGroupAsRunning(newProcessGroup.getProcessGroupEntity().getProcessGroup());
-      } catch (JerseyClientException e) {
-        String errorMsg = "Unable to mark feed as " + NifiProcessUtil.PROCESS_STATE.RUNNING + ".";
-        newProcessGroup
-            .addError(newProcessGroup.getProcessGroupEntity().getProcessGroup().getId(), "", NifiError.SEVERITY.WARN, errorMsg,
-                      "Process State");
-        newProcessGroup.setSuccess(false);
-      }
-    }
-  }
 
   private void markInputAsRunning(NifiProcessGroup newProcessGroup, ProcessorDTO input) {
     try {
