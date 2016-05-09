@@ -28,9 +28,9 @@
                     </md-radio-button>
                 </md-radio-group>
             </div>
-            <div ng-if="vm.model.table.method == 'SAMPLE_FILE'" layout="row" layout-align="center center" style="padding-left:25px;">
-                    <input type="file"  file-model="vm.sampleFile"/>
-                <md-button class="md-raised" ng-click="vm.uploadSampleFile();" ng-if="vm.sampleFile != null" ng-disabled="vm.uploadBtnDisabled">
+            <div ng-if="vm.model.table.method == 'SAMPLE_FILE'" layout="row" layout-align="center center" style="padding-left:5px;">
+                <upload-file upload-file-model="vm.sampleFile" input-size="20" style="margin-top: -10px;" ></upload-file>
+                <md-button style="margin-top: -5px;" id="upload-sample-file-btn" class="md-raised md-primary" ng-click="vm.uploadSampleFile();" ng-if="vm.sampleFile != null" ng-disabled="vm.uploadBtnDisabled">
                     Upload
                 </md-button>
             </div>

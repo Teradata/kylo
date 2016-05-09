@@ -38,7 +38,7 @@ public class NifiError {
     }
 
     public NifiError(SEVERITY severity,String message, String category) {
-        this.severity = SEVERITY.WARN;
+        this.severity = severity;
         this.message = message;
         this.category = category;
     }

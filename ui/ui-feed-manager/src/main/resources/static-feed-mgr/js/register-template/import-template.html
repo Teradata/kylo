@@ -1,51 +1,123 @@
 <div ng-controller="ImportTemplateController as vm">
 
-<card-layout  header-css="filter-header" class="centered">
+    <card-layout header-css="filter-header" class="centered">
 
-    <header-section >
-        <div layout="row" layout-align="center start">
-            <h2 class="md-title">Import a Template</h2>
-            <span flex></span>
-            <ng-md-icon icon="file_upload" style="fill:#F08C38;padding-right:16px;" size="30"></ng-md-icon>
-        </div>
-    </header-section>
-
-
-    <body-section>
+        <header-section>
+            <div layout="row" layout-align="center start">
+                <h2 class="md-title">Import a Template</h2>
+                <span flex></span>
+                <ng-md-icon icon="file_upload" style="fill:#F08C38;padding-right:16px;" size="30"></ng-md-icon>
+            </div>
+        </header-section>
 
 
+        <body-section>
 
 
+            <div layout="column" flex class="md-padding">
+                <div>
+                    <div class="md-subheader">Choose Import a Nifi Template or Pipeline Controller Archive.</div>
+                </div>
+                <div class="layout-padding-indent">
+                    <md-list flex layout-fill class="list-item-table list-condensed">
 
-        <div layout="column" flex>
-            <div  layout="row" layout-align="center center" style="padding-left:25px;">
-                <input type="file"  file-model="vm.templateFile"/>
-                <md-checkbox ng-model="vm.overwrite" aria-label="Overwrite if exists">
-                    Overwrite Template if it already exists
-                </md-checkbox>
-                <md-button class="md-raised" ng-click="vm.importTemplate();" ng-if="vm.templateFile != null" ng-disabled="vm.importBtnDisabled">
+                        <md-list-item>
+                            <div layout="row" layout-fill>
+                                <div flex="20" class="md-list-item-text hint">
+                                    Type
+                                </div>
+                                <div flex="10" class="md-list-item-text hint">
+                                    File type
+                                </div>
+                                <div flex="60" class="md-list-item-text hint">
+                                    Description
+                                </div>
+
+                            </div>
+                        </md-list-item>
+
+
+                        <md-list-item>
+                            <div layout="row" layout-fill>
+                                <div flex="20" class="md-list-item-text ">
+                                    Nifi Template
+                                </div>
+                                <div flex="10" class="md-list-item-text ">
+                                    XML
+                                </div>
+                                <div flex="60" class="md-list-item-text ">
+                                    Importing a Nifi Template will validate and import the template into Nifi.
+                                </div>
+                            </div>
+                        </md-list-item>
+                        <md-list-item>
+                            <div layout="row" layout-fill>
+                                <div flex="20" class="md-list-item-text ">
+                                    Archive
+                                </div>
+                                <div flex="10" class="md-list-item-text ">
+                                    ZIP
+                                </div>
+                                <div flex="60" class="md-list-item-text ">
+                                    An archive contains both Nifi and Pipeline Controller data.
+                                    <Br/>
+                                    This will import into Nifi and register the template in Pipeline Controller.
+                                </div>
+                            </div>
+                        </md-list-item>
+                    </md-list>
+                </div>
+
+                <div fex layout="column" layout-align="start start" style="padding-top:15px;"
+                     class="layout-padding-indent">
+                    <upload-file upload-file-model="vm.templateFile"></upload-file>
+                    <md-input-container class="condensed-no-float md-block layout-padding-bottom">
+                        <md-checkbox ng-model="vm.overwrite" aria-label="Overwrite if exists">
+                            Overwrite
+                        </md-checkbox>
+                        <div class="hint" style="margin-top:-10px">
+                            If template already exists it will be replaced.
+                        </div>
+                    </md-input-container>
+                    <md-input-container class="condensed-no-float md-block layout-padding-bottom"
+                                        ng-if="vm.xmlType == true">
+                        <md-checkbox ng-model="vm.createReusableFlow" aria-label="Create Reusable Flow">
+                            Create Reusable Flow
+                        </md-checkbox>
+                        <div class="hint" style="margin-top:-10px">
+                            A Flow will be created and saved in Nifi under the "reusable_templates" process group.
+                        </div>
+                    </md-input-container>
+                <span style="padding-top:10px">
+                <md-button class="md-raised md-primary" ng-click="vm.importTemplate();" ng-if="vm.templateFile != null"
+                           ng-disabled="vm.importBtnDisabled">
                     Import Template
                 </md-button>
-            </div>
+                    </span>
+                </div>
 
 
-            <div ng-if="vm.importResult != null && vm.importResult.success == false">
-                <div>Errors were found attempting to register the template: {{vm.importResult.templateName}}</div>
-                <md-list class="padding-left" ng-repeat="(severity,errors)  in vm.errorMap">
-                    <md-subheader class="md-warn" ng-if="errors.length >0">{{::severity}} errors</md-subheader>
-                    <md-list-item class="md-2-line" ng-repeat="error in errors track by $index" >
-                        <div class="md-list-item-text" >
-                            <div ng-if="error.processorName != null && error.processorName != '' " style="color:grey">Processor: {{::error.processorName}}</div>
-                            <div class="md-warn-text">{{::error.message}}</div>
-                        </div>
-                        <md-divider ng-if="!$last"></md-divider>
-                    </md-list-item>
-                </md-list>
+                <div ng-if="vm.importResult != null" class="layout-padding-indent layout-padding-top">
+                    <div layout="row">
+                        <ng-md-icon icon="{{vm.importResultIcon}}"
+                                    style="fill:{{vm.importResultIconColor}}"></ng-md-icon>
+                        <span style="padding-left:15px;">{{vm.message}}</span>
+                        <span flex></span>
+                    </div>
+                    <md-list class="padding-left" ng-repeat="(severity,errors)  in vm.errorMap">
+                        <md-subheader class="md-warn" ng-if="errors.length >0">Errors</md-subheader>
+                        <md-list-item class="md-2-line" ng-repeat="error in errors track by $index">
+                            <div class="md-list-item-text">
+                                <div ng-if="error.processorName != null && error.processorName != '' "
+                                     style="color:grey">Processor: {{::error.processorName}}
+                                </div>
+                                <div class="md-warn-text">{{::error.message}}</div>
+                            </div>
+                            <md-divider ng-if="!$last"></md-divider>
+                        </md-list-item>
+                    </md-list>
+                </div>
             </div>
-            <div ng-if="vm.importResult != null && vm.importResult.success == true">
-                <div> Successfully imported and Registered the template: {{vm.importResult.templateName}}</div>
-            </div>
-        </div>
-    </body-section>
-</card-layout>
-    </div>
+        </body-section>
+    </card-layout>
+</div>

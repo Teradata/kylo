@@ -5,6 +5,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 
@@ -16,6 +17,7 @@ import java.util.List;
  */
 public class NifiProcessGroup {
 
+    public static String CONTROLLER_SERVICE_CATEGORY = "Controller Service";
     private ProcessGroupEntity processGroupEntity;
 
     private List<ProcessorDTO> activeProcessors;
@@ -110,12 +112,34 @@ public class NifiProcessGroup {
         if(errors != null && !errors.isEmpty()) {
             for(NifiProcessorDTO processor : errors){
                 List<NifiError> errors = processor.getFatalErrors();
-             if(errors != null && !errors.isEmpty()) {
-                 return true;
-             }
+                     if(errors != null && !errors.isEmpty()) {
+                         return true;
+                     }
             }
         }
         return false;
+    }
+
+    public List<NifiProcessorDTO> getControllerServiceErrors(){
+        return getErrorsForCategory(CONTROLLER_SERVICE_CATEGORY);
+    }
+
+    public List<NifiProcessorDTO> getErrorsForCategory(final String category){
+        if(StringUtils.isBlank(category)){
+            return null;
+        }
+        return Lists.newArrayList(Iterables.filter(getErrors(), new Predicate<NifiProcessorDTO>() {
+            @Override
+            public boolean apply(NifiProcessorDTO nifiProcessorDTO) {
+                NifiError error = Iterables.tryFind(nifiProcessorDTO.getValidationErrors(), new Predicate<NifiError>() {
+                    @Override
+                    public boolean apply(NifiError nifiError) {
+                        return category.equalsIgnoreCase(nifiError.getCategory());
+                    }
+                }).orNull();
+                return error != null;
+            }
+        }));
     }
 
     public boolean isSuccess() {
