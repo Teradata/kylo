@@ -22,6 +22,8 @@ public class TimestampValidatorTest {
         assertTrue(ts.validate("2015-01-15 11:10:20.333"));
         assertTrue(ts.validate("2015-01-15 11:10:20"));
         assertTrue(ts.validate("2015-01-15 11:10:20.333444555"));
+        assertTrue(ts.validate("2016-02-03T07:55:29Z"));
+        assertTrue(ts.validate("1994-11-05T08:15:30-05:00"));
 
         assertFalse(ts.validate("2015/01/15 11:10:20"));
         assertFalse(ts.validate("2015-01-15"));

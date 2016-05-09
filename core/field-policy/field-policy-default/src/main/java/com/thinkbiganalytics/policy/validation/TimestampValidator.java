@@ -9,6 +9,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +26,8 @@ public class TimestampValidator implements ValidationPolicy<String> {
     private static final DateTimeFormatter DATETIME_NANOS = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSSSSSSSS");
     private static final DateTimeFormatter DATETIME_MILLIS = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS");
     private static final DateTimeFormatter DATETIME_NOMILLIS = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DATETIME_ISO8601 = ISODateTimeFormat.dateTimeParser();
+
     private static final int MIN_LENGTH = 19;
     private static final int MAX_LENGTH = 29;
 
@@ -59,7 +62,9 @@ public class TimestampValidator implements ValidationPolicy<String> {
         if (cnt < MIN_LENGTH || cnt > MAX_LENGTH) {
             throw new IllegalArgumentException("Unexpected format");
         }
-        if (cnt == MIN_LENGTH) {
+        if (value.charAt(10) == 'T') {
+            return DATETIME_ISO8601.parseDateTime(value);
+        } else if (cnt == MIN_LENGTH) {
             return DATETIME_NOMILLIS.parseDateTime(value);
         } else if (cnt == MAX_LENGTH) {
             return DATETIME_NANOS.parseDateTime(value);

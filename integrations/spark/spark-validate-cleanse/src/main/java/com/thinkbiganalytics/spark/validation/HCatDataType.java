@@ -26,7 +26,7 @@ public class HCatDataType implements Cloneable, Serializable {
     private static HCatDataType UNCHECKED_TYPE = new HCatDataType();
     private static Map<String, HCatDataType> dataTypes = new HashMap();
 
-    // Build rules around the various column types
+    // Build static rules around the various column types
     static {
         dataTypes.put("tinyint", new HCatDataType((int) Byte.MIN_VALUE, (int) Byte.MAX_VALUE));
         dataTypes.put("smallint", new HCatDataType((int) Short.MIN_VALUE, (int) Short.MAX_VALUE));
@@ -36,7 +36,7 @@ public class HCatDataType implements Cloneable, Serializable {
         dataTypes.put("string", new HCatDataType(Long.MAX_VALUE));
         dataTypes.put("varchar", new HCatDataType(65355L));
         dataTypes.put("char", new HCatDataType(255L));
-        // We use -MAX_VALUE because MIN_VALUE is actually minimum postive non-zero value
+        // We use -MAX_VALUE because MIN_VALUE is actually minimum positive non-zero value
         dataTypes.put("float", new HCatDataType(-Float.MAX_VALUE, Float.MAX_VALUE));
         dataTypes.put("double", new HCatDataType(-Double.MAX_VALUE, Double.MAX_VALUE));
         dataTypes.put("real", new HCatDataType(-Double.MAX_VALUE, Double.MAX_VALUE));
@@ -256,7 +256,7 @@ public class HCatDataType implements Cloneable, Serializable {
      */
     public boolean isValueConvertibleToType(String val) {
         try {
-            if (val != null  && !isnumeric) {
+            if (val != null && !isnumeric) {
                 if (convertibleType == Timestamp.class) {
                     return TimestampValidator.instance().validate(val);
                 } else if (convertibleType == Date.class) {

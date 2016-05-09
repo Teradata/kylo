@@ -165,7 +165,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
         if (StringUtils.isEmpty(timezone)) {
             return format;
         }
-        if ("UTC".equals(timezone) || "GMT".equals(timezone)) {
+        if ("UTC".equals(timezone)) {
             return format.withZoneUTC();
         }
         return format.withZone(DateTimeZone.forTimeZone(TimeZone.getTimeZone(timezone)));

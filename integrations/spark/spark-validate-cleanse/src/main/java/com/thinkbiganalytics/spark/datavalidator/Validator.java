@@ -189,7 +189,7 @@ public class Validator implements Serializable {
 
 
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Failed to perform validation", e);
             System.exit(1);
         }
     }
