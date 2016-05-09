@@ -53,7 +53,7 @@ CREATE TABLE `FM_TEMPLATE` (
   `modified_time` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
   `description` varchar(255) DEFAULT NULL,
   `name` varchar(255) NOT NULL,
-  `state` varchar(10) DEFAULT 'ACTIVE',
+  `state` varchar(10) DEFAULT 'ENABLED',
   `is_define_table` varchar(1) DEFAULT NULL,
   `is_data_transform` varchar(1) DEFAULT NULL,
   `allow_preconditions` varchar(1) DEFAULT NULL,
