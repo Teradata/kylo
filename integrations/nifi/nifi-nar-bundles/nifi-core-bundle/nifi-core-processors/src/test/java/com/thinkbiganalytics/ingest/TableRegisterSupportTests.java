@@ -7,6 +7,7 @@ package com.thinkbiganalytics.ingest;
 import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.TableType;
 import org.junit.Test;
+import static org.junit.Assert.assertNotNull;
 
 public class TableRegisterSupportTests {
 
@@ -18,7 +19,8 @@ public class TableRegisterSupportTests {
         TableRegisterSupport support = new TableRegisterSupport();
         TableType[] tableTypes = new TableType[]{TableType.FEED, TableType.INVALID, TableType.VALID, TableType.MASTER};
         for (TableType tableType : tableTypes) {
-            System.out.println(support.createDDL("emp_sr3", "employee", specs, parts, "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'", tableType));
+            String ddl = support.createDDL("emp_sr3", "employee", specs, parts, "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'", tableType);
+            assertNotNull(ddl);
         }
     }
 }

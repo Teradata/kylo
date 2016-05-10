@@ -8,12 +8,15 @@ import org.junit.Test;
 
 import java.io.IOException;
 
+import static org.junit.Assert.assertNotNull;
 
 public class ColumnSpecTest {
 
     @Test
     public void testSpecs() throws IOException {
-        ColumnSpec[] specs = ColumnSpec.createFromString("col1|string|my comment\ncol2|int\ncol3|string|foo description\ncol4|string");
+        ColumnSpec[]
+            specs =
+            ColumnSpec.createFromString("col1|string|my comment\ncol2|int\ncol3|string|foo description\ncol4|string");
 
         StringBuffer sb = new StringBuffer();
         int i = specs.length;
@@ -24,6 +27,7 @@ public class ColumnSpecTest {
             }
         }
         System.out.println(sb.toString());
+        assertNotNull(sb.toString());
     }
 }
 
