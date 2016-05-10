@@ -73,17 +73,23 @@ describe("SparkShellService", function() {
     });
 
     // getFields
-    it("should get a list of fields", function() {
-        var service = new SparkShellService("SELECT * FROM invalid");
-        service.states_[0].columns = [
-            {dataType: "string", hiveColumnLabel: "username"},
-            {dataType: "decimal(8,2)", hiveColumnLabel: "(pricepaid - commission) / qtysold"}
-        ];
-        expect(service.getFields()).toEqual([
-            {name: "username", description: "", dataType: "string", primaryKey: false, nullable: false, sampleValues: []},
-            {name: "(pricepaid - commission) / qtysold", description: "", dataType: "double", primaryKey: false, nullable: false,
-                sampleValues: []}
-        ]);
+    describe("get fields", function() {
+        it("from applied transformation", function() {
+            var service = new SparkShellService("SELECT * FROM invalid");
+            service.states_[0].columns = [
+                {dataType: "string", hiveColumnLabel: "username"},
+                {dataType: "decimal(8,2)", hiveColumnLabel: "(pricepaid - commission) / qtysold"}
+            ];
+            expect(service.getFields()).toEqual([
+                {name: "username", description: "", dataType: "string", primaryKey: false, nullable: false, sampleValues: []},
+                {name: "(pricepaid - commission) / qtysold", description: "", dataType: "double", primaryKey: false,
+                    nullable: false, sampleValues: []}
+            ]);
+        });
+        it("from null columns", function() {
+            var service = new SparkShellService("SELECT * FROM invalid");
+            expect(service.getFields()).toBe(null);
+        });
     });
 
     // getScript
@@ -104,7 +110,7 @@ describe("SparkShellService", function() {
 
             // Test script
             var formula = "(divide(divide(commission, pricepaid), qtysold) * 100).as(\"overhead\")";
-            service.push("column expression", "code", tern.parse(formula));
+            service.push(tern.parse(formula), {});
             expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
                     "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
                     ".select(new Column(\"*\"), new Column(\"commission\").divide(new Column(\"pricepaid\"))" +
@@ -128,7 +134,7 @@ describe("SparkShellService", function() {
 
             // Test script
             var formula = "filter(qtysold == 2 && pricepaid - commission > 200)";
-            service.push("filter expression", "code", tern.parse(formula));
+            service.push(tern.parse(formula), {});
             expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
                     "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
                     ".filter(new Column(\"qtysold\").equalTo(functions.lit(2)).and(new Column(\"pricepaid\")" +
@@ -143,7 +149,7 @@ describe("SparkShellService", function() {
 
             // Test script
             var formula = "rand()";
-            service.push("random", "code", tern.parse(formula));
+            service.push(tern.parse(formula), {});
             expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
                     "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
                     ".select(new Column(\"*\"), functions.rand())");
@@ -168,7 +174,7 @@ describe("SparkShellService", function() {
             
             // Test script
             var formula = "groupBy(username, eventname).sum(\"qtysold\", \"pricepaid\")";
-            service.push("aggregation", "code", tern.parse(formula));
+            service.push(tern.parse(formula), {});
             expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
                     "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
                     ".groupBy(new Column(\"username\"), new Column(\"eventname\")).sum(\"qtysold\", \"pricepaid\")");
@@ -191,14 +197,14 @@ describe("SparkShellService", function() {
         var service = new SparkShellService("SELECT * FROM invalid");
 
         var state = service.newState();
-        state.name = "42";
+        state.context = {formula: "42", icon: "code", name: "answer"};
         state.script = ".withColumn(\"col1\", functions.lit(42))";
         service.redo_.push(state);
 
         // Test redo
         expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)");
 
-        expect(service.redo()).toEqual({icon: "code", name: "42"});
+        expect(service.redo()).toEqual({formula: "42", icon: "code", name: "answer"});
         expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
                                          ".withColumn(\"col1\", functions.lit(42))");
     });
@@ -230,8 +236,8 @@ describe("SparkShellService", function() {
     it("should splice transformation array", function() {
         // Add formulas
         var service = new SparkShellService("SELECT * FROM invalid");
-        service.push("number", "code", tern.parse("42"));
-        service.push("string", "code", tern.parse("\"thinkbig\""));
+        service.push(tern.parse("42"), {});
+        service.push(tern.parse("\"thinkbig\""), {});
         expect(service.getScript()).toBe("import org.apache.spark.sql._\n" +
                                          "sqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
                                          ".select(new Column(\"*\"), functions.lit(42))" +
@@ -250,7 +256,7 @@ describe("SparkShellService", function() {
         var service = new SparkShellService("SELECT * FROM invalid");
 
         var state = service.newState();
-        state.name = "42";
+        state.context = {formula: "42", icon: "code", name: "answer"};
         state.script = ".withColumn(\"col1\", functions.lit(42))";
         service.states_.push(state);
 
@@ -258,7 +264,7 @@ describe("SparkShellService", function() {
         expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)" +
                                          ".withColumn(\"col1\", functions.lit(42))");
 
-        expect(service.undo()).toEqual({icon: "code", name: "42"});
+        expect(service.undo()).toEqual({formula: "42", icon: "code", name: "answer"});
         expect(service.getScript()).toBe("import org.apache.spark.sql._\nsqlContext.sql(\"SELECT * FROM invalid\").limit(1000)");
     });
 });

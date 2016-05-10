@@ -247,8 +247,8 @@ angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function($m
             column.colDef.visible = false;
             column.visible = false;
 
-            this.controller.pushFormula("Hide " + column.displayName, "remove_circle", "drop(\"" + StringUtils.quote(column.field)
-                    + "\")");
+            var formula = "drop(\"" + StringUtils.quote(column.field) + "\")";
+            this.controller.pushFormula(formula, {formula: formula, icon: "remove_circle", name: "Hide " + column.displayName});
 
             grid.queueGridRefresh();
             grid.api.core.notifyDataChange("column");
