@@ -237,7 +237,9 @@
         };
 
         /**
-         * Query Hive using the query from the previous step. Set the Grids rows and columns
+         * Query Hive using the query from the previous step. Set the Grids rows and columns.
+         * 
+         * @return {Promise} a promise for when the query completes
          */
         this.query = function() {
             //flag to indicate query is running
@@ -492,29 +494,41 @@
             }
         }
 
+        /**
+         * Saves the current transformation to the feed model.
+         *
+         * @returns {Promise} signals when the save is complete
+         */
+        function saveToFeedModel() {
+            // Add unsaved filters
+            self.addFilters();
 
-        function saveToFeedModel(){
+            // Populate Feed Model from the Visual Query Model
             var feedModel = FeedService.createFeedModel;
-            //Populate Feed Model from the Visual Query Model
             feedModel.dataTransformation.dataTransformScript = self.sparkShellService.getScript();
-            feedModel.dataTransformation.formulas = [];
-            var tableSchema = {schemaName:'',name:'',fields: self.sparkShellService.getFields()};//need to get data in a com.thinkbiganalytics.db.model.schema.TableSchema
+            feedModel.dataTransformation.formulas = _.map(self.functionHistory, function(history) {
+                return history.formula;
+            });
 
+            feedModel.table.existingTableName = "";
+            feedModel.table.method = "EXISTING_TABLE";
+            feedModel.table.sourceTableSchema.name = "";
 
-
-                FeedService.setTableFields(tableSchema.fields);
-                feedModel.table.method = 'EXISTING_TABLE';
-                if(tableSchema.schemaName != null){
-                    feedModel.table.existingTableName = tableSchema.schemaName+"."+tableSchema.name;
-                }
-                else {
-                    feedModel.table.existingTableName = tableSchema.name;
-                }
-                feedModel.table.sourceTableSchema.name=feedModel.table.existingTableName;
+            // Get list of fields
             var deferred = $q.defer();
-            deferred.resolve([]);
-            return deferred.promise;
+            var fields = self.sparkShellService.getFields();
 
+            if (fields !== null) {
+                FeedService.setTableFields(fields);
+                deferred.resolve(true);
+            } else {
+                self.query().then(function() {
+                    FeedService.setTableFields(self.sparkShellService.getFields());
+                    deferred.resolve(true);
+                });
+            }
+
+            return deferred.promise;
         }
 
         //Hide the left side nav bar

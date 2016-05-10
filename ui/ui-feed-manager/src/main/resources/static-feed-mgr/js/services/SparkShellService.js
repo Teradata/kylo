@@ -214,12 +214,19 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         },
 
         /**
-         * Gets the schema fields for the the current transformation. The transformation must have been applied first.
+         * Gets the schema fields for the the current transformation.
          *
-         * @returns {Array.<SchemaField>} the schema fields
+         * @returns {Array.<SchemaField>|null} the schema fields or {@code null} if the transformation has not been applied
          */
         getFields: function() {
-            return _.map(this.getColumns(), function(col) {
+            // Get list of columns
+            var columns = this.getColumns();
+            if (columns === null) {
+                return null;
+            }
+
+            // Get field list
+            return _.map(columns, function(col) {
                 var dataType;
                 if (col.dataType.startsWith("decimal")) {
                     dataType = "double";
