@@ -49,14 +49,13 @@
  *
  * @typedef {Object} ScriptState
  * @property {Array.<QueryResultColumn>|null} columns the columns as returned by the server
- * @property {string} icon the icon for the transformation
- * @property {string} name the name of the transformation
+ * @property {Object} context the UI context for this script state
  * @property {Array.<Object.<string,*>>|null} rows the rows as returned by the server
  * @property {string} script the Spark script
  * @property {string|null} table the table containing the results
  */
 
-angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $mdDialog, RestUrlService) {
+angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $mdDialog, $q, RestUrlService) {
     // URL to the API server
     var API_URL = RestUrlService.SPARK_SHELL_SERVICE_URL;
 
@@ -317,15 +316,13 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         /**
          * Adds a transformation expression to the stack.
          *
-         * @param {string} name the name of the transformation
-         * @param {string} icon the icon for the transformation
          * @param {acorn.Node} tree the abstract syntax tree for the expression
+         * @param {Object} context the UI context for the transformation
          */
-        push: function(name, icon, tree) {
+        push: function(tree, context) {
             // Add new state
             var state = this.newState();
-            state.name = name;
-            state.icon = icon;
+            state.context = context;
             state.script = toScript(tree, this);
             this.states_.push(state);
 
@@ -337,14 +334,14 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          * Restores the last transformation that was undone.
          *
          * @see #undo()
-         * @returns {{icon: string, name: string}} the name and icon for the transformation
+         * @returns {Object} the UI context for the transformation
          * @throws {Error} if there are no transformations to redo
          */
         redo: function() {
             if (this.redo_.length > 0) {
                 var state = this.redo_.pop();
                 this.states_.push(state);
-                return {icon: state.icon, name: state.name};
+                return state.context;
             }
             else {
                 throw new Error("No states to redo");
@@ -406,7 +403,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         /**
          * Runs the current Spark script on the server.
          *
-         * @return {HttpPromise} a promise for the response
+         * @return {Promise} a promise for the response
          */
         transform: function() {
             // Build the request body
@@ -435,28 +432,31 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
 
             // Create the response handlers
             var self = this;
+            var deferred = $q.defer();
+
             var successCallback = function(response) {
                 var state = self.states_[index];
                 state.columns = response.data.results.columns;
                 state.rows = response.data.results.rows;
                 state.table = response.data.table;
+                deferred.resolve(true);
             };
-            var errorCallback = function() {
+            var errorCallback = function(response) {
                 var state = self.states_[index];
                 state.columns = [];
                 state.rows = [];
+                deferred.reject(response.data.message);
             };
 
             // Send the request
-            var promise = $http({
+            $http({
                 method: "POST",
                 url: API_URL + "/transform",
                 data: JSON.stringify(body),
                 headers: {"Content-Type": "application/json"},
                 responseType: "json"
-            });
-            promise.then(successCallback, errorCallback());
-            return promise;
+            }).then(successCallback, errorCallback);
+            return deferred.promise;
         },
 
         /**
@@ -464,14 +464,14 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          *
          * @see #pop()
          * @see #redo()
-         * @returns {{icon: string, name: string}} the name and icon for the transformation
+         * @returns {Object} the UI context for the transformation
          * @throws {Error} if there are no transformations to undo
          */
         undo: function() {
             if (this.states_.length > 1) {
                 var state = this.states_.pop();
                 this.redo_.push(state);
-                return {icon: state.icon, name: state.name};
+                return state.context;
             }
             else {
                 throw new Error("No states to undo");
@@ -512,7 +512,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          * @returns {ScriptState} a new script state
          */
         newState: function() {
-            return {columns: null, icon: "code", name: "", rows: null, script: "", table: null};
+            return {columns: null, context: {}, rows: null, script: "", table: null};
         }
     });
 

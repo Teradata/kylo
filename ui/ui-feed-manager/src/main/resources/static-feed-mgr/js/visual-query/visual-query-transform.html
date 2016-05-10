@@ -100,65 +100,33 @@
                                  <i class="material-icons">mode_edit</i> Rename Column
                              </md-button>
                          </md-menu-item>
-                         <md-menu-item>
+                         <md-menu-item ng-if="delegate.filters.length !== 0">
                              <md-menu>
                                  <md-button ng-click="$mdOpenMenu()">
                                      <i class="material-icons">filter_list</i> Filter
                                  </md-button>
                                  <md-menu-content class="visual-query-column-menu">
-                                     <md-menu-item ng-if="col.colDef.dataType == 'string'">
+                                     <md-menu-item ng-repeat="filter in delegate.filters">
                                          <div>
-                                             <i class="material-icons">search</i>
+                                             <i class="material-icons" ng-class="{'custom-icon': (filter.icon.length === 1)}">{{filter.icon}}</i>
                                              <md-input-container>
-                                                 <label>Contains...</label>
-                                                 <input type="text" ng-model="delegate.filters[3].term">
-                                             </md-input-container>
-                                         </div>
-                                     </md-menu-item>
-                                     <md-menu-item>
-                                         <div>
-                                             <i class="material-icons">keyboard_arrow_left</i>
-                                             <md-input-container>
-                                                 <label>Less than...</label>
-                                                 <input type="text" ng-model="delegate.filters[0].term">
-                                             </md-input-container>
-                                         </div>
-                                     </md-menu-item>
-                                     <md-menu-item>
-                                         <div>
-                                             <i class="material-icons">keyboard_arrow_right</i>
-                                             <md-input-container>
-                                                 <label>Greater than...</label>
-                                                 <input type="text" ng-model="delegate.filters[1].term">
-                                             </md-input-container>
-                                         </div>
-                                     </md-menu-item>
-                                     <md-menu-item>
-                                         <div>
-                                             <i class="material-icons custom-icon">=</i>
-                                             <md-input-container>
-                                                 <label>Equal to...</label>
-                                                 <input type="text" ng-model="delegate.filters[2].term">
+                                                 <label>{{filter.label}}</label>
+                                                 <input type="text" ng-model="filter.term">
                                              </md-input-container>
                                          </div>
                                      </md-menu-item>
                                  </md-menu-content>
                              </md-menu>
                          </md-menu-item>
-                         <md-menu-item>
+                         <md-menu-item ng-if="delegate.transforms.length !== 0">
                              <md-menu>
                                  <md-button ng-click="$mdOpenMenu()">
                                      <i class="material-icons">transform</i> Transform
                                  </md-button>
                                  <md-menu-content class="visual-query-column-menu">
-                                     <md-menu-item>
-                                         <md-button ng-click="delegate.transformColumn('Uppercase', 'arrow_upward', 'upper', col, grid)">
-                                             <i class="material-icons">arrow_upward</i> Uppercase
-                                         </md-button>
-                                     </md-menu-item>
-                                     <md-menu-item>
-                                         <md-button ng-click="delegate.transformColumn('Lowercase', 'arrow_downward', 'lower', col,grid)">
-                                             <i class="material-icons">arrow_downward</i> Lowercase
+                                     <md-menu-item ng-repeat="transform in delegate.transforms">
+                                         <md-button ng-click="delegate.transformColumn(transform, col, grid)">
+                                             <i class="material-icons" ng-class="{'custom-icon': (transform.icon.length === 1)}">{{transform.icon}}</i> {{transform.name}}
                                          </md-button>
                                      </md-menu-item>
                                  </md-menu-content>

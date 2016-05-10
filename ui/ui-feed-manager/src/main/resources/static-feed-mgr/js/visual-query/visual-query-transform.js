@@ -244,7 +244,7 @@
             this.executingQuery = true;
 
             // Query Spark shell service
-            var successCallback = function(response) {
+            var successCallback = function() {
                 //mark the query as finished
                 self.executingQuery = false;
 
@@ -263,13 +263,13 @@
                 //Initialize the Command function holder
                 self.functionCommandHolder = TableDataFunctions.newCommandHolder(self.tableData);
             };
-            var errorCallback = function(response) {
+            var errorCallback = function(message) {
                 // Display error message
                 var alert = $mdDialog.alert()
                         .parent($('body'))
                         .clickOutsideToClose(true)
                         .title("Error executing the query")
-                        .textContent(response.data.message)
+                        .textContent(message)
                         .ariaLabel("error executing the query")
                         .ok("Got it!");
                 $mdDialog.show(alert);
@@ -289,9 +289,8 @@
             var columns = [];
 
             angular.forEach(tableData.columns, function(col) {
-                var delegate = new VisualQueryColumnDelegate(self);
+                var delegate = new VisualQueryColumnDelegate(col.dataType, self);
                 columns.push({
-                    dataType: col.dataType,
                     delegate: delegate,
                     displayName: col.displayName,
                     filters: delegate.filters,
@@ -363,23 +362,22 @@
 
             // Add formula
             var name = "Find " + column.displayName + " " + verb + " " + filter.term;
-            self.pushFormula(name, "filter_list", formula);
+            self.pushFormula(formula, {formula: formula, icon: filter.icon, name: name});
         };
 
         /**
          * Adds the specified formula to the current script and refreshes the table data.
          *
-         * @param {string} name the name of the transformation
-         * @param {string} icon the icon for the transformation
          * @param {string} formula the formula
+         * @param {TransformContext} context the UI context for the transformation
          */
-        this.addFunction = function(name, icon, formula) {
+        this.addFunction = function(formula, context) {
             var tableData = self.functionCommandHolder.executeStr(formula);
             if (tableData != null && tableData != undefined) {
                 updateGrid(tableData);
 
                 self.addFilters();
-                self.pushFormula(name, icon, formula);
+                self.pushFormula(formula, context);
                 self.query();
             }
         };
@@ -387,18 +385,17 @@
         /**
          * Appends the specified formula to the current script.
          *
-         * @param {string} name the name of the transformation
-         * @param {string} icon the icon for the transformation
          * @param {string} formula the formula
+         * @param {TransformContext} context the UI context for the transformation
          */
-        this.pushFormula = function(name, icon, formula) {
+        this.pushFormula = function(formula, context) {
             // Covert to a syntax tree
             self.ternServer.server.addFile("[doc]", formula);
             var file = self.ternServer.server.findFile("[doc]");
 
             // Add to the Spark script
             try {
-                self.sparkShellService.push(name, icon, file.ast);
+                self.sparkShellService.push(file.ast, context);
             } catch (e) {
                 var alert = $mdDialog.alert()
                         .parent($('body'))
@@ -413,14 +410,14 @@
             }
 
             // Add to function history
-            self.functionHistory.push({icon: icon, name: name});
+            self.functionHistory.push(context);
         };
 
         /**
          * Called when the user clicks Add on the function bar
          */
         this.onAddFunction = function() {
-            self.addFunction(self.currentFormula, "code", self.currentFormula);
+            self.addFunction(self.currentFormula, {formula: self.currentFormula, icon: "code", name: self.currentFormula});
         };
 
         /**
@@ -435,7 +432,7 @@
             });
 
             formula += ")";
-            self.pushFormula("Reorder columns", "reorder", formula);
+            self.pushFormula(formula, {formula: formula, icon: "reorder", name: "Reorder columns"});
         };
 
         /**
