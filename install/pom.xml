@@ -156,6 +156,18 @@
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
             </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/thinkbig-services/plugin</directory>
+              <filemode>644</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/thinkbig-services/plugin/conf</directory>
+              <filemode>644</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+            </mapping>
             <!-- thinkbig spark shell mappings -->
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-spark-shell</directory>
