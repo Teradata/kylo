@@ -20,7 +20,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
-@PropertySource("file:/opt/tba/nifi/conf/config.properties")
+@PropertySource("file:/opt/nifi/ext-config/config.properties")
 public class NifiProvenanceConfig {
     @Autowired
     private Environment env;

@@ -69,7 +69,7 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
     ProvenanceEventReceiverDatabaseWriter databaseWriter;
 
 
-    @Value("${thinkbig.provenance.h2.databaseName:/opt/tba/nifi/h2/thinkbig-nifi}")
+    @Value("${thinkbig.provenance.h2.databaseName}")
     private String h2DatabaseName;
 
     @Value("${thinkbig.provenance.h2.showWebConsole:false}")

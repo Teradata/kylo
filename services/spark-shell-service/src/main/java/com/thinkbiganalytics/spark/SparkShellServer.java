@@ -62,7 +62,7 @@ public class SparkShellServer {
         });
 
         // Start server
-        URI bindUri = UriBuilder.fromUri("http://0.0.0.0/").port(8076).build();
+        URI bindUri = UriBuilder.fromUri("http://0.0.0.0/").port(8450).build();
 
         Server server = JettyHttpContainerFactory.createServer(bindUri, config);
         server.start();

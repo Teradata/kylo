@@ -1,0 +1,38 @@
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Start daemon at boot time
+# Description:       Enable service provided by daemon.
+### END INIT INFO
+
+dir="/opt/nifi/current/bin"
+user="root"
+
+name=nifi
+
+case "$1" in
+    start)
+    cd "$dir"
+    $dir/nifi.sh start
+    ;;
+    stop)
+    cd "$dir"
+    $dir/nifi.sh stop
+    ;;
+    restart)
+    $dir/nifi.sh restart
+    ;;
+    status)
+    $dir/nifi.sh status
+    ;;
+    *)
+    echo "Usage: $0 {start|stop|restart|status}"
+    exit 1
+    ;;
+esac
+
+exit 0

@@ -1,5 +1,6 @@
 
-CREATE DATABASE thinkbig_nifi;
+CREATE DATABASE if not exists thinkbig_nifi;
+USE thinkbig_nifi;
 
 CREATE TABLE NIFI_PROVENANCE_EVENT_SEQ (
 	ID BIGINT NOT NULL,
