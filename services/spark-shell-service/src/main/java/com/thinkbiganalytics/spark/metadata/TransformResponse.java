@@ -1,10 +1,12 @@
 package com.thinkbiganalytics.spark.metadata;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.thinkbiganalytics.db.model.query.QueryResult;
 
 /**
  * The result of a Spark transformation.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class TransformResponse {
 
     /**
