@@ -2,15 +2,9 @@ package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
-import com.thinkbiganalytics.feedmgr.support.ObjectMapperSerializer;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.jpa.feedmgr.feed.JpaFeedManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.template.JpaFeedManagerTemplate;
 
 import java.util.ArrayList;

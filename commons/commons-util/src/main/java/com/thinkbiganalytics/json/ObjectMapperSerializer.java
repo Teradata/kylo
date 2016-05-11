@@ -2,7 +2,7 @@
  * Copyright (c) 2016.
  */
 
-package com.thinkbiganalytics.feedmgr.support;
+package com.thinkbiganalytics.json;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;

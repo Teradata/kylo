@@ -3,9 +3,8 @@ package com.thinkbiganalytics.jobrepo.nifi.provenance.db;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
-
-import java.io.IOException;
 
 /**
  * Serialize the ProvenanceEventRecord
@@ -13,35 +12,24 @@ import java.io.IOException;
  */
 public class ProvenanceEventRecordSerializer {
 
-    private ObjectMapper mapper;
-
-    public ProvenanceEventRecordSerializer() {
-        mapper = new ObjectMapper();
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-
-    }
 
 
-
-    public String getAttributesAsJSON(ProvenanceEventDTO event) {
+    public  static String getAttributesAsJSON(ProvenanceEventDTO event) {
         String json = null;
-        try {
+
             if (event.getAttributes() != null) {
-                json = mapper.writeValueAsString(event.getAttributes());
+                json = ObjectMapperSerializer.serialize(event.getAttributes());
             }
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+
         return json;
     }
 
-    public String getAsJSON(ProvenanceEventDTO event) {
-        String json = null;
-        try {
-            json = mapper.writeValueAsString(event);
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
+    public static String getAsJSON(ProvenanceEventDTO event) {
+        String json = ObjectMapperSerializer.serialize(event);
         return json;
+    }
+
+    public static ProvenanceEventDTO deserialize(String json){
+        return ObjectMapperSerializer.deserialize(json,ProvenanceEventDTO.class);
     }
 }

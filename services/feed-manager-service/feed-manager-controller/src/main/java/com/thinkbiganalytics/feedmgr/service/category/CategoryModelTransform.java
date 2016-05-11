@@ -5,16 +5,10 @@ import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
-import com.thinkbiganalytics.feedmgr.support.ObjectMapperSerializer;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategory;
-import com.thinkbiganalytics.metadata.jpa.feedmgr.feed.JpaFeedManagerFeed;
-import com.thinkbiganalytics.scheduler.TriggerIdentifier;
-import com.thinkbiganalytics.scheduler.rest.model.ScheduleIdentifier;
-import com.thinkbiganalytics.scheduler.rest.model.TriggerInfo;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
