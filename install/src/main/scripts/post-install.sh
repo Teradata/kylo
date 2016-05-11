@@ -217,4 +217,4 @@ chmod +x $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh
 
 echo "   INSTALL COMPLETE"
 echo "   - Please configure the application using the property files and scripts located under the '$rpmInstallDir/thinkbig-ui/conf' and '$rpmInstallDir/thinkbig-services/conf' folder.  See deployment guide for details."
-echo "   - To remove thinkbig-datalake-accelerator.sh run $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh "
+echo "   - To remove thinkbig-datalake-accelerator run $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh "

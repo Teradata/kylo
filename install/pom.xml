@@ -280,31 +280,35 @@
               </sources>
             </mapping>
             <mapping>
-                <directory>${rpm.install.dir}/setup/database/mysql/metadata</directory>
+                <directory>${rpm.install.dir}/setup/sql</directory>
                 <filemode>744</filemode>
                 <username>${rpm.user}</username>
                 <groupname>${rpm.user}</groupname>
                 <sources>
                     <source>
-                        <location>../metadata/metadata-jpa/src/main/resources</location>
-                        <includes>
-                            <include>schema-mysql.sql</include>
-                            <include>constraints-mysql.sql</include>
-                        </includes>
+                        <location>setup/sql</location>
                     </source>
                 </sources>
             </mapping>
             <mapping>
-              <directory>${rpm.install.dir}/setup/database/mysql/job-repo</directory>
+              <directory>${rpm.install.dir}/setup/activemq</directory>
               <filemode>744</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
                 <source>
-                  <location>../plugins/job-repository-nifi/src/main/resources/setup/mysql</location>
-                  <includes>
-                    <include>*.*</include>
-                  </includes>
+                  <location>setup/activemq</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/setup/elasticsearch</directory>
+              <filemode>744</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>setup/elasticsearch</location>
                 </source>
               </sources>
             </mapping>
