@@ -1,1 +1,1 @@
-create database thinkbig if not exists;
+create database  if not exists thinkbig;
