@@ -1,5 +1,3 @@
-create database if not exists thinkbig;
-use thinkbig;
 create table IF NOT EXISTS CHANGE_SET (id UUID not null, created_time timestamp, modified_time timestamp, completeness_factor integer, intrinsic_period varchar(255), intrinsic_time timestamp, dataset_id UUID, primary key (id));
 create table IF NOT EXISTS CHANGE_SET_FILES (id UUID not null, primary key (id));
 create table IF NOT EXISTS CHANGE_SET_FILES_PATH (change_set_files_id UUID not null, path varchar(255));

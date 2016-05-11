@@ -1,5 +1,3 @@
-create database if not exists thinkbig;
-use thinkbig;
 create table CHANGE_SET (id binary(16) not null, created_time datetime, modified_time datetime, completeness_factor integer, intrinsic_period varchar(255), intrinsic_time datetime, dataset_id binary(16), primary key (id)) ENGINE=InnoDB;
 create table CHANGE_SET_FILES (id binary(16) not null, primary key (id)) ENGINE=InnoDB;
 create table CHANGE_SET_FILES_PATH (change_set_files_id binary(16) not null, path varchar(255)) ENGINE=InnoDB;
@@ -66,21 +64,3 @@ CREATE TABLE `FM_TEMPLATE` (
 
 
 
-CREATE TABLE NIFI_PIPELINE_CONTROLLER_STEP  (
-  EVENT_ID BIGINT NOT NULL PRIMARY KEY,
-     NIFI_EVENT_ID BIGINT,
-     COMPONENT_ID VARCHAR(255),
- JOB_EXECUTION_ID BIGINT,
- STEP_EXECUTION_ID BIGINT
- ) ENGINE=InnoDB;
-
-
-     CREATE TABLE NIFI_PIPELINE_CONTROLLER_JOB  (
-     EVENT_ID BIGINT NOT NULL PRIMARY KEY,
-     NIFI_EVENT_ID BIGINT,
-     FLOW_FILE_UUID VARCHAR(255),
-     FEED_ID BIGINT,
-     FEED_NAME VARCHAR(255),
-     JOB_INSTANCE_ID BIGINT,
-     JOB_EXECUTION_ID BIGINT
-     ) ENGINE=InnoDB;

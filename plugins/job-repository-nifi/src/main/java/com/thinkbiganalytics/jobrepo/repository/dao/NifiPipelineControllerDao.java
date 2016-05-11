@@ -18,17 +18,17 @@ import java.sql.Types;
 public class NifiPipelineControllerDao implements InitializingBean {
 
 
-  private static final String INSERT_NIFI_PIPELINE_CONTROLLER_JOB = "INSERT INTO NIFI_PIPELINE_CONTROLLER_JOB "
+  private static final String INSERT_NIFI_PIPELINE_CONTROLLER_JOB = "INSERT INTO BATCH_NIFI_JOB "
                                                                     + "(EVENT_ID,NIFI_EVENT_ID,FLOW_FILE_UUID, FEED_ID, FEED_NAME,JOB_INSTANCE_ID, JOB_EXECUTION_ID) "
                                                                     + "VALUES(?,?,?,?, ?, ?,?)";
 
-  private static final String INSERT_NIFI_PIPELINE_CONTROLLER_STEP = "INSERT INTO NIFI_PIPELINE_CONTROLLER_STEP "
+  private static final String INSERT_NIFI_PIPELINE_CONTROLLER_STEP = "INSERT INTO BATCH_NIFI_STEP "
                                                                      + "(EVENT_ID,NIFI_EVENT_ID,COMPONENT_ID,JOB_EXECUTION_ID,STEP_EXECUTION_ID) "
                                                                      + "VALUES(?,?, ?,?, ?)";
 
 
 
-  private static final String GET_MAX_EVENT_ID = "SELECT MAX(EVENT_ID) FROM NIFI_PIPELINE_CONTROLLER_STEP";
+  private static final String GET_MAX_EVENT_ID = "SELECT MAX(EVENT_ID) FROM BATCH_NIFI_STEP";
 
   public NifiPipelineControllerDao() {
   }

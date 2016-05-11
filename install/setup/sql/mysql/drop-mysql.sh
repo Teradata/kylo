@@ -8,12 +8,8 @@ fi
 
 if [[ "$1" == "DROP" ]]
 then
-    echo "* Dropping pipeline_db database..."
-    mysql -u root  -e 'drop database pipeline_db;'
-    echo "* Dropping thinkbig_nifi database..."
-    mysql -u root  -e 'drop database thinkbig_nifi;'
-    echo "* Dropping metadata database..."
-    mysql -u root  -e 'drop database metadata;'
+    echo "* Dropping thinkbig database..."
+    mysql -u root  -e 'drop database thinkbig;'
 fi
 
 
