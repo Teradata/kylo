@@ -1,12 +1,8 @@
 package com.thinkbiganalytics.spark.metadata
 
 import com.thinkbiganalytics.db.model.query.{QueryResult, QueryResultColumn}
-import com.thinkbiganalytics.spark.util.HiveUtils
+import com.thinkbiganalytics.spark.util.{DataTypeUtils, HiveUtils}
 
-import org.apache.hadoop.hive.common.`type`.HiveDecimal
-import org.apache.hadoop.hive.serde2.objectinspector.primitive.{JavaHiveDecimalObjectInspector, PrimitiveObjectInspectorFactory}
-import org.apache.hadoop.hive.serde2.objectinspector.{ObjectInspector, ObjectInspectorFactory}
-import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo
 import org.apache.spark.sql.types._
 import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import org.slf4j.LoggerFactory
@@ -74,7 +70,7 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
 
         for (field <- schema.fields) {
             val column = new QueryResultColumn
-            column.setDataType(toInspector(field.dataType).getTypeName)
+            column.setDataType(DataTypeUtils.toObjectInspector(field.dataType).getTypeName)
             column.setHiveColumnLabel(field.name)
             column.setTableName(destination)
 
@@ -116,11 +112,10 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
             sqlContext.read.table(parentTable)
         }
         catch {
-            case e: Exception => {
+            case e: Exception =>
                 log.trace("Exception reading parent table: {}", e.toString)
                 log.debug("Parent table not found: {}", parentTable)
                 parentDataFrame
-            }
         }
     }
 
@@ -140,50 +135,12 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
         throw new UnsupportedOperationException
     }
 
-    /** Converts the specified Spark SQL type to a Hive ObjectInspector.
-      *
-      * @param dataType the Spark SQL type
-      * @return the Hive ObjectInspector
-      */
-    def toInspector(dataType: DataType): ObjectInspector = dataType match {
-        // Primitive types
-        case BinaryType => PrimitiveObjectInspectorFactory.javaByteArrayObjectInspector
-        case BooleanType => PrimitiveObjectInspectorFactory.javaBooleanObjectInspector
-        case ByteType => PrimitiveObjectInspectorFactory.javaByteObjectInspector
-        case DateType => PrimitiveObjectInspectorFactory.javaDateObjectInspector
-        case decimalType: DecimalType =>
-            val precision = if (decimalType.precision >= 0) decimalType.precision else HiveDecimal.MAX_PRECISION
-            val scale = if (decimalType.scale >= 0) decimalType.scale else HiveDecimal.MAX_SCALE
-            new JavaHiveDecimalObjectInspector(new DecimalTypeInfo(precision, scale))
-        case DoubleType => PrimitiveObjectInspectorFactory.javaDoubleObjectInspector
-        case FloatType => PrimitiveObjectInspectorFactory.javaFloatObjectInspector
-        case IntegerType => PrimitiveObjectInspectorFactory.javaIntObjectInspector
-        case LongType => PrimitiveObjectInspectorFactory.javaLongObjectInspector
-        case NullType => PrimitiveObjectInspectorFactory.javaVoidObjectInspector
-        case ShortType => PrimitiveObjectInspectorFactory.javaShortObjectInspector
-        case StringType => PrimitiveObjectInspectorFactory.javaStringObjectInspector
-        case TimestampType => PrimitiveObjectInspectorFactory.javaTimestampObjectInspector
-
-        // Complex types
-        case ArrayType(elementType, _) => ObjectInspectorFactory.getStandardListObjectInspector(
-            toInspector(elementType))
-        case MapType(keyType, valueType, _) => ObjectInspectorFactory.getStandardMapObjectInspector(
-            toInspector(keyType), toInspector(valueType))
-        case StructType(fields) =>
-            val fieldNames = util.Arrays.asList(fields.map(_.name): _*)
-            val fieldInspectors = util.Arrays.asList(fields.map(f => toInspector(f.dataType)): _*)
-            ObjectInspectorFactory.getStandardStructObjectInspector(fieldNames, fieldInspectors)
-
-        // Unsupported types
-        case _ => throw new IllegalArgumentException
-    }
-
     /** Converts the specified DataFrame schema to a CREATE TABLE statement.
       *
       * @param schema the DataFrame schema
       * @return the CREATE TABLE statement
       */
-    def toSQL(schema: StructType): String = {
+    protected[metadata] def toSQL(schema: StructType): String = {
         var first = true
         val sql = new StringBuilder
 
@@ -196,7 +153,7 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
             else sql.append(',')
             sql.append(HiveUtils.quoteIdentifier(field.name))
             sql.append(' ')
-            sql.append(toInspector(field.dataType).getTypeName)
+            sql.append(DataTypeUtils.toObjectInspector(field.dataType).getTypeName)
         }
 
         sql.append(") STORED AS ORC")
