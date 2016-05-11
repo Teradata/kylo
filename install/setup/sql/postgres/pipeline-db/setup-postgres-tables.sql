@@ -1,4 +1,4 @@
-\connect pipeline_db;
+\connect thinkbig;
 CREATE TABLE IF NOT EXISTS BATCH_EXECUTION_CONTEXT_VALUES (
                                       JOB_EXECUTION_ID BIGINT NOT NULL,
                                       STEP_EXECUTION_ID BIGINT

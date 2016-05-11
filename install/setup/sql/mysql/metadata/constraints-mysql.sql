@@ -24,7 +24,7 @@ alter table SLA_OBLIGATION_GROUP add constraint FKowk48beqvytrqxdxoejj1mjrb fore
 /* FEED MANAGER TABLE FK Constraints */
 
 ALTER TABLE `metadata`.`FM_FEED`
-ADD INDEX `FM_TEMPLATE_ID_FK_idx` (`template_id` ASC)  COMMENT '';
+ADD INDEX `FM_TEMPLATE_ID_FK_idx` (`template_id` ASC);
 ALTER TABLE `metadata`.`FM_FEED`
 ADD CONSTRAINT `FM_TEMPLATE_ID_FK`
   FOREIGN KEY (`template_id`)
@@ -33,7 +33,7 @@ ADD CONSTRAINT `FM_TEMPLATE_ID_FK`
   ON UPDATE NO ACTION;
 
 ALTER TABLE `metadata`.`FM_FEED`
-ADD INDEX `FM_CATEGORY_ID_FK_idx` (`category_id` ASC)  COMMENT '';
+ADD INDEX `FM_CATEGORY_ID_FK_idx` (`category_id` ASC);
 ALTER TABLE `metadata`.`FM_FEED`
 ADD CONSTRAINT `FM_CATEGORY_ID_FK`
   FOREIGN KEY (`category_id`)

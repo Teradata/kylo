@@ -6,10 +6,10 @@ if [[ $# -ne 1 ]] ; then
     exit 1
 fi
 
-echo "* Dropping pipeline_db database..."
+echo "* Dropping thinkbig database..."
 if [[ "$1" == "DROP" ]]
 then
 ## CHANGE below to password for postgres user
 ###Execute the setup scripts as the postgres user
-   sudo -u postgres psql -c 'drop database pipeline_db;'
+   sudo -u postgres psql -c 'drop database thinkbig;'
 fi

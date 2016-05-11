@@ -1,3 +1,3 @@
-CREATE DATABASE pipeline_db owner=pguser;
-\connect pipeline_db;
+CREATE DATABASE thinkbig owner=pguser;
+\connect thinkbig;
 CREATE CAST (varchar as bigint) with inout as implicit;

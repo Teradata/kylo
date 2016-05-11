@@ -1,1 +1,1 @@
-create database pipeline_db;
+create database thinkbig if not exists;
