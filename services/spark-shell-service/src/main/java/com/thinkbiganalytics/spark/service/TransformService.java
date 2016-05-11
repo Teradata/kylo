@@ -246,12 +246,15 @@ public class TransformService extends AbstractScheduledService {
         }
 
         // Drop table
-        if (isCached) {
-            context.uncacheTable(name);
-        }
-        else {
-            String identifier = HiveUtils.quoteIdentifier(DATABASE, name);
-            context.sql("DROP TABLE IF EXISTS " + identifier);
+        try {
+            if (isCached) {
+                context.uncacheTable(name);
+            } else {
+                String identifier = HiveUtils.quoteIdentifier(DATABASE, name);
+                context.sql("DROP TABLE IF EXISTS " + identifier);
+            }
+        } catch (Exception e) {
+            log.warn("Unable to drop cached table {}: {}", name, e);
         }
     }
 
