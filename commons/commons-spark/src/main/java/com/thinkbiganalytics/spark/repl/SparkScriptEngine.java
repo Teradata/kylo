@@ -49,8 +49,17 @@ public class SparkScriptEngine extends ScriptEngine {
     @Nonnull
     @Override
     protected SparkContext createSparkContext() {
+        // Let Spark know where to find class files
         this.conf.set("spark.repl.class.uri", getInterpreter().classServerUri());
-        return new SparkContext(this.conf);
+
+        // The SparkContext ClassLoader is needed during initialization (only for YARN master)
+        Thread currentThread = Thread.currentThread();
+        ClassLoader contextClassLoader = currentThread.getContextClassLoader();
+        currentThread.setContextClassLoader(SparkContext.class.getClassLoader());
+
+        SparkContext sparkContext = new SparkContext(this.conf);
+        currentThread.setContextClassLoader(contextClassLoader);
+        return sparkContext;
     }
 
     @Override
