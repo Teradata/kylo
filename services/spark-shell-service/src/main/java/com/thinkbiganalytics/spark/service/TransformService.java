@@ -94,7 +94,7 @@ public class TransformService extends AbstractScheduledService {
         }
 
         // Generate destination
-        String table = UUID.randomUUID().toString().replace("-", "");
+        String table = newTableName();
         this.cache.put(table, MIN_BYTES);
 
         // Execute script
@@ -256,6 +256,22 @@ public class TransformService extends AbstractScheduledService {
         } catch (Exception e) {
             log.warn("Unable to drop cached table {}: {}", name, e);
         }
+    }
+
+    /**
+     * Generates a new, unique table name.
+     *
+     * @return the table name
+     * @throws IllegalStateException if a table name cannot be generated
+     */
+    private String newTableName() {
+        for (int i=0; i < 100; ++i) {
+            String name = UUID.randomUUID().toString();
+            if (name.matches("^[a-fA-F].*")) {
+                return name.replace("-", "");
+            }
+        }
+        throw new IllegalStateException("Unable to generate a new table name");
     }
 
     /**
