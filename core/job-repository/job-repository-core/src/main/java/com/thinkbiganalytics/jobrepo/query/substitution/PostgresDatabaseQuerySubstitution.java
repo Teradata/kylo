@@ -77,4 +77,7 @@ public class PostgresDatabaseQuerySubstitution implements DatabaseQuerySubstitut
   public String toDateSql(String date) {
     return "TO_DATE('" + date + "','MM/DD/YYYY')";
   }
+  public String dateTimeAsMillisecondsSql(String dateTimeColumn){
+    return "EXTRACT(EPOCH FROM "+dateTimeColumn+" AT TIME ZONE 'UTC')";
+  }
 }

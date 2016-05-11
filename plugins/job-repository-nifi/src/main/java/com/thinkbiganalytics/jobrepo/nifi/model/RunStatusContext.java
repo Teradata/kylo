@@ -2,20 +2,20 @@ package com.thinkbiganalytics.jobrepo.nifi.model;
 
 import com.google.common.base.MoreObjects;
 import com.thinkbiganalytics.jobrepo.nifi.support.DateTimeUtil;
-
 import org.joda.time.DateTime;
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by sr186054 on 2/26/16.
  */
-public class RunStatusContext implements RunStatus {
-   public enum RUN_STATUS {
-        INITIAL,RUNNING, COMPLETED,FAILED
+public class RunStatusContext implements RunStatus, Serializable {
+    public enum RUN_STATUS {
+        INITIAL, RUNNING, COMPLETED, FAILED
     }
 
-    private RUN_STATUS runStatus= RUN_STATUS.INITIAL;
+    private RUN_STATUS runStatus = RUN_STATUS.INITIAL;
     private Date startTime;
     private Date endTime;
 
@@ -36,64 +36,66 @@ public class RunStatusContext implements RunStatus {
         this.endTime = endTime;
     }
 
-    public void markInitial(){
+    public void markInitial() {
         this.runStatus = RUN_STATUS.INITIAL;
     }
 
 
-  @Override
-  public boolean markRunning() {
-    return markRunning(null);
-  }
-
-  @Override
-  public boolean markCompleted() {
-    return markCompleted(null);
-  }
-
-  @Override
-  public boolean markFailed() {
-    return markFailed(null);
-  }
-
-  @Override
-  public boolean markRunning(DateTime dateTime){
-    if(!isRunning()) {
-      this.runStatus = RUN_STATUS.RUNNING;
-      this.startTime = dateTime != null ? dateTime.toDate() : new Date();
-      return true;
+    @Override
+    public boolean markRunning() {
+        return markRunning(null);
     }
-    return false;
-  }
-  @Override
-  public boolean markCompleted(DateTime dateTime){
-    if(isRunning()) {
-      this.runStatus = RUN_STATUS.COMPLETED;
-      this.endTime = dateTime != null ? dateTime.toDate() : new Date();
-      return true;
-    }
-    return false;
-  }
-  @Override
-  public boolean markFailed(DateTime dateTime){
-    if(isRunning()) {
-      this.runStatus = RUN_STATUS.FAILED;
-      this.endTime = dateTime != null ? dateTime.toDate() : new Date();
-      return true;
-    }
-    return false;
-  }
 
-    public boolean isInitial(){
+    @Override
+    public boolean markCompleted() {
+        return markCompleted(null);
+    }
+
+    @Override
+    public boolean markFailed() {
+        return markFailed(null);
+    }
+
+    @Override
+    public boolean markRunning(DateTime dateTime) {
+        if (!isRunning()) {
+            this.runStatus = RUN_STATUS.RUNNING;
+            this.startTime = dateTime != null ? dateTime.toDate() : new Date();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean markCompleted(DateTime dateTime) {
+        if (isRunning()) {
+            this.runStatus = RUN_STATUS.COMPLETED;
+            this.endTime = dateTime != null ? dateTime.toDate() : new Date();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean markFailed(DateTime dateTime) {
+        if (isRunning()) {
+            this.runStatus = RUN_STATUS.FAILED;
+            this.endTime = dateTime != null ? dateTime.toDate() : new Date();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean isInitial() {
         return RUN_STATUS.INITIAL.equals(getRunStatus());
     }
 
     @Override
-    public boolean isRunning(){
+    public boolean isRunning() {
         return RUN_STATUS.RUNNING.equals(getRunStatus());
     }
 
-    public boolean isComplete(){
+    public boolean isComplete() {
         return RUN_STATUS.COMPLETED.equals(getRunStatus());
     }
 
@@ -115,7 +117,7 @@ public class RunStatusContext implements RunStatus {
     @Override
     public Date getUTCStartTime() {
 
-        if(startTime != null) {
+        if (startTime != null) {
             return DateTimeUtil.convertToUTC(startTime);
         }
         return null;
@@ -123,7 +125,7 @@ public class RunStatusContext implements RunStatus {
 
     @Override
     public Date getUTCEndTime() {
-        if(endTime != null) {
+        if (endTime != null) {
             return DateTimeUtil.convertToUTC(endTime);
         }
         return null;

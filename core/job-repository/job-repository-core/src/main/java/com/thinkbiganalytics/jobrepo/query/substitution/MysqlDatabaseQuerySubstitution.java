@@ -57,4 +57,7 @@ public class MysqlDatabaseQuerySubstitution implements DatabaseQuerySubstitution
     }
     return limitString;
   }
+  public String dateTimeAsMillisecondsSql(String dateTimeColumn){
+    return " (UNIX_TIMESTAMP("+dateTimeColumn+")*1000) ";
+  }
 }

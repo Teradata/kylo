@@ -10,6 +10,7 @@ import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
 import com.thinkbiganalytics.jobrepo.query.substitution.DatabaseQuerySubstitution;
 import com.thinkbiganalytics.jobrepo.query.support.ColumnFilter;
 import com.thinkbiganalytics.jobrepo.query.support.OrderBy;
+import org.joda.time.DateTime;
 
 import java.util.List;
 import java.util.Map;
@@ -41,6 +42,8 @@ public interface JobRepository {
   public List<ExecutedJob> findJobs(List<ColumnFilter> conditions, List<OrderBy> order, Integer start, Integer limit);
 
   public List<ExecutedJob> findLatestJobs(List<ColumnFilter> conditions, List<OrderBy> order, Integer start, Integer limit);
+
+  public List<ExecutedJob> findJobsCurrentStartedBeforeSpecifiedTime(DateTime startTime);
 
   public SearchResult getDataTablesSearchResult(List<ColumnFilter> conditions, List<ColumnFilter> defaultFilters,
                                                 List<OrderBy> order, Integer start, Integer limit);

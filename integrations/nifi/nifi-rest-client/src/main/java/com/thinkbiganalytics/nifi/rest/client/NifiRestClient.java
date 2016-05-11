@@ -833,6 +833,11 @@ public class NifiRestClient extends JerseyRestClient {
         return null;
     }
 
+    public ProvenanceEventEntity getProvenanceEvent(String eventId) throws JerseyClientException
+    {
+        ProvenanceEventEntity eventEntity = get("/controller/provenance/events/"+eventId,null,ProvenanceEventEntity.class);
+        return eventEntity;
+    }
 
     public AboutEntity getNifiVersion() throws JerseyClientException {
         return get("/controller/about", null, AboutEntity.class);
@@ -1179,8 +1184,7 @@ public class NifiRestClient extends JerseyRestClient {
             group = new NifiVisitableProcessGroup(processGroupEntity.getProcessGroup());
             NifiConnectionOrderVisitor orderVisitor = new NifiConnectionOrderVisitor(this, group);
             group.accept(orderVisitor);
-            orderVisitor.printOrder();
-            ;
+            //orderVisitor.printOrder();
         }
         return group;
     }
@@ -1206,6 +1210,21 @@ public class NifiRestClient extends JerseyRestClient {
         }
 
         return failureProcessors;
+    }
+
+
+    public ProvenanceEventEntity replayProvenanceEvent(Long eventId) throws JerseyClientException {
+        Map<String,String> map = new HashMap<>();
+        map.put("eventId",eventId.toString());
+        try {
+            Entity controller = getControllerRevision();
+            if (controller != null && controller.getRevision() != null) {
+                map.put("clientId", controller.getRevision().getClientId());
+            }
+        }catch(JerseyClientException e){
+
+        }
+        return post("/controller/provenance/replays",map, ProvenanceEventEntity.class);
     }
 
 

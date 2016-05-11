@@ -4,6 +4,7 @@ import com.thinkbiganalytics.jobrepo.nifi.model.FlowFileComponent;
 import com.thinkbiganalytics.jobrepo.nifi.model.NifiJobExecution;
 
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.jdbc.core.JdbcOperations;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
 
@@ -25,12 +26,14 @@ public class NifiPipelineControllerDao implements InitializingBean {
                                                                      + "(EVENT_ID,NIFI_EVENT_ID,COMPONENT_ID,JOB_EXECUTION_ID,STEP_EXECUTION_ID) "
                                                                      + "VALUES(?,?, ?,?, ?)";
 
+
+
   private static final String GET_MAX_EVENT_ID = "SELECT MAX(EVENT_ID) FROM NIFI_PIPELINE_CONTROLLER_STEP";
 
   public NifiPipelineControllerDao() {
   }
 
-  protected JdbcTemplate jdbcTemplate;
+  protected JdbcOperations jdbcTemplate;
 
   public void saveJobExecution(NifiJobExecution jobExecution) {
 
@@ -71,13 +74,15 @@ public class NifiPipelineControllerDao implements InitializingBean {
     return count;
   }
 
-  public void setJdbcTemplate(JdbcTemplate jdbcTemplate) {
+  public void setJdbcTemplate(JdbcOperations jdbcTemplate) {
     this.jdbcTemplate = jdbcTemplate;
   }
 
-  public JdbcTemplate getJdbcTemplate() {
+  public JdbcOperations getJdbcTemplate() {
     return jdbcTemplate;
   }
+
+
 
   /**
    * /** CREATE TABLE NIFI_PIPELINE_CONTROLLER_STEP  ( EVENT_ID BIGINT NOT NULL PRIMARY KEY, NIFI_EVENT_ID BIGINT, COMPONENT_ID

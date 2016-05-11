@@ -3,7 +3,9 @@ package com.thinkbiganalytics.jobrepo.repository.dao;
 
 import com.thinkbiganalytics.jobrepo.nifi.model.FlowFileComponent;
 import com.thinkbiganalytics.jobrepo.nifi.model.NifiJobExecution;
+import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 
+import java.util.List;
 import java.util.Map;
 
 /**

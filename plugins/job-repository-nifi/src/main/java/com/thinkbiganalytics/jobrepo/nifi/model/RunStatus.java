@@ -30,7 +30,7 @@ public interface RunStatus {
 
     boolean markCompleted(DateTime dateTime);
 
-   boolean markFailed(DateTime dateTime);
+    boolean markFailed(DateTime dateTime);
 
     boolean markRunning();
 

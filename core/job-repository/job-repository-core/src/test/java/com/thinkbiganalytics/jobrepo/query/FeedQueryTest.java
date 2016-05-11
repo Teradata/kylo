@@ -16,6 +16,7 @@ import com.thinkbiganalytics.jobrepo.query.feed.LatestFeedStatusCountQuery;
 import com.thinkbiganalytics.jobrepo.query.feed.LatestOperationalFeedQuery;
 import com.thinkbiganalytics.jobrepo.query.feed.MaxFeedQuery;
 import com.thinkbiganalytics.jobrepo.query.job.JobQuery;
+import com.thinkbiganalytics.jobrepo.query.job.RunningJobsStartedBeforeSpecifiedTimeQuery;
 import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
 import com.thinkbiganalytics.jobrepo.query.support.ColumnFilter;
 import com.thinkbiganalytics.jobrepo.query.support.DatabaseType;
@@ -23,6 +24,7 @@ import com.thinkbiganalytics.jobrepo.query.support.OrderBy;
 import com.thinkbiganalytics.jobrepo.query.support.OrderByClause;
 import com.thinkbiganalytics.jobrepo.query.support.QueryColumnFilterSqlString;
 
+import org.joda.time.DateTime;
 import org.junit.Test;
 import org.springframework.batch.core.ExitStatus;
 
@@ -58,6 +60,17 @@ public class FeedQueryTest {
     public void testFeedQueryWithLatestFeedColumn(){
         testFeedQuery(DatabaseType.MYSQL, FeedQuery.class);
         testFeedQuery(DatabaseType.MYSQL, LatestOperationalFeedQuery.class);
+    }
+
+    @Test
+    public void testRunningJobsStartedBeforeSpecifiedTimeQuery(){
+        RunningJobsStartedBeforeSpecifiedTimeQuery query = new RunningJobsStartedBeforeSpecifiedTimeQuery(DatabaseType.POSTGRES,new DateTime());
+        Query q = query.buildQuery();
+        logQuery(q, RunningJobsStartedBeforeSpecifiedTimeQuery.class);
+
+        query = new RunningJobsStartedBeforeSpecifiedTimeQuery(DatabaseType.MYSQL,new DateTime());
+         q = query.buildQuery();
+        logQuery(q, RunningJobsStartedBeforeSpecifiedTimeQuery.class);
     }
 
     @Test

@@ -33,4 +33,6 @@ public interface DatabaseQuerySubstitution {
   public String getFeedExecutionRunTimeSql();
 
   public String limitAndOffset(Integer limit, Integer offset);
+
+  public String dateTimeAsMillisecondsSql(String dateTimeColumn);
 }

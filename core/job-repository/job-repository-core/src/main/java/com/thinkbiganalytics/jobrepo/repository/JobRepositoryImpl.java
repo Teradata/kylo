@@ -4,14 +4,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
-import com.thinkbiganalytics.jobrepo.query.job.AugmentJobExecutionTimingDataQuery;
-import com.thinkbiganalytics.jobrepo.query.job.JobProgressQuery;
-import com.thinkbiganalytics.jobrepo.query.job.JobQueryConstants;
-import com.thinkbiganalytics.jobrepo.query.job.JobStatusCountByDayQuery;
-import com.thinkbiganalytics.jobrepo.query.job.JobStepQuery;
-import com.thinkbiganalytics.jobrepo.query.job.RelatedJobExecutionsQuery;
-import com.thinkbiganalytics.jobrepo.query.job.RunningOrFailedJobCountsQuery;
-import com.thinkbiganalytics.jobrepo.query.job.StepExecutionTimingQuery;
+import com.thinkbiganalytics.jobrepo.query.job.*;
 import com.thinkbiganalytics.jobrepo.query.model.DailyJobStatusCount;
 import com.thinkbiganalytics.jobrepo.query.model.DailyJobStatusCountResult;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
@@ -393,6 +386,21 @@ public class JobRepositoryImpl implements JobRepository {
     return executedJob;
 
 
+  }
+
+  public List<ExecutedJob> findJobsCurrentStartedBeforeSpecifiedTime(DateTime startTime) {
+    List<ExecutedJob> jobs = new ArrayList<>();
+    List<TbaJobExecution> jobExecutions = jobDao.findList( new RunningJobsStartedBeforeSpecifiedTimeQuery(jobDao.getDatabaseType(),startTime));
+    if(jobExecutions != null){
+      for(TbaJobExecution jobExecution : jobExecutions){
+        ExecutedJob executedJob = JobRepositoryImpl.convertToExecutedJob(jobExecution.getJobInstance(), jobExecution);
+        List<ExecutedStep> steps = getJobProgress(new Long(executedJob.getExecutionId()).toString());
+        executedJob.setExecutedSteps(steps);
+        jobs.add(executedJob);
+      }
+
+    }
+    return jobs;
   }
 
 

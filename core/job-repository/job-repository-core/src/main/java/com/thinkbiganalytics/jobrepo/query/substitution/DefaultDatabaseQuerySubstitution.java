@@ -44,4 +44,8 @@ public class DefaultDatabaseQuerySubstitution implements DatabaseQuerySubstituti
   public String toDateSql(String date) {
     return "TO_DATE('" + date + "','MM/DD/YYYY')";
   }
+
+  public String dateTimeAsMillisecondsSql(String dateTimeColumn){
+    return "UNIX_TIMESTAMP("+dateTimeColumn+")*1000)";
+  }
 }
