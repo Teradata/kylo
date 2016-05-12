@@ -72,16 +72,16 @@
                         </tr>
                         </thead>
                         <tbody md-body>
-                        <tr md-row ng-repeat="template in vm.registeredTemplates | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (tab.currentPage - 1) * vm.paginationData.rowsPerPage"  ng-click="vm.templateDetails($event,feed)">
-                            <td md-cell>
+                        <tr md-row ng-repeat="template in vm.registeredTemplates | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (tab.currentPage - 1) * vm.paginationData.rowsPerPage"  >
+                            <td md-cell ng-click="vm.templateDetails($event,feed)">
                                 <ng-md-icon icon="{{template.icon}}" size="20" hide-xs style="fill:{{template.iconColor}}">
                                 </ng-md-icon>
                                 {{template.templateName}}</td>
 
-                            <td md-cell>
+                            <td md-cell ng-click="vm.templateDetails($event,feed)">
                                 {{template.properties.length}}
                             </td>
-                            <td md-cell >{{template.updateDate | date: 'MM/dd/yyyy @ h:mm:ssa' }}</td>
+                            <td md-cell ng-click="vm.templateDetails($event,feed)">{{template.updateDate | date: 'MM/dd/yyyy @ h:mm:ssa' }}</td>
                             <td md-cell>
                                 <md-button href="{{template.exportUrl}}"  layout-align="center">
                                     <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"> </ng-md-icon>
