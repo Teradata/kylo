@@ -8,6 +8,7 @@
 
         <body-section>
 
+            <div ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
             <md-list flex layout-fill class="list-item-table">
                 <md-list-item  class="md-secondary" dir-paginate="feed in vm.feedData |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId"  ng-click="vm.feedDetails($event,feed)">
                     <div layout="row" layout-fill>
@@ -15,20 +16,19 @@
                                      <span class="item-title" title="{{feed.feedName}}">
                                       {{feed.feedName}}
                                    </span>
-                                   <span title="{{feed.state}}" ng-class="{'enabled':feed.state == 'ENABLED','disabled':feed.state == 'DISABLED'}" class="column-title-bottom">
-                                     <ng-md-icon icon="{{feed.stateIcon}}" size="20" hide-xs >
-                                     </ng-md-icon> Feed Name
+                                   <span class="column-title column-title-bottom">
+                                     Feed Name
                                    </span>
 
                         </div>
                         <div flex="15" layout="column" class="item-column md-list-item-text ">
 
-                                   <span  class="item-title" title="{{feed.active}}"  >
-                                    <ng-md-icon md-icon icon="highlight_off" ng-if="!feed.active"></ng-md-icon>
-                                        <ng-md-icon md-icon icon="done" ng-if="feed.active"></ng-md-icon>
+                                   <span title="{{feed.state}}" ng-class="{'enabled':feed.state == 'ENABLED','disabled':feed.state == 'DISABLED'}" class="item-title">
+                                     <ng-md-icon icon="{{feed.stateIcon}}" size="20" hide-xs >
+                                     </ng-md-icon> {{feed.state}}
                                    </span>
                                      <span class="column-title column-title-bottom">
-                                     Active
+                                     State
                                    </span>
                         </div>
                         <div flex="30" layout="column" class="item-column md-list-item-text ">
@@ -48,7 +48,7 @@
                     </div>
                     <md-divider ng-if="!$last"></md-divider>
                 </md-list-item>
-                <md-list-item  ng-show="vm.loading == false && vm.feedData.length ==0" class="md-padding">
+                <md-list-item  ng-show="vm.loading == false && vm.feedData.length ==0" class="md-padding md-list-item">
                     No results found
                 </md-list-item >
                 <md-divider></md-divider>
@@ -59,7 +59,7 @@
                                              direction-links="true"
                                              boundary-links="false"
                                              template-url="js/vendor/dirPagination/dirPagination.tpl.html"
-                                             current-page="vm.currentPage()"
+                                             current-page="vm.currentPage"
                                              on-page-change="vm.onPaginationChange(newPageNumber)"
                                              label="Rows per page"
                                              rows-per-page="vm.paginationData.rowsPerPage"
@@ -68,6 +68,42 @@
                     </dir-pagination-controls>
                 </md-list-item>
             </md-list>
+                </div>
+            <div ng-hide="vm.viewType != 'table'" ng-show="vm.viewType == 'table'">
+                <md-table-container>
+                    <table md-table md-progress="vm.deferred.promise">
+                        <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange" >
+                        <tr md-row>
+                            <th md-column name="Feed" md-order-by="feedName">Feed</th>
+                            <th md-column name="State" md-order-by="state">State</th>
+                            <th md-column name="Category" md-order-by="category.name">Category</th>
+                            <th md-column name="Last Updated" md-order-by="updateDate" >Last Updated</th>
+                        </tr>
+                        </thead>
+                        <tbody md-body>
+                        <tr md-row ng-repeat="feed in vm.feedData | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (tab.currentPage - 1) * vm.paginationData.rowsPerPage"  ng-click="vm.feedDetails($event,feed)">
+                            <td md-cell>{{feed.feedName}}</td>
+                            <td md-cell>
+                                    <span   ng-class="{'enabled':feed.state == 'ENABLED','disabled':feed.state == 'DISABLED'}">
+                                       <ng-md-icon icon="{{feed.stateIcon}}" size="20">
+                                       </ng-md-icon>
+                                       <span>{{feed.state}}</span></span>
+
+                            </td>
+                            <td md-cell>
+                                              <ng-md-icon icon="{{feed.category.icon}}" size="20" style="fill:{{feed.category.iconColor}}">
+                                              </ng-md-icon>
+                                         {{feed.category.name}}
+                            </td>
+                            <td md-cell >{{feed.updateDate | date: 'MM/dd/yyyy @ h:mm:ssa' }}</td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </md-table-container>
+
+                <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="vm.currentPage" md-total="{{vm.feedData.length}}" md-on-paginate="vm.onPaginationChange" md-limit-options="[5,10,20,50,'ALL']"></md-table-pagination>
+
+            </div>
 
         </body-section>
 

@@ -21,6 +21,7 @@
         this.paginationData = PaginationDataService.paginationData(this.pageName);
         this.paginationId = 'feeds';
         PaginationDataService.setRowsPerPageOptions(this.pageName,['5','10','20','50','All']);
+        this.currentPage =PaginationDataService.currentPage(self.pageName)||1;
         this.viewType = PaginationDataService.viewType(this.pageName);
         this.sortOptions = loadSortOptions();
 
@@ -46,7 +47,9 @@
 
         this.onPaginationChange = function (page, limit) {
             PaginationDataService.currentPage(self.pageName,null,page);
+            self.currentPage = page;
         };
+
 
 
         /**
@@ -65,7 +68,7 @@
          * @returns {*[]}
          */
         function loadSortOptions() {
-            var options = {'Feed':'feedName','Active':'active','Category':'category','Last Modified':'updateDate'};
+            var options = {'Feed':'feedName','State':'state','Category':'category.name','Last Modified':'updateDate'};
 
             var sortOptions = TableOptionsService.newSortOptions(self.pageName,options,'feedName','asc');
             var currentOption = TableOptionsService.getCurrentSort(self.pageName);
