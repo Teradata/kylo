@@ -138,6 +138,46 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         this.states_ = [this.newState()];
     };
 
+    angular.extend(SparkShellService, {
+        /**
+         * Stores the list of redo states for the global state.
+         *
+         * @private
+         * @static
+         * @type {Array.<ScriptState>|null}
+         */
+        globalRedo_: null,
+
+        /**
+         * Stores the list of states for the global state.
+         *
+         * @private
+         * @static
+         * @type {Array.<ScriptState>|null}
+         */
+        globalState_: null,
+
+        /**
+         * Stores the source for the global states.
+         *
+         * @private
+         * @static
+         * @type {string|null}
+         */
+        globalSource_: null,
+
+        /**
+         * Clears the global state.
+         *
+         * @static
+         */
+        clearGlobalState: function() {
+            SparkShellService.globalRedo_ = null;
+            SparkShellService.globalState_ = null;
+            SparkShellService.globalSource_ = null;
+        }
+    });
+
     angular.extend(SparkShellService.prototype, {
         /**
          * Indicates if a previously undone transformation can be redone.
@@ -250,6 +290,17 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         },
 
         /**
+         * Gets the list of contexts for the current transformations.
+         *
+         * @return {Object[]} the function history
+         */
+        getHistory: function() {
+            return _.map(this.states_.slice(1), function(state) {
+                return state.context;
+            });
+        },
+
+        /**
          * Gets the rows after applying the current transformation.
          * 
          * @returns {Array.<Object.<string,*>>|null} the rows or {@code null} if the transformation has not been applied
@@ -310,6 +361,20 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         },
 
         /**
+         * Loads states from the global state if the source matches.
+         *
+         * @returns {boolean} {@code true} if the global state was loaded, or {@code false} otherwise
+         */
+        loadGlobalState: function() {
+            if (this.source_ === SparkShellService.globalSource_) {
+                this.redo_ = angular.copy(SparkShellService.globalRedo_);
+                this.states_ = angular.copy(SparkShellService.globalState_);
+                return true;
+            }
+            return false;
+        },
+
+        /**
          * Removes the last transformation from the stack. This action cannot be undone.
          *
          * @see #undo()
@@ -367,6 +432,15 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 this.sample_ = opt_value;
             }
             return this.sample_;
+        },
+
+        /**
+         * Saves the current states to the global state.
+         */
+        saveGlobalState: function() {
+            SparkShellService.globalState_ = this.states_;
+            SparkShellService.globalRedo_ = this.redo_;
+            SparkShellService.globalSource_ = this.source_;
         },
 
         /**

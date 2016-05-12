@@ -520,10 +520,12 @@
 
             if (fields !== null) {
                 FeedService.setTableFields(fields);
+                self.sparkShellService.saveGlobalState();
                 deferred.resolve(true);
             } else {
                 self.query().then(function() {
                     FeedService.setTableFields(self.sparkShellService.getFields());
+                    self.sparkShellService.saveGlobalState();
                     deferred.resolve(true);
                 });
             }
@@ -534,6 +536,12 @@
         //Hide the left side nav bar
         SideNavService.hideSideNav();
 
+        // Load table data
+        if (FeedService.createFeedModel.dataTransformation.formulas.length > 0 && self.sparkShellService.loadGlobalState()) {
+            self.functionHistory = self.sparkShellService.getHistory();
+        } else {
+            SparkShellService.clearGlobalState();
+        }
         this.query();
 
         $scope.$on('$destroy', function() {
