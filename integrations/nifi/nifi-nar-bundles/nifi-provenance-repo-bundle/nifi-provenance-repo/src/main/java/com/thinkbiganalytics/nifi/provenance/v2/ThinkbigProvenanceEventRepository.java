@@ -63,24 +63,29 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
     @Override
     public void registerEvent(ProvenanceEventRecord provenanceEventRecord) {
         System.out.println("ThinkbigProvenanceEventRepository recording 1 single provenance event: " + provenanceEventRecord.getComponentId() + ", " + provenanceEventRecord.getComponentType());
+        checkAndSetEventId();
         repository.registerEvent(provenanceEventRecord);
-        Long maxId = getMaxEventId();
-        Long eventId = provenanceEventRecordWriter.checkAndSetMaxEventId(maxId == null ? 1L : maxId) ;
-        if(maxId == null){
-            System.out.println("getMaxEventId is null for " + provenanceEventRecord.getComponentId() + ", " + provenanceEventRecord.getComponentType()+" using "+eventId+" from internal incrementer");
-        }
         provenanceEventRecordWriter.writeEvent(provenanceEventRecord);
+    }
+
+    /**
+     * get the latest event id
+     * if the getMaxEventId is null use -1 as a base id
+     * the writer will do an incrementAndGet on it to start it off a 0 which is what Nifi starts with
+     */
+    private void checkAndSetEventId(){
+        Long maxId = getMaxEventId();
+        Long eventId = provenanceEventRecordWriter.checkAndSetMaxEventId(maxId == null ? -1L : maxId) ;
+        if(maxId == null){
+            System.out.println("Register Events ... getMaxEventId is null  using "+eventId+" from internal incrementer");
+        }
     }
 
     @Override
     public void registerEvents(Iterable<ProvenanceEventRecord> iterable) {
         List<ProvenanceEventRecord> events = Lists.newArrayList(iterable);
-        Long maxId = getMaxEventId();
-        Long eventId = provenanceEventRecordWriter.checkAndSetMaxEventId(maxId == null ? 1L : maxId) ;
+        checkAndSetEventId();
         repository.registerEvents(events);
-        if(maxId == null){
-            System.out.println("Register Events ... getMaxEventId is null  using "+eventId+" from internal incrementer");
-        }
         if (events != null && events.size() > 0) {
             System.out.println("ThinkbigProvenanceEventRepository recording " + events.size() + " provenance events ");
             for (ProvenanceEventRecord event : events) {
