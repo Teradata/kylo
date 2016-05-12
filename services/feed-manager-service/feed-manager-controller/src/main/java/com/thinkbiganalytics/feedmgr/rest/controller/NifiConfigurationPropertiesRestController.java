@@ -13,6 +13,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
@@ -40,6 +41,9 @@ public class NifiConfigurationPropertiesRestController {
   @Autowired
   private NifiRestClient nifiRestClient;
 
+    @Autowired
+    private  SpringEnvironmentProperties environmentProperties;
+
     public NifiConfigurationPropertiesRestController() {
     }
 
@@ -47,7 +51,11 @@ public class NifiConfigurationPropertiesRestController {
     @Path("/configuration/properties")
     @Produces({MediaType.APPLICATION_JSON })
     public Response getFeeds(){
-       Properties properties = NifiConfigurationPropertiesService.getInstance().getPropertiesWithConfigPrefix();
+       Map<String,Object> properties = environmentProperties.getPropertiesStartingWith("nifi.config");
+        if(properties == null){
+            properties = new HashMap<>();
+        }
+       //Properties properties = NifiConfigurationPropertiesService.getInstance().getPropertiesWithConfigPrefix();
         return Response.ok(properties).build();
     }
 

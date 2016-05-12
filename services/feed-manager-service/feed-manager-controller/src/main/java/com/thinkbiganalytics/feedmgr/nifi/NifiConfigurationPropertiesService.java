@@ -29,7 +29,7 @@ public class NifiConfigurationPropertiesService {
 
         final Properties properties = new Properties();
         try (final InputStream stream =
-                     this.getClass().getClassLoader().getResourceAsStream("nifi-configuration.properties")) {
+                     this.getClass().getClassLoader().getResourceAsStream("application.properties")) {
             properties.load(stream);
     /* or properties.loadFromXML(...) */
         } catch (Exception e) {
