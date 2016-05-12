@@ -78,6 +78,7 @@
         // Translates expressions into Spark code
         this.sparkShellService = new SparkShellService(this.sql);
 
+        this.executingQuery = false;
         //Code Mirror options.  Tern Server requires it be in javascript mode
         this.codemirrorOptions = {
             lineWrapping: false,
