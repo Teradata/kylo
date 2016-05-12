@@ -14,9 +14,12 @@ import org.apache.nifi.provenance.search.QuerySubmission;
 import org.apache.nifi.provenance.search.SearchableField;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 /**
  * Custom Event Repository that will take the PovenanceEvents and write them to some output.
@@ -25,14 +28,15 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
 
     private PersistentProvenanceRepository repository;
 
+    private  Lock registerEventLock = null;
+
 
     private ProvenanceEventActiveMqWriter provenanceEventRecordWriter;
 
-    private Timer timer;
-    private AtomicLong eventCounter = new AtomicLong(0);
-
     public ThinkbigProvenanceEventRepository() {
+        this.registerEventLock = new ReentrantReadWriteLock(true).readLock();
         try {
+
 
             repository = new PersistentProvenanceRepository();
             provenanceEventRecordWriter = new ProvenanceEventActiveMqWriter();
@@ -63,9 +67,7 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
     @Override
     public void registerEvent(ProvenanceEventRecord provenanceEventRecord) {
         System.out.println("ThinkbigProvenanceEventRepository recording 1 single provenance event: " + provenanceEventRecord.getComponentId() + ", " + provenanceEventRecord.getComponentType());
-        checkAndSetEventId();
-        repository.registerEvent(provenanceEventRecord);
-        provenanceEventRecordWriter.writeEvent(provenanceEventRecord);
+        registerEvents(Collections.singleton(provenanceEventRecord));
     }
 
     /**
@@ -83,6 +85,8 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
 
     @Override
     public void registerEvents(Iterable<ProvenanceEventRecord> iterable) {
+        this.registerEventLock.lock();
+        try {
         List<ProvenanceEventRecord> events = Lists.newArrayList(iterable);
         checkAndSetEventId();
         repository.registerEvents(events);
@@ -91,6 +95,9 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
             for (ProvenanceEventRecord event : events) {
                 provenanceEventRecordWriter.writeEvent(event);
             }
+        }
+        } finally {
+            this.registerEventLock.unlock();
         }
     }
 
@@ -145,7 +152,6 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
     @Override
     public void close() throws IOException {
         repository.close();
-        timer.cancel();
     }
 
     @Override
