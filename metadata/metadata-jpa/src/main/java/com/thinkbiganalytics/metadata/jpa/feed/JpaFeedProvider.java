@@ -12,6 +12,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -40,8 +41,9 @@ import org.springframework.beans.factory.annotation.Qualifier;
  *
  * @author Sean Felten
  */
-public class JpaFeedProvider implements FeedProvider {
+public class JpaFeedProvider  implements FeedProvider {
 
+    @PersistenceContext
     @Inject
     @Qualifier("metadataEntityManager")
     private EntityManager entityMgr;
@@ -51,8 +53,9 @@ public class JpaFeedProvider implements FeedProvider {
     
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
-    
-//    @Inject 
+
+
+    //    @Inject
 //    private FeedPreconditionService preconditionService;
 
     /* (non-Javadoc)
@@ -341,7 +344,30 @@ public class JpaFeedProvider implements FeedProvider {
         }
     }
 
-    
+    @Override
+    public boolean enableFeed(ID id) {
+       Feed feed = getFeed(id);
+        if(feed != null){
+            JpaFeed jpaFeed = (JpaFeed) feed;
+            jpaFeed.setState(Feed.State.ENABLED);
+            entityMgr.merge(jpaFeed);
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    public boolean disableFeed(ID id) {
+        Feed feed = getFeed(id);
+        if(feed != null){
+            JpaFeed jpaFeed = (JpaFeed) feed;
+            jpaFeed.setState(Feed.State.DISABLED);
+             entityMgr.merge(jpaFeed);
+            return true;
+        }
+        return false;
+    }
+
     private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {
         
         private String name;
