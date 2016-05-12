@@ -318,6 +318,17 @@ angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function($m
         },
 
         /**
+         * Validates the specified filter.
+         *
+         * @param {Object} filter the filter to be validated
+         */
+        validateFilter: function(filter) {
+            if (filter.term == "") {
+                filter.term = null;
+            }
+        },
+
+        /**
          * Creates a formula that replaces the specified column with the specified script.
          *
          * @private

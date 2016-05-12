@@ -111,7 +111,7 @@
                                              <i class="material-icons" ng-class="{'custom-icon': (filter.icon.length === 1)}">{{filter.icon}}</i>
                                              <md-input-container>
                                                  <label>{{filter.label}}</label>
-                                                 <input type="text" ng-model="filter.term">
+                                                 <input type="text" ng-model="filter.term" ng-change="delegate.validateFilter(filter)">
                                              </md-input-container>
                                          </div>
                                      </md-menu-item>
