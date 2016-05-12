@@ -8,6 +8,7 @@ import org.apache.spark.sql.{DataFrame, SQLContext, SaveMode}
 import org.slf4j.LoggerFactory
 
 import java.util
+import java.util.concurrent.Callable
 import java.util.regex.Pattern
 
 import scala.collection.JavaConversions
@@ -29,28 +30,7 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
 
     /** Evaluates this transform script and stores the result in a Hive table. */
     def run(): Any = {
-        val df: DataFrame = dataFrame
-
-        if (sendResults) {
-            val cache = df.cache
-            cache.registerTempTable(destination)
-
-            val result = new QueryResult("SELECT * FROM " + destination)
-            val columns = getColumns(cache.schema)
-            result.setColumns(JavaConversions.seqAsJavaList(columns))
-            for (row <- cache.collect()) {
-                val r = new util.HashMap[String, Object]()
-                for (i <- columns.indices) {
-                    r.put(columns(i).getDisplayName, row.getAs(i))
-                }
-                result.addRow(r)
-            }
-            result
-        }
-        else {
-            sqlContext.sql(toSQL(df.schema))
-            df.write.mode(SaveMode.Overwrite).insertInto(destination)
-        }
+        if (sendResults) new QueryResultCallable else new InsertHiveCallable
     }
 
     /** Evaluates the transform script.
@@ -158,5 +138,39 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
 
         sql.append(") STORED AS ORC")
         sql.toString()
+    }
+
+    /** Writes the `DataFrame` results to a Hive table. */
+    private class InsertHiveCallable extends Callable[Unit] {
+        override def call(): Unit = {
+            val df = dataFrame
+            sqlContext.sql(toSQL(df.schema))
+            df.write.mode(SaveMode.Overwrite).insertInto(destination)
+        }
+    }
+
+    /** Stores the `DataFrame` results in a [[com.thinkbiganalytics.db.model.query.QueryResult]] and returns the object. */
+    private class QueryResultCallable extends Callable[QueryResult] {
+        override def call(): QueryResult = {
+            // Cache data frame
+            val cache = dataFrame.cache
+            cache.registerTempTable(destination)
+
+            // Build result object
+            val result = new QueryResult("SELECT * FROM " + destination)
+
+            val columns = getColumns(cache.schema)
+            result.setColumns(JavaConversions.seqAsJavaList(columns))
+
+            for (row <- cache.collect()) {
+                val r = new util.HashMap[String, Object]()
+                for (i <- columns.indices) {
+                    r.put(columns(i).getDisplayName, row.getAs(i))
+                }
+                result.addRow(r)
+            }
+
+            result
+        }
     }
 }

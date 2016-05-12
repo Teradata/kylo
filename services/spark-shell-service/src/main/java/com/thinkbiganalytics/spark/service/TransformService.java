@@ -26,6 +26,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
@@ -102,6 +103,15 @@ public class TransformService extends AbstractScheduledService {
                 new NamedParamClass("tableName", "String", table));
 
         Object results = this.engine.eval(toScript(request), bindings);
+        if (results instanceof Callable) {
+            try {
+                results = ((Callable<?>) results).call();
+            } catch (Exception e) {
+                ScriptException se = new ScriptException(e);
+                log.error("Throwing {}", se);
+                throw se;
+            }
+        }
 
         // Update table weight
         try {
