@@ -23,12 +23,12 @@ if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
     echo "Which database (Enter the number)?"
     echo "1) MySQL"
     echo "2) Postgress"
-    read database_type;
+    read -p "> " database_type;
     echo "Please enter the database admin username";
-    read username;
+    read -p "> " username;
 
     echo "Please enter the database admin password";
-    read -s password;
+    read -p "> " -s password;
 fi
 
 echo "db type " $database_type;
