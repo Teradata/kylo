@@ -7,9 +7,10 @@ public abstract class AbstractProvenanceEventWriter implements ProvenanceEventWr
     protected ProvenanceEventIdIncrementer eventIdIncrementer = new ProvenanceEventIdIncrementer();
 
     @Override
-    public void checkAndSetMaxEventId(Long l) {
+    public Long checkAndSetMaxEventId(Long l) {
         if (eventIdIncrementer.isNull()) {
             eventIdIncrementer.setId(l);
         }
+        return eventIdIncrementer.getId();
     }
 }

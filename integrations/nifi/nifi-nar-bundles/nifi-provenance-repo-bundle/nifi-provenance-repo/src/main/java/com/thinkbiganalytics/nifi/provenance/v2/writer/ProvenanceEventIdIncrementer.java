@@ -15,6 +15,9 @@ public class ProvenanceEventIdIncrementer {
 
     public void setId(Long l) {
         System.out.println("EVENT ID SET TO " + l);
+        if(l == null){
+            l = 0L;
+        }
         if (eventIdCounter == null) {
             eventIdCounter = new AtomicLong(l);
         } else {

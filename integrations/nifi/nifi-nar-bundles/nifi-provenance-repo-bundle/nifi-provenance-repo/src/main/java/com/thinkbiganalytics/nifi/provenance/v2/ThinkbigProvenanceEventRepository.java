@@ -64,17 +64,25 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
     public void registerEvent(ProvenanceEventRecord provenanceEventRecord) {
         System.out.println("ThinkbigProvenanceEventRepository recording 1 single provenance event: " + provenanceEventRecord.getComponentId() + ", " + provenanceEventRecord.getComponentType());
         repository.registerEvent(provenanceEventRecord);
-        provenanceEventRecordWriter.checkAndSetMaxEventId(getMaxEventId());
+        Long maxId = getMaxEventId();
+        Long eventId = provenanceEventRecordWriter.checkAndSetMaxEventId(maxId == null ? 1L : maxId) ;
+        if(maxId == null){
+            System.out.println("getMaxEventId is null for " + provenanceEventRecord.getComponentId() + ", " + provenanceEventRecord.getComponentType()+" using "+eventId+" from internal incrementer");
+        }
         provenanceEventRecordWriter.writeEvent(provenanceEventRecord);
     }
 
     @Override
     public void registerEvents(Iterable<ProvenanceEventRecord> iterable) {
         List<ProvenanceEventRecord> events = Lists.newArrayList(iterable);
-        provenanceEventRecordWriter.checkAndSetMaxEventId(getMaxEventId());
+        Long maxId = getMaxEventId();
+        Long eventId = provenanceEventRecordWriter.checkAndSetMaxEventId(maxId == null ? 1L : maxId) ;
         repository.registerEvents(events);
-        if (events != null && events.size() >0) {
-            System.out.println("ThinkbigProvenanceEventRepository recording " + events.size()+" provenance events ");
+        if(maxId == null){
+            System.out.println("Register Events ... getMaxEventId is null  using "+eventId+" from internal incrementer");
+        }
+        if (events != null && events.size() > 0) {
+            System.out.println("ThinkbigProvenanceEventRepository recording " + events.size() + " provenance events ");
             for (ProvenanceEventRecord event : events) {
                 provenanceEventRecordWriter.writeEvent(event);
             }

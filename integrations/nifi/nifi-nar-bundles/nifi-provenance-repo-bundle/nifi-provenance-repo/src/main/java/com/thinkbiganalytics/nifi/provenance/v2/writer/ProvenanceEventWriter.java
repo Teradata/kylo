@@ -12,5 +12,5 @@ public interface ProvenanceEventWriter {
 
     Long writeEvent(ProvenanceEventRecord event);
 
-    void checkAndSetMaxEventId(Long l);
+    Long checkAndSetMaxEventId(Long l);
 }
