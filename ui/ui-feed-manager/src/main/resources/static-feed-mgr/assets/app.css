@@ -396,12 +396,12 @@ tba-jobs md-list-item:hover {
   color:#FD9B28;
 }
 
-.healthy, .success{
+.healthy, .success,.enabled{
   color:#009933;
   fill:#009933;
 }
 
-.abandoned,.unknown{
+.abandoned,.unknown,.disabled{
   color: #969696;
   fill: #969696;
 }

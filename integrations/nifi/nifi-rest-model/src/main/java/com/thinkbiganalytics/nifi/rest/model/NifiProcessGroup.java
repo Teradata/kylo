@@ -29,6 +29,9 @@ public class NifiProcessGroup {
     private boolean success;
 
     private List<NifiProcessorDTO> errors;
+
+    private boolean rolledBack = false;
+
     public NifiProcessGroup() {
 
     }
@@ -85,6 +88,7 @@ public class NifiProcessGroup {
 
     }
 
+
     public void addError(NifiError.SEVERITY severity,String error, String errorType){
        addError(processGroupEntity.getProcessGroup().getName(),"",severity,error,errorType);
 
@@ -118,6 +122,15 @@ public class NifiProcessGroup {
             }
         }
         return false;
+    }
+
+
+    public boolean isRolledBack() {
+        return rolledBack;
+    }
+
+    public void setRolledBack(boolean rolledBack) {
+        this.rolledBack = rolledBack;
     }
 
     public List<NifiProcessorDTO> getControllerServiceErrors(){

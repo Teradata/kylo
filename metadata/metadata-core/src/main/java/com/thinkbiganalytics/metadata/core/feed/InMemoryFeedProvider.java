@@ -330,6 +330,19 @@ public class InMemoryFeedProvider implements FeedProvider {
         }
     }
 
+    @Override
+    public boolean enableFeed(Feed.ID id) {
+        BaseFeed feed = (BaseFeed) getFeed(id);
+        feed.setState(Feed.State.ENABLED);
+       return true;
+    }
+
+    @Override
+    public boolean disableFeed(Feed.ID id) {
+        BaseFeed feed = (BaseFeed) getFeed(id);
+        feed.setState(Feed.State.DISABLED);
+      return true;
+    }
 
     private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {
         

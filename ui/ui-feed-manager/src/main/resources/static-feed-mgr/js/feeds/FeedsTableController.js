@@ -90,7 +90,13 @@
                 var simpleFeedData = [];
                 if(response.data){
                     angular.forEach(response.data,function(feed){
-                        simpleFeedData.push({id:feed.id,active:feed.active,feedName:feed.feedName,category:{name:feed.categoryName,icon:feed.categoryIcon,iconColor:feed.categoryIconColor},updateDate:feed.updateDate})
+                        if(feed.state == 'ENABLED') {
+                            feed.stateIcon = 'check_circle'
+                        }
+                        else {
+                            feed.stateIcon = 'block'
+                        }
+                        simpleFeedData.push({id:feed.id,active:feed.active,state:feed.state,stateIcon: feed.stateIcon,feedName:feed.feedName,category:{name:feed.categoryName,icon:feed.categoryIcon,iconColor:feed.categoryIconColor},updateDate:feed.updateDate})
                     });
                 }
                 self.feedData = simpleFeedData;

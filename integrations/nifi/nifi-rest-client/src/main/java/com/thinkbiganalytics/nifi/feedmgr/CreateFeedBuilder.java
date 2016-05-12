@@ -57,6 +57,11 @@ public class CreateFeedBuilder {
   private String reusableTemplateInputPortName;
   private boolean isReusableTemplate;
 
+  private NifiProcessGroup newProcessGroup = null;
+  private ProcessGroupEntity previousFeedProcessGroup = null;
+
+
+
 
   private String version;
 
@@ -67,6 +72,8 @@ public class CreateFeedBuilder {
 
   private List<NifiError> errors = new ArrayList<>();
 
+  TemplateCreationHelper templateCreationHelper;
+
 
   protected CreateFeedBuilder(NifiRestClient restClient, String category, String feedName, String templateId) {
     this.restClient = restClient;
@@ -74,6 +81,7 @@ public class CreateFeedBuilder {
     this.category = category;
     this.feedName = feedName;
     this.templateId = templateId;
+    this.templateCreationHelper = new TemplateCreationHelper(this.restClient);
   }
 
   public static CreateFeedBuilder newFeed(NifiRestClient restClient, String category, String feedName, String templateId) {
@@ -147,12 +155,13 @@ public class CreateFeedBuilder {
   }
 
 
+
   public NifiProcessGroup build() throws JerseyClientException {
-    NifiProcessGroup newProcessGroup = null;
+     newProcessGroup = null;
     TemplateDTO template = restClient.getTemplateById(templateId);
 
     if (template != null) {
-      TemplateCreationHelper templateCreationHelper = new TemplateCreationHelper(this.restClient);
+
       //create the encompassing process group
       String processGroupId = createProcessGroupForFeed();
       if (StringUtils.isNotBlank(processGroupId)) {
@@ -161,14 +170,9 @@ public class CreateFeedBuilder {
         //create the flow from the template
         templateCreationHelper.instantiateFlowFromTemplate(processGroupId, templateId);
 
-        //if the feed has an outputPort that should go to a reusable Flow then make those connections
-        if (reusableTemplateInputPortName != null) {
-          connectFeedToReusableTemplate(processGroupId);
 
-        }
-        if (isReusableTemplate) {
-          ensureInputPortsForReuseableTemplate(processGroupId);
-        }
+        updatePortConnectionsForProcessGroup(processGroupId);
+
 
         //mark the new services that were created as a result of creating the new flow from the template
         templateCreationHelper.identifyNewlyCreatedControllerServiceReferences();
@@ -225,7 +229,8 @@ public class CreateFeedBuilder {
           }
 
           if (newProcessGroup.hasFatalErrors()) {
-            restClient.deleteProcessGroup(entity.getProcessGroup());
+            rollback();
+            newProcessGroup.setRolledBack(true);
             //  cleanupControllerServices();
             newProcessGroup.setSuccess(false);
           }
@@ -240,6 +245,10 @@ public class CreateFeedBuilder {
               newProcessGroup.addError(error);
               if (error.isFatal()) {
                 newProcessGroup.setSuccess(false);
+                if(!newProcessGroup.isRolledBack()){
+                  rollback();
+                  newProcessGroup.setRolledBack(true);
+                }
               }
             }
           }
@@ -250,6 +259,58 @@ public class CreateFeedBuilder {
     }
     return newProcessGroup;
   }
+
+  private void updatePortConnectionsForProcessGroup(String processGroupId) throws JerseyClientException {
+    //if the feed has an outputPort that should go to a reusable Flow then make those connections
+    if (reusableTemplateInputPortName != null) {
+      connectFeedToReusableTemplate(processGroupId);
+
+    }
+    if (isReusableTemplate) {
+      ensureInputPortsForReuseableTemplate(processGroupId);
+    }
+  }
+
+  public ProcessGroupEntity rollback() throws JerseyClientException {
+    if(newProcessGroup != null){
+      try {
+        restClient.deleteProcessGroup(newProcessGroup.getProcessGroupEntity().getProcessGroup());
+      }catch(JerseyClientException e){
+
+      }
+    }
+    String parentGroupId = newProcessGroup != null ? newProcessGroup.getProcessGroupEntity().getProcessGroup().getParentGroupId() : (previousFeedProcessGroup != null ? previousFeedProcessGroup.getProcessGroup().getParentGroupId() : null);
+    if(StringUtils.isNotBlank(parentGroupId)) {
+      ProcessGroupDTO feedGroup = restClient.getProcessGroupByName(parentGroupId, feedName);
+      //attempt to reset the last version back to this feed process group... do so only if there is no feed group with this name
+      //there shouldt be as we should have deleted it above
+      if(feedGroup == null) {
+        if (previousFeedProcessGroup != null) {
+
+
+          ProcessGroupEntity entity = restClient.getProcessGroup(previousFeedProcessGroup.getProcessGroup().getId(), false, false);
+          if (entity != null) {
+            entity.getProcessGroup().setName(feedName);
+            entity = restClient.updateProcessGroup(entity);
+
+            updatePortConnectionsForProcessGroup(entity.getProcessGroup().getId());
+            if (hasConnectionPorts()) {
+              templateCreationHelper.markConnectionPortsAsRunning(entity);
+            }
+            //mark the input as running
+            restClient.setInputAsRunningByProcessorMatchingType(entity.getProcessGroup().getId(),
+                    inputProcessorType);
+            //mark the processors as running
+            restClient.markProcessorGroupAsRunning(entity.getProcessGroup());
+            return entity;
+          }
+        }
+      }
+    }
+    return null;
+  }
+
+
 
   private void versionFeed(ProcessGroupDTO feedGroup) throws JerseyClientException {
     restClient.disableAllInputProcessors(feedGroup.getId());
@@ -321,7 +382,7 @@ public class CreateFeedBuilder {
     feedGroup.setName(feedName + new Date().getTime());
     ProcessGroupEntity entity = new ProcessGroupEntity();
     entity.setProcessGroup(feedGroup);
-    restClient.updateProcessGroup(entity);
+    previousFeedProcessGroup = restClient.updateProcessGroup(entity);
   }
 
   private String createProcessGroupForFeed() throws JerseyClientException {

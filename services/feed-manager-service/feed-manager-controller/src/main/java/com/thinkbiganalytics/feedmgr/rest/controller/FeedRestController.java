@@ -92,6 +92,23 @@ public class FeedRestController {
             return Response.ok(feed).build();
     }
 
+    @POST
+    @Path("/enable/{feedId}")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.APPLICATION_JSON })
+    public Response enableFeed(@PathParam("feedId")String feedId) throws JerseyClientException{
+        FeedSummary feed = getMetadataService().enableFeed(feedId);
+        return Response.ok(feed).build();
+    }
+
+    @POST
+    @Path("/disable/{feedId}")
+    @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
+    @Produces({MediaType.APPLICATION_JSON })
+    public Response disableFeed(@PathParam("feedId")String feedId) throws JerseyClientException{
+        FeedSummary feed = getMetadataService().disableFeed(feedId);
+        return Response.ok(feed).build();
+    }
 
     @GET
     @Path("/reusable-feeds")

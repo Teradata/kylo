@@ -219,5 +219,23 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
         }
     }
 
+    @Override
+    public FeedSummary enableFeed(String feedId) {
+        FeedMetadata feedMetadata = getFeedById(feedId);
+        if(feedMetadata != null){
+            feedMetadata.setState("ENABLED");
+            return new FeedSummary(feedMetadata);
+        }
+      return null;
+    }
 
+    @Override
+    public FeedSummary disableFeed(String feedId) {
+        FeedMetadata feedMetadata = getFeedById(feedId);
+        if(feedMetadata != null){
+            feedMetadata.setState("DISABLED");
+            return new FeedSummary(feedMetadata);
+        }
+        return null;
+    }
 }

@@ -107,6 +107,13 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
         return self.GET_FEEDS_URL+"/"+feedId+"/profile-invalid-results";
     }
 
+    this.ENABLE_FEED_URL = function(feedId){
+        return self.FEEDS_BASE_URL+"/enable/"+feedId;
+    }
+    this.DISABLE_FEED_URL = function(feedId){
+        return self.FEEDS_BASE_URL+"/disable/"+feedId;
+    }
+
     //Field Policy Urls
 
     this.AVAILABLE_STANDARDIZATION_POLICIES = this.ROOT+"/proxy/v1/field-policies/standardization";

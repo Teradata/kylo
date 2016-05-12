@@ -15,8 +15,9 @@
                                      <span class="item-title" title="{{feed.feedName}}">
                                       {{feed.feedName}}
                                    </span>
-                                   <span class="column-title column-title-bottom">
-                                     Feed Name
+                                   <span title="{{feed.state}}" ng-class="{'enabled':feed.state == 'ENABLED','disabled':feed.state == 'DISABLED'}" class="column-title-bottom">
+                                     <ng-md-icon icon="{{feed.stateIcon}}" size="20" hide-xs >
+                                     </ng-md-icon> Feed Name
                                    </span>
 
                         </div>

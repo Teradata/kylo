@@ -33,6 +33,10 @@ public interface FeedManagerFeedService {
 
   void saveFeed(FeedMetadata feed);
 
+  FeedSummary enableFeed(String feedId);
+
+  FeedSummary disableFeed(String feedId);
+
   public void updateFeedsWithTemplate(String oldTemplateId, String newTemplateId);
 
 

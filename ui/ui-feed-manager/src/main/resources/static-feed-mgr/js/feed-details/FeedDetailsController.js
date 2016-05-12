@@ -21,6 +21,17 @@
 
         })
 
+        this.enableFeed = function(){
+            $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function(response){
+               self.model.state = response.data.state;
+            });
+        }
+        this.disableFeed= function(){
+            $http.post(RestUrlService.DISABLE_FEED_URL(self.feedId)).then(function(response){
+                self.model.state = response.data.state;
+            });
+        }
+
         function mergeTemplateProperties(feed){
             var successFn = function (response) {
                 return response;

@@ -15,8 +15,14 @@ import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
+import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.rest.JerseyClientException;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.entity.ProcessGroupEntity;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Created by sr186054 on 1/13/16.
@@ -31,6 +37,9 @@ public class FeedManagerMetadataService implements MetadataService {
 
   @Inject
   FeedManagerFeedService feedProvider;
+
+  @Inject
+  NifiRestClient nifiRestClient;
 
 
 
@@ -94,6 +103,65 @@ public class FeedManagerMetadataService implements MetadataService {
   @Override
   public void saveFeed(FeedMetadata feed) {
     feedProvider.saveFeed(feed);
+  }
+
+  private boolean updateNifiFeedRunningStatus(FeedSummary feedSummary, Feed.State state){
+    boolean updatedNifi = false;
+    if(feedSummary  != null && feedSummary.getState().equals(state.name()) ) {
+
+      try {
+        ProcessGroupDTO group = nifiRestClient.getProcessGroupByName("root", feedSummary.getSystemCategoryName());
+        if (group != null) {
+          ProcessGroupDTO feed = nifiRestClient.getProcessGroupByName(group.getId(), feedSummary.getSystemFeedName());
+          if (feed != null) {
+            ProcessGroupEntity entity = null;
+            if(state.equals(Feed.State.ENABLED)) {
+              entity = nifiRestClient.startAll(feed.getId(), feed.getParentGroupId());
+            }else if(state.equals(Feed.State.DISABLED)) {
+              entity = nifiRestClient.stopAllProcessors(feed.getId(), feed.getParentGroupId());
+            }
+
+            if (entity != null) {
+              updatedNifi = true;
+            }
+          }
+        }
+      } catch (JerseyClientException e) {
+        e.printStackTrace();
+      }
+    }
+    return updatedNifi;
+  }
+
+  @Transactional(transactionManager = "metadataTransactionManager")
+  public FeedSummary enableFeed(String feedId) {
+    FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
+    if(!feedMetadata.getState().equals(Feed.State.ENABLED.name())) {
+    FeedSummary feedSummary = feedProvider.enableFeed(feedId);
+
+      boolean updatedNifi = updateNifiFeedRunningStatus(feedSummary,Feed.State.ENABLED);
+    if(!updatedNifi){
+      //rollback
+      throw new RuntimeException("Unable to enable Feed "+feedId);
+    }
+      return feedSummary;
+    }
+  return new FeedSummary(feedMetadata);
+  }
+
+  @Transactional(transactionManager = "metadataTransactionManager")
+  public FeedSummary disableFeed(String feedId) {
+    FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
+    if(!feedMetadata.getState().equals(Feed.State.DISABLED.name())) {
+      FeedSummary feedSummary = feedProvider.disableFeed(feedId);
+      boolean updatedNifi = updateNifiFeedRunningStatus(feedSummary,Feed.State.DISABLED);
+      if(!updatedNifi){
+        //rollback
+        throw new RuntimeException("Unable to disable Feed "+feedId);
+      }
+      return feedSummary;
+    }
+    return new FeedSummary(feedMetadata);
   }
 
   @Override

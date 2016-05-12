@@ -41,6 +41,10 @@ public interface MetadataService {
 
     void saveFeed(FeedMetadata feed);
 
+    FeedSummary enableFeed(String feedId);
+
+    FeedSummary disableFeed(String feedId);
+
     Collection<FeedMetadata> getFeeds();
 
     Collection<? extends UIFeed> getFeeds(boolean verbose);

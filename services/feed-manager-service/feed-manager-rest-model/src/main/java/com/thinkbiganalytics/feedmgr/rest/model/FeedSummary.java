@@ -21,6 +21,7 @@ public class FeedSummary implements UIFeed {
     private String feedName;
     private String systemFeedName;
     private boolean active;
+    private String state;
     private Date updateDate;
 
     public FeedSummary() {
@@ -38,6 +39,7 @@ public class FeedSummary implements UIFeed {
         this.categoryIcon = feedMetadata.getCategoryIcon();
         this.categoryIconColor = feedMetadata.getCategoryIconColor();
         this.active = feedMetadata.isActive();
+        this.state = feedMetadata.getState();
     }
 
     @Override
@@ -147,5 +149,13 @@ public class FeedSummary implements UIFeed {
 
     public void setCategoryIconColor(String categoryIconColor) {
         this.categoryIconColor = categoryIconColor;
+    }
+
+    public String getState() {
+        return state;
+    }
+
+    public void setState(String state) {
+        this.state = state;
     }
 }

@@ -16,6 +16,7 @@ import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.template.JpaFeedManagerTemplate;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.rest.JerseyClientException;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -143,6 +144,9 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
 
     @Transactional(transactionManager = "metadataTransactionManager")
     public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
+        if(feedMetadata.getState().equals(Feed.State.NEW.name())) {
+            feedMetadata.setState(Feed.State.ENABLED.name());
+        }
         return super.createFeed(feedMetadata);
     }
 
@@ -161,6 +165,46 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
             feedProvider.updatePrecondition(domainFeed.getId(), domainMetrics);
         }
 
+    }
+
+    @Transactional(transactionManager = "metadataTransactionManager")
+    private boolean enableFeed(Feed.ID feedId){
+       return feedProvider.enableFeed(feedId);
+    }
+
+    @Transactional(transactionManager = "metadataTransactionManager")
+    private boolean disableFeed(Feed.ID feedId){
+       return feedProvider.disableFeed(feedId);
+    }
+
+    public FeedSummary enableFeed(String feedId) {
+        if(StringUtils.isNotBlank(feedId)) {
+            FeedMetadata feedMetadata  = getFeedById(feedId);
+          Feed.ID domainId = feedProvider.resolveFeed(feedId);
+         boolean enabled = enableFeed(domainId);
+          //re fetch it
+          if(enabled){
+              feedMetadata.setState(Feed.State.ENABLED.name());
+          }
+          FeedSummary feedSummary = new FeedSummary(feedMetadata);
+            return feedSummary;
+        }
+        return null;
+
+    }
+    public FeedSummary disableFeed(String feedId) {
+        if(StringUtils.isNotBlank(feedId)) {
+            FeedMetadata feedMetadata  = getFeedById(feedId);
+            Feed.ID domainId = feedProvider.resolveFeed(feedId);
+            boolean enabled = disableFeed(domainId);
+            //re fetch it
+            if(enabled){
+                feedMetadata.setState(Feed.State.DISABLED.name());
+            }
+            FeedSummary feedSummary = new FeedSummary(feedMetadata);
+            return feedSummary;
+        }
+        return null;
     }
 
 

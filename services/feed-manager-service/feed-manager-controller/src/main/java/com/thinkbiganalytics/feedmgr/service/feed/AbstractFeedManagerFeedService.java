@@ -5,6 +5,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.feedmgr.CreateFeedBuilder;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
@@ -63,7 +64,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
 
         CreateFeedBuilder
-                feedBuilder = nifiRestClient.newFeedBuilder(registeredTemplate.getNifiTemplateId(), feedMetadata.getCategory().getSystemName(), feedMetadata.getFeedName());
+                feedBuilder = nifiRestClient.newFeedBuilder(registeredTemplate.getNifiTemplateId(), feedMetadata.getCategory().getSystemName(), feedMetadata.getSystemFeedName());
 
         if(registeredTemplate.isReusableTemplate()){
             feedBuilder.setReusableTemplate(true);
@@ -100,9 +101,13 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         else {
             feed.setSuccess(false);
         }
+        if(!feed.isSuccess()){
+            if(!entity.isRolledBack()){
+                feedBuilder.rollback();
+                entity.setRolledBack(true);
+            }
+        }
         return feed;
-
-
     }
 
 }
