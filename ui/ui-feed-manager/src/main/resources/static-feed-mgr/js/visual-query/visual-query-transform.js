@@ -86,7 +86,6 @@
             smartIndent: false,
             lineNumbers: false,
             matchBrackets: false,
-            autofocus: true,
             mode: 'javascript',
             scrollbarStyle: null
         };
@@ -170,6 +169,7 @@
                 });
                 _editor.on("cursorActivity", self.showHint);
                 _editor.on("focus", self.showHint);
+                _editor.focus();
             });
         }
 
