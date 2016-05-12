@@ -93,9 +93,6 @@ public class JpaFeedManagerFeed extends JpaFeed implements FeedManagerFeed {
         this.template = template;
     }
 
-    public boolean isNew() {
-        return getState() == null || State.NEW.equals(getState());
-    }
 
 
 

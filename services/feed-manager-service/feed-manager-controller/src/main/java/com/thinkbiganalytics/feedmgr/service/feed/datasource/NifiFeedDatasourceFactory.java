@@ -33,7 +33,7 @@ return (Class<? extends NifiProcessorToFeedSource>)transformer;
         return null;
     }
 
-    public static  Datasource transform(FeedMetadata metadata){
+    public static  Datasource transformSources(FeedMetadata metadata){
         String inputProcessorType = metadata.getInputProcessorType();
         Class<? extends NifiProcessorToFeedSource> transformerClass = getTransformerClass(inputProcessorType);
         if(transformerClass != null){

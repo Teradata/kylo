@@ -19,7 +19,7 @@ public interface Feed extends Propertied, Serializable {
 
     interface ID extends Serializable { }
 
-    enum State {NEW, ENABLED, DISABLED, DELETED }
+    enum State {ENABLED, DISABLED, DELETED }
 
     
     ID getId();

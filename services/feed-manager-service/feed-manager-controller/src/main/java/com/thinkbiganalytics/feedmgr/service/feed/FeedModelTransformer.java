@@ -46,11 +46,14 @@ public class FeedModelTransformer  {
         if(domain == null){
             isNew = true;
             domain = new JpaFeedManagerFeed(domainId,feedMetadata.getSystemFeedName(),feedMetadata.getDescription());
-            domain.setState(Feed.State.NEW);
+            domain.setState(Feed.State.ENABLED);
             feedMetadata.setId(domainId.toString());
             feedMetadata.setFeedId(domainId.toString());
-            feedMetadata.setState(Feed.State.NEW.name());
+            feedMetadata.setState(Feed.State.ENABLED.name());
         }
+        domain.setDisplayName(feedMetadata.getFeedName());
+        domain.setDescription(feedMetadata.getDescription());
+
         feedMetadata.setId(domain.getId().toString());
 
         FeedCategory category = feedMetadata.getCategory();
@@ -74,7 +77,8 @@ public class FeedModelTransformer  {
             feedMetadata.setVersion(1L);
         }
 
-        //Datasource datasource = NifiFeedDatasourceFactory.transform(feedMetadata);
+        //Datasource datasource = NifiFeedDatasourceFactory.transformSources(feedMetadata);
+
 
         if(domain.getTemplate() == null){
             FeedManagerTemplate.ID templateId = new JpaFeedManagerTemplate.FeedManagerTemplateId(feedMetadata.getTemplateId());

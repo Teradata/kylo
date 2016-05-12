@@ -22,8 +22,6 @@ public interface FeedManagerFeed extends Feed{
 
     void setJson(String json);
 
-    boolean isNew();
-
     FeedManagerTemplate getTemplate();
 
     DateTime getCreatedTime();

@@ -144,7 +144,7 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
 
     @Transactional(transactionManager = "metadataTransactionManager")
     public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
-        if(feedMetadata.getState() == null || feedMetadata.getState().equals(Feed.State.NEW.name())) {
+        if(feedMetadata.getState() == null ) {
             feedMetadata.setState(Feed.State.ENABLED.name());
         }
         return super.createFeed(feedMetadata);
@@ -155,7 +155,7 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     public void saveFeed(FeedMetadata feed) {
         //if this is the first time saving this feed create a new one
         FeedManagerFeed domainFeed = feedModelTransformer.feedToDomain(feed);
-        if(domainFeed.getState() == null || domainFeed.getState().equals(Feed.State.NEW)) {
+        if(domainFeed.getState() == null) {
             domainFeed.setState(Feed.State.ENABLED);
         }
         domainFeed = feedManagerFeedProvider.update(domainFeed);
