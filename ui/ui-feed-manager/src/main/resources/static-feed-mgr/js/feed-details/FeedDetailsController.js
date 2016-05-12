@@ -24,11 +24,13 @@
         this.enableFeed = function(){
             $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function(response){
                self.model.state = response.data.state;
+                FeedService.updateEditModelStateIcon();
             });
         }
         this.disableFeed= function(){
             $http.post(RestUrlService.DISABLE_FEED_URL(self.feedId)).then(function(response){
                 self.model.state = response.data.state;
+                FeedService.updateEditModelStateIcon();
             });
         }
 
@@ -131,6 +133,7 @@
                             self.model.inputProcessors = inputProcessors;
                             self.model.nonInputProcessors = nonInputProcessors;
                             self.loadingFeedData = false;
+                            FeedService.updateEditModelStateIcon();
                         }
                     }, function (err){
                         //handle err

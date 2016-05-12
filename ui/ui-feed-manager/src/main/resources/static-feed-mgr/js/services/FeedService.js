@@ -93,6 +93,14 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             this.createFeedModel.table.fieldPolicies = [];
             this.createFeedModel.table.existingTableName = null;
         },
+        updateEditModelStateIcon: function(){
+            if(self.editFeedModel.state == 'ENABLED') {
+                self.editFeedModel.stateIcon = 'check_circle'
+            }
+            else {
+                self.editFeedModel.stateIcon = 'block'
+            }
+        },
         resetFeedModel:function(){
             angular.extend(this.createFeedModel,this.getNewCreateFeedModel());
         },

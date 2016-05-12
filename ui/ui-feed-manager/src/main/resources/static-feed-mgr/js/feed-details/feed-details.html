@@ -72,6 +72,10 @@
                  ENABLE FEED
              </md-button>
              <div layout="column" class="layout-padding-top-bottom">
+                 <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state == 'DISABLED'}"> <ng-md-icon icon="{{vm.model.stateIcon}}" size="20"></ng-md-icon> {{vm.model.state}}</span>
+                 <span class="hint">State</span>
+             </div>
+             <div layout="column" class="layout-padding-top-bottom">
                  <span>{{vm.model.dataOwner}}</span>
                  <span class="hint">Data Owner</span>
              </div>
