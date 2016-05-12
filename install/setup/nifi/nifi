@@ -10,24 +10,24 @@
 ### END INIT INFO
 
 dir="/opt/nifi/current/bin"
-user="root"
+RUN_AS_USER=nifi
 
 name=nifi
 
 case "$1" in
     start)
     cd "$dir"
-    $dir/nifi.sh start
+    su - $RUN_AS_USER -c "$dir/nifi.sh start"
     ;;
     stop)
     cd "$dir"
-    $dir/nifi.sh stop
+    su - $RUN_AS_USER -c "$dir/nifi.sh stop"
     ;;
     restart)
-    $dir/nifi.sh restart
+    su - $RUN_AS_USER -c "$dir/nifi.sh restart"
     ;;
     status)
-    $dir/nifi.sh status
+    su - $RUN_AS_USER -c "$dir/nifi.sh status"
     ;;
     *)
     echo "Usage: $0 {start|stop|restart|status}"

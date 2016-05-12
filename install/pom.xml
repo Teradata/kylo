@@ -218,6 +218,12 @@
                   </includes>
                 </source>
                 <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-provenance-repo-bundle/nifi-provenance-repo/src/main/resources</location>
+                  <includes>
+                    <include>config.properties</include>
+                  </includes>
+                </source>
+                <source>
                   <location>../integrations/nifi/nifi-nar-bundles/nifi-core-bundle/nifi-core-nar/target</location>
                   <includes>
                     <include>thinkbig-nifi-core-nar-${project.version}.nar</include>
@@ -309,6 +315,46 @@
               <sources>
                 <source>
                   <location>setup/elasticsearch</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/setup</directory>
+              <filemode>744</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>setup</location>
+                  <includes>
+                    <include>setup-wizard.sh</include>
+                  </includes>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}</directory>
+              <filemode>744</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>setup</location>
+                  <includes>
+                    <include>start-thinkbig-apps.sh</include>
+                    <include>stop-thinkbig-apps.sh</include>
+                  </includes>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/setup/dev</directory>
+              <filemode>744</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>setup/dev</location>
                 </source>
               </sources>
             </mapping>

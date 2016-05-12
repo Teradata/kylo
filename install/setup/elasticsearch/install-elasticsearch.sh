@@ -5,7 +5,7 @@ echo "Downloading RPM"
 wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.3.0/elasticsearch-2.3.0.rpm
 echo "Executing RPM"
 rpm -ivh elasticsearch-2.3.0.rpm
-cp ./elasticsearch.yml /etc/elasticsearch/
+cp /opt/thinkbig/setup/elasticsearch/elasticsearch.yml /etc/elasticsearch/
 echo "Setup elasticsearch as a service"
 sudo chkconfig --add elasticsearch
 echo "Installing HQ plugin"

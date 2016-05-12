@@ -39,7 +39,7 @@ echo " ";
 read -p "Would you like me to install a local activemq instance?  Please enter y/n: " install_activemq
 
 echo " ";
-echo "Would you like me to install a local nifi instance? Please enter y/n: " install_nifi
+read -p "Would you like me to install a local nifi instance? Please enter y/n: " install_nifi
 
 if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
     echo "Running the database scripts"
@@ -52,4 +52,17 @@ if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
         echo "Installation for Postgres is not yet supported"
     fi
 
+fi
+
+if [ "$install_es" == "y"  ] || [ "$install_es" == "Y" ] ; then
+    ./elasticsearch/install-elasticsearch.sh
+fi
+
+if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
+    ./activemq/install-activemq.sh
+fi
+
+if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
+    ./nifi/install-nifi.sh
+    ./nifi/install-thinkbig-components.sh
 fi
