@@ -259,11 +259,13 @@
                         select:function(attr){
                             attr.selected =true;
                             this.selected.push(attr);
+                            validate();
                         },
                         deselect:function(attr){
                             attr.selected =false;
                             var idx = this.selected.indexOf(attr);
                             if (idx > -1) this.selected.splice(idx, 1);
+                            validate();
                         },
                         sql: "`" + StringUtils.quoteSql(table.schema) + "`.`" + StringUtils
                             .quoteSql(table.tableName) + "`"
