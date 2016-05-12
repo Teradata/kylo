@@ -1,4 +1,4 @@
-<vertical-section-layout section-title="Data Policies" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" ng-if="vm.model.registeredTemplate.defineTable">
+<vertical-section-layout section-title="Data Policies" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.model.state == 'ENABLED'" ng-if="vm.model.registeredTemplate.defineTable">
 
     <readonly-section>
         <md-list flex layout-fill class="list-item-table list-condensed">

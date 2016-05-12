@@ -1,4 +1,4 @@
-<vertical-section-layout section-title="Schedule" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allowEdit="!vm.model.reusableFeed">
+<vertical-section-layout section-title="Schedule"  on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="!vm.model.reusableFeed && vm.model.state == 'ENABLED'">
 
     <readonly-section>
         <div ng-if="vm.model.reusableFeed == false">
