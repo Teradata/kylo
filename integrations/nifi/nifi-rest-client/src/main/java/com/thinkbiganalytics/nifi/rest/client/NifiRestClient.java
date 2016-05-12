@@ -1214,17 +1214,19 @@ public class NifiRestClient extends JerseyRestClient {
 
 
     public ProvenanceEventEntity replayProvenanceEvent(Long eventId) throws JerseyClientException {
-        Map<String,String> map = new HashMap<>();
-        map.put("eventId",eventId.toString());
+        Form form = new Form();
+        form.param("eventId", eventId.toString());
         try {
             Entity controller = getControllerRevision();
             if (controller != null && controller.getRevision() != null) {
-                map.put("clientId", controller.getRevision().getClientId());
+                form.param("clientId", controller.getRevision().getClientId());
             }
         }catch(JerseyClientException e){
 
         }
-        return post("/controller/provenance/replays",map, ProvenanceEventEntity.class);
+
+
+        return postForm("/controller/provenance/replays",form, ProvenanceEventEntity.class);
     }
 
 
