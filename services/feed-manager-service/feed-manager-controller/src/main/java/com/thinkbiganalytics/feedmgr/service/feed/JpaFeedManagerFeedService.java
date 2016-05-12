@@ -47,6 +47,9 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     @Inject
     FeedManagerPreconditionService feedPreconditionModelTransform;
 
+    @Inject
+    FeedModelTransformer feedModelTransformer;
+
     @Override
     public List<FeedMetadata> getReusableFeeds() {
         return null;
@@ -147,29 +150,7 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     @Transactional(transactionManager = "metadataTransactionManager")
     public void saveFeed(FeedMetadata feed) {
         //if this is the first time saving this feed create a new one
-        FeedManagerFeed domainFeed = FeedModelTransform.FEED_TO_DOMAIN.apply(feed);
-        if(domainFeed.getTemplate() == null){
-            FeedManagerTemplate.ID templateId = new JpaFeedManagerTemplate.FeedManagerTemplateId(feed.getTemplateId());
-           FeedManagerTemplate template = templateProvider.findById(templateId);
-            domainFeed.setTemplate(template);
-        }
-        Feed baseFeed = null;
-        if(domainFeed.isNew()) {
-
-            baseFeed = new JpaFeed(feed.getCategoryAndFeedName(),feed.getDescription());
-            domainFeed.setFeed(baseFeed);
-            feed.setFeedId(baseFeed.getId().toString());
-            //change the state to ENABLED
-            domainFeed.setState(FeedMetadata.STATE.ENABLED.name());
-            feed.setState(FeedMetadata.STATE.ENABLED.name());
-            //TODO Write the Feed Sources and Destinations
-           // Datasource datasource = NifiFeedDatasourceFactory.transform(feed);
-        }
-        else {
-            //attach the latest Feed data to this object
-           baseFeed =  (JpaFeed) feedProvider.getFeed(new JpaFeed.FeedId(feed.getFeedId()));
-            domainFeed.setFeed(baseFeed);
-        }
+        FeedManagerFeed domainFeed = feedModelTransformer.feedToDomain(feed);
         domainFeed = feedManagerFeedProvider.update(domainFeed);
 
         //merge in preconditions if they exist
@@ -177,8 +158,7 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
         if (preconditions != null) {
             List<List<com.thinkbiganalytics.metadata.sla.api.Metric>> domainMetrics = new ArrayList<>();
             domainMetrics.add(new ArrayList<Metric>(FeedManagerPreconditionService.uiPreconditionToFeedPrecondition(feed, preconditions)));
-            baseFeed = feedProvider.updatePrecondition(baseFeed.getId(), domainMetrics);
-
+            feedProvider.updatePrecondition(domainFeed.getId(), domainMetrics);
         }
 
     }

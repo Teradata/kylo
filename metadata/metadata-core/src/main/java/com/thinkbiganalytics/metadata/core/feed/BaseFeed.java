@@ -264,7 +264,11 @@ public class BaseFeed implements Feed {
             super(ser);
         } 
     }
-    
+
+    @Override
+    public Integer getVersion() {
+        return null;
+    }
 
     private abstract class Data implements FeedConnection {
         

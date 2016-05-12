@@ -31,7 +31,7 @@ public class JpaFeedManagerCategory  extends AbstractAuditedEntity implements co
     private FeedManagerCategoryId id;
 
     @OneToMany(targetEntity=JpaFeedManagerFeed.class)
-    @JoinColumn(name = "feed_id")
+    @JoinColumn(name = "id")
     private List<FeedManagerFeed> feeds;
 
 

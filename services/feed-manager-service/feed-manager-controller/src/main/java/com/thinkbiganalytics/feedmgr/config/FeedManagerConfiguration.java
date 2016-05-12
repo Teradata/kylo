@@ -6,6 +6,7 @@ import java.net.URI;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.category.JpaFeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransformer;
 import com.thinkbiganalytics.feedmgr.service.feed.JpaFeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.JpaFeedManagerTemplateService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,11 @@ public class FeedManagerConfiguration {
     @Bean
     public FeedManagerTemplateService feedManagerTemplateService(){
         return new JpaFeedManagerTemplateService();
+    }
+
+    @Bean
+    public FeedModelTransformer feedModelTransformer(){
+        return new FeedModelTransformer();
     }
 
     @Bean

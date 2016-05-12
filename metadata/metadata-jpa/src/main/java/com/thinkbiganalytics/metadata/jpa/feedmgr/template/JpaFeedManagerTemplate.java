@@ -31,7 +31,7 @@ public class JpaFeedManagerTemplate extends AbstractAuditedEntity implements com
 
 
     @OneToMany(targetEntity = JpaFeedManagerFeed.class)
-    @JoinColumn(name = "feed_id", insertable = false, updatable = false)
+    @JoinColumn(name = "id", insertable = false, updatable = false)
     private List<FeedManagerFeed> feeds;
 
     @EmbeddedId

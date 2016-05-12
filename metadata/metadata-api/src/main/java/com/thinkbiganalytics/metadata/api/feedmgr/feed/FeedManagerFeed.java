@@ -10,16 +10,9 @@ import java.io.Serializable;
 /**
  * Created by sr186054 on 5/4/16.
  */
-public interface FeedManagerFeed {
+public interface FeedManagerFeed extends Feed{
 
     void setTemplate(FeedManagerTemplate template);
-
-    interface ID extends Serializable { }
-    Feed getFeed();
-
-    void setFeed(Feed feed);
-
-    ID getId();
 
     FeedManagerCategory getCategory();
 
@@ -29,10 +22,6 @@ public interface FeedManagerFeed {
 
     void setJson(String json);
 
-    String getState();
-
-    void setState(String state);
-
     boolean isNew();
 
     FeedManagerTemplate getTemplate();
@@ -41,5 +30,4 @@ public interface FeedManagerFeed {
 
     DateTime getModifiedTime();
 
-    Integer getVersion();
 }

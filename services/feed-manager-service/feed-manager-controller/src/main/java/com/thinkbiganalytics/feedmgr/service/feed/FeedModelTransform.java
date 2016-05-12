@@ -6,11 +6,13 @@ import com.thinkbiganalytics.feedmgr.rest.model.*;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.feed.JpaFeedManagerFeed;
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import java.util.ArrayList;
@@ -32,7 +34,7 @@ public class FeedModelTransform {
                     String json = domain.getJson();
                     FeedMetadata feed = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
                     feed.setId(domain.getId().toString());
-                    feed.setFeedId(domain.getFeed().getId().toString());
+                    feed.setFeedId(domain.getId().toString());
                     feed.setTemplateId(domain.getTemplate().getId().toString());
                     if(domain.getCreatedTime() != null) {
                         feed.setCreateDate(domain.getCreatedTime().toDate());
@@ -51,7 +53,7 @@ public class FeedModelTransform {
                         FeedCategory feedCategory = CategoryModelTransform.DOMAIN_TO_FEED_CATEGORY_SIMPLE.apply(category);
                         feed.setCategory(feedCategory);
                     }
-                    feed.setState(domain.getState());
+                    feed.setState(domain.getState() != null ? domain.getState().name() :null);
                     feed.setVersion(domain.getVersion().longValue());
                     return feed;
                 }
@@ -63,64 +65,20 @@ public class FeedModelTransform {
         public FeedSummary apply(@Nullable FeedManagerFeed feedManagerFeed) {
           FeedSummary feedSummary = new FeedSummary();
             feedSummary.setId(feedManagerFeed.getId().toString());
-            feedSummary.setFeedId(feedManagerFeed.getFeed().getId().toString());
+            feedSummary.setFeedId(feedManagerFeed.getId().toString());
             feedSummary.setCategoryId(feedManagerFeed.getCategory().getId().toString());
             feedSummary.setCategoryIcon(feedManagerFeed.getCategory().getIcon());
             feedSummary.setCategoryIconColor(feedManagerFeed.getCategory().getIconColor());
             feedSummary.setCategoryName(feedManagerFeed.getCategory().getDisplayName());
             feedSummary.setSystemCategoryName(feedManagerFeed.getCategory().getSystemName());
             feedSummary.setUpdateDate(feedManagerFeed.getModifiedTime().toDate());
-            feedSummary.setFeedName(feedManagerFeed.getFeed().getDisplayName());
-            feedSummary.setSystemFeedName(feedManagerFeed.getFeed().getName());
-            feedSummary.setActive(feedManagerFeed.getState().equalsIgnoreCase("enabled"));
+            feedSummary.setFeedName(feedManagerFeed.getDisplayName());
+            feedSummary.setSystemFeedName(feedManagerFeed.getName());
+            feedSummary.setActive(feedManagerFeed.getState() != null ? feedManagerFeed.getState().equals(Feed.State.ENABLED) : false);
             return feedSummary;
         }
     };
 
-
-    public static final Function<FeedMetadata, FeedManagerFeed>
-            FEED_TO_DOMAIN =
-            new Function<FeedMetadata,FeedManagerFeed>() {
-                @Override
-                public FeedManagerFeed apply(FeedMetadata feed) {
-                    //resolve the id
-                    boolean isNew = feed.getId() == null;
-                    JpaFeedManagerFeed.FeedManagerFeedId domainId = feed.getId() != null ? new JpaFeedManagerFeed.FeedManagerFeedId(feed.getId()): JpaFeedManagerFeed.FeedManagerFeedId.create();
-                    JpaFeedManagerFeed
-                            domain = new JpaFeedManagerFeed(domainId);
-                    if(isNew){
-                        domain.setFeed( new JpaFeed(feed.getSystemFeedName(),feed.getDescription()));
-                        feed.setFeedId(domain.getFeed().getId().toString());
-                        feed.setState(FeedMetadata.STATE.NEW.name());
-                    }
-                    else {
-                        JpaFeed existingFeed = new JpaFeed();
-                        existingFeed.setId(new JpaFeed.FeedId(feed.getFeedId()));
-                        domain.setFeed(existingFeed);
-                    }
-                    feed.setId(domain.getId().toString());
-
-                    FeedCategory category = feed.getCategory();
-                    if(category != null){
-                        FeedManagerCategory domainCategory = CategoryModelTransform.FEED_CATEGORY_TO_DOMAIN.apply(category);
-                        domain.setCategory(domainCategory);
-                    }
-                    RegisteredTemplate template = feed.getRegisteredTemplate();
-                    if(template != null){
-                       //TODO is this needed, or should it just be looked up and assigned
-                        FeedManagerTemplate domainTemplate = TemplateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(template);
-                        domain.setTemplate(domainTemplate);
-                    }
-                    domain.setState(feed.getState());
-
-                    domain.setJson(ObjectMapperSerializer.serialize(feed));
-                    if(feed.getVersion() == null){
-                        feed.setVersion(1L);
-                    }
-                    domain.setVersion(feed.getVersion().intValue());
-                    return domain;
-                }
-            };
 
 
 
@@ -132,9 +90,6 @@ public class FeedModelTransform {
         return new ArrayList<>(Collections2.transform(domain, DOMAIN_TO_FEED));
     }
 
-    public static List<FeedManagerFeed> feedMetadataToDomain(Collection<FeedMetadata> feedMetadata) {
-        return new ArrayList<>(Collections2.transform(feedMetadata, FEED_TO_DOMAIN));
-    }
 
 
     public static List<FeedSummary> domainToFeedSummary(Collection<FeedManagerFeed> domain) {

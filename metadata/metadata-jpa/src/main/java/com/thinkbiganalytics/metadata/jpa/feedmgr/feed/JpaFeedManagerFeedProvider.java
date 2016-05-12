@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.jpa.feedmgr.feed;
 
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
@@ -34,8 +35,8 @@ public class JpaFeedManagerFeedProvider  extends BaseJpaProvider<FeedManagerFeed
 
 
     @Override
-    public FeedManagerFeed.ID resolveId(Serializable fid) {
-     return new JpaFeedManagerFeed.FeedManagerFeedId(fid);
+    public Feed.ID resolveId(Serializable fid) {
+     return new JpaFeed.FeedId(fid);
     }
 
 

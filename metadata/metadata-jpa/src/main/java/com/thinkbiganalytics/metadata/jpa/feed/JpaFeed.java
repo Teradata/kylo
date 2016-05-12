@@ -13,23 +13,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.persistence.CascadeType;
-import javax.persistence.CollectionTable;
-import javax.persistence.Column;
-import javax.persistence.ElementCollection;
-import javax.persistence.Embeddable;
-import javax.persistence.Embedded;
-import javax.persistence.EmbeddedId;
-import javax.persistence.Entity;
-import javax.persistence.EntityListeners;
-import javax.persistence.EnumType;
-import javax.persistence.Enumerated;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.MapKeyColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 import org.hibernate.annotations.GenericGenerator;
 
@@ -53,6 +37,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 @Entity
 @Table(name="FEED")
+@Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(AuditTimestampListener.class)
 public class JpaFeed extends AbstractAuditedEntity implements Feed {
 
@@ -92,9 +77,16 @@ public class JpaFeed extends AbstractAuditedEntity implements Feed {
     
     @Embedded
     private JpaFeedPrecondition precondition;
-    
+
+
+    @Version
+    @Column(name = "VERSION")
+    private Integer version = 1;
 
     public JpaFeed() {
+    }
+    public JpaFeed(FeedId feedId) {
+        this.Id = feedId;
     }
     
     public JpaFeed(String name, String description) {
@@ -272,6 +264,15 @@ public class JpaFeed extends AbstractAuditedEntity implements Feed {
     public FeedPrecondition setPrecondition(JpaServiceLevelAgreement sla) {
         this.precondition = new JpaFeedPrecondition(sla);
         return this.precondition;
+    }
+
+
+    public Integer getVersion() {
+        return version;
+    }
+
+    public void setVersion(Integer version) {
+        this.version = version;
     }
 
     
