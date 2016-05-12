@@ -8,7 +8,7 @@
 
 
         <body-section>
-
+<div  ng-hide="vm.viewType != 'list'" ng-show="vm.viewType == 'list'">
             <md-list flex layout-fill class="list-item-table registered-templates">
                 <md-list-item  class="md-secondary" dir-paginate="template in vm.registeredTemplates |orderBy:vm.paginationData.sort |filter:vm.filter|itemsPerPage:vm.paginationData.rowsPerPage" pagination-id="vm.paginationId"  >
                     <div layout="row" layout-fill>
@@ -60,7 +60,42 @@
                     </dir-pagination-controls>
                 </md-list-item>
             </md-list>
+</div>
+            <div ng-hide="vm.viewType != 'table'" ng-show="vm.viewType == 'table'">
+                <md-table-container>
+                    <table md-table md-progress="vm.deferred.promise">
+                        <thead md-head md-order="vm.paginationData.sort" md-on-reorder="vm.onOrderChange" >
+                        <tr md-row>
+                            <th md-column name="Template" md-order-by="templateName">Template</th>
+                            <th md-column name="# of Properties" md-order-by="template.properties.length"># of Properties</th>
+                            <th md-column name="Last Updated" md-order-by="updateDate" >Last Updated</th>
+                        </tr>
+                        </thead>
+                        <tbody md-body>
+                        <tr md-row ng-repeat="template in vm.registeredTemplates | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (tab.currentPage - 1) * vm.paginationData.rowsPerPage"  ng-click="vm.templateDetails($event,feed)">
+                            <td md-cell>
+                                <ng-md-icon icon="{{template.icon}}" size="20" hide-xs style="fill:{{template.iconColor}}">
+                                </ng-md-icon>
+                                {{template.templateName}}</td>
 
+                            <td md-cell>
+                                {{template.properties.length}}
+                            </td>
+                            <td md-cell >{{template.updateDate | date: 'MM/dd/yyyy @ h:mm:ssa' }}</td>
+                            <td md-cell>
+                                <md-button href="{{template.exportUrl}}"  layout-align="center">
+                                    <ng-md-icon icon="file_download" size="20" style="fill:#F08C38"> </ng-md-icon>
+                                    <span style="padding-left:10px;">Export</span>
+                                </md-button>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </md-table-container>
+
+                <md-table-pagination md-limit="vm.paginationData.rowsPerPage" md-page="vm.currentPage" md-total="{{vm.registeredTemplates.length}}" md-on-paginate="vm.onPaginationChange" md-limit-options="[5,10,20,50,'ALL']"></md-table-pagination>
+
+            </div>
         </body-section>
 
     </card-layout>

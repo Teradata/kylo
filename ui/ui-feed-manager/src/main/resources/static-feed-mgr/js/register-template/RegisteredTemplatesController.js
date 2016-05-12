@@ -16,6 +16,7 @@
         this.paginationData = PaginationDataService.paginationData(this.pageName);
         this.paginationId = 'registered-templates';
         PaginationDataService.setRowsPerPageOptions(this.pageName,['5','10','20','50','All']);
+        this.currentPage =PaginationDataService.currentPage(self.pageName)||1;
         this.viewType = PaginationDataService.viewType(this.pageName);
         this.sortOptions = loadSortOptions();
 
@@ -39,6 +40,7 @@
 
         this.onPaginationChange = function (page, limit) {
             PaginationDataService.currentPage(self.pageName,null,page);
+            self.currentPage = page;
         };
 
 
