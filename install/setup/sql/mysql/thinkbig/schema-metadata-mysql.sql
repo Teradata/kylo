@@ -6,6 +6,13 @@ create table CHANGE_SET_HIVE_TABLE_PART_VALUE (change_set_hive_table_id binary(1
 create table DATA_OPERATION (id binary(16) not null, created_time datetime, modified_time datetime, start_time datetime, state varchar(15), status varchar(2048), stop_time datetime, dataset_id binary(16), producer_id binary(16), primary key (id)) ENGINE=InnoDB;
 create table DATASET (id binary(16) not null, created_time datetime, modified_time datetime, type varchar(10), datasource_id binary(16), primary key (id)) ENGINE=InnoDB;
 create table DATASOURCE (type varchar(31) not null, id binary(16) not null, created_time datetime, modified_time datetime, description varchar(255), name varchar(100), database_name varchar(255), table_name varchar(255), path varchar(255), primary key (id)) ENGINE=InnoDB;
+create table FEED_DESTINATION (id binary(16) not null, created_time datetime, modified_time datetime, datasource_id binary(16), feed_id binary(16), primary key (id)) ENGINE=InnoDB;
+create table FEED_PROPERTIES (JpaFeed_id binary(16) not null, prop_value varchar(255), prop_key varchar(100) not null, primary key (JpaFeed_id, prop_key)) ENGINE=InnoDB;
+create table FEED_SOURCE (id binary(16) not null, created_time datetime, modified_time datetime, datasource_id binary(16), feed_id binary(16), agreement_id binary(16), primary key (id)) ENGINE=InnoDB;
+create table SLA (id binary(16) not null, created_time datetime, modified_time datetime, description varchar(255), name varchar(100), primary key (id)) ENGINE=InnoDB;
+create table SLA_METRIC (id binary(255) not null, created_time datetime, modified_time datetime, metric varchar(255), obligation_id binary(16), primary key (id)) ENGINE=InnoDB;
+create table SLA_OBLIGATION (id binary(16) not null, created_time datetime, modified_time datetime, description varchar(255), group_id binary(16), primary key (id)) ENGINE=InnoDB;
+create table SLA_OBLIGATION_GROUP (id binary(16) not null, created_time datetime, modified_time datetime, cond varchar(10), agreement_id binary(16), primary key (id)) ENGINE=InnoDB;
 CREATE TABLE `FEED` (
   `id` binary(16) NOT NULL,
   `created_time` datetime DEFAULT NULL,
@@ -24,14 +31,6 @@ CREATE TABLE `FEED` (
   CONSTRAINT `FKi6tlfq6nytlrb8429acoovlay` FOREIGN KEY (`sla_id`) REFERENCES `SLA` (`id`)
 ) ENGINE=InnoDB;
 
-create table FEED_DESTINATION (id binary(16) not null, created_time datetime, modified_time datetime, datasource_id binary(16), feed_id binary(16), primary key (id)) ENGINE=InnoDB;
-create table FEED_PROPERTIES (JpaFeed_id binary(16) not null, prop_value varchar(255), prop_key varchar(100) not null, primary key (JpaFeed_id, prop_key)) ENGINE=InnoDB;
-create table FEED_SOURCE (id binary(16) not null, created_time datetime, modified_time datetime, datasource_id binary(16), feed_id binary(16), agreement_id binary(16), primary key (id)) ENGINE=InnoDB;
-create table SLA (id binary(16) not null, created_time datetime, modified_time datetime, description varchar(255), name varchar(100), primary key (id)) ENGINE=InnoDB;
-create table SLA_METRIC (id binary(255) not null, created_time datetime, modified_time datetime, metric varchar(255), obligation_id binary(16), primary key (id)) ENGINE=InnoDB;
-create table SLA_OBLIGATION (id binary(16) not null, created_time datetime, modified_time datetime, description varchar(255), group_id binary(16), primary key (id)) ENGINE=InnoDB;
-create table SLA_OBLIGATION_GROUP (id binary(16) not null, created_time datetime, modified_time datetime, cond varchar(10), agreement_id binary(16), primary key (id)) ENGINE=InnoDB;
-
 CREATE TABLE `FM_CATEGORY` (
   `id` binary(16) NOT NULL,
   `created_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -45,21 +44,6 @@ CREATE TABLE `FM_CATEGORY` (
   `icon_color` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
-
-
-CREATE TABLE `FM_FEED` (
-  `id` binary(16) NOT NULL,
-  `json` mediumtext,
-  `category_id` binary(16) NOT NULL,
-  `template_id` binary(16) NOT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `id_UNIQUE` (`id`),
-  KEY `FM_TEMPLATE_ID_FK_idx` (`template_id`),
-  KEY `FM_CATEGORY_ID_FK_idx` (`category_id`),
-  CONSTRAINT `FM_CATEGORY_ID_FK` FOREIGN KEY (`category_id`) REFERENCES `FM_CATEGORY` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT `FM_TEMPLATE_ID_FK` FOREIGN KEY (`template_id`) REFERENCES `FM_TEMPLATE` (`id`) ON DELETE NO ACTION ON UPDATE NO ACTION
-) ENGINE=InnoDB;
-
 
 CREATE TABLE `FM_TEMPLATE` (
   `id` binary(16) NOT NULL,
@@ -77,6 +61,18 @@ CREATE TABLE `FM_TEMPLATE` (
   `icon_color` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+CREATE TABLE `FM_FEED` (
+  `id` binary(16) NOT NULL,
+  `json` mediumtext,
+  `category_id` binary(16) NOT NULL,
+  `template_id` binary(16) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `id_UNIQUE` (`id`),
+  KEY `FM_TEMPLATE_ID_FK_idx` (`template_id`),
+  KEY `FM_CATEGORY_ID_FK_idx` (`category_id`)
+) ENGINE=InnoDB;
+
 
 
 
