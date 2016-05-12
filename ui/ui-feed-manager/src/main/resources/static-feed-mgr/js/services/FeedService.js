@@ -5,7 +5,7 @@
 /**
  *
  */
-angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdToast, RestUrlService) {
+angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdToast, RestUrlService, VisualQueryService) {
 
 
     function trim(str) {
@@ -38,6 +38,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         },
         newCreateFeed:function(){
             this.createFeedModel = this.getNewCreateFeedModel();
+            VisualQueryService.resetModel();
         },
         updateFeed: function(feedModel){
             var self = this;
@@ -53,6 +54,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         },
         resetFeed : function(){
           angular.extend(this.createFeedModel,this.getNewCreateFeedModel());
+            VisualQueryService.resetModel();
         },
 
         newTableFieldDefinition: function() {
@@ -100,9 +102,6 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             else {
                 this.editFeedModel.stateIcon = 'block'
             }
-        },
-        resetFeedModel:function(){
-            angular.extend(this.createFeedModel,this.getNewCreateFeedModel());
         },
         init:function(){
             this.newCreateFeed();

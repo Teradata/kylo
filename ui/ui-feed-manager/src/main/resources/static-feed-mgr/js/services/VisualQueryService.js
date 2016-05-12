@@ -3,7 +3,10 @@ angular.module(MODULE_FEED_MGR).factory('VisualQueryService', function ($http, $
 
     var data = {
 
-        model : {}
+        model : {},
+        resetModel:function(){
+            this.model = {};
+        }
 
 };
 return data;

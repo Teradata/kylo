@@ -94,7 +94,7 @@
 
         self.cancelStepper = function(){
             //or just reset the url
-            FeedService.resetFeedModel();
+            FeedService.resetFeed();
             self.stepperUrl = null;
             //StateService.navigateToFeeds();
         }
