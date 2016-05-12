@@ -155,6 +155,9 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     public void saveFeed(FeedMetadata feed) {
         //if this is the first time saving this feed create a new one
         FeedManagerFeed domainFeed = feedModelTransformer.feedToDomain(feed);
+        if(domainFeed.getState() == null || domainFeed.getState().equals(Feed.State.NEW)) {
+            domainFeed.setState(Feed.State.ENABLED);
+        }
         domainFeed = feedManagerFeedProvider.update(domainFeed);
 
         //merge in preconditions if they exist
