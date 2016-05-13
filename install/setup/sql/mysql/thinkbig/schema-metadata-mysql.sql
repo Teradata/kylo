@@ -74,7 +74,6 @@ CREATE TABLE `FM_FEED` (
   `id` binary(16) NOT NULL,
   `json` mediumtext,
   `template_id` binary(16) NOT NULL,
-  `category_id` binary(16) DEFAULT NULL,
   `nifi_process_group_id` varchar(45) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`),
