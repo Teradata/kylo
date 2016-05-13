@@ -45,7 +45,8 @@ Follow the steps below to install the data lake accelerator. This procedure is a
 
 . Login to the the host using root or sudo access
 
-. Find and download the RPM file from artifactory and place on the host linux machine. You can right click the download link and copy the url to use wget instead
+. Find and download the RPM file from artifactory and place on the host linux machine. You can right click the download
+  link and copy the url to use wget instead
 
            http://54.152.98.43:8080/artifactory/webapp/search/artifact/?7&q=thinkbig-datalake-accelerator  (requires VPN)
 
@@ -63,13 +64,14 @@ Follow the steps below to install the data lake accelerator. This procedure is a
 
     Elasticsearch, NiFi, and ActiveMQ will be started when the wizard is finished
 
-. Start the 3 Think Big applications
+. Start the three Think Big services
 
            $ /opt/thinkbig/start-thinkbig-apps.sh
 
-           At this point all applications should be running
+           At this point all services should be running
 
-TIP: See section below on how to use the cleanup script to completely remove all of the components above. This is useful in a DEV or sandbox environment so you can run a clean install.
+TIP: See section below on how to use the cleanup script to completely remove all of the components above. This is useful in
+     a DEV or sandbox environment so you can run a clean install.
 
 === Procedure for installing each component manually
 
@@ -78,7 +80,8 @@ Follow the steps below to install the data lake accelerator manually. This metho
 
 1. For each step login to the the host using root or sudo access
 
-2. Find and download the RPM file from artifactory and place on the host linux machine you want to install the data lake accelerator services on. You can right click the download link and copy the url to use wget instead
+2. Find and download the RPM file from artifactory and place on the host linux machine you want to install the data lake
+   accelerator services on. You can right click the download link and copy the url to use wget instead
 
            http://54.152.98.43:8080/artifactory/webapp/search/artifact/?7&q=thinkbig-datalake-accelerator  (requires VPN)
 
@@ -91,7 +94,8 @@ Follow the steps below to install the data lake accelerator manually. This metho
 
 5. Install Elasticsearch
 
-    You can leverage an existing elasticsearch installation or follow the steps in the elasticsearch script used by the wizard.
+    You can leverage an existing elasticsearch installation or follow the steps in the elasticsearch
+    script used by the wizard.
 
     /opt/thinkbig/setup/elasticsearch/install-elasticsearch.sh
 
@@ -107,14 +111,15 @@ Follow the steps below to install the data lake accelerator manually. This metho
 
         * spring.activemq.broker-url
 
-    /opt/thinkbig/thinkbig-services/conf/application/properties
+    /opt/thinkbig/thinkbig-services/conf/application.properties
 
         * jms.activemq.broker.url
 
 
 7. Install NiFI
 
-    You can leverage an existing NiFi installation or follow the steps in the setup directory which is used by the wizard. There are two steps:
+    You can leverage an existing NiFi installation or follow the steps in the setup directory which is used by
+    the wizard. There are two steps:
 
     1. Install NiFi
     /opt/thinkbig/setup/nifi/install-nifi.sh
@@ -122,11 +127,11 @@ Follow the steps below to install the data lake accelerator manually. This metho
     2. Install Think Big specific components
     /opt/thinkbig/setup/nifi/install-thinkbig-components.sh
 
-8. Start the 3 Think Big applications
+8. Start the three Think Big services
 
            $ /opt/thinkbig/start-thinkbig-apps.sh
 
-           At this point all applications should be running
+           At this point all services should be running
 
 == Configuration
 
@@ -138,26 +143,11 @@ Configuration for the data lake accelerator services are located under the follo
     /opt/thinkbig/thinkbig-services/conf/application.properties
 
 
-=== Configuration Properties
-
-Below is a list of the properties provided by the Pipeline Controller that can be used in the application.properties
-file.  You can use externalized configuration from command line arguments, for example '--spring.config.location=classpath:/override.properties'.
-See http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-external-config.html for details.
-
-
-.Server Configuration Properties
-|===
-|Configuration Property|Required|Example
-
-|server.port||8400
-|||
-|===
-
 === Database Setup
 
 Data lake services can be configured to work with Postgres or MySQL. Database and permission setup scripts are provided to assist in the initial configuration process.   The script names relevant to setup are below:
 
-==== My SQL
+==== MySQL
 |===
 |Script Name|Description
 |/opt/thinkbig/setup/sql/mysql/setup-mysql.sh|Create tables used by data lake accelerator services
@@ -171,7 +161,7 @@ TBD - Not yet supported
 
 === Optimizing Performance
 
-You can adjust the memory setting of the Pipeline Controller Service using the PIPELINE_APPLICATION_OPTS environment variable.  
+You can adjust the memory setting for each services using the below environment variables
 
     export THINKBIG_UI_OPTS=Xmx4g
     export THINKBIG_SERVICES_OPTS=Xmx4g
@@ -214,7 +204,7 @@ For starting and stopping the 3 data lake accelerator services there you can run
     $ service thinkbig-services status
     $ service thinkbig-ui status
 
-== Viewing Service Output
+== Log Output
 
 === Configuring Log Output
 
