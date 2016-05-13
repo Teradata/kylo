@@ -18,6 +18,8 @@ import java.util.Set;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.rest.model.feed.*;
 import org.joda.time.Period;
 import org.quartz.CronExpression;
 
@@ -34,10 +36,6 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
@@ -213,10 +211,16 @@ public class Model {
                 feed.setState(Feed.State.valueOf(domain.getState().name()));
                 feed.setCreatedTime(domain.getCreatedTime());
                 feed.setInitialized(domain.isInitialized());
+                if(domain.getCategory() != null){
+                feed.setCategory(DOMAIN_TO_FEED_CATEGORY.apply(domain.getCategory()));
+                }
+
 //                feed.setPrecondition();
 //                feed.setOwner();
+                @SuppressWarnings("unchecked")
                 Collection<FeedSource> sources = Collections2.transform(domain.getSources(), DOMAIN_TO_FEED_SOURCE);
                 feed.setSources(new HashSet<FeedSource>(sources));
+                @SuppressWarnings("unchecked")
                 Collection<FeedDestination> destinations =Collections2.transform(domain.getDestinations(), DOMAIN_TO_FEED_DESTINATION) ;
                 feed.setDestinations(new HashSet<FeedDestination>(destinations));
                 
@@ -353,6 +357,20 @@ public class Model {
                 return ds;
             }
         };
+
+    public static final Function<Category,FeedCategory> DOMAIN_TO_FEED_CATEGORY = new Function<Category, FeedCategory>() {
+        @Override
+        public FeedCategory apply(Category category) {
+           FeedCategory feedCategory = new FeedCategory();
+            feedCategory.setId(category.getId().toString());
+            feedCategory.setSystemName(category.getName());
+            feedCategory.setDisplayName(category.getDisplayName());
+            feedCategory.setDescription(category.getDescription());
+            return feedCategory;
+        }
+    };
+
+
         
     public static final Function<ChangeSet, com.thinkbiganalytics.metadata.rest.model.op.ChangeSet> DOMAIN_TO_CHANGESET
         = new Function<ChangeSet, com.thinkbiganalytics.metadata.rest.model.op.ChangeSet>() {

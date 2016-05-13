@@ -38,6 +38,7 @@ public class Feed implements Serializable {
     private Set<FeedSource> sources = new HashSet<>();
     private Set<FeedDestination> destinations = new HashSet<>();
     private Properties properties = new Properties();
+    private FeedCategory category;
 
 
     public Feed() {
@@ -152,4 +153,11 @@ public class Feed implements Serializable {
     }
 
 
+    public FeedCategory getCategory() {
+        return category;
+    }
+
+    public void setCategory(FeedCategory category) {
+        this.category = category;
+    }
 }
