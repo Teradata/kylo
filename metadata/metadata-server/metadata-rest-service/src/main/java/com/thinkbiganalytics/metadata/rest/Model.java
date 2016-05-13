@@ -215,8 +215,10 @@ public class Model {
                 feed.setInitialized(domain.isInitialized());
 //                feed.setPrecondition();
 //                feed.setOwner();
-                feed.setSources(new HashSet<>(Collections2.transform(domain.getSources(), DOMAIN_TO_FEED_SOURCE)));
-                feed.setDestinations(new HashSet<>(Collections2.transform(domain.getDestinations(), DOMAIN_TO_FEED_DESTINATION)));
+                Collection<FeedSource> sources = Collections2.transform(domain.getSources(), DOMAIN_TO_FEED_SOURCE);
+                feed.setSources(new HashSet<FeedSource>(sources));
+                Collection<FeedDestination> destinations =Collections2.transform(domain.getDestinations(), DOMAIN_TO_FEED_DESTINATION) ;
+                feed.setDestinations(new HashSet<FeedDestination>(destinations));
                 
                 for (Entry<String, String> entry : domain.getProperties().entrySet()) {
                     feed.getProperties().setProperty(entry.getKey(), entry.getValue());
