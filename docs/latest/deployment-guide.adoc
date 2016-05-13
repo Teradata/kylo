@@ -8,7 +8,7 @@ May 2016
 
 == About
 
-This document explains how to install the data lake accelerator framework as well as Elasticsearch, NiFi, and ActiveMQ. There are a few different ways you can
+This document explains how to install the Data Lake Accelerator framework as well as Elasticsearch, NiFi, and ActiveMQ. There are a few different ways you can
 install it depending on whether or not you are installing all components on one edge node vs. multiple nodes.
 
 == System Requirements
@@ -38,7 +38,7 @@ The Data Lake Accelerator services should be installed on an edge node.  The fol
 
 == Installation
 
-=== Procedure for installing all components on 1 edge node
+=== Procedure for installing all components on one edge node
 
 Follow the steps below to install the data lake accelerator. This procedure is also recommended for installing to a Hortonworks sandbox.
 
@@ -102,13 +102,14 @@ Follow the steps below to install the data lake accelerator manually. This metho
     /opt/thinkbig/setup/activemq/install-activemq.sh
 
     NOTE: If installing on a different node than NiFi and thinkbig-services you will need to update the following properties
+
     /opt/nifi/ext-config/config.properties
 
-        spring.activemq.broker-url
+        * spring.activemq.broker-url
 
     /opt/thinkbig/thinkbig-services/conf/application/properties
 
-        jms.activemq.broker.url
+        * jms.activemq.broker.url
 
 
 7. Install NiFI
@@ -250,6 +251,14 @@ Below are the default URL's and ports for the services
     ActiveMQ Admin
     http://127.0.0.1:8161/admin
 
+
+== Appendix: Cleanup script
+For development and sandbox environments you can leverage the cleanup script to remove all of the Think Big services as well as Elasticsearch,
+ActiveMQ, and NiFi.
+
+    $ /opt/thinkbig/setup/dev/cleanup-env.sh
+
+ IMPORTANT Only run this in a DEV environment. This will delete all application and the MySQL schema
 
 == Appendix: Postgres Integration
 
