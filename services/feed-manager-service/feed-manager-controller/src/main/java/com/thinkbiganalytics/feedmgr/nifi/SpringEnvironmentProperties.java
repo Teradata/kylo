@@ -1,7 +1,9 @@
 package com.thinkbiganalytics.feedmgr.nifi;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.support.PropertySourcesPlaceholderConfigurer;
 import org.springframework.core.env.*;
+import org.springframework.core.io.ClassPathResource;
 
 import java.util.*;
 
@@ -14,12 +16,16 @@ public class SpringEnvironmentProperties {
 
     private  Map<String,Object> properties;
 
+    private Map<String,Map<String,Object>> propertiesStartingWith = new HashMap<>();
+
+
+
     public SpringEnvironmentProperties() {
 
     }
 
     @Autowired
-    private ConfigurableEnvironment environment;
+    private Environment env;
 
     /**
      * Get All Properties that start with a prefix
@@ -27,13 +33,35 @@ public class SpringEnvironmentProperties {
      * @return
      */
     public Map<String,Object> getPropertiesStartingWith(String key){
-        Map<String,Object> props = getAllProperties();
-        if(props != null) {
-            NavigableMap m = new TreeMap(props);
-            return m.subMap( key, key + Character.MAX_VALUE );
+
+        if(propertiesStartingWith.containsKey(key)){
+            return propertiesStartingWith.get(key);
+        }
+        else {
+            Map<String, Object> props = getAllProperties();
+            if (props != null) {
+                NavigableMap m = new TreeMap(props);
+                Map<String,Object> properties = m.subMap(key, key + Character.MAX_VALUE);
+                propertiesStartingWith.put(key,properties);
+                return properties;
+
+            }
+            return null;
+        }
+    }
+
+    public Object getPropertyValue(String key){
+        return getAllProperties().get(key);
+    }
+
+    public String getPropertyValueAsString(String key){
+        Object obj =  getPropertyValue(key);
+        if(obj != null){
+            return obj.toString();
         }
         return null;
     }
+
 
     /**
      * get All properties
@@ -42,57 +70,17 @@ public class SpringEnvironmentProperties {
     public  Map<String,Object> getAllProperties(  )
     {
         if(properties == null) {
-            final Map<String, Object> result = new HashMap<>();
-           MutablePropertySources sources = environment.getPropertySources();
-            while(sources.iterator().hasNext()){
-                PropertySource propertySource = sources.iterator().next();
-                addAll(result, getAllProperties(propertySource));
-            }
-            properties = result;
-        }
-        return properties;
-    }
-
-    private  Map<String,Object> getAllProperties( PropertySource<?> aPropSource )
-    {
-        final Map<String,Object> result = new HashMap<>();
-
-        if ( aPropSource instanceof CompositePropertySource)
-        {
-            CompositePropertySource cps = (CompositePropertySource) aPropSource;
-            for(PropertySource propertySource: cps.getPropertySources()){
-                addAll(result, getAllProperties(propertySource));
-            }
-
-            return result;
-        }
-
-        if ( aPropSource instanceof EnumerablePropertySource<?>)
-        {
-            EnumerablePropertySource<?> ps = (EnumerablePropertySource<?>) aPropSource;
-            if(ps != null && ps.getPropertyNames() != null) {
-                List<String> keys = Arrays.asList(ps.getPropertyNames());
-                for (String key : keys) {
-                    result.put(key, ps.getProperty(key));
+            Map<String, Object> map = new HashMap();
+            for(Iterator it = ((AbstractEnvironment) env).getPropertySources().iterator(); it.hasNext(); ) {
+                PropertySource propertySource = (PropertySource) it.next();
+                if (propertySource instanceof MapPropertySource) {
+                    map.putAll(((MapPropertySource) propertySource).getSource());
                 }
             }
-            return result;
+
+            properties = map;
         }
-        return result;
-
-    }
-
-    private  void addAll( Map<String, Object> aBase, Map<String, Object> aToBeAdded )
-    {
-        for (Map.Entry<String, Object> entry : aToBeAdded.entrySet())
-        {
-            if ( aBase.containsKey( entry.getKey() ) )
-            {
-                continue;
-            }
-
-            aBase.put( entry.getKey(), entry.getValue() );
-        }
+        return properties;
     }
 
 }

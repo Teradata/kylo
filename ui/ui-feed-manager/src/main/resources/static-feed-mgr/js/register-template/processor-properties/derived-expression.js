@@ -1,11 +1,3 @@
-/*
- * Copyright (c) 2015.
- */
-
-/**
- * This Directive is wired in to the FeedStatusIndicatorDirective.
- * It uses the OverviewService to watch for changes and update after the Indicator updates
- */
 (function () {
 
     var directive = function (RegisterTemplateService) {

@@ -9,6 +9,7 @@ import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -20,11 +21,13 @@ import java.util.regex.Pattern;
  * Created by sr186054 on 1/25/16.
  */
 public class PropertyExpressionResolver {
+    @Autowired
+    private  SpringEnvironmentProperties environmentProperties;
 
     public static String metadataPropertyPrefix = MetadataFieldAnnotationFieldNameResolver.metadataPropertyPrefix;
     public static String configPropertyPrefix = "config.";
 
-    public static  List<NifiProperty> resolvePropertyExpressions(FeedMetadata metadata) {
+    public   List<NifiProperty> resolvePropertyExpressions(FeedMetadata metadata) {
         List<NifiProperty> resolvedProperties = new ArrayList<>();
         if(metadata != null && metadata.getProperties() != null && !metadata.getProperties().isEmpty()){
             for(NifiProperty property:metadata.getProperties()){
@@ -37,7 +40,7 @@ public class PropertyExpressionResolver {
     }
 
 
-    public static boolean resolveExpression(FeedMetadata metadata, NifiProperty property) {
+    public  boolean resolveExpression(FeedMetadata metadata, NifiProperty property) {
         String value = property.getValue();
         StringBuffer sb = null;
 
@@ -78,7 +81,7 @@ public class PropertyExpressionResolver {
 
     }
 
-    public static String getMetadataPropertyValue(FeedMetadata metadata, String variableName) throws Exception{
+    public  String getMetadataPropertyValue(FeedMetadata metadata, String variableName) throws Exception{
             String fieldPathName = StringUtils.substringAfter(variableName, metadataPropertyPrefix);
         Object obj = null;
         try {
@@ -101,20 +104,18 @@ public class PropertyExpressionResolver {
         }
     }
 
-    public static String getConfigurationPropertyValue(String propertyKey){
-        String key = StringUtils.substringAfter(propertyKey, configPropertyPrefix);
-        String value = NifiConfigurationPropertiesService.getInstance().getPropertyValue(key);
-        return value;
+    public  String getConfigurationPropertyValue(String propertyKey){
+      return environmentProperties.getPropertyValueAsString(propertyKey);
     }
 
-    public static List<AnnotatedFieldProperty> getMetadataProperties(){
+    public  List<AnnotatedFieldProperty> getMetadataProperties(){
         List<AnnotatedFieldProperty> properties = MetadataFields.getInstance().getProperties(FeedMetadata.class);
         return properties;
     }
 
 
 
-    private static List<String> getFieldNames(List<Field> fields) {
+    private  List<String> getFieldNames(List<Field> fields) {
         List<String> names = new ArrayList<>();
         if(fields != null) {
             for(Field field: fields){

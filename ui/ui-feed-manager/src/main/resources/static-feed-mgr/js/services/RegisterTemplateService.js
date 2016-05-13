@@ -121,6 +121,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
       return propertiesAndProcessors;
     },
     fetchConfigurationProperties: function (successFn, errorFn) {
+
       var self = this;
       if (self.configurationProperties.length == 0) {
         var _successFn = function (response) {
@@ -193,6 +194,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
     },
     deriveExpression: function (expression) {
       var self = this;
+      var replaced = false;
       if (expression != null && expression != '') {
         var variables = expression.match(/\$\{(.*?)\}/gi);
         if (variables && variables.length) {
@@ -206,10 +208,15 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
               var value = self.configurationPropertyMap[varName];
               if (value) {
                 expression = self.replaceAll(expression, variable, value);
+                replaced = true;
               }
+
             }
           });
         }
+      }
+      if(!replaced){
+        expression = '';
       }
       return expression;
     },

@@ -4,6 +4,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -25,6 +26,9 @@ import io.swagger.annotations.Api;
 @Component
 public class FeedMetadataPropertiesRestController {
 
+    @Autowired
+    PropertyExpressionResolver propertyExpressionResolver;
+
     public FeedMetadataPropertiesRestController() {
     }
 
@@ -32,7 +36,7 @@ public class FeedMetadataPropertiesRestController {
     @Path("/")
     @Produces({MediaType.APPLICATION_JSON })
     public Response getProperties(){
-        List<AnnotatedFieldProperty> properties = PropertyExpressionResolver.getMetadataProperties();
+        List<AnnotatedFieldProperty> properties = propertyExpressionResolver.getMetadataProperties();
        return Response.ok(properties).build();
     }
 

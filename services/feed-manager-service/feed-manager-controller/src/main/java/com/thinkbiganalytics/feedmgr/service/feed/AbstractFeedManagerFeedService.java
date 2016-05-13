@@ -25,6 +25,9 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
     @Autowired
     private NifiRestClient nifiRestClient;
 
+    @Autowired
+    PropertyExpressionResolver propertyExpressionResolver;
+
     protected abstract RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException;
 
 
@@ -49,7 +52,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
                 .matchAndSetPropertyByIdKey(registeredTemplate.getProperties(), feedMetadata.getProperties());
         feedMetadata.setProperties(registeredTemplate.getProperties());
         //resolve any ${metadata.} properties
-        List<NifiProperty> resolvedProperties = PropertyExpressionResolver.resolvePropertyExpressions(feedMetadata);
+        List<NifiProperty> resolvedProperties = propertyExpressionResolver.resolvePropertyExpressions(feedMetadata);
 
         //store all input related properties as well
         List<NifiProperty> inputProperties = NifiPropertyUtil

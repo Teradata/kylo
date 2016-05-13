@@ -3,6 +3,7 @@ package com.thinkbiganalytics.feedmgr.config;
 
 import java.net.URI;
 
+import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.category.JpaFeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
@@ -79,5 +80,9 @@ public class FeedManagerConfiguration {
         return new ExportImportTemplateService();
     }
 
+    @Bean
+    public PropertyExpressionResolver propertyExpressionResolver(){
+        return new PropertyExpressionResolver();
+    }
 
 }

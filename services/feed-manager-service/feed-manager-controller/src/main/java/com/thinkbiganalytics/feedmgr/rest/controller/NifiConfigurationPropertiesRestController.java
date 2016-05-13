@@ -13,16 +13,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
-import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import com.thinkbiganalytics.feedmgr.nifi.NifiConfigurationPropertiesService;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.rest.JerseyClientException;
@@ -51,11 +49,10 @@ public class NifiConfigurationPropertiesRestController {
     @Path("/configuration/properties")
     @Produces({MediaType.APPLICATION_JSON })
     public Response getFeeds(){
-       Map<String,Object> properties = environmentProperties.getPropertiesStartingWith("nifi.config");
+       Map<String,Object> properties = environmentProperties.getPropertiesStartingWith(PropertyExpressionResolver.configPropertyPrefix);
         if(properties == null){
             properties = new HashMap<>();
         }
-       //Properties properties = NifiConfigurationPropertiesService.getInstance().getPropertiesWithConfigPrefix();
         return Response.ok(properties).build();
     }
 
