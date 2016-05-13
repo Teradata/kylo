@@ -14,6 +14,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import com.thinkbiganalytics.metadata.api.category.Category;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -128,6 +129,16 @@ public class BaseFeed implements Feed {
     
     public void setState(State state) {
         this.state = state;
+    }
+
+    @Override
+    public Category getCategory() {
+        return null;
+    }
+
+    @Override
+    public DateTime getModifiedTime() {
+        return null;
     }
 
     public List<FeedSource> getSources() {

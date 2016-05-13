@@ -9,7 +9,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
-public interface FeedProvider  {
+public interface FeedProvider{
 
     FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId);
     FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID id, ServiceLevelAgreement.ID slaId);

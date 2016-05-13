@@ -10,6 +10,7 @@ import javax.sql.DataSource;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.jpa.category.JpaCategoryProvider;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.feed.JpaFeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.template.JpaFeedManagerTemplateProvider;
@@ -139,6 +140,11 @@ public class JpaConfiguration {
     @Bean
     public FeedManagerCategoryProvider jpaFeedManagerCategoryProvider() {
         return new JpaFeedManagerCategoryProvider();
+    }
+
+    @Bean
+    public JpaCategoryProvider jpaCategoryProvider() {
+        return new JpaCategoryProvider();
     }
 
 

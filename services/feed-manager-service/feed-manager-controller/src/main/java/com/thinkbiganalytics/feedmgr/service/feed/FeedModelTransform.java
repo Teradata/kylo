@@ -59,18 +59,18 @@ public class FeedModelTransform {
                 }
             };
 
-    public static final Function<FeedManagerFeed,FeedSummary> DOMAIN_TO_FEED_SUMMARY = new Function<FeedManagerFeed, FeedSummary>() {
+    public static final Function<Feed,FeedSummary> DOMAIN_TO_FEED_SUMMARY = new Function< Feed, FeedSummary>() {
         @Nullable
         @Override
-        public FeedSummary apply(@Nullable FeedManagerFeed feedManagerFeed) {
+        public FeedSummary apply(@Nullable Feed feedManagerFeed) {
           FeedSummary feedSummary = new FeedSummary();
             feedSummary.setId(feedManagerFeed.getId().toString());
             feedSummary.setFeedId(feedManagerFeed.getId().toString());
             feedSummary.setCategoryId(feedManagerFeed.getCategory().getId().toString());
-            feedSummary.setCategoryIcon(feedManagerFeed.getCategory().getIcon());
-            feedSummary.setCategoryIconColor(feedManagerFeed.getCategory().getIconColor());
+            feedSummary.setCategoryIcon(((FeedManagerCategory)feedManagerFeed.getCategory()).getIcon());
+            feedSummary.setCategoryIconColor(((FeedManagerCategory) feedManagerFeed.getCategory()).getIconColor());
             feedSummary.setCategoryName(feedManagerFeed.getCategory().getDisplayName());
-            feedSummary.setSystemCategoryName(feedManagerFeed.getCategory().getSystemName());
+            feedSummary.setSystemCategoryName(feedManagerFeed.getCategory().getName());
             feedSummary.setUpdateDate(feedManagerFeed.getModifiedTime().toDate());
             feedSummary.setFeedName(feedManagerFeed.getDisplayName());
             feedSummary.setSystemFeedName(feedManagerFeed.getName());
@@ -92,7 +92,7 @@ public class FeedModelTransform {
 
 
 
-    public static List<FeedSummary> domainToFeedSummary(Collection<FeedManagerFeed> domain) {
+    public static List<FeedSummary> domainToFeedSummary(Collection< Feed> domain) {
         return new ArrayList<>(Collections2.transform(domain, DOMAIN_TO_FEED_SUMMARY));
     }
 

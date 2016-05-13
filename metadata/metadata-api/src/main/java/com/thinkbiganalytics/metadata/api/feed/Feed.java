@@ -6,6 +6,7 @@ package com.thinkbiganalytics.metadata.api.feed;
 import java.io.Serializable;
 import java.util.List;
 
+import com.thinkbiganalytics.metadata.api.category.Category;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.Propertied;
@@ -15,7 +16,7 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
  *
  * @author Sean Felten
  */
-public interface Feed extends Propertied, Serializable {
+public interface Feed<C extends Category> extends Propertied, Serializable {
 
     interface ID extends Serializable { }
 
@@ -31,8 +32,6 @@ public interface Feed extends Propertied, Serializable {
     String getDescription();
     
     State getState();
-    
-    DateTime getCreatedTime();
     
     boolean isInitialized();
     
@@ -59,6 +58,12 @@ public interface Feed extends Propertied, Serializable {
     
     void setState(State state);
 
+     C getCategory();
 
     Integer getVersion();
+
+
+    DateTime getCreatedTime();
+
+    DateTime getModifiedTime();
 }

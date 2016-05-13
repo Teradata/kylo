@@ -11,11 +11,14 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
+import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
+import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategory;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.feed.JpaFeedManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.template.JpaFeedManagerTemplate;
 import org.apache.commons.lang3.StringUtils;
@@ -27,6 +30,8 @@ import javax.inject.Inject;
  */
 public class FeedModelTransformer  {
 
+    @Inject
+    FeedManagerCategoryProvider categoryProvider;
 
     @Inject
     private FeedProvider feedProvider;
@@ -57,8 +62,8 @@ public class FeedModelTransformer  {
         feedMetadata.setId(domain.getId().toString());
 
         FeedCategory category = feedMetadata.getCategory();
-        if(category != null){
-            FeedManagerCategory domainCategory = CategoryModelTransform.FEED_CATEGORY_TO_DOMAIN.apply(category);
+        if(category != null && domain.getCategory() == null){
+            JpaFeedManagerCategory domainCategory = (JpaFeedManagerCategory)categoryProvider.findById(new JpaCategory.CategoryId(category.getId()));
             domain.setCategory(domainCategory);
         }
         RegisteredTemplate template = feedMetadata.getRegisteredTemplate();
@@ -71,6 +76,7 @@ public class FeedModelTransformer  {
             Feed.State state = Feed.State.valueOf(feedMetadata.getState().toUpperCase());
             domain.setState(state);
         }
+        domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
         domain.setJson(ObjectMapperSerializer.serialize(feedMetadata));
         if(feedMetadata.getVersion() == null){
@@ -78,7 +84,7 @@ public class FeedModelTransformer  {
         }
 
         //Datasource datasource = NifiFeedDatasourceFactory.transformSources(feedMetadata);
-
+       // feedProvider.ensureFeedSource()
 
         if(domain.getTemplate() == null){
             FeedManagerTemplate.ID templateId = new JpaFeedManagerTemplate.FeedManagerTemplateId(feedMetadata.getTemplateId());

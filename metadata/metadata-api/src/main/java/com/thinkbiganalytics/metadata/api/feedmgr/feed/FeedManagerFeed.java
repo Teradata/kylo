@@ -10,13 +10,9 @@ import java.io.Serializable;
 /**
  * Created by sr186054 on 5/4/16.
  */
-public interface FeedManagerFeed extends Feed{
+public interface FeedManagerFeed<C extends FeedManagerCategory> extends Feed<C>{
 
     void setTemplate(FeedManagerTemplate template);
-
-    FeedManagerCategory getCategory();
-
-    void setCategory(FeedManagerCategory category);
 
     String getJson();
 
@@ -28,4 +24,8 @@ public interface FeedManagerFeed extends Feed{
 
     DateTime getModifiedTime();
 
+    String getNifiProcessGroupId();
+
+    @Override
+    C getCategory();
 }

@@ -12,6 +12,7 @@ import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -32,6 +33,9 @@ public class FeedCategory {
     private List<FeedSummary> feeds;
 
     private int relatedFeeds;
+
+    private Date createDate;
+    private Date updateDate;
 
     public String getId() {
         return id;
@@ -132,6 +136,19 @@ public class FeedCategory {
         this.systemName = SystemNamingService.generateSystemName(name);
     }
 
+    public Date getUpdateDate() {
+        return updateDate;
+    }
 
+    public void setUpdateDate(Date updateDate) {
+        this.updateDate = updateDate;
+    }
 
+    public Date getCreateDate() {
+        return createDate;
+    }
+
+    public void setCreateDate(Date createDate) {
+        this.createDate = createDate;
+    }
 }

@@ -41,7 +41,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
  *
  * @author Sean Felten
  */
-public class JpaFeedProvider  implements FeedProvider {
+public class JpaFeedProvider implements FeedProvider{
 
     @PersistenceContext
     @Inject
@@ -53,6 +53,7 @@ public class JpaFeedProvider  implements FeedProvider {
     
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
+
 
 
     //    @Inject
@@ -412,9 +413,9 @@ public class JpaFeedProvider  implements FeedProvider {
         @Override
         public boolean apply(Feed input) {
             if (this.name != null && ! name.equals(input.getName())) return false;
-            
             if (! this.destIds.isEmpty()) {
-                for (FeedDestination dest : input.getDestinations()) {
+                List<FeedDestination> destinations = input.getDestinations();
+                for (FeedDestination dest : destinations) {
                     if (this.destIds.contains(dest.getDatasource().getId())) {
                         return true;
                     }
@@ -423,7 +424,8 @@ public class JpaFeedProvider  implements FeedProvider {
             }
             
             if (! this.sourceIds.isEmpty()) {
-                for (FeedSource src : input.getSources()) {
+                List<FeedSource> sources = input.getSources();
+                for (FeedSource src : sources) {
                     if (this.sourceIds.contains(src.getDatasource().getId())) {
                         return true;
                     }

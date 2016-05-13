@@ -10,35 +10,34 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.jpa.BaseId;
 import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedProvider;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
+import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategory;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.template.JpaFeedManagerTemplate;
 
 import javax.inject.Inject;
 import javax.persistence.NoResultException;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 import java.io.Serializable;
 import java.util.List;
 
 /**
  * Created by sr186054 on 5/3/16.
  */
-public class JpaFeedManagerFeedProvider  extends BaseJpaProvider<FeedManagerFeed,FeedManagerFeed.ID> implements FeedManagerFeedProvider {
+public class JpaFeedManagerFeedProvider extends BaseJpaProvider<FeedManagerFeed,Feed.ID>  implements FeedManagerFeedProvider{
 
-    @Inject
-    FeedProvider feedProvider;
 
     @Override
     public Class<? extends FeedManagerFeed> getEntityClass() {
-         return JpaFeedManagerFeed.class;
+        return JpaFeedManagerFeed.class;
     }
-
-
-
 
     @Override
     public Feed.ID resolveId(Serializable fid) {
-     return new JpaFeed.FeedId(fid);
+        return new JpaFeed.FeedId(fid);
     }
-
 
     public FeedManagerFeed findBySystemName(String systemName) {
 

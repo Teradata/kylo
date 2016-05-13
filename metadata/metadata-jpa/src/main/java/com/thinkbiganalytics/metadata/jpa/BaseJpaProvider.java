@@ -28,8 +28,6 @@ public abstract class BaseJpaProvider<T, PK extends Serializable> implements Bas
         this.entityClass = (Class<T>)getEntityClass();
     }
 
-
-
     @Override
     public T create(T t) {
         this.entityManager.persist(t);

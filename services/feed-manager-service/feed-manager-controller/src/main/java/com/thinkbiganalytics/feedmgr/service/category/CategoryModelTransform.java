@@ -8,6 +8,7 @@ import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategory;
+import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,8 +24,7 @@ public class CategoryModelTransform {
             new Function<FeedManagerCategory, FeedCategory>() {
                 @Override
                 public FeedCategory apply(FeedManagerCategory domainCategory) {
-                    String json = domainCategory.getJson();
-                    FeedCategory category = ObjectMapperSerializer.deserialize(json, FeedCategory.class);
+                    FeedCategory category = new FeedCategory();
                     category.setId(domainCategory.getId().toString());
                     if(domainCategory.getFeeds() != null){
                        List<FeedSummary> summaries = FeedModelTransform.domainToFeedSummary(domainCategory.getFeeds());
@@ -34,8 +34,8 @@ public class CategoryModelTransform {
                     category.setIcon(domainCategory.getIcon());
                     category.setName(domainCategory.getDisplayName());
                     category.setDescription(domainCategory.getDescription());
-                  //  category.setCreateDate(domainCategory.getCreatedTime().toDate());
-                  //  category.setUpdateDate(domainCategory.getModifiedTime().toDate());
+                    category.setCreateDate(domainCategory.getCreatedTime().toDate());
+                    category.setUpdateDate(domainCategory.getModifiedTime().toDate());
                     return category;
                 }
             };
@@ -45,16 +45,14 @@ public class CategoryModelTransform {
             new Function<FeedManagerCategory, FeedCategory>() {
                 @Override
                 public FeedCategory apply(FeedManagerCategory domainCategory) {
-                    String json = domainCategory.getJson();
-                    //FeedCategory category = ObjectMapperSerializer.deserialize(json, FeedCategory.class);
                     FeedCategory category = new FeedCategory();
                     category.setId(domainCategory.getId().toString());
                     category.setIconColor(domainCategory.getIconColor());
                     category.setIcon(domainCategory.getIcon());
                     category.setName(domainCategory.getDisplayName());
                     category.setDescription(domainCategory.getDescription());
-                    //  category.setCreateDate(domainCategory.getCreatedTime().toDate());
-                    //  category.setUpdateDate(domainCategory.getModifiedTime().toDate());
+                      category.setCreateDate(domainCategory.getCreatedTime().toDate());
+                      category.setUpdateDate(domainCategory.getModifiedTime().toDate());
                     return category;
                 }
             };
@@ -64,18 +62,19 @@ public class CategoryModelTransform {
             new Function<FeedCategory,FeedManagerCategory>() {
                 @Override
                 public FeedManagerCategory apply(FeedCategory feedCategory) {
-                    JpaFeedManagerCategory.FeedManagerCategoryId domainId = feedCategory.getId() != null ? new JpaFeedManagerCategory.FeedManagerCategoryId(feedCategory.getId()): JpaFeedManagerCategory.FeedManagerCategoryId.create();
+                    JpaFeedManagerCategory.CategoryId domainId = feedCategory.getId() != null ? new JpaFeedManagerCategory.CategoryId(feedCategory.getId()): JpaFeedManagerCategory.CategoryId.create();
                    if(feedCategory.getId() == null){
                        feedCategory.setId(domainId.toString());
                    }
                     JpaFeedManagerCategory
                             category = new JpaFeedManagerCategory(domainId);
                     category.setDisplayName(feedCategory.getName());
-                    category.setSystemName(feedCategory.getSystemName());
+                    category.setName(feedCategory.getSystemName());
                     category.setDescription(feedCategory.getDescription());
                     category.setIcon(feedCategory.getIcon());
                     category.setIconColor(feedCategory.getIconColor());
-                    category.setJson(ObjectMapperSerializer.serialize(feedCategory));
+                    category.setCreatedTime(new DateTime(feedCategory.getCreateDate()));
+                    category.setModifiedTime(new DateTime(feedCategory.getUpdateDate()));
                     return category;
                 }
             };

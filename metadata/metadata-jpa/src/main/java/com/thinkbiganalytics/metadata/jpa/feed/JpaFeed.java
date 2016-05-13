@@ -15,6 +15,12 @@ import java.util.UUID;
 
 import javax.persistence.*;
 
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
+import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
+import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
+import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
+import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategory;
 import org.hibernate.annotations.GenericGenerator;
 
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
@@ -39,7 +45,11 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 @Table(name="FEED")
 @Inheritance(strategy = InheritanceType.JOINED)
 @EntityListeners(AuditTimestampListener.class)
-public class JpaFeed extends AbstractAuditedEntity implements Feed {
+@NamedQuery(
+        name = NamedJpaQueries.FEED_FIND_BY_SYSTEM_NAME,
+        query = "select feed FROM JpaFeed as feed INNER JOIN FETCH feed.category as c WHERE feed.name = :systemName"
+)
+public class JpaFeed<C extends Category> extends AbstractAuditedEntity implements Feed<C>{
 
     private static final long serialVersionUID = 404021578157775507L;
 
@@ -78,6 +88,10 @@ public class JpaFeed extends AbstractAuditedEntity implements Feed {
     @Embedded
     private JpaFeedPrecondition precondition;
 
+    @ManyToOne(targetEntity = JpaCategory.class)
+    @JoinColumn(name = "category_id", nullable = false, insertable = true, updatable = false)
+    private C category;
+
 
     @Version
     @Column(name = "VERSION")
@@ -90,6 +104,7 @@ public class JpaFeed extends AbstractAuditedEntity implements Feed {
     }
     
     public JpaFeed(String name, String description) {
+
         this.Id = FeedId.create();
         this.name = name;
         this.description = description;
@@ -189,7 +204,8 @@ public class JpaFeed extends AbstractAuditedEntity implements Feed {
     public void setState(State state) {
         this.state = state;
     }
-    
+
+
     @Override
     public FeedDestination getDestination(Datasource.ID id) {
         // TODO is there a sexy JPA/Hibernate way to do this since there is an implicit session used to get the destinations?
@@ -275,7 +291,16 @@ public class JpaFeed extends AbstractAuditedEntity implements Feed {
         this.version = version;
     }
 
-    
+    @Override
+    public C getCategory() {
+        return category;
+    }
+
+
+    public  void setCategory( C category) {
+        this.category = category;
+    }
+
     @Embeddable
     public static class FeedId extends BaseId implements Feed.ID {
         

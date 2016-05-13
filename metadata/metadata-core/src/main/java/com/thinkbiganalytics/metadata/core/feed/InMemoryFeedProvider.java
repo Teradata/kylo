@@ -333,15 +333,22 @@ public class InMemoryFeedProvider implements FeedProvider {
     @Override
     public boolean enableFeed(Feed.ID id) {
         BaseFeed feed = (BaseFeed) getFeed(id);
-        feed.setState(Feed.State.ENABLED);
-       return true;
+        if(feed != null) {
+            feed.setState(Feed.State.ENABLED);
+            return true;
+        }
+        return false;
+
     }
 
     @Override
     public boolean disableFeed(Feed.ID id) {
         BaseFeed feed = (BaseFeed) getFeed(id);
-        feed.setState(Feed.State.DISABLED);
-      return true;
+        if(feed != null) {
+            feed.setState(Feed.State.DISABLED);
+            return true;
+        }
+        return false;
     }
 
     private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {
@@ -355,7 +362,8 @@ public class InMemoryFeedProvider implements FeedProvider {
             if (this.name != null && ! name.equals(input.getName())) return false;
             
             if (! this.destIds.isEmpty()) {
-                for (FeedDestination dest : input.getDestinations()) {
+                List<FeedDestination> destinations = input.getDestinations();
+                for (FeedDestination dest : destinations) {
                     if (this.destIds.contains(dest.getDatasource().getId())) {
                         return true;
                     }
@@ -364,7 +372,8 @@ public class InMemoryFeedProvider implements FeedProvider {
             }
             
             if (! this.sourceIds.isEmpty()) {
-                for (FeedSource src : input.getSources()) {
+                List<FeedSource> sources = input.getSources();
+                for (FeedSource src : sources) {
                     if (this.sourceIds.contains(src.getDatasource().getId())) {
                         return true;
                     }
