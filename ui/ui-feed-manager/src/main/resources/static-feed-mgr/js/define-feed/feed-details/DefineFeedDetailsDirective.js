@@ -90,7 +90,7 @@
                     if (property.inputProperty) {
                         processors[property.processorId].inputProcessor = true;
                     }
-                property.value = RegisterTemplateService.deriveExpression(property.value);
+                property.value = RegisterTemplateService.deriveExpression(property.value, false);
                 property.renderWithCodeMirror = RegisterTemplateService.isRenderPropertyWithCodeMirror(property);
 
             });

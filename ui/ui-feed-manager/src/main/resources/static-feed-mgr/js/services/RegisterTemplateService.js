@@ -192,7 +192,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
     replaceAll: function (str, find, replace) {
       return str.replace(new RegExp(escapeRegExp(find), 'g'), replace);
     },
-    deriveExpression: function (expression) {
+    deriveExpression: function (expression, configOnly) {
       var self = this;
       var replaced = false;
       if (expression != null && expression != '') {
@@ -215,7 +215,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
           });
         }
       }
-      if(!replaced){
+      if(configOnly == true && !replaced){
         expression = '';
       }
       return expression;

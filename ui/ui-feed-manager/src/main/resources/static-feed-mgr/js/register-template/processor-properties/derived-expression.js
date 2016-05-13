@@ -12,7 +12,7 @@
                     'ngModel',
                     function (newValue) {
                         if(newValue != null) {
-                            var derivedValue = RegisterTemplateService.deriveExpression(newValue)
+                            var derivedValue = RegisterTemplateService.deriveExpression(newValue,true)
                             $element.html(derivedValue);
                         }
                         else {
