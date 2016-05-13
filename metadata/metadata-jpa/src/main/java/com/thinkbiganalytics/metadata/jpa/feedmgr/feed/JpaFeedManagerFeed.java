@@ -32,10 +32,6 @@ import javax.persistence.*;
 public class JpaFeedManagerFeed<C extends JpaFeedManagerCategory> extends JpaFeed<C> implements FeedManagerFeed<C> {
 
 
-    @ManyToOne(targetEntity = JpaFeedManagerCategory.class)
-    @JoinColumn(name = "category_id", nullable = false, insertable = true, updatable = false)
-    private C category;
-
     @ManyToOne(targetEntity = JpaFeedManagerTemplate.class)
     @JoinColumn(name = "template_id", nullable = false, insertable = true, updatable = false)
     private FeedManagerTemplate template;
@@ -87,13 +83,13 @@ public class JpaFeedManagerFeed<C extends JpaFeedManagerCategory> extends JpaFee
         this.template = template;
     }
 
-    @Override
     public C getCategory() {
-        return category;
+        return super.getCategory();
     }
 
+    @ManyToOne(targetEntity = JpaFeedManagerCategory.class)
+    @JoinColumn(name = "category_id", nullable = false, insertable = true, updatable = false)
     public void setCategory(C category) {
-        this.category = category;
         super.setCategory(category);
     }
 

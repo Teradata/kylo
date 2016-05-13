@@ -22,15 +22,14 @@ import java.util.UUID;
 @EntityListeners(AuditTimestampListener.class)
 @NamedQuery(
         name= NamedJpaQueries.CATEGORY_FIND_BY_SYSTEM_NAME,
-        query="FROM JpaFeedManagerCategory c WHERE name = :systemName"
+        query="FROM JpaCategory c WHERE name = :systemName"
 )
 public class JpaCategory extends AbstractAuditedEntity implements Category {
 
     @EmbeddedId
     private CategoryId id;
 
-    @OneToMany(targetEntity=JpaFeed.class)
-    @JoinColumn(name = "id")
+    @OneToMany(targetEntity=JpaFeed.class,mappedBy = "category")
     private List<Feed> feeds;
 
     @Column(name="DISPLAY_NAME")

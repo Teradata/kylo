@@ -33,6 +33,7 @@ public class JpaCategoryProvider extends BaseJpaProvider<Category,Category.ID> i
 
 
 
+
     @Override
     public Category.ID resolveId(Serializable fid) {
         return new JpaCategory.CategoryId(fid);

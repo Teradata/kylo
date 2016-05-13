@@ -130,6 +130,10 @@ public class FeedCategory {
         return relatedFeeds;
     }
 
+    public void setRelatedFeeds(int relatedFeeds) {
+        this.relatedFeeds = relatedFeeds;
+    }
+
     @JsonIgnore
     public void generateSystemName(){
 

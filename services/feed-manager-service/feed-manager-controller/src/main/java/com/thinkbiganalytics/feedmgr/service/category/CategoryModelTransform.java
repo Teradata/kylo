@@ -29,6 +29,7 @@ public class CategoryModelTransform {
                     if(domainCategory.getFeeds() != null){
                        List<FeedSummary> summaries = FeedModelTransform.domainToFeedSummary(domainCategory.getFeeds());
                         category.setFeeds(summaries);
+                        category.setRelatedFeeds(summaries.size());
                     }
                     category.setIconColor(domainCategory.getIconColor());
                     category.setIcon(domainCategory.getIcon());

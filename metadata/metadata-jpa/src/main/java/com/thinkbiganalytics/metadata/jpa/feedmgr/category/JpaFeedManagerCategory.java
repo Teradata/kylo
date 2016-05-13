@@ -5,6 +5,7 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.jpa.BaseId;
+import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
 import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
@@ -23,6 +24,10 @@ import java.util.UUID;
 @Entity
 @Table(name="FM_CATEGORY")
 @PrimaryKeyJoinColumn(referencedColumnName="id")
+@NamedQuery(
+        name= FeedManagerNamedQueries.CATEGORY_FIND_BY_SYSTEM_NAME,
+        query="select c FROM JpaFeedManagerCategory c WHERE name = :systemName"
+)
 public class JpaFeedManagerCategory  extends JpaCategory implements FeedManagerCategory {
 
     @Column(name="ICON")
