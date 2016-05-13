@@ -1,4 +1,4 @@
-= Pipeline Controller Deployment Guide
+= Data Lake Accelerator Deployment Guide
 Think Big Analytics
 May 2016
 
@@ -15,7 +15,7 @@ install it depending on whether or not you are installing all components on one 
 
 === Dependencies
 
-Pipeline Controller should be installed on an edge node.  The following should be available prior to the installing the Data Lake Starter.
+The Data Lake Accelerator services should be installed on an edge node.  The following should be available prior to the installing the Data Lake Starter.
 
 .Dependencies
 |===
@@ -26,7 +26,7 @@ Pipeline Controller should be installed on an edge node.  The following should b
 |Spark 1.5.x+
 |Apache NiFi 0.5+ (or Hortonworks DataFlow)
 |Hive
-|MySql
+|MySQL
 |===
 
 .Tested Platforms
@@ -40,7 +40,7 @@ Pipeline Controller should be installed on an edge node.  The following should b
 
 === Procedure for installing all components on 1 edge node
 
-Follow the steps below to install the data lake accelerator. This procedure is also recommended for installing in a Hortonworks sandbox.
+Follow the steps below to install the data lake accelerator. This procedure is also recommended for installing to a Hortonworks sandbox.
 
 
 . Login to the the host using root or sudo access
@@ -69,7 +69,7 @@ Follow the steps below to install the data lake accelerator. This procedure is a
 
            At this point all applications should be running
 
-Tip: See section below on how to use the cleanup script to completely remove all of the components above. This is useful in a DEV or sandbox environment so you can run a clean install.
+TIP: See section below on how to use the cleanup script to completely remove all of the components above. This is useful in a DEV or sandbox environment so you can run a clean install.
 
 === Procedure for installing each component manually
 
@@ -101,11 +101,15 @@ Follow the steps below to install the data lake accelerator manually. This metho
 
     /opt/thinkbig/setup/activemq/install-activemq.sh
 
-    Note: If installing on a different node than NiFi and thinkbig-services you will need to update the following properties
+    NOTE: If installing on a different node than NiFi and thinkbig-services you will need to update the following properties
     /opt/nifi/ext-config/config.properties
+
         spring.activemq.broker-url
+
     /opt/thinkbig/thinkbig-services/conf/application/properties
+
         jms.activemq.broker.url
+
 
 7. Install NiFI
 
