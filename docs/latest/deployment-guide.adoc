@@ -6,6 +6,11 @@ May 2016
 :toclevels: 2
 :toc-title: Contents
 
+== About
+
+This document explains how to install the data lake accelerator framework as well as Elasticsearch, NiFi, and ActiveMQ. There are a few different ways you can
+install it depending on whether or not you are installing all components on one edge node vs. multiple nodes.
+
 == System Requirements
 
 === Dependencies
@@ -24,40 +29,109 @@ Pipeline Controller should be installed on an edge node.  The following should b
 |MySql
 |===
 
+.Tested Platforms
+|===
+|Platform|URL|Version
+
+|Hortonworks Sandbox|http://hortonworks.com/products/hortonworks-sandbox/| HDP 2.3, 2.4
+|===
+
 == Installation
 
-=== Procedure
+=== Procedure for installing all components on 1 edge node
 
-Follow the steps below to install the Pipeline Controller Service
-
-
-1. Find and download the RPM file from artifactory and place on the host linux machine
-
-           http://54.152.98.43:8080/artifactory/webapp/search/artifact?q=data-lake   (requires VPN)
+Follow the steps below to install the data lake accelerator. This procedure is also recommended for installing in a Hortonworks sandbox.
 
 
-2. Login to the the host using root or sudo access
-3. Run RPM install
+. Login to the the host using root or sudo access
 
-           $ rpm -ivh pipeline-controller-<version>.noarch.rpm
+. Find and download the RPM file from artifactory and place on the host linux machine. You can right click the download link and copy the url to use wget instead
+
+           http://54.152.98.43:8080/artifactory/webapp/search/artifact/?7&q=thinkbig-datalake-accelerator  (requires VPN)
+
+. Run RPM install
+
+           $ rpm -ivh thinkbig-datalake-accelerator-<version>.noarch.rpm
+
+. Run the setup wizard - /opt/thinkbig/setup/setup-wizard.sh
+
+    Follow the directions and it will install the following:
+    * MySQL or Postgres scripts into the local database
+    * Elasticsearch
+    * ActiveMQ
+    * NiFi and the Think Big dependencies
+
+    Elasticsearch, NiFi, and ActiveMQ will be started when the wizard is finished
+
+. Start the 3 Think Big applications
+
+           $ /opt/thinkbig/start-thinkbig-apps.sh
+
+           At this point all applications should be running
+
+Tip: See section below on how to use the cleanup script to completely remove all of the components above. This is useful in a DEV or sandbox environment so you can run a clean install.
+
+=== Procedure for installing each component manually
+
+Follow the steps below to install the data lake accelerator manually. This method is useful if you are deploying products across multiple edge nodes
 
 
-Note: If needed you can remove or un-install using the command below
+1. For each step login to the the host using root or sudo access
 
-           $ rpm -e pipeline-controller-<version>
+2. Find and download the RPM file from artifactory and place on the host linux machine you want to install the data lake accelerator services on. You can right click the download link and copy the url to use wget instead
+
+           http://54.152.98.43:8080/artifactory/webapp/search/artifact/?7&q=thinkbig-datalake-accelerator  (requires VPN)
+
+3. Run data lake accelerator RPM install
+
+           $ rpm -ivh thinkbig-datalake-accelerator-<version>.noarch.rpm
+
+4. Run the database scripts (see database configuration section)
 
 
-<<<
+5. Install Elasticsearch
+
+    You can leverage an existing elasticsearch installation or follow the steps in the elasticsearch script used by the wizard.
+
+    /opt/thinkbig/setup/elasticsearch/install-elasticsearch.sh
+
+6. Install ActiveMQ
+
+    You can leverage an existing ActiveMQ installation or follow the steps in the ActiveMQ script used by the wizard
+
+    /opt/thinkbig/setup/activemq/install-activemq.sh
+
+    Note: If installing on a different node than NiFi and thinkbig-services you will need to update the following properties
+    /opt/nifi/ext-config/config.properties
+        spring.activemq.broker-url
+    /opt/thinkbig/thinkbig-services/conf/application/properties
+        jms.activemq.broker.url
+
+7. Install NiFI
+
+    You can leverage an existing NiFi installation or follow the steps in the setup directory which is used by the wizard. There are two steps:
+
+    1. Install NiFi
+    /opt/thinkbig/setup/nifi/install-nifi.sh
+
+    2. Install Think Big specific components
+    /opt/thinkbig/setup/nifi/install-thinkbig-components.sh
+
+8. Start the 3 Think Big applications
+
+           $ /opt/thinkbig/start-thinkbig-apps.sh
+
+           At this point all applications should be running
 
 == Configuration
 
-=== Configuration File
+=== Configuration Files
 
-Configuration for the Pipeline Controller Service is located under the following files:
+Configuration for the data lake accelerator services are located under the following files:
 
-    /opt/tba/pipeline-application/conf/application.properties
+    /opt/thinkbig/thinkbig-ui/conf/application.properties
+    /opt/thinkbig/thinkbig-services/conf/application.properties
 
-<<<
 
 === Configuration Properties
 
@@ -70,140 +144,110 @@ See http://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-
 |===
 |Configuration Property|Required|Example
 
-|server.port||8282
+|server.port||8400
 |||
 |===
 
-==== Database Setup
+=== Database Setup
 
-Pipeline Controller can be configured to work with Postgres or MySQL. Database and permission setup scripts are provided to assist in the initial configuration process.   The script names relevant to setup are below:
+Data lake services can be configured to work with Postgres or MySQL. Database and permission setup scripts are provided to assist in the initial configuration process.   The script names relevant to setup are below:
 
 ==== My SQL
 |===
 |Script Name|Description
-|/opt/tba/pipeline-application/conf/setup/mysql/setup-mysql.sh|Create tables used by pipeline controller
-|/opt/tba/pipeline-application/conf/setup/mysql/drop-mysql.sh DROP|Used to remove pipeline controller tables
+|/opt/thinkbig/setup/sql/mysql/setup-mysql.sh|Create tables used by data lake accelerator services
+|/opt/thinkbig/setup/sql/mysql/drop-mysql.sh DROP|Used to remove the data lake accelerator schema(s)
 |===
 
 
 ==== Postgres
-|===
-|Script Name|Description
-|/opt/tba/pipeline-application/conf/setup/postgres/setup-postgres.sh|Create tables used by pipeline controller
-|/opt/tba/pipeline-application/conf/setup/postgres/drop-postgres.sh DROP|PUsed to remove pipeline controller tables
-|===
+TBD - Not yet supported
 
-==== Airline Example Install
-
-Setup script for aircraft example is:
-
-           cd /opt/tba/pipeline-application/conf/setup/
-           ./setup-examples.sh
-
-The setup-examples.sh script will copy the required JARs into the /opt/tba/pipeline-application/plugins folder and append additional application properties to the application.properties file.
-
-<<<
-    
-
-<<<
 
 === Optimizing Performance
 
 You can adjust the memory setting of the Pipeline Controller Service using the PIPELINE_APPLICATION_OPTS environment variable.  
 
-    export PIPELINE_APPLICATION_OPTS=Xmx4g
+    export THINKBIG_UI_OPTS=Xmx4g
+    export THINKBIG_SERVICES_OPTS=Xmx4g
     
 The setting above would set the Java maximum heap size to 4 GB.    
-    
-<<<
 
-== Starting the Pipeline Application Service
 
-1. To Start
+== Starting the Services
+Note: These below are installed as services and should start and stop automatically when the machine is rebooted
 
-    $ /etc/init.d/pipeline-application start
-              
-2. To Stop
+For starting and stopping the 3 data lake accelerator services there you can run the following scripts
 
-    $ /etc/init.d/pipeline-application stop
-              
-3.  To get Status
+   /opt/thinkbig/start-thinkbig-apps.sh
+   /opt/thinkbig/stop-thinkbig-apps.sh
 
-    $ /etc/init.d/pipeline-application status
+1. To Start individual services
 
-<<<
+    $ service activemq start
+    $ service elasticsearch start
+    $ service nifi start
+    $ service thinkbig-spark-shell start
+    $ service thinkbig-services start
+    $ service thinkbig-ui start
+
+2. To Stop individual services
+
+    $ service activemq stop
+    $ service elasticsearch stop
+    $ service nifi stop
+    $ service thinkbig-spark-shell stop
+    $ service thinkbig-services stop
+    $ service thinkbig-ui stop
+
+3.  To get the status of individual services
+
+    $ service activemq status
+    $ service elasticsearch status
+    $ service nifi status
+    $ service thinkbig-spark-shell status
+    $ service thinkbig-services status
+    $ service thinkbig-ui status
 
 == Viewing Service Output
 
-=== General Log Output
+=== Configuring Log Output
 
-Log output for the Pipeline Application is configured at
+Log output for the services mentioned above are configured at:
 
-			/opt/tba/pipeline-application/conf/log4j.properties
-			
+			/opt/thinkbig/thinkbig-ui/conf/log4j.properties
+			/opt/thinkbig/thinkbig-services/conf/log4j.properties
+
 You may place logs where desired according to the 'log4j.appender.file.File' property.  Note the configuration line:
 
-			log4j.appender.file.File=/var/log/pipeline-application/pipeline-application.log
+			log4j.appender.file.File=/var/log/<app>/<app>.log
 
-To view output logs for the Pipeline Application simply view this file:
+=== Viewing Log Output
 
-            tail -f pipeline-application.log
+The default log locations for the various applications are located at:
 
+/var/log/<service_name>
 
-=== Pipeline Application Web Console
+== Web and REST Access
 
-After you start the service you can view running jobs, job history and other details using the Pipeline Application Web Console.
+Below are the default URL's and ports for the services
 
-    http://127.0.0.1:8282
+    Feed Manager and Operations UI
+    http://127.0.0.1:8400
     username: dladmin
 	password: thinkbig
 
-.Application Pipeline Job View
-image::images/PipelineControllerJobView.png[Log]
+    NiFi UI
+    http://127.0.0.1:8079
+
+    Elasticsearch REST API
+    http://127.0.0.1:9200
+
+    ActiveMQ Admin
+    http://127.0.0.1:8161/admin
 
 
 == Appendix: Postgres Integration
 
-It's also possible to use Postgresql instead of mySql. To install it, run the following commands (RedHat)
-
-1. Forward port 5432 to host OS, if required.
-
-2. login as root
-
-    $ su - root
-
-3. Install postgres using yum:
-
-    yum install -y postgresql postgresql-devel postgresql-server postgresql-libs postgresql-contrib
-
-4. Initiate and start the database
-    
-    $ service postgresql initdb
-    $ service postgresql start
-
-5. Add a password to postgres user
-
-    $ su - postgres
-    $ psql postgres -c "alter user postgres with password 'postgres';"
-    $ exit
-
-6. Change configuration files as required and restart the database:
-
-    $ sed -i 's/    ident/    md5/g' /var/lib/pgsql/data/pg_hba.conf
-    $ sed -i 's_127.0.0.1/32_pipeline-controller-1.0.0-10.0.0.0/0_g' /var/lib/pgsql/data/pg_hba.conf
-    $ sed -i "s/#listen_addresses = 'localhost'/listen_addresses = '*'/g" /var/lib/pgsql/data/postgresql.conf
-    $ service postgresql restart
-
-7. Create pipeline_application_db database and a user that will own it:
-
-    $ su - postgres
-    $ psql postgres -c "create user pguser with password 'thinkbig';"
-    $ psql postgres -c "create database pipeline_db owner=pguser;"
-
-8. Update application.properties entries:
-
-	spring.datasource.url=jdbc:postgresql://localhost:5432/pipeline_db
-	spring.datasource.username=pguser
-	spring.datasource.password=thinkbig
-	spring.datasource.driverClassName=org.postgresql.Driver
+TBD
 	
