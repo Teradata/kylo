@@ -47,11 +47,11 @@
          if(self.opsManagerUrl == undefined) {
              $http.get(ConfigurationService.MODULE_URLS).then(function(response){
                self.opsManagerUrl = response.data.opsMgr;
-               window.location.pathname = self.opsManagerUrl;
+                 window.location.href=window.location.origin+self.opsManagerUrl;
              });
          }
        else {
-           window.location.pathname = self.opsManagerUrl;
+             window.location.href=window.location.origin+self.opsManagerUrl;
          }
      }
 

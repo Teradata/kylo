@@ -45,11 +45,11 @@
         if(self.feedMgrUrl == undefined) {
           $http.get(ConfigurationService.MODULE_URLS).then(function(response){
             self.feedMgrUrl = response.data.feedMgr;
-            window.location.pathname = self.feedMgrUrl;
+            window.location.href=window.location.origin+self.feedMgrUrl;
           });
         }
         else {
-          window.location.pathname = self.feedMgrUrl;
+            window.location.href=window.location.origin+self.feedMgrUrl;
         }
       }
 
