@@ -29,14 +29,14 @@
                     </md-tab-body>
                 </md-tab>
                 <md-tab >
-                    <md-tab-label >
+                    <md-tab-label ng-disabled="true">
                         <div>Related</div>
                     </md-tab-label>
                     <md-tab-body>
                         Related
                     </md-tab-body>
                 </md-tab>
-                <md-tab >
+                <md-tab ng-disabled="true">
                     <md-tab-label >
                         <div>SLA</div>
                     </md-tab-label>
@@ -44,7 +44,7 @@
                     Service Level Agreements
                     </md-tab-body>
                 </md-tab>
-                <md-tab >
+                <md-tab ng-disabled="true">
                     <md-tab-label >
                         <div>Versions</div>
                     </md-tab-label>
@@ -100,10 +100,10 @@
              </div>
 
              <div layout="row" layout-align="space-between center">
-                 <md-button ng-click="addAlert()" class="md-primary">
+                 <md-button ng-click="addAlert()" class="md-primary" ng-disabled="true">
                  ADD ALERT
                  </md-button>
-                 <md-button ng-click="addSla()" class="md-primary">
+                 <md-button ng-click="addSla()" class="md-primary" ng-disabled="true">
                      ADD SLA
                  </md-button>
              </div>
