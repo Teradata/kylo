@@ -14,6 +14,8 @@ import org.elasticsearch.common.settings.Settings;
 import org.elasticsearch.common.transport.InetSocketTransportAddress;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.QueryStringQueryBuilder;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -28,12 +30,10 @@ import java.util.Set;
  */
 public class ElasticSearch {
 
-    private static class LazyHolder {
-        static final ElasticSearch INSTANCE = new ElasticSearch();
-    }
+    private ElasticSearchClientConfig clientConfig;
 
-    public static ElasticSearch getInstance() {
-        return LazyHolder.INSTANCE;
+    public ElasticSearch(ElasticSearchClientConfig clientConfig){
+        this.clientConfig = clientConfig;
     }
 
     private Client client;
@@ -41,11 +41,12 @@ public class ElasticSearch {
         if(this.client == null) {
             Client client = null;
             try {
-                String hostName = "localhost";
+                String hostName = clientConfig.getHost();
+                String clusterName = clientConfig.getClusterName();
                 Settings settings = Settings.settingsBuilder()
-                        .put("cluster.name", "demo-cluster").build();
+                        .put("cluster.name", clusterName).build();
                 client = TransportClient.builder().settings(settings).build()
-                        .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(hostName), 9300));
+                        .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(hostName), clientConfig.getPort()));
                 this.client = client;
             } catch (UnknownHostException e) {
                 e.printStackTrace();
