@@ -58,7 +58,7 @@ public class RunStatusContext implements RunStatus, Serializable {
 
     @Override
     public boolean markRunning(DateTime dateTime) {
-        if (!isRunning()) {
+        if (!isRunning() && !isComplete() && !isFailed()) {
             this.runStatus = RUN_STATUS.RUNNING;
             this.startTime = dateTime != null ? dateTime.toDate() : new Date();
             return true;
@@ -88,6 +88,10 @@ public class RunStatusContext implements RunStatus, Serializable {
 
     public boolean isInitial() {
         return RUN_STATUS.INITIAL.equals(getRunStatus());
+    }
+
+    public boolean isFailed() {
+        return RUN_STATUS.FAILED.equals(getRunStatus());
     }
 
     @Override

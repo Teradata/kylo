@@ -3,6 +3,7 @@ package com.thinkbiganalytics.jobrepo.nifi.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.google.common.base.MoreObjects;
+import org.apache.commons.lang3.StringUtils;
 
 import java.io.Serializable;
 import java.util.*;
@@ -125,6 +126,15 @@ public class FlowFileComponent extends RunStatusContext implements Serializable 
         return eventList;
     }
 
+    public List<Long> getEventIds(){
+        List<Long> ids = new ArrayList<>();
+        List<ProvenanceEventRecordDTO> events = getEventsAsList();
+        for(ProvenanceEventRecordDTO e : events){
+            ids.add(e.getEventId());
+        }
+        return ids;
+    }
+
     public ProvenanceEventRecordDTO getLastEvent() {
         List<ProvenanceEventRecordDTO> eventList = getEventsAsList();
         if (!eventList.isEmpty()) {
@@ -185,7 +195,10 @@ public class FlowFileComponent extends RunStatusContext implements Serializable 
 
     @Override
     public String toString() {
+
+
         return MoreObjects.toStringHelper(this)
+                .add("eventIds", StringUtils.join(getEventIds()))
                 .add("componentId", componentId)
                 .add("componetName", componetName)
                 .add("stepExecutionId", stepExecutionId)
