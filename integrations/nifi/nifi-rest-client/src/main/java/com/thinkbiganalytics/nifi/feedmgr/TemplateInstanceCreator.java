@@ -12,6 +12,8 @@ import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -19,6 +21,8 @@ import java.util.List;
  * Created by sr186054 on 5/6/16.
  */
 public class TemplateInstanceCreator {
+    private static final Logger log = LoggerFactory.getLogger(TemplateInstanceCreator.class);
+
     private String templateId;
     private NifiRestClient restClient;
 
@@ -48,11 +52,13 @@ public class TemplateInstanceCreator {
         TemplateDTO template = restClient.getTemplateById(templateId);
 
         if (template != null) {
+
             TemplateCreationHelper templateCreationHelper = new TemplateCreationHelper(this.restClient);
             String processGroupId = null;
 
             ProcessGroupEntity group = null;
             if(isCreateReusableFlow()){
+                log.info("Creating a new Reusable flow instance for template: {} ",template.getName());
                 //1 get/create the parent "reusable_templates" processgroup
                 ProcessGroupDTO reusableParentGroup = restClient.getProcessGroupByName("root", TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
                 if(reusableParentGroup == null){
@@ -61,6 +67,7 @@ public class TemplateInstanceCreator {
                 ProcessGroupDTO thisGroup = restClient.getProcessGroupByName(reusableParentGroup.getId(), template.getName());
                 if(thisGroup != null){
                     //version the group
+                    log.info("A previous Process group of with this name {} was found.  Versioning it before continuing",thisGroup.getName());
                     templateCreationHelper.versionProcessGroup(thisGroup);
 
                 }
@@ -69,16 +76,20 @@ public class TemplateInstanceCreator {
             else {
                 String tmpName = template.getName() + "_" + System.currentTimeMillis();
              group   =restClient.createProcessGroup(tmpName);
+                log.info("Creating a temporary process group with name {} for template {} ",tmpName, template.getName());
             }
             processGroupId = group.getProcessGroup().getId();
             if (StringUtils.isNotBlank(processGroupId)) {
                 //snapshot the existing controller services
                 templateCreationHelper.snapshotControllerServiceReferences();
+                log.info("Successfully Snapshot of controller services");
                 //create the flow from the template
                 templateCreationHelper.instantiateFlowFromTemplate(processGroupId, templateId);
+                log.info("Successfully created the temp flow");
 
                 if (this.createReusableFlow) {
                     ensureInputPortsForReuseableTemplate(processGroupId);
+                    log.info("Reusable flow, input ports created successfully.");
                 }
 
                 //mark the new services that were created as a result of creating the new flow from the template
@@ -97,11 +108,15 @@ public class TemplateInstanceCreator {
                     input = inputProcessors.get(0);
                 }
 
+                log.info("Attempt to update/validate controller services for template.");
                 //update any references to the controller services and try to assign the value to an enabled service if it is not already
                 if (input != null) {
+                    log.info("attempt to update controllerservices on {} input processor ",input.getName());
                     templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(input));
                 }
+                log.info("attempt to update controllerservices on {} processors ",(nonInputProcessors != null ? nonInputProcessors.size() : 0));
                 templateCreationHelper.updateControllerServiceReferences(nonInputProcessors);
+                log.info("Controller service validation complete");
                 //refetch processors for updated errors
                 entity = restClient.getProcessGroup(processGroupId, true, true);
                 nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity.getProcessGroup());
@@ -111,17 +126,22 @@ public class TemplateInstanceCreator {
                 ///make the input/output ports in the category group as running
                 if(isCreateReusableFlow())
                 {
+                    log.info("Reusable flow, attempt to mark the connection ports as running.");
                     templateCreationHelper.markConnectionPortsAsRunning(entity);
+                    log.info("Reusable flow.  Successfully marked the ports as running.");
                 }
 
 
                 newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
 
                 if(isCreateReusableFlow()) {
+                    log.info("Reusable flow, attempt to mark the Processors as running.");
                     templateCreationHelper.markProcessorsAsRunning(newProcessGroup);
+                    log.info("Reusable flow.  Successfully marked the Processors as running.");
                 }
 
                  templateCreationHelper.cleanupControllerServices();
+                log.info("Controller service cleanup complete");
                 List<NifiError> errors = templateCreationHelper.getErrors();
                     //add any global errors to the object
                     if (errors != null && !errors.isEmpty()) {
@@ -133,6 +153,7 @@ public class TemplateInstanceCreator {
 
 
                 newProcessGroup.setSuccess(!newProcessGroup.hasFatalErrors());
+                log.info("Finished importing template Errors found.  Success: {}, {} {}", newProcessGroup.isSuccess(),(errors != null ? errors.size() : 0), (errors != null ? " - " + StringUtils.join(errors) : ""));
 
                 return newProcessGroup;
 

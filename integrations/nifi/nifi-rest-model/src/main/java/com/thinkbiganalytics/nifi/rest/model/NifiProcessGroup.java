@@ -155,6 +155,16 @@ public class NifiProcessGroup {
         }));
     }
 
+
+    public List<NifiError> getAllErrors(){
+        List<NifiError> errors = new ArrayList<>();
+        for(NifiProcessorDTO item : getErrors()) {
+            if(item.getValidationErrors() != null && !item.getValidationErrors().isEmpty()) {
+                errors.addAll(item.getValidationErrors());
+            }
+        }
+        return errors;
+    }
     public boolean isSuccess() {
         return success;
     }

@@ -12,6 +12,8 @@ import com.thinkbiganalytics.rest.JerseyClientException;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 import org.xml.sax.SAXException;
@@ -31,6 +33,8 @@ import java.util.zip.ZipOutputStream;
  * Created by sr186054 on 5/6/16.
  */
 public class ExportImportTemplateService {
+    private static final Logger log = LoggerFactory.getLogger(ExportImportTemplateService.class);
+
 
     private static final String NIFI_TEMPLATE_XML_FILE = "nifiTemplate.xml";
 
@@ -213,6 +217,7 @@ public class ExportImportTemplateService {
     private ImportTemplate importZip(String fileName, InputStream inputStream, boolean overwrite, boolean createReusableFlow) throws JerseyClientException, IOException {
         ImportTemplate importTemplate = openZip(fileName, inputStream);
         RegisteredTemplate template = ObjectMapperSerializer.deserialize(importTemplate.getTemplateJson(), RegisteredTemplate.class);
+        log.info("Importing Zip file template {}, overwrite: {}, reusableFlow: {}",fileName,overwrite,createReusableFlow);
 
         //1 ensure this template doesnt already exist
         importTemplate.setTemplateName(template.getTemplateName());
@@ -248,7 +253,7 @@ public class ExportImportTemplateService {
             throw new UnsupportedOperationException("The Xml File you are trying to import is not a valid Nifi Template.  Please Try again. " + e.getMessage());
         }
 
-
+        log.info("Attempting to import Nifi Template: {} for file {}",templateName,fileName);
         TemplateDTO dto = nifiRestClient.importTemplate(template.getTemplateName(), importTemplate.getNifiTemplateXml());
         template.setNifiTemplateId(dto.getId());
         //register it in the system
@@ -287,6 +292,9 @@ public class ExportImportTemplateService {
         String xmlTemplate = writer.toString();
         importTemplate.setNifiTemplateXml(xmlTemplate);
 
+        log.info("Importing XML file template {}, overwrite: {}, reusableFlow: {}", fileName, overwrite, createReusableFlow);
+
+
         String oldTemplateXml = null;
 
         //Check to see if this template doesnt already exist in Nifi
@@ -307,27 +315,47 @@ public class ExportImportTemplateService {
             throw new UnsupportedOperationException("The Xml File you are trying to import is not a valid Nifi Template.  Please Try again. " + e.getMessage());
         }
 
+        log.info("Attempting to import Nifi Template: {} for file {}",templateName,fileName);
         TemplateDTO dto = nifiRestClient.importTemplate(xmlTemplate);
-
+        log.info("Import success... validate by creating a template instance in nifi Nifi Template: {} for file {}",templateName,fileName);
         NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(dto.getId(), createReusableFlow);
+        log.info("Import finished for {}, {}... verify results",templateName,fileName);
         if (newTemplateInstance.isSuccess()) {
+            log.info("SUCCESS! This template is valid Nifi Template: {} for file {}",templateName,fileName);
             importTemplate.setSuccess(true);
         } else {
+            String processGroupId = newTemplateInstance.getProcessGroupEntity().getProcessGroup().getId();
+            String parentProcessGroupId = newTemplateInstance.getProcessGroupEntity().getProcessGroup().getParentGroupId();
+            log.error("errors found");
+            log.error("ERROR! This template is NOT VALID Nifi Template: {} for file {}.  Errors are: {} ", templateName, fileName, newTemplateInstance.getAllErrors());
             //delete this template
             importTemplate.setSuccess(false);
             //delete the template?
             nifiRestClient.deleteTemplate(dto.getId());
+            log.info("Rollback Nifi:  Deleted the template: {}  from Nifi ", templateName);
+            nifiRestClient.stopAllProcessors(parentProcessGroupId, processGroupId);
+            //remove connections
+            nifiRestClient.removeConnectionsToProcessGroup(parentProcessGroupId, processGroupId);
+
+            log.info("Rollback Nifi: Stopped all processors on {}", newTemplateInstance.getProcessGroupEntity().getProcessGroup().getName());
             nifiRestClient.deleteProcessGroup(newTemplateInstance.getProcessGroupEntity().getProcessGroup());
+            log.error("Rollback Nifi: Deleted the process group {} from nifi: {}  from Nifi ", newTemplateInstance.getProcessGroupEntity().getProcessGroup().getName());
             //restore old template
             if (oldTemplateXml != null) {
+                log.info("Rollback Nifi: Attempt to restore old template xml ");
                 nifiRestClient.importTemplate(oldTemplateXml);
+                log.info("Rollback Nifi: restored old template xml ");
             }
+            log.info("Rollback Nifi: Rollback Complete! ");
         }
         importTemplate.setTemplateResults(newTemplateInstance);
         //delete processgroup
-        if (!createReusableFlow) {
+        if (!createReusableFlow && newTemplateInstance.isSuccess()) {
+            log.info("Success cleanup: Removing temporary flow from Nifi for processgroup: {}",newTemplateInstance.getProcessGroupEntity().getProcessGroup().getName());
             nifiRestClient.deleteProcessGroup(newTemplateInstance.getProcessGroupEntity().getProcessGroup());
+            log.info("Success cleanup: Successfully cleaned up Nifi" );
         }
+        log.info("Import all finished");
         return importTemplate;
     }
 

@@ -492,6 +492,23 @@ public class NifiRestClient extends JerseyRestClient {
         return get("/controller/process-groups/" + processGroupId + "/connections", null, ConnectionsEntity.class);
     }
 
+    public void removeConnectionsToProcessGroup(String parentProcessGroupId, final String processGroupId) throws JerseyClientException{
+        ConnectionsEntity connectionsEntity = getProcessGroupConnections(parentProcessGroupId);
+        if(connectionsEntity != null && connectionsEntity.getConnections() != null) {
+          List<ConnectionDTO> connections =  Lists.newArrayList(Iterables.filter(connectionsEntity.getConnections(), new Predicate<ConnectionDTO>() {
+                @Override
+                public boolean apply(ConnectionDTO connectionDTO) {
+                    return connectionDTO.getDestination().getGroupId().equals(processGroupId);
+                }
+            }));
+            if(connections != null){
+                for(ConnectionDTO connectionDTO : connections){
+                    deleteConnection(connectionDTO);
+                }
+            }
+        }
+
+    }
 
     public ProcessGroupEntity getProcessGroup(String processGroupId, boolean recursive, boolean verbose)
             throws JerseyClientException {

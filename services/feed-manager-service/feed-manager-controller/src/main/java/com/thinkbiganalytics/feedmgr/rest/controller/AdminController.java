@@ -40,9 +40,8 @@ public class AdminController {
                                     @FormDataParam("file") FormDataContentDisposition fileMetaData,
     @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite, @FormDataParam("createReusableFlow") @DefaultValue("false") boolean createReusableFlow) throws Exception
     {
+      ExportImportTemplateService.ImportTemplate importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(),fileInputStream,overwrite,createReusableFlow);
 
-
-        ExportImportTemplateService.ImportTemplate importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(),fileInputStream,overwrite,createReusableFlow);
         return Response.ok(importTemplate).build();
     }
 

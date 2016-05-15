@@ -2,6 +2,7 @@ package com.thinkbiganalytics.nifi.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.common.base.MoreObjects;
 
 /**
  * Created by sr186054 on 2/2/16.
@@ -69,5 +70,14 @@ public class NifiError {
 
     public void setSeverity(SEVERITY severity) {
         this.severity = severity;
+    }
+
+    @Override
+    public String toString() {
+        return MoreObjects.toStringHelper(this)
+                .add("severity", severity)
+                .add("category", category)
+                .add("message", message)
+                .toString();
     }
 }
