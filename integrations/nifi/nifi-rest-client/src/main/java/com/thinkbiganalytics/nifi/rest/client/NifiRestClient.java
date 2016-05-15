@@ -802,12 +802,18 @@ public class NifiRestClient extends JerseyRestClient {
 
     //http://localhost:8079/nifi-api/controller/controller-services/node/edfe9a53-4fde-4437-a798-1305830c15ac
     public ControllerServiceEntity enableControllerService(String id) throws JerseyClientException {
-        ControllerServiceEntity entity = new ControllerServiceEntity();
-        ControllerServiceDTO dto = new ControllerServiceDTO();
-        dto.setState(NifiProcessUtil.SERVICE_STATE.ENABLED.name());
-        entity.setControllerService(dto);
-        updateEntityForSave(entity);
-        return put("/controller/controller-services/node/" + id, entity, ControllerServiceEntity.class);
+        ControllerServiceEntity entity = getControllerService(null,id);
+        ControllerServiceDTO dto = entity.getControllerService();
+        if(!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
+            dto.setState(NifiProcessUtil.SERVICE_STATE.ENABLED.name());
+
+            entity.setControllerService(dto);
+            updateEntityForSave(entity);
+            return put("/controller/controller-services/NODE/" + id, entity, ControllerServiceEntity.class);
+        }
+        else {
+            return entity;
+        }
     }
 
     public ControllerServiceEntity disableControllerService(String id) throws JerseyClientException {
@@ -816,7 +822,7 @@ public class NifiRestClient extends JerseyRestClient {
         dto.setState(NifiProcessUtil.SERVICE_STATE.DISABLED.name());
         entity.setControllerService(dto);
         updateEntityForSave(entity);
-        return put("/controller/controller-services/node/" + id, entity, ControllerServiceEntity.class);
+        return put("/controller/controller-services/NODE/" + id, entity, ControllerServiceEntity.class);
     }
 
 

@@ -187,8 +187,7 @@ public class TemplateCreationHelper {
                             set = true;
                         } catch (JerseyClientException e) {
                             //errors.add(new NifiError(NifiError.SEVERITY.WARN,"Error trying to enable Controller Service " + dto.getName() +" on referencing Processor: " + property.getProcessorName() + " and field " + property.getKey() + ". Please go to Nifi and configure and enable this Service before creating this feed.", "Controller Services"));
-
-                        }
+                         }
                     }
                     if (!set) {
                         boolean controllerServiceSet = false;
@@ -232,7 +231,6 @@ public class TemplateCreationHelper {
                                         }
                                     } catch (JerseyClientException e) {
                                         //errors will be handled downstream
-
                                     }
                                 }
                             }

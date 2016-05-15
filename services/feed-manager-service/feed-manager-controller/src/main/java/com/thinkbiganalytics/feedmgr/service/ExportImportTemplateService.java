@@ -326,8 +326,7 @@ public class ExportImportTemplateService {
         } else {
             String processGroupId = newTemplateInstance.getProcessGroupEntity().getProcessGroup().getId();
             String parentProcessGroupId = newTemplateInstance.getProcessGroupEntity().getProcessGroup().getParentGroupId();
-            log.error("errors found");
-            log.error("ERROR! This template is NOT VALID Nifi Template: {} for file {}.  Errors are: {} ", templateName, fileName, newTemplateInstance.getAllErrors());
+             log.error("ERROR! This template is NOT VALID Nifi Template: {} for file {}.  Errors are: {} ", templateName, fileName, newTemplateInstance.getAllErrors());
             //delete this template
             importTemplate.setSuccess(false);
             //delete the template?
