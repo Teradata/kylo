@@ -28,9 +28,11 @@ md-list .md-button:not(.md-no-style) {
   text-transform: none;
 }
 
+md-list-item.with-padding.md-no-proxy {
+  padding:16px !important;
+}
 
-
-md-list-item .md-no-style, md-list-item.md-no-proxy {
+md-list-item .md-no-style, md-list-item:not(.with-padding).md-no-proxy {
   padding:0px !important;
   line-height:inherit;
 }
