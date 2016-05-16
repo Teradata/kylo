@@ -39,7 +39,10 @@ public class JobExecutionRowMapper implements RowMapper<TbaJobExecution> {
     int i = 0;
     while (i < rsmd.getColumnCount()) {
       i++;
-      String columnName = rsmd.getColumnName(i);
+      String columnName = rsmd.getColumnLabel(i);
+      if(StringUtils.isBlank(columnName)){
+        columnName = rsmd.getColumnName(i);
+      }
       int columnType = rsmd.getColumnType(i);
       String tableName = rsmd.getTableName(i);
       columnNames.add(columnName);
@@ -96,6 +99,11 @@ public class JobExecutionRowMapper implements RowMapper<TbaJobExecution> {
     String feedName = null;
     if (columnNames.contains("FEED_NAME")) {
       feedName = rs.getString("FEED_NAME");
+    }
+
+    if(StringUtils.isBlank(feedName) && columnNames.contains("STRING_VAL") ){
+      feedName = rs.getString("STRING_VAL");
+
     }
 
     if (!jobInstanceMap.containsKey(jobInstanceId)) {
