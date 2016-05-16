@@ -26,5 +26,14 @@ public interface MetadataRecorder {
     
     void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg);
 
+    // TODO: Remove all following when working
+
+    void recordFeedInitialization(String systemCategory, String feedName);
+
+    boolean isFeedInitialized(String systemCategory, String feedName);
+
+    void recordLastLoadTime(String systemCategory, String feedName, DateTime time);
+
+    DateTime getLastLoadTime(String systemCategory, String feedName);
 
 }

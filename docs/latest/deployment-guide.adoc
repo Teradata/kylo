@@ -43,10 +43,11 @@ The Data Lake Accelerator services should be installed on an edge node.  The fol
 Follow the steps below to install the data lake accelerator. This procedure is also recommended for installing to a Hortonworks sandbox.
 
 
-. Login to the the host using root or sudo access
+. Login to the host using root or sudo access
 
-. Find and download the RPM file from artifactory and place on the host linux machine. You can right click the download
-  link and copy the url to use wget instead
+. R&D provides a pre-built RPM compiled against recent versions of Hadoop, Spark, and NiFi libraries.  Find and download the RPM file from artifactory and place on the
+host linux machine. You can
+right click the download:
 
            http://54.152.98.43:8080/artifactory/webapp/search/artifact/?7&q=thinkbig-datalake-accelerator  (requires VPN)
 
@@ -54,7 +55,7 @@ Follow the steps below to install the data lake accelerator. This procedure is a
 
            $ rpm -ivh thinkbig-datalake-accelerator-<version>.noarch.rpm
 
-. Run the setup wizard - /opt/thinkbig/setup/setup-wizard.sh
+. Run the setup wizard - sudo /opt/thinkbig/setup/setup-wizard.sh
 
     Follow the directions and it will install the following:
     * MySQL or Postgres scripts into the local database
@@ -64,11 +65,20 @@ Follow the steps below to install the data lake accelerator. This procedure is a
 
     Elasticsearch, NiFi, and ActiveMQ will be started when the wizard is finished
 
+. Add nifi and thinkbig user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
+    $ usermod -a -G hdfs nifi
+    $ usermod -a -G hdfs thinkbig
+
+. Create a dropzone folder on the edge node for file ingest, for example:
+    $ mkdir -p /var/dropzone
+    $ chown nifi /var/dropzone
+Note: Files should be copied into the dropzone such that user nifi can read and remove.
+
 . Start the three Think Big services
 
            $ /opt/thinkbig/start-thinkbig-apps.sh
 
-           At this point all services should be running
+           At this point all services should be running. Note that services are started automatically on boot.
 
 TIP: See section below on how to use the cleanup script to completely remove all of the components above. This is useful in
      a DEV or sandbox environment so you can run a clean install.
@@ -233,7 +243,7 @@ Below are the default URL's and ports for the services
 	password: thinkbig
 
     NiFi UI
-    http://127.0.0.1:8079
+    http://127.0.0.1:8079/nifi
 
     Elasticsearch REST API
     http://127.0.0.1:9200

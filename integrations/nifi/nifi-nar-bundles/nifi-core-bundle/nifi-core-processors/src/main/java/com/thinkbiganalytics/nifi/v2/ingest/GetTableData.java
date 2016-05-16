@@ -4,21 +4,12 @@
 
 package com.thinkbiganalytics.nifi.v2.ingest;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-import java.util.concurrent.TimeUnit;
+import com.thinkbiganalytics.ingest.GetTableDataSupport;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
+import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
+import com.thinkbiganalytics.util.ComponentAttributes;
+import com.thinkbiganalytics.util.JdbcCommon;
 
 import org.apache.commons.lang3.Validate;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -42,14 +33,21 @@ import org.apache.nifi.util.StopWatch;
 import org.joda.time.DateTime;
 import org.joda.time.format.ISODateTimeFormat;
 
-import com.thinkbiganalytics.ingest.GetTableDataSupport;
-import com.thinkbiganalytics.nifi.core.api.metadata.BatchLoadStatus;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
-import com.thinkbiganalytics.nifi.thrift.api.AbstractRowVisitor;
-import com.thinkbiganalytics.util.BatchLoadStatusImpl;
-import com.thinkbiganalytics.util.ComponentAttributes;
-import com.thinkbiganalytics.util.JdbcCommon;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+import java.util.concurrent.TimeUnit;
 
 @TriggerWhenEmpty
 @InputRequirement(Requirement.INPUT_FORBIDDEN)
@@ -283,7 +281,9 @@ public class GetTableData extends AbstractProcessor {
                             rs = support.selectFullLoad(tableName, selectFields);
                         } else if (strategy == LoadStrategy.INCREMENTAL) {
 
-                            lastLoadDate = recorder.getLastLoadTime(session, incoming, categoryName).toDate();
+                            // TODO: restore when working
+                            //lastLoadDate = recorder.getLastLoadTime(session, incoming, categoryName).toDate();
+                            lastLoadDate = recorder.getLastLoadTime(categoryName, feedName).toDate();
                             visitor = new LastFieldVisitor(dateField, lastLoadDate);
                             rs = support.selectIncremental(tableName, selectFields, dateField, overlapTime, lastLoadDate, backoffTime, GetTableDataSupport.UnitSizes.valueOf(unitSize));
                         } else {
@@ -332,7 +332,8 @@ public class GetTableData extends AbstractProcessor {
                     outgoing = session.putAttribute(outgoing, ComponentAttributes.PREVIOUS_HIGHWATER_DATE.key(), prettyDate(previousHighwater));
                     outgoing = session.putAttribute(outgoing, ComponentAttributes.NEW_HIGHWATER_DATE.key(), prettyDate(newHighwater));
                     
-                    recorder.recordLastLoadTime(session, incoming, categoryName, new DateTime(newHighwater));
+                    //recorder.recordLastLoadTime(session, incoming, categoryName, new DateTime(newHighwater));
+                    recorder.recordLastLoadTime(categoryName, feedName, new DateTime(newHighwater));
 
                     logger.info("Recorded load status feed {} date {}", new Object[]{feedName, newHighwater});
                 }

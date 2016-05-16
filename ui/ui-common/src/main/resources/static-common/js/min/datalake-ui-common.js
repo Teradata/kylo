@@ -369,16 +369,15 @@ angular.module(COMMON_APP_MODULE_NAME).service('ConfigurationService', function 
 
   var self = this;
   this.MODULE_URLS = "/api/v1/configuration/module-urls";
-});
-angular.module(COMMON_APP_MODULE_NAME).directive('fileModel', ['$parse', function ($parse) {
+});angular.module(COMMON_APP_MODULE_NAME).directive('fileModel', ['$parse', function ($parse) {
     return {
         restrict: 'A',
-        link: function(scope, element, attrs) {
+        link: function (scope, element, attrs) {
             var model = $parse(attrs.fileModel);
             var modelSetter = model.assign;
 
-            element.bind('change', function(){
-                scope.$apply(function(){
+            element.bind('change', function () {
+                scope.$apply(function () {
                     modelSetter(scope, element[0].files[0]);
                 });
             });
@@ -387,23 +386,21 @@ angular.module(COMMON_APP_MODULE_NAME).directive('fileModel', ['$parse', functio
 }]);
 
 
-
-
 function uploadFile($parse) {
     var directive = {
         restrict: 'E',
         template: '<input id="fileInput" type="file" class="ng-hide"> <md-button id="uploadButton" class="md-raised md-primary" aria-label="attach_file">    Choose file </md-button><md-input-container class="condensed-no-float" md-no-float  flex>    <input id="textInput" size="40" ng-model="fileName" type="text" placeholder="No file chosen" ng-readonly="true" style="margin-top: 20px;"></md-input-container>',
-        link: function(scope, element, attrs) {
+        link: function (scope, element, attrs) {
             var input = $(element[0].querySelector('#fileInput'));
             var button = $(element[0].querySelector('#uploadButton'));
             var textInput = $(element[0].querySelector('#textInput'));
 
             var size = attrs.inputSize;
-            if(size !=  null) {
+            if (size != null) {
                 try {
                     size = parseInt(size);
-                    input.attr("size",size)
-                }catch(e){
+                    input.attr("size", size)
+                } catch (e) {
 
                 }
 
@@ -413,15 +410,15 @@ function uploadFile($parse) {
             var modelSetter = model.assign;
 
             if (input.length && button.length && textInput.length) {
-                button.click(function(e) {
+                button.click(function (e) {
                     input.click();
                 });
-                textInput.click(function(e) {
+                textInput.click(function (e) {
                     input.click();
                 });
             }
 
-            input.on('change', function(e) {
+            input.on('change', function (e) {
                 var files = e.target.files;
                 if (files[0]) {
                     scope.fileName = files[0].name;
@@ -430,7 +427,7 @@ function uploadFile($parse) {
                     scope.fileName = null;
                     button.addClass("md-primary")
                 }
-                scope.$apply(function(){
+                scope.$apply(function () {
                     modelSetter(scope, files[0]);
                 });
             });
@@ -440,30 +437,29 @@ function uploadFile($parse) {
 }
 
 
-
-angular.module(COMMON_APP_MODULE_NAME).directive('uploadFile',['$parse', uploadFile]);
+angular.module(COMMON_APP_MODULE_NAME).directive('uploadFile', ['$parse', uploadFile]);
 
 
 angular.module(COMMON_APP_MODULE_NAME).service('FileUpload', ['$http', function ($http) {
-    this.uploadFileToUrl = function(file, uploadUrl, successFn, errorFn,params){
+    this.uploadFileToUrl = function (file, uploadUrl, successFn, errorFn, params) {
         var fd = new FormData();
         fd.append('file', file);
-        if(params){
-            angular.forEach(params,function(val,key){
-                fd.append(key,val);
+        if (params) {
+            angular.forEach(params, function (val, key) {
+                fd.append(key, val);
             })
         }
         $http.post(uploadUrl, fd, {
             transformRequest: angular.identity,
             headers: {'Content-Type': undefined}
         })
-            .success(function(data){
-                if(successFn){
+            .success(function (data) {
+                if (successFn) {
                     successFn(data)
                 }
             })
-            .error(function(err){
-                if(errorFn){
+            .error(function (err) {
+                if (errorFn) {
                     errorFn(err)
                 }
             });

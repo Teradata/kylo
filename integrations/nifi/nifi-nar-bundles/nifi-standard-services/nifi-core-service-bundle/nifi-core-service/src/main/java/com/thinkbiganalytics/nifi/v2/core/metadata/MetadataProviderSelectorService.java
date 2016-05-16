@@ -7,10 +7,9 @@
  */
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
 import org.apache.nifi.components.AllowableValue;
@@ -21,9 +20,10 @@ import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
 
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * @author Sean Felten
@@ -76,6 +76,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
     @OnEnabled
     public void onConfigured(final ConfigurationContext context) throws InitializationException {
         PropertyValue impl = context.getProperty(IMPLEMENTATION);
+        this.recorder = new MetadataClientRecorder();
 
         if (impl.getValue().equalsIgnoreCase("REMOTE")) {
             URI uri = URI.create(context.getProperty(CLIENT_URL).toString());
@@ -84,6 +85,8 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
         }
     }
+
+
 
     @Override
     public MetadataProvider getProvider() {

@@ -3,7 +3,11 @@
  */
 package com.thinkbiganalytics.nifi.v2.core.metadata;
 
-import java.net.URI;
+import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
+import com.thinkbiganalytics.metadata.rest.model.Formatters;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessSession;
@@ -11,11 +15,9 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.thinkbiganalytics.metadata.rest.client.MetadataClient;
-import com.thinkbiganalytics.metadata.rest.model.Formatters;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *
@@ -26,6 +28,13 @@ public class MetadataClientRecorder implements MetadataRecorder {
     private static final Logger log = LoggerFactory.getLogger(MetadataClientRecorder.class);
     
     private MetadataClient client;
+
+    // TODO: Remove this
+    public Map<String,Boolean> workaroundRegistration = new HashMap<>();
+
+    // TODO: remove this (
+    public Map<String,DateTime> workaroundWatermark = new HashMap<>();
+
 
     public MetadataClientRecorder() {
         this(URI.create("http://localhost:8077/api/metadata"));
@@ -90,10 +99,38 @@ public class MetadataClientRecorder implements MetadataRecorder {
         }
     }
 
+
+
     @Override
     public void updateFeedStatus(ProcessSession session, FlowFile ff, String statusMsg) {
         // TODO Auto-generated method stub
         
+    }
+
+    @Override
+    // TODO: Remove workaroundRegistration
+    public void recordFeedInitialization(String systemCategory, String feedName) {
+        workaroundRegistration.put(systemCategory + "." + feedName, true);
+    }
+
+    @Override
+    // TODO: Remove workaroundRegistration
+    public boolean isFeedInitialized(String systemCategory, String feedName) {
+        Boolean result = workaroundRegistration.get(systemCategory+"."+feedName);
+        return (result == null ? false : result);
+    }
+
+    @Override
+    // TODO: Remove workaroundwatermark
+    public void recordLastLoadTime(String systemCategory, String feedName, DateTime time) {
+        workaroundWatermark.put(systemCategory+"."+feedName, time);
+    }
+
+    @Override
+    // TODO: Remove workaroundwatermark
+    public DateTime getLastLoadTime(String systemCategory, String feedName) {
+        DateTime dt =  workaroundWatermark.get(systemCategory+"."+feedName);
+        return (dt == null ? new DateTime(0L) : dt);
     }
 
 }
