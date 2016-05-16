@@ -23,6 +23,7 @@ import org.springframework.batch.core.launch.JobOperator;
 import org.springframework.batch.core.launch.NoSuchJobExecutionException;
 import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -167,16 +168,7 @@ public class NifiJobService extends AbstractJobService {
 
     @Override
     public boolean stopJobExecution(Long executionId) throws JobExecutionException {
-        JobExecution execution = this.jobExplorer.getJobExecution(executionId);
-        if (execution.getStartTime() == null) {
-            execution.setStartTime(new Date());
-        }
-        execution.setEndTime(new Date());
-        try {
-            return this.jobOperator.stop(executionId);
-        } catch (NoSuchJobExecutionException | JobExecutionNotRunningException e) {
-            throw new JobExecutionException(e);
-        }
+        throw new UnsupportedOperationException("Unable to stop Nifi Job Execution at this time.  Please mark the job as Failed and Abandoned, if necessary.");
     }
 
     @Override

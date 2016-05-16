@@ -17,6 +17,7 @@ import org.springframework.batch.core.repository.dao.JobExecutionDao;
 import org.springframework.batch.core.repository.dao.JobInstanceDao;
 import org.springframework.batch.core.repository.dao.StepExecutionDao;
 import org.springframework.batch.item.ExecutionContext;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.util.Assert;
 
 import java.util.*;
@@ -124,7 +125,13 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
         jobExecution.setLastUpdated(DateTimeUtil.getUTCTime());
         jobExecution.setEndTime(DateTimeUtil.getUTCTime());//nifiJobExecution.getEndTime());
         executionContextValuesService.saveJobExecutionContextValues(jobExecution);
-        jobExecutionDao.updateJobExecution(jobExecution);
+        try {
+            jobExecutionDao.updateJobExecution(jobExecution);
+        }catch(OptimisticLockingFailureException e) {
+            //increment the version and try to save again
+            jobExecution.incrementVersion();
+            jobExecutionDao.updateJobExecution(jobExecution);
+        }
         nifiJobExecution.setVersion(jobExecution.getVersion());
     }
 
@@ -159,7 +166,13 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
         ExitStatus exitStatus = jobExecution.getExitStatus().addExitDescription(sb.toString());
         jobExecution.setExitStatus(exitStatus);
         executionContextValuesService.saveJobExecutionContextValues(jobExecution);
-        jobExecutionDao.updateJobExecution(jobExecution);
+        try {
+            jobExecutionDao.updateJobExecution(jobExecution);
+        }catch(OptimisticLockingFailureException e) {
+            //increment the version and try to save again
+            jobExecution.incrementVersion();
+            jobExecutionDao.updateJobExecution(jobExecution);
+        }
         nifiJobExecution.setVersion(jobExecution.getVersion());
     }
 

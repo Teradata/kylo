@@ -2,6 +2,9 @@ angular.module(COMMON_APP_MODULE_NAME).service('NotificationService', function (
 
     var self = this;
     this.alerts = {};
+    this.CONNECTION_ERRORS_ALERT_THRESHOLD = 5;
+    this.connectionErrors = 0;
+    this.lastConnectionError = 0;
 
     this.addAlert = function(errorType,message, detailMsg,type, timeout, groupKey) {
         var id = IDGenerator.generateId("alert");
@@ -87,7 +90,29 @@ angular.module(COMMON_APP_MODULE_NAME).service('NotificationService', function (
         //Only add the error if it doesnt already exist
         if(groupKey != undefined) {
             if (this.getAlertWithGroupKey(groupKey) == null) {
-                return this.addAlert(errorType,message, detailMsg,"danger",undefined, groupKey);
+                var alert = false;
+                if(groupKey == "Connection Error"){
+                    self.connectionErrors++;
+                    //reset the connection error check if > 1 min
+                    if((new Date().getTime() - self.lastConnectionError) > 60000)
+                    {
+                        self.connectionErrors = 0;
+                    }
+                    self.lastConnectionError = new Date().getTime();
+                    if(self.connectionErrors > self.CONNECTION_ERRORS_ALERT_THRESHOLD){
+                        self.connectionErrors = 0;
+                        alert = true;
+                    }
+                } else {
+                    alert = true;
+                }
+                if(alert) {
+                    return this.addAlert(errorType, message, detailMsg, "danger", undefined, groupKey);
+                }
+                else {
+                    return {};
+                }
+
             }
         }
         else {

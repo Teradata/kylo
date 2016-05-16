@@ -67,7 +67,7 @@
                         </md-item >
                         <md-divider></md-divider>
                         <md-list-item   layout-align="end center"  layout-row class="pagination-list-item">
-                            <dir-pagination-controls pagination-id="vm.paginationId(tab)"
+                            <dir-pagination-controls pagination-id="vm.paginationId(tab)" ng-if="vm.viewType == 'list'"
                                                      auto-hide="false"
                                                      max-size="5"
                                                      direction-links="true"

@@ -40,11 +40,9 @@ var JobService = angular.module(MODULE_OPERATIONS).factory('JobData', ['$q', '$h
                 if(errorMessage &&  errorMessage.startsWith("A job instance already exists and is complete")){
                     errorMessage = "Unable to restart.  This job is already complete.<br/> If you want to run this job again, change the parameters."
                 }
-                console.log('ERROR restarting job',errorMessage);
 
-                NotificationService.error( errorMessage);
+             //   NotificationService.error( errorMessage);
                 if(errorCallback) {
-                    console.log('ERROR restarting job calling ErrorCallback');
                     errorCallback(errorMessage);
                 }
             })
@@ -57,7 +55,7 @@ var JobService = angular.module(MODULE_OPERATIONS).factory('JobData', ['$q', '$h
             }).error(function (msg) {
                 var errorMessasge = msg.error != undefined ? msg.error +': ': '';
                 errorMessasge +=msg.message;
-                NotificationService.error( errorMessasge);
+            //    NotificationService.error( errorMessasge);
             })
     }
     JobData.abandonJob = function ( executionId, params, callback) {
@@ -67,7 +65,7 @@ var JobService = angular.module(MODULE_OPERATIONS).factory('JobData', ['$q', '$h
             }).error(function (msg) {
                 var errorMessasge = msg.error != undefined ? msg.error +': ': '';
                 errorMessasge +=msg.message;
-                NotificationService.error( errorMessasge);
+            //    NotificationService.error( errorMessasge);
             })
     };
 
@@ -78,7 +76,7 @@ var JobService = angular.module(MODULE_OPERATIONS).factory('JobData', ['$q', '$h
             }).error(function (msg) {
                 var errorMessasge = msg.error != undefined ? msg.error +': ': '';
                 errorMessasge +=msg.message;
-                NotificationService.error( errorMessasge);
+              //  NotificationService.error( errorMessasge);
             })
     };
 
