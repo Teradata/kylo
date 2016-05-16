@@ -110,27 +110,38 @@ public class MetadataClientRecorder implements MetadataRecorder {
     @Override
     // TODO: Remove workaroundRegistration
     public void recordFeedInitialization(String systemCategory, String feedName) {
-        workaroundRegistration.put(systemCategory + "." + feedName, true);
+        String key = feedKey(systemCategory, feedName);
+        log.warn("recordFeedInit feed {} size {}", key, workaroundRegistration.size());
+        workaroundRegistration.put(key, true);
     }
 
     @Override
     // TODO: Remove workaroundRegistration
     public boolean isFeedInitialized(String systemCategory, String feedName) {
-        Boolean result = workaroundRegistration.get(systemCategory+"."+feedName);
+        String key = feedKey(systemCategory,feedName);
+        Boolean result = workaroundRegistration.get(key);
+        log.warn("isFeedInitialized feed {} size {} result {}", key, workaroundRegistration.size(), result);
         return (result == null ? false : result);
     }
 
     @Override
     // TODO: Remove workaroundwatermark
     public void recordLastLoadTime(String systemCategory, String feedName, DateTime time) {
-        workaroundWatermark.put(systemCategory+"."+feedName, time);
+        String key = feedKey(systemCategory,feedName);
+        workaroundWatermark.put(key, time);
     }
 
     @Override
     // TODO: Remove workaroundwatermark
     public DateTime getLastLoadTime(String systemCategory, String feedName) {
-        DateTime dt =  workaroundWatermark.get(systemCategory+"."+feedName);
+        String key = feedKey(systemCategory,feedName);
+        DateTime dt =  workaroundWatermark.get(key);
         return (dt == null ? new DateTime(0L) : dt);
+    }
+
+    // TODO: Remove workaround
+    private String feedKey(String systemCategory, String feedName) {
+        return systemCategory+"."+feedName;
     }
 
 }

@@ -116,8 +116,8 @@ public class RouteOnRegistration extends AbstractProcessor {
             //boolean required = recorder.isFeedInitialized(incoming);
 
             // TODO: remove this workaround
-            boolean required = recorder.isFeedInitialized(categoryName, feedName);
-            if (required) {
+            boolean isInitialized = recorder.isFeedInitialized(categoryName, feedName);
+            if (!isInitialized) {
                 session.transfer(outgoing, REL_REGISTRATION_REQ);
             } else {
                 session.transfer(outgoing, REL_SUCCESS);
