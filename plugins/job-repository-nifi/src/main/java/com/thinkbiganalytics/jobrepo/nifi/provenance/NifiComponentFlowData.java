@@ -8,6 +8,7 @@ import com.thinkbiganalytics.jobrepo.nifi.model.FlowFileEvents;
 import com.thinkbiganalytics.jobrepo.nifi.model.NifiJobExecution;
 import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
@@ -301,7 +302,11 @@ public class NifiComponentFlowData {
         if (!feedEndingProcessors.containsKey(feedGroup)) {
             Set<ProcessorDTO> processorDTOs = new HashSet<>();
             try {
-                Set<NifiVisitableProcessor> processors = nifiRestClient.getFlowOrder(feedGroup.getId()).getEndingProcessors();
+                Set<NifiVisitableProcessor> processors = null;
+                NifiVisitableProcessGroup group =  nifiRestClient.getFlowOrder(feedGroup.getId());
+                if(group != null){
+                    processors = group.getEndingProcessors();
+                }
                 if (processors != null) {
                     for (NifiVisitableProcessor p : processors) {
                         processorDTOs.add(p.getDto());

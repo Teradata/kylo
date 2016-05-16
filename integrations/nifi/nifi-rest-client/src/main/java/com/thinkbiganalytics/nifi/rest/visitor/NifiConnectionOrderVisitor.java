@@ -9,6 +9,7 @@ import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.apache.nifi.web.api.dto.ConnectableDTO;
@@ -68,7 +69,7 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
         NifiVisitableProcessor sourceProcessor = getSourceProcessor(connection.getDto());
 
         if(destinationProcessor != null){
-           if(relationships != null && relationships.contains("failure") && !relationships.contains("success")){
+           if(relationships != null && relationships.contains("failure") && !relationships.contains("success") && (StringUtils.isBlank(connection.getDto().getName()) || !StringUtils.startsWithIgnoreCase(connection.getDto().getName(),"retry"))){
                destinationProcessor.setIsFailureProcessor(true);
            }
         }

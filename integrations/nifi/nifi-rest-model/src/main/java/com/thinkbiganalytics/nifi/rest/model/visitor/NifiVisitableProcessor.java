@@ -129,7 +129,7 @@ public class NifiVisitableProcessor implements  NifiVisitable {
             failureProcessors.add(this.getDto());
         }
         for(NifiVisitableProcessor child: getDestinations()){
-            if(!failureProcessors.contains(this.getDto())) {
+            if(!failureProcessors.contains(this.getDto()) &&  !child.containsDestination(this)) {
                 failureProcessors.addAll(child.getFailureProcessors());
             }
         }

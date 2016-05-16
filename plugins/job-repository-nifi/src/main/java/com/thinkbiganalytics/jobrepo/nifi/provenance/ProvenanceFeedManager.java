@@ -125,7 +125,7 @@ public class ProvenanceFeedManager {
 
         Set<BulletinDTO> warnings = new HashSet<>();
         //Get any bulletins that have not been processed and dont match the current component
-        //if this happens it is because the processor failed and didnt get registered in the PRovenance event list.
+        //if this happens it is because the processor failed and didnt get registered in the Provenance event list.
         //we need to create a new  Component and Event with the bulletin id and add it in the correct place in the event history
 
         List<BulletinDTO> bulletins = nifiComponentFlowData.getBulletinsNotYetProcessedForOtherComponents(event);
