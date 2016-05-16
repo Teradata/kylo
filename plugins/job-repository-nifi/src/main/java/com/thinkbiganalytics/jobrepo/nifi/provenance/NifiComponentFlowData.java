@@ -336,15 +336,21 @@ public class NifiComponentFlowData {
 
     public boolean isFailureProcessor(ProvenanceEventRecordDTO event) {
         ProcessGroupDTO feedGroup = getFeedProcessGroup(event);
-        if (!feedFailureProcessors.containsKey(feedGroup)) {
-            LOG.info("Check for Failure Processor on Feed Group " + feedGroup);
-            populateFeedFailureProcessorMap(feedGroup);
+        if(feedGroup != null) {
+            if (!feedFailureProcessors.containsKey(feedGroup)) {
+                LOG.info("Check for Failure Processor on Feed Group " + feedGroup);
+                populateFeedFailureProcessorMap(feedGroup);
+            }
+            boolean isFailure = feedFailureProcessors.get(feedGroup).containsKey(event.getComponentId());
+            if (isFailure) {
+                LOG.info("Failure Processor Found:  {} ", event.getFlowFileComponent());
+            }
+            return feedFailureProcessors.get(feedGroup).containsKey(event.getComponentId());
         }
-        boolean isFailure = feedFailureProcessors.get(feedGroup).containsKey(event.getComponentId());
-        if (isFailure) {
-            LOG.info("Failure Processor Found:  {} ", event.getFlowFileComponent());
+        else {
+            LOG.warn("Warning unable to find Feed Process Group for Event {} when checkign for isFailureProcessor",event);
+            return false;
         }
-        return feedFailureProcessors.get(feedGroup).containsKey(event.getComponentId());
     }
 
     public void populateGroupIdForEvent(ProvenanceEventRecordDTO event) {
