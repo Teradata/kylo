@@ -127,10 +127,10 @@ public class ProvenanceEventListener {
             previousEvent = flowFile.getPreviousEvent(event);
         }
         if (previousEvent != null) {
-            log.info("Getting StartTime for {} from previous EndTime of {} ({})", event.getFlowFileComponent(), previousEvent.getFlowFileComponent().getEndTime(), previousEvent.getFlowFileComponent());
+            log.debug("Getting StartTime for {} from previous EndTime of {} ({})", event.getFlowFileComponent(), previousEvent.getFlowFileComponent().getEndTime(), previousEvent.getFlowFileComponent());
             return new DateTime(previousEvent.getFlowFileComponent().getEndTime());
         } else {
-            log.info("Cant Find Previous Event to get Start Time for ", event.getFlowFileComponent());
+            log.info("Cant Find Previous Event to get Start Time for {}, returning current time ", event.getFlowFileComponent());
             return new DateTime();
         }
     }
@@ -139,15 +139,16 @@ public class ProvenanceEventListener {
         //mark the component as complete
         FlowFileEvents eventFlowFile = flowFileEventProvider.getFlowFile(event.getFlowFileUuid());
         if (eventFlowFile.markComponentComplete(event.getComponentId(), new DateTime())) {
-            log.info("COMPLETING Component Event {} ", event.getFlowFileComponent());
+            log.info("COMPLETING Component {} ", event.getFlowFileComponent());
             //if the current Event is a failure Processor that means the previous component failed.
             //mark the previous event as failed
             if (provenanceFeedManager.isFailureProcessor(event)) {
                 //get or create the event and component for failure
                 //lookup bulletins for failure events
                 boolean addedFailure = provenanceFeedManager.processBulletinsAndFailComponents(event);
-                if (addedFailure) {
-                    log.info("Added Failure for bulletins for {} ({}) ", event.getFlowFileComponent().getComponetName(), event.getComponentId());
+                //if the step was not failed because of bulletin records then fail it
+                if (!addedFailure) {
+                    log.info("Added Failure for {} ({}) ", event.getFlowFileComponent().getComponetName(), event.getComponentId());
                     provenanceFeedManager.componentFailed(event);
                 } else {
                     provenanceFeedManager.componentCompleted(event);
@@ -186,7 +187,7 @@ public class ProvenanceEventListener {
 
         //mark the component as running
         if (flowFile.markComponentRunning(event.getComponentId(), startTime)) {
-            log.info("Starting Component IDS: FF ID: {}, Comp ID: {}, Component: {} in flowfile: {}, Flow File Component: {}, RUN_STATUS: {} ", System.identityHashCode(flowFile), System.identityHashCode(flowFile.getComponent(event.getComponentId())), event.getFlowFileComponent(), flowFile, flowFile.getComponent(event.getComponentId()), flowFile.getComponent(event.getComponentId()).getRunStatus());
+            log.info("Starting Component {} in flowfile: {}, RUN_STATUS: {} ", event.getFlowFileComponent(), flowFile, event.getFlowFileComponent().getRunStatus());
             //if we start a failure processor check bulletins for other events
             if (provenanceFeedManager.isFailureProcessor(event)) {
                 //get or create the event and component for failure

@@ -743,8 +743,7 @@ public class ProvenanceEventRecordDTO  implements RunStatus, Serializable {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("eventId", this.getEventId())
-                .add("nifiEventId", nifiEventId)
+                .add("eventId", this.getEventId() == null ? nifiEventId : this.getEventId())
                 .add("eventTime", this.getEventTime())
                 .add("eventType", this.getEventType())
                 .toString();

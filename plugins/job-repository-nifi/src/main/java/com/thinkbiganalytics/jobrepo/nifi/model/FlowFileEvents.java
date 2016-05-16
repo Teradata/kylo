@@ -60,6 +60,16 @@ public class FlowFileEvents extends RunStatusContext implements Serializable {
         return this.jobExecutionId;
     }
 
+    public Set<String> getAllFlowFileIds(){
+        Set<String>flowFileIds = new HashSet();
+        flowFileIds.add(getUuid());
+       for(FlowFileEvents child : getChildren()){
+           flowFileIds.addAll(child.getAllFlowFileIds());
+       }
+        return flowFileIds;
+
+    }
+
     public FlowFileEvents(String uuid) {
         this.uuid = uuid;
         this.createDate = new DateTime();
@@ -76,6 +86,10 @@ public class FlowFileEvents extends RunStatusContext implements Serializable {
     public void addEvent(ProvenanceEventRecordDTO event) {
         getEvents().add(event);
         event.setFlowFile(this);
+    }
+
+    public void removeEvent(ProvenanceEventRecordDTO event) {
+        getEvents().remove(event);
     }
 
     public Set<FlowFileEvents> getParents() {
@@ -174,9 +188,9 @@ public class FlowFileEvents extends RunStatusContext implements Serializable {
     public boolean markComponentRunning(String componentId, DateTime startTime) {
         FlowFileComponent component = getComponent(componentId);
         if (component != null) {
-            LOG.info("Flow File Events... mark component as Running for {}... current status: {} ", component, component.getRunStatus());
+            LOG.debug("Flow File Events... mark component as Running for {}... current status: {} ", component, component.getRunStatus());
             boolean running = component.markRunning(startTime);
-            LOG.info("Flow File Events running status:... mark component as Running? {} for {} ", running, component);
+            LOG.debug("Flow File Events running status:... mark component as Running? {} for {} ", running, component);
             if (running) {
                 runningComponents.add(component);
             }

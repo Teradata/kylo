@@ -199,8 +199,8 @@ public class FlowFileComponent extends RunStatusContext implements Serializable 
 
         return MoreObjects.toStringHelper(this)
                 .add("eventIds", StringUtils.join(getEventIds()))
-                .add("componentId", componentId)
                 .add("componetName", componetName)
+                .add("componentId", componentId)
                 .add("stepExecutionId", stepExecutionId)
                 .add("version", version)
                 .add("stepFinished", stepFinished)

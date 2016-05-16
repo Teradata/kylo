@@ -139,7 +139,7 @@ public class ProvenanceEventStartupListener implements ApplicationStartupListene
                 try {
                     ProvenanceEventEntity provenanceEventEntity =  nifiRestClient.getProvenanceEvent(nifiEventId.toString());
                     if(provenanceEventEntity != null && provenanceEventEntity.getProvenanceEvent() != null){
-                        ProvenanceEventRecordDTO recordDTO = new ProvenanceEventRecordDTO(null,provenanceEventEntity.getProvenanceEvent());
+                        ProvenanceEventRecordDTO recordDTO = new ProvenanceEventRecordDTO(provenanceEventEntity.getProvenanceEvent().getEventId(),provenanceEventEntity.getProvenanceEvent());
                         provenanceEventDTOs.add(recordDTO);
                         eventToStepIdMap.put(recordDTO.getEventId(),step);
                     }

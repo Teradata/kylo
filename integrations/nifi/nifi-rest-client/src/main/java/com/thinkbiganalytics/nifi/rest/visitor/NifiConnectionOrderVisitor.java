@@ -87,7 +87,7 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
     @Override
     public void visitProcessGroup(NifiVisitableProcessGroup processGroup) {
 
-    log.info(" Visit Process Group: {}, ({}) ",processGroup.getDto().getName(),processGroup.getDto().getId());
+    log.debug(" Visit Process Group: {}, ({}) ",processGroup.getDto().getName(),processGroup.getDto().getId());
 
         NifiVisitableProcessGroup group = visitedProcessGroups.get(processGroup.getDto().getId());
 
