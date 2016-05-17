@@ -201,7 +201,7 @@ public class CreateFeedBuilder {
         templateCreationHelper.updateControllerServiceReferences(nonInputProcessors);
         //refetch processors for updated errors
         entity = restClient.getProcessGroup(processGroupId, true, true);
-        input = NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType);
+     //   input = NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType);
         nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity.getProcessGroup());
 
         newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
@@ -463,7 +463,7 @@ public class CreateFeedBuilder {
   }
 
   private void updateFeedSchedule(NifiProcessGroup newProcessGroup, ProcessorDTO input) {
-    if (feedSchedule != null) {
+    if (feedSchedule != null && input != null) {
       input.getConfig().setSchedulingPeriod(feedSchedule.getSchedulingPeriod());
       input.getConfig().setSchedulingStrategy(feedSchedule.getSchedulingStrategy());
       input.getConfig().setConcurrentlySchedulableTaskCount(feedSchedule.getConcurrentTasks());
