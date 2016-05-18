@@ -35,7 +35,7 @@ CREATE TABLE `FEED` (
   `display_name` varchar(100) DEFAULT NULL,
   `initialized` char(1) DEFAULT NULL,
   `name` varchar(100) NOT NULL,
-  `state` varchar(10) DEFAULT 'NEW',
+  `state` varchar(10) DEFAULT 'ENABLED',
   `sla_id` binary(16) DEFAULT NULL,
   `version` int(11) DEFAULT '1',
    `category_id` binary(16) DEFAULT NULL,

@@ -13,13 +13,18 @@ import com.thinkbiganalytics.rest.JerseyClientException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.*;
 import org.apache.nifi.web.api.entity.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by sr186054 on 5/6/16.
  */
 public class TemplateCreationHelper {
+
+    private static final Logger log = LoggerFactory.getLogger(TemplateCreationHelper.class);
 
     public static String REUSABLE_TEMPLATES_PROCESS_GROUP_NAME = "reusable_templates";
 
@@ -30,6 +35,11 @@ public class TemplateCreationHelper {
     private Set<ControllerServiceDTO> snapshotControllerServices;
 
     private Set<ControllerServiceDTO> newlyCreatedControllerServices;
+
+    Map<String,Integer> controllerServiceEnableAttempts = new ConcurrentHashMap<>();
+
+    private Integer MAX_ENABLE_ATTEMPTS = 5;
+    private Long ENABLE_CONTROLLER_SERVICE_WAIT_TIME = 3000L;
 
     public TemplateCreationHelper(NifiRestClient restClient){
         this.restClient = restClient;
@@ -61,12 +71,12 @@ public class TemplateCreationHelper {
         Map<String,ProcessorDTO> processors = NifiProcessUtil.getProcessorsMap(processGroupDTO);
         if(processors != null && !processors.isEmpty()){
             for(ProcessorDTO processor: processors.values()){
-               List<PropertyDescriptorDTO> propertyDescriptors = Lists.newArrayList(Iterables.filter(processor.getConfig().getDescriptors().values(), new Predicate<PropertyDescriptorDTO>() {
-                   @Override
-                   public boolean apply(PropertyDescriptorDTO propertyDescriptorDTO) {
-                       return StringUtils.isNotBlank(propertyDescriptorDTO.getIdentifiesControllerService());
-                   }
-               }));
+                List<PropertyDescriptorDTO> propertyDescriptors = Lists.newArrayList(Iterables.filter(processor.getConfig().getDescriptors().values(), new Predicate<PropertyDescriptorDTO>() {
+                    @Override
+                    public boolean apply(PropertyDescriptorDTO propertyDescriptorDTO) {
+                        return StringUtils.isNotBlank(propertyDescriptorDTO.getIdentifiesControllerService());
+                    }
+                }));
                 if(propertyDescriptors != null){
                     for(PropertyDescriptorDTO propertyDescriptor : propertyDescriptors){
                         String value = processor.getConfig().getProperties().get(propertyDescriptor.getName());
@@ -90,7 +100,7 @@ public class TemplateCreationHelper {
             }
 
             for(ControllerServiceProperty controllerServiceProperty: controllerServiceProperties){
-              ControllerServiceDTO controllerServiceDTO = controllerServices.get(controllerServiceProperty.getPropertyValue());
+                ControllerServiceDTO controllerServiceDTO = controllerServices.get(controllerServiceProperty.getPropertyValue());
                 String message = "The Controller Service assigned to Processor: "+controllerServiceProperty.getProcessorName()+"["+controllerServiceProperty.getProcessorId()+"] - "+controllerServiceProperty.getPropertyName();
                 if(controllerServiceDTO == null){
                     controllerServiceProperty.setValid(false);
@@ -115,7 +125,7 @@ public class TemplateCreationHelper {
             }
 
         }
-      return new ControllerServicePropertyHolder(controllerServiceProperties);
+        return new ControllerServicePropertyHolder(controllerServiceProperties);
 
 
 
@@ -143,6 +153,37 @@ public class TemplateCreationHelper {
         return newServices;
     }
 
+    private ControllerServiceEntity tryToEnableControllerService(String serviceId, String name){
+        try {
+            ControllerServiceEntity entity =  restClient.enableControllerService(serviceId);
+        return entity;
+        } catch (JerseyClientException e) {
+            if(e.getCause().getMessage().contains("409")){
+                //wait and try again
+                Integer attempt = controllerServiceEnableAttempts.get(serviceId);
+                if(attempt == null){
+                    attempt = 0;
+                    controllerServiceEnableAttempts.put(serviceId,attempt);
+                }
+                attempt++;
+                controllerServiceEnableAttempts.put(serviceId,attempt);
+                if(attempt <= MAX_ENABLE_ATTEMPTS) {
+                    log.info("Error attempting to enable the controller service {},{}.  Attempt Number: {} .  Waiting {} seconds before trying again", serviceId, name, attempt, ENABLE_CONTROLLER_SERVICE_WAIT_TIME / 1000);
+                    try {
+                        Thread.sleep(ENABLE_CONTROLLER_SERVICE_WAIT_TIME);
+                        tryToEnableControllerService(serviceId,name);
+                    } catch (InterruptedException e2) {
+e.printStackTrace();
+                    }
+                }else {
+                    log.error("Unable to Enable Controller Service for {}, {}.  Max retry attempts of {} exceeded ",name,serviceId,MAX_ENABLE_ATTEMPTS);
+                }
+
+            }
+
+       }
+        return null;
+    }
 
     public void updateControllerServiceReferences(List<ProcessorDTO> processors) {
 
@@ -176,18 +217,19 @@ public class TemplateCreationHelper {
 
             for (final NifiProperty property : properties) {
                 String controllerService = property.getPropertyDescriptor().getIdentifiesControllerService();
+                boolean isRequired = property.getPropertyDescriptor().isRequired();
                 if (StringUtils.isNotBlank(controllerService)) {
                     boolean set = false;
 
                     //if the service is not enabled, but it exists then try to enable that
                     if (!enabledServices.containsKey(property.getValue()) && allServices.containsKey(property.getValue())) {
                         ControllerServiceDTO dto = allServices.get(property.getValue());
-                        try {
-                            restClient.enableControllerService(dto.getId());
+                            ControllerServiceEntity entity = tryToEnableControllerService(dto.getId(),dto.getName());
+                            if(entity != null && entity.getControllerService() != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getControllerService().getState())) {
+                                enabledServices.put(entity.getControllerService().getId(),entity.getControllerService());
+                            }
                             set = true;
-                        } catch (JerseyClientException e) {
-                            //errors.add(new NifiError(NifiError.SEVERITY.WARN,"Error trying to enable Controller Service " + dto.getName() +" on referencing Processor: " + property.getProcessorName() + " and field " + property.getKey() + ". Please go to Nifi and configure and enable this Service before creating this feed.", "Controller Services"));
-                         }
+
                     }
                     if (!set) {
                         boolean controllerServiceSet = false;
@@ -221,17 +263,11 @@ public class TemplateCreationHelper {
                                 }
                                 if (allServices.containsKey(allowableValueDTO.getValue())) {
                                     property.setValue(allowableValueDTO.getValue());
-                                    try {
-                                        ControllerServiceEntity
-                                                entity = restClient.enableControllerService(allowableValueDTO.getValue());
-                                        if (entity != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name()
-                                                .equalsIgnoreCase(entity.getControllerService().getState())) {
-                                            controllerServiceSet = true;
-                                            break;
+                                        ControllerServiceEntity entity = tryToEnableControllerService(allowableValueDTO.getValue(),controllerServiceName);
+                                        if(entity != null && entity.getControllerService() != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getControllerService().getState())) {
+                                            enabledServices.put(entity.getControllerService().getId(),entity.getControllerService());
                                         }
-                                    } catch (JerseyClientException e) {
-                                        //errors will be handled downstream
-                                    }
+                                        controllerServiceSet = true;
                                 }
                             }
                         }
@@ -239,7 +275,7 @@ public class TemplateCreationHelper {
                             //update the processor
                             restClient.updateProcessorProperty(property.getProcessGroupId(), property.getProcessorId(), property);
                         }
-                        if (!controllerServiceSet) {
+                        if (!controllerServiceSet && (StringUtils.isNotBlank(property.getValue()) || isRequired) ) {
                             errors.add(new NifiError(NifiError.SEVERITY.FATAL,
                                     "Error trying to enable Controller Service " + controllerServiceName
                                             + " on referencing Processor: " + property.getProcessorName() + " and field " + property
@@ -254,7 +290,7 @@ public class TemplateCreationHelper {
 
         } catch (JerseyClientException e) {
             errors.add(new NifiError(NifiError.SEVERITY.FATAL, "Error trying to identify Controller Services. " + e.getMessage(),
-                     NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
+                    NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
         }
     }
 
@@ -298,50 +334,50 @@ public class TemplateCreationHelper {
 
         }
         //delete all connections
-            ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(processGroup.getParentGroupId());
-            if(connectionsEntity != null) {
-                List<ConnectionDTO> connections =                 NifiConnectionUtil.findConnectionsMatchingSourceGroupId(connectionsEntity.getConnections(), processGroup.getId());
+        ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(processGroup.getParentGroupId());
+        if(connectionsEntity != null) {
+            List<ConnectionDTO> connections =                 NifiConnectionUtil.findConnectionsMatchingSourceGroupId(connectionsEntity.getConnections(), processGroup.getId());
 
-                    if(connections != null) {
-                        for(ConnectionDTO connection: connections){
-                            String type = connection.getDestination().getType();
-                            if(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)){
-                                //stop the port
-                                try {
-                                    restClient.stopOutputPort(connection.getParentGroupId(), connection.getDestination().getId());
-                                }catch (JerseyClientException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            try {
-                                restClient.deleteConnection(connection);
-                            }catch (JerseyClientException e) {
-                                e.printStackTrace();
-                            }
+            if(connections != null) {
+                for(ConnectionDTO connection: connections){
+                    String type = connection.getDestination().getType();
+                    if(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)){
+                        //stop the port
+                        try {
+                            restClient.stopOutputPort(connection.getParentGroupId(), connection.getDestination().getId());
+                        }catch (JerseyClientException e) {
+                            e.printStackTrace();
                         }
                     }
-
-                    connections = NifiConnectionUtil.findConnectionsMatchingDestinationGroupId(connectionsEntity.getConnections(), processGroup.getId());
-                    if(connections != null) {
-                        for(ConnectionDTO connection: connections){
-                            String type = connection.getSource().getType();
-                            if(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)){
-                                //stop the port
-                                try {
-                                    restClient.stopInputPort(connection.getParentGroupId(), connection.getSource().getId());
-                                }catch (JerseyClientException e) {
-                                    e.printStackTrace();
-                                }
-                            }
-                            try {
-                                restClient.deleteConnection(connection);
-                            }catch (JerseyClientException e) {
-                                e.printStackTrace();
-                            }
-                        }
+                    try {
+                        restClient.deleteConnection(connection);
+                    }catch (JerseyClientException e) {
+                        e.printStackTrace();
                     }
-
+                }
             }
+
+            connections = NifiConnectionUtil.findConnectionsMatchingDestinationGroupId(connectionsEntity.getConnections(), processGroup.getId());
+            if(connections != null) {
+                for(ConnectionDTO connection: connections){
+                    String type = connection.getSource().getType();
+                    if(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)){
+                        //stop the port
+                        try {
+                            restClient.stopInputPort(connection.getParentGroupId(), connection.getSource().getId());
+                        }catch (JerseyClientException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    try {
+                        restClient.deleteConnection(connection);
+                    }catch (JerseyClientException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+        }
 
 
 

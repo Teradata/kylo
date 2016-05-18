@@ -1,4 +1,7 @@
 #!/bin/bash
+
+chown -R thinkbig:users /opt/thinkbig
+
 rpmInstallDir=/opt/thinkbig
 pgrepMarkerThinkbigUi=thinkbig-ui-pgrep-marker
 pgrepMarkerThinkbigServices=thinkbig-services-pgrep-marker
@@ -28,6 +31,7 @@ cat << EOF > /etc/init.d/thinkbig-ui
   # chkconfig: 345 95 20
   # description: thinkbig-ui
   # processname: thinkbig-ui
+  RUN_AS_USER=thinkbig
   case "\$1" in
     start)
         if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
@@ -35,7 +39,7 @@ cat << EOF > /etc/init.d/thinkbig-ui
             echo Already running.
           else
             echo Starting thinkbig-ui ...
-            $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh
+            su - $RUN_AS_USER -c "$rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh"
         fi
       ;;
     stop)
@@ -96,6 +100,7 @@ cat << EOF > /etc/init.d/thinkbig-services
   # chkconfig: 345 95 20
   # description: thinkbig-services
   # processname: thinkbig-services
+  RUN_AS_USER=thinkbig
   case "\$1" in
     start)
         if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
@@ -103,7 +108,7 @@ cat << EOF > /etc/init.d/thinkbig-services
             echo Already running.
           else
             echo Starting thinkbig-services ...
-            $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
+            su - $RUN_AS_USER -c "$rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh"
         fi
       ;;
     stop)
@@ -150,7 +155,7 @@ echo "   - Installed thinkbig-spark-shell to '$rpmInstallDir/thinkbig-spark-shel
 
 cat << EOF > $rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh
   #!/bin/bash
-  spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellServer --jars \`find $rpmInstallDir/thinkbig-spark-shell/lib/ -name "*.jar" | paste -d, -s\` $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
+  spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --jars \`find $rpmInstallDir/thinkbig-spark-shell/lib/ -name "*.jar" | paste -d, -s\` $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
 EOF
 chmod +x $rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh
 echo "   - Created thinkbig-spark-shell script '$rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh'"
@@ -162,6 +167,7 @@ cat << EOF > /etc/init.d/thinkbig-spark-shell
   # processname: thinkbig-spark-shell
   stdout_log="/var/log/thinkbig-spark-shell/thinkbig-spark-shell.log"
   stderr_log="/var/log/thinkbig-spark-shell/thinkbig-spark-shell.err"
+  RUN_AS_USER=thinkbig
   case "\$1" in
     start)
         if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
@@ -169,7 +175,7 @@ cat << EOF > /etc/init.d/thinkbig-spark-shell
             echo Already running.
           else
             echo Starting thinkbig-spark-shell ...
-            $rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh >> "\$stdout_log" 2>> "\$stderr_log" &
+            su - $RUN_AS_USER -c "$rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh" >> "\$stdout_log" 2>> "\$stderr_log" &
         fi
       ;;
     stop)
@@ -214,6 +220,8 @@ echo "rpm -e $lastRpm " > $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh
 chmod +x $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh
 
 }
+
+chown -R thinkbig:users /opt/thinkbig
 
 echo "   INSTALL COMPLETE"
 echo "   - Please configure the application using the property files and scripts located under the '$rpmInstallDir/thinkbig-ui/conf' and '$rpmInstallDir/thinkbig-services/conf' folder.  See deployment guide for details."

@@ -246,18 +246,20 @@ function FeedErrorDialogController($scope, $mdDialog, $mdToast, $http, StateServ
             })
         }
 
-        angular.forEach(createdFeed.feedProcessGroup.errors,function(processor){
-            if(processor.validationErrors){
-                angular.forEach(processor.validationErrors,function(error){
-                    var copy = {};
-                    angular.extend(copy,error);
-                    angular.extend(copy,processor);
-                    copy.validationErrors = null;
-                    errorMap[error.severity].push(copy);
-                    count++;
-                });
-            }
-        });
+        if(createdFeed.feedProcessGroup != null) {
+            angular.forEach(createdFeed.feedProcessGroup.errors, function (processor) {
+                if (processor.validationErrors) {
+                    angular.forEach(processor.validationErrors, function (error) {
+                        var copy = {};
+                        angular.extend(copy, error);
+                        angular.extend(copy, processor);
+                        copy.validationErrors = null;
+                        errorMap[error.severity].push(copy);
+                        count++;
+                    });
+                }
+            });
+        }
         $scope.feedErrorsData = errorMap;
         $scope.feedErrorsCount = count;
     }

@@ -7,17 +7,17 @@ import com.thinkbiganalytics.spark.service.TransformService;
 
 import org.apache.spark.SparkConf;
 import org.apache.spark.util.ShutdownHookManager;
-import org.eclipse.jetty.server.Server;
 import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.jetty.JettyHttpContainerFactory;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
-
-import java.net.URI;
+import org.springframework.beans.factory.config.PropertyOverrideConfigurer;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
 
 import javax.annotation.Nonnull;
-import javax.ws.rs.core.UriBuilder;
 
 import io.swagger.jaxrs.listing.ApiListingResource;
 import io.swagger.jaxrs.listing.SwaggerSerializers;
@@ -28,7 +28,8 @@ import scala.runtime.BoxedUnit;
 /**
  * Instantiates a REST server for executing Spark scripts.
  */
-public class SparkShellServer {
+@SpringBootApplication
+public class SparkShellApp {
 
     /**
      * Instantiates the REST server with the specified arguments.
@@ -36,10 +37,18 @@ public class SparkShellServer {
      * @param args the command-line arguments
      * @throws Exception if an error occurs
      */
-    public static void main(@Nonnull final String[] args) throws Exception {
-        // Create configuration
-        ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class,
-                                                   SparkShellController.class);
+    public static void main(String[] args) throws Exception {
+        SpringApplication.run(SparkShellApp.class, args);
+    }
+
+    /**
+     * Gets the resource configuration for setting up Jersey.
+     *
+     * @return the Jersey configuration
+     */
+    @Bean
+    public ResourceConfig getJerseyConfig () {
+        ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class, SparkShellController.class);
 
         SparkConf conf = new SparkConf().setAppName("SparkShellServer");
         final ScriptEngine scriptEngine = ScriptEngineFactory.getScriptEngine(conf);
@@ -61,12 +70,22 @@ public class SparkShellServer {
             }
         });
 
-        // Start server
-        URI bindUri = UriBuilder.fromUri("http://0.0.0.0/").port(8450).build();
+        return config;
+    }
 
-        Server server = JettyHttpContainerFactory.createServer(bindUri, config);
-        server.start();
-        server.join();
+    /**
+     * Gets additional property configurations.
+     *
+     * @return additional property configurations
+     */
+    @Bean
+    public PropertyOverrideConfigurer getPropertyOverrideConfigurer() {
+        PropertyOverrideConfigurer poc = new PropertyOverrideConfigurer();
+        poc.setIgnoreInvalidKeys(true);
+        poc.setIgnoreResourceNotFound(true);
+        poc.setLocations(new ClassPathResource("application.properties"), new ClassPathResource("applicationDevOverride.properties"));
+        poc.setOrder(-100);
+        return poc;
     }
 
     /**

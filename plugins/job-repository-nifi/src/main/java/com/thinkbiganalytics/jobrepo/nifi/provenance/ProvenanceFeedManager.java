@@ -27,6 +27,8 @@ public class ProvenanceFeedManager {
 
     private static final Logger LOG = LoggerFactory.getLogger(ProvenanceFeedManager.class);
     public static final String NIFI_JOB_TYPE_PROPERTY = "tb.jobType";
+    public static final String NIFI_FEED_PROPERTY = "feed";
+    public static final String NIFI_CATEGORY_PROPERTY = "category";
     public static final String AUTO_TERMINATED_FAILURE_RELATIONSHIP = "auto-terminated by failure relationship";
 
     private ObjectMapperSerializer objectMapperSerializer;
@@ -100,7 +102,9 @@ public class ProvenanceFeedManager {
         NifiJobExecution jobExecution = event.getFlowFileComponent().getJobExecution();
         if (event.getUpdatedAttributes().containsKey(NIFI_JOB_TYPE_PROPERTY)) {
             String jobType = (String) event.getUpdatedAttributes().get(NIFI_JOB_TYPE_PROPERTY);
-            String feedName = (String) event.getAttributeMap().get(FeedConstants.PARAM__FEED_NAME);
+            String nifiCategory = (String) event.getAttributeMap().get(NIFI_CATEGORY_PROPERTY);
+            String nifiFeedName =  (String) event.getAttributeMap().get(NIFI_FEED_PROPERTY);
+            String feedName = nifiCategory+"."+nifiFeedName;
             LOG.info("UPDATING JOB TYPE TO BE " + jobType + " for Feed " + feedName);
             if (FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK.equalsIgnoreCase(jobType)) {
                 jobExecution.setJobType(FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK);

@@ -4,6 +4,8 @@ import com.thinkbiganalytics.spark.metadata.TransformRequest;
 import com.thinkbiganalytics.spark.metadata.TransformResponse;
 import com.thinkbiganalytics.spark.service.TransformService;
 
+import org.springframework.stereotype.Component;
+
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 
@@ -28,6 +30,7 @@ import io.swagger.annotations.ApiResponses;
  * Endpoint for executing Spark scripts on the server.
  */
 @Api(value = "spark-shell")
+@Component
 @Path("/api/v1/spark/shell")
 public class SparkShellController {
 

@@ -1,3 +1,8 @@
 #!/bin/bash
-/usr/sbin/groupadd -f -r thinkbig 2> /dev/null || :
-/usr/sbin/useradd -r -m -c "thinkbig user" -g thinkbig thinkbig 2> /dev/null || :
+echo "Installing data lake accelerator"
+echo "Creating thinkbig user"
+if [ $(getent passwd thinkbig) ] ; then
+    echo "The thinkbig user already exists"
+else
+    useradd -m thinkbig -d /opt/thinkbig
+fi
