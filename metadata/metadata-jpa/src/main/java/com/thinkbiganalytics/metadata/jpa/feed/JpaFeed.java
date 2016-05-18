@@ -366,7 +366,8 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
             return set;
         }
         
-        protected ServiceLevelAgreement getAgreement() {
+        @Override
+        public ServiceLevelAgreement getAgreement() {
             return sla;
         }
     }

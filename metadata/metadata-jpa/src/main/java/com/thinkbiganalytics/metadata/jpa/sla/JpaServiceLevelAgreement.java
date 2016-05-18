@@ -13,9 +13,12 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
+
+import org.hibernate.annotations.GenericGenerator;
 
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.jpa.BaseId;
@@ -141,7 +144,7 @@ public class JpaServiceLevelAgreement extends AbstractAuditedEntity implements S
         
         private static final long serialVersionUID = 6965221468619613881L;
         
-        @Column(name="id", columnDefinition="binary(16)", length = 16)
+        @Column(name="id", columnDefinition="binary(16)")
         private UUID uuid;
         
         public static SlaId create() {

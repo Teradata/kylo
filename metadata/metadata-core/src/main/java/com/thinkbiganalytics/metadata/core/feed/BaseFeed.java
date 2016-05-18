@@ -363,7 +363,8 @@ public class BaseFeed implements Feed {
             return set;
         }
         
-        protected ServiceLevelAgreement getAgreement() {
+        @Override
+        public ServiceLevelAgreement getAgreement() {
             return sla;
         }
     }

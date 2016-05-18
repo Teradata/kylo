@@ -6,6 +6,7 @@ package com.thinkbiganalytics.metadata.api.feed;
 import java.util.Set;
 
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
  *
@@ -19,4 +20,5 @@ public interface FeedPrecondition {
     
     Set<Metric> getMetrics();
 
+    ServiceLevelAgreement getAgreement();
 }
