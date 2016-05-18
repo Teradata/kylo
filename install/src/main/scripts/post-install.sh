@@ -155,7 +155,7 @@ echo "   - Installed thinkbig-spark-shell to '$rpmInstallDir/thinkbig-spark-shel
 
 cat << EOF > $rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh
   #!/bin/bash
-  spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellServer --jars \`find $rpmInstallDir/thinkbig-spark-shell/lib/ -name "*.jar" | paste -d, -s\` $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
+  spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --jars \`find $rpmInstallDir/thinkbig-spark-shell/lib/ -name "*.jar" | paste -d, -s\` $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
 EOF
 chmod +x $rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh
 echo "   - Created thinkbig-spark-shell script '$rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh'"

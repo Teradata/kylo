@@ -23,5 +23,6 @@ userdel activemq
 
 echo "Uninstalling elasticsearch"
 rpm -e elasticsearch
+rm -rf /var/lib/elasticsearch/
 
 echo "Uninstall complete. You should now be able to re-install the RPM and run the setup wizard to get a clean install"
