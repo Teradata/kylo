@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.reflect.TypeToken;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -25,7 +26,14 @@ import org.codehaus.jettison.json.JSONObject;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * This processor aggregates JSON metadata about a hive table so that a table and it's columns are in one JSON document
@@ -34,69 +42,70 @@ import java.util.*;
 @Tags({"hive", "metadata", "thinkbig", "elasticsearch"})
 @CapabilityDescription("Aggregate JSON across multiple documents into one document representing a Hive table (V2)")
 public class MergeHiveTableMetadata extends AbstractProcessor {
+
     // relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
-            .name("success")
-            .description("Json objects that are successfully merged are transferred to this relationship")
-            .build();
+        .name("success")
+        .description("Json objects that are successfully merged are transferred to this relationship")
+        .build();
 
     public static final Relationship REL_FAILURE = new Relationship.Builder()
-            .name("failure")
-            .description(
-                    "Json objects that are un-successfully merged are transferred to this relationship")
-            .build();
+        .name("failure")
+        .description(
+            "Json objects that are un-successfully merged are transferred to this relationship")
+        .build();
     private final Set<Relationship> relationships;
 
     // properties
     public static final PropertyDescriptor DATABASE_NAME = new PropertyDescriptor.Builder()
-            .name("Database Name Field")
-            .description("The name of the hive database field")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("Database Name Field")
+        .description("The name of the hive database field")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
     public static final PropertyDescriptor DATABASE_OWNER = new PropertyDescriptor.Builder()
-            .name("Database Owner Field")
-            .description("Database owner field name")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("Database Owner Field")
+        .description("Database owner field name")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
     public static final PropertyDescriptor TABLE_CREATE_TIME = new PropertyDescriptor.Builder()
-            .name("Table Create Time Field")
-            .description("Field representing the table create time")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("Table Create Time Field")
+        .description("Field representing the table create time")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
     public static final PropertyDescriptor TABLE_NAME = new PropertyDescriptor.Builder()
-            .name("Table Name Field")
-            .description("Field holding the table name")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("Table Name Field")
+        .description("Field holding the table name")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
     public static final PropertyDescriptor TABLE_TYPE = new PropertyDescriptor.Builder()
-            .name("Table Type Field")
-            .description("Field representing what type of hive table it is")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("Table Type Field")
+        .description("Field representing what type of hive table it is")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
     public static final PropertyDescriptor COLUMN_NAME = new PropertyDescriptor.Builder()
-            .name("Column Name Field")
-            .description("Field representing the column name")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("Column Name Field")
+        .description("Field representing the column name")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
     public static final PropertyDescriptor COLUMN_TYPE = new PropertyDescriptor.Builder()
-            .name("Column Type Field")
-            .description("Field representing what the column type is")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .expressionLanguageSupported(true)
-            .build();
+        .name("Column Type Field")
+        .description("Field representing what the column type is")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
 
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -130,20 +139,23 @@ public class MergeHiveTableMetadata extends AbstractProcessor {
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
         final ProcessorLog logger = getLogger();
-        FlowFile incoming = session.get();
-        FlowFile outgoing = (incoming == null ? session.create() : incoming);
+
+        FlowFile flowFile = session.get();
+        if (flowFile == null) {
+            return;
+        }
         try {
               /* Configuration parameters for spark launcher */
-            final String databaseNameField = context.getProperty(DATABASE_NAME).evaluateAttributeExpressions(outgoing).getValue();
-            final String databaseOwnerField = context.getProperty(DATABASE_OWNER).evaluateAttributeExpressions(outgoing).getValue();
-            final String tableCreateTimeField = context.getProperty(TABLE_CREATE_TIME).evaluateAttributeExpressions(outgoing).getValue();
-            final String tableNameField = context.getProperty(TABLE_NAME).evaluateAttributeExpressions(outgoing).getValue();
-            final String tableTypeField = context.getProperty(TABLE_TYPE).evaluateAttributeExpressions(outgoing).getValue();
-            final String columnNameField = context.getProperty(COLUMN_NAME).evaluateAttributeExpressions(outgoing).getValue();
-            final String columnTypeField = context.getProperty(COLUMN_TYPE).evaluateAttributeExpressions(outgoing).getValue();
+            final String databaseNameField = context.getProperty(DATABASE_NAME).evaluateAttributeExpressions(flowFile).getValue();
+            final String databaseOwnerField = context.getProperty(DATABASE_OWNER).evaluateAttributeExpressions(flowFile).getValue();
+            final String tableCreateTimeField = context.getProperty(TABLE_CREATE_TIME).evaluateAttributeExpressions(flowFile).getValue();
+            final String tableNameField = context.getProperty(TABLE_NAME).evaluateAttributeExpressions(flowFile).getValue();
+            final String tableTypeField = context.getProperty(TABLE_TYPE).evaluateAttributeExpressions(flowFile).getValue();
+            final String columnNameField = context.getProperty(COLUMN_NAME).evaluateAttributeExpressions(flowFile).getValue();
+            final String columnTypeField = context.getProperty(COLUMN_TYPE).evaluateAttributeExpressions(flowFile).getValue();
 
             final StringBuffer sb = new StringBuffer();
-            session.read(incoming, new InputStreamCallback() {
+            session.read(flowFile, new InputStreamCallback() {
 
                 @Override
                 public void process(InputStream in) throws IOException {
@@ -154,7 +166,7 @@ public class MergeHiveTableMetadata extends AbstractProcessor {
 
             logger.debug("The json that was received is: " + sb.toString());
 
-            outgoing = session.write(outgoing, new OutputStreamCallback() {
+            flowFile = session.write(flowFile, new OutputStreamCallback() {
                 @Override
                 public void process(final OutputStream out) throws IOException {
                     try {
@@ -212,16 +224,16 @@ public class MergeHiveTableMetadata extends AbstractProcessor {
             });
 
             logger.info("*** Completed with status ");
-            session.transfer(outgoing, REL_SUCCESS);
+            session.transfer(flowFile, REL_SUCCESS);
         } catch (final Exception e) {
-            e.printStackTrace();
-            logger.error("Unable to execute merge hive json job", new Object[]{incoming, e});
-            session.transfer(incoming, REL_FAILURE);
+            logger.error("Unable to execute merge hive json job", new Object[]{flowFile, e});
+            session.transfer(flowFile, REL_FAILURE);
         }
 
     }
 
     private class Metadata {
+
         private String databaseName;
         private String databaseOwner;
         private String tableCreateTime;
@@ -280,6 +292,7 @@ public class MergeHiveTableMetadata extends AbstractProcessor {
     }
 
     private class HiveColumn {
+
         private String columnName;
         private String columnType;
 

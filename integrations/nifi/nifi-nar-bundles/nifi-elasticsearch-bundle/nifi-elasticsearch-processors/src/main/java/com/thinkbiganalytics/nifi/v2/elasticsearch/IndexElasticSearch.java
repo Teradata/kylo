@@ -121,18 +121,18 @@ public class IndexElasticSearch extends AbstractProcessor {
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
         final ProcessorLog logger = getLogger();
-        FlowFile incoming = session.get();
-        FlowFile outgoing = (incoming == null ? session.create() : incoming);
+        FlowFile flowFile = session.get();
+        if (flowFile == null) return;
         try {
               /* Configuration parameters for spark launcher */
-            String indexName = context.getProperty(INDEX_NAME).evaluateAttributeExpressions(outgoing).getValue();
-            String type = context.getProperty(TYPE).evaluateAttributeExpressions(outgoing).getValue();
-            String hostName = context.getProperty(HOST_NAME).evaluateAttributeExpressions(outgoing).getValue();
-            String clusterName = context.getProperty(CLUSTER_NAME).evaluateAttributeExpressions(outgoing).getValue();
-            String idField = context.getProperty(ID_FIELD).evaluateAttributeExpressions(outgoing).getValue();
+            String indexName = context.getProperty(INDEX_NAME).evaluateAttributeExpressions(flowFile).getValue();
+            String type = context.getProperty(TYPE).evaluateAttributeExpressions(flowFile).getValue();
+            String hostName = context.getProperty(HOST_NAME).evaluateAttributeExpressions(flowFile).getValue();
+            String clusterName = context.getProperty(CLUSTER_NAME).evaluateAttributeExpressions(flowFile).getValue();
+            String idField = context.getProperty(ID_FIELD).evaluateAttributeExpressions(flowFile).getValue();
 
             final StringBuffer sb = new StringBuffer();
-            session.read(incoming, new InputStreamCallback() {
+            session.read(flowFile, new InputStreamCallback() {
 
                 @Override
                 public void process(InputStream in) throws IOException {
@@ -148,15 +148,15 @@ public class IndexElasticSearch extends AbstractProcessor {
              /* Wait for job completion */
             if (!success) {
                 logger.info("*** Completed with failed status ");
-                session.transfer(outgoing, REL_FAILURE);
+                session.transfer(flowFile, REL_FAILURE);
             } else {
                 logger.info("*** Completed with status ");
-                session.transfer(outgoing, REL_SUCCESS);
+                session.transfer(flowFile, REL_SUCCESS);
             }
         } catch (final Exception e) {
             e.printStackTrace();
-            logger.error("Unable to execute Elasticsearch job", new Object[]{incoming, e});
-            session.transfer(incoming, REL_FAILURE);
+            logger.error("Unable to execute Elasticsearch job", new Object[]{flowFile, e});
+            session.transfer(flowFile, REL_FAILURE);
         }
 
     }

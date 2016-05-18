@@ -104,13 +104,15 @@ public class UpdateRegistration extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        FlowFile incoming = session.get();
-        FlowFile outgoing = (incoming == null ? session.create() : incoming);
+        FlowFile flowFile = session.get();
+        if (flowFile == null) {
+            return;
+        }
         ProcessorLog logger = getLogger();
         try {
             final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
-            final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(outgoing).getValue();
-            final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(outgoing).getValue();
+            final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
+            final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
             //final String result = context.getProperty(RESULT).getValue();
 
             final MetadataRecorder client = metadataService.getRecorder();
@@ -122,9 +124,9 @@ public class UpdateRegistration extends AbstractProcessor {
             client.recordFeedInitialization(categoryName, feedName);
 
         } catch (final Exception e) {
-            logger.warn("Failed to update registration due to {}. Will proceed anyway resulting in new files going through registration.", new Object[]{incoming, e});
+            logger.warn("Failed to update registration due to {}. Will proceed anyway resulting in new files going through registration.", new Object[]{flowFile, e});
         }
-        session.transfer(outgoing, REL_SUCCESS);
+        session.transfer(flowFile, REL_SUCCESS);
     }
 
 }

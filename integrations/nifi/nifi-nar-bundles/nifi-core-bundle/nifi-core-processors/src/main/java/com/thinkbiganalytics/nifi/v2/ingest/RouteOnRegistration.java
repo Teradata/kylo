@@ -102,31 +102,31 @@ public class RouteOnRegistration extends AbstractProcessor {
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
         ProcessorLog logger = getLogger();
-        FlowFile incoming = session.get();
-        FlowFile outgoing = (incoming == null ? session.create() : incoming);
+        FlowFile flowFile = session.get();
+        if (flowFile == null) {
+            return;
+        }
 
         try {
             final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
-            final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(outgoing).getValue();
-            final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(outgoing).getValue();
+            final String categoryName = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
+            final String feedName = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
 
             final MetadataRecorder recorder = metadataService.getRecorder();
 
             // TODO: restore workaround
-            //boolean required = recorder.isFeedInitialized(incoming);
+            //boolean required = recorder.isFeedInitialized(flowFile);
 
             // TODO: remove this workaround
             boolean isInitialized = recorder.isFeedInitialized(categoryName, feedName);
-            if (!isInitialized) {
-                session.transfer(outgoing, REL_REGISTRATION_REQ);
-            } else {
-                session.transfer(outgoing, REL_SUCCESS);
+            if (isInitialized) {
+                session.transfer(flowFile, REL_SUCCESS);
             }
 
         } catch (final Exception e) {
-            logger.warn("Routing to registration required. Unable to determine registration status. Failed to route on registration due to {}", new Object[]{incoming, e});
-            session.transfer(outgoing, REL_REGISTRATION_REQ);
+            logger.warn("Routing to registration required. Unable to determine registration status. Failed to route on registration due to {}", new Object[]{flowFile, e});
         }
+        session.transfer(flowFile, REL_REGISTRATION_REQ);
     }
 
 }

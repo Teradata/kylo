@@ -116,14 +116,14 @@ public class MergeTable extends AbstractProcessor {
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
         final ProcessorLog logger = getLogger();
-        FlowFile incoming = session.get();
-        FlowFile outgoing = (incoming == null ? session.create() : incoming);
+        FlowFile flowFile = session.get();
+        if (flowFile == null) return;
 
         ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
-        String partitionSpecString = context.getProperty(PARTITION_SPECIFICATION).evaluateAttributeExpressions(outgoing).getValue();
-        String sourceTable = context.getProperty(SOURCE_TABLE).evaluateAttributeExpressions(outgoing).getValue();
-        String targetTable = context.getProperty(TARGET_TABLE).evaluateAttributeExpressions(outgoing).getValue();
-        String feedPartitionValue = context.getProperty(FEED_PARTITION).evaluateAttributeExpressions(outgoing).getValue();
+        String partitionSpecString = context.getProperty(PARTITION_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue();
+        String sourceTable = context.getProperty(SOURCE_TABLE).evaluateAttributeExpressions(flowFile).getValue();
+        String targetTable = context.getProperty(TARGET_TABLE).evaluateAttributeExpressions(flowFile).getValue();
+        String feedPartitionValue = context.getProperty(FEED_PARTITION).evaluateAttributeExpressions(flowFile).getValue();
 
         logger.info("Using Source: " + sourceTable + " Target: " + targetTable + " feed partition:" + feedPartitionValue + " partSpec: " + partitionSpecString);
 
@@ -137,21 +137,21 @@ public class MergeTable extends AbstractProcessor {
 
             // Record detail of each batch
             if (batches != null) {
-                outgoing = session.putAttribute(outgoing, ComponentAttributes.NUM_MERGED_PARTITIONS.key(), String.valueOf(batches.size()));
+                flowFile = session.putAttribute(flowFile, ComponentAttributes.NUM_MERGED_PARTITIONS.key(), String.valueOf(batches.size()));
                 int i = 1;
                 for (PartitionBatch batch : batches) {
-                    outgoing = session.putAttribute(outgoing, ComponentAttributes.MERGED_PARTITION.key() + "." + i, batch.getBatchDescription());
-                    outgoing = session.putAttribute(outgoing, ComponentAttributes.MERGED_PARTITION_ROWCOUNT.key() + "." + i, String.valueOf(batch.getRecordCount()));
+                    flowFile = session.putAttribute(flowFile, ComponentAttributes.MERGED_PARTITION.key() + "." + i, batch.getBatchDescription());
+                    flowFile = session.putAttribute(flowFile, ComponentAttributes.MERGED_PARTITION_ROWCOUNT.key() + "." + i, String.valueOf(batch.getRecordCount()));
                 }
             }
 
             stopWatch.stop();
-            session.getProvenanceReporter().modifyContent(outgoing, "Execution completed", stopWatch.getElapsed(TimeUnit.MILLISECONDS));
-            session.transfer(outgoing, REL_SUCCESS);
+            session.getProvenanceReporter().modifyContent(flowFile, "Execution completed", stopWatch.getElapsed(TimeUnit.MILLISECONDS));
+            session.transfer(flowFile, REL_SUCCESS);
 
         } catch (final Exception e) {
-            logger.error("Unable to execute merge dedupe for {} due to {}; routing to failure", new Object[]{incoming, e});
-            session.transfer(incoming, REL_FAILURE);
+            logger.error("Unable to execute merge dedupe for {} due to {}; routing to failure", new Object[]{flowFile, e});
+            session.transfer(flowFile, REL_FAILURE);
         }
     }
 }
