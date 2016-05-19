@@ -153,9 +153,10 @@ public class ExecuteHQL extends AbstractProcessor {
         } catch (NoSuchMethodError e) {
             logger.error("Failed to get incoming", e);
         }
+        FlowFile outgoing = (flowFile == null ? session.create() : flowFile);
 
         final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
-        final String selectQuery = context.getProperty(SQL_SELECT_QUERY).evaluateAttributeExpressions(flowFile).getValue();
+        final String selectQuery = context.getProperty(SQL_SELECT_QUERY).evaluateAttributeExpressions(outgoing).getValue();
         final Integer queryTimeout = context.getProperty(QUERY_TIMEOUT).asTimePeriod(TimeUnit.SECONDS).intValue();
 
         final StopWatch stopWatch = new StopWatch(true);
@@ -165,7 +166,7 @@ public class ExecuteHQL extends AbstractProcessor {
             setQueryTimeout(st, queryTimeout);
             final LongHolder nrOfRows = new LongHolder(0L);
 
-            flowFile = session.write(flowFile, new OutputStreamCallback() {
+            outgoing = session.write(outgoing, new OutputStreamCallback() {
                 @Override
                 public void process(final OutputStream out) throws IOException {
                     try {
@@ -179,16 +180,15 @@ public class ExecuteHQL extends AbstractProcessor {
             });
 
             // set attribute how many rows were selected
-            flowFile = session.putAttribute(flowFile, RESULT_ROW_COUNT, nrOfRows.get().toString());
+            outgoing = session.putAttribute(outgoing, RESULT_ROW_COUNT, nrOfRows.get().toString());
 
             logger.info("{} contains {} Avro records", new Object[]{nrOfRows.get()});
-            logger.info("Transferred {} to 'success'", new Object[]{flowFile});
-            session.getProvenanceReporter().modifyContent(flowFile, "Retrieved " + nrOfRows.get() + " rows", stopWatch.getElapsed(TimeUnit.MILLISECONDS));
-            session.transfer(flowFile, REL_SUCCESS);
+            logger.info("Transferred {} to 'success'", new Object[]{outgoing});
+            session.getProvenanceReporter().modifyContent(outgoing, "Retrieved " + nrOfRows.get() + " rows", stopWatch.getElapsed(TimeUnit.MILLISECONDS));
+            session.transfer(outgoing, REL_SUCCESS);
         } catch (final ProcessException | SQLException e) {
-            e.printStackTrace();
-            logger.error("Unable to execute SQL select query {} for {} due to {}; routing to failure", new Object[]{selectQuery, flowFile, e});
-            session.transfer(flowFile, REL_FAILURE);
+            logger.error("Unable to execute SQL select query {} for {} due to {}; routing to failure", new Object[]{selectQuery, outgoing, e});
+            session.transfer(outgoing, REL_FAILURE);
         }
     }
 
