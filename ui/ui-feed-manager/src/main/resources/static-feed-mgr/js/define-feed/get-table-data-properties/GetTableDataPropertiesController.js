@@ -145,7 +145,7 @@
            if(dbcpProperty != null && dbcpProperty.value != null) {
                var serviceId = dbcpProperty.value;
                var serviceNameValue = _.find(dbcpProperty.propertyDescriptor.allowableValues,function(allowableValue) {
-                  return allowableValue.value = serviceId;
+                  return allowableValue.value == serviceId;
                });
                var serviceName = serviceNameValue != null && serviceNameValue != undefined ?serviceNameValue.displayName : '';
 
