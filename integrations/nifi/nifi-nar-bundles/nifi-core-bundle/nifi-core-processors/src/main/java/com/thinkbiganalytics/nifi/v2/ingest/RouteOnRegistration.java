@@ -101,11 +101,11 @@ public class RouteOnRegistration extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        ProcessorLog logger = getLogger();
         FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;
         }
+        final ProcessorLog logger = getLogger();
 
         try {
             final MetadataProviderService metadataService = context.getProperty(METADATA_SERVICE).asControllerService(MetadataProviderService.class);
@@ -121,6 +121,7 @@ public class RouteOnRegistration extends AbstractProcessor {
             boolean isInitialized = recorder.isFeedInitialized(categoryName, feedName);
             if (isInitialized) {
                 session.transfer(flowFile, REL_SUCCESS);
+                return;
             }
 
         } catch (final Exception e) {

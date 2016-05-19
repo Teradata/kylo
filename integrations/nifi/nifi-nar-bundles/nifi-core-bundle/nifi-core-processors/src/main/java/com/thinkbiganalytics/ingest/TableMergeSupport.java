@@ -253,16 +253,17 @@ public class TableMergeSupport implements Serializable {
     }
 
 
-    protected String[] getSelectFields(String source, String dest, PartitionSpec partitionSpec) {
-        List<String> srcFields = resolveTableSchema(source);
-        List<String> destFields = resolveTableSchema(dest);
+    protected String[] getSelectFields(String sourceTable, String destTable, PartitionSpec partitionSpec) {
+        List<String> srcFields = resolveTableSchema(sourceTable);
+        List<String> destFields = resolveTableSchema(destTable);
 
         // Find common fields
         destFields.retainAll(srcFields);
 
         // Eliminate any partition columns
-        destFields.removeAll(partitionSpec.getKeyNames());
-
+        if (partitionSpec != null) {
+            destFields.removeAll(partitionSpec.getKeyNames());
+        }
         return destFields.toArray(new String[0]);
     }
 
@@ -270,8 +271,12 @@ public class TableMergeSupport implements Serializable {
 
         List<String> columnSet = new Vector<>();
         try (final Statement st = conn.createStatement()) {
-
-            ResultSet rs = st.executeQuery("desc " + qualifiedTablename);
+            // Use default database to resolve ambiguity between schema.table and table.column
+            // https://issues.apache.org/jira/browse/HIVE-12184
+            st.execute("use default");
+            String ddl = "desc " + qualifiedTablename;
+            logger.info("Resolving table schema [{}]", ddl);
+            ResultSet rs = st.executeQuery(ddl);
             while (rs.next()) {
                 // First blank row is start of partition info
                 if (StringUtils.isEmpty(rs.getString(1))) {

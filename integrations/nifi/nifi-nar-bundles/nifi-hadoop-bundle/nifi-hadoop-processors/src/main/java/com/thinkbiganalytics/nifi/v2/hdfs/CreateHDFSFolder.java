@@ -141,6 +141,7 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
         FlowFile flowFile = session.get();
+        if (flowFile == null) return;
 
         final StopWatch stopWatch = new StopWatch(true);
         try {
