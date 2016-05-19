@@ -283,6 +283,12 @@
                     <include>thinkbig-spark-validate-cleanse-${project.version}-jar-with-dependencies.jar</include>
                   </includes>
                 </source>
+                <source>
+                  <location>../integrations/spark/spark-interpreter/target</location>
+                  <includes>
+                    <include>thinkbig-spark-interpreter-${project.version}-jar-with-dependencies.jar</include>
+                  </includes>
+                </source>
               </sources>
             </mapping>
             <mapping>
@@ -304,6 +310,17 @@
               <sources>
                 <source>
                   <location>setup/data</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/setup/local_packages</directory>
+              <filemode>744</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>setup/local_packages</location>
                 </source>
               </sources>
             </mapping>
