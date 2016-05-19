@@ -313,7 +313,7 @@
                 </source>
               </sources>
             </mapping>
-            <mapping>
+           <!--mapping>
               <directory>${rpm.install.dir}/setup/local_packages</directory>
               <filemode>744</filemode>
               <username>${rpm.user}</username>
@@ -323,7 +323,7 @@
                   <location>setup/local_packages</location>
                 </source>
               </sources>
-            </mapping>
+            </mapping-->
             <mapping>
               <directory>${rpm.install.dir}/setup/activemq</directory>
               <filemode>744</filemode>
