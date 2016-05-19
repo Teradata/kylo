@@ -55,12 +55,16 @@
                     else {
                         self.message = "Successfully imported the template " + response.templateName + " into Nifi"
                     }
+                    self.createReusableFlow = false;
+                    self.overwrite = false;
                 }
                 else {
                     if (response.success) {
                         self.message = "Successfully imported " + (response.zipFile == true ? "and registered " : "") + " the template " + response.templateName + " but some errors were found. Please review these errors";
                         self.importResultIcon = "warning";
                         self.importResultIconColor = "#FF9901";
+                        self.createReusableFlow = false;
+                        self.overwrite = false;
                     }
                     else {
                         self.importResultIcon = "error";
