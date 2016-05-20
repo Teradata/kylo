@@ -141,7 +141,7 @@ public class ExecuteHQL extends AbstractProcessor {
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
         final ProcessorLog logger = getLogger();
-        FlowFile flowFile = session.get();
+        FlowFile flowFile = null;
 
         try {
             if (context.hasIncomingConnection()) {
