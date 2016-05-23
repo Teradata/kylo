@@ -9,10 +9,11 @@ import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
 public interface FlowFileEventProvider {
     FlowFileEvents addFlowFile(String flowFileId);
 
-    void addEvent(ProvenanceEventRecordDTO event);
 
     FlowFileEvents getFlowFile(String flowFileId);
 
     FlowFileEvents getOrAddFlowFile(String flowFileId);
+
+    void removeFlowFile(String flowFileId);
 
 }

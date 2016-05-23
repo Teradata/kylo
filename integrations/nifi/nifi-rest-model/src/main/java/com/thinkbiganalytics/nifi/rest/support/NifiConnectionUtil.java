@@ -29,6 +29,20 @@ public class NifiConnectionUtil {
         }
         return processorIds;
     }
+
+    public static List<String> getInputPortIds(Collection<ConnectionDTO> connections) {
+        List<String> inputPortIds = new ArrayList<>();
+        if(connections != null) {
+            for (ConnectionDTO connectionDTO : connections) {
+                if (connectionDTO.getSource().getType().equals(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())) {
+                    inputPortIds.add(connectionDTO.getSource().getId());
+                }
+            }
+        }
+        return inputPortIds;
+    }
+
+
     private static class SourcesAndDestinations{
 
        private List<String> destinationConnections = new ArrayList<>();

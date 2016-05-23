@@ -49,23 +49,6 @@ public class NifiComponentFlowData {
 
     Map<String, ProcessorDTO> processorMap = new HashMap<>();
 
-    Map<String, String> flowFileToFeed = new HashMap<>();
-
-    public void registerFlowFileWithFeed(String flowfileUUID, String feedGroupId) {
-        flowFileToFeed.put(flowfileUUID, feedGroupId);
-    }
-
-    public Map<String, String> getFlowFileToFeed() {
-        return flowFileToFeed;
-    }
-
-    public String getFeedGroupIdForFlowFileUUID(String flowFileUUID) {
-        return flowFileToFeed.get(flowFileUUID);
-    }
-
-    public boolean isFlowFileRegisteredForFeed(String flowFileUUIID) {
-        return getFlowFileToFeed().containsKey(flowFileUUIID);
-    }
 
     private void populateFeedFailureProcessorMap(ProcessGroupDTO feedGroup) {
         Map<String, ProcessorDTO> failureMap = new HashMap<>();

@@ -177,6 +177,8 @@ public class CreateFeedBuilder {
         //mark the new services that were created as a result of creating the new flow from the template
         templateCreationHelper.identifyNewlyCreatedControllerServiceReferences();
 
+
+
         //match the properties incoming to the defined properties
         updateProcessGroupProperties(processGroupId);
 
@@ -311,16 +313,10 @@ public class CreateFeedBuilder {
   }
 
 
-
+/*
   private void versionFeed(ProcessGroupDTO feedGroup) throws JerseyClientException {
     restClient.disableAllInputProcessors(feedGroup.getId());
-    //attempt to stop all processors
-    try {
-      restClient.stopAllProcessors(feedGroup);
-    }catch (JerseyClientException e)
-    {
 
-    }
     //delete all connections
     if (hasConnectionPorts()) {
       ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(feedGroup.getParentGroupId());
@@ -384,6 +380,8 @@ public class CreateFeedBuilder {
     entity.setProcessGroup(feedGroup);
     previousFeedProcessGroup = restClient.updateProcessGroup(entity);
   }
+  */
+
 
   private String createProcessGroupForFeed() throws JerseyClientException {
     //create Category Process group
@@ -405,7 +403,7 @@ public class CreateFeedBuilder {
     ProcessGroupDTO feedGroup = restClient.getProcessGroupByName(categoryGroup.getId(), feedName);
     if (feedGroup != null) {
       try {
-        versionFeed(feedGroup);
+        templateCreationHelper.versionProcessGroup(feedGroup);
       } catch (JerseyClientException e) {
         throw new JerseyClientException("Previous version of the feed " + feedName
                                         + " was found.  Error in attempting to version the previous feed.  Please go into Nifi and address any issues with the Feeds Process Group");

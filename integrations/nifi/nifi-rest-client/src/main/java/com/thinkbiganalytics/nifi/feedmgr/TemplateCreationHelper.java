@@ -34,6 +34,10 @@ public class TemplateCreationHelper {
 
     private Set<ControllerServiceDTO> snapshotControllerServices;
 
+    private Set<ControllerServiceDTO> snapshottedEnabledControllerServices = new HashSet<>();
+
+    private Map<String,ControllerServiceDTO> mergedControllerServices;
+
     private Set<ControllerServiceDTO> newlyCreatedControllerServices;
 
     Map<String,Integer> controllerServiceEnableAttempts = new ConcurrentHashMap<>();
@@ -54,6 +58,11 @@ public class TemplateCreationHelper {
         ControllerServicesEntity controllerServiceEntity = restClient.getControllerServices();
         if (controllerServiceEntity != null) {
             snapshotControllerServices = controllerServiceEntity.getControllerServices();
+            for(ControllerServiceDTO serviceDTO : controllerServiceEntity.getControllerServices()) {
+                if(serviceDTO.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED)) {
+                    snapshottedEnabledControllerServices.add(serviceDTO);
+                }
+            }
         }
     }
 
@@ -150,6 +159,8 @@ public class TemplateCreationHelper {
             }
         }
         newlyCreatedControllerServices = newServices;
+
+        mergeControllerServices();
         return newServices;
     }
 
@@ -173,7 +184,7 @@ public class TemplateCreationHelper {
                         Thread.sleep(ENABLE_CONTROLLER_SERVICE_WAIT_TIME);
                         tryToEnableControllerService(serviceId,name);
                     } catch (InterruptedException e2) {
-e.printStackTrace();
+                            e.printStackTrace();
                     }
                 }else {
                     log.error("Unable to Enable Controller Service for {}, {}.  Max retry attempts of {} exceeded ",name,serviceId,MAX_ENABLE_ATTEMPTS);
@@ -185,18 +196,65 @@ e.printStackTrace();
         return null;
     }
 
+    private void mergeControllerServices(){
+
+
+        final Map<String,ControllerServiceDTO> map = new HashMap<String,ControllerServiceDTO>();
+        final Map<String,List<ControllerServiceDTO>> serviceNameMap = new HashMap<>();
+        //first use the snapshotted servies as a baseline
+        for(ControllerServiceDTO serviceDTO: snapshotControllerServices){
+            map.put(serviceDTO.getId(),serviceDTO);
+            if(!serviceNameMap.containsKey(serviceDTO.getName())){
+                serviceNameMap.put(serviceDTO.getName(),new ArrayList<ControllerServiceDTO>());
+            }
+            serviceNameMap.get(serviceDTO.getName()).add(serviceDTO);
+        }
+        //now try to merge in the newly created services if they exist by ID or name then reference the existing one, otherwise add them to the map
+      List<ControllerServiceDTO> matchingControllerServices =  Lists.newArrayList(Iterables.filter(newlyCreatedControllerServices, new Predicate<ControllerServiceDTO>() {
+          @Override
+          public boolean apply(ControllerServiceDTO controllerServiceDTO) {
+              return map.containsKey(controllerServiceDTO.getId()) || serviceNameMap.containsKey(controllerServiceDTO.getName());
+          }
+      }));
+        //add any others not matched to the map to return
+        List<ControllerServiceDTO> unmatchedServices =  Lists.newArrayList(Iterables.filter(newlyCreatedControllerServices, new Predicate<ControllerServiceDTO>() {
+            @Override
+            public boolean apply(ControllerServiceDTO controllerServiceDTO) {
+                return !map.containsKey(controllerServiceDTO.getId()) && !serviceNameMap.containsKey(controllerServiceDTO.getName());
+            }
+        }));
+
+        if(unmatchedServices != null && !unmatchedServices.isEmpty()){
+            for(ControllerServiceDTO serviceToAdd : unmatchedServices){
+                map.put(serviceToAdd.getId(),serviceToAdd);
+            }
+        }
+
+        //if match existing services, then delete the new ones
+        if(matchingControllerServices != null && !matchingControllerServices.isEmpty()){
+            for(ControllerServiceDTO serviceToDelete: matchingControllerServices){
+
+                try {
+                    restClient.deleteControllerService(serviceToDelete.getId());
+                } catch (JerseyClientException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        mergedControllerServices = map;
+    }
+
     public void updateControllerServiceReferences(List<ProcessorDTO> processors) {
 
         try {
-            ControllerServicesEntity controllerServiceEntity = restClient.getControllerServices();
+            //merge the snapshotted services with the newly created ones and update respective processors in the newly created flow
             final Map<String, ControllerServiceDTO> enabledServices = new HashMap<>();
-            Map<String, ControllerServiceDTO> allServices = new HashMap<>();
-            for (ControllerServiceDTO dto : controllerServiceEntity.getControllerServices()) {
+            Map<String, ControllerServiceDTO> allServices = mergedControllerServices;
+            for (ControllerServiceDTO dto : allServices.values()) {
                 if (NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(dto.getState())) {
                     enabledServices.put(dto.getId(), dto);
-                }
-                allServices.put(dto.getId(), dto);
-
+               }
             }
             List<NifiProperty> properties = new ArrayList<>();
             Map<String, ProcessGroupDTO> processGroupDTOMap = new HashMap<>();
@@ -326,6 +384,7 @@ e.printStackTrace();
 
     public void versionProcessGroup(ProcessGroupDTO processGroup) throws JerseyClientException {
         restClient.disableAllInputProcessors(processGroup.getId());
+
         //attempt to stop all processors
         try {
             restClient.stopAllProcessors(processGroup);
@@ -333,10 +392,12 @@ e.printStackTrace();
         {
 
         }
+
+
         //delete all connections
         ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(processGroup.getParentGroupId());
         if(connectionsEntity != null) {
-            List<ConnectionDTO> connections =                 NifiConnectionUtil.findConnectionsMatchingSourceGroupId(connectionsEntity.getConnections(), processGroup.getId());
+            List<ConnectionDTO> connections = NifiConnectionUtil.findConnectionsMatchingSourceGroupId(connectionsEntity.getConnections(), processGroup.getId());
 
             if(connections != null) {
                 for(ConnectionDTO connection: connections){

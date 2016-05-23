@@ -572,6 +572,36 @@ public class NifiRestClient extends JerseyRestClient {
                 }
             }
         }
+        //also stop any input ports
+
+        /*
+        List<String> inputPortIds = getInputPortIds(processGroupId);
+        if(inputPortIds != null && !inputPortIds.isEmpty())
+        {
+            for(String inputPortId : inputPortIds) {
+             InputPortEntity inputPortEntity =   stopInputPort(processGroupId, inputPortId);
+                int i =0;
+            }
+        }
+        */
+    }
+
+
+    public void stopAllInputProcessors(String processGroupId) throws JerseyClientException {
+        List<ProcessorDTO> processorDTOs = getInputProcessors(processGroupId);
+        ProcessorDTO updateDto = new ProcessorDTO();
+        if (processorDTOs != null) {
+            for (ProcessorDTO dto : processorDTOs) {
+                updateDto.setParentGroupId(dto.getParentGroupId());
+                updateDto.setId(dto.getId());
+                //fetch the processor and update it
+                if (NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(dto.getState())) {
+                    //if its stopped you can disable it.. otherwise stop it and then disable it
+                    updateDto.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+                    updateProcessor(updateDto);
+                }
+            }
+        }
     }
 
     /**
@@ -648,6 +678,16 @@ public class NifiRestClient extends JerseyRestClient {
             processorIds = NifiConnectionUtil.getInputProcessorIds(connections.getConnections());
         }
         return processorIds;
+    }
+
+    public List<String> getInputPortIds(String processGroupId) throws JerseyClientException {
+        List<String> ids = new ArrayList<>();
+        ConnectionsEntity connections = get("/controller/process-groups/" + processGroupId + "/connections", null,
+                ConnectionsEntity.class);
+        if (connections != null) {
+            ids = NifiConnectionUtil.getInputPortIds(connections.getConnections());
+        }
+        return ids;
     }
 
     /**

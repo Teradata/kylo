@@ -70,7 +70,7 @@ public class ProvenanceEventListener {
             }
         }
 
-        flowFileEventProvider.addEvent(event);
+       // flowFileEventProvider.addEvent(event);
         attachEventComponent(event);
         provenanceFeedManager.setComponentName(event);
 
@@ -244,6 +244,7 @@ public class ProvenanceEventListener {
         //loop through the child flow files and if they are all complete then mark parent as complete.
         if (flowFile.getRoot().areAllComponentsComplete() && !flowFile.getRoot().hasInitialFlowFiles() && flowFile.getRoot().getRunningFlowFiles().size() == 0) {
             provenanceFeedManager.feedCompleted(event);
+            flowFileEventProvider.removeFlowFile(flowFile.getRoot().getUuid());
         }
 
 
