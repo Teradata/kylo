@@ -13,7 +13,6 @@ public class InMemoryFlowFileEventProvider implements FlowFileEventProvider {
 
 
     protected Map<String, FlowFileEvents> flowFileMap = new HashMap<>();
-    protected Set<ProvenanceEventRecordDTO> events = new HashSet<>();
 
     public InMemoryFlowFileEventProvider() {
 
@@ -27,10 +26,6 @@ public class InMemoryFlowFileEventProvider implements FlowFileEventProvider {
         return getFlowFile(flowFileId);
     }
 
-    @Override
-    public void addEvent(ProvenanceEventRecordDTO event) {
-        events.add(event);
-    }
 
 
     @Override
@@ -42,6 +37,17 @@ public class InMemoryFlowFileEventProvider implements FlowFileEventProvider {
     @Override
     public FlowFileEvents getOrAddFlowFile(String flowFileId) {
         return addFlowFile(flowFileId);
+    }
+
+    public void removeFlowFile(String flowFileId){
+        //remove parent and all children
+        if (flowFileMap.containsKey(flowFileId)) {
+            FlowFileEvents flowFile = flowFileMap.get(flowFileId);
+            for(FlowFileEvents child: flowFile.getChildren()) {
+                removeFlowFile(child.getUuid());
+            }
+            flowFileMap.remove(flowFileId);
+        }
     }
 
 

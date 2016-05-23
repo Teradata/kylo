@@ -39,7 +39,6 @@ public class ProvenanceFeedManager {
     @Autowired
     private NifiComponentFlowData nifiComponentFlowData;
 
-    private Map<String, NifiJobExecution> flowFileJobExecutions = new HashMap<>();
 
     public ProvenanceFeedManager() {
         objectMapperSerializer = new ObjectMapperSerializer();
