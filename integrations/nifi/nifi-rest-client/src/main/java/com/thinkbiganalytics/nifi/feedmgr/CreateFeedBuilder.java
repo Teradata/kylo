@@ -185,16 +185,9 @@ public class CreateFeedBuilder {
         //Fetch the Feed Group now that it has the flow in it
         ProcessGroupEntity entity = restClient.getProcessGroup(processGroupId, true, true);
 
-        //identify the various processors (first level initial processors)
-        List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity.getProcessGroup());
-
-        ProcessorDTO input = NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType);
+        ProcessorDTO input = fetchInputProcessorForProcessGroup(entity);
         List<ProcessorDTO> nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity.getProcessGroup());
 
-        //if the input is null attempt to get the first input available on the template
-        if (input == null && inputProcessors != null && !inputProcessors.isEmpty()) {
-          input = inputProcessors.get(0);
-        }
 
         //update any references to the controller services and try to assign the value to an enabled service if it is not already
         if (input != null) {
@@ -203,8 +196,10 @@ public class CreateFeedBuilder {
         templateCreationHelper.updateControllerServiceReferences(nonInputProcessors);
         //refetch processors for updated errors
         entity = restClient.getProcessGroup(processGroupId, true, true);
-     //   input = NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType);
+        input = fetchInputProcessorForProcessGroup(entity);
         nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity.getProcessGroup());
+
+
 
         newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
 
@@ -260,6 +255,19 @@ public class CreateFeedBuilder {
       }
     }
     return newProcessGroup;
+  }
+
+  private ProcessorDTO fetchInputProcessorForProcessGroup(ProcessGroupEntity entity){
+    //identify the various processors (first level initial processors)
+    List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity.getProcessGroup());
+
+    ProcessorDTO input = NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType);
+    //if the input is null attempt to get the first input available on the template
+    if (input == null && inputProcessors != null && !inputProcessors.isEmpty()) {
+      input = inputProcessors.get(0);
+    }
+    return input;
+
   }
 
   private void updatePortConnectionsForProcessGroup(String processGroupId) throws JerseyClientException {

@@ -254,6 +254,7 @@ public class TemplateCreationHelper {
             for (ControllerServiceDTO dto : allServices.values()) {
                 if (NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(dto.getState())) {
                     enabledServices.put(dto.getId(), dto);
+                    enabledServices.put(dto.getName(),dto);
                }
             }
             List<NifiProperty> properties = new ArrayList<>();
@@ -302,18 +303,30 @@ public class TemplateCreationHelper {
                                 Lists.newArrayList(Iterables.filter(allowableValueDTOs, new Predicate<PropertyDescriptorDTO.AllowableValueDTO>() {
                                     @Override
                                     public boolean apply(PropertyDescriptorDTO.AllowableValueDTO allowableValueDTO) {
-                                        return enabledServices.containsKey(allowableValueDTO.getValue());
+                                        return enabledServices.containsKey(allowableValueDTO.getValue()) || enabledServices.containsKey(allowableValueDTO.getDisplayName());
                                     }
                                 }));
                         if (enabledValues != null && !enabledValues.isEmpty()) {
                             PropertyDescriptorDTO.AllowableValueDTO enabledService = enabledValues.get(0);
                             ControllerServiceDTO dto = enabledServices.get(enabledService.getValue());
+                            if(dto == null){
+                                dto = enabledServices.get(enabledService.getDisplayName());
+                            }
                             controllerServiceName = dto.getName();
-                            property.setValue(enabledService.getValue());
+                            String previousValue = property.getValue();
+                            property.setValue(dto.getId());
+                            if(StringUtils.isBlank(previousValue) || !previousValue.equalsIgnoreCase(dto.getId())) {
+                                log.info("About to assign Controller Service {} ({}) to property {} on processor {} ({}). ", dto.getName(), dto.getId(), property.getKey(), property.getProcessorName(), property.getProcessorId());
+                                //update it in nifi
+                                restClient.updateProcessorProperty(property.getProcessGroupId(),property.getProcessorId(),property);
+                                log.info("Finished Assigning Controller Service {} ({}) to property {} on processor {} ({}). ", dto.getName(), dto.getId(), property.getKey(), property.getProcessorName(), property.getProcessorId());
+
+
+                            }
                             controllerServiceSet = true;
                         } else {
                             //try to enable the service
-
+                            //match the service by Name...
                             for (PropertyDescriptorDTO.AllowableValueDTO allowableValueDTO : allowableValueDTOs) {
                                 ControllerServiceDTO dto = allServices.get(allowableValueDTO.getValue());
                                 if (StringUtils.isBlank(controllerServiceName)) {
@@ -327,6 +340,7 @@ public class TemplateCreationHelper {
                                         }
                                         controllerServiceSet = true;
                                 }
+
                             }
                         }
                         if (controllerServiceSet) {
