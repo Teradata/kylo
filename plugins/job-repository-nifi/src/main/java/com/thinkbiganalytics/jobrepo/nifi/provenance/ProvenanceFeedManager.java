@@ -135,7 +135,7 @@ public class ProvenanceFeedManager {
         List<BulletinDTO> bulletins = nifiComponentFlowData.getBulletinsNotYetProcessedForOtherComponents(event);
 
         if (bulletins != null && !bulletins.isEmpty()) {
-            LOG.info("Checking for Bulletins... found {} for {}", bulletins.size(), event.getComponentName());
+            LOG.info("Checking for Bulletins... found {} for NIFI Processor ID: {}", bulletins.size(), event.getComponentId());
             for (BulletinDTO dto : bulletins) {
                 if (dto != null && dto.getSourceId() != null) {
                     if (!otherErrors.containsKey(dto.getSourceId())) {

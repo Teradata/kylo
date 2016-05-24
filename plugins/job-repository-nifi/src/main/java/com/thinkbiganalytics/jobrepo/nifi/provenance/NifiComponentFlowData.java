@@ -159,6 +159,7 @@ public class NifiComponentFlowData {
         provenanceEventRecordDTO.setFlowFile(flowFile);
         provenanceEventRecordDTO.setFlowFileUuid(flowFile.getUuid());
         flowFile.addEventPriorTo(provenanceEventRecordDTO, event);
+        flowFile.getOrAddComponent(componentId);
         LOG.info("Added new Failure Event with id " + provenanceEventRecordDTO.getEventId() + " and time " + provenanceEventRecordDTO.getEventTime() + " with details " + provenanceEventRecordDTO.getDetails());
         //mark the bulletins as processed for the job
         jobExecution.addBulletinErrors(dtos);

@@ -27,6 +27,7 @@ public class NifiPipelineControllerDao implements InitializingBean {
                                                                      + "VALUES(?,?, ?,?, ?)";
 
 
+    private static final String GET_STEP_EXECUTION_ID_FOR_EVENT_AND_FLOWFILE = "SELECT STEP_EXECUTION_ID FROM BATCH_NIFI_STEP WHERE EVENT_ID = ? AND FLOW_FILE_UUID = ?";
 
   private static final String GET_MAX_EVENT_ID = "SELECT MAX(EVENT_ID) FROM BATCH_NIFI_STEP";
 
@@ -59,6 +60,16 @@ public class NifiPipelineControllerDao implements InitializingBean {
         parameters,
         new int[]{Types.BIGINT, Types.BIGINT, Types.VARCHAR, Types.BIGINT, Types.BIGINT});
   }
+
+    public Long getStepExecutionId(Long eventId,String flowFileUUID) {
+        Long id = jdbcTemplate.queryForObject(GET_STEP_EXECUTION_ID_FOR_EVENT_AND_FLOWFILE,new Object[]{eventId,flowFileUUID}, new RowMapper<Long>() {
+            @Override
+            public Long mapRow(ResultSet resultSet, int i) throws SQLException {
+                return resultSet.getLong(1);
+            }
+        });
+        return id;
+    }
 
 
   /**
