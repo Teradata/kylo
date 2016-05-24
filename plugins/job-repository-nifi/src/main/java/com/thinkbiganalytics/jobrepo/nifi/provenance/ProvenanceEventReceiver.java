@@ -16,10 +16,6 @@ import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import java.util.Comparator;
-import java.util.Set;
-import java.util.TreeSet;
-import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -54,11 +50,11 @@ public class ProvenanceEventReceiver implements ProvenanceEventStartupCompleteLi
 
     }
 
-    private void processEventsOnStartup(){
+    private void processEventsOnStartup() {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                log.info("Startup is finished... now processing internal Queue size of: {} in a new Thread",unprocessedEventsQueue.size());
+                log.info("Startup is finished... now processing internal Queue size of: {} in a new Thread", unprocessedEventsQueue.size());
                 processAllUnprocessedEventsEvent();
                 log.info("Startup processing is finished continue on with JMS processing ");
                 canProcessJmsMessages.set(true);
@@ -68,7 +64,7 @@ public class ProvenanceEventReceiver implements ProvenanceEventStartupCompleteLi
     }
 
     @PostConstruct
-    public void init(){
+    public void init() {
         provenanceEventStartupListener.subscribe(this);
     }
 
@@ -79,34 +75,31 @@ public class ProvenanceEventReceiver implements ProvenanceEventStartupCompleteLi
         log.info("Received ProvenanceEvent with Nifi Event Id of {} <{}>", eventId, message);
 
 
-        if(canProcessJmsMessages.get()) {
+        if (canProcessJmsMessages.get()) {
             processAllUnprocessedEventsEvent();
             ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO(eventId, message);
             provenanceEventListener.receiveEvent(dto);
-        }
-        else {
+        } else {
             //wait and hold until
             log.info("Startup is not finished... holding event {} in internal queue", message.getEventId());
             unprocessedEventsQueue.add(message);
-           // unprocessedEvents.add(message);
+            // unprocessedEvents.add(message);
         }
     }
 
-    private void processAllUnprocessedEventsEvent(){
-           ProvenanceEventDTO event = null;
-            while((event = unprocessedEventsQueue.poll()) != null) {
-                Long eventId = event.getEventId();
-                ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO(eventId, event);
-                log.info("process event in internal queue {} ", dto);
-                try {
-                    provenanceEventListener.receiveEvent(dto);
-                } catch (Exception e) {
-                    log.error("ERROR PROCESSING EVENT (Nifi Processor Id: {} ) for job that was running prior to Pipeline Controller going down. {}. {} ", dto.getComponentId(), e.getMessage(), e.getStackTrace());
-                }
+    private void processAllUnprocessedEventsEvent() {
+        ProvenanceEventDTO event = null;
+        while ((event = unprocessedEventsQueue.poll()) != null) {
+            Long eventId = event.getEventId();
+            ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO(eventId, event);
+            log.info("process event in internal queue {} ", dto);
+            try {
+                provenanceEventListener.receiveEvent(dto);
+            } catch (Exception e) {
+                log.error("ERROR PROCESSING EVENT (Nifi Processor Id: {} ) for job that was running prior to Pipeline Controller going down. {}. {} ", dto.getComponentId(), e.getMessage(), e.getStackTrace());
             }
+        }
     }
-
-
 
 
 }

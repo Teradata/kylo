@@ -83,27 +83,14 @@ public class ProvenanceFeedManager {
         return nifiComponentFlowData.getBulletinsNotYetProcessed(event);
     }
 
-/*
-    public void registerFlowFileWithFeed(String flowfileUUID, String feedGroupId) {
-        nifiComponentFlowData.registerFlowFileWithFeed(flowfileUUID, feedGroupId);
-    }
-
-    public boolean isFlowFileRegisteredWithFeed(String flowfileUUID) {
-        return nifiComponentFlowData.isFlowFileRegisteredForFeed(flowfileUUID);
-    }
-
-    public String getFeedProcessGroupIdForFlowFile(String flowFileUUID) {
-        return nifiComponentFlowData.getFeedGroupIdForFlowFileUUID(flowFileUUID);
-    }
-    */
 
     public void updateJobType(ProvenanceEventRecordDTO event) {
         NifiJobExecution jobExecution = event.getFlowFileComponent().getJobExecution();
         if (event.getUpdatedAttributes().containsKey(NIFI_JOB_TYPE_PROPERTY)) {
             String jobType = (String) event.getUpdatedAttributes().get(NIFI_JOB_TYPE_PROPERTY);
             String nifiCategory = (String) event.getAttributeMap().get(NIFI_CATEGORY_PROPERTY);
-            String nifiFeedName =  (String) event.getAttributeMap().get(NIFI_FEED_PROPERTY);
-            String feedName = nifiCategory+"."+nifiFeedName;
+            String nifiFeedName = (String) event.getAttributeMap().get(NIFI_FEED_PROPERTY);
+            String feedName = nifiCategory + "." + nifiFeedName;
             LOG.info("UPDATING JOB TYPE TO BE " + jobType + " for Feed " + feedName);
             if (FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK.equalsIgnoreCase(jobType)) {
                 jobExecution.setJobType(FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK);
@@ -229,11 +216,11 @@ public class ProvenanceFeedManager {
 
         String feedName = getFeedNameForComponentId(event);
         ProcessGroupDTO feedGroup = getFeedProcessGroup(event);
-        if(feedGroup == null) {
-            LOG.info("unable to start feed for event: {}, feedName: {} and Process Group: {} ", event,feedName,feedGroup);
+        if (feedGroup == null) {
+            LOG.info("unable to start feed for event: {}, feedName: {} and Process Group: {} ", event, feedName, feedGroup);
             //remove the event from the flow file
             event.getFlowFile().removeEvent(event);
-            throw new UnsupportedOperationException("Unable to Start feed for incoming Provenance Event of "+event+".  Unable to find the correct Nifi Feed Process Group related to this event.  For More information query Nifi for this event at: http://localhost:8079/nifi-api/controller/provenance/events/"+event.getEventId());
+            throw new UnsupportedOperationException("Unable to Start feed for incoming Provenance Event of " + event + ".  Unable to find the correct Nifi Feed Process Group related to this event.  For More information query Nifi for this event at: http://localhost:8079/nifi-api/controller/provenance/events/" + event.getEventId());
         }
 
         //TODO figure out how to deal with Restarts reusing the same Job Instance
@@ -242,7 +229,7 @@ public class ProvenanceFeedManager {
         jobExecution.setEndingProcessorComponentIds(getEndingProcessorIds(event));
         jobExecution.markStarted();
         //add the new Job to the map for lookup later
-       // flowFileJobExecutions.put(event.getFlowFileUuid(), jobExecution);
+        // flowFileJobExecutions.put(event.getFlowFileUuid(), jobExecution);
         //mark it as started/running
         jobExecution.markRunning();
         Long jobInstanceId = jobRepository.createJobInstance(jobExecution);
@@ -255,7 +242,7 @@ public class ProvenanceFeedManager {
 
         Map<String, Object> executionContext = new HashMap<>();
         ProcessorDTO feedProcessor = getFeedProcessor(event);
-         executionContext.put("Feed Process Group Id", feedGroup.getId());
+        executionContext.put("Feed Process Group Id", feedGroup.getId());
         executionContext.put("Feed Name", feedName);
         jobRepository.saveJobExecutionContext(jobExecution, executionContext);
 
@@ -307,7 +294,7 @@ public class ProvenanceFeedManager {
         return event.getFlowFileComponent().getJobExecution() != null;
     }
 
-    private boolean hasDetailsIndicatingFailure(ProvenanceEventRecordDTO event){
+    private boolean hasDetailsIndicatingFailure(ProvenanceEventRecordDTO event) {
         return event != null && event.getDetails() != null && event.getDetails().equalsIgnoreCase(AUTO_TERMINATED_FAILURE_RELATIONSHIP);
     }
 
@@ -315,8 +302,8 @@ public class ProvenanceFeedManager {
         if (hasJobExecution(event)) {
 
             List<BulletinDTO> bulletins = nifiComponentFlowData.getBulletinsNotYetProcessedForComponent(event);
-            if(bulletins == null || bulletins.isEmpty()){
-                bulletins = nifiComponentFlowData.getProcessorBulletinsForComponentInFlowFile(event.getFlowFile().getRoot(),event.getComponentId());
+            if (bulletins == null || bulletins.isEmpty()) {
+                bulletins = nifiComponentFlowData.getProcessorBulletinsForComponentInFlowFile(event.getFlowFile().getRoot(), event.getComponentId());
             }
 
             boolean failComponent = hasDetailsIndicatingFailure(event);
@@ -354,16 +341,14 @@ public class ProvenanceFeedManager {
                 //check to see if the event autoterminated by a failure relationship.  if so fail the flow
 
 
-
                 if (failComponent) {
                     if (event.getFlowFileComponent().isRunning() || event.getFlowFileComponent().getEndTime() == null) {
                         event.getFlowFileComponent().markFailed();
                     }
-                    LOG.info("FAILING EVENT {} with COMPONENT {} with STEP id of {} ",event,event.getFlowFileComponent(), event.getFlowFileComponent().getStepExecutionId());
+                    LOG.info("FAILING EVENT {} with COMPONENT {} with STEP id of {} ", event, event.getFlowFileComponent(), event.getFlowFileComponent().getStepExecutionId());
                     jobRepository.failStep(event.getFlowFileComponent());
                     event.getFlowFileComponent().getJobExecution().addFailedComponent(event.getFlowFileComponent());
-                }
-                else {
+                } else {
                     jobRepository.completeStep(event.getFlowFileComponent());
                 }
 

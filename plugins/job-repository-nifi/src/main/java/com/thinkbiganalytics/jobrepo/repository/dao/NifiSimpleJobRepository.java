@@ -127,7 +127,7 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
         executionContextValuesService.saveJobExecutionContextValues(jobExecution);
         try {
             jobExecutionDao.updateJobExecution(jobExecution);
-        }catch(OptimisticLockingFailureException e) {
+        } catch (OptimisticLockingFailureException e) {
             //increment the version and try to save again
             jobExecution.incrementVersion();
             jobExecutionDao.updateJobExecution(jobExecution);
@@ -171,7 +171,7 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
         executionContextValuesService.saveJobExecutionContextValues(jobExecution);
         try {
             jobExecutionDao.updateJobExecution(jobExecution);
-        }catch(OptimisticLockingFailureException e) {
+        } catch (OptimisticLockingFailureException e) {
             //increment the version and try to save again
             jobExecution.incrementVersion();
             jobExecutionDao.updateJobExecution(jobExecution);
@@ -193,8 +193,8 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
         //save the mappings so we can correlate the Nifi Flow to the Spring Batch flow later if needed
         try {
             nifiPipelineControllerDao.saveStepExecution(flowFileComponent);
-        }catch (Exception e){
-            LOG.error("Unable to save Mapping between NIFI Event to Spring Batch Step to the BATCH_NIFI_STEP table because of the following error, {}, {} ",e.getMessage(),e.getStackTrace());
+        } catch (Exception e) {
+            LOG.error("Unable to save Mapping between NIFI Event to Spring Batch Step to the BATCH_NIFI_STEP table because of the following error, {}, {} ", e.getMessage(), e.getStackTrace());
         }
         flowFileComponent.setVersion(stepExecution.getVersion());
         return stepExecution.getId();
@@ -214,7 +214,6 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
         }).orNull();
 
     }
-
 
 
     public void completeStep(FlowFileComponent flowFileComponent) {
@@ -259,7 +258,7 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
         allAttrs.putAll(attrs);
         StepExecution stepExecution = getStepExecution(flowFileComponent);
         ExecutionContext executionContext = new ExecutionContext(allAttrs);
-        if(stepExecution != null) {
+        if (stepExecution != null) {
             stepExecution.setExecutionContext(executionContext);
             if (flowFileComponent.isExecutionContextSet()) {
                 ecDao.updateExecutionContext(stepExecution);
@@ -269,10 +268,9 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
             }
             flowFileComponent.setExecutionContextMap(allAttrs);
 
-        }
-        else {
+        } else {
             Long jobExecutionId = flowFileComponent.getJobExecution() != null ? flowFileComponent.getJobExecution().getJobExecutionId() : null;
-            LOG.error("Unable to assign step execution context data to step.  StepExecution for JobExecutionId of {} is null for Component {}.  Execution Map is {} ",jobExecutionId,flowFileComponent,allAttrs);
+            LOG.error("Unable to assign step execution context data to step.  StepExecution for JobExecutionId of {} is null for Component {}.  Execution Map is {} ", jobExecutionId, flowFileComponent, allAttrs);
         }
     }
 
