@@ -394,65 +394,88 @@ public class TemplateCreationHelper {
         }
     }
 
+private void deleteConnections(ProcessGroupDTO processGroup) throws JerseyClientException {
+    ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(processGroup.getParentGroupId());
+    if(connectionsEntity != null) {
 
+        //outgoing connections coming from this Process Group to some destination
+        List<ConnectionDTO> connections = NifiConnectionUtil.findConnectionsMatchingSourceGroupId(connectionsEntity.getConnections(), processGroup.getId());
+
+        if(connections != null) {
+            for(ConnectionDTO connection: connections){
+                String type = connection.getDestination().getType();
+                log.info("Found Connection Matching Source Group Id. {}, connected to {} as type: {} ", connection.getId(),connection.getDestination().getId(),type);
+                if(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)){
+                    //stop the port
+                    try {
+                        restClient.stopOutputPort(connection.getDestination().getGroupId(), connection.getDestination().getId());
+                        log.info("Stopped output port {} for connection: {} ", connection.getDestination().getId(), connection.getId());
+                    }catch (JerseyClientException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+
+                    restClient.deleteConnection(connection,false);
+                }catch (JerseyClientException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        //Incoming connections coming from some source to this process group.
+
+        connections = NifiConnectionUtil.findConnectionsMatchingDestinationGroupId(connectionsEntity.getConnections(), processGroup.getId());
+        if(connections != null) {
+            for(ConnectionDTO connection: connections){
+                String type = connection.getSource().getType();
+                log.info("Found Connection Matching Destination Group Id. {}, connected to {} as type: {} ", connection.getId(),connection.getDestination().getId(),type);
+                if(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)){
+                    //stop the port
+                    try {
+                        restClient.stopInputPort(connection.getSource().getGroupId(), connection.getSource().getId());
+                        log.info("Stopped input port {} for connection: {} ", connection.getSource().getId(), connection.getId());
+                    }catch (JerseyClientException e) {
+                        e.printStackTrace();
+                    }
+                }
+                try {
+                    restClient.deleteConnection(connection,false);
+                }catch (JerseyClientException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+    }
+}
 
     public void versionProcessGroup(ProcessGroupDTO processGroup) throws JerseyClientException {
-        restClient.disableAllInputProcessors(processGroup.getId());
+        log.info("Versioning Process Group {} ",processGroup.getName());
 
+        restClient.disableAllInputProcessors(processGroup.getId());
+        log.info("Disabled Inputs for {} ", processGroup.getName());
         //attempt to stop all processors
         try {
-            restClient.stopAllProcessors(processGroup);
+            restClient.stopInputs(processGroup.getId());
+            log.info("Stopped Input Ports for {}, ", processGroup.getName());
         }catch (JerseyClientException e)
         {
-
+            e.printStackTrace();
         }
+
+        // delete any connections that join to this processGroup
+
+      //  restClient.stopAllProcessors(processGroup);
 
 
         //delete all connections
-        ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(processGroup.getParentGroupId());
-        if(connectionsEntity != null) {
-            List<ConnectionDTO> connections = NifiConnectionUtil.findConnectionsMatchingSourceGroupId(connectionsEntity.getConnections(), processGroup.getId());
-
-            if(connections != null) {
-                for(ConnectionDTO connection: connections){
-                    String type = connection.getDestination().getType();
-                    if(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)){
-                        //stop the port
-                        try {
-                            restClient.stopOutputPort(connection.getParentGroupId(), connection.getDestination().getId());
-                        }catch (JerseyClientException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    try {
-                        restClient.deleteConnection(connection);
-                    }catch (JerseyClientException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-            connections = NifiConnectionUtil.findConnectionsMatchingDestinationGroupId(connectionsEntity.getConnections(), processGroup.getId());
-            if(connections != null) {
-                for(ConnectionDTO connection: connections){
-                    String type = connection.getSource().getType();
-                    if(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)){
-                        //stop the port
-                        try {
-                            restClient.stopInputPort(connection.getParentGroupId(), connection.getSource().getId());
-                        }catch (JerseyClientException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    try {
-                        restClient.deleteConnection(connection);
-                    }catch (JerseyClientException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }
-
-        }
+      /* try {
+           deleteConnections(processGroup);
+       }catch (JerseyClientException e){
+           e.printStackTrace();
+       }
+       */
 
 
 
@@ -462,6 +485,7 @@ public class TemplateCreationHelper {
         ProcessGroupEntity entity = new ProcessGroupEntity();
         entity.setProcessGroup(processGroup);
         restClient.updateProcessGroup(entity);
+        log.info("Renamed ProcessGroup to  {}, ",processGroup.getName());
     }
 
     public void markProcessorsAsRunning(NifiProcessGroup newProcessGroup) {
