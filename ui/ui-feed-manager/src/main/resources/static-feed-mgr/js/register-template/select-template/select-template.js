@@ -99,6 +99,7 @@
 
 
         function assignPropertyRenderType(property) {
+
             var allowableValues = property.propertyDescriptor.allowableValues;
             if( allowableValues !== undefined && allowableValues !== null && allowableValues.length >0 ){
                  if(allowableValues.length == 2){
@@ -112,11 +113,11 @@
                  if(property.renderTypes == undefined){
                     property.renderTypes = RegisterTemplateService.selectRenderType;
                 }
-                property.renderType = 'select';
+                property.renderType = property.renderType == undefined ? 'select' : property.renderType;
             }
             else {
                 property.renderTypes = RegisterTemplateService.propertyRenderTypes;
-                property.renderType = 'text';
+                property.renderType = property.renderType == undefined ? 'text' : property.renderType;
             }
         }
 
@@ -140,9 +141,9 @@
                 if(property.selected == undefined){
                     property.selected = false;
                 }
-                if(property.propertyDescriptor.required == true && ( property.value =='' || property.value ==undefined)) {
-                    property.selected = true;
-                }
+               // if(property.propertyDescriptor.required == true && ( property.value =='' || property.value ==undefined)) {
+               //     property.selected = true;
+              //  }
 
                 assignPropertyRenderType(property)
 
@@ -208,6 +209,7 @@
                     },10);
 
                     self.model.nifiTemplateId = templateData.nifiTemplateId;
+                    self.nifiTemplateId = templateData.nifiTemplateId;
                     self.model.templateName = templateData.templateName;
                     self.model.defineTable = templateData.defineTable;
                     self.model.allowPreconditions = templateData.allowPreconditions;
@@ -222,7 +224,8 @@
                 var errorFn = function (err) {
 
                 }
-                     var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(self.model.nifiTemplateId), {params: {allProperties: true}});
+                var id = self.registeredTemplateId != undefined && self.registeredTemplateId != null ? self.registeredTemplateId : self.model.nifiTemplateId;
+                     var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATE_URL(id), {params: {allProperties: true}});
                     promise.then(successFn, errorFn);
                     return promise;
             }
