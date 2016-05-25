@@ -1,11 +1,14 @@
 package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
 import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.ArrayList;
@@ -15,6 +18,8 @@ import java.util.List;
  * Created by sr186054 on 5/4/16.
  */
 public abstract class AbstractFeedManagerTemplateService {
+
+    private static final Logger log = LoggerFactory.getLogger(AbstractFeedManagerTemplateService.class);
 
 
     @Autowired
@@ -52,6 +57,7 @@ public abstract class AbstractFeedManagerTemplateService {
         RegisteredTemplate registeredTemplate = getRegisteredTemplate(templateId);
         //if it is null check to see if the template exists in nifi and is already registered
         if(registeredTemplate == null){
+            log.info("Attempt to get Template with ID {}, returned Null.  This ID must be one registed in Nifi... attempt to query Nifi for this template ",templateId);
             registeredTemplate = getRegisteredTemplateForNifiProperties(templateId,null);
         }
         if (registeredTemplate == null) {
@@ -76,12 +82,19 @@ public abstract class AbstractFeedManagerTemplateService {
      * @param template
      */
     private void syncTemplateId(RegisteredTemplate template){
+        String oldId = template.getNifiTemplateId();
         String nifiTemplateId = templateIdForTemplateName(template.getTemplateName());
         template.setNifiTemplateId(nifiTemplateId);
 
         RegisteredTemplate t = getRegisteredTemplate(template.getId());
         template.setProperties(t.getProperties());
+        if(!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
+            log.info("Updating Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId, template.getNifiTemplateId());
+        }
         saveRegisteredTemplate(template);
+        if(!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
+            log.info("Successfully updated and synchronized Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId, template.getNifiTemplateId());
+        }
     }
 
     public abstract RegisteredTemplate getRegisteredTemplateForNifiProperties(String nifiTemplateId, String nifiTemplateName);
@@ -95,6 +108,7 @@ public abstract class AbstractFeedManagerTemplateService {
     public RegisteredTemplate mergeRegisteredTemplateProperties(RegisteredTemplate registeredTemplate) throws JerseyClientException {
 
         if(registeredTemplate != null){
+            log.info("Merging properties for template {} ({})",registeredTemplate.getTemplateName(),registeredTemplate.getId());
             List<NifiProperty> properties = null;
             int matchCount = 0;
             try {
@@ -106,6 +120,7 @@ public abstract class AbstractFeedManagerTemplateService {
 
             }
             if(properties == null || matchCount == 0) {
+                log.info("Unable to find Nifi Template associated with saved Id of {}.  Possibly the Nifi Template was updated and saved again.  Attempt to query Nifi for template with the name of {}",registeredTemplate.getNifiTemplateId(),registeredTemplate.getTemplateName());
                 //sync templateId for name
                 properties = nifiRestClient.getPropertiesForTemplateByName(registeredTemplate.getTemplateName());
                 if(properties != null) {
@@ -126,6 +141,9 @@ public abstract class AbstractFeedManagerTemplateService {
 
             registeredTemplate = copy;
 
+        }
+        else {
+            log.info("Unable to merge Registered Template.  It is null");
         }
         return registeredTemplate;
     }

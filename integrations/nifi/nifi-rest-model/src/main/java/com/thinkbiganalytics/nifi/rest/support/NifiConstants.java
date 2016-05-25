@@ -8,5 +8,8 @@ public class NifiConstants {
   public enum NIFI_PORT_TYPE {
   OUTPUT_PORT,INPUT_PORT
   }
+  public enum NIFI_PROCESSOR_TYPE {
+    PROCESSOR
+  }
 
 }

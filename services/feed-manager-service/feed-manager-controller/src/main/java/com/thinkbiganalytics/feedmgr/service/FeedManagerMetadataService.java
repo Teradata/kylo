@@ -69,6 +69,7 @@ public class FeedManagerMetadataService implements MetadataService {
   }
 
   @Override
+  @Transactional(transactionManager = "metadataTransactionManager")
   public RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException {
     return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
   }
@@ -118,7 +119,7 @@ public class FeedManagerMetadataService implements MetadataService {
             if(state.equals(Feed.State.ENABLED)) {
               entity = nifiRestClient.startAll(feed.getId(), feed.getParentGroupId());
             }else if(state.equals(Feed.State.DISABLED)) {
-              entity = nifiRestClient.stopAllProcessors(feed.getId(), feed.getParentGroupId());
+              entity = nifiRestClient.stopInputs(feed.getId());
             }
 
             if (entity != null) {

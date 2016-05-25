@@ -274,7 +274,9 @@ public class NifiProcessUtil {
             }
         }
         for(String processorId: processorIds){
-            processors.add(map.get(processorId));
+            if(map.containsKey(processorId)) {
+                processors.add(map.get(processorId));
+            }
         }
         return processors;
     }

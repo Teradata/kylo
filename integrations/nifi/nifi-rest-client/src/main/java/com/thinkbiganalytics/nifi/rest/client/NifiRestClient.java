@@ -338,6 +338,56 @@ public class NifiRestClient extends JerseyRestClient {
         stopAllProcessors(groupDTO.getId(), groupDTO.getParentGroupId());
     }
 
+    public void stopProcessor(ProcessorDTO processorDTO) throws JerseyClientException {
+        if(NifiProcessUtil.PROCESS_STATE.RUNNING.name().equalsIgnoreCase(processorDTO.getState())){
+          stopProcessor(processorDTO.getParentGroupId(),processorDTO.getId());
+        }
+    }
+
+    public void stopProcessor(String processorGroupId,String processorId ) throws JerseyClientException {
+            ProcessorEntity entity = new ProcessorEntity();
+            ProcessorDTO dto = new ProcessorDTO();
+            dto.setId(processorId);
+            dto.setParentGroupId(processorGroupId);
+            dto.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+            entity.setProcessor(dto);
+            updateProcessor(entity);
+    }
+
+    public void startProcessor(String processorGroupId,String processorId ) throws JerseyClientException {
+        ProcessorEntity entity = new ProcessorEntity();
+        ProcessorDTO dto = new ProcessorDTO();
+        dto.setId(processorId);
+        dto.setParentGroupId(processorGroupId);
+        dto.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+        entity.setProcessor(dto);
+        updateProcessor(entity);
+    }
+
+    public void stopInputs(ProcessGroupDTO groupDTO) throws JerseyClientException {
+        List<ProcessorDTO> inputs = NifiProcessUtil.getInputProcessors(groupDTO);
+        if(inputs != null){
+            for(ProcessorDTO input: inputs){
+             stopProcessor(input);
+            }
+        }
+      InputPortsEntity inputPorts = getInputPorts(groupDTO.getId());
+        if(inputPorts != null){
+            for(PortDTO port : inputPorts.getInputPorts()){
+                stopInputPort(groupDTO.getId(),port.getId());
+            }
+        }
+    }
+
+    public ProcessGroupEntity stopInputs(String processGroupId) throws JerseyClientException {
+        ProcessGroupEntity entity = getProcessGroup(processGroupId, false, true);
+        if(entity != null && entity.getProcessGroup() != null) {
+            stopInputs(entity.getProcessGroup());
+            return entity;
+        }
+        return null;
+    }
+
     public ProcessGroupEntity stopAllProcessors(String processGroupId, String parentProcessGroupId) throws JerseyClientException {
         ProcessGroupEntity entity = getProcessGroup(processGroupId, false, false);
         entity.getProcessGroup().setRunning(false);
@@ -356,36 +406,49 @@ public class NifiRestClient extends JerseyRestClient {
     }
 
     public InputPortEntity stopInputPort(String groupId, String portId) throws JerseyClientException {
-        InputPortEntity portEntity = getInputPort(groupId, portId);
-        portEntity.getInputPort().setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-        updateEntityForSave(portEntity);
-        return put("/controller/process-groups/" + groupId + "/input-ports/" + portId, portEntity, InputPortEntity.class);
+        InputPortEntity entity = new InputPortEntity();
+        PortDTO portDTO = new PortDTO();
+        portDTO.setId(portId);
+        portDTO.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+        entity.setInputPort(portDTO);
+        updateEntityForSave(entity);
+        return put("/controller/process-groups/" + groupId + "/input-ports/" + portId, entity, InputPortEntity.class);
     }
 
     public OutputPortEntity stopOutputPort(String groupId, String portId) throws JerseyClientException {
-        OutputPortEntity portEntity = getOutputPort(groupId, portId);
-        portEntity.getOutputPort().setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-        updateEntityForSave(portEntity);
-        return put("/controller/process-groups/" + groupId + "/output-ports/" + portId, portEntity, OutputPortEntity.class);
+        OutputPortEntity entity = new OutputPortEntity();
+        PortDTO portDTO = new PortDTO();
+        portDTO.setId(portId);
+        portDTO.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
+        entity.setOutputPort(portDTO);
+        updateEntityForSave(entity);
+        return put("/controller/process-groups/" + groupId + "/output-ports/" + portId, entity, OutputPortEntity.class);
     }
 
     public InputPortEntity startInputPort(String groupId, String portId) throws JerseyClientException {
-        InputPortEntity portEntity = getInputPort(groupId, portId);
-        portEntity.getInputPort().setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-        updateEntityForSave(portEntity);
-        return put("/controller/process-groups/" + groupId + "/input-ports/" + portId, portEntity, InputPortEntity.class);
+        InputPortEntity entity = new InputPortEntity();
+        PortDTO portDTO = new PortDTO();
+        portDTO.setId(portId);
+        portDTO.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+        entity.setInputPort(portDTO);
+        updateEntityForSave(entity);
+        return put("/controller/process-groups/" + groupId + "/input-ports/" + portId, entity, InputPortEntity.class);
     }
 
     public OutputPortEntity startOutputPort(String groupId, String portId) throws JerseyClientException {
-        OutputPortEntity portEntity = getOutputPort(groupId, portId);
-        portEntity.getOutputPort().setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-        updateEntityForSave(portEntity);
-        return put("/controller/process-groups/" + groupId + "/output-ports/" + portId, portEntity, OutputPortEntity.class);
+        OutputPortEntity entity = new OutputPortEntity();
+        PortDTO portDTO = new PortDTO();
+        portDTO.setId(portId);
+        portDTO.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+        entity.setOutputPort(portDTO);
+        updateEntityForSave(entity);
+        return put("/controller/process-groups/" + groupId + "/output-ports/" + portId, entity, OutputPortEntity.class);
     }
 
     public ProcessGroupEntity deleteProcessGroup(ProcessGroupDTO groupDTO) throws JerseyClientException {
         ProcessGroupEntity deleteEntity = new ProcessGroupEntity();
         deleteEntity.setProcessGroup(groupDTO);
+        deleteEntity.getProcessGroup().setRunning(false);
         deleteEntity.getProcessGroup().setRunning(false);
         updateEntityForSave(deleteEntity);
         put("/controller/process-groups/" + groupDTO.getParentGroupId() + "/process-group-references/" + groupDTO.getId(),
@@ -437,7 +500,7 @@ public class NifiRestClient extends JerseyRestClient {
             for (ConnectionDTO connection : group.getContents().getConnections()) {
                 Map<String, Object> params = getUpdateParams();
                 try {
-                    deleteConnection(connection);
+                    deleteConnection(connection,true);
                 } catch (JerseyClientException e) {
                     e.printStackTrace();
                 }
@@ -450,22 +513,93 @@ public class NifiRestClient extends JerseyRestClient {
         }
     }
 
-    public void deleteConnection(ConnectionDTO connection) throws JerseyClientException {
+    public ConnectionEntity getConnection(String processGroupId, String connectionId)throws JerseyClientException {
+        return get("/controller/process-groups/"+processGroupId+"/connections/"+connectionId,null,ConnectionEntity.class);
+    }
+
+    public ListingRequestEntity getConnectionQueue(String processGroupId, String connectionId) throws JerseyClientException {
+        return postForm("/controller/process-groups/" + processGroupId + "/connections/" + connectionId + "/listing-requests", null, ListingRequestEntity.class);
+    }
+
+    public void deleteConnection(ConnectionDTO connection, boolean emptyQueue) throws JerseyClientException {
 
         Map<String, Object> params = getUpdateParams();
         try {
-            //empty connection Queue
-            DropRequestEntity
-                    dropRequestEntity =
-                    delete("/controller/process-groups/" + connection.getParentGroupId() + "/connections/" + connection.getId() + "/contents", params,
-                            DropRequestEntity.class);
-            if (dropRequestEntity != null && dropRequestEntity.getDropRequest() != null) {
-                params = getUpdateParams();
-                delete("/controller/process-groups/" + connection.getParentGroupId() + "/connections/" + connection.getId() + "/drop-requests/"
-                        + dropRequestEntity.getDropRequest().getId(), params, DropRequestEntity.class);
+            if( emptyQueue ) {
+                //empty connection Queue
+                DropRequestEntity
+                        dropRequestEntity =
+                        delete("/controller/process-groups/" + connection.getParentGroupId() + "/connections/" + connection.getId() + "/contents", params,
+                                DropRequestEntity.class);
+                if (dropRequestEntity != null && dropRequestEntity.getDropRequest() != null) {
+                    params = getUpdateParams();
+                    delete("/controller/process-groups/" + connection.getParentGroupId() + "/connections/" + connection.getId() + "/drop-requests/"
+                            + dropRequestEntity.getDropRequest().getId(), params, DropRequestEntity.class);
+                }
             }
-            delete("/controller/process-groups/" + connection.getParentGroupId() + "/connections/" + connection.getId(), params,
+            //before deleting the connection we need to stop the source
+            LOG.info("Before deleting the connection we need to stop Sources and destinations.");
+            LOG.info("Stopping Source {} ({}) for connection {} ", connection.getSource().getId(),connection.getSource().getType(),connection.getId());
+            String type = connection.getSource().getType();
+            try {
+                if (NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)) {
+                    stopOutputPort(connection.getSource().getGroupId(), connection.getSource().getId());
+                } else if (NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)) {
+                    stopInputPort(connection.getSource().getGroupId(), connection.getSource().getId());
+                } else if (NifiConstants.NIFI_PROCESSOR_TYPE.PROCESSOR.name().equalsIgnoreCase(type)) {
+                    stopProcessor(connection.getSource().getGroupId(), connection.getSource().getId());
+                }
+            }catch (JerseyClientException e) {
+e.printStackTrace();
+            }
+            type = connection.getDestination().getType();
+            LOG.info("Stopping Destination {} ({}) for connection {} ", connection.getDestination().getId(),connection.getDestination().getType(),connection.getId());
+            try {
+                if (NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)) {
+                    stopOutputPort(connection.getDestination().getGroupId(), connection.getDestination().getId());
+                } else if (NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)) {
+                    stopInputPort(connection.getDestination().getGroupId(), connection.getDestination().getId());
+                } else if (NifiConstants.NIFI_PROCESSOR_TYPE.PROCESSOR.name().equalsIgnoreCase(type)) {
+                    stopProcessor(connection.getDestination().getGroupId(), connection.getDestination().getId());
+                }
+            }catch (JerseyClientException e) {
+e.printStackTrace();
+            }
+            LOG.info("Deleting the connection {} ", connection.getId());
+    delete("/controller/process-groups/" + connection.getParentGroupId() + "/connections/" + connection.getId(), params,
                     ConnectionEntity.class);
+            try {
+                type = connection.getSource().getType();
+                //now start the inputs again
+                LOG.info("After Delete... Starting source again {} ({}) ", connection.getSource().getId(), connection.getSource().getType());
+                if (NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)) {
+                    startOutputPort(connection.getSource().getGroupId(), connection.getSource().getId());
+                } else if (NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)) {
+                    startInputPort(connection.getSource().getGroupId(), connection.getSource().getId());
+                } else if (NifiConstants.NIFI_PROCESSOR_TYPE.PROCESSOR.name().equalsIgnoreCase(type)) {
+                    startProcessor(connection.getSource().getGroupId(), connection.getSource().getId());
+                }
+            }catch (JerseyClientException e) {
+                e.printStackTrace();
+            }
+
+            try {
+                type = connection.getDestination().getType();
+                //now start the inputs again
+                LOG.info("After Delete... Starting dest again {} ({}) ", connection.getDestination().getId(), connection.getDestination().getType());
+                if (NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)) {
+                    startOutputPort(connection.getDestination().getGroupId(), connection.getDestination().getId());
+                } else if (NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)) {
+                    startInputPort(connection.getDestination().getGroupId(), connection.getDestination().getId());
+                } else if (NifiConstants.NIFI_PROCESSOR_TYPE.PROCESSOR.name().equalsIgnoreCase(type)) {
+                    startProcessor(connection.getDestination().getGroupId(), connection.getDestination().getId());
+                }
+            }catch (JerseyClientException e) {
+                e.printStackTrace();
+            }
+
+
+
         } catch (JerseyClientException e) {
             e.printStackTrace();
         }
@@ -503,7 +637,7 @@ public class NifiRestClient extends JerseyRestClient {
             }));
             if(connections != null){
                 for(ConnectionDTO connectionDTO : connections){
-                    deleteConnection(connectionDTO);
+                    deleteConnection(connectionDTO,true);
                 }
             }
         }

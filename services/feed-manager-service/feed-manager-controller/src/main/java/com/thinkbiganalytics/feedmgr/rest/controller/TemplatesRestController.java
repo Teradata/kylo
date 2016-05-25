@@ -15,9 +15,12 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import com.thinkbiganalytics.feedmgr.service.feed.AbstractFeedManagerFeedService;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.entity.TemplatesEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.google.common.base.Predicate;
@@ -47,7 +50,7 @@ import io.swagger.annotations.Api;
 @Path("/v1/feedmgr/templates")
 public class TemplatesRestController {
 
-
+    private static final Logger log = LoggerFactory.getLogger(TemplatesRestController.class);
 
     @Autowired
     NifiRestClient nifiRestClient;
@@ -215,6 +218,8 @@ public class TemplatesRestController {
         else {
          registeredTemplate = getMetadataService().getRegisteredTemplate(templateId);
         }
+
+        log.info("Returning Registered template for id {} as {} ",templateId,(registeredTemplate != null ? registeredTemplate.getTemplateName() : null));
 
         //if savedFeedId is passed in merge the properties with the saved values
         if(feedName != null) {

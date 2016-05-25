@@ -3,6 +3,8 @@ package com.thinkbiganalytics.feedmgr.service.template;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.inject.Inject;
@@ -12,6 +14,8 @@ import java.util.List;
  * Created by sr186054 on 5/4/16.
  */
 public class JpaFeedManagerTemplateService extends AbstractFeedManagerTemplateService implements FeedManagerTemplateService {
+
+    private static final Logger log = LoggerFactory.getLogger(JpaFeedManagerTemplateService.class);
 
     @Inject
     FeedManagerTemplateProvider templateProvider;
@@ -25,10 +29,13 @@ public class JpaFeedManagerTemplateService extends AbstractFeedManagerTemplateSe
         RegisteredTemplate template = getRegisteredTemplateByName(registeredTemplate.getTemplateName());
         if(template != null && !template.getId().equalsIgnoreCase(registeredTemplate.getId())){
             //Warning cant save.. duplicate Name
+            log.error("Unable to save template {}.  There is already a template with this name registered in the system",registeredTemplate.getTemplateName());
             return null;
         }
         else {
+            log.info("About to save Registered Template {} ({}), nifi template Id of {} ",registeredTemplate.getTemplateName(),registeredTemplate.getId(),registeredTemplate.getNifiTemplateId());
             FeedManagerTemplate domain = TemplateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(registeredTemplate);
+            log.info("Domain Object is {} ({}), nifi template Id of {}",domain.getName(),domain.getId(),domain.getNifiTemplateId());
             domain = templateProvider.update(domain);
             //query it back to display to the ui
             domain = templateProvider.findById(domain.getId());

@@ -5,6 +5,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
+import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.feedmgr.CreateFeedBuilder;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
@@ -12,6 +13,8 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,6 +24,8 @@ import java.util.*;
  * Created by sr186054 on 5/4/16.
  */
 public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedService {
+
+    private static final Logger log = LoggerFactory.getLogger(AbstractFeedManagerFeedService.class);
 
     @Autowired
     private NifiRestClient nifiRestClient;
@@ -48,6 +53,9 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         //get all the properties for the metadata
         RegisteredTemplate
                 registeredTemplate = getRegisteredTemplateWithAllProperties(feedMetadata.getTemplateId());
+
+
+
         List<NifiProperty> matchedProperties =  NifiPropertyUtil
                 .matchAndSetPropertyByIdKey(registeredTemplate.getProperties(), feedMetadata.getProperties());
         feedMetadata.setProperties(registeredTemplate.getProperties());
