@@ -25,7 +25,7 @@
             <span flex="25" class="property-name">Feed Type</span>
 
             <div flex>
-                {{vm.model.templateId}}
+                {{vm.model.templateName}}
             </div>
         </div>
     </readonly-section>
@@ -49,19 +49,9 @@
             <label>Description</label>
             <textarea ng-model="vm.editModel.description"></textarea>
         </md-input-container>
-        <div layout="row" layout-align="space-between start" class="layout-padding-top">
-            <md-input-container  flex="45" class="condensed">
-                <label>Feed Type</label>
-                <md-select required ng-model="vm.editModel.templateId" name="templateId">
-                    <md-option ng-repeat="template in vm.templates | orderBy:templateName" value="{{template.templateId}}">
-                        {{template.templateName}}
-                    </md-option>
-                </md-select>
-                <div ng-show="editFeedDefinitionForm.templateId.$touched && editFeedDefinitionForm.templateId.$invalid" ng-messages="editFeedDefinitionForm.templateId.$error">
-                    <div ng-show="editFeedDefinitionForm.templateId.$error.required" ng-message="required">Required.</div>
-                </div>
-            </md-input-container>
-            <span flex></span>
-        </div>
+        <md-input-container flex="45" class="condensed">
+            <label>Feed Type</label>
+            <input  readonly ng-model="vm.model.templateName"/>
+        </md-input-container>
     </editable-section>
 </vertical-section-layout>

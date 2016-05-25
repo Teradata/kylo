@@ -1,11 +1,3 @@
-/*
- * Copyright (c) 2015.
- */
-
-/**
- * This Directive is wired in to the FeedStatusIndicatorDirective.
- * It uses the OverviewService to watch for changes and update after the Indicator updates
- */
 (function () {
 
     var directive = function () {
@@ -24,7 +16,7 @@
         };
     }
 
-    var controller =  function($scope, FeedService) {
+    var controller =  function($scope, $q, FeedService) {
 
         var self = this;
 
@@ -59,11 +51,15 @@
         }
         this.onSave = function() {
             //save changes to the model
+            var copy = angular.copy(self.model);
             self.model.feedName = self.editModel.feedName;
             self.model.systemFeedName = self.editModel.systemFeedName;
             self.model.description = self.editModel.description;
             self.model.templateId = self.editModel.templateId;
-            FeedService.saveFeedModel(FeedService.editFeedModel);
+            FeedService.saveFeedModel(FeedService.editFeedModel).then(function(){},function(err) {
+                console.log('ERROR ... rollback ')
+
+            });
         }
 
 
