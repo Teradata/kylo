@@ -88,7 +88,7 @@ public class JerseyRestClient {
             try {
                  sslContext = sslConfig.createSSLContext();
             }catch(Exception e){
-                LOG.error("ERROR creating JiraClient with SSL Context.  "+e.getMessage()+" Falling back to JIRA Client without SSL.  JIRA Integration will probably not work until this is fixed!");
+                LOG.error("ERROR creating CLient SSL Context.  "+e.getMessage()+" Falling back to JIRA Client without SSL.  JIRA Integration will probably not work until this is fixed!");
             }
         }
 
@@ -132,12 +132,13 @@ public class JerseyRestClient {
 
         }
 
+        clientConfig.register(MultiPartFeature.class);
         if(sslContext != null) {
             LOG.info("Created new Jersey Client with SSL");
-            client = ClientBuilder.newBuilder().withConfig(clientConfig).sslContext(sslContext).build();
+            client = new JerseyClientBuilder().withConfig(clientConfig).sslContext(sslContext).build();
         } else {
             LOG.info("Created new Jersey Client without SSL");
-            client = ClientBuilder.newClient(clientConfig);
+            client = JerseyClientBuilder.createClient(clientConfig);
 
         }
         client.register(JacksonFeature.class);

@@ -3,11 +3,22 @@ package com.thinkbiganalytics.servicemonitor.rest.client.cdh;
 import com.cloudera.api.ApiRootResource;
 import com.cloudera.api.DataView;
 import com.cloudera.api.v1.RootResourceV1;
+import com.google.common.reflect.Reflection;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.MethodUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.cglib.core.ReflectUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 /**
  * Created by sr186054 on 10/8/15.
  */
 public class ClouderaRootResourceManager {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ClouderaRootResourceManager.class);
 
   private static DataView dataView = DataView.FULL;
 
@@ -15,31 +26,29 @@ public class ClouderaRootResourceManager {
   public static ClouderaRootResource getRootResource(ApiRootResource apiRootResource) {
 
     String version = apiRootResource.getCurrentVersion();
+    Integer numericVersion = new Integer(StringUtils.substringAfter(version,"v"));
     RootResourceV1 rootResource = null;
+    Integer maxVersion = 10;
+    if(numericVersion > maxVersion){
+      numericVersion = maxVersion;
+    }
 
-    if ("v1".equalsIgnoreCase(version)) {
-      rootResource = apiRootResource.getRootV1();
-    } else if ("v2".equalsIgnoreCase(version)) {
-      rootResource = apiRootResource.getRootV2();
-    } else if ("v3".equalsIgnoreCase(version)) {
-      rootResource = apiRootResource.getRootV3();
-    } else if ("v4".equalsIgnoreCase(version)) {
-      rootResource = apiRootResource.getRootV4();
-    } else if ("v5".equalsIgnoreCase(version)) {
-      rootResource = apiRootResource.getRootV5();
-    } else if ("v6".equalsIgnoreCase(version)) {
-      rootResource = apiRootResource.getRootV6();
-    } else if ("v7".equalsIgnoreCase(version)) {
-      rootResource = apiRootResource.getRootV7();
-    } else if ("v8".equalsIgnoreCase(version)) {
-      rootResource = apiRootResource.getRootV8();
-    } else if ("v9".equalsIgnoreCase(version)) {
-      rootResource = apiRootResource.getRootV8();
-    } else if ("v10".equalsIgnoreCase(version)) {
-      rootResource = apiRootResource.getRootV10();
-    } else {
+    try {
+      rootResource = (RootResourceV1)MethodUtils.invokeMethod(apiRootResource,"getRootV"+numericVersion);
+      } catch (IllegalAccessException e) {
+        e.printStackTrace();
+      } catch (InvocationTargetException e) {
+        e.printStackTrace();
+      } catch (NoSuchMethodException e) {
+      e.printStackTrace();
+    }
+    if(rootResource == null){
+      LOG.info("Unable to get RootResource for version {}, returning version 1",numericVersion);
       rootResource = apiRootResource.getRootV1();
     }
+
+
+    LOG.info("Returning Cloudera resource for version {}, as {} ",numericVersion,rootResource);
 
     return new DefaultClouderaRootResource(rootResource);
 
