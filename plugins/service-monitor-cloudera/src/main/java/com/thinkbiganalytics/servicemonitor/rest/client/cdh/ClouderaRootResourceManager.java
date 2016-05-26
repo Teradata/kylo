@@ -48,7 +48,7 @@ public class ClouderaRootResourceManager {
     }
 
 
-    LOG.info("Returning Cloudera resource for version {}, as {} ",numericVersion,rootResource);
+    LOG.info("Returning Cloudera resource using API version {} ",numericVersion);
 
     return new DefaultClouderaRootResource(rootResource);
 

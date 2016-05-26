@@ -137,14 +137,17 @@ public class ClouderaServicesStatusCheck implements ServicesStatusCheck {
                 ApiHealthSummary roleHealthSummary = role.getHealthSummary();
                 List<ApiHealthCheck> roleHealthChecks = role.getHealthChecks();
                 ServiceComponent.STATE roleState = apiRoleStateToServiceComponentState(role.getRoleState());
+                List<ServiceAlert> componentAlerts = new ArrayList<>();
                 for (ApiHealthCheck healthCheck : roleHealthChecks) {
-                  alerts.add(apiHealthCheckToServiceAlert(serviceName, roleName, healthCheck));
+                  ServiceAlert alert = apiHealthCheckToServiceAlert(serviceName, roleName, healthCheck);
+                  alerts.add(alert);
+                  componentAlerts.add(alert);
                 }
 
                 ServiceComponent
                     component =
                     new DefaultServiceComponent.Builder(roleName, roleState).clusterName(clusterName)
-                        .message(role.getRoleState().name()).build();
+                            .message(role.getRoleState().name()).alerts(componentAlerts).build();
                 if (definedServiceComponentMap.containsKey(serviceName) && (definedServiceComponentMap.get(serviceName).contains(
                     ServiceMonitorCheckUtil.ALL_COMPONENTS) || definedServiceComponentMap.get(serviceName)
                                                                                 .contains(component.getName()))) {
