@@ -10,14 +10,14 @@ public class MysqlDatabaseQuerySubstitution implements DatabaseQuerySubstitution
   }
 
   public String getDateDiffWhereClause(String column, DATE_PART datePart, Integer number) {
-    return " " + column + " >= DATE_SUB(NOW(),INTERVAL " + number + " " + datePart.name() + ") ";
+    return " " + column + " >= DATE_SUB(UTC_TIMESTAMP(),INTERVAL " + number + " " + datePart.name() + ") ";
   }
 
   /**
    * Return a SQL fragment that will return The Current Date - some Interval
    */
   public String getTimeBeforeNow(DATE_PART datePart, Integer number) {
-    return "DATE_SUB(NOW(),INTERVAL " + number + " " + datePart.name() + ") ";
+    return "DATE_SUB(UTC_TIMESTAMP(),INTERVAL " + number + " " + datePart.name() + ") ";
   }
 
 
@@ -26,18 +26,18 @@ public class MysqlDatabaseQuerySubstitution implements DatabaseQuerySubstitution
   }
 
   public String getJobExecutionRunTimeSql() {
-    return "TIMESTAMPDIFF(SECOND,e.START_TIME,COALESCE(e.END_TIME,NOW()))";
+    return "TIMESTAMPDIFF(SECOND,e.START_TIME,COALESCE(e.END_TIME,UTC_TIMESTAMP()))";
   }
 
   public String getTimeSinceEndTimeSql(String tableAlias) {
-    return "TIMESTAMPDIFF(SECOND,COALESCE("+tableAlias+".END_TIME,NOW()),NOW())";
+    return "TIMESTAMPDIFF(SECOND,COALESCE("+tableAlias+".END_TIME,UTC_TIMESTAMP()),UTC_TIMESTAMP())";
   }
 
 
 
   @Override
   public String getFeedExecutionRunTimeSql() {
-    return "TIMESTAMPDIFF(SECOND,e.START_TIME,COALESCE(childJobs.END_TIME,COALESCE(e.END_TIME,NOW())))";
+    return "TIMESTAMPDIFF(SECOND,e.START_TIME,COALESCE(childJobs.END_TIME,COALESCE(e.END_TIME,UTC_TIMESTAMP())))";
   }
 
   public String toDateSql(String date) {
