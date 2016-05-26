@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by sr186054 on 10/1/15.
@@ -26,6 +27,10 @@ public class ClouderaClient {
   private RestClientConfig clientConfig;
 
   private ClouderaManagerClientBuilder clouderaManagerClientBuilder;
+
+  private ClouderaRootResource clouderaRootResource;
+
+  private AtomicBoolean creatingResource = new AtomicBoolean(false);
 
 
   public ClouderaClient() {
@@ -55,8 +60,13 @@ public class ClouderaClient {
 
 
   public ClouderaRootResource getClouderaResource() {
-    ApiRootResource rootResource = this.clouderaManagerClientBuilder.build();
-    return ClouderaRootResourceManager.getRootResource(rootResource);
+    if(clouderaRootResource == null && !creatingResource.get()) {
+      creatingResource.set(true);
+      ApiRootResource rootResource = this.clouderaManagerClientBuilder.build();
+      clouderaRootResource = ClouderaRootResourceManager.getRootResource(rootResource);
+      LOG.info("Successfully Created Cloudera Client");
+    }
+    return  clouderaRootResource;
   }
 
   public void setClientConfig(RestClientConfig clientConfig) {

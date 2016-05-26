@@ -15,6 +15,7 @@ import com.thinkbiganalytics.servicemonitor.model.ServiceAlert;
 import com.thinkbiganalytics.servicemonitor.model.ServiceComponent;
 import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 import com.thinkbiganalytics.servicemonitor.rest.client.cdh.ClouderaClient;
+import com.thinkbiganalytics.servicemonitor.rest.client.cdh.ClouderaRootResource;
 import com.thinkbiganalytics.servicemonitor.support.ServiceMonitorCheckUtil;
 
 import org.slf4j.Logger;
@@ -113,9 +114,15 @@ public class ClouderaServicesStatusCheck implements ServicesStatusCheck {
     Map<String, List<String>> definedServiceComponentMap = ServiceMonitorCheckUtil.getMapOfServiceAndComponents(services);
 
     if (definedServiceComponentMap != null && !definedServiceComponentMap.isEmpty()) {
+      ClouderaRootResource rootResource = null;
       try {
+        rootResource = clouderaClient.getClouderaResource();
+        if(rootResource == null){
+          LOG.info(" Returning 0 services.  The Cloudera Resource is null... It may still be trying to initialize the Rest Client.");
+          return serviceStatusResponseList;
+        }
 
-        ApiClusterList clusters = clouderaClient.getClouderaResource().getPopulatedClusterList();
+        ApiClusterList clusters = rootResource.getPopulatedClusterList();
         for (ApiCluster cluster : clusters.getClusters()) {
           String clusterName = cluster.getName();
           List<ApiService> services = cluster.getServices();
