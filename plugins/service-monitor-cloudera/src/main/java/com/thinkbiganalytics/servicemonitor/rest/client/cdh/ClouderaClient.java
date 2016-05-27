@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Created by sr186054 on 10/1/15.
@@ -31,6 +32,8 @@ public class ClouderaClient {
   private ClouderaRootResource clouderaRootResource;
 
   private AtomicBoolean creatingResource = new AtomicBoolean(false);
+
+ private Integer clientAttempts = 0;
 
 
   public ClouderaClient() {
@@ -60,11 +63,23 @@ public class ClouderaClient {
 
 
   public ClouderaRootResource getClouderaResource() {
+    if(clouderaRootResource == null){
+      this.clientAttempts++;
+    }
     if(clouderaRootResource == null && !creatingResource.get()) {
       creatingResource.set(true);
-      ApiRootResource rootResource = this.clouderaManagerClientBuilder.build();
-      clouderaRootResource = ClouderaRootResourceManager.getRootResource(rootResource);
-      LOG.info("Successfully Created Cloudera Client");
+      try {
+        ApiRootResource rootResource = this.clouderaManagerClientBuilder.build();
+        clouderaRootResource = ClouderaRootResourceManager.getRootResource(rootResource);
+        LOG.info("Successfully Created Cloudera Client");
+      }catch (Exception e){
+        creatingResource.set(false);
+      }
+    }
+    if(clientAttempts >=3){
+      //rest
+      clientAttempts = 0;
+      creatingResource.set(false);
     }
     return  clouderaRootResource;
   }
