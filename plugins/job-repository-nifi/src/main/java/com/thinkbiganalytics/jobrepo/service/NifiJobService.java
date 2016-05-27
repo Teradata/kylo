@@ -4,6 +4,7 @@ package com.thinkbiganalytics.jobrepo.service;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.jobrepo.nifi.support.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.nifi.support.NifiSpringBatchConstants;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
 import com.thinkbiganalytics.jobrepo.repository.dao.NifiJobRepository;
@@ -175,9 +176,9 @@ public class NifiJobService extends AbstractJobService {
     public void abandonJobExecution(Long executionId) throws JobExecutionException {
         JobExecution execution = this.jobExplorer.getJobExecution(executionId);
         if (execution.getStartTime() == null) {
-            execution.setStartTime(new Date());
+            execution.setStartTime(DateTimeUtil.getUTCTime());
         }
-        execution.setEndTime(new Date());
+        execution.setEndTime(DateTimeUtil.getUTCTime());
         try {
             this.jobOperator.abandon(executionId);
         } catch (NoSuchJobExecutionException | JobExecutionAlreadyRunningException e) {
@@ -197,10 +198,10 @@ public class NifiJobService extends AbstractJobService {
             }
         }
         if (execution.getStartTime() == null) {
-            execution.setStartTime(new Date());
+            execution.setStartTime(DateTimeUtil.getUTCTime());
         }
         execution.setStatus(BatchStatus.FAILED);
-        execution.setEndTime(new Date());
+        execution.setEndTime(DateTimeUtil.getUTCTime());
         this.jobRepository.update(execution);
     }
 
