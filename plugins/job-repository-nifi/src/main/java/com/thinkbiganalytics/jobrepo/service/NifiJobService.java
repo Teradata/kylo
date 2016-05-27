@@ -175,14 +175,14 @@ public class NifiJobService extends AbstractJobService {
     @Override
     public void abandonJobExecution(Long executionId) throws JobExecutionException {
         JobExecution execution = this.jobExplorer.getJobExecution(executionId);
+        if(execution != null) {
         if (execution.getStartTime() == null) {
             execution.setStartTime(DateTimeUtil.getUTCTime());
         }
-        execution.setEndTime(DateTimeUtil.getUTCTime());
-        try {
-            this.jobOperator.abandon(executionId);
-        } catch (NoSuchJobExecutionException | JobExecutionAlreadyRunningException e) {
-            throw new JobExecutionException(e);
+            execution.setStatus(BatchStatus.ABANDONED);
+            execution.setEndTime(DateTimeUtil.getUTCTime());
+            this.jobRepository.update(execution);
+
         }
     }
 
