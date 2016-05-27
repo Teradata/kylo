@@ -33,7 +33,7 @@ public class ProvenanceEventListener {
     private FlowFileEventProvider flowFileEventProvider;
 
     public ProvenanceEventListener() {
-        int i = 0;
+
     }
 
     @Autowired
@@ -74,7 +74,7 @@ public class ProvenanceEventListener {
         attachEventComponent(event);
         provenanceFeedManager.setComponentName(event);
 
-        log.info("added Event to internal Maps... about to process event for component: {} in the system",event,event.getFlowFileComponent().getComponetName());
+        log.info("added Event to internal Map.  About to process event for component: {} in the system",event,event.getFlowFileComponent().getComponetName());
      return flowFile;
     }
 
@@ -130,7 +130,7 @@ public class ProvenanceEventListener {
             log.debug("Getting StartTime for {} from previous EndTime of {} ({})", event.getFlowFileComponent(), previousEvent.getFlowFileComponent().getEndTime(), previousEvent.getFlowFileComponent());
             return new DateTime(previousEvent.getFlowFileComponent().getEndTime());
         } else {
-            log.info("Cant Find Previous Event to get Start Time for {}, returning current time ", event.getFlowFileComponent());
+           log.debug("Cant Find Previous Event to get Start Time for {}, returning current time ", event.getFlowFileComponent());
             return new DateTime();
         }
     }
@@ -139,19 +139,17 @@ public class ProvenanceEventListener {
         //mark the component as complete
         FlowFileEvents eventFlowFile = flowFileEventProvider.getFlowFile(event.getFlowFileUuid());
         if (eventFlowFile.markComponentComplete(event.getComponentId(), new DateTime())) {
-            log.info("COMPLETING Component {} ", event.getFlowFileComponent());
+            boolean isFailureProcessor = provenanceFeedManager.isFailureProcessor(event);
+            log.info("COMPLETING Component {}.  Is Failure Processor: {} ", event.getFlowFileComponent(),isFailureProcessor);
             //if the current Event is a failure Processor that means the previous component failed.
             //mark the previous event as failed
-            if (provenanceFeedManager.isFailureProcessor(event)) {
+            if (isFailureProcessor) {
                 //get or create the event and component for failure
                 //lookup bulletins for failure events
                 boolean addedFailure = provenanceFeedManager.processBulletinsAndFailComponents(event);
                 //if the step was not failed because of bulletin records then fail it
                 if (!addedFailure) {
-                    log.info("Added Failure for {} ({}) ", event.getFlowFileComponent().getComponetName(), event.getComponentId());
                     provenanceFeedManager.componentFailed(event);
-                } else {
-                    provenanceFeedManager.componentCompleted(event);
                 }
             } else {
                 provenanceFeedManager.componentCompleted(event);
@@ -205,7 +203,7 @@ public class ProvenanceEventListener {
         if ((previousEvent != null && !previousEvent.getComponentId().equalsIgnoreCase(event.getComponentId()))) {
             if (previousEvent.markCompleted()) {
                 eventCounter.decrementAndGet();
-                log.info("MARKING PREVIOUS EVENT {} as Complete . EndTime of: {}", previousEvent);
+                log.debug("MARKING PREVIOUS EVENT {} as Complete . EndTime of: {}", previousEvent);
                 markEventComplete(previousEvent);
             }
             if (isCompletionEvent(event)) {
@@ -250,6 +248,13 @@ public class ProvenanceEventListener {
 
     }
 
+    public void setProvenanceFeedManager(ProvenanceFeedManager provenanceFeedManager) {
+        this.provenanceFeedManager = provenanceFeedManager;
+    }
+
+    public void setFlowFileEventProvider(FlowFileEventProvider flowFileEventProvider) {
+        this.flowFileEventProvider = flowFileEventProvider;
+    }
 }
 
 

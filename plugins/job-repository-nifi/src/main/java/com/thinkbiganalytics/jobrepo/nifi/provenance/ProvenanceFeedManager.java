@@ -181,7 +181,7 @@ public class ProvenanceFeedManager {
                         }
                         LOG.info("About to fail step for  for other component that was already in flow " + component);
                         jobRepository.failStep(component);
-                        //failedStep = false;
+                        failedStep = true;
                         jobExecution.addBulletinErrors(otherBulletins);
                         jobExecution.addFailedComponent(component);
                     }
@@ -418,4 +418,11 @@ public class ProvenanceFeedManager {
     }
 
 
+    public void setJobRepository(NifiJobRepository jobRepository) {
+        this.jobRepository = jobRepository;
+    }
+
+    public void setNifiComponentFlowData(NifiComponentFlowData nifiComponentFlowData) {
+        this.nifiComponentFlowData = nifiComponentFlowData;
+    }
 }

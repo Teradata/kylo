@@ -69,10 +69,10 @@ public class ProvenanceEventReceiver implements ProvenanceEventStartupCompleteLi
     }
 
     @JmsListener(destination = Topics.THINKBIG_NIFI_EVENT_TOPIC, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY,
-            subscription = Subscriptions.FEED_MANAGER_NIFI_PROVENANCE)
+           subscription = Subscriptions.FEED_MANAGER_NIFI_PROVENANCE)
     public void receiveTopic(ProvenanceEventDTO message) {
         Long eventId = message.getEventId();
-        log.info("Received ProvenanceEvent with Nifi Event Id of {} <{}>", eventId, message);
+        log.info("Received ProvenanceEvent with Nifi Event Id of {}", eventId);
 
 
         if (canProcessJmsMessages.get()) {
@@ -101,5 +101,11 @@ public class ProvenanceEventReceiver implements ProvenanceEventStartupCompleteLi
         }
     }
 
+    public void setProvenanceEventListener(ProvenanceEventListener provenanceEventListener) {
+        this.provenanceEventListener = provenanceEventListener;
+    }
 
+    public void setProvenanceEventStartupListener(ProvenanceEventStartupListener provenanceEventStartupListener) {
+        this.provenanceEventStartupListener = provenanceEventStartupListener;
+    }
 }

@@ -202,8 +202,6 @@ public class FlowFileComponent extends RunStatusContext implements Serializable 
                 .add("componetName", componetName)
                 .add("componentId", componentId)
                 .add("stepExecutionId", stepExecutionId)
-                .add("version", version)
-                .add("stepFinished", stepFinished)
                 .toString();
     }
 }

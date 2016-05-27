@@ -78,8 +78,6 @@ public class ProvenanceEventStartupListener implements ApplicationStartupListene
         if (jobs != null) {
             log.info("Found {} Jobs that were running prior to start Time of {} ",jobs.size(),startTime);
             processStartupJobExecutions(jobs);
-            //what to do with these jobs??
-            //try to build up the FlowFileEvents with these objects
 
             //if we cant get any FlowFileEvents then mark the jobs as abandoned?
             //jobService.abandonJobExecution();
@@ -197,5 +195,11 @@ public class ProvenanceEventStartupListener implements ApplicationStartupListene
 
     }
 
+    public void setJobRepoApplicationStartupListener(JobRepoApplicationStartupListener jobRepoApplicationStartupListener) {
+        this.jobRepoApplicationStartupListener = jobRepoApplicationStartupListener;
+    }
 
+    public void setJobRepository(JobRepository jobRepository) {
+        this.jobRepository = jobRepository;
+    }
 }

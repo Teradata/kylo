@@ -223,21 +223,23 @@ public class NifiComponentFlowData {
         BulletinBoardEntity entity = null;
         ProcessGroupDTO feedGroup = getFeedProcessGroup(event);
         final String flowFileUUID = event.getFlowFileUuid();
-        try {
-            entity = nifiRestClient.getProcessGroupBulletins(feedGroup.getId());
-            if (entity != null) {
-                final BulletinBoardDTO bulletinBoardDTO = entity.getBulletinBoard();
+        if(feedGroup != null) {
+            try {
+                entity = nifiRestClient.getProcessGroupBulletins(feedGroup.getId());
+                if (entity != null) {
+                    final BulletinBoardDTO bulletinBoardDTO = entity.getBulletinBoard();
 
-                return Lists.newArrayList(Iterables.filter(bulletinBoardDTO.getBulletins(), new Predicate<BulletinDTO>() {
-                    @Override
-                    public boolean apply(BulletinDTO bulletinDTO) {
-                        return flowFileUUID.equalsIgnoreCase(getFlowFileUUIDFromBulletinMessage(bulletinDTO.getMessage()));
-                    }
-                }));
+                    return Lists.newArrayList(Iterables.filter(bulletinBoardDTO.getBulletins(), new Predicate<BulletinDTO>() {
+                        @Override
+                        public boolean apply(BulletinDTO bulletinDTO) {
+                            return flowFileUUID.equalsIgnoreCase(getFlowFileUUIDFromBulletinMessage(bulletinDTO.getMessage()));
+                        }
+                    }));
 
+                }
+            } catch (JerseyClientException e) {
+                e.printStackTrace();
             }
-        } catch (JerseyClientException e) {
-            e.printStackTrace();
         }
         return null;
     }
@@ -526,5 +528,7 @@ public class NifiComponentFlowData {
         return null;
     }
 
-
+    public void setNifiRestClient(NifiRestClient nifiRestClient) {
+        this.nifiRestClient = nifiRestClient;
+    }
 }
