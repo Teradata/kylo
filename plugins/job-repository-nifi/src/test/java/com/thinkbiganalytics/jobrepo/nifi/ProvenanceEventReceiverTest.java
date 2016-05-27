@@ -9,8 +9,6 @@ import com.thinkbiganalytics.jobrepo.repository.JobRepository;
 import com.thinkbiganalytics.jobrepo.repository.dao.NifiJobRepository;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.rest.JerseyClientException;
-import javafx.scene.control.Alert;
-import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
@@ -19,7 +17,6 @@ import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Answers;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
@@ -27,16 +24,13 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.*;
-import static org.assertj.core.api.Assertions.*;
 
 /**
  * Created by sr186054 on 5/25/16.
@@ -72,9 +66,6 @@ public class ProvenanceEventReceiverTest {
     private NifiRestClient nifiRestClient;
 
 
-
-
-
     private AtomicLong eventId = new AtomicLong(0L);
 
 
@@ -85,10 +76,8 @@ public class ProvenanceEventReceiverTest {
     private AtomicLong nifiJobRepositoryId = new AtomicLong(0L);
 
 
-
     @Test
     public void testBacklog() {
-
 
 
     }
@@ -107,15 +96,12 @@ public class ProvenanceEventReceiverTest {
         provenanceEventListener.setFlowFileEventProvider(flowFileEventProvider);
 
 
-
         nifiComponentFlowData.setNifiRestClient(nifiRestClient);
         provenanceFeedManager.setJobRepository(nifiJobRepository);
         provenanceFeedManager.setNifiComponentFlowData(nifiComponentFlowData);
 
         provenanceEventReceiver.setProvenanceEventListener(provenanceEventListener);
         provenanceEventReceiver.setProvenanceEventStartupListener(provenanceEventStartupListener);
-
-
 
 
         provenanceEventStartupListener.setJobRepoApplicationStartupListener(jobRepoApplicationStartupListener);
@@ -126,7 +112,7 @@ public class ProvenanceEventReceiverTest {
     /**
      * Mock up the Job Rep
      */
-    private void setupMockNifiJobRepository(){
+    private void setupMockNifiJobRepository() {
         when(this.nifiJobRepository.createJobInstance(any(NifiJobExecution.class))).thenReturn(nifiJobRepositoryId.getAndIncrement());
         when(this.nifiJobRepository.saveJobExecution(any(NifiJobExecution.class))).thenReturn(nifiJobRepositoryId.getAndIncrement());
         when(this.nifiJobRepository.saveStepExecution(any(FlowFileComponent.class))).thenReturn(nifiJobRepositoryId.getAndIncrement());
@@ -136,8 +122,6 @@ public class ProvenanceEventReceiverTest {
         doNothing().when(this.nifiJobRepository).completeJobExecution(any(NifiJobExecution.class));
 
     }
-
-
 
 
     private void setupMockNifiRestClient() {
@@ -164,8 +148,8 @@ public class ProvenanceEventReceiverTest {
     }
 
 
-    private Answer getRootProcessGroup(){
-        return  new Answer<ProcessGroupEntity>() {
+    private Answer getRootProcessGroup() {
+        return new Answer<ProcessGroupEntity>() {
             @Override
             public ProcessGroupEntity answer(InvocationOnMock invocationOnMock) throws Throwable {
                 ProcessGroupEntity entity = new ProcessGroupEntity();
@@ -175,13 +159,13 @@ public class ProvenanceEventReceiverTest {
                 flowSnippetDTO.setProcessors(newProcessors(10));
                 groupDTO.setContents(flowSnippetDTO);
                 entity.setProcessGroup(groupDTO);
-               return entity;
+                return entity;
             }
         };
     }
 
-    private Answer getFeedProcessGroup(){
-        return  new Answer<ProcessGroupDTO>() {
+    private Answer getFeedProcessGroup() {
+        return new Answer<ProcessGroupDTO>() {
             @Override
             public ProcessGroupDTO answer(InvocationOnMock invocationOnMock) throws Throwable {
                 ProcessGroupDTO groupDTO = new ProcessGroupDTO();
@@ -195,33 +179,30 @@ public class ProvenanceEventReceiverTest {
     }
 
 
-
-
-    private Answer getProcessorsForFlow(){
-        return  new Answer<Set<ProcessorDTO>>() {
+    private Answer getProcessorsForFlow() {
+        return new Answer<Set<ProcessorDTO>>() {
             @Override
             public Set<ProcessorDTO> answer(InvocationOnMock invocationOnMock) throws Throwable {
-              return newProcessors(4);
+                return newProcessors(4);
             }
         };
     }
-    private Set<ProcessorDTO> newProcessors(int max){
+
+    private Set<ProcessorDTO> newProcessors(int max) {
         Set<ProcessorDTO> set = new HashSet<>();
-        for(int i=1; i<=max; i++){
+        for (int i = 1; i <= max; i++) {
             set.add(newProcessor());
         }
-        return  set;
+        return set;
     }
-    private ProcessorDTO newProcessor(){
+
+    private ProcessorDTO newProcessor() {
         ProcessorDTO dto = new ProcessorDTO();
         dto.setId(UUID.randomUUID().toString());
         dto.setParentGroupId("ROOT");
-        dto.setName("Processor "+dto.getId());
+        dto.setName("Processor " + dto.getId());
         return dto;
     }
-
-
-
 
 
     @Test
@@ -243,7 +224,7 @@ public class ProvenanceEventReceiverTest {
         //startup the application
         this.provenanceEventStartupListener.onStartup(new DateTime());
         //Simulate running events for some time
-        while(!finished.get()) {
+        while (!finished.get()) {
             try {
                 Thread.sleep(1000L);
             } catch (InterruptedException e) {
@@ -255,7 +236,7 @@ public class ProvenanceEventReceiverTest {
 
     }
 
-    private  ProvenanceEventDTO newEvent(){
+    private ProvenanceEventDTO newEvent() {
         ProvenanceEventDTO eventDTO = new ProvenanceEventDTO();
         eventDTO.setId(eventId.getAndIncrement() + "");
         eventDTO.setEventId(eventId.get());
@@ -269,15 +250,15 @@ public class ProvenanceEventReceiverTest {
     /**
      * Simulate JMS Queue sending in 100 events
      */
-    private void simulateNifiEvents(){
+    private void simulateNifiEvents() {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                for( int i=0; i<100; i++) {
+                for (int i = 0; i < 100; i++) {
                     ProvenanceEventDTO event = newEvent();
                     provenanceEventReceiver.receiveTopic(event);
                     //simulate wait when startup is processing backlog
-                    if(!startupFinished.get()) {
+                    if (!startupFinished.get()) {
                         try {
                             Thread.sleep(300);
                         } catch (InterruptedException e) {
@@ -292,10 +273,10 @@ public class ProvenanceEventReceiverTest {
     }
 
 
-    private void  processAndWait(long totalTime) throws InterruptedException {
+    private void processAndWait(long totalTime) throws InterruptedException {
         long start = System.currentTimeMillis();
         long now = System.currentTimeMillis();
-        while(now - start < totalTime){
+        while (now - start < totalTime) {
             Thread.sleep(1000);
             now = System.currentTimeMillis();
         }
@@ -304,11 +285,11 @@ public class ProvenanceEventReceiverTest {
     }
 
 
-    private void heapSize(){
+    private void heapSize() {
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
-                while(!finished.get()) {
+                while (!finished.get()) {
                     try {
                         Thread.sleep(5000);
                     } catch (InterruptedException e) {
@@ -332,12 +313,12 @@ public class ProvenanceEventReceiverTest {
 
     }
 
-    private Answer onStartup(){
-        return  new Answer<Void>() {
+    private Answer onStartup() {
+        return new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
                 DateTime startTime = (DateTime) invocationOnMock.getArguments()[0];
-                System.out.println("Startup"+startTime);
+                System.out.println("Startup" + startTime);
                 //Wait 5 seconds
                 processAndWait(5000);
                 //call the method
