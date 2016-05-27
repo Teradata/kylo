@@ -220,7 +220,7 @@
             }
         );
 
-/*
+
         this.clearRefreshInterval = function () {
             if (self.refreshInterval != null) {
                 $interval.cancel(self.refreshInterval);
@@ -235,12 +235,12 @@
 
             }
         }
-        */
+
 
    //     this.init();
 
         $scope.$on('$destroy', function () {
-          // self.clearRefreshInterval();
+           self.clearRefreshInterval();
         });
     };
 
