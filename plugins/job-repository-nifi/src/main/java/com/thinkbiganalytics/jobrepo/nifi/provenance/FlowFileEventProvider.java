@@ -16,4 +16,6 @@ public interface FlowFileEventProvider {
 
     void removeFlowFile(String flowFileId);
 
+    Integer sizeOfFlowFileMap();
+
 }

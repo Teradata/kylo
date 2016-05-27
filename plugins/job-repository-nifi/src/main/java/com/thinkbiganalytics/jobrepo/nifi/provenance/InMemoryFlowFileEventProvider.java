@@ -5,6 +5,7 @@ import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by sr186054 on 5/9/16.
@@ -12,7 +13,7 @@ import java.util.*;
 public class InMemoryFlowFileEventProvider implements FlowFileEventProvider {
 
 
-    protected Map<String, FlowFileEvents> flowFileMap = new HashMap<>();
+    protected Map<String, FlowFileEvents> flowFileMap = new ConcurrentHashMap<>();
 
     public InMemoryFlowFileEventProvider() {
 
@@ -50,5 +51,9 @@ public class InMemoryFlowFileEventProvider implements FlowFileEventProvider {
         }
     }
 
+
+    public Integer sizeOfFlowFileMap() {
+        return flowFileMap.size();
+    }
 
 }
