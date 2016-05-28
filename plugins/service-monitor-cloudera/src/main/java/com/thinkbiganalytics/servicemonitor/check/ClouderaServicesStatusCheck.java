@@ -81,10 +81,10 @@ public class ClouderaServicesStatusCheck implements ServicesStatusCheck {
 
   private ServiceAlert.STATE apiHealthSummaryAlertState(ApiHealthSummary healthSummary) {
     ServiceAlert.STATE state = ServiceAlert.STATE.UNKNOWN;
-    if (ApiHealthSummary.DISABLED.equals(healthSummary) || ApiHealthSummary.HISTORY_NOT_AVAILABLE.equals(healthSummary)
+    if (ApiHealthSummary.HISTORY_NOT_AVAILABLE.equals(healthSummary)
         || ApiHealthSummary.NOT_AVAILABLE.equals(healthSummary)) {
       state = ServiceAlert.STATE.UNKNOWN;
-    } else if (ApiHealthSummary.GOOD.equals(healthSummary)) {
+    } else if (ApiHealthSummary.DISABLED.equals(healthSummary) || ApiHealthSummary.GOOD.equals(healthSummary)) {
       state = ServiceAlert.STATE.OK;
     } else if (ApiHealthSummary.BAD.equals(healthSummary)) {
       state = ServiceAlert.STATE.CRITICAL;
