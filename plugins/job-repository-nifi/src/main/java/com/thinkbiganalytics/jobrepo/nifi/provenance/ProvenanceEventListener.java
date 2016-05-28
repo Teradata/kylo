@@ -50,8 +50,6 @@ public class ProvenanceEventListener {
 
         //find the Group Id associated with this event
         provenanceFeedManager.populateGroupIdForEvent(event);
-        log.info("EVENT {}, for Feed {}", event, event.getGroupId());
-        //provenanceFeedManager.getProcessor(event.getComponentId()).getName())
 
         flowFile.addEvent(event);
         if (event.getParentUuids() != null && !event.getParentUuids().isEmpty()) {
@@ -192,7 +190,6 @@ public class ProvenanceEventListener {
                 //lookup bulletins for failure events
 
                 boolean addedFailure = provenanceFeedManager.processBulletinsAndFailComponents(event);
-                log.info("Starting failure component. Failed the step? {} ",addedFailure);
             }
 
             String componentId = event.getComponentId();
