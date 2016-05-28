@@ -35,12 +35,8 @@ public class ClouderaRootResourceManager {
 
     try {
       rootResource = (RootResourceV1)MethodUtils.invokeMethod(apiRootResource,"getRootV"+numericVersion);
-      } catch (IllegalAccessException e) {
-        e.printStackTrace();
-      } catch (InvocationTargetException e) {
-        e.printStackTrace();
-      } catch (NoSuchMethodException e) {
-      e.printStackTrace();
+      } catch (Exception  e) {
+
     }
     if(rootResource == null){
       LOG.info("Unable to get RootResource for version {}, returning version 1",numericVersion);
@@ -48,7 +44,7 @@ public class ClouderaRootResourceManager {
     }
 
 
-    LOG.info("Returning Cloudera resource using API version {} ",numericVersion);
+
 
     return new DefaultClouderaRootResource(rootResource);
 
