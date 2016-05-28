@@ -118,8 +118,7 @@ public class ClouderaServicesStatusCheck implements ServicesStatusCheck {
       try {
         rootResource = clouderaClient.getClouderaResource();
         if(rootResource == null){
-          LOG.info(" Returning 0 services.  The Cloudera Resource is null... It may still be trying to initialize the Rest Client.");
-          return serviceStatusResponseList;
+          throw new Exception("The Cloudera Resource is null... It may still be trying to initialize the Rest Client.");
         }
 
         ApiClusterList clusters = rootResource.getPopulatedClusterList();
