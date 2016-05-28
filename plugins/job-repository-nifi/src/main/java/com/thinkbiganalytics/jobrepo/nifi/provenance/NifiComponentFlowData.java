@@ -86,6 +86,16 @@ public class NifiComponentFlowData {
         NifiJobExecution jobExecution = event.getFlowFileComponent().getJobExecution();
         List<BulletinDTO> dtos = new ArrayList<>();
         List<BulletinDTO> bulletinDTOList = getFeedBulletinsForComponentInFlowFile(event);
+        LOG.info("get Bulletins found ... {} bulletins",bulletinDTOList.size());
+        try {
+            BulletinBoardEntity bulletinBoardEntity = nifiRestClient.getBulletins(null);
+            if(bulletinBoardEntity != null ){
+              List<BulletinDTO> b = bulletinBoardEntity.getBulletinBoard().getBulletins();
+                LOG.info("FULL Bulletins found ... {} bulletins", b.size());
+            }
+        }catch(JerseyClientException e){
+
+        }
         for (BulletinDTO dto : bulletinDTOList) {
             if (!jobExecution.isBulletinProcessed(dto)) {
                 dtos.add(dto);
@@ -225,14 +235,16 @@ public class NifiComponentFlowData {
         final String flowFileUUID = event.getFlowFileUuid();
         if(feedGroup != null) {
             try {
-                entity = nifiRestClient.getProcessGroupBulletins(feedGroup.getId());
+                entity = nifiRestClient.getBulletins(null); //feedGroup.getId());
                 if (entity != null) {
-                    final BulletinBoardDTO bulletinBoardDTO = entity.getBulletinBoard();
 
+                    final Set<String> flowFileIds = event.getFlowFile().getRoot().getAllFlowFileIds();
+
+                    final BulletinBoardDTO bulletinBoardDTO = entity.getBulletinBoard();
                     return Lists.newArrayList(Iterables.filter(bulletinBoardDTO.getBulletins(), new Predicate<BulletinDTO>() {
                         @Override
                         public boolean apply(BulletinDTO bulletinDTO) {
-                            return flowFileUUID.equalsIgnoreCase(getFlowFileUUIDFromBulletinMessage(bulletinDTO.getMessage()));
+                            return flowFileIds.contains(getFlowFileUUIDFromBulletinMessage(bulletinDTO.getMessage()));
                         }
                     }));
 

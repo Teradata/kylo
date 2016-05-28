@@ -190,7 +190,9 @@ public class ProvenanceEventListener {
             if (provenanceFeedManager.isFailureProcessor(event)) {
                 //get or create the event and component for failure
                 //lookup bulletins for failure events
+
                 boolean addedFailure = provenanceFeedManager.processBulletinsAndFailComponents(event);
+                log.info("Starting failure component. Failed the step? {} ",addedFailure);
             }
 
             String componentId = event.getComponentId();
@@ -226,11 +228,13 @@ public class ProvenanceEventListener {
                 eventCounter.decrementAndGet();
             }
             //mark the component as complete
-            if (flowFile.markComponentComplete(event.getComponentId(), new DateTime())) {
+            markEventComplete(event);
+          /*  if (flowFile.markComponentComplete(event.getComponentId(), new DateTime())) {
                 provenanceFeedManager.componentCompleted(event);
                 componentCounter.decrementAndGet();
                 startedComponents.remove(event.getComponentId());
             }
+            */
             //mark the flow file as complete if all components are complete
             flowFile.updateCompletedStatus();
             //if(flowFile.markCompleted() && !flowFile.isParent()){

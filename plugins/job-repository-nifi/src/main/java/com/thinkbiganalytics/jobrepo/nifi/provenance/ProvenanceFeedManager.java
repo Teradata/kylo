@@ -120,9 +120,8 @@ public class ProvenanceFeedManager {
         //we need to create a new  Component and Event with the bulletin id and add it in the correct place in the event history
 
         List<BulletinDTO> bulletins = nifiComponentFlowData.getBulletinsNotYetProcessedForOtherComponents(event);
-
         if (bulletins != null && !bulletins.isEmpty()) {
-            LOG.info("Checking for Bulletins... found {} for NIFI Processor ID: {}", bulletins.size(), event.getComponentId());
+            LOG.debug("Checking for Bulletins... found {} for NIFI Processor ID: {}", bulletins.size(), event.getComponentId());
             for (BulletinDTO dto : bulletins) {
                 if (dto != null && dto.getSourceId() != null) {
                     if (!otherErrors.containsKey(dto.getSourceId())) {
@@ -172,9 +171,6 @@ public class ProvenanceFeedManager {
                 if (component.getStepExecutionId() != null && !component.isStepFinished()) {
                     String details = nifiComponentFlowData.getBulletinDetails(otherBulletins);
                     component.getLastEvent().setDetails(details);
-                    for (BulletinDTO b : otherBulletins) {
-                        LOG.info("BULLETIN LEVEL {}", b.getLevel());
-                    }
                     if (!warnings.containsAll(otherBulletins)) {
                         if (component.isRunning() || component.getEndTime() == null) {
                             component.markFailed();
