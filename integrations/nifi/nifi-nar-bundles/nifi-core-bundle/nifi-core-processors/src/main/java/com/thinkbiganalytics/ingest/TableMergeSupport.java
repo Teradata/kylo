@@ -98,7 +98,7 @@ public class TableMergeSupport implements Serializable {
 
         sb.append(" select ").append(selectSQL)
             .append(" from ").append(sourceTable).append(" where processing_dttm='" + feedPartitionValue + "' ")
-            .append(" union ")
+            .append(" union all ")
             .append(" select ").append(selectSQL)
             .append(" from ").append(targetTable);
 
@@ -141,7 +141,7 @@ public class TableMergeSupport implements Serializable {
             .append(" where ")
             .append(" processing_dttm='" + feedPartitionValue + "' and ")
             .append(sourceSqlWhereClause)
-            .append(" union ")
+            .append(" union all ")
             .append(" select ").append(selectSQL)
             .append(" from ").append(targetTable).append(" ")
             .append(" where ")
