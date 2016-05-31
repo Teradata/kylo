@@ -37,6 +37,11 @@ import java.util.concurrent.TimeUnit;
 )
 public class MergeTable extends AbstractProcessor {
 
+    /** Merge with dedupe **/
+    public static final String STRATEGY_MERGE_DEDUPE = "DEDUPE";
+    /** Merge allowing duplicates **/
+    public static final String STRATEGY_MERGE_ALL = "ALL";
+
     // Relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
             .name("success")
@@ -86,6 +91,14 @@ public class MergeTable extends AbstractProcessor {
             .expressionLanguageSupported(true)
             .build();
 
+    public static final PropertyDescriptor MERGE_STRATEGY = new PropertyDescriptor.Builder()
+        .name("Merge Strategy")
+        .description("Specifies the algorithm used to merge. The 'Dedupe' strategy ensures duplicate rows will not appear in the target.")
+        .required(true)
+        .allowableValues(STRATEGY_MERGE_ALL, STRATEGY_MERGE_DEDUPE)
+        .defaultValue(STRATEGY_MERGE_DEDUPE)
+        .build();
+
     private final List<PropertyDescriptor> propDescriptors;
 
     public MergeTable() {
@@ -100,6 +113,7 @@ public class MergeTable extends AbstractProcessor {
         pds.add(TARGET_TABLE);
         pds.add(FEED_PARTITION);
         pds.add(PARTITION_SPECIFICATION);
+        pds.add(MERGE_STRATEGY);
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -124,6 +138,7 @@ public class MergeTable extends AbstractProcessor {
         String sourceTable = context.getProperty(SOURCE_TABLE).evaluateAttributeExpressions(flowFile).getValue();
         String targetTable = context.getProperty(TARGET_TABLE).evaluateAttributeExpressions(flowFile).getValue();
         String feedPartitionValue = context.getProperty(FEED_PARTITION).evaluateAttributeExpressions(flowFile).getValue();
+        Boolean shouldDedupe = (STRATEGY_MERGE_DEDUPE.equals(context.getProperty(MERGE_STRATEGY).evaluateAttributeExpressions(flowFile).getValue()));
 
         logger.info("Using Source: " + sourceTable + " Target: " + targetTable + " feed partition:" + feedPartitionValue + " partSpec: " + partitionSpecString);
 
@@ -133,7 +148,7 @@ public class MergeTable extends AbstractProcessor {
 
             TableMergeSupport mergeSupport = new TableMergeSupport(conn);
             PartitionSpec partitionSpec = new PartitionSpec(partitionSpecString);
-            List<PartitionBatch> batches = mergeSupport.doDedupe(sourceTable, targetTable, partitionSpec, feedPartitionValue);
+            List<PartitionBatch> batches = mergeSupport.doMerge(sourceTable, targetTable, partitionSpec, feedPartitionValue, shouldDedupe);
 
             // Record detail of each batch
             if (batches != null) {
@@ -150,7 +165,7 @@ public class MergeTable extends AbstractProcessor {
             session.transfer(flowFile, REL_SUCCESS);
 
         } catch (final Exception e) {
-            logger.error("Unable to execute merge dedupe for {} due to {}; routing to failure", new Object[]{flowFile, e});
+            logger.error("Unable to execute merge doMerge for {} due to {}; routing to failure", new Object[]{flowFile, e});
             session.transfer(flowFile, REL_FAILURE);
         }
     }
