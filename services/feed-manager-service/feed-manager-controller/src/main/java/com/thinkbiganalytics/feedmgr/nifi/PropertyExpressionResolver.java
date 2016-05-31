@@ -4,6 +4,7 @@ package com.thinkbiganalytics.feedmgr.nifi;
 import com.thinkbiganalytics.feedmgr.MetadataFieldAnnotationFieldNameResolver;
 import com.thinkbiganalytics.feedmgr.MetadataFields;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 
@@ -13,12 +14,19 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by sr186054 on 1/25/16.
+ * Auto Inject Property Values stored in both the FeedMetadata for @Metdata properties and the application.properties file for static properties
+ * Static Property resolution  supports 2 use cases
+ * 1) store properties in the file starting with the prefix defined in the configPropertyPrefix property below
+ * 2) store properties in the file starting with "nifi.<PROCESSORTYPE>.<PROPERTY_KEY>   where PROCESSORTYPE and PROPERTY_KEY are all lowercase and the spaces are substituted with underscore
+ *    This comes from the @ConfigurationPropertyReplacer.java class in the nifi-rest-client project
+ *
  */
 public class PropertyExpressionResolver {
     @Autowired
@@ -59,10 +67,13 @@ public class PropertyExpressionResolver {
                     String variable = matchVariablePattern.group(1);
                     //lookup the variable
                     //first look at configuration properties
-                    String resolvedValue = getConfigurationPropertyValue(variable);
+                    String resolvedValue = getConfigurationPropertyValue(property,variable);
                     if (resolvedValue != null) {
                         matchVariablePattern.appendReplacement(sb, resolvedValue);
                     }else {
+
+
+
                         try {
                                 resolvedValue = getMetadataPropertyValue(metadata, variable);
                                 matchVariablePattern.appendReplacement(sb, resolvedValue);
@@ -104,8 +115,31 @@ public class PropertyExpressionResolver {
         }
     }
 
-    public  String getConfigurationPropertyValue(String propertyKey){
-      return environmentProperties.getPropertyValueAsString(propertyKey);
+    public Map<String,Object> getStaticConfigProperties(){
+        Map<String,Object> props = environmentProperties.getPropertiesStartingWith(configPropertyPrefix);
+
+        Map<String,Object> nifiProps = environmentProperties.getPropertiesStartingWith("nifi.");
+        if(nifiProps != null && !nifiProps.isEmpty()) {
+            if(props != null) {
+                //copy it to a new map
+                props = new HashMap<>(props);
+            }
+            else {
+                props = new HashMap<>();
+            }
+            props.putAll(nifiProps);
+        }
+        return props;
+    }
+
+    public  String getConfigurationPropertyValue(NifiProperty property, String propertyKey){
+      if(StringUtils.isNotBlank(propertyKey) && propertyKey.startsWith(configPropertyPrefix)) {
+          return environmentProperties.getPropertyValueAsString(propertyKey);
+      }else {
+          //see if the processorType is configured
+          String processorTypeProperty = ConfigurationPropertyReplacer.getProcessorPropertyConfigName(property);
+          return environmentProperties.getPropertyValueAsString(processorTypeProperty);
+      }
     }
 
     public  List<AnnotatedFieldProperty> getMetadataProperties(){

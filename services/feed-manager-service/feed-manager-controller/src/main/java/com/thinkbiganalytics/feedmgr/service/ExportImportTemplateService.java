@@ -2,6 +2,7 @@ package com.thinkbiganalytics.feedmgr.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
+import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
@@ -25,6 +26,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
@@ -39,6 +41,8 @@ public class ExportImportTemplateService {
     private static final String NIFI_TEMPLATE_XML_FILE = "nifiTemplate.xml";
 
     private static final String TEMPLATE_JSON_FILE = "template.json";
+    @Autowired
+    PropertyExpressionResolver propertyExpressionResolver;
 
 
     @Autowired
@@ -260,7 +264,8 @@ public class ExportImportTemplateService {
         metadataService.registerTemplate(template);
         //get the new template
         template = metadataService.getRegisteredTemplateByName(template.getTemplateName());
-        NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(template.getNifiTemplateId(), createReusableFlow);
+        Map<String,Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
+        NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(template.getNifiTemplateId(), configProperties,createReusableFlow);
         if (newTemplateInstance.isSuccess()) {
             importTemplate.setSuccess(true);
         } else {
@@ -318,7 +323,8 @@ public class ExportImportTemplateService {
         log.info("Attempting to import Nifi Template: {} for file {}",templateName,fileName);
         TemplateDTO dto = nifiRestClient.importTemplate(xmlTemplate);
         log.info("Import success... validate by creating a template instance in nifi Nifi Template: {} for file {}",templateName,fileName);
-        NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(dto.getId(), createReusableFlow);
+        Map<String,Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
+        NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(dto.getId(), configProperties,createReusableFlow);
         log.info("Import finished for {}, {}... verify results",templateName,fileName);
         if (newTemplateInstance.isSuccess()) {
             log.info("SUCCESS! This template is valid Nifi Template: {} for file {}",templateName,fileName);
