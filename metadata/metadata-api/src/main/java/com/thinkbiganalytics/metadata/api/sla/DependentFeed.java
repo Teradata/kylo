@@ -11,7 +11,10 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  */
 public abstract class DependentFeed implements Metric {
 
-    private final String feedName;
+    private String feedName;
+    
+    public DependentFeed() {
+    }
 
     public DependentFeed(String feedName) {
         super();
@@ -20,5 +23,9 @@ public abstract class DependentFeed implements Metric {
     
     public String getFeedName() {
         return feedName;
+    }
+
+    public void setFeedName(String feedName) {
+        this.feedName = feedName;
     }
 }

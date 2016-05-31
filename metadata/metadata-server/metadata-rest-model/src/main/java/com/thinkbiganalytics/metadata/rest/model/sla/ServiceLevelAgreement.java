@@ -22,8 +22,8 @@ public class ServiceLevelAgreement {
     private String id;
     private String name;
     private String description;
-    private List<Obligation> obligations; // either a list of obligations a list of groups, but not both.
-    private List<ObligationGroup> groups;
+    private ObligationGroup defaultGroup = new ObligationGroup("REQUIRED");
+    private List<ObligationGroup> groups = new ArrayList<>();
     
     public ServiceLevelAgreement() {
     }
@@ -33,7 +33,7 @@ public class ServiceLevelAgreement {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.obligations = null;
+        this.defaultGroup = null;
         this.groups = null;
     }
 
@@ -42,8 +42,9 @@ public class ServiceLevelAgreement {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.obligations = Arrays.asList(obligations);
         this.groups = null;
+        
+
     }
 
     public ServiceLevelAgreement(String id, String name, String description, ObligationGroup... groups) {
@@ -51,7 +52,6 @@ public class ServiceLevelAgreement {
         this.id = id;
         this.name = name;
         this.description = description;
-        this.obligations = null;
         this.groups = Arrays.asList(groups);
     }
 
@@ -80,37 +80,44 @@ public class ServiceLevelAgreement {
     }
 
     public List<Obligation> getObligations() {
-        return obligations;
-    }
-
-    public void setObligations(List<Obligation> obligations) {
-        this.obligations = obligations;
-        this.groups = null;
+        if (! this.defaultGroup.getObligations().isEmpty() && this.groups.isEmpty()) {
+            return this.defaultGroup.getObligations();
+        } else {
+            return null;
+        }
     }
     
     public void addObligation(Obligation ob) {
-        if (this.obligations == null) {
-            this.obligations = new ArrayList<>();
-        }
-
-        this.obligations.add(ob);
+        this.defaultGroup.addObligation(ob);
     }
 
     public List<ObligationGroup> getGroups() {
-        return groups;
+        List<ObligationGroup> all = new ArrayList<>();
+        
+        if (! this.defaultGroup.getObligations().isEmpty()) {
+            all.add(defaultGroup);
+        }
+        
+        all.addAll(this.groups);
+        
+        return all;
     }
 
     public void setGroups(List<ObligationGroup> groups) {
-        this.groups = groups;
-        this.obligations = null;
+        this.groups = new ArrayList<>(groups);
+        this.defaultGroup.getObligations().clear();
     }
     
     public void addGroup(ObligationGroup group) {
-        if (this.groups == null) {
-            this.groups = new ArrayList<>();
-        }
-
         this.groups.add(group);
     }
     
+    protected ObligationGroup getDefaultGroup() {
+        return defaultGroup;
+    }
+    
+    protected void setDefaultGroup(ObligationGroup defaultGroup) {
+        this.defaultGroup = defaultGroup;
+    }
+
 }
