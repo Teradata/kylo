@@ -11,6 +11,9 @@ class TestMetric implements Metric {
     private int intValue;
     private String stringValue;
     
+    public TestMetric() {
+    }
+    
     public TestMetric(int field1, String field2) {
         super();
         this.intValue = field1;

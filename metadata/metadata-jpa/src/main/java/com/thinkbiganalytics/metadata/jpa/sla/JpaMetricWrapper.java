@@ -30,8 +30,8 @@ public class JpaMetricWrapper extends AbstractAuditedEntity implements Serializa
     @GeneratedValue
     private UUID id;
 
-    @Convert(converter = JsonAttributeConverter.class)
-    private Object metric;
+    @Convert(converter = MetricAttributeConverter.class)
+    private Metric metric;
 
     public JpaMetricWrapper() {
     }
@@ -48,5 +48,8 @@ public class JpaMetricWrapper extends AbstractAuditedEntity implements Serializa
     public void setMetric(Metric metric) {
         this.metric = metric;
     }
+    
+    
+    public static class MetricAttributeConverter extends JsonAttributeConverter<Metric> { }
 
 }

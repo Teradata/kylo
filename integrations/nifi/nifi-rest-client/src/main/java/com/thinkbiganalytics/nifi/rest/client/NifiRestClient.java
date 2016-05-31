@@ -169,8 +169,8 @@ public class NifiRestClient extends JerseyRestClient {
         return response;
     }
 
-    public NifiProcessGroup createNewTemplateInstance(String templateId, boolean createReusableFlow) throws JerseyClientException {
-        TemplateInstanceCreator creator = new TemplateInstanceCreator(this, templateId, createReusableFlow);
+    public NifiProcessGroup createNewTemplateInstance(String templateId, Map<String,Object> staticConfigProperties,boolean createReusableFlow) throws JerseyClientException {
+        TemplateInstanceCreator creator = new TemplateInstanceCreator(this, templateId, staticConfigProperties,createReusableFlow);
         return creator.createTemplate();
     }
 

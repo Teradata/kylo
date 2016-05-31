@@ -14,6 +14,8 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceNotFoundException;
@@ -25,6 +27,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.jpa.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed.JpaFeedPrecondition;
@@ -35,7 +38,6 @@ import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  *
@@ -53,11 +55,9 @@ public class JpaFeedProvider implements FeedProvider{
     
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
-
-
-
-    //    @Inject
-//    private FeedPreconditionService preconditionService;
+    
+    @Inject 
+    private FeedPreconditionService preconditionService;
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID)
@@ -215,8 +215,7 @@ public class JpaFeedProvider implements FeedProvider{
             
             JpaServiceLevelAgreement sla = (JpaServiceLevelAgreement) slaBldr.build();
             
-            // TODO create interface for service in API project or somewhere
-//            this.preconditionService.watchFeed(feed);
+            this.preconditionService.watchFeed(feed);
             
             feed.setPrecondition(sla);
             this.entityMgr.merge(feed);

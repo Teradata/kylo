@@ -11,8 +11,11 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  */
 public abstract class DependentDatasource implements Metric {
     
-    private final String datasourceName;
-    private final String feedName;
+    private String datasourceName;
+    private String feedName;
+    
+    public DependentDatasource() {
+    }
 
     public DependentDatasource(String datasetName) {
         this(null, datasetName);
@@ -31,4 +34,13 @@ public abstract class DependentDatasource implements Metric {
     public String getFeedName() {
         return feedName;
     }
+
+    public void setDatasourceName(String datasourceName) {
+        this.datasourceName = datasourceName;
+    }
+
+    public void setFeedName(String feedName) {
+        this.feedName = feedName;
+    }
+    
 }

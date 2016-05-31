@@ -35,7 +35,7 @@ public class JpaFeedProviderTest extends AbstractTransactionalTestNGSpringContex
     
     private String nameTag = "" + System.currentTimeMillis();
 
-    @Test
+//    @Test
     @Transactional
     @Commit
     public void testEnsureFeed() {
@@ -51,7 +51,7 @@ public class JpaFeedProviderTest extends AbstractTransactionalTestNGSpringContex
         assertThat(same.getId()).isNotNull().isEqualTo(feed.getId());
     }
     
-    @Test(dependsOnMethods="testEnsureFeed")
+//    @Test(dependsOnMethods="testEnsureFeed")
     @Transactional
     public void testGetFeeds() {
         List<Feed> list = this.feedProvider.getFeeds();

@@ -18,12 +18,11 @@ import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEvent;
 import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
@@ -73,7 +72,7 @@ public class FeedPreconditionService {
     }
     
     public ServiceLevelAssessment assess(FeedPrecondition precond) {
-        ServiceLevelAgreement sla = asAgreement(precond);
+        ServiceLevelAgreement sla = precond.getAgreement();
         return this.assessor.assess(sla);
     }
 
@@ -89,7 +88,7 @@ public class FeedPreconditionService {
                     Feed feed = feedProvider.getFeed(feedId);
                     
                     if (feed != null && feed.getPrecondition() != null) {
-                        ServiceLevelAgreement sla = asAgreement(feed.getPrecondition());
+                        ServiceLevelAgreement sla = feed.getPrecondition().getAgreement();
                         List<Dataset<Datasource, ChangeSet>> changes = checkPrecondition(sla);
                         
                         // No changes means precondition not met.
@@ -116,11 +115,6 @@ public class FeedPreconditionService {
                 }
             }
         };
-    }
-
-    protected ServiceLevelAgreement asAgreement(FeedPrecondition precondition) {
-        // TODO Not the best...
-        return ((BaseFeed.FeedPreconditionImpl) precondition).getAgreement();
     }
 
     private List<Dataset<Datasource, ChangeSet>> checkPrecondition(ServiceLevelAgreement sla) {

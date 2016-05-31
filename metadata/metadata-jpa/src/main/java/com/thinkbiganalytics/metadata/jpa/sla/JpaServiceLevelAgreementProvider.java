@@ -96,11 +96,12 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
     }
 
     private ServiceLevelAgreement createAgreement(JpaServiceLevelAgreement sla) {
-        JpaServiceLevelAgreement slaImpl = (JpaServiceLevelAgreement) findAgreementByName(sla.getName());
+        JpaServiceLevelAgreement existing = (JpaServiceLevelAgreement) findAgreementByName(sla.getName());
         
-        if (slaImpl == null) {
-            this.entityMgr.persist(slaImpl);
-            return slaImpl;
+        if (existing == null) {
+            sla.setId(SlaId.create());
+            this.entityMgr.persist(sla);
+            return sla;
         } else {
             throw new DuplicateAgreementNameException(sla.getName());
         }

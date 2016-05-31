@@ -5,7 +5,9 @@ import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.ControllerServicePropertyHolder;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
+import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
@@ -16,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Created by sr186054 on 5/6/16.
@@ -28,10 +31,13 @@ public class TemplateInstanceCreator {
 
     private boolean createReusableFlow;
 
-    public TemplateInstanceCreator(NifiRestClient restClient, String templateId, boolean createReusableFlow) {
+    private Map<String,Object> staticConfigPropertyMap;
+
+    public TemplateInstanceCreator(NifiRestClient restClient, String templateId, Map<String,Object> staticConfigPropertyMap,boolean createReusableFlow) {
         this.restClient = restClient;
         this.templateId = templateId;
         this.createReusableFlow = createReusableFlow;
+        this.staticConfigPropertyMap = staticConfigPropertyMap;
     }
 
     public boolean isCreateReusableFlow() {
@@ -92,10 +98,35 @@ public class TemplateInstanceCreator {
                     log.info("Reusable flow, input ports created successfully.");
                 }
 
+
                 //mark the new services that were created as a result of creating the new flow from the template
                 templateCreationHelper.identifyNewlyCreatedControllerServiceReferences();
 
                 ProcessGroupEntity entity = restClient.getProcessGroup(processGroupId, true, true);
+
+                //replace static properties and inject values into the flow
+
+              List<NifiProperty> processorProperties=  NifiPropertyUtil.getProperties(entity.getProcessGroup());
+                if(processorProperties != null) {
+                    boolean didReplace = false;
+                    for(NifiProperty property : processorProperties){
+                        boolean replaced = ConfigurationPropertyReplacer.resolveStaticConfigurationProperty(property,staticConfigPropertyMap);
+                        if(replaced) {
+                            //update the properties that are replaced
+                            restClient.updateProcessorProperty(property.getProcessGroupId(),property.getProcessorId(),property);
+                            didReplace = true;
+                        }
+                    }
+                    //if we replaced any properties, refetch to get the latest data
+                    if(didReplace){
+                        entity = restClient.getProcessGroup(processGroupId, true, true);
+                    }
+                }
+
+
+
+
+
 
                 //identify the various processors (first level initial processors)
                 List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity.getProcessGroup());
