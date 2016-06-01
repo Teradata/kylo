@@ -1,10 +1,5 @@
 package com.thinkbiganalytics.feedmgr.service;
 
-import java.util.Collection;
-import java.util.List;
-
-import org.springframework.stereotype.Service;
-
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -15,16 +10,23 @@ import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.rest.JerseyClientException;
 
+import org.springframework.stereotype.Service;
+
+import java.util.Collection;
+import java.util.List;
+
 /**
  * Created by sr186054 on 2/23/16.
  */
 @Service
 public interface MetadataService {
+
     void registerTemplate(RegisteredTemplate registeredTemplate);
 
     List<NifiProperty> getTemplateProperties(String templateId);
 
     RegisteredTemplate getRegisteredTemplate(String templateId);
+
     RegisteredTemplate getRegisteredTemplateByName(String templateName);
 
     RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException;
@@ -33,7 +35,7 @@ public interface MetadataService {
 
     void deleteRegisteredTemplate(String templateId);
 
-   // List<String> getRegisteredTemplateIds();
+    // List<String> getRegisteredTemplateIds();
 
     List<RegisteredTemplate> getRegisteredTemplates();
 
@@ -56,6 +58,8 @@ public interface MetadataService {
     FeedMetadata getFeedByName(String feedName);
 
     FeedMetadata getFeedById(String feedId);
+
+    FeedMetadata getFeedById(String feedId, boolean refreshTargetTableSchema);
 
     List<FeedMetadata> getReusableFeeds();
 

@@ -1,9 +1,12 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
-import com.thinkbiganalytics.feedmgr.rest.model.*;
-import com.thinkbiganalytics.feedmgr.service.feed.datasource.NifiFeedDatasourceFactory;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.GenericUIPrecondition;
+import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
@@ -12,17 +15,17 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
-import com.thinkbiganalytics.metadata.jpa.feedmgr.template.JpaFeedManagerTemplate;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.rest.JerseyClientException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 5/4/16.
@@ -60,7 +63,7 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     public FeedMetadata getFeedByName(String feedName) {
         FeedMetadata feedMetadata = null;
         FeedManagerFeed domainFeed = feedManagerFeedProvider.findBySystemName(feedName);
-        if(domainFeed != null){
+        if (domainFeed != null) {
             feedMetadata = FeedModelTransform.DOMAIN_TO_FEED.apply(domainFeed);
         }
         return feedMetadata;
@@ -68,11 +71,19 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
 
     @Override
     public FeedMetadata getFeedById(String id) {
+        return getFeedById(id, false);
+    }
+
+    @Override
+    public FeedMetadata getFeedById(String id, boolean refreshTargetTableSchema) {
         FeedMetadata feedMetadata = null;
         FeedManagerFeed.ID domainId = feedManagerFeedProvider.resolveId(id);
         FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(domainId);
-        if(domainFeed != null){
+        if (domainFeed != null) {
             feedMetadata = FeedModelTransform.DOMAIN_TO_FEED.apply(domainFeed);
+        }
+        if (refreshTargetTableSchema && feedMetadata != null) {
+            feedModelTransformer.refreshTableSchemaFromHive(feedMetadata);
         }
         return feedMetadata;
     }
@@ -81,18 +92,17 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     public Collection<FeedMetadata> getFeeds() {
         Collection<FeedMetadata> feeds = null;
         List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
-        if(domainFeeds != null){
-         feeds =   FeedModelTransform.domainToFeedMetadata(domainFeeds);
+        if (domainFeeds != null) {
+            feeds = FeedModelTransform.domainToFeedMetadata(domainFeeds);
         }
         return feeds;
     }
 
     @Override
     public Collection<? extends UIFeed> getFeeds(boolean verbose) {
-        if(verbose){
+        if (verbose) {
             return getFeeds();
-        }
-        else {
+        } else {
             return getFeedSummaryData();
         }
 
@@ -102,8 +112,8 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     public List<FeedSummary> getFeedSummaryData() {
         Collection<FeedMetadata> feeds = getFeeds();
         List<FeedSummary> summaryList = new ArrayList<>();
-        if(feeds != null && !feeds.isEmpty()) {
-            for(FeedMetadata feed: feeds){
+        if (feeds != null && !feeds.isEmpty()) {
+            for (FeedMetadata feed : feeds) {
                 summaryList.add(new FeedSummary(feed));
             }
         }
@@ -117,9 +127,9 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
         List<FeedSummary> summaryList = new ArrayList<>();
         FeedManagerCategory.ID categoryDomainId = categoryProvider.resolveId(categoryId);
         List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByCategoryId(categoryDomainId);
-        if(domainFeeds != null && !domainFeeds.isEmpty()) {
-            List<FeedMetadata> feeds =    FeedModelTransform.domainToFeedMetadata(domainFeeds);
-            for(FeedMetadata feed: feeds){
+        if (domainFeeds != null && !domainFeeds.isEmpty()) {
+            List<FeedMetadata> feeds = FeedModelTransform.domainToFeedMetadata(domainFeeds);
+            for (FeedMetadata feed : feeds) {
                 summaryList.add(new FeedSummary(feed));
             }
         }
@@ -131,7 +141,7 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
         List<FeedMetadata> feedMetadatas = null;
         FeedManagerTemplate.ID templateDomainId = templateProvider.resolveId(registeredTemplateId);
         List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByTemplateId(templateDomainId);
-        if(domainFeeds != null){
+        if (domainFeeds != null) {
             feedMetadatas = FeedModelTransform.domainToFeedMetadata(domainFeeds);
         }
         return feedMetadatas;
@@ -139,12 +149,12 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
 
     @Override
     protected RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException {
-       return templateRestProvider.getRegisteredTemplate(templateId);
+        return templateRestProvider.getRegisteredTemplate(templateId);
     }
 
     @Transactional(transactionManager = "metadataTransactionManager")
     public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
-        if(feedMetadata.getState() == null ) {
+        if (feedMetadata.getState() == null) {
             feedMetadata.setState(Feed.State.ENABLED.name());
         }
         return super.createFeed(feedMetadata);
@@ -155,7 +165,7 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     public void saveFeed(FeedMetadata feed) {
         //if this is the first time saving this feed create a new one
         FeedManagerFeed domainFeed = feedModelTransformer.feedToDomain(feed);
-        if(domainFeed.getState() == null) {
+        if (domainFeed.getState() == null) {
             domainFeed.setState(Feed.State.ENABLED);
         }
         domainFeed = feedManagerFeedProvider.update(domainFeed);
@@ -171,37 +181,38 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     }
 
     @Transactional(transactionManager = "metadataTransactionManager")
-    private boolean enableFeed(Feed.ID feedId){
-       return feedProvider.enableFeed(feedId);
+    private boolean enableFeed(Feed.ID feedId) {
+        return feedProvider.enableFeed(feedId);
     }
 
     @Transactional(transactionManager = "metadataTransactionManager")
-    private boolean disableFeed(Feed.ID feedId){
-       return feedProvider.disableFeed(feedId);
+    private boolean disableFeed(Feed.ID feedId) {
+        return feedProvider.disableFeed(feedId);
     }
 
     public FeedSummary enableFeed(String feedId) {
-        if(StringUtils.isNotBlank(feedId)) {
-            FeedMetadata feedMetadata  = getFeedById(feedId);
-          Feed.ID domainId = feedProvider.resolveFeed(feedId);
-         boolean enabled = enableFeed(domainId);
-          //re fetch it
-          if(enabled){
-              feedMetadata.setState(Feed.State.ENABLED.name());
-          }
-          FeedSummary feedSummary = new FeedSummary(feedMetadata);
+        if (StringUtils.isNotBlank(feedId)) {
+            FeedMetadata feedMetadata = getFeedById(feedId);
+            Feed.ID domainId = feedProvider.resolveFeed(feedId);
+            boolean enabled = enableFeed(domainId);
+            //re fetch it
+            if (enabled) {
+                feedMetadata.setState(Feed.State.ENABLED.name());
+            }
+            FeedSummary feedSummary = new FeedSummary(feedMetadata);
             return feedSummary;
         }
         return null;
 
     }
+
     public FeedSummary disableFeed(String feedId) {
-        if(StringUtils.isNotBlank(feedId)) {
-            FeedMetadata feedMetadata  = getFeedById(feedId);
+        if (StringUtils.isNotBlank(feedId)) {
+            FeedMetadata feedMetadata = getFeedById(feedId);
             Feed.ID domainId = feedProvider.resolveFeed(feedId);
             boolean enabled = disableFeed(domainId);
             //re fetch it
-            if(enabled){
+            if (enabled) {
                 feedMetadata.setState(Feed.State.DISABLED.name());
             }
             FeedSummary feedSummary = new FeedSummary(feedMetadata);
@@ -213,6 +224,6 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
 
     @Override
     public void updateFeedsWithTemplate(String oldTemplateId, String newTemplateId) {
-            //not needed
+        //not needed
     }
 }

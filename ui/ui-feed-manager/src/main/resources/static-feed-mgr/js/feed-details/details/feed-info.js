@@ -1,18 +1,10 @@
-/*
- * Copyright (c) 2015.
- */
-
-/**
- * This Directive is wired in to the FeedStatusIndicatorDirective.
- * It uses the OverviewService to watch for changes and update after the Indicator updates
- */
 (function () {
 
     var directive = function () {
         return {
             restrict: "EA",
             bindToController: {
-                selectedTabIndex:'='
+                selectedTabIndex: '='
             },
             controllerAs: 'vm',
             scope: {},
@@ -25,12 +17,11 @@
         };
     }
 
-    var controller =  function($scope) {
+    var controller = function ($scope) {
 
         var self = this;
 
     };
-
 
     angular.module(MODULE_FEED_MGR).controller('FeedInfoController', controller);
 

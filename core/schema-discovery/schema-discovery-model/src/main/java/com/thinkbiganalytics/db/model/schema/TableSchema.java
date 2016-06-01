@@ -6,10 +6,15 @@ package com.thinkbiganalytics.db.model.schema;
 
 
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.google.common.base.Function;
+import com.google.common.collect.Maps;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TableSchema {
@@ -89,6 +94,7 @@ public class TableSchema {
         this.schemaName = schemaName;
     }
 
+    @JsonIgnore
     public String deriveHiveRecordFormat(){
         hiveRecordFormat = "ROW FORMAT DELIMITED FIELDS TERMINATED BY '"+getDelim()+"' LINES TERMINATED BY '\\n' STORED AS TEXTFILE";
         return hiveRecordFormat;
@@ -100,5 +106,20 @@ public class TableSchema {
 
     public void setHiveRecordFormat(String hiveRecordFormat) {
         this.hiveRecordFormat = hiveRecordFormat;
+    }
+
+    @JsonIgnore
+    public Map<String,Field> getFieldsAsMap(){
+        Map<String,Field> map = new HashMap<>();
+        if(fields != null) {
+            map = Maps.uniqueIndex(fields, new Function<Field, String>() {
+                @Override
+                public String apply(Field field) {
+                    return field.getName();
+                }
+            });
+
+        }
+        return map;
     }
 }

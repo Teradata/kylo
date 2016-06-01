@@ -54,7 +54,7 @@ public class TableSetup {
     private String targetMergeStrategy;
 
     @MetadataField(description = "JSON array of FieldPolicy objects")
-    private  String fieldPoliciesJson;
+    private String fieldPoliciesJson;
 
     @MetadataField(description = "Nifi propety name 'elasticsearch.columns'")
     private String fieldIndexString;
@@ -135,28 +135,27 @@ public class TableSetup {
         this.fieldsString = fieldsString;
     }
 
-    private void setStringBuffer(StringBuffer sb, String name,String separator){
-        if(StringUtils.isNotBlank(sb.toString())){
+    private void setStringBuffer(StringBuffer sb, String name, String separator) {
+        if (StringUtils.isNotBlank(sb.toString())) {
             sb.append(separator);
         }
         sb.append(name);
     }
 
 
-
     @JsonIgnore
-    public void updateFieldStringData(){
+    public void updateFieldStringData() {
         StringBuffer fieldsString = new StringBuffer();
         StringBuffer nullableFieldsString = new StringBuffer();
         StringBuffer primaryKeyFieldsString = new StringBuffer();
-        if(tableSchema != null && tableSchema.getFields() != null) {
-            for(Field field: tableSchema.getFields()){
-                setStringBuffer(fieldsString,field.getName(),"\n");
-                if(field.getNullable()){
-                    setStringBuffer(nullableFieldsString,field.getName(),",");
+        if (tableSchema != null && tableSchema.getFields() != null) {
+            for (Field field : tableSchema.getFields()) {
+                setStringBuffer(fieldsString, field.getName(), "\n");
+                if (field.getNullable()) {
+                    setStringBuffer(nullableFieldsString, field.getName(), ",");
                 }
-                if(field.getPrimaryKey()){
-                    setStringBuffer(primaryKeyFieldsString,field.getName(),",");
+                if (field.getPrimaryKey()) {
+                    setStringBuffer(primaryKeyFieldsString, field.getName(), ",");
                 }
             }
         }
@@ -167,11 +166,11 @@ public class TableSetup {
 
 
     @JsonIgnore
-    public void updateSourceFieldsString(){
+    public void updateSourceFieldsString() {
         StringBuffer sb = new StringBuffer();
-        if(sourceTableSchema != null && sourceTableSchema.getFields() != null) {
-            for(Field field: sourceTableSchema.getFields()){
-                setStringBuffer(sb,field.getName(),"\n");
+        if (sourceTableSchema != null && sourceTableSchema.getFields() != null) {
+            for (Field field : sourceTableSchema.getFields()) {
+                setStringBuffer(sb, field.getName(), "\n");
 
             }
         }
@@ -179,11 +178,11 @@ public class TableSetup {
     }
 
     @JsonIgnore
-    public void updateFieldStructure(){
+    public void updateFieldStructure() {
         StringBuffer sb = new StringBuffer();
-        if(tableSchema != null && tableSchema.getFields() != null) {
-            for(Field field: tableSchema.getFields()){
-                if(StringUtils.isNotBlank(sb.toString())){
+        if (tableSchema != null && tableSchema.getFields() != null) {
+            for (Field field : tableSchema.getFields()) {
+                if (StringUtils.isNotBlank(sb.toString())) {
                     sb.append("\n");
                 }
                 sb.append(field.asFieldStructure());
@@ -194,15 +193,15 @@ public class TableSetup {
     }
 
     @JsonIgnore
-    public void updateFieldIndexString(){
+    public void updateFieldIndexString() {
         StringBuffer sb = new StringBuffer();
-        if(tableSchema != null && tableSchema.getFields() != null && fieldPolicies != null) {
+        if (tableSchema != null && tableSchema.getFields() != null && fieldPolicies != null) {
             int idx = 0;
-            for(FieldPolicy field: fieldPolicies){
-                if(field.isIndex() && StringUtils.isNotBlank(sb.toString())){
+            for (FieldPolicy field : fieldPolicies) {
+                if (field.isIndex() && StringUtils.isNotBlank(sb.toString())) {
                     sb.append(",");
                 }
-                if(field.isIndex()) {
+                if (field.isIndex()) {
                     sb.append(tableSchema.getFields().get(idx).getName());
                 }
                 idx++;
@@ -212,10 +211,10 @@ public class TableSetup {
     }
 
     @JsonIgnore
-    public void updateFieldPolicyNames(){
-        if(tableSchema != null && tableSchema.getFields() != null && fieldPolicies != null) {
+    public void updateFieldPolicyNames() {
+        if (tableSchema != null && tableSchema.getFields() != null && fieldPolicies != null) {
             int idx = 0;
-            for(FieldPolicy field: fieldPolicies){
+            for (FieldPolicy field : fieldPolicies) {
                 field.setFieldName(tableSchema.getFields().get(idx).getName());
                 idx++;
             }
@@ -224,11 +223,11 @@ public class TableSetup {
 
 
     @JsonIgnore
-    public void updatePartitionStructure(){
+    public void updatePartitionStructure() {
         StringBuffer sb = new StringBuffer();
-        if(partitions != null) {
-            for(PartitionField field: partitions){
-                if(StringUtils.isNotBlank(sb.toString())){
+        if (partitions != null) {
+            for (PartitionField field : partitions) {
+                if (StringUtils.isNotBlank(sb.toString())) {
                     sb.append("\n");
                 }
                 sb.append(field.asPartitionStructure());
@@ -240,11 +239,11 @@ public class TableSetup {
 
 
     @JsonIgnore
-    public void updatePartitionSpecs(){
+    public void updatePartitionSpecs() {
         StringBuffer sb = new StringBuffer();
-        if(partitions != null) {
-            for(PartitionField field: partitions){
-                if(StringUtils.isNotBlank(sb.toString())){
+        if (partitions != null) {
+            for (PartitionField field : partitions) {
+                if (StringUtils.isNotBlank(sb.toString())) {
                     sb.append("\n");
                 }
                 sb.append(field.asPartitionSpec());
@@ -255,7 +254,7 @@ public class TableSetup {
     }
 
     @JsonIgnore
-    private void updateFieldPolicyJson(){
+    private void updateFieldPolicyJson() {
         ObjectMapper mapper = new ObjectMapper();
         String json = "[]";
         try {
@@ -269,21 +268,20 @@ public class TableSetup {
 
     private void updateTargetTblProperties() {
         //build based upon compression options
-        if(options != null && StringUtils.isNotBlank(options.getCompressionFormat()) && !"NONE".equalsIgnoreCase(options.getCompressionFormat())) {
-            this.targetTblProperties = "tblproperties(\"orc.compress\"=\""+options.getCompressionFormat()+"\")";
-        }
-        else {
+        if (options != null && StringUtils.isNotBlank(options.getCompressionFormat()) && !"NONE".equalsIgnoreCase(options.getCompressionFormat())) {
+            this.targetTblProperties = "tblproperties(\"orc.compress\"=\"" + options.getCompressionFormat() + "\")";
+        } else {
             this.targetTblProperties = "";
         }
     }
 
-    public void updateFeedFormat(){
-        if(StringUtils.isNotBlank(feedFormat)){
-            feedFormat = StringUtils.replace(feedFormat,"\\n","\\\\n");
+    public void updateFeedFormat() {
+        if (StringUtils.isNotBlank(feedFormat)) {
+            feedFormat = StringUtils.replace(feedFormat, "\\n", "\\\\n");
         }
     }
 
-    public void updateMetadataFieldValues(){
+    public void updateMetadataFieldValues() {
         updatePartitionStructure();
         updateFieldStructure();
         updateFieldStringData();

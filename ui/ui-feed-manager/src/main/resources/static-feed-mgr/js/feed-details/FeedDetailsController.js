@@ -1,40 +1,39 @@
 (function () {
 
-    var controller = function($scope,$q,$stateParams,$mdDialog,$mdToast,$http,RestUrlService,FeedService,RegisterTemplateService,StateService){
+    var controller = function ($scope, $q, $stateParams, $mdDialog, $mdToast, $http, RestUrlService, FeedService, RegisterTemplateService, StateService) {
 
         var self = this;
         this.feedId = null;
         this.selectedTabIndex = 0;
-        var init = function(){
+        var init = function () {
             self.feedId = $stateParams.feedId;
             loadFeed()
         }
         this.loadingFeedData = false;
         this.model = FeedService.editFeedModel;
         this.model.loaded = false;
-        this.loadMessage =''
+        this.loadMessage = ''
 
-
-        $scope.$watch(function(){
+        $scope.$watch(function () {
             return self.selectedTabIndex;
-        },function(newVal){
+        }, function (newVal) {
 
         })
 
-        this.enableFeed = function(){
-            $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function(response){
-               self.model.state = response.data.state;
+        this.enableFeed = function () {
+            $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function (response) {
+                self.model.state = response.data.state;
                 FeedService.updateEditModelStateIcon();
             });
         }
-        this.disableFeed= function(){
-            $http.post(RestUrlService.DISABLE_FEED_URL(self.feedId)).then(function(response){
+        this.disableFeed = function () {
+            $http.post(RestUrlService.DISABLE_FEED_URL(self.feedId)).then(function (response) {
                 self.model.state = response.data.state;
                 FeedService.updateEditModelStateIcon();
             });
         }
 
-        function mergeTemplateProperties(feed){
+        function mergeTemplateProperties(feed) {
             var successFn = function (response) {
                 return response;
             }
@@ -51,32 +50,28 @@
                 }
             }).then(successFn, errorFn);
 
-
             return promise;
         }
 
-        this.onCategoryClick = function(){
+        this.onCategoryClick = function () {
             StateService.navigateToCategoryDetails(self.model.category.id);
         }
 
-
-        this.onTableClick = function(){
-            StateService.navigateToTable(self.model.category.systemName,self.model.table.tableSchema.name);
+        this.onTableClick = function () {
+            StateService.navigateToTable(self.model.category.systemName, self.model.table.tableSchema.name);
         }
 
-
-        function loadFeed(){
+        function loadFeed() {
             self.loadingFeedData = true;
             self.model.loaded = false;
-            self.loadMessage ='';
+            self.loadMessage = '';
             var successFn = function (response) {
-                if(response.data) {
-                    mergeTemplateProperties(response.data).then(function(updatedFeedResponse){
+                if (response.data) {
+                    mergeTemplateProperties(response.data).then(function (updatedFeedResponse) {
                         //merge in the template properties
                         //this will update teh self.model as they point to the same object
 
-                        if(updatedFeedResponse == undefined || updatedFeedResponse.data == undefined )
-                        {
+                        if (updatedFeedResponse == undefined || updatedFeedResponse.data == undefined) {
                             self.loadingFeedData = false;
                             var loadMessage = 'Unable to load Feed Details.  Please ensure that Apache Nifi is up and running and then refresh this page.';
                             self.loadMessage = loadMessage;
@@ -89,15 +84,13 @@
                                     .ariaLabel('Unable to load Feed Details')
                                     .ok('Got it!')
                             );
-                         } else {
+                        } else {
                             self.model.loaded = true;
                             FeedService.updateFeed(updatedFeedResponse.data);
-
 
                             //get those properties that are Input properties
                             var processors = {};
                             var inputProcessors = [];
-
 
                             var nonInputProcessors = [];
                             angular.forEach(self.model.properties, function (property) {
@@ -134,13 +127,13 @@
                             self.model.nonInputProcessors = nonInputProcessors;
                             self.loadingFeedData = false;
                             FeedService.updateEditModelStateIcon();
+
+                            console.log('this.model', self.model)
                         }
-                    }, function (err){
+                    }, function (err) {
                         //handle err
                         self.loadingFeedData = false;
                     })
-
-
 
                 }
             }
@@ -158,7 +151,7 @@
                 );
 
             }
-            var promise = $http.get(RestUrlService.GET_FEEDS_URL+"/"+self.feedId);
+            var promise = $http.get(RestUrlService.GET_FEEDS_URL + "/" + self.feedId);
             promise.then(successFn, errorFn);
             return promise;
         }
@@ -166,9 +159,7 @@
         init();
     };
 
-    angular.module(MODULE_FEED_MGR).controller('FeedDetailsController',controller);
-
-
+    angular.module(MODULE_FEED_MGR).controller('FeedDetailsController', controller);
 
 }());
 

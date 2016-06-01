@@ -1,18 +1,9 @@
-/*
- * Copyright (c) 2015.
- */
-
-/**
- * This Directive is wired in to the FeedStatusIndicatorDirective.
- * It uses the OverviewService to watch for changes and update after the Indicator updates
- */
 (function () {
 
     var directive = function () {
         return {
             restrict: "EA",
-            bindToController: {
-            },
+            bindToController: {},
             controllerAs: 'vm',
             scope: {},
             templateUrl: 'js/feed-details/details/feed-data-policies.html',
@@ -24,12 +15,11 @@
         };
     }
 
-    var controller =  function($scope, $mdDialog,FeedService,FeedSecurityGroups) {
+    var controller = function ($scope, $mdDialog, FeedService, FeedSecurityGroups) {
 
         var self = this;
 
         this.model = FeedService.editFeedModel;
-
 
         $scope.$watch(function () {
             return FeedService.editFeedModel;
@@ -40,17 +30,13 @@
             }
         })
 
+        this.permissionGroups = ['Marketing', 'Human Resources', 'Administrators', 'IT'];
+        this.compressionOptions = ['NONE', 'SNAPPY', 'ZLIB'];
 
+        this.mergeStrategies = [{name: 'Sync', type: 'SYNC', hint: 'Sync and overwrite table', disabled: false}, {name: 'Merge', type: 'MERGE', hint: 'Merges content into existing table', disabled: false},
+                {name: 'Dedupe and Merge', type: 'DEDUPE_MERGE', hint: 'Dedupe and Merge content into existing table', disabled: false}];
 
-        this.permissionGroups = ['Marketing','Human Resources','Administrators','IT'];
-        this.compressionOptions = ['NONE','SNAPPY','ZLIB'];
-
-
-        this.mergeStrategies = [{name:'Sync',type:'SYNC',hint:'Sync and overwrite table',disabled:false},{name:'Merge',type:'MERGE',hint:'Merges content into existing table',disabled:false},{name:'Dedupe and Merge',type:'DEDUPE_MERGE',hint:'Dedupe and Merge content into existing table',disabled:false}];
-
-        this.targetFormatOptions = [{label:"ORC",value:'STORED AS ORC'},{label:"PARQUET",value:'STORED AS PARQUET'}];
-
-
+        this.targetFormatOptions = [{label: "ORC", value: 'STORED AS ORC'}, {label: "PARQUET", value: 'STORED AS PARQUET'}];
 
         this.feedSecurityGroups = FeedSecurityGroups;
 
@@ -67,16 +53,14 @@
             return {name: chip}
         }
 
-
         self.editModel = {};
 
-        function findProperty(key){
-            return _.find(self.model.inputProcessor.properties,function(property){
+        function findProperty(key) {
+            return _.find(self.model.inputProcessor.properties, function (property) {
                 //return property.key = 'Source Database Connection';
                 return property.key == key;
             });
         }
-
 
         this.onEdit = function () {
             //copy the model
@@ -90,15 +74,15 @@
             self.editModel.table.targetMergeStrategy = FeedService.editFeedModel.table.targetMergeStrategy;
             self.editModel.table.options = angular.copy(FeedService.editFeedModel.table.options);
             self.editModel.table.securityGroups = angular.copy(FeedService.editFeedModel.table.securityGroups);
-            if (self.editModel.table.securityGroups == undefined){
-            self.editModel.table.securityGroups = [];
+            if (self.editModel.table.securityGroups == undefined) {
+                self.editModel.table.securityGroups = [];
             }
         }
 
-        this.onCancel = function() {
+        this.onCancel = function () {
 
         }
-        this.onSave = function() {
+        this.onSave = function () {
             //save changes to the model
             self.model.table.targeFormat = self.editModel.table.targeFormat;
             self.model.table.fieldPolicies = self.editModel.fieldPolicies;
@@ -109,28 +93,26 @@
             FeedService.saveFeedModel(self.model);
         }
 
-        this.showFieldRuleDialog = function(field,policyParam) {
+        this.showFieldRuleDialog = function (field, policyParam) {
             $mdDialog.show({
                 controller: 'FeedFieldPolicyRuleDialogController',
                 templateUrl: 'js/shared/feed-field-policy-rules/define-feed-data-processing-field-policy-dialog.html',
                 parent: angular.element(document.body),
-                clickOutsideToClose:false,
+                clickOutsideToClose: false,
                 fullscreen: true,
-                locals : {
-                    field:field,
-                    policyParameter:policyParam
+                locals: {
+                    field: field,
+                    policyParameter: policyParam
                 }
             })
-                .then(function(msg) {
+                .then(function (msg) {
 
-
-                }, function() {
+                }, function () {
 
                 });
         };
 
     };
-
 
     angular.module(MODULE_FEED_MGR).controller('FeedDataPoliciesController', controller);
 

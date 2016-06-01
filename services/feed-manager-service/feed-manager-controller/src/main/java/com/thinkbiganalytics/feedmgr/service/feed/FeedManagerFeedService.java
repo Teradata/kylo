@@ -14,30 +14,33 @@ import java.util.List;
  */
 public interface FeedManagerFeedService {
 
-  List<FeedMetadata> getReusableFeeds();
+    List<FeedMetadata> getReusableFeeds();
 
-  FeedMetadata getFeedByName(String feedName);
+    FeedMetadata getFeedByName(String feedName);
 
-  FeedMetadata getFeedById(String id);
+    FeedMetadata getFeedById(String id);
 
-  Collection<FeedMetadata> getFeeds();
-  public Collection<? extends UIFeed> getFeeds(boolean verbose);
+    FeedMetadata getFeedById(String id, boolean refreshTargetTableSchema);
 
-  public List<FeedSummary> getFeedSummaryData();
+    Collection<FeedMetadata> getFeeds();
 
-  public List<FeedSummary> getFeedSummaryForCategory(String categoryId);
+    public Collection<? extends UIFeed> getFeeds(boolean verbose);
 
-  List<FeedMetadata> getFeedsWithTemplate(String registeredTemplateId);
+    public List<FeedSummary> getFeedSummaryData();
 
-  NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException;
+    public List<FeedSummary> getFeedSummaryForCategory(String categoryId);
 
-  void saveFeed(FeedMetadata feed);
+    List<FeedMetadata> getFeedsWithTemplate(String registeredTemplateId);
 
-  FeedSummary enableFeed(String feedId);
+    NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException;
 
-  FeedSummary disableFeed(String feedId);
+    void saveFeed(FeedMetadata feed);
 
-  public void updateFeedsWithTemplate(String oldTemplateId, String newTemplateId);
+    FeedSummary enableFeed(String feedId);
+
+    FeedSummary disableFeed(String feedId);
+
+    public void updateFeedsWithTemplate(String oldTemplateId, String newTemplateId);
 
 
 }

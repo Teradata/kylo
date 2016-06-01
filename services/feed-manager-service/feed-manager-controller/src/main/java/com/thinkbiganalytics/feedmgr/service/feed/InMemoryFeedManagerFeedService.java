@@ -3,17 +3,26 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.feedmgr.rest.model.*;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.rest.JerseyClientException;
-import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import java.util.*;
 
 /**
  * Created by sr186054 on 5/1/16.
@@ -81,8 +90,6 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
 
     /**
      * Get a list of all the feeds which use a Template designated as being reusable
-     *
-     * @return
      */
     @Override
     public List<FeedMetadata> getReusableFeeds() {
@@ -97,9 +104,9 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
     public List<FeedSummary> getFeedSummaryForCategory(String categoryId) {
         List<FeedSummary> summaryList = new ArrayList<>();
         FeedCategory category = categoryProvider.getCategoryById(categoryId);
-   if(category != null && category.getFeeds() != null){
-       summaryList.addAll(category.getFeeds());
-   }
+        if (category != null && category.getFeeds() != null) {
+            summaryList.addAll(category.getFeeds());
+        }
         return summaryList;
     }
 
@@ -120,6 +127,11 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
 
     @Override
     public FeedMetadata getFeedById(String id) {
+        return getFeedById(id, false);
+    }
+
+    @Override
+    public FeedMetadata getFeedById(String id, boolean refreshTargetTableSchema) {
 
         if (feeds != null && !feeds.isEmpty()) {
             FeedMetadata feed = feeds.get(id);
@@ -166,7 +178,7 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
     private void loadSavedFeedsToMetaClientStore() {
         for (FeedMetadata feedMetadata : feeds.values()) {
             feedMetadata.setFeedId(null);
-          //  saveToMetadataStore(feedMetadata);
+            //  saveToMetadataStore(feedMetadata);
         }
     }
 
@@ -222,17 +234,17 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
     @Override
     public FeedSummary enableFeed(String feedId) {
         FeedMetadata feedMetadata = getFeedById(feedId);
-        if(feedMetadata != null){
+        if (feedMetadata != null) {
             feedMetadata.setState("ENABLED");
             return new FeedSummary(feedMetadata);
         }
-      return null;
+        return null;
     }
 
     @Override
     public FeedSummary disableFeed(String feedId) {
         FeedMetadata feedMetadata = getFeedById(feedId);
-        if(feedMetadata != null){
+        if (feedMetadata != null) {
             feedMetadata.setState("DISABLED");
             return new FeedSummary(feedMetadata);
         }

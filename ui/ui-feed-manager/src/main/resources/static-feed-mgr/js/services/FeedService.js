@@ -51,7 +51,11 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             //set the field name to the policy name attribute
             if(this.editFeedModel.table != null && this.editFeedModel.table.fieldPolicies != null) {
                 angular.forEach(this.editFeedModel.table.fieldPolicies, function (policy, i) {
-                    policy.name = self.editFeedModel.table.tableSchema.fields[i].name
+                    var field = self.editFeedModel.table.tableSchema.fields[i];
+                    policy.name = field.name;
+                    policy.dataType = field.dataType;
+                    policy.nullable = field.nullable;
+                    policy.primaryKey = field.primaryKey;
                 });
             }
 

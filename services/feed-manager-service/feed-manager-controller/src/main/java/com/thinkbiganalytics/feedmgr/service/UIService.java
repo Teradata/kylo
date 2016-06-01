@@ -9,6 +9,7 @@ import java.util.Map;
 public class UIService {
 
     private static class LazyHolder {
+
         static final UIService INSTANCE = new UIService();
     }
 
@@ -16,30 +17,29 @@ public class UIService {
         return LazyHolder.INSTANCE;
     }
 
-
-    private Map<String,String> supportedCodeMirrorTypes = new HashMap<>();
+    private Map<String, String> supportedCodeMirrorTypes = new HashMap<>();
 
 
     private UIService() {
-        registerCodeMirrorType("text/x-pig","Pig");
-        registerCodeMirrorType("text/x-sql","Sql");
-        registerCodeMirrorType("text/x-mysql","MySql");
-        registerCodeMirrorType("text/x-hive","Hive");
-        registerCodeMirrorType("shell","Shell");
-        registerCodeMirrorType("text/x-cython","Python");
-        registerCodeMirrorType("xml","Xml");
-        registerCodeMirrorType("text/x-groovy","Groovy");
-        registerCodeMirrorType("text/x-properties","Properties");
+        registerCodeMirrorType("text/x-pig", "Pig");
+        registerCodeMirrorType("text/x-sql", "Sql");
+        registerCodeMirrorType("text/x-mysql", "MySql");
+        registerCodeMirrorType("text/x-hive", "Hive");
+        registerCodeMirrorType("shell", "Shell");
+        registerCodeMirrorType("text/x-cython", "Python");
+        registerCodeMirrorType("xml", "Xml");
+        registerCodeMirrorType("text/x-groovy", "Groovy");
+        registerCodeMirrorType("text/x-properties", "Properties");
 
-  }
+    }
 
-    public Map<String,String>  getCodeMirrorTypes() {
+    public Map<String, String> getCodeMirrorTypes() {
         return supportedCodeMirrorTypes;
     }
 
 
-    public void registerCodeMirrorType(String type, String name){
-        supportedCodeMirrorTypes.put(type,name);
+    public void registerCodeMirrorType(String type, String name) {
+        supportedCodeMirrorTypes.put(type, name);
     }
 
 }
