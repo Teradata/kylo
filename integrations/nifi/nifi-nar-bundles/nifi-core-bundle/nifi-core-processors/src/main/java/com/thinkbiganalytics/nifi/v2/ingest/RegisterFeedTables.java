@@ -38,7 +38,6 @@ import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.PARTITION
 import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_FAILURE;
 import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_SUCCESS;
 import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.TARGET_FORMAT_SPECS;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.TARGET_TABLE;
 import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.TARGET_TBLPROPERTIES;
 import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.THRIFT_SERVICE;
 
@@ -110,7 +109,7 @@ public class RegisterFeedTables extends AbstractProcessor {
 
         try (final Connection conn = thriftService.getConnection()) {
 
-            String entity = context.getProperty(TARGET_TABLE).evaluateAttributeExpressions(flowFile).getValue();
+            String entity = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
             String source = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
             String feedFormatOptions = context.getProperty(FEED_FORMAT_SPECS).evaluateAttributeExpressions(flowFile).getValue();
             String targetFormatOptions = context.getProperty(TARGET_FORMAT_SPECS).evaluateAttributeExpressions(flowFile).getValue();

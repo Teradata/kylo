@@ -42,7 +42,7 @@ public interface ComponentProperties {
         .name("System feed category")
         .description("System category of feed this processor supports")
         .required(true)
-        .defaultValue("${metadata.category.systemName}")
+        .defaultValue("${category}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -50,7 +50,7 @@ public interface ComponentProperties {
     PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
         .name("System feed name")
         .description("Name of feed this processor supports")
-        .defaultValue("${metadata.systemFeedName}")
+        .defaultValue("${feed}")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
@@ -60,7 +60,7 @@ public interface ComponentProperties {
         .name("Target table")
         .description("Fully qualified name of the target table")
         .required(true)
-        .defaultValue("${metadata.category.systemName}.${metadata.systemFeedName}")
+        .defaultValue("${category}.${feed}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -107,7 +107,7 @@ public interface ComponentProperties {
         .description(
             "Provide storage format specification for the target tables")
         .required(true)
-        .defaultValue("{$metadata.targetFormat}")
+        .defaultValue("${metadata.table.targetFormat}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
