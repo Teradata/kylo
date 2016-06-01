@@ -55,6 +55,11 @@ public class TableMergeSyncSupport implements Serializable {
         Validate.notNull(partitionSpec);
         Validate.notNull(feedPartionValue);
 
+
+
+
+
+
         truncateTable(targetTable);
 
         String[] selectFields = getSelectFields(sourceTable, targetTable, partitionSpec);

@@ -62,6 +62,20 @@ public class TableRegisterSupportTests {
      * Create some data in the target directory. Note that the 'targetFile' references the same dir as the create table statement in the script under test. <p/> This example is for defining the data
      * in line as a string.
      */
+    @HiveResource(targetFile = "${hiveconf:MY.HDFS.DIR}/model.db/bar/employee/feed")
+    private String dataFromString2 = "2,World\n3,!";
+
+    @HiveResource(targetFile = "${hiveconf:MY.HDFS.DIR}/model.db/bar/employee/invalid")
+    private String dataFromString3 = "2,World\n3,!";
+    @HiveResource(targetFile = "${hiveconf:MY.HDFS.DIR}/model.db/bar/employee/valid")
+    private String dataFromString4 = "2,World\n3,!";
+    @HiveResource(targetFile = "${hiveconf:MY.HDFS.DIR}/app.warehouse/bar/employee")
+    private String dataFromString5 = "2,World\n3,!";
+
+    /**
+     * Create some data in the target directory. Note that the 'targetFile' references the same dir as the create table statement in the script under test. <p/> This example is for defining the data
+     * in line as a string.
+     */
     @HiveResource(targetFile = "${hiveconf:MY.HDFS.DIR}/foo/data_from_string.csv")
     private String dataFromString = "2,World\n3,!";
 
@@ -98,6 +112,7 @@ public class TableRegisterSupportTests {
         Assert.assertEquals(expected, actual);
     }
 
+
     @Test
     public void testSelectFromFooWithTypeCheck() {
 
@@ -127,11 +142,18 @@ public class TableRegisterSupportTests {
         TableRegisterSupport support = new TableRegisterSupport();
         TableType[] tableTypes = new TableType[]{TableType.FEED, TableType.INVALID, TableType.VALID, TableType.MASTER};
         for (TableType tableType : tableTypes) {
-            String ddl = support.createDDL("emp_sr3", "employee3", specs, parts, "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'", "stored as orc", "tblproperties (\"orc"
-                                                                                                                                                                   + ".compress\"=\"SNAPPY\")",
+            String ddl = support.createDDL("bar", "employee", specs, parts, "ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde'", "stored as orc", "tblproperties (\"orc"
+                                                                                                                                                              + ".compress\"=\"SNAPPY\")",
                                            tableType);
+
             System.out.println(ddl);
             assertNotNull(ddl);
+
+           // System.out.println(ddl);
+ ddl = "CREATE EXTERNAL TABLE IF NOT EXISTS `bar.employee_feed` (`id` string COMMENT 'my comment', `name` string, `company` string COMMENT 'some description', `zip` string, `phone` string, "
+         + "`email` string, `country` string, `hired` string)   PARTITIONED BY (`processing_dttm` string)  ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde' LOCATION '${hiveconf:MY.HDFS.DIR}/model"
+             + ".db/bar/employee/feed'";
+            //hiveShell.execute(ddl);
         }
     }
 }
