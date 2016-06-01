@@ -235,7 +235,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
 
          },
         getColumnDefinitionByName:function(name) {
-        return _.find(this.createFeedModel.table.columnDefinitions,function(columnDef) {
+        return _.find(this.createFeedModel.table.tableSchema.fields,function(columnDef) {
             return columnDef.name == name;
         });
       },

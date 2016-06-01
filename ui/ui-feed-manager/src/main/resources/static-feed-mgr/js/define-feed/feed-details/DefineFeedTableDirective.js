@@ -201,11 +201,12 @@
 
     angular.module(MODULE_FEED_MGR).filter('filterPartitionFormula', ['FeedService', function (FeedService) {
         return function (formulas, partition) {
+
             if (partition && partition.sourceField) {
                 var columnDef = FeedService.getColumnDefinitionByName(partition.sourceField);
                 if (columnDef) {
                     return _.filter(formulas, function (formula) {
-                        if (columnDef.dataType != 'date' && formula != 'val') {
+                        if (columnDef.dataType != 'date' && columnDef.dataType != 'timestamp' && formula != 'val') {
                             return false;
                         }
                         else {
