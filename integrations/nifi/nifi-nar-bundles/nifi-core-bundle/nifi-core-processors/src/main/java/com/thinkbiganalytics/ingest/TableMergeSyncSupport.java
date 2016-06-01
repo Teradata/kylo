@@ -24,19 +24,62 @@ import java.util.Vector;
 /**
  * Merge from a table into a target table. Dedupes and uses partition strategy of the target table
  */
-public class TableMergeSupport implements Serializable {
+public class TableMergeSyncSupport implements Serializable {
 
     public static Logger logger = LoggerFactory.getLogger(TableRegisterSupport.class);
 
     private Connection conn;
 
-    public TableMergeSupport(Connection conn) {
+    public TableMergeSyncSupport(Connection conn) {
         Validate.notNull(conn);
         this.conn = conn;
     }
 
-    protected TableMergeSupport() {
+    protected TableMergeSyncSupport() {
         // for unit testing
+    }
+
+    /**
+     * Performs a sync replacing all data in the target table.  This causes a lapse for consumers where existing data is wiped out and then added back.
+     *
+     * @param sourceTable      the source table
+     * @param targetTable      the target table
+     * @param partitionSpec    the partition specification
+     * @param feedPartionValue the source processing partition value
+     */
+    public List<PartitionBatch> doSync(String sourceTable, String targetTable, PartitionSpec partitionSpec, String feedPartionValue) {
+
+        Validate.notEmpty(sourceTable);
+        Validate.notEmpty(targetTable);
+        Validate.notNull(partitionSpec);
+        Validate.notNull(feedPartionValue);
+
+        truncateTable(targetTable);
+
+        String[] selectFields = getSelectFields(sourceTable, targetTable, partitionSpec);
+        if (partitionSpec.isNonPartitioned()) {
+            String sql = generateSyncNonPartitionQuery(selectFields, sourceTable, targetTable, feedPartionValue);
+            doMerge(sql);
+        } else {
+
+            List<PartitionBatch> batches = createPartitionBatches(partitionSpec, sourceTable, feedPartionValue);
+            if (batches.size() > 0) {
+                logger.info("{} batches will be executed", batches.size());
+                for (PartitionBatch batch : batches) {
+                    String sql = generateSyncPartitionQuery(selectFields, partitionSpec, batch.getPartionValues(), sourceTable, targetTable, feedPartionValue);
+                    doMerge(sql);
+                }
+                return batches;
+            } else {
+                logger.warn("No valid data found.");
+            }
+        }
+        return null;
+    }
+
+
+    protected void truncateTable(String sourceTable) {
+        doMerge("TRUNCATE " + sourceTable);
     }
 
     /**
@@ -65,7 +108,7 @@ public class TableMergeSupport implements Serializable {
             if (batches.size() > 0) {
                 logger.info("{} batches will be executed", batches.size());
                 for (PartitionBatch batch : batches) {
-                    String sql = generateDedupePartitionQuery(selectFields, partitionSpec, batch.getPartionValues(), sourceTable, targetTable, feedPartionValue, shouldDedupe);
+                    String sql = generateSyncPartitionQuery(selectFields, partitionSpec, batch.getPartionValues(), sourceTable, targetTable, feedPartionValue);
                     doMerge(sql);
                 }
                 return batches;
@@ -74,6 +117,57 @@ public class TableMergeSupport implements Serializable {
             }
         }
         return null;
+    }
+
+    /**
+     * Generates a sync query for inserting from a source table into the target table with no partitions
+     *
+     * @param selectFields the list of fields in the select clause of the source table
+     * @param sourceTable  the source table
+     * @param targetTable  the target table
+     * @return the sql string
+     */
+    protected String generateSyncNonPartitionQuery(String[] selectFields, String sourceTable, String targetTable, String feedPartitionValue) {
+
+        String selectSQL = StringUtils.join(selectFields, ",");
+
+        StringBuffer sb = new StringBuffer();
+        sb.append("insert overwrite table ").append(targetTable).append(" ");
+
+        sb.append(" select ").append(selectSQL)
+            .append(" from ").append(sourceTable).append(" where processing_dttm='" + feedPartitionValue + "' ");
+
+        return sb.toString();
+    }
+
+    /**
+     * Generates a sync query for inserting overwriting from a source table into the target table adhering to partitions
+     *
+     * @param selectFields    the list of fields in the select clause of the source table
+     * @param spec            the partition specification or null if none
+     * @param partitionValues the values containing the distinct partition data to process this iterator
+     * @param sourceTable     the source table
+     * @param targetTable     the target table
+     * @return the sql string
+     */
+    protected String generateSyncPartitionQuery(String[] selectFields, PartitionSpec spec, String[] partitionValues, String sourceTable, String targetTable, String feedPartitionValue) {
+
+        String selectSQL = StringUtils.join(selectFields, ",");
+        String targetSqlWhereClause = spec.toTargetSQLWhere(partitionValues);
+        String sourceSqlWhereClause = spec.toSourceSQLWhere(partitionValues);
+        String partitionClause = spec.toPartitionSpec(partitionValues);
+
+        StringBuffer sb = new StringBuffer();
+        sb.append("insert overwrite table ").append(targetTable).append(" ")
+            .append(partitionClause);
+
+        sb.append(" select ").append(selectSQL)
+            .append(" from ").append(sourceTable).append(" ")
+            .append(" where ")
+            .append(" processing_dttm='" + feedPartitionValue + "' and ")
+            .append(sourceSqlWhereClause);
+
+        return sb.toString();
     }
 
     /**
@@ -313,7 +407,7 @@ public class TableMergeSupport implements Serializable {
     }
 
     public static void main(String[] args) {
-        TableMergeSupport support = new TableMergeSupport();
+        TableMergeSyncSupport support = new TableMergeSyncSupport();
         String[] selectFields = new String[]{"id", "name", "company", "zip", "phone", "email", "hired"};
         String sourceTable = "emp_sr5.employee_valid";
         String targetTable = "emp_sr5.employee";
