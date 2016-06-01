@@ -84,11 +84,11 @@ public class TableRegisterSupport {
         }
     }
 
-    public boolean registerProfileTable(String source, String tableEntity) {
+    public boolean registerProfileTable(String source, String tableEntity, String targetFormatOptions) {
 
         String tableName = TableType.PROFILE.deriveQualifiedName(source, tableEntity);
         String columnSQL = " `columnname` string,`metrictype` string,`metricvalue` string";
-        String formatSQL = TableType.PROFILE.deriveFormatSpecification(null, null);
+        String formatSQL = TableType.PROFILE.deriveFormatSpecification("NOT_USED", targetFormatOptions);
         String partitionSQL = TableType.PROFILE.derivePartitionSpecification(null);
         String locationSQL = TableType.PROFILE.deriveLocationSpecification(source, tableEntity);
 
@@ -107,7 +107,7 @@ public class TableRegisterSupport {
             }
         }
         if (!existingTables.contains(TableType.PROFILE.deriveTablename(tableEntity))) {
-            result = registerProfileTable(source, tableEntity) && result;
+            result = registerProfileTable(source, tableEntity, targetFormatOptions) && result;
         }
         return result;
     }
