@@ -60,6 +60,7 @@ public class FeedRestController {
     NifiRestClient nifiRestClient;
 
 
+
     @Autowired
     MetadataService metadataService;
 
@@ -155,7 +156,7 @@ public class FeedRestController {
     @Path("/{feedId}")
     @Produces({MediaType.APPLICATION_JSON })
     public Response getFeed(@PathParam("feedId") String feedId ) throws JerseyClientException{
-        FeedMetadata feed =getMetadataService().getFeedById(feedId);
+        FeedMetadata feed =getMetadataService().getFeedById(feedId,true);
 
         return Response.ok(feed).build();
     }
