@@ -1,9 +1,13 @@
 package com.thinkbiganalytics.hive.config;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
@@ -41,23 +45,19 @@ public class HiveDataSourceConfiguration {
 
 
     @Bean(name="hiveDataSource")
+    @ConfigurationProperties(prefix = "hive.datasource")
     public DataSource dataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(env.getProperty("hive.datasource.driverClassName"));
-        dataSource.setUrl(env.getProperty("hive.datasource.url"));
-        dataSource.setUsername(env.getProperty("hive.datasource.username"));
-        dataSource.setPassword(env.getProperty("hive.datasource.password"));
-        return dataSource;
+        DataSource ds = DataSourceBuilder.create().build();
+        return ds;
     }
 
+
+
     @Bean(name="hiveMetastoreDataSource")
-    public DataSource hiveMetastoreDataSource() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName(env.getProperty("hive.metastore.datasource.driverClassName"));
-        dataSource.setUrl(env.getProperty("hive.metastore.datasource.url"));
-        dataSource.setUsername(env.getProperty("hive.metastore.datasource.username"));
-        dataSource.setPassword(env.getProperty("hive.metastore.datasource.password"));
-        return dataSource;
+    @ConfigurationProperties(prefix = "hive.metastore.datasource")
+    public DataSource metadataDataSource() {
+        DataSource ds = DataSourceBuilder.create().build();
+        return ds;
     }
 
 }
