@@ -34,7 +34,7 @@
         this.compressionOptions = ['NONE', 'SNAPPY', 'ZLIB'];
 
         this.mergeStrategies = [{name: 'Sync', type: 'SYNC', hint: 'Sync and overwrite table', disabled: false}, {name: 'Merge', type: 'MERGE', hint: 'Merges content into existing table', disabled: false},
-                {name: 'Dedupe and Merge', type: 'DEDUPE_MERGE', hint: 'Dedupe and Merge content into existing table', disabled: false}];
+                {name: 'Dedupe and Merge', type: 'DEDUPE_AND_MERGE', hint: 'Dedupe and Merge content into existing table', disabled: false}];
 
         this.targetFormatOptions = [{label: "ORC", value: 'STORED AS ORC'}, {label: "PARQUET", value: 'STORED AS PARQUET'}];
 
