@@ -29,12 +29,16 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
          //return str.replace(/([A-Z])/g, "_$1").replace(/^_/,'').toLowerCase();
     }
 
+
+
     var data = {
+
+        customPropertyRendering:["metadata.table.targetFormat","metadata.table.feedFormat"],
 
         createFeedModel : {},
         editFeedModel : {},
         getNewCreateFeedModel : function(){
-            return  {id:null,version:null,templateId:'',feedName:'',description:null,systemFeedName:'',inputProcessorType:'',inputProcessor:null,nonInputProcessors:[],properties:[], schedule:{schedulingPeriod:'* * * * * ?',schedulingStrategy:'CRON_DRIVEN', concurrentTasks:1},defineTable:false,allowPreconditions:false,dataTransformationFeed:false,table:{tableSchema:{name:null,fields:[]},sourceTableSchema:{name:null,fields:[]},method:'MANUAL',existingTableName:null,tableType:'DELTA',recordFormat:'DELIMITED',fieldPolicies:[],partitions:[],options:{compress:false,compressionFormat:null,auditLogging:true,encrypt:false,trackHistory:false}, securityGroups:[], incrementalDateField:null}, category:{id:null,name:null},  dataOwner:'',tags:[], reusableFeed:false, dataTransformation:{visualQuery:{sql:null,selectedColumnsAndTablesJson:null,chartViewModelJson:null},dataTransformScript:null,formulas:[],state:'NEW'}};
+            return  {id:null,version:null,templateId:'',feedName:'',description:null,systemFeedName:'',inputProcessorType:'',inputProcessor:null,nonInputProcessors:[],properties:[], schedule:{schedulingPeriod:'* * * * * ?',schedulingStrategy:'CRON_DRIVEN', concurrentTasks:1},defineTable:false,allowPreconditions:false,dataTransformationFeed:false,table:{tableSchema:{name:null,fields:[]},sourceTableSchema:{name:null,fields:[]},method:'MANUAL',existingTableName:null,targetMergeStrategy:'DEDUPE_AND_MERGE',feedFormat:"ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n' STORED AS TEXTFILE",targetFormat:null,fieldPolicies:[],partitions:[],options:{compress:false,compressionFormat:null,auditLogging:true,encrypt:false,trackHistory:false}, securityGroups:[], sourceTableIncrementalDateField:null}, category:{id:null,name:null},  dataOwner:'',tags:[], reusableFeed:false, dataTransformation:{visualQuery:{sql:null,selectedColumnsAndTablesJson:null,chartViewModelJson:null},dataTransformScript:null,formulas:[],state:'NEW'}};
         },
         newCreateFeed:function(){
             this.createFeedModel = this.getNewCreateFeedModel();
@@ -50,6 +54,44 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                     policy.name = self.editFeedModel.table.tableSchema.fields[i].name
                 });
             }
+
+        },
+        isCustomPropertyRendering:function(key){
+            var self = this;
+           var custom = _.find(this.customPropertyRendering,function(customKey){
+                return key == customKey;
+            });
+            return custom !== undefined;
+        },
+        findPropertyForProcessor: function(model,processorName,propertyKey){
+        var property =  _.find(model.inputProcessor.properties,function(property){
+            //return property.key = 'Source Database Connection';
+            return property.key == key;
+        });
+
+        if(property == undefined) {
+            for (processorId in model.nonInputProcessors) {
+                var processor = null;
+                var aProcessor = model[processorId];
+                if (processorName != undefined && processorName != null) {
+                    if (aProcessor.processorName == processorName) {
+                        processor = aProcessor;
+                    }
+                }
+                else {
+                    processor = aProcessor;
+                }
+                if (processor != null) {
+                    property = _.find(processor.properties, function (property) {
+                        return property.key == propertyKey;
+                    });
+                }
+                if (property != undefined) {
+                    break;
+                }
+            }
+        }
+            return property;
 
         },
         resetFeed : function(){
@@ -90,6 +132,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         }
         },
         clearTableData:function(){
+
             this.createFeedModel.table.method = 'MANUAL';
             this.createFeedModel.table.tableSchema.fields = [];
             this.createFeedModel.table.fieldPolicies = [];

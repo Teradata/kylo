@@ -30,6 +30,8 @@ public class TableSchema {
 
     private boolean quotes;
 
+    private String hiveRecordFormat;
+
 
     public String getName() {
         return name;
@@ -85,5 +87,18 @@ public class TableSchema {
 
     public void setSchemaName(String schemaName) {
         this.schemaName = schemaName;
+    }
+
+    public String deriveHiveRecordFormat(){
+        hiveRecordFormat = "ROW FORMAT DELIMITED FIELDS TERMINATED BY '"+getDelim()+"' LINES TERMINATED BY '\\n' STORED AS TEXTFILE";
+        return hiveRecordFormat;
+    }
+
+    public String getHiveRecordFormat() {
+        return hiveRecordFormat;
+    }
+
+    public void setHiveRecordFormat(String hiveRecordFormat) {
+        this.hiveRecordFormat = hiveRecordFormat;
     }
 }

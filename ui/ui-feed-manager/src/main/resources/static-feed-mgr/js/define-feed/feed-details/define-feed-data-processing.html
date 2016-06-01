@@ -65,34 +65,35 @@
       </md-list>
 
 
-   <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="vm.model.table.method != 'EXISTING_TABLE'">
-      <label class="label-small md-container-ignore">Type</label>
-      <md-radio-group ng-model="vm.model.table.tableType" layout="row" layout-wrap="true" class="layout-padding-top">
-         <md-radio-button ng-repeat="tableType in vm.tableTypes"
-                          ng-value="tableType.type"
-                          aria-label="{{tableType.name}}">
-            {{tableType.name}}
-            <div class="hint">{{tableType.hint}}</div>
+   <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
+      <label class="label-small md-container-ignore">Merge Strategy</label>
+      <md-radio-group ng-model="vm.model.table.targetMergeStrategy" layout="row" layout-wrap="true" class="layout-padding-top">
+         <md-radio-button ng-repeat="strategy in vm.mergeStrategies"
+                          ng-value="strategy.type"
+                          aria-label="{{strategy.name}}"
+                          ng-disabled="{{strategy.disabled}}">
+            {{strategy.name}}
+            <div class="hint">{{strategy.hint}}</div>
          </md-radio-button>
       </md-radio-group>
 
    </md-input-container>
 
 
-     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" ng-if="vm.model.table.tableType == 'DELTA'">
-         <label class="label-small md-container-ignore">Date Field to use when merging incremental updates</label>
-         <md-select ng-model="vm.model.table.incrementalDateField" ng-change="vm.onIncrementalDateFieldChange()">
-             <md-option ng-repeat="field in vm.model.table.tableSchema.fields | filter: vm.filterFieldDates track by $index" value="{{field.name}}">
-                 {{field.name}}
+     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" >
+         <label class="label-small md-container-ignore">Target Format</label>
+         <md-select ng-model="vm.model.table.targetFormat" ng-change="vm.onTableFormatChange(opt);">
+             <md-option ng-repeat="opt in vm.targetFormatOptions track by $index" ng-value="opt.value">
+                 {{opt.label}}
              </md-option>
          </md-select>
      </md-input-container>
 
 
      <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" >
-         <label class="label-small md-container-ignore">ORC Compression options</label>
+         <label class="label-small md-container-ignore">Compression options</label>
          <md-select ng-model="vm.model.table.options.compressionFormat" >
-             <md-option ng-repeat="opt in ::vm.compressionOptions track by $index" value="{{opt}}">
+             <md-option ng-repeat="opt in vm.compressionOptions track by $index" ng-value="opt">
                  {{opt}}
              </md-option>
          </md-select>

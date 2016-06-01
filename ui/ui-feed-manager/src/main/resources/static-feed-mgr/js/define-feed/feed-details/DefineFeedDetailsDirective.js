@@ -108,7 +108,13 @@
                     nonInputProcessors.push(processors[processorId]);
                 }
                 angular.forEach(processors[processorId].properties,function(property) {
-                    if(property.userEditable == true){
+                    //if it is a custom render property then dont allow the default editing.
+                    //the other fields are coded to look for these specific properties
+                    //otherwise check to see if it is editable
+                    if(FeedService.isCustomPropertyRendering(property.key)){
+                        property.customProperty = true;
+                        property.userEditable = false;
+                    } else if(property.userEditable == true){
                         processors[processorId].userEditable = true;
                         return false;
                     }

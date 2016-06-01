@@ -31,12 +31,9 @@
         this.isValid = false;
         this.sampleFile = null;
         this.tableCreateMethods = [{type: 'MANUAL', name: 'Manual'}, {type: 'SAMPLE_FILE', name: 'Sample File'}];
-        this.tableRecordFormats = [{
-            type: 'DELIMITED',
-            name: 'Delimited',
-            hint: 'Data Files use delimiters like commas (CSV) or tabs'
-        }, {type: 'SERDE', name: 'Serde', hint: 'Enter a specialized serialization implementation'}]
         this.columnDefinitionDataTypes = ['string', 'int', 'bigint', 'tinyint', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary'];
+
+        this.feedFormat = '';
 
 
         BroadcastService.subscribe($scope, 'DATA_TRANSFORM_SCHEMA_LOADED', onDataTransformSchemaLoaded);
@@ -171,6 +168,10 @@
                 angular.forEach(response.fields, function (field) {
                     self.addColumn(field);
                 });
+                //set the feedFormat property
+                self.model.table.feedFormat = response.hiveRecordFormat;
+                console.log('self.model.table.feedFormat',self.model.table.feedFormat)
+
                 hideProgress();
                 self.uploadBtnDisabled = false;
                 angular.element('#upload-sample-file-btn').removeClass('md-primary');

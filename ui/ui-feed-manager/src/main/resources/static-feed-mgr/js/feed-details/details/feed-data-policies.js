@@ -42,9 +42,16 @@
 
 
 
-        this.tableTypes = [{name:'Snapshot',type:'SNAPSHOT',hint:'Snapshot and overwrite table'},{name:'Delta',type:'DELTA',hint:'Merges content into existing table'}];
         this.permissionGroups = ['Marketing','Human Resources','Administrators','IT'];
         this.compressionOptions = ['NONE','SNAPPY','ZLIB'];
+
+
+        this.mergeStrategies = [{name:'Sync',type:'SYNC',hint:'Sync and overwrite table',disabled:false},{name:'Merge',type:'MERGE',hint:'Merges content into existing table',disabled:false},{name:'Dedupe and Merge',type:'DEDUPE_MERGE',hint:'Dedupe and Merge content into existing table',disabled:false}];
+
+        this.targetFormatOptions = [{label:"ORC",value:'STORED AS ORC'},{label:"PARQUET",value:'STORED AS PARQUET'}];
+
+
+
         this.feedSecurityGroups = FeedSecurityGroups;
 
         self.securityGroupChips = {};
@@ -63,25 +70,6 @@
 
         self.editModel = {};
 
-
-        this.filterFieldDates = function(field){
-            return field.dataType == 'date' || field.dataType == 'timestamp';
-        }
-
-        this.INCREMENTAL_DATE_FIELD_KEY = 'Date Field';
-
-
-        function findIncrementalDateFieldProperty(){
-            return findProperty(self.INCREMENTAL_DATE_FIELD_KEY);
-        }
-
-        this.onIncrementalDateFieldChange = function(){
-            var prop = findIncrementalDateFieldProperty();
-            if(prop != null) {
-                prop.value =  self.editModel.table.incrementalDateField;
-            }
-        }
-
         function findProperty(key){
             return _.find(self.model.inputProcessor.properties,function(property){
                 //return property.key = 'Source Database Connection';
@@ -98,15 +86,12 @@
             self.editModel.fieldPolicies = fieldPolicies;
 
             self.editModel.table = {};
-            self.editModel.table.tableType = FeedService.editFeedModel.table.tableType;
+            self.editModel.table.targeFormat = FeedService.editFeedModel.table.targetFormat;
+            self.editModel.table.targetMergeStrategy = FeedService.editFeedModel.table.targetMergeStrategy;
             self.editModel.table.options = angular.copy(FeedService.editFeedModel.table.options);
             self.editModel.table.securityGroups = angular.copy(FeedService.editFeedModel.table.securityGroups);
             if (self.editModel.table.securityGroups == undefined){
             self.editModel.table.securityGroups = [];
-            }
-            var incrementalDateFieldProperty = findIncrementalDateFieldProperty();
-            if(incrementalDateFieldProperty != null) {
-                self.editModel.table.incrementalDateField =incrementalDateFieldProperty.value;
             }
         }
 
@@ -115,14 +100,12 @@
         }
         this.onSave = function() {
             //save changes to the model
+            self.model.table.targeFormat = self.editModel.table.targeFormat;
             self.model.table.fieldPolicies = self.editModel.fieldPolicies;
-            self.model.table.tableType = self.editModel.table.tableType;
+            self.model.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
             self.model.table.options = self.editModel.table.options;
             self.model.table.securityGroups = self.editModel.table.securityGroups;
-            if(self.editModel.table.incrementalDateField){
-                findIncrementalDateFieldProperty().value = self.editModel.table.incrementalDateField;
-                self.model.table.incrementalDateField = self.editModel.table.incrementalDateField;
-            }
+
             FeedService.saveFeedModel(self.model);
         }
 

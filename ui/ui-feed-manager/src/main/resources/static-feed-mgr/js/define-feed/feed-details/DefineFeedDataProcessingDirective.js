@@ -30,10 +30,14 @@
         this.stepNumber = parseInt(this.stepIndex)+1
 
 
-        this.tableTypes = [{name:'Snapshot',type:'SNAPSHOT',hint:'Snapshot and overwrite table'},{name:'Delta',type:'DELTA',hint:'Merges content into existing table'}];
+        this.mergeStrategies = [{name:'Sync',type:'SYNC',hint:'Replaces table data',disabled:false},{name:'Merge',type:'MERGE',hint:'Append table data',disabled:false},{name:'Dedupe and Merge',type:'DEDUPE_AND_MERGE',hint:'Append data without duplicates',disabled:false}];
         this.permissionGroups = ['Marketing','Human Resources','Administrators','IT'];
 
-        this.compressionOptions = ['NONE','SNAPPY','ZLIB'];
+       // this.compressionOptions = ['NONE','SNAPPY','ZLIB'];
+
+        this.allCompressionOptions = {'ORC':['NONE','SNAPPY','ZLIB'],'PARQUET':['NONE','SNAPPY']};
+
+        this.targetFormatOptions = [{label:"ORC",value:'STORED AS ORC'},{label:"PARQUET",value:'STORED AS PARQUET'}];
 
         self.securityGroupChips = {};
         self.securityGroupChips.selectedItem = null;
@@ -48,24 +52,23 @@
             return { name: chip }
         }
 
+        this.compressionOptions = ['NONE'];
 
-        this.filterFieldDates = function(field){
-            return field.dataType == 'date' || field.dataType == 'timestamp';
-        }
-
-        this.INCREMENTAL_DATE_FIELD_KEY = 'Date Field';
-
-
-        function findIncrementalDateFieldProperty(){
-            return findProperty(self.INCREMENTAL_DATE_FIELD_KEY);
-        }
-
-        this.onIncrementalDateFieldChange = function(){
-            var prop = findIncrementalDateFieldProperty();
-            if(prop != null) {
-             prop.value =  self.model.table.incrementalDateField;
+        this.onTableFormatChange = function(opt){
+            var format = self.model.table.targetFormat;
+            if(format == 'STORED AS ORC' ){
+                self.compressionOptions = self.allCompressionOptions['ORC'];
+            }
+            else  if(format == 'STORED AS PARQUET' ){
+                self.compressionOptions = self.allCompressionOptions['PARQUET'];
+            }
+            else {
+                self.compressionOptions = ['NONE'];
             }
         }
+
+
+
 
         function findProperty(key){
             return _.find(self.model.inputProcessor.properties,function(property){
@@ -73,6 +76,9 @@
                 return property.key == key;
             });
         }
+
+
+
 
         this.showFieldRuleDialog = function(field,policyParam) {
             $mdDialog.show({

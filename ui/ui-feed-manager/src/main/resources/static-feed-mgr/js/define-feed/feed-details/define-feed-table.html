@@ -194,17 +194,12 @@
             </md-button>
         </div>
     </div>
-        <div class="layout-padding-top-bottom">
+        <div class="layout-padding-top">
             <div class="md-subhead">Record Format</div>
             <div class="layout-padding-indent">
-                <md-radio-group ng-model="vm.model.table.recordFormat" layout="row" layout-align="start start" class="layout-padding-top-bottom">
-                    <md-radio-button ng-repeat="recordFormat in vm.tableRecordFormats"
-                                     ng-value="recordFormat.type"
-                                     aria-label="{{recordFormat.name}}" >
-                        {{recordFormat.name}}
-                        <div class="hint">{{recordFormat.hint}}</div>
-                    </md-radio-button>
-                </md-radio-group>
+                <md-input-container class="md-block condensed">
+                    <textarea ng-model="vm.model.table.feedFormat"></textarea>
+                </md-input-container>
             </div>
         </div>
 

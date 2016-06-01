@@ -115,6 +115,7 @@ public class TextFileParser {
         }
         schema.setFields(fields);
         deriveDataTypes(fields);
+        schema.deriveHiveRecordFormat();
         return schema;
 
     }

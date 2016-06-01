@@ -36,9 +36,22 @@ public class TableSetup {
     @MetadataField
     private String incrementalDateField;
 
+    @MetadataField(description = "Source Field to be used when incrementally querying Table Data ")
+    private String sourceTableIncrementalDateField;
+
     private TableOptions options;
 
-    private String recordFormat;
+    @MetadataField(description = "Hive Row Format String for the Feed Table (example: ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n' STORED AS\n  TEXTFILE ")
+    private String feedFormat;
+
+    @MetadataField(description = "Format of the Destination Table storage. Supported Values are: [STORED AS PARQUET, STORED AS ORC]")
+    private String targetFormat;
+
+    @MetadataField(description = "Destination Hive Table Properties string (i.e.  tblproperties(\"orc.compress\"=\"SNAPPY\") ")
+    private String targetTblProperties;
+
+    @MetadataField(description = "Strategy for merging data into the destination.  Supported Values are [Sync, Merge, Dedupe and Merge]")
+    private String targetMergeStrategy;
 
     @MetadataField(description = "JSON array of FieldPolicy objects")
     private  String fieldPoliciesJson;
@@ -254,6 +267,22 @@ public class TableSetup {
 
     }
 
+    private void updateTargetTblProperties() {
+        //build based upon compression options
+        if(options != null && StringUtils.isNotBlank(options.getCompressionFormat()) && !"NONE".equalsIgnoreCase(options.getCompressionFormat())) {
+            this.targetTblProperties = "tblproperties(\"orc.compress\"=\""+options.getCompressionFormat()+"\")";
+        }
+        else {
+            this.targetTblProperties = "";
+        }
+    }
+
+    public void updateFeedFormat(){
+        if(StringUtils.isNotBlank(feedFormat)){
+            feedFormat = StringUtils.replace(feedFormat,"\\n","\\\\n");
+        }
+    }
+
     public void updateMetadataFieldValues(){
         updatePartitionStructure();
         updateFieldStructure();
@@ -263,6 +292,8 @@ public class TableSetup {
         updatePartitionSpecs();
         updateFieldPolicyNames();
         updateFieldPolicyJson();
+        updateTargetTblProperties();
+        updateFeedFormat();
 
     }
 
@@ -288,14 +319,6 @@ public class TableSetup {
 
     public void setOptions(TableOptions options) {
         this.options = options;
-    }
-
-    public String getRecordFormat() {
-        return recordFormat;
-    }
-
-    public void setRecordFormat(String recordFormat) {
-        this.recordFormat = recordFormat;
     }
 
 
@@ -377,5 +400,46 @@ public class TableSetup {
 
     public void setFieldPoliciesJson(String fieldPoliciesJson) {
         this.fieldPoliciesJson = fieldPoliciesJson;
+    }
+
+
+    public String getFeedFormat() {
+        return feedFormat;
+    }
+
+    public void setFeedFormat(String feedFormat) {
+        this.feedFormat = feedFormat;
+    }
+
+    public String getTargetFormat() {
+        return targetFormat;
+    }
+
+    public void setTargetFormat(String targetFormat) {
+        this.targetFormat = targetFormat;
+    }
+
+    public String getTargetTblProperties() {
+        return targetTblProperties;
+    }
+
+    public void setTargetTblProperties(String targetTblProperties) {
+        this.targetTblProperties = targetTblProperties;
+    }
+
+    public String getSourceTableIncrementalDateField() {
+        return sourceTableIncrementalDateField;
+    }
+
+    public void setSourceTableIncrementalDateField(String sourceTableIncrementalDateField) {
+        this.sourceTableIncrementalDateField = sourceTableIncrementalDateField;
+    }
+
+    public String getTargetMergeStrategy() {
+        return targetMergeStrategy;
+    }
+
+    public void setTargetMergeStrategy(String targetMergeStrategy) {
+        this.targetMergeStrategy = targetMergeStrategy;
     }
 }

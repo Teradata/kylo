@@ -268,9 +268,11 @@
         this.onIncrementalDateFieldChange = function(){
             var prop = self.incrementalDateFieldProperty;
             if(prop != null) {
-                prop.value =  self.model.table.incrementalDateField;
+                prop.value =  self.model.table.sourceTableIncrementalDateField;
             }
         }
+
+
 
 
 
@@ -332,7 +334,7 @@ if(this.mode =='create') {
             });
         }
 
-        this.loadStrategies = [{name:'Full Load',type:'SNAPSHOT',strategy:'FULL_LOAD',hint:'Snapshot and overwrite table'},{name:'Incremental',type:'DELTA',strategy:'INCREMENTAL',hint:'Merges content into existing table'}];
+        this.loadStrategies = [{name:'Full Load',type:'SNAPSHOT',strategy:'FULL_LOAD',hint:'Select entire table'},{name:'Incremental',type:'DELTA',strategy:'INCREMENTAL',hint:'Select part of table based on high watermark'}];
 
         if(self.loadStrategyProperty){
             $scope.$watch(function () {
