@@ -1,0 +1,61 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.thinkbiganalytics.metadata</groupId>
+        <artifactId>thinkbig-metadata</artifactId>
+        <version>0.1.0-SNAPSHOT</version>
+    </parent>
+    <artifactId>thinkbig-metadata-modeshape</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.thinkbiganalytics.metadata</groupId>
+            <artifactId>thinkbig-metadata-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.metadata</groupId>
+            <artifactId>thinkbig-metadata-core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.modeshape</groupId>
+            <artifactId>modeshape-jcr</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.modeshape</groupId>
+            <artifactId>modeshape-jcr-api</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>1.3.172</version>
+        </dependency>
+
+        <!-- Spring -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+
+    </dependencies>
+
+    <dependencyManagement>
+        <dependencies>
+        <!-- Import the ModeShape BOM for embedded usage. This adds to the "dependenciesManagement" section
+             defaults for all of the modules we might need, but we still have to include in the
+             "dependencies" section the modules we DO need. The benefit is that we don't have to
+             specify the versions of any of those modules.-->
+        <dependency>
+            <groupId>org.modeshape.bom</groupId>
+            <artifactId>modeshape-bom-embedded</artifactId>
+            <version>4.0.0.Final</version>
+            <type>pom</type>
+            <scope>import</scope>
+        </dependency>
+      </dependencies>
+    </dependencyManagement>
+
+</project>
