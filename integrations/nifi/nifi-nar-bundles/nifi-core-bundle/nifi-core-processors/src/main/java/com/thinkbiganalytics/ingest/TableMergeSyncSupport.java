@@ -22,7 +22,8 @@ import java.util.List;
 import java.util.Vector;
 
 /**
- * Merge from a table into a target table. Dedupes and uses partition strategy of the target table
+ * Merge or Sync from a table into a target table. Dedupes and uses partition strategy of the target table. Sync will completely replace the target table with the contents from the source.  Merge will
+ * append the data into the target table adhering to partitions if defined.  If Dedupe is specified then duplicates will be stripped.
  */
 public class TableMergeSyncSupport implements Serializable {
 
@@ -59,7 +60,7 @@ public class TableMergeSyncSupport implements Serializable {
         String[] selectFields = getSelectFields(sourceTable, targetTable, partitionSpec);
         if (partitionSpec.isNonPartitioned()) {
             String sql = generateSyncNonPartitionQuery(selectFields, sourceTable, targetTable, feedPartionValue);
-            doMerge(sql);
+            doExecuteSQL(sql);
         } else {
 
             List<PartitionBatch> batches = createPartitionBatches(partitionSpec, sourceTable, feedPartionValue);
@@ -67,7 +68,7 @@ public class TableMergeSyncSupport implements Serializable {
                 logger.info("{} batches will be executed", batches.size());
                 for (PartitionBatch batch : batches) {
                     String sql = generateSyncPartitionQuery(selectFields, partitionSpec, batch.getPartionValues(), sourceTable, targetTable, feedPartionValue);
-                    doMerge(sql);
+                    doExecuteSQL(sql);
                 }
                 return batches;
             } else {
@@ -79,7 +80,7 @@ public class TableMergeSyncSupport implements Serializable {
 
 
     protected void truncateTable(String sourceTable) {
-        doMerge("TRUNCATE " + sourceTable);
+        doExecuteSQL("TRUNCATE " + sourceTable);
     }
 
     /**
@@ -101,7 +102,7 @@ public class TableMergeSyncSupport implements Serializable {
         String[] selectFields = getSelectFields(sourceTable, targetTable, partitionSpec);
         if (partitionSpec.isNonPartitioned()) {
             String sql = generateDedupeNonPartitionQuery(selectFields, sourceTable, targetTable, feedPartionValue, shouldDedupe);
-            doMerge(sql);
+            doExecuteSQL(sql);
         } else {
 
             List<PartitionBatch> batches = createPartitionBatches(partitionSpec, sourceTable, feedPartionValue);
@@ -109,7 +110,7 @@ public class TableMergeSyncSupport implements Serializable {
                 logger.info("{} batches will be executed", batches.size());
                 for (PartitionBatch batch : batches) {
                     String sql = generateSyncPartitionQuery(selectFields, partitionSpec, batch.getPartionValues(), sourceTable, targetTable, feedPartionValue);
-                    doMerge(sql);
+                    doExecuteSQL(sql);
                 }
                 return batches;
             } else {
@@ -153,7 +154,6 @@ public class TableMergeSyncSupport implements Serializable {
     protected String generateSyncPartitionQuery(String[] selectFields, PartitionSpec spec, String[] partitionValues, String sourceTable, String targetTable, String feedPartitionValue) {
 
         String selectSQL = StringUtils.join(selectFields, ",");
-        String targetSqlWhereClause = spec.toTargetSQLWhere(partitionValues);
         String sourceSqlWhereClause = spec.toSourceSQLWhere(partitionValues);
         String partitionClause = spec.toPartitionSpec(partitionValues);
 
@@ -327,7 +327,7 @@ public class TableMergeSyncSupport implements Serializable {
         return sb.toString();
     }
 
-    protected void doMerge(String sql) {
+    protected void doExecuteSQL(String sql) {
 
         try (final Statement st = conn.createStatement()) {
             logger.info("Executing doMerge batch sql {}", sql);
@@ -411,14 +411,21 @@ public class TableMergeSyncSupport implements Serializable {
         String[] selectFields = new String[]{"id", "name", "company", "zip", "phone", "email", "hired"};
         String sourceTable = "emp_sr5.employee_valid";
         String targetTable = "emp_sr5.employee";
-        String processingPartion = "20160119074340";
+        String processingPartition = "20160119074340";
         String[] partitionValues = new String[]{"USA", "2015"};
         PartitionSpec spec = new PartitionSpec("country|string|country\nyear|int|year(hired)");
-        String sql = support.generateDedupeNonPartitionQuery(selectFields, sourceTable, targetTable, processingPartion, true);
-        String sql2 = support.generateDedupePartitionQuery(selectFields, spec, partitionValues, sourceTable, targetTable, processingPartion, false);
-        System.out.println(sql);
+        String sql = support.generateDedupeNonPartitionQuery(selectFields, sourceTable, targetTable, processingPartition, true);
+        String sql2 = support.generateDedupePartitionQuery(selectFields, spec, partitionValues, sourceTable, targetTable, processingPartition, false);
 
+        System.out.println(sql);
         System.out.println(sql2);
+
+        String sqlSync1 = support.generateSyncNonPartitionQuery(selectFields, sourceTable, targetTable, processingPartition);
+        String sqlSync2 = support.generateSyncPartitionQuery(selectFields, spec, partitionValues, sourceTable, targetTable, processingPartition);
+
+        System.out.println(sqlSync1);
+        System.out.println(sqlSync2);
+
     }
 
 }

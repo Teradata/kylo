@@ -19,13 +19,17 @@ import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.processor.util.StandardValidators;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_NAME;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.METADATA_SERVICE;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_SUCCESS;
 
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
@@ -39,35 +43,7 @@ public class UpdateRegistration extends AbstractProcessor {
 
     // Relationships
 
-    public static final Relationship REL_SUCCESS = new Relationship.Builder()
-        .name("success")
-        .description("Registration succeeded.")
-        .build();
-
     private final Set<Relationship> relationships;
-
-    public static final PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
-        .name("Metadata Service")
-        .description("The Think Big metadata service")
-        .required(true)
-        .identifiesControllerService(MetadataProviderService.class)
-        .build();
-
-    public static final PropertyDescriptor FEED_CATEGORY = new PropertyDescriptor.Builder()
-        .name("System Feed Category")
-        .description("System category of feed this processor supports")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
-    public static final PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
-        .name("System Feed Name")
-        .description("System name of feed this processor supports")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
 
     public static final PropertyDescriptor RESULT = new PropertyDescriptor.Builder()
         .name("Result")

@@ -7,6 +7,7 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 import com.thinkbiganalytics.ingest.TableRegisterSupport;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 import com.thinkbiganalytics.util.ColumnSpec;
+import com.thinkbiganalytics.util.TableType;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -20,7 +21,6 @@ import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.processor.util.StandardValidators;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -30,71 +30,40 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_FORMAT_SPECS;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_NAME;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FIELD_SPECIFICATION;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.PARTITION_SPECS;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_FAILURE;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_SUCCESS;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.TARGET_FORMAT_SPECS;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.TARGET_TABLE;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.TARGET_TBLPROPERTIES;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.THRIFT_SERVICE;
+
+
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"hive", "ddl", "register", "thinkbig"})
-@CapabilityDescription("Creates a set of tables managed by the Think Big platform. ")
+@CapabilityDescription("Creates a set of standard feed tables managed by the Think Big platform. ")
 public class RegisterFeedTables extends AbstractProcessor {
 
+    /**
+     * Specify creation of all tables
+     */
+    public static String ALL_TABLES = "ALL";
+
     // Relationships
-    public static final Relationship REL_SUCCESS = new Relationship.Builder()
-        .name("success")
-        .description("Successfully created tables.")
-        .build();
-    public static final Relationship REL_FAILURE = new Relationship.Builder()
-        .name("failure")
-        .description("Table execution failed. Incoming FlowFile will be penalized and routed to this relationship")
-        .build();
     private final Set<Relationship> relationships;
 
-    public static final PropertyDescriptor THRIFT_SERVICE = new PropertyDescriptor.Builder()
-        .name("Database Connection Pooling Service")
-        .description("The Controller Service that is used to obtain connection to database")
+    public static final PropertyDescriptor TABLE_TYPE = new PropertyDescriptor.Builder()
+        .name("Table Type")
+        .description("Specifies the standard table type to create or ALL for standard set.")
         .required(true)
-        .identifiesControllerService(ThriftService.class)
+        .allowableValues(TableType.FEED.toString(), TableType.VALID.toString(), TableType.INVALID.toString(), TableType.PROFILE.toString(), TableType.MASTER.toString(), ALL_TABLES)
+        .defaultValue("ALL")
         .build();
-
-    public static final PropertyDescriptor SOURCE = new PropertyDescriptor.Builder()
-        .name("Source")
-        .description("Name representing the source category")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
-    public static final PropertyDescriptor TABLE_ENTITY = new PropertyDescriptor.Builder()
-        .name("Table Entity")
-        .description("Name of the master table")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
-    public static final PropertyDescriptor COLUMN_SPECS = new PropertyDescriptor.Builder()
-        .name("ColumnSpecs")
-        .description("Pipe-delim format with the specifications for the columns (column name|data type|comment")
-        .required(true)
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
-    public static final PropertyDescriptor FORMAT_SPECS = new PropertyDescriptor.Builder()
-        .name("Format specification")
-        .description(
-            "Provide format and delimiter specification. This is the full clause starting with the INPUTFORMAT such as: INPUTFORMAT 'org.apache.hadoop.mapred.TextInputFormat' OUTPUTFORMAT 'org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat' ")
-        .required(true)
-        .defaultValue("ROW FORMAT SERDE 'org.apache.hadoop.hive.serde2.OpenCSVSerde' ")
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
-    public static final PropertyDescriptor PARTITION_SPECS = new PropertyDescriptor.Builder()
-        .name("Partition specification")
-        .description("Provide list of partition columns column-delimited")
-        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-        .expressionLanguageSupported(true)
-        .build();
-
 
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -106,11 +75,14 @@ public class RegisterFeedTables extends AbstractProcessor {
 
         final List<PropertyDescriptor> pds = new ArrayList<>();
         pds.add(THRIFT_SERVICE);
-        pds.add(COLUMN_SPECS);
-        pds.add(FORMAT_SPECS);
-        pds.add(SOURCE);
+        pds.add(FEED_CATEGORY);
+        pds.add(FEED_NAME);
+        pds.add(TABLE_TYPE);
+        pds.add(FIELD_SPECIFICATION);
         pds.add(PARTITION_SPECS);
-        pds.add(TABLE_ENTITY);
+        pds.add(FEED_FORMAT_SPECS);
+        pds.add(TARGET_FORMAT_SPECS);
+        pds.add(TARGET_TBLPROPERTIES);
 
         propDescriptors = Collections.unmodifiableList(pds);
     }
@@ -138,16 +110,24 @@ public class RegisterFeedTables extends AbstractProcessor {
 
         try (final Connection conn = thriftService.getConnection()) {
 
-            String entity = context.getProperty(TABLE_ENTITY).evaluateAttributeExpressions(flowFile).getValue();
-            String source = context.getProperty(SOURCE).evaluateAttributeExpressions(flowFile).getValue();
-            String formatOptions = context.getProperty(FORMAT_SPECS).evaluateAttributeExpressions(flowFile).getValue();
+            String entity = context.getProperty(TARGET_TABLE).evaluateAttributeExpressions(flowFile).getValue();
+            String source = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
+            String feedFormatOptions = context.getProperty(FEED_FORMAT_SPECS).evaluateAttributeExpressions(flowFile).getValue();
+            String targetFormatOptions = context.getProperty(TARGET_FORMAT_SPECS).evaluateAttributeExpressions(flowFile).getValue();
             String partitionSpecs = context.getProperty(PARTITION_SPECS).evaluateAttributeExpressions(flowFile).getValue();
+            String targetTableProperties = context.getProperty(TARGET_TBLPROPERTIES).evaluateAttributeExpressions(flowFile).getValue();
             ColumnSpec[] partitions = ColumnSpec.createFromString(partitionSpecs);
-            String specString = context.getProperty(COLUMN_SPECS).evaluateAttributeExpressions(flowFile).getValue();
+            String specString = context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue();
             ColumnSpec[] columnSpecs = ColumnSpec.createFromString(specString);
-
+            String tableType = context.getProperty(TABLE_TYPE).evaluateAttributeExpressions(flowFile).getValue();
             TableRegisterSupport register = new TableRegisterSupport(conn);
-            boolean result = register.registerStandardTables(source, entity, formatOptions, partitions, columnSpecs);
+
+            Boolean result;
+            if (ALL_TABLES.equals(tableType)) {
+                result = register.registerStandardTables(source, entity, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties);
+            } else {
+                result = register.registerTable(source, entity, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties, TableType.valueOf(tableType));
+            }
             Relationship relnResult = (result ? REL_SUCCESS : REL_FAILURE);
 
             session.transfer(flowFile, relnResult);

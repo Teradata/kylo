@@ -49,10 +49,11 @@ public class TableRegisterSupport {
     }
 
 
-    public boolean registerTable(String source, String tableEntity, String formatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs, TableType tableType) {
+    public boolean registerTable(String source, String tableEntity, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs, String
+        targetTableProperties, TableType tableType) {
         Validate.notNull(conn);
 
-        String ddl = createDDL(source, tableEntity, columnSpecs, partitions, formatOptions, tableType);
+        String ddl = createDDL(source, tableEntity, columnSpecs, partitions, feedFormatOptions, targetFormatOptions, targetTableProperties, tableType);
         return createTable(ddl);
     }
 
@@ -87,22 +88,22 @@ public class TableRegisterSupport {
 
         String tableName = TableType.PROFILE.deriveQualifiedName(source, tableEntity);
         String columnSQL = " `columnname` string,`metrictype` string,`metricvalue` string";
-        String formatSQL = TableType.PROFILE.deriveFormatSpecification(null);
+        String formatSQL = TableType.PROFILE.deriveFormatSpecification(null, null);
         String partitionSQL = TableType.PROFILE.derivePartitionSpecification(null);
         String locationSQL = TableType.PROFILE.deriveLocationSpecification(source, tableEntity);
 
-        String ddl = createDDL(tableName, columnSQL, partitionSQL, formatSQL, locationSQL);
+        String ddl = createDDL(tableName, columnSQL, partitionSQL, formatSQL, locationSQL, "");
         return createTable(ddl);
     }
 
-    public boolean registerStandardTables(String source, String tableEntity, String formatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs) {
+    public boolean registerStandardTables(String source, String tableEntity, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs, String tblProperties) {
         boolean result = true;
         registerDatabase(source);
         Set<String> existingTables = fetchExisting(source, tableEntity);
         TableType[] tableTypes = new TableType[]{TableType.FEED, TableType.INVALID, TableType.VALID, TableType.MASTER};
         for (TableType tableType : tableTypes) {
             if (!existingTables.contains(tableType.deriveTablename(tableEntity))) {
-                result = registerTable(source, tableEntity, formatOptions, partitions, columnSpecs, tableType) && result;
+                result = registerTable(source, tableEntity, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, tblProperties, tableType) && result;
             }
         }
         if (!existingTables.contains(TableType.PROFILE.deriveTablename(tableEntity))) {
@@ -117,30 +118,35 @@ public class TableRegisterSupport {
         return sb.toString();
     }
 
-    protected String createDDL(String source, String entity, ColumnSpec[] columnSpecs, ColumnSpec[] partitions, String formatOptions, TableType tableType) {
+    protected String createDDL(String source, String entity, ColumnSpec[] columnSpecs, ColumnSpec[] partitions, String feedFormatOptions, String targetFormatOptions, String targetTableProperties,
+                               TableType tableType) {
         String tableName = tableType.deriveQualifiedName(source, entity);
         String partitionSQL = tableType.derivePartitionSpecification(partitions);
         String columnsSQL = tableType.deriveColumnSpecification(columnSpecs, partitions);
         String locationSQL = tableType.deriveLocationSpecification(source, entity);
-        String formatOptionsSQL = tableType.deriveFormatSpecification(formatOptions);
+        String formatOptionsSQL = tableType.deriveFormatSpecification(feedFormatOptions, targetFormatOptions);
+        String tblPropertiesSQL = tableType.deriveTableProperties(targetTableProperties);
 
-        return createDDL(tableName, columnsSQL, partitionSQL, formatOptionsSQL, locationSQL);
+        return createDDL(tableName, columnsSQL, partitionSQL, formatOptionsSQL, locationSQL, tblPropertiesSQL);
     }
 
-    protected String createDDL(String tableName, String columnsSQL, String partitionSQL, String formatOptionsSQL, String locationSQL) {
+    protected String createDDL(String tableName, String columnsSQL, String partitionSQL, String formatOptionsSQL, String locationSQL, String targetTablePropertiesSQL) {
         StringBuffer sb = new StringBuffer();
         sb.append("CREATE EXTERNAL ");
         sb.append("TABLE IF NOT EXISTS `")
-                .append(tableName)
-                .append("`").append("(").append(columnsSQL).append(") ");
+            .append(tableName.trim())
+            .append("`").append(" (").append(columnsSQL).append(") ");
 
         if (!StringUtils.isEmpty(partitionSQL)) {
-            sb.append(partitionSQL);
+            sb.append(" ").append(partitionSQL);
         }
         if (!StringUtils.isEmpty(formatOptionsSQL)) {
-            sb.append(formatOptionsSQL);
+            sb.append(" ").append(formatOptionsSQL);
         }
         sb.append(locationSQL);
+        if (!StringUtils.isEmpty(targetTablePropertiesSQL)) {
+            sb.append(" ").append(targetTablePropertiesSQL);
+        }
         return sb.toString();
     }
 }

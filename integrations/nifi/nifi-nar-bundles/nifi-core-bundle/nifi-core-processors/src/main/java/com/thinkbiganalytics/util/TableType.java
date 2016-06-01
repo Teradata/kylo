@@ -23,18 +23,18 @@ public enum TableType {
     private String tableLocation;
     private String partitionLocation;
     private String tableSuffix;
-    private boolean orc;
+    private boolean useTargetStorageSpec;
     private boolean strings;
     private boolean feedPartition;
     private boolean addReasonCode;
 
 
-    TableType(String tableRoot, String dataRoot, String suffix, boolean feedPartition, boolean orc, boolean strings, boolean addReasonCode) {
+    TableType(String tableRoot, String dataRoot, String suffix, boolean feedPartition, boolean useTargetStorageSpec, boolean strings, boolean addReasonCode) {
         this.tableLocation = tableRoot;
         this.partitionLocation = dataRoot;
         this.tableSuffix = suffix;
         this.feedPartition = feedPartition;
-        this.orc = orc;
+        this.useTargetStorageSpec = useTargetStorageSpec;
         this.strings = strings;
         this.addReasonCode = addReasonCode;
     }
@@ -79,18 +79,23 @@ public enum TableType {
         return sb.toString();
     }
 
-    public String deriveFormatSpecification(String specification) {
+    /**
+     * Derive the STORED AS clause for the table
+     * @param rawSpecification the clause for the raw specification
+     * @param targetSpecification the target specification
+     */
+    public String deriveFormatSpecification(String rawSpecification, String targetSpecification) {
         StringBuffer sb = new StringBuffer();
-        if (isOrc()) {
-            sb.append("STORED AS ORC ");
+        if (isUseTargetStorageSpec()) {
+            sb.append(targetSpecification);
         } else {
-            sb.append(specification);
+            sb.append(rawSpecification);
         }
         return sb.toString();
     }
 
-    public boolean isOrc() {
-        return orc;
+    public boolean isUseTargetStorageSpec() {
+        return useTargetStorageSpec;
     }
 
     public boolean isStrings() {
@@ -123,13 +128,11 @@ public enum TableType {
         return sb.toString();
     }
 
-/*
-    public String buildFeedPartitionValue(String source, String entity, String value) {
-        StringBuffer sb = new StringBuffer();
-        sb.append(" PARTITION (processing_dttm='");
-        sb.append(value);
-        sb.append("') LOCATION ");
-        return sb.toString();
+
+    public String deriveTableProperties(String targetTableProperties) {
+        if (isUseTargetStorageSpec()) {
+            return targetTableProperties;
+        }
+        return "";
     }
-*/
 }
