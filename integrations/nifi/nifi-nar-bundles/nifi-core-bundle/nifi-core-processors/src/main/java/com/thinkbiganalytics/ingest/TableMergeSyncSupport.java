@@ -27,7 +27,7 @@ import java.util.Vector;
  */
 public class TableMergeSyncSupport implements Serializable {
 
-    public static Logger logger = LoggerFactory.getLogger(TableRegisterSupport.class);
+    public static Logger logger = LoggerFactory.getLogger(TableMergeSyncSupport.class);
 
     private Connection conn;
 
@@ -80,7 +80,7 @@ public class TableMergeSyncSupport implements Serializable {
 
 
     protected void truncateTable(String sourceTable) {
-        doExecuteSQL("TRUNCATE " + sourceTable);
+        doExecuteSQL("TRUNCATE TABLE " + sourceTable);
     }
 
     /**
