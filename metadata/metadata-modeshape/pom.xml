@@ -9,7 +9,7 @@
     <artifactId>thinkbig-metadata-modeshape</artifactId>
 
     <properties>
-        <modeshape.version>4.6.0.Final</modeshape.version>
+        <modeshape.version>5.0.0.Final</modeshape.version>
         <jdbc.h2.version>1.2.124</jdbc.h2.version>
         <jdbc.mysql.version>5.1.32</jdbc.mysql.version>
     </properties>
@@ -43,6 +43,7 @@
             <artifactId>modeshape-common</artifactId>
         </dependency>
         <!--This examples uses Infinispan's JDBC cache store, which requires C3P0 and a JDBC database driver -->
+        <!-- 
         <dependency>
             <groupId>org.infinispan</groupId>
             <artifactId>infinispan-cachestore-jdbc</artifactId>
@@ -51,6 +52,7 @@
             <groupId>com.mchange</groupId>
             <artifactId>c3p0</artifactId>
         </dependency>
+         -->
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>

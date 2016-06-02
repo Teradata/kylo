@@ -3,7 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -11,11 +10,8 @@ import java.util.concurrent.Future;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.jcr.Repository;
-import javax.jcr.RepositoryException;
 
-import org.infinispan.schematic.document.ParsingException;
 import org.modeshape.common.collection.Problems;
-import org.modeshape.jcr.ConfigurationException;
 import org.modeshape.jcr.JcrRepository;
 import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.RepositoryConfiguration;
@@ -37,7 +33,7 @@ public class ModeShapeEngineConfig {
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);
     
     @PostConstruct
-    public void startEngine() throws ConfigurationException, ParsingException, FileNotFoundException, RepositoryException {
+    public void startEngine() {
         log.info("Starting ModeShap engine...");
         modeShapeEngine().start();
         log.info("ModeShap engine started");
@@ -47,17 +43,18 @@ public class ModeShapeEngineConfig {
     public void stopEngine() throws InterruptedException, ExecutionException {
         log.info("Stopping ModeShap engine...");
         Future<Boolean> future = modeShapeEngine().shutdown();
+        
         if ( future.get() ) {
             log.info("ModeShap engine stopped");
+        } else {
+            log.info("ModeShap engine not reported as stopped");
         }
     }
     
     @Bean
     public RepositoryConfiguration metadataRepoConfig() throws IOException {
-        // org.modeshape.jcr.URL = file:path/to/metadata-repository.json
         ClassPathResource res = new ClassPathResource("/metadata-repository.json");
         RepositoryConfiguration config = RepositoryConfiguration.read(res.getURL());
-//        RepositoryConfiguration config = RepositoryConfiguration.read("/metadata-repository.json");
         
         Problems problems = config.validate();
         if (problems.hasErrors()) {
