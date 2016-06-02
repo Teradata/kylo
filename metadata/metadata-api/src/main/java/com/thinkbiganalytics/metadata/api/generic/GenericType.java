@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public interface GenericType {
     
-    enum PropertyType { STRING, BOOLEAN, INTEGER, LONG, DOUBLE, PATH, ENTITY } // TODO need more
+    enum PropertyType { STRING, BOOLEAN, INTEGER, LONG, DOUBLE, PATH, ENTITY } // TODO need more like DATE
 
     String getName();
     

@@ -16,6 +16,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
+import javax.jcr.ValueFormatException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
@@ -209,16 +210,20 @@ public class JcrUtil {
     
     public static Value asValue(ValueFactory factory, Object obj) {
         // STRING, BOOLEAN, LONG, DOUBLE, PATH, ENTITY
-        if (obj instanceof String) {
-            return factory.createValue((String) obj);
-        } else if (obj instanceof Integer || obj instanceof Long) {
-            return factory.createValue((Long) obj);
-        } else if (obj instanceof Float || obj instanceof Double) {
-            return factory.createValue((Double) obj);
+        try {
+            if (obj instanceof String) {
+                return factory.createValue((String) obj);
+            } else if (obj instanceof Integer || obj instanceof Long) {
+                return factory.createValue(obj.toString(), PropertyType.LONG);
+            } else if (obj instanceof Float || obj instanceof Double) {
+                return factory.createValue(obj.toString(), PropertyType.DOUBLE);
 //        } else if (obj instanceof GenericEntity) {
 //            return factory.createValue((String) obj);
-        } else {
-            return factory.createValue(obj.toString());
+            } else {
+                return factory.createValue(obj.toString());
+            }
+        } catch (ValueFormatException e) {
+            throw new MetadataRepositoryException("Invalid value format", e);
         }
     }
     
