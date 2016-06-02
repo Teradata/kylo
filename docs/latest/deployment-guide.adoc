@@ -66,12 +66,15 @@ right click the download:
     Elasticsearch, NiFi, and ActiveMQ will be started when the wizard is finished
 
 . Add nifi and thinkbig user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
+
     $ usermod -a -G hdfs nifi
     $ usermod -a -G hdfs thinkbig
 
 . Create a dropzone folder on the edge node for file ingest, for example:
+
     $ mkdir -p /var/dropzone
     $ chown nifi /var/dropzone
+
 Note: Files should be copied into the dropzone such that user nifi can read and remove.
 
 . Start the three Think Big services
