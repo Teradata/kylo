@@ -1,3 +1,4 @@
+use thinkbig;
 DELIMITER $$
 CREATE DEFINER=`root`@`%` PROCEDURE `delete_feed_metadata`(in systemCategoryName varchar(255), in systemFeedName varchar(255))
 BEGIN
