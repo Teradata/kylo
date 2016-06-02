@@ -15,6 +15,8 @@
         "persistence" : {
             "type" : "db",
             "connectionUrl": "jdbc:mysql://localhost:3306/metadata",
+            "driver": "com.mysql.jdbc.Driver",
+            "username": "root",
             "createOnStart" : true,
             "dropOnExit" : true
         },
