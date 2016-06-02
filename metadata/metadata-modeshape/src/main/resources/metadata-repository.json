@@ -12,8 +12,12 @@
         }
     },
     "storage" : {
-        "cacheConfiguration" : "infinispan-configuration-mysql.xml",
-        "cacheName" : "metadata-repository",
+        "persistence" : {
+            "type" : "db",
+            "connectionUrl": "jdbc:mysql://localhost:3306/metadata",
+            "createOnStart" : true,
+            "dropOnExit" : true
+        },
         "binaryStorage" : {
             "type" : "file",
             "directory": "target/content/binaries",
