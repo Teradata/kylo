@@ -4,14 +4,19 @@
 package com.thinkbiganalytics.metadata.modeshape.generic;
 
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.UUID;
 
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.NodeTypeTemplate;
 import javax.jcr.nodetype.PropertyDefinitionTemplate;
@@ -51,7 +56,7 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
             Session session = getSession();
             NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
             NodeTypeTemplate nodeTemplate = typeMgr.createNodeTypeTemplate();
-            nodeTemplate.setName(name);
+            nodeTemplate.setName(JcrMetadataAccess.META_PREFIX + ":" + name);
             
             if (supertype != null) {
                 String supername = supertype.getTypeName();
@@ -66,6 +71,11 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
             }
             
             NodeType nodeType = typeMgr.registerNodeType(nodeTemplate, true);
+            
+            if (! session.nodeExists("/generic/" + name)) {
+                session.getRootNode().addNode("generic/" + name);
+            }
+            
             return new JcrGenericType(nodeType);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create new generic type: " + name, e);
@@ -73,17 +83,54 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
     }
     
     @Override
+    public GenericType getType(String name) {
+        Session session = getSession();
+        try {
+            NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
+            NodeType nodeType = typeMgr.getNodeType(JcrMetadataAccess.META_PREFIX + ":" + name);
+            return new JcrGenericType(nodeType);
+        } catch (NoSuchNodeTypeException e) {
+            return null;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to lookup generic type: " + name, e);
+        }
+    }
+    
+    @Override
+    public List<GenericType> getTypes() {
+        Session session = getSession();
+        try {
+            List<GenericType> list = new ArrayList<GenericType>();
+            NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
+            NodeTypeIterator typeItr = typeMgr.getPrimaryNodeTypes();
+            
+            while (typeItr.hasNext()) {
+                NodeType nodeType = (NodeType) typeItr.next();
+                
+                if (nodeType.getName().startsWith(JcrMetadataAccess.META_PREFIX)) {
+                    list.add(new JcrGenericType(nodeType));
+                }
+            }
+            
+            return list;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to lookup all generic types", e);
+        }
+    }
+    
+    @Override
     public GenericEntity createEntity(GenericType type, Map<String, Object> props) {
+        JcrGenericType typeImpl = (JcrGenericType) type;
         Session session = getSession();
         
         try {
-            Node typesNode = session.getNode(Paths.get("/generic", type.getName()).toString());
-            Node entNode = typesNode.addNode("/", type.getName());
+            Node typesNode = session.getNode(Paths.get("/generic", typeImpl.getName()).toString());
+            Node entNode = typesNode.addNode(UUID.randomUUID().toString(), typeImpl.getJcrName());
             entNode = JcrUtil.setProperties(session, entNode, props);
             
             return new JcrGenericEntity(entNode);
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to create new generic entity of type: " + type.getName(), e);
+            throw new MetadataRepositoryException("Failed to create new generic entity of type: " + typeImpl.getName(), e);
         }
     }
 
@@ -107,8 +154,27 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
     
     @Override
     public List<GenericEntity> getEntities() {
-        // TODO Auto-generated method stub
-        return null;
+        List<GenericEntity> list = new ArrayList<>();
+        Session session = getSession();
+        
+        try {
+            Node genericsNode = session.getNode("/generic");
+            NodeIterator typeNameItr = genericsNode.getNodes();
+            
+            while (typeNameItr.hasNext()) {
+                Node typeNameNode = (Node) typeNameItr.next();
+                NodeIterator entityItr = typeNameNode.getNodes();
+                
+                while (entityItr.hasNext()) {
+                    Node entNode = (Node) entityItr.next();
+                    list.add(new JcrGenericEntity(entNode));
+                }
+            }
+            
+            return list;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve list of generic entities", e);
+        }
     }
 
     private Session getSession() {

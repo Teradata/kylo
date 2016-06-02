@@ -9,6 +9,7 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
@@ -44,7 +45,11 @@ public class JcrGenericEntity implements GenericEntity {
      */
     @Override
     public String getTypeName() {
-        return JcrUtil.getString(this.node, "typeName");
+        try {
+            return this.node.getPrimaryNodeType().getName().replace(JcrMetadataAccess.META_PREFIX + ":", "");
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the entity type name", e);
+        }
     }
 
     /* (non-Javadoc)

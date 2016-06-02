@@ -8,6 +8,7 @@ import java.util.Map;
 import javax.jcr.nodetype.NodeType;
 
 import com.thinkbiganalytics.metadata.api.generic.GenericType;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrUtil;
 
 /**
@@ -16,7 +17,6 @@ import com.thinkbiganalytics.metadata.modeshape.JcrUtil;
  */
 public class JcrGenericType implements GenericType {
     
-//    private final NodeDefinition definition;
     private final NodeType nodeType;
 
     /**
@@ -31,7 +31,7 @@ public class JcrGenericType implements GenericType {
      */
     @Override
     public String getName() {
-        return this.nodeType.getName();
+        return getJcrName().replace(JcrMetadataAccess.META_PREFIX + ":", "");
     }
 
     /* (non-Javadoc)
@@ -57,6 +57,10 @@ public class JcrGenericType implements GenericType {
     @Override
     public GenericType.PropertyType getPropertyType(String name) {
         return JcrUtil.getPropertyType(this.nodeType, name);
+    }
+
+    public String getJcrName() {
+        return this.nodeType.getName();
     }
 
 }

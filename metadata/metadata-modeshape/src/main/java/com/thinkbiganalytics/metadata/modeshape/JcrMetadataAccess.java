@@ -18,6 +18,8 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
  */
 public class JcrMetadataAccess implements MetadataAccess {
     
+    public static final String META_PREFIX = "meta";
+    
     private static final ThreadLocal<Session> activeSession = new ThreadLocal<Session>() {
         protected Session initialValue() {
             return null;
@@ -44,7 +46,9 @@ public class JcrMetadataAccess implements MetadataAccess {
             try {
                 activeSession.set(this.repository.login());
                 try {
-                    return cmd.execute();
+                    R result = cmd.execute();
+                    activeSession.get().save();
+                    return result;
                 } finally {
                     activeSession.get().logout();
                     activeSession.remove();
