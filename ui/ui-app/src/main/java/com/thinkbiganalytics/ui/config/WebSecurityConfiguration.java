@@ -87,9 +87,9 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 protected void configure(HttpSecurity http) throws Exception {
 
                         http.csrf()
-                            .disable().antMatcher("/api/**").authorizeRequests()
+                            .disable().antMatcher("/proxy/**").authorizeRequests()
                             // the ant matcher is what limits the scope of this configuration.
-                            .antMatchers("/api/**").authenticated()
+                            .antMatchers("/proxy/**").authenticated()
                             .and().httpBasic();//.realmName("Sourcing API");
 
                 }
