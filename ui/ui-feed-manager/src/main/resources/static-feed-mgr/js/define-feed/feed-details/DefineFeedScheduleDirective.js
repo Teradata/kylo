@@ -159,29 +159,6 @@
                 }
             })
                 .then(function(msg) {
-                    if(msg == 'fixErrors') {
-                       //stay here and fix
-                    }
-                    else if(msg == 'sla') {
-                        StateService.navigateToServiceLevelAgreements();
-                    }
-                    else if(msg == 'newFeedLike') {
-                        self.model.feedName = null;
-                        self.model.category.name = null;
-                        self.model.id = null;
-                        //go to first step
-                        self.stepperController.goToFirstStep();
-                    }
-                   else if(msg == 'newFeed') {
-                        FeedService.resetFeed();
-                        self.stepperController.resetAndGoToFirstStep();
-                    }
-                    else if(msg == 'viewFeeds') {
-                        FeedService.resetFeed();
-                        StateService.navigateToFeeds();
-                    }
-
-
 
                 }, function() {
 
@@ -243,6 +220,7 @@ function FeedErrorDialogController($scope, $mdDialog, $mdToast, $http, StateServ
         if(createdFeed.errorMessages != null && createdFeed.errorMessages.length >0){
             angular.forEach(createdFeed.errorMessages,function(msg){
                 errorMap['FATAL'].push({category:'General',message:msg});
+                count++;
             })
         }
 
@@ -287,6 +265,10 @@ function FeedErrorDialogController($scope, $mdDialog, $mdToast, $http, StateServ
     }
     else {
         $scope.message = 'Error creating feed.'
+    }
+
+    $scope.fixErrors = function() {
+        $mdDialog.hide('fixErrors');
     }
 
 

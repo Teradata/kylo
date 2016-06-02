@@ -1,12 +1,9 @@
 <md-dialog aria-label="Feed Results"  ng-cloak>
     <form>
             <div  class="md-toolbar-tools">
-                <h4 class="md-title" ng-if="isValid">
-                    <ng-md-icon md-icon icon="done" aria-label="Close dialog"></ng-md-icon>
-                    <span>Successfully created {{feedName}}</span></h4>
                 <h4 class="md-warn" ng-if="!isValid">
-                    <ng-md-icon class="md-warn" md-icon icon="error_outline" aria-label="Close dialog"></ng-md-icon>
-                    <span>Error creating {{feedName}}</span>
+                    <ng-md-icon class="md-warn" md-icon icon="error_outline" aria-label="Error creating Feed"></ng-md-icon>
+                    <span>Error creating {{feedName | characters:50}}</span>
                 </h4>
                 <span flex></span>
                 <md-button class="md-icon-button" ng-click="cancel()">
@@ -27,50 +24,12 @@
                                 </md-list-item>
                             </md-list>
             </div>
+            <md-list class="md-2-line">
+                <md-list-item ng-click="fixErrors()"><ng-md-icon md-icon icon="error_outline" class="md-warn"></ng-md-icon>
 
-
-
-            <!--<div>{{message}}</div> -->
-            <div ng-if="isValid">
-                <div>You might also like to ...</div>
-                <md-list >
-                    <md-list-item ng-click="defineSla()" class="md-2-line" >
-                        <ng-md-icon icon="call_missed" class="accent-color-2"></ng-md-icon>
-                        <div class="md-list-item-text">
-                            Define a Service Level Agreement
-                            </div>
-
-                    </md-list-item>
-                    <md-divider></md-divider>
-                    <md-list-item ng-click="defineNewFeed()" class="md-2-line" >
-                        <ng-md-icon md-icon icon="add_circle_outline" class="accent-color-2"></ng-md-icon>
-                        <div class="md-list-item-text">Create a new feed
-                            </div>
-                    </md-list-item>
-                    <md-divider></md-divider>
-                    <md-list-item ng-click="defineNewFeedLike()" class="md-2-line" >
-                        <ng-md-icon md-icon icon="control_point_duplicate" class="accent-color-2"></ng-md-icon>
-                        <div class="md-list-item-text">Create another like this feed
-                            </div>
-                    </md-list-item>
-                    <md-divider></md-divider>
-                    <md-list-item ng-click="cancel()" class="md-2-line" >
-                        <ng-md-icon md-icon icon="rate_review" class="accent-color-2"></ng-md-icon>
-                        <div class="md-list-item-text">Review this feed
-                            </div>
-                    </md-list-item>
-                    <md-divider></md-divider>
-                    <md-list-item ng-click="viewFeeds()" class="md-2-line" >
-                        <ng-md-icon md-icon icon="playlist_play" class="accent-color-2"></ng-md-icon>
-                        <div class="md-list-item-text">View all the feeds
-                            </div>
-                    </md-list-item>
-                </md-list>
-            </div>
-            <md-list ng-if="!isValid" class="md-2-line">
-                <md-list-item ng-click="fixErrors()"><ng-md-icon md-icon icon="error_outline" class="md-warn"></ng-md-icon> </md-list-item>
                 <div class="md-list-item-text">Click here to review and fix the errors.
                     </div>
+                </md-list-item>
             </md-list>
         </md-dialog-content>
     </form>

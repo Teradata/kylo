@@ -1,7 +1,3 @@
-/**
- * ui-router service.  Controllers that link/navigate to other controllers/pages use this service.
- * See the corresponding name references in app.js
- */
 angular.module(MODULE_FEED_MGR).factory('ElasticSearchService', function ($q,$http,RestUrlService) {
 
     function  performSearch(query, rowsPerPage,start) {
