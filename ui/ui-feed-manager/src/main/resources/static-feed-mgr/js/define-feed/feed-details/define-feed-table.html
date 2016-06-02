@@ -3,6 +3,7 @@
         <div layout="row" layout-align="space-between-center" flex>
             <h2 class="md-title" flex>Table</h2><h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
         </div>
+         <div class="md-subheader">Define the destination table schema</div>
     </header-section>
 <body-section md-content class="md-padding">
     <ng-form name="defineFeedForm">
@@ -195,10 +196,11 @@
         </div>
     </div>
         <div class="layout-padding-top">
-            <div class="md-subhead">Record Format</div>
+            <div class="md-subhead">Source Record Format</div>
             <div class="layout-padding-indent">
                 <md-input-container class="md-block condensed">
                     <textarea ng-model="vm.model.table.feedFormat"></textarea>
+                    <div class="hint">Define the feed source record format clause in Hive</div>
                 </md-input-container>
             </div>
         </div>
