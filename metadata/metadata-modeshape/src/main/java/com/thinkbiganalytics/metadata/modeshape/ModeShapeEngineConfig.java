@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -22,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 
 /**
@@ -29,6 +31,7 @@ import org.springframework.core.io.ClassPathResource;
  * @author Sean Felten
  */
 @Configuration
+@Import({ JcrProviderConfig.class })
 public class ModeShapeEngineConfig {
     
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);
@@ -50,10 +53,11 @@ public class ModeShapeEngineConfig {
     }
     
     @Bean
-    public RepositoryConfiguration metadataRepoConfig() throws ParsingException, FileNotFoundException {
+    public RepositoryConfiguration metadataRepoConfig() throws IOException {
         // org.modeshape.jcr.URL = file:path/to/metadata-repository.json
-//        ClassPathResource res = new ClassPathResource("/metadata-repository.json")
-        RepositoryConfiguration config = RepositoryConfiguration.read("/metadata-repository.json");
+        ClassPathResource res = new ClassPathResource("/metadata-repository.json");
+        RepositoryConfiguration config = RepositoryConfiguration.read(res.getURL());
+//        RepositoryConfiguration config = RepositoryConfiguration.read("/metadata-repository.json");
         
         Problems problems = config.validate();
         if (problems.hasErrors()) {
@@ -69,7 +73,7 @@ public class ModeShapeEngineConfig {
         return new ModeShapeEngine();
     }
     
-    @Bean
+    @Bean(name="metadataJcrRepository")
     public Repository metadataJcrRepository() throws Exception {
         JcrRepository repo = modeShapeEngine().deploy(metadataRepoConfig());
         
