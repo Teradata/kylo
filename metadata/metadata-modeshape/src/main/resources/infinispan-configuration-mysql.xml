@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<infinispan
+		xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		xsi:schemaLocation="urn:infinispan:config:7.0 http://www.infinispan.org/schemas/infinispan-config-7.0.xsd
+                            urn:infinispan:config:store:jdbc:7.0 http://www.infinispan.org/schemas/infinispan-cachestore-jdbc-config-7.0.xsd"
+		xmlns="urn:infinispan:config:7.0">
+	<cache-container default-cache="metadata-repository">
+		<jmx duplicate-domains="true"/>
+		<local-cache name="metadata-repository">
+			<transaction
+					mode="NON_XA"
+					locking="PESSIMISTIC"/>
+			<eviction max-entries="8192" 
+					  strategy="LIRS"/>
+			<persistence>
+				<string-keyed-jdbc-store xmlns="urn:infinispan:config:store:jdbc:7.0"
+										 fetch-state="false"
+										 read-only="false"
+										 purge="false">
+					<connection-pool
+							connection-url="jdbc:mysql://localhost:3306/metadata?characterEncoding=utf8"
+							driver="com.mysql.jdbc.Driver"
+							username="root"
+							password=""/>
+					<string-keyed-table
+							prefix="ISPN_STRING_TABLE"
+							create-on-start="true"
+							drop-on-exit="true">
+						<id-column name="ID_COLUMN" type="VARCHAR(255)"/>
+						<data-column name="DATA_COLUMN" type="LONGBLOB"/>
+						<timestamp-column name="TIMESTAMP_COLUMN" type="BIGINT"/>
+					</string-keyed-table>
+                    <!-- 
+					<write-behind thread-pool-size="10"/>
+                     -->
+				</string-keyed-jdbc-store>
+			</persistence>
+		</local-cache>
+	</cache-container>
+</infinispan>

@@ -1,2 +1,23 @@
 {
+    "name" : "metadata-repository",
+    "workspaces" : {
+        "predefined" : ["metadata"],
+        "default" : "default",
+        "allowCreation" : true
+    },
+    "security" : {
+        "anonymous" : {
+            "roles" : ["readonly","readwrite","admin"],
+            "useOnFailedLogin" : false
+        }
+    },
+    "storage" : {
+        "cacheConfiguration" : "infinispan-configuration-mysql.xml",
+        "cacheName" : "metadata-repository",
+        "binaryStorage" : {
+            "type" : "file",
+            "directory": "target/content/binaries",
+            "minimumBinarySizeInBytes" : 999
+        }
+    }
 }

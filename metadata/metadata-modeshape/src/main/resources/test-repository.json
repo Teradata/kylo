@@ -1,0 +1,72 @@
+{
+    "name" : "Test Repository",
+    "jndiName" : "jcr/Test Repository",
+    "monitoring" : {
+        "enabled" : true
+    },
+    "workspaces" : {
+        "default" : "defaultWorkspace",
+        "predefined" : ["otherWorkspace"],
+        "allowCreation" : true
+    },
+    "storage" : {
+        "cacheConfiguration" : "/path/to/infinispan/cache/configuration.xml",
+        "cacheName" : "Test Repository",
+        "binaryStorage" : {
+            "minimumBinarySizeInBytes" : 4096,
+            "minimumStringSize" : 4096,
+            "type" : "file"
+        }
+    },
+    "security" : {
+        "jaas" : {
+            "policyName" : "modeshape-jcr"
+        }
+        "anonymous" : {
+            "roles" : ["readonly","readwrite","admin"],
+            "username" : "<anonymous>",
+            "useOnFailedLogin" : false
+        },
+        "providers" : [
+            {
+                "classname" : "org.example.MyAuthorizationProvider",
+                "member1" : "value of instance member1"
+            }
+        ]
+    },
+    "indexProviders" : {
+        "local" : {
+            "classname" : "org.modeshape.jcr.index.local.LocalIndexProvider",
+            "directory" : "target/local_index_test_repository/1"
+        }
+    },
+    "indexes" : {
+        "index" : {
+            "kind" : "value",
+            "nodeType" : "mix:title",
+            "columns" : "jcr:title(STRING)",
+            "provider" : "local",
+            "synchronous" : true,
+            "workspaces" : "*"
+        }
+    },
+   "textExtraction": {
+        "extractors" : {
+            "tikaExtractor":{
+                "name" : "Tika content-based extractor",
+                "classname" : "tika"
+            }
+        }
+    },
+    "sequencing" : {
+        "removeDerivedContentWithOriginal" : true,
+        "threadPool" : "modeshape-workers",
+        "sequencers" : { [
+            {
+                "name" : "XSD sequencer",
+                "classname" : "xsd",
+                "pathExpressions" : [ "/(*.xsd)/jcr:content[@jcr:data]" ],
+            }
+        ]
+    }
+}
