@@ -14,6 +14,16 @@
         <jdbc.mysql.version>5.1.32</jdbc.mysql.version>
     </properties>
 
+<repositories>
+    <repository>
+        <id>jboss-public</id>
+        <name>jboss-public</name>
+        <url>http://repository.jboss.org/nexus/content/groups/public</url>
+    </repository>
+</repositories>
+
+
+
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
@@ -42,9 +52,12 @@
             <groupId>org.modeshape</groupId>
             <artifactId>modeshape-common</artifactId>
         </dependency>
+
         <dependency>
             <groupId>org.modeshape</groupId>
             <artifactId>modeshape-web-explorer</artifactId>
+            <version>${modeshape.version}</version>
+
         </dependency>
         <!--This examples uses Infinispan's JDBC cache store, which requires C3P0 and a JDBC database driver -->
         <!-- 
