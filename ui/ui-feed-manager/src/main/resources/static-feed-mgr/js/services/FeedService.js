@@ -5,7 +5,7 @@
 /**
  *
  */
-angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdToast, RestUrlService, VisualQueryService) {
+angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdToast, RestUrlService, VisualQueryService,FeedCreationErrorService) {
 
 
     function trim(str) {
@@ -43,6 +43,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         newCreateFeed:function(){
             this.createFeedModel = this.getNewCreateFeedModel();
             VisualQueryService.resetModel();
+            FeedCreationErrorService.reset();
         },
         updateFeed: function(feedModel){
             var self = this;
@@ -59,6 +60,15 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                 });
             }
 
+        },
+        showFeedErrorsDialog:function(){
+            return FeedCreationErrorService.showErrorDialog();
+        },
+        buildErrorData:function(name,nifiFeed){
+          FeedCreationErrorService.buildErrorData(name,nifiFeed);
+        },
+        hasFeedCreationErrors: function() {
+            return FeedCreationErrorService.hasErrors();
         },
         isCustomPropertyRendering:function(key){
             var self = this;
@@ -101,6 +111,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         resetFeed : function(){
           angular.extend(this.createFeedModel,this.getNewCreateFeedModel());
             VisualQueryService.resetModel();
+            FeedCreationErrorService.reset();
         },
 
         newTableFieldDefinition: function() {

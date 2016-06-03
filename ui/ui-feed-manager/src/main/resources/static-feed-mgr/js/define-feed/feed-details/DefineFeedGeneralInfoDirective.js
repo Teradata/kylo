@@ -51,6 +51,7 @@
             }
         }
 
+
       //  getRegisteredTemplates();
 
         function validate(){
