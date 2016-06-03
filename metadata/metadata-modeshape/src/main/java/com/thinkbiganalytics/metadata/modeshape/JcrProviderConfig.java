@@ -13,8 +13,16 @@ import org.springframework.context.annotation.Configuration;
 
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
+import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
+import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
+import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.modeshape.generic.JcrGenericEntityProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 
 /**
  *

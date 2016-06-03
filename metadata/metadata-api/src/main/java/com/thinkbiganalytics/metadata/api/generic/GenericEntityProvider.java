@@ -20,6 +20,8 @@ public interface GenericEntityProvider {
     
     List<GenericType> getTypes();
     
+//    List<GenericType> getTypes(GenericType type);
+    
     GenericEntity createEntity(GenericType type, Map<String, Object> props);
     
     GenericEntity getEntity(GenericEntity.ID id);
