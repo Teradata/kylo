@@ -13,16 +13,8 @@ import org.springframework.context.annotation.Configuration;
 
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
-import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
-import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
-import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
-import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.modeshape.generic.JcrGenericEntityProvider;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 
 /**
  *
@@ -33,6 +25,7 @@ public class JcrProviderConfig {
     
     @PostConstruct
     public void initializeMetadata() {
+        // TODO: Delegate this and other setup behavior to a JCR metadata configurator of some kind.
         metadataAccess().commit(new Command<String>() {
             @Override
             public String execute() {

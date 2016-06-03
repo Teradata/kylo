@@ -30,7 +30,7 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
     private MetadataAccess metadata;
     
 
-    @Test
+    @Test(enabled = false)
     public void testCreateType() {
         String typeName = metadata.commit(new Command<String>() {
             @Override
@@ -49,7 +49,7 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
         assertThat(typeName).isNotNull().isEqualTo("Person");
     }
     
-    @Test(dependsOnMethods="testCreateType")
+    @Test(enabled = false, dependsOnMethods="testCreateType")
     public void getPersonType() {
         boolean found = metadata.commit(new Command<Boolean>() {
             @Override
@@ -63,7 +63,7 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
         assertThat(found).isTrue();
     }
     
-    @Test(dependsOnMethods="testCreateType")
+    @Test(enabled = false, dependsOnMethods="testCreateType")
     public void getAllType() {
         int size = metadata.commit(new Command<Integer>() {
             @Override
@@ -77,7 +77,7 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
         assertThat(size).isEqualTo(1);
     }
     
-    @Test(dependsOnMethods="testCreateType")
+    @Test(enabled = false, dependsOnMethods="testCreateType")
     public void testCreateEntity() {
         GenericEntity.ID id = metadata.commit(new Command<GenericEntity.ID>() {
             @Override
@@ -98,7 +98,7 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
         assertThat(id).isNotNull();
     }
     
-    @Test(dependsOnMethods="testCreateEntity")
+    @Test(enabled = false, dependsOnMethods="testCreateEntity")
     public void testGetEntity() {
         String typeName = metadata.commit(new Command<String>() {
             @Override

@@ -114,18 +114,18 @@
             <artifactId>thinkbig-metadata-jms</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- 
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
             <artifactId>thinkbig-metadata-jpa</artifactId>
             <version>${project.version}</version>
         </dependency>
-         -->
+        <!-- 
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
             <artifactId>thinkbig-metadata-modeshape</artifactId>
             <version>${project.version}</version>
         </dependency>
+         -->
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
