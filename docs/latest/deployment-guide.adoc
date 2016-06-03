@@ -67,15 +67,27 @@ right click the download:
 
 . Add nifi and thinkbig user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
 
+    Hortonworks
     $ usermod -a -G hdfs nifi
     $ usermod -a -G hdfs thinkbig
+
+    Cloudera
+      $ groupadd supergroup
+      # Add nifi, hfs, and root to that group:
+      $ usermod -a -G supergroup nifi
+      $ usermod -a -G supergroup hdfs
+      $ usermod -a -G supergroup root
 
 . Create a dropzone folder on the edge node for file ingest, for example:
 
     $ mkdir -p /var/dropzone
     $ chown nifi /var/dropzone
 
-Note: Files should be copied into the dropzone such that user nifi can read and remove.
+    Note: Files should be copied into the dropzone such that user nifi can read and remove.
+
+. Complete this step for Cloudera installations ONLY
+
+  See the appendix section below "Cloudera Configuration File Changes"
 
 . Start the three Think Big services
 
@@ -91,28 +103,28 @@ TIP: See section below on how to use the cleanup script to completely remove all
 Follow the steps below to install the data lake accelerator manually. This method is useful if you are deploying products across multiple edge nodes
 
 
-1. For each step login to the the host using root or sudo access
+. For each step login to the the host using root or sudo access
 
-2. Find and download the RPM file from artifactory and place on the host linux machine you want to install the data lake
+. Find and download the RPM file from artifactory and place on the host linux machine you want to install the data lake
    accelerator services on. You can right click the download link and copy the url to use wget instead
 
            http://54.152.98.43:8080/artifactory/webapp/search/artifact/?7&q=thinkbig-datalake-accelerator  (requires VPN)
 
-3. Run data lake accelerator RPM install
+. Run data lake accelerator RPM install
 
            $ rpm -ivh thinkbig-datalake-accelerator-<version>.noarch.rpm
 
-4. Run the database scripts (see database configuration section)
+. Run the database scripts (see database configuration section)
 
 
-5. Install Elasticsearch
+. Install Elasticsearch
 
     You can leverage an existing elasticsearch installation or follow the steps in the elasticsearch
     script used by the wizard.
 
     /opt/thinkbig/setup/elasticsearch/install-elasticsearch.sh
 
-6. Install ActiveMQ
+. Install ActiveMQ
 
     You can leverage an existing ActiveMQ installation or follow the steps in the ActiveMQ script used by the wizard
 
@@ -129,7 +141,7 @@ Follow the steps below to install the data lake accelerator manually. This metho
         * jms.activemq.broker.url
 
 
-7. Install NiFI
+. Install NiFI
 
     You can leverage an existing NiFi installation or follow the steps in the setup directory which is used by
     the wizard. There are two steps:
@@ -140,7 +152,31 @@ Follow the steps below to install the data lake accelerator manually. This metho
     2. Install Think Big specific components
     /opt/thinkbig/setup/nifi/install-thinkbig-components.sh
 
-8. Start the three Think Big services
+. Add nifi and thinkbig user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
+
+    Hortonworks
+    $ usermod -a -G hdfs nifi
+    $ usermod -a -G hdfs thinkbig
+
+    Cloudera
+      $ groupadd supergroup
+      # Add nifi, hfs, and root to that group:
+      $ usermod -a -G supergroup nifi
+      $ usermod -a -G supergroup hdfs
+      $ usermod -a -G supergroup root
+
+. Create a dropzone folder on the edge node for file ingest, for example:
+
+    $ mkdir -p /var/dropzone
+    $ chown nifi /var/dropzone
+
+    Note: Files should be copied into the dropzone such that user nifi can read and remove.
+
+. Complete this step for Cloudera installations ONLY
+
+  See the appendix section below "Cloudera Configuration File Changes"
+
+. Start the three Think Big services
 
            $ /opt/thinkbig/start-thinkbig-apps.sh
 
@@ -254,6 +290,25 @@ Below are the default URL's and ports for the services
     ActiveMQ Admin
     http://127.0.0.1:8161/admin
 
+== Appendix: Cloudera Configuration File Changes
+
+The configuration is setup to work out of the box with the Hortonworks sandbox. There are a few differences that require configuration changes for Cloudera.
+    /opt/thinkbig/thinkbig-services/conf/application.properties
+
+    .. Update the 3 MySQL password values to "cloudera"
+
+    spring.datasource.password=cloudera
+    metadata.datasource.password=cloudera
+    hive.metastore.datasource.password=cloudera
+
+    .. Update the hive username
+
+    hive.datasource.username=hive
+
+    .. Update the following parameters
+
+    config.hive.schema=metastore
+    nifi.executesparkjob.sparkhome=/usr/lib/spark
 
 == Appendix: Cleanup script
 For development and sandbox environments you can leverage the cleanup script to remove all of the Think Big services as well as Elasticsearch,

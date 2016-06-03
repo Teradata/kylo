@@ -211,6 +211,7 @@
                   <location>./setup/nifi</location>
                   <includes>
                     <include>logback.xml</include>
+                    <include>bootstrap.conf</include>
                     <include>nifi.properties</include>
                     <include>nifi</include>
                     <include>install-nifi.sh</include>
