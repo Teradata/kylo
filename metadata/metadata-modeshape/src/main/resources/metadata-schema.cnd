@@ -1,0 +1,67 @@
+/*
+Defines the following structure and node types:
+
+    "metadata"
+        "feeds"
+            category
+                feed*
+                    feedSource*
+                    feedDestination*
+        "datasources"
+            datasource
+        "generic"
+            "types"
+                genericType
+            "entities"
+                genericEntity
+*/
+
+<tba = 'http://thinkbiganalytics.com/metadata'>
+
+//// Tree structure /////
+
+[tba:metadataFolder]
+    + feeds (tba:feedsFolder) = tba:feedsFolder mandatory autocreated
+    + datasources (tba:datasourcesFolder) = tba:datasourcesFolder mandatory autocreated
+    + generic (tba:genericFolder) = tba:genericFolder mandatory autocreated
+
+[tba:feedsFolder] > nt:folder
+    + category (tba:categoryFolder) = tba:categoryFolder mandatory autocreated
+
+[tba:genericFolder] > nt:folder
+    + types (tba:typesFolder) = tba:typesFolder mandatory autocreated
+    + entities (tba:entitiesFolder) = tba:entitiesFolder mandatory autocreated
+
+[tba:datasourcesFolder] > nt:folder
+
+[tba:categoryFolder] > nt:folder
+
+[tba:typesFolder] > nt:folder
+
+[tba:entitiesFolder] > nt:folder
+    
+    
+//// Predefined Entities ////
+
+[tba:feed] > nt:hierarchyNode, mix:referenceable, mix:title, mix:created, mix:lastModified
+    - systemName (String) mandatory
+    - state (Long)
+    - initialized (Boolean) = false
+    + sources (tba:feedSource) multiple
+    + destinations (tba:feedDestination) multiple
+//    - preconditon (tba:feedPrecondition)
+
+
+[tba:feedConnection] > mix:referenceable, mix:created, mix:lastModified
+    + datasource (weakreference) mandatory
+
+[tba:feedSource] > tba:feedConnection
+
+[tba:feedDestination] > tba:feedConnection
+//  + fieldPolicies (tba:fieldPolicy) multiple
+
+[tba:datasource] > nt:hierarchyNode, mix:referenceable, mix:title, mix:created, mix:lastModified
+    + feedSources (tba:feedSource) multiple
+    + feedDestinations (tba:feedDestination) multiple
+
+    
