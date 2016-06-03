@@ -4,6 +4,8 @@
 
 package com.thinkbiganalytics.nifi.v2.spark;
 
+import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
+import com.thinkbiganalytics.nifi.security.SecurityUtil;
 import com.thinkbiganalytics.nifi.util.InputStreamReaderRunnable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -11,7 +13,11 @@ import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
+import org.apache.hadoop.conf.Configuration;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.ValidationContext;
+import org.apache.nifi.components.ValidationResult;
+import org.apache.nifi.components.Validator;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.logging.LogLevel;
 import org.apache.nifi.logging.ProcessorLog;
@@ -21,8 +27,11 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
+import org.apache.nifi.util.NiFiProperties;
 import org.apache.spark.launcher.SparkLauncher;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -37,6 +46,8 @@ import java.util.Set;
 public class ExecuteSparkJob extends AbstractProcessor {
 
     public static final String SPARK_NETWORK_TIMEOUT_CONFIG_NAME = "spark.network.timeout";
+    public static final String SPARK_YARN_KEYTAB = "spark.yarn.keytab";
+    public static final String SPARK_YARN_PRINCIPAL = "spark.yarn.principal";
 
     // Relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -150,6 +161,26 @@ public class ExecuteSparkJob extends AbstractProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
+    public static final PropertyDescriptor HADOOP_CONFIGURATION_RESOURCES = new PropertyDescriptor.Builder()
+        .name("Hadoop Configuration Resources")
+        .description("A file or comma separated list of files which contains the Hadoop file system configuration. Without this, Hadoop "
+                     + "will search the classpath for a 'core-site.xml' and 'hdfs-site.xml' file or will revert to a default configuration.")
+        .required(false).addValidator(createMultipleFilesExistValidator())
+        .build();
+
+    public static final PropertyDescriptor KERBEROS_PRINCIPAL = new PropertyDescriptor.Builder()
+        .name("Kerberos Principal")
+        .required(false)
+        .description("Kerberos principal to authenticate as. Requires nifi.kerberos.krb5.file to be set in your nifi.properties")
+        .addValidator(kerberosConfigValidator())
+        .build();
+
+    public static final PropertyDescriptor KERBEROS_KEYTAB = new PropertyDescriptor.Builder()
+        .name("Kerberos Keytab").required(false)
+        .description("Kerberos keytab associated with the principal. Requires nifi.kerberos.krb5.file to be set in your nifi.properties")
+        .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
+        .addValidator(kerberosConfigValidator())
+        .build();
 
 
     private final List<PropertyDescriptor> propDescriptors;
@@ -173,6 +204,9 @@ public class ExecuteSparkJob extends AbstractProcessor {
         pds.add(SPARK_APPLICATION_NAME);
         pds.add(EXECUTOR_CORES);
         pds.add(NETWORK_TIMEOUT);
+        pds.add(HADOOP_CONFIGURATION_RESOURCES);
+        pds.add(KERBEROS_PRINCIPAL);
+        pds.add(KERBEROS_KEYTAB);
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -205,9 +239,49 @@ public class ExecuteSparkJob extends AbstractProcessor {
             String sparkApplicationName = context.getProperty(SPARK_APPLICATION_NAME).evaluateAttributeExpressions(flowFile).getValue();
             String executorCores = context.getProperty(EXECUTOR_CORES).evaluateAttributeExpressions(flowFile).getValue();
             String networkTimeout = context.getProperty(NETWORK_TIMEOUT).evaluateAttributeExpressions(flowFile).getValue();
+            String principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
+            String keyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
+            String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
             String[] args = null;
             if (!StringUtils.isEmpty(appArgs)) {
                 args = appArgs.split(",");
+            }
+
+            ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
+            Configuration configuration;
+            try {
+                configuration = ApplySecurityPolicy.getConfigurationFromResources(hadoopConfigurationResources);
+
+                if (SecurityUtil.isSecurityEnabled(configuration)) {
+                    if (principal.equals("") && keyTab.equals("")) {
+                        getLogger().error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster.");
+                        session.transfer(flowFile, REL_FAILURE);
+                        return;
+                    }
+
+                    try {
+                        getLogger().info("User anuthentication initiated");
+
+                        boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(logger, hadoopConfigurationResources, principal, keyTab);
+                        if (authenticationStatus) {
+                            getLogger().info("User authenticated successfully.");
+                        } else {
+                            getLogger().info("User authentication failed.");
+                            session.transfer(flowFile, REL_FAILURE);
+                            return;
+                        }
+
+                    } catch (Exception unknownException) {
+                        getLogger().error("Unknown exception occured while validating user :" + unknownException.getMessage());
+                        session.transfer(flowFile, REL_FAILURE);
+                        return;
+                    }
+
+                }
+            } catch (IOException e1) {
+                getLogger().error("Unknown exception occurred while authenticating user :" + e1.getMessage());
+                session.transfer(flowFile, REL_FAILURE);
+                return;
             }
 
             String sparkHome = context.getProperty(SPARK_HOME).getValue();
@@ -222,6 +296,8 @@ public class ExecuteSparkJob extends AbstractProcessor {
                 .setConf(SparkLauncher.EXECUTOR_MEMORY, executorMemory)
                 .setConf(SparkLauncher.EXECUTOR_CORES, executorCores)
                 .setConf(SPARK_NETWORK_TIMEOUT_CONFIG_NAME, networkTimeout)
+                .setConf(SPARK_YARN_KEYTAB, keyTab)
+                .setConf(SPARK_YARN_PRINCIPAL, principal)
                 .setSparkHome(sparkHome)
                 .setAppName(sparkApplicationName);
             if (args != null) {
@@ -255,6 +331,65 @@ public class ExecuteSparkJob extends AbstractProcessor {
             session.transfer(flowFile, REL_FAILURE);
         }
 
+    }
+
+    /*
+     * Validates that one or more files exist, as specified in a single property.
+     */
+    public static final Validator createMultipleFilesExistValidator() {
+        return new Validator() {
+            @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+                final String[] files = input.split(",");
+                for (String filename : files) {
+                    try {
+                        final File file = new File(filename.trim());
+                        final boolean valid = file.exists() && file.isFile();
+                        if (!valid) {
+                            final String message = "File " + file + " does not exist or is not a file";
+                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                        }
+                    } catch (SecurityException e) {
+                        final String message = "Unable to access " + filename + " due to " + e.getMessage();
+                        return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                    }
+                }
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            }
+
+        };
+    }
+
+    public static final Validator kerberosConfigValidator() {
+        return new Validator() {
+
+            @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+
+                File niFiPropoerties = NiFiProperties.getInstance().getKerberosConfigurationFile();
+
+                // Check that the Kerberos configuration is set
+                if (niFiPropoerties == null) {
+                    return new ValidationResult.Builder()
+                        .subject(subject).input(input).valid(false)
+                        .explanation("you are missing the nifi.kerberos.krb5.file property which "
+                                     + "must be set in order to use Kerberos")
+                        .build();
+                }
+
+                // Check that the Kerberos configuration is readable
+                if (!niFiPropoerties.canRead()) {
+                    return new ValidationResult.Builder().subject(subject).input(input).valid(false)
+                        .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
+                                                   + "and nifi has adequate permissions", niFiPropoerties.getAbsoluteFile()))
+                        .build();
+                }
+
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            }
+
+
+        };
     }
 
 
