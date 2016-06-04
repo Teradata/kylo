@@ -27,6 +27,8 @@ public interface GenericEntityProvider {
     GenericEntity getEntity(GenericEntity.ID id);
     
     List<GenericEntity> getEntities();
+
+    Map<String,GenericType.PropertyType> getPropertyTypes(String nodeType);
     
     
 }

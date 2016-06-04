@@ -39,29 +39,28 @@ Defines the following structure and node types:
 [tba:typesFolder] > nt:folder
 
 [tba:entitiesFolder] > nt:folder
-    
-    
+
+
 //// Predefined Entities ////
 
 [tba:feed] > nt:hierarchyNode, mix:referenceable, mix:title, mix:created, mix:lastModified
     - systemName (String) mandatory
     - state (Long)
     - initialized (Boolean) = false
-    + sources (tba:feedSource) multiple
-    + destinations (tba:feedDestination) multiple
+    + sources (tba:feedSource) sns
+    + destinations (tba:feedDestination) sns
 //    - preconditon (tba:feedPrecondition)
 
 
 [tba:feedConnection] > mix:referenceable, mix:created, mix:lastModified
-    + datasource (weakreference) mandatory
+    + datasource (tba:datasource) mandatory
 
 [tba:feedSource] > tba:feedConnection
 
 [tba:feedDestination] > tba:feedConnection
-//  + fieldPolicies (tba:fieldPolicy) multiple
+//  + fieldPolicies (tba:fieldPolicy) sns
 
 [tba:datasource] > nt:hierarchyNode, mix:referenceable, mix:title, mix:created, mix:lastModified
-    + feedSources (tba:feedSource) multiple
-    + feedDestinations (tba:feedDestination) multiple
+    + feedSources (tba:feedSource) sns
+    + feedDestinations (tba:feedDestination) sns
 
-    

@@ -17,6 +17,7 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.ValueFormatException;
+import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
@@ -116,6 +117,47 @@ public class JcrUtil {
         
         // Not found
         throw new UnknownPropertyException(name);
+    }
+
+    /**
+     * Return the nodes Super Type properties, own properties, and referencing node Entities
+     * @param type
+     * @return
+     */
+    public static Map<String,GenericType.PropertyType> getAllPropertyTypes(NodeType type){
+        Map<String, GenericType.PropertyType> typeMap = new HashMap<>();
+        String thisTypeName = type.getName();
+
+        //Add the Super Types
+        NodeType[] superTypes = type.getDeclaredSupertypes();
+        if(superTypes !=  null){
+            for(NodeType superType: superTypes) {
+                if(!typeMap.containsKey(superType.getName()) && !thisTypeName.equalsIgnoreCase(superType.getName())) {
+                    typeMap.putAll(getAllPropertyTypes(superType));
+                }
+            }
+        }
+        //add this nodes properties
+        typeMap.putAll(getPropertyTypes(type));
+
+        //Add the child Node Entities
+        NodeDefinition[] childNodes = type.getChildNodeDefinitions();
+
+        if(childNodes != null){
+            for(NodeDefinition childNode: childNodes){
+                NodeType[] childTypes = childNode.getRequiredPrimaryTypes();
+
+                if(childTypes != null) {
+                    for(NodeType childType: childTypes){
+                        if(!typeMap.containsKey(childType.getName()) && !thisTypeName.equalsIgnoreCase(childType.getName())) {
+                            typeMap.put(childType.getName(),GenericType.PropertyType.ENTITY);
+                        }
+                    }
+                }
+            }
+        }
+        return typeMap;
+
     }
 
     public static GenericType.PropertyType asType(Property prop) {

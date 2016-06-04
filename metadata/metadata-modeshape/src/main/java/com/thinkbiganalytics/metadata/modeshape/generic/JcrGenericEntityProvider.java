@@ -177,6 +177,22 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
         }
     }
 
+    /**
+     * Return the Property names and types for a given NodeType (i.e. pass in tba:feed)
+     * @param nodeType
+     * @return
+     * @throws RepositoryException
+     */
+    public Map<String,GenericType.PropertyType> getPropertyTypes(String nodeType) {
+        try {
+        NodeTypeManager typeMgr = getSession().getWorkspace().getNodeTypeManager();
+        NodeType type = typeMgr.getNodeType(nodeType);
+        return JcrUtil.getAllPropertyTypes(type);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve list of property types for node "+nodeType, e);
+        }
+    }
+
     private Session getSession() {
         return JcrMetadataAccess.getActiveSession();
     }

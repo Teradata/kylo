@@ -11,6 +11,7 @@
             "useOnFailedLogin" : false
         }
     },
+    "node-types" : ["metadata-schema.cnd"],
     "storage" : {
         "persistence" : {
             "type" : "db",
