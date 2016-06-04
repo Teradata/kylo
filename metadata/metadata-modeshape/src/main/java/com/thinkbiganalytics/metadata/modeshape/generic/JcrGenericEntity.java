@@ -46,7 +46,7 @@ public class JcrGenericEntity implements GenericEntity {
     @Override
     public String getTypeName() {
         try {
-            return this.node.getPrimaryNodeType().getName().replace(JcrMetadataAccess.META_PREFIX + ":", "");
+            return this.node.getPrimaryNodeType().getName().replace(JcrMetadataAccess.TBA_PREFIX + ":", "");
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity type name", e);
         }

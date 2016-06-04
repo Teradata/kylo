@@ -35,13 +35,10 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
  */
 public class JcrGenericEntityProvider implements GenericEntityProvider {
 
-    // default/entities
-    
     /**
      * 
      */
     public JcrGenericEntityProvider() {
-        // TODO Auto-generated constructor stub
     }
 
     @Override
@@ -51,16 +48,19 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
 
     @Override
     @SuppressWarnings("unchecked")
-    public GenericType createType(String name, GenericEntity supertype, Map<String, GenericType.PropertyType> props) {
+    public GenericType createType(String name, GenericType supertype, Map<String, GenericType.PropertyType> props) {
         try {
             Session session = getSession();
             NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
             NodeTypeTemplate nodeTemplate = typeMgr.createNodeTypeTemplate();
-            nodeTemplate.setName(JcrMetadataAccess.META_PREFIX + ":" + name);
+            nodeTemplate.setName(JcrMetadataAccess.TBA_PREFIX + ":" + name);
             
             if (supertype != null) {
-                String supername = supertype.getTypeName();
-                nodeTemplate.setDeclaredSuperTypeNames(new String[] { supername });
+                JcrGenericType superImpl = (JcrGenericType) supertype;
+                String supername = superImpl.getJcrName();
+                nodeTemplate.setDeclaredSuperTypeNames(new String[] { "tba:genericEntity", supername });
+            } else {
+                nodeTemplate.setDeclaredSuperTypeNames(new String[] { "tba:genericEntity" });
             }
             
             for (Entry<String, GenericType.PropertyType> entry : props.entrySet()) {
@@ -72,8 +72,8 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
             
             NodeType nodeType = typeMgr.registerNodeType(nodeTemplate, true);
             
-            if (! session.nodeExists("/generic/" + name)) {
-                session.getRootNode().addNode("generic/" + name);
+            if (! session.nodeExists("/metadata/generic/entities/" + name)) {
+                session.getRootNode().addNode("metadata/generic/entities/" + name, "nt:folder");
             }
             
             return new JcrGenericType(nodeType);
@@ -87,7 +87,7 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
         Session session = getSession();
         try {
             NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
-            NodeType nodeType = typeMgr.getNodeType(JcrMetadataAccess.META_PREFIX + ":" + name);
+            NodeType nodeType = typeMgr.getNodeType(JcrMetadataAccess.TBA_PREFIX + ":" + name);
             return new JcrGenericType(nodeType);
         } catch (NoSuchNodeTypeException e) {
             return null;
@@ -103,11 +103,12 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
             List<GenericType> list = new ArrayList<GenericType>();
             NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
             NodeTypeIterator typeItr = typeMgr.getPrimaryNodeTypes();
+            NodeType genericType = typeMgr.getNodeType("tba:genericEntity");
             
             while (typeItr.hasNext()) {
                 NodeType nodeType = (NodeType) typeItr.next();
                 
-                if (nodeType.getName().startsWith(JcrMetadataAccess.META_PREFIX)) {
+                if (nodeType.isNodeType(genericType.getName()) && ! nodeType.equals(genericType)) {
                     list.add(new JcrGenericType(nodeType));
                 }
             }
@@ -124,7 +125,7 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
         Session session = getSession();
         
         try {
-            Node typesNode = session.getNode(Paths.get("/generic", typeImpl.getName()).toString());
+            Node typesNode = session.getNode(Paths.get("/metadata", "generic", "entities", typeImpl.getName()).toString());
             Node entNode = typesNode.addNode(UUID.randomUUID().toString(), typeImpl.getJcrName());
             entNode = JcrUtil.setProperties(session, entNode, props);
             
@@ -158,7 +159,7 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
         Session session = getSession();
         
         try {
-            Node genericsNode = session.getNode("/generic");
+            Node genericsNode = session.getNode("/metadata/generic/entities");
             NodeIterator typeNameItr = genericsNode.getNodes();
             
             while (typeNameItr.hasNext()) {

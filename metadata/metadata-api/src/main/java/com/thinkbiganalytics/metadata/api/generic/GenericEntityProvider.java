@@ -14,7 +14,7 @@ public interface GenericEntityProvider {
 
     GenericType createType(String name, Map<String, GenericType.PropertyType> props);
     
-    GenericType createType(String name, GenericEntity supertype, Map<String, GenericType.PropertyType> props);
+    GenericType createType(String name, GenericType supertype, Map<String, GenericType.PropertyType> props);
     
     GenericType getType(String name);
     

@@ -18,7 +18,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
  */
 public class JcrMetadataAccess implements MetadataAccess {
     
-    public static final String META_PREFIX = "tba";
+    public static final String TBA_PREFIX = "tba";
     
     private static final ThreadLocal<Session> activeSession = new ThreadLocal<Session>() {
         protected Session initialValue() {
@@ -67,7 +67,7 @@ public class JcrMetadataAccess implements MetadataAccess {
      */
     @Override
     public <R> R read(Command<R> cmd) {
-        // TODO Auto-generated method stub
+        // TODO Handle rollback/read-only support
         return commit(cmd);
     }
 }

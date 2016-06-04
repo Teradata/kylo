@@ -1,5 +1,6 @@
 {
     "name" : "metadata-repository",
+    "node-types" : ["metadata-schema.cnd"],
     "workspaces" : {
         "predefined" : ["metadata"],
         "default" : "default",
@@ -26,5 +27,8 @@
             "directory": "target/content/binaries",
             "minimumBinarySizeInBytes" : 999
         }
+    },
+    "garbageCollection" : {
+        "initialTime": "17:00"
     }
 }

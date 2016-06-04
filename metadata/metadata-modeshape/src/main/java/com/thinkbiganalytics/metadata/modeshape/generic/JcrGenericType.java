@@ -31,7 +31,7 @@ public class JcrGenericType implements GenericType {
      */
     @Override
     public String getName() {
-        return getJcrName().replace(JcrMetadataAccess.META_PREFIX + ":", "");
+        return getJcrName().replace(JcrMetadataAccess.TBA_PREFIX + ":", "");
     }
 
     /* (non-Javadoc)

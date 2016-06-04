@@ -3,7 +3,7 @@ Defines the following structure and node types:
 
     "metadata"
         "feeds"
-            category
+            category*
                 feed*
                     feedSource*
                     feedDestination*
@@ -43,7 +43,14 @@ Defines the following structure and node types:
 
 //// Predefined Entities ////
 
-[tba:feed] > nt:hierarchyNode, mix:referenceable, mix:title, mix:created, mix:lastModified
+[tba:propertied]
+    + properties mandatory
+
+[tba:entity] > nt:hierarchyNode, mix:lastModified
+
+[tba:genericEntity] > tba:entity
+
+[tba:feed] > tba:entity, tba:propertied, mix:title, mix:referenceable
     - systemName (String) mandatory
     - state (Long)
     - initialized (Boolean) = false
@@ -52,15 +59,15 @@ Defines the following structure and node types:
 //    - preconditon (tba:feedPrecondition)
 
 
-[tba:feedConnection] > mix:referenceable, mix:created, mix:lastModified
-    + datasource (tba:datasource) mandatory
+[tba:feedConnection] > tba:entity, mix:referenceable
+    - datasource (weakreference) mandatory
 
 [tba:feedSource] > tba:feedConnection
 
 [tba:feedDestination] > tba:feedConnection
 //  + fieldPolicies (tba:fieldPolicy) sns
 
-[tba:datasource] > nt:hierarchyNode, mix:referenceable, mix:title, mix:created, mix:lastModified
+[tba:datasource] > tba:entity, tba:propertied, mix:title, mix:referenceable
     + feedSources (tba:feedSource) sns
     + feedDestinations (tba:feedDestination) sns
 
