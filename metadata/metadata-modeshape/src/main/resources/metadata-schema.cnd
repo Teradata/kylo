@@ -60,7 +60,11 @@
 /*
  * // Predefined Entities ////
  */
+tba:typeDescriptor] > nt:hierarchyNode, mix:title
+    + * (tba:fieldDescriptor) sns
 
+[tba:fieldDescriptor] > nt:hierarchyNode, mix:title
+    
 [tba:taggable] mixin
   - tba:tags (STRING) multiple
 
@@ -70,11 +74,11 @@
 [tba:properties]
 	- * (UNDEFINED) multiple COPY
 
-[tba:entity] > mix:lastModified, nt:hierarchyNode, tba:taggable
+[tba:entity] > mix:lastModified, nt:hierarchyNode 
 
-[tba:genericEntity] > tba:entity
+[tba:extensibleEntity] > tba:entity 
 
-[tba:feedTemplate] > mix:title,tba:entity, tba:propertied
+[tba:feedTemplate] > tba:entity, mix:title, tba:propertied
 - tba:defineTable (BOOLEAN) = 'false'
 - tba:dataTransformation (BOOLEAN) = 'false'
 - tba:allowPreconditions (BOOLEAN) = 'false'
@@ -83,13 +87,13 @@
 - tba:nifiTemplateId (STRING)
 
 
-[tba:category] > mix:referenceable, mix:title, tba:entity, tba:propertied 
+[tba:category] > tba:entity, mix:referenceable, mix:title, tba:propertied 
 	- tba:systemName (STRING) mandatory
 	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'
 	+ * (tba:feed) sns
 
-[tba:feed] > mix:referenceable, mix:title, tba:entity, tba:propertied
+[tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied 
 	+ tba:sources (tba:feedSource)  sns
 	+ tba:destinations (tba:feedDestination)  sns
 	- tba:systemName (STRING) mandatory
@@ -97,24 +101,24 @@
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:category (REFERENCE) mandatory
 	- tba:template (REFERENCE)
-
-
 /*
  * - preconditon (tba:feedPrecondition)
  */
-[tba:feedConnection] > mix:referenceable, tba:entity 
+
+
+[tba:feedConnection] > tba:extensibleEntity, mix:referenceable
 	- tba:datasource (WEAKREFERENCE) mandatory COPY
 
 [tba:feedSource] > tba:feedConnection
 
 
 [tba:feedDestination] > tba:feedConnection 
-
-
 /*
  * + fieldPolicies (tba:fieldPolicy) sns
  */
-[tba:datasource] > mix:referenceable, mix:title, tba:entity, tba:propertied
+
+
+[tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied 
     - tba:systemName (STRING) mandatory
 	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'
