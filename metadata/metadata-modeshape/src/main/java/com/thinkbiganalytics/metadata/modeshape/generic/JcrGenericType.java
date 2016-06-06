@@ -9,7 +9,7 @@ import javax.jcr.nodetype.NodeType;
 
 import com.thinkbiganalytics.metadata.api.generic.GenericType;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  *

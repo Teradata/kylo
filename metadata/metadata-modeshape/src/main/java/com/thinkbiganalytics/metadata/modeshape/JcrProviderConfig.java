@@ -41,16 +41,20 @@ public class JcrProviderConfig {
         });
     }                
     
-    @Bean
-    public MetadataJcrConfigurer metadataConfigurer() {
-        return new MetadataJcrConfigurer();
-    }
+
 
     @Bean
     public GenericEntityProvider genericEntitiyProvider() {
         return new JcrGenericEntityProvider();
     }
-    
+
+    @Bean
+    public BaseProvider baseProvider() {
+        return new BaseProvider();
+    }
+
+
+
 //    @Bean
 //    public FeedProvider feedProvider() {
 //        return new InMemoryFeedProvider();

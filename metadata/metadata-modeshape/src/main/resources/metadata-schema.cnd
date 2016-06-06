@@ -1,73 +1,98 @@
+
 /*
-Defines the following structure and node types:
+ * Defines the following structure and node types:
+ * 
+ *     "metadata"
+ *         "feeds"
+ *             category*
+ *                 feed*
+ *                     feedSource*
+ *                     feedDestination*
+ *         "datasources"
+ *             datasource
+ *         "generic"
+ *             "types"
+ *                 genericType
+ *             "entities"
+ *                 genericEntity
+ */
 
-    "metadata"
-        "feeds"
-            category*
-                feed*
-                    feedSource*
-                    feedDestination*
-        "datasources"
-            datasource
-        "generic"
-            "types"
-                genericType
-            "entities"
-                genericEntity
-*/
-
+<jcr='http://www.jcp.org/jcr/1.0'>
 <tba = 'http://thinkbiganalytics.com/metadata'>
 
-//// Tree structure /////
 
-[tba:metadataFolder]
-    + feeds (tba:feedsFolder) = tba:feedsFolder mandatory autocreated
-    + datasources (tba:datasourcesFolder) = tba:datasourcesFolder mandatory autocreated
-    + generic (tba:genericFolder) = tba:genericFolder mandatory autocreated
+/*
+ * // Tree structure /////
+ */
+[tba:metadataFolder] 
+	+ feeds (tba:feedsFolder) = tba:feedsFolder autocreated mandatory
+	+ datasources (tba:datasourcesFolder) = tba:datasourcesFolder autocreated mandatory
+	+ generic (tba:genericFolder) = tba:genericFolder autocreated mandatory
 
-[tba:feedsFolder] > nt:folder
-    + category (tba:categoryFolder) = tba:categoryFolder mandatory autocreated
+[tba:feedsFolder] > nt:folder 
+	+ category (tba:categoryFolder) = tba:categoryFolder autocreated mandatory
 
-[tba:genericFolder] > nt:folder
-    + types (tba:typesFolder) = tba:typesFolder mandatory autocreated
-    + entities (tba:entitiesFolder) = tba:entitiesFolder mandatory autocreated
+[tba:categoryFolder] > nt:folder 
+	+ feed (tba:feedFolder) = tba:feedFolder autocreated
 
-[tba:datasourcesFolder] > nt:folder
+[tba:feedFolder] > nt:folder 
+	+ feedSource (tba:feedSourceFolder) = tba:feedSourceFolder autocreated
+	+ feedDestination (tba:feedDestinationFolder) = tba:feedDestinationFolder autocreated
 
-[tba:categoryFolder] > nt:folder
+[tba:feedSourceFolder] > nt:folder 
 
-[tba:typesFolder] > nt:folder
+[tba:feedDestinationFolder] > nt:folder 
 
-[tba:entitiesFolder] > nt:folder
+[tba:propertiesFolder] > nt:folder 
+
+[tba:genericFolder] > nt:folder 
+	+ types (tba:typesFolder) = tba:typesFolder autocreated mandatory COPY
+	+ entities (tba:entitiesFolder) = tba:entitiesFolder autocreated mandatory COPY
+
+[tba:datasourcesFolder] > nt:folder 
+
+[tba:typesFolder] > nt:folder 
+
+[tba:entitiesFolder] > nt:folder 
 
 
-//// Predefined Entities ////
-
+/*
+ * // Predefined Entities ////
+ */
 [tba:propertied]
-    + properties mandatory
+	+ tba:properties (tba:properties) sns
 
-[tba:entity] > nt:hierarchyNode, mix:lastModified
+[tba:properties]
+    - * (undefined) multiple
 
-[tba:genericEntity] > tba:entity
+[tba:entity] > mix:lastModified, nt:hierarchyNode 
 
-[tba:feed] > tba:entity, tba:propertied, mix:title, mix:referenceable
-    - systemName (String) mandatory
-    - state (Long)
-    - initialized (Boolean) = false
-    + sources (tba:feedSource) sns
-    + destinations (tba:feedDestination) sns
-//    - preconditon (tba:feedPrecondition)
+[tba:genericEntity] > tba:entity 
+
+[tba:feed] > mix:referenceable, mix:title, tba:entity, tba:propertied 
+	+ tba:sources (tba:feedSource) sns
+	+ tba:destinations (tba:feedDestination) sns
+	- tba:systemName (STRING) mandatory
+	- tba:state (LONG) COPY
+	- tba:initialized (BOOLEAN) = 'false'
 
 
-[tba:feedConnection] > tba:entity, mix:referenceable
-    - datasource (weakreference) mandatory
+/*
+ * - preconditon (tba:feedPrecondition)
+ */
+[tba:feedConnection] > mix:referenceable, tba:entity 
+	- tba:datasource (WEAKREFERENCE) mandatory
 
-[tba:feedSource] > tba:feedConnection
+[tba:feedSource] > tba:feedConnection 
 
-[tba:feedDestination] > tba:feedConnection
-//  + fieldPolicies (tba:fieldPolicy) sns
+[tba:feedDestination] > tba:feedConnection 
 
-[tba:datasource] > tba:entity, tba:propertied, mix:title, mix:referenceable
-    + feedSources (tba:feedSource) sns
-    + feedDestinations (tba:feedDestination) sns
+
+/*
+ * + fieldPolicies (tba:fieldPolicy) sns
+ */
+[tba:datasource] > mix:referenceable, mix:title, tba:entity, tba:propertied 
+	+ tba:feedSources (tba:feedSource) sns
+	+ tba:feedDestinations (tba:feedDestination) sns
+	- tba:feedSources (REFERENCE) multiple
 

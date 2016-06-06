@@ -12,6 +12,7 @@ import javax.jcr.Session;
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 
+
 /**
  *
  * @author Sean Felten
@@ -25,7 +26,7 @@ public class JcrMetadataAccess implements MetadataAccess {
             return null;
         }
     };
-    
+
     @Inject
     @Named("metadataJcrRepository")
     private Repository repository;

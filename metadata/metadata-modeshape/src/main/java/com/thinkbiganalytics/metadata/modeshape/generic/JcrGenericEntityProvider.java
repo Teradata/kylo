@@ -26,7 +26,7 @@ import com.thinkbiganalytics.metadata.api.generic.GenericEntity.ID;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericType;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
 /**

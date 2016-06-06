@@ -13,6 +13,18 @@
         <jdbc.h2.version>1.2.124</jdbc.h2.version>
         <jdbc.mysql.version>5.1.32</jdbc.mysql.version>
     </properties>
+    
+      <repositories>
+    <repository>
+      <id>jboss-public</id>
+      <name>jboss-public</name>
+      <url>http://repository.jboss.org/nexus/content/groups/public</url>
+    </repository>
+          <repository>
+              <id>pentaho-releases</id>
+              <url>http://repository.pentaho.org/artifactory/repo/</url>
+          </repository>
+  </repositories>
 
     <dependencies>
         <dependency>
@@ -123,6 +135,7 @@
             <artifactId>hadoop-core</artifactId>
             <version>1.0.0</version>
         </dependency>
+
     </dependencies>
 
     <dependencyManagement>
