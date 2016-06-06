@@ -247,41 +247,49 @@ public class ExecuteSparkJob extends AbstractProcessor {
                 args = appArgs.split(",");
             }
 
-            ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
-            Configuration configuration;
-            try {
-                configuration = ApplySecurityPolicy.getConfigurationFromResources(hadoopConfigurationResources);
+            // If all 3 fields are filled out then assume kerberos is enabled and we want to authenticate the user
+            boolean authenticateUser = false;
+            if (!(StringUtils.isEmpty(principal) && StringUtils.isEmpty(keyTab) && StringUtils.isEmpty(hadoopConfigurationResources))) {
+                authenticateUser = true;
+            }
 
-                if (SecurityUtil.isSecurityEnabled(configuration)) {
-                    if (principal.equals("") && keyTab.equals("")) {
-                        getLogger().error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster.");
-                        session.transfer(flowFile, REL_FAILURE);
-                        return;
-                    }
+            if(authenticateUser) {
+                ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
+                Configuration configuration;
+                try {
+                    configuration = ApplySecurityPolicy.getConfigurationFromResources(hadoopConfigurationResources);
 
-                    try {
-                        getLogger().info("User anuthentication initiated");
-
-                        boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(logger, hadoopConfigurationResources, principal, keyTab);
-                        if (authenticationStatus) {
-                            getLogger().info("User authenticated successfully.");
-                        } else {
-                            getLogger().info("User authentication failed.");
+                    if (SecurityUtil.isSecurityEnabled(configuration)) {
+                        if (principal.equals("") && keyTab.equals("")) {
+                            getLogger().error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster.");
                             session.transfer(flowFile, REL_FAILURE);
                             return;
                         }
 
-                    } catch (Exception unknownException) {
-                        getLogger().error("Unknown exception occured while validating user :" + unknownException.getMessage());
-                        session.transfer(flowFile, REL_FAILURE);
-                        return;
-                    }
+                        try {
+                            getLogger().info("User anuthentication initiated");
 
+                            boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(logger, hadoopConfigurationResources, principal, keyTab);
+                            if (authenticationStatus) {
+                                getLogger().info("User authenticated successfully.");
+                            } else {
+                                getLogger().info("User authentication failed.");
+                                session.transfer(flowFile, REL_FAILURE);
+                                return;
+                            }
+
+                        } catch (Exception unknownException) {
+                            getLogger().error("Unknown exception occured while validating user :" + unknownException.getMessage());
+                            session.transfer(flowFile, REL_FAILURE);
+                            return;
+                        }
+
+                    }
+                } catch (IOException e1) {
+                    getLogger().error("Unknown exception occurred while authenticating user :" + e1.getMessage());
+                    session.transfer(flowFile, REL_FAILURE);
+                    return;
                 }
-            } catch (IOException e1) {
-                getLogger().error("Unknown exception occurred while authenticating user :" + e1.getMessage());
-                session.transfer(flowFile, REL_FAILURE);
-                return;
             }
 
             String sparkHome = context.getProperty(SPARK_HOME).getValue();
@@ -296,10 +304,12 @@ public class ExecuteSparkJob extends AbstractProcessor {
                 .setConf(SparkLauncher.EXECUTOR_MEMORY, executorMemory)
                 .setConf(SparkLauncher.EXECUTOR_CORES, executorCores)
                 .setConf(SPARK_NETWORK_TIMEOUT_CONFIG_NAME, networkTimeout)
-                .setConf(SPARK_YARN_KEYTAB, keyTab)
-                .setConf(SPARK_YARN_PRINCIPAL, principal)
                 .setSparkHome(sparkHome)
                 .setAppName(sparkApplicationName);
+            if(authenticateUser) {
+                launcher.setConf(SPARK_YARN_KEYTAB, keyTab);
+                launcher.setConf(SPARK_YARN_PRINCIPAL, principal);
+            }
             if (args != null) {
                 launcher.addAppArgs(args);
             }
@@ -336,6 +346,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
     /*
      * Validates that one or more files exist, as specified in a single property.
      */
+
     public static final Validator createMultipleFilesExistValidator() {
         return new Validator() {
             @Override
@@ -366,10 +377,10 @@ public class ExecuteSparkJob extends AbstractProcessor {
             @Override
             public ValidationResult validate(String subject, String input, ValidationContext context) {
 
-                File niFiPropoerties = NiFiProperties.getInstance().getKerberosConfigurationFile();
+                File nifiProperties = NiFiProperties.getInstance().getKerberosConfigurationFile();
 
                 // Check that the Kerberos configuration is set
-                if (niFiPropoerties == null) {
+                if (nifiProperties == null) {
                     return new ValidationResult.Builder()
                         .subject(subject).input(input).valid(false)
                         .explanation("you are missing the nifi.kerberos.krb5.file property which "
@@ -378,10 +389,10 @@ public class ExecuteSparkJob extends AbstractProcessor {
                 }
 
                 // Check that the Kerberos configuration is readable
-                if (!niFiPropoerties.canRead()) {
+                if (!nifiProperties.canRead()) {
                     return new ValidationResult.Builder().subject(subject).input(input).valid(false)
                         .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
-                                                   + "and nifi has adequate permissions", niFiPropoerties.getAbsoluteFile()))
+                                                   + "and nifi has adequate permissions", nifiProperties.getAbsoluteFile()))
                         .build();
                 }
 
