@@ -73,9 +73,11 @@ right click the download:
 
     Cloudera
       $ groupadd supergroup
-      # Add nifi, hfs, and root to that group:
+      # Add nifi and hdfs to that group:
       $ usermod -a -G supergroup nifi
       $ usermod -a -G supergroup hdfs
+
+      Note: If you want to perform actions as a root user in a development environment run the below command
       $ usermod -a -G supergroup root
 
 . Create a dropzone folder on the edge node for file ingest, for example:
