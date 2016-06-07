@@ -2,12 +2,17 @@ package com.thinkbiganalytics.metadata.modeshape.generic;
 
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericType;
-import com.thinkbiganalytics.metadata.modeshape.BaseProvider;
+import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryPovider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,6 +22,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -36,7 +42,10 @@ public class JcrPropertyTest {
     private GenericEntityProvider provider;
 
     @Inject
-    BaseProvider baseProvider;
+    CategoryProvider categoryProvider;
+
+    @Inject
+    FeedProvider feedProvider;
 
     @Inject
     private MetadataAccess metadata;
@@ -66,14 +75,14 @@ public class JcrPropertyTest {
                 props.put(JcrCategory.SYSTEM_NAME, "my_category");
                 props.put(JcrCategory.DESCRIPTION, "my cat desc");
 
-                JcrCategory category = baseProvider.createCategory(props);
+                Category category = ((JcrCategoryPovider) categoryProvider).createCategory(props);
 
                 props = new HashMap<String, Object>();
                 props.put(JcrCategory.TITLE, "my feed");
                 props.put(JcrCategory.SYSTEM_NAME, "my_feed");
                 props.put(JcrCategory.DESCRIPTION, "my feed desc");
 
-                JcrFeed feed = baseProvider.createFeed(category.getId(), props);
+                JcrFeed feed = ((JcrFeedProvider) feedProvider).createFeed(category.getId(), props);
 
                 Map<String, Object> otherProperties = new HashMap<String, Object>();
                 otherProperties.put("prop1", "my prop1");
@@ -89,7 +98,8 @@ public class JcrPropertyTest {
         JcrFeed readFeed = metadata.read(new Command<JcrFeed>() {
             @Override
             public JcrFeed execute() {
-                JcrFeed f = baseProvider.getEntity(feed.getId(), JcrFeed.class);
+                JcrFeed f = ((JcrFeedProvider) feedProvider).findById(feed.getId());
+                List<Category> categoryList = categoryProvider.findAll();
                 return f;
             }
         });

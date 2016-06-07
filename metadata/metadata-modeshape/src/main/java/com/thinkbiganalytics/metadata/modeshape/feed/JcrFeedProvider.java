@@ -5,20 +5,61 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
+import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
+import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryPovider;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
 
 /**
  *
  * @author Sean Felten
  */
-public class JcrFeedProvider implements FeedProvider {
+public class JcrFeedProvider extends BaseJcrProvider<JcrFeed,Feed.ID> implements FeedProvider {
+
+    @Inject
+    JcrCategoryPovider categoryPovider;
+
+    @Override
+    public String getNodeType() {
+        return JcrFeed.FEED_TYPE;
+    }
+
+    @Override
+    public Class<? extends JcrFeed> getEntityClass() {
+        return JcrFeed.class;
+    }
+
+    @Override
+    public Class<? extends JcrEntity> getJcrEntityClass() {
+        return JcrFeed.class;
+    }
+
+    public JcrFeed createFeed(Category.ID categoryId, Map<String,Object> props) {
+        Category category = ((JcrCategoryPovider)categoryPovider).findById(categoryId);
+        String systemName = (String)props.get(AbstractJcrSystemEntity.SYSTEM_NAME);
+        String categoryPath = EntityUtil.pathForCategory(category.getName());
+        Node feedNode = createEntityNode(categoryPath,systemName);
+        JcrFeed feed = new JcrFeed(feedNode);
+        feed.setSystemName(systemName);
+        return feed;
+    }
+
 
     /**
      * 

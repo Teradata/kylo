@@ -13,7 +13,11 @@ import org.springframework.context.annotation.Configuration;
 
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryPovider;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.generic.JcrGenericEntityProvider;
 
 /**
@@ -49,8 +53,13 @@ public class JcrProviderConfig {
     }
 
     @Bean
-    public BaseProvider baseProvider() {
-        return new BaseProvider();
+    public CategoryProvider categoryProvider() {
+        return new JcrCategoryPovider();
+    }
+
+    @Bean
+    public FeedProvider feedProvider() {
+        return new JcrFeedProvider();
     }
 
 

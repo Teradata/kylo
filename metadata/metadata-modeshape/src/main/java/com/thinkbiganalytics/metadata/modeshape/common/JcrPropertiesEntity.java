@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.common;
 
+import com.thinkbiganalytics.metadata.api.Propertied;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.util.Map;
@@ -13,7 +14,7 @@ import javax.jcr.Node;
  *
  * @author Sean Felten
  */
-public class JcrPropertiesEntity extends JcrEntity {
+public class JcrPropertiesEntity extends JcrEntity implements Propertied {
 
     public static final String PROPERTIES_NAME = "tba:properties";
     public static final String PROPERTIES_TYPE = "tba:properties";
@@ -35,6 +36,7 @@ public class JcrPropertiesEntity extends JcrEntity {
         return null;
     }
 
+
     public void setProperties(Map<String,Object> properties){
 
         JcrProperties n = JcrUtil.getOrCreateNode(this.node, PROPERTIES_NAME, PROPERTIES_TYPE, JcrProperties.class);
@@ -42,6 +44,16 @@ public class JcrPropertiesEntity extends JcrEntity {
         for(Map.Entry<String,Object> entry: properties.entrySet()){
             n.setProperty(entry.getKey(),entry.getValue());
         }
+
+    }
+
+    @Override
+    public Map<String, Object> mergeProperties(Map<String, Object> props) {
+        return null;
+    }
+
+    @Override
+    public void removeProperty(String key) {
 
     }
 }

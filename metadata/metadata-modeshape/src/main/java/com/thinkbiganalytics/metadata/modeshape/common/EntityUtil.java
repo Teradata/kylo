@@ -16,6 +16,11 @@ public class EntityUtil {
         return Paths.get("/metadata", "feeds",categorySystemName).toString();
     }
 
+    public static String pathForFeed(String categorySystemName, String feedSystemName){
+        return Paths.get("/metadata", "feeds",categorySystemName,feedSystemName).toString();
+    }
+
+
 
 }
 

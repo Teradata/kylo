@@ -3,10 +3,18 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.common;
 
-import com.google.common.base.MoreObjects;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
+
+import com.thinkbiganalytics.metadata.core.BaseId;
+import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
+import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+
+import org.apache.poi.ss.formula.functions.T;
+
+import java.io.Serializable;
+import java.util.UUID;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -36,6 +44,8 @@ public class JcrEntity  extends JcrObject implements GenericEntity {
         }
     }
 
+
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.category.CustomEntity#getTypeName()
      */
@@ -51,15 +61,19 @@ public class JcrEntity  extends JcrObject implements GenericEntity {
 
 
     
-    public static class EntityId implements ID {
+    public static class EntityId extends BaseId implements ID {
         private static final long serialVersionUID = -9084653006891727475L;
         
         private String idValue;
-        
-        public EntityId(String idStr) {
-            this.idValue = idStr;
+
+
+        public EntityId() {
         }
-        
+
+        public EntityId(Serializable ser) {
+            super(ser);
+        }
+
         public String getIdValue() {
             return idValue;
         }
@@ -67,6 +81,17 @@ public class JcrEntity  extends JcrObject implements GenericEntity {
         @Override
         public String toString() {
             return idValue;
+        }
+
+        @Override
+        public UUID getUuid() {
+           return UUID.fromString(idValue);
+        }
+
+        @Override
+        public void setUuid(UUID uuid) {
+            this.idValue = uuid.toString();
+
         }
     }
 

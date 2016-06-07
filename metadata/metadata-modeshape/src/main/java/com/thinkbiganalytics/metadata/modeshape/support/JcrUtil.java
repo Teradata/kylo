@@ -338,6 +338,10 @@ public class JcrUtil {
         return entity;
     }
 
+    public static <T extends JcrObject> T createJcrObject(Node node, Class<T> type) {
+        return createJcrObject(node,type,null);
+    }
+
     public static <T extends JcrObject> T createJcrObject(Node node, Class<T> type, Object[] constructorArgs) {
         T entity = null;
         try {
