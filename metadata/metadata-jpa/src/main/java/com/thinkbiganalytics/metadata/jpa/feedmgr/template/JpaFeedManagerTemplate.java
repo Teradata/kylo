@@ -3,7 +3,7 @@ package com.thinkbiganalytics.metadata.jpa.feedmgr.template;
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.jpa.BaseId;
+import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.feed.JpaFeedManagerFeed;
 import org.hibernate.annotations.Type;

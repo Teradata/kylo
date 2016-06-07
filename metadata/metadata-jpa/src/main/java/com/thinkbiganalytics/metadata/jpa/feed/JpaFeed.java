@@ -16,11 +16,9 @@ import java.util.UUID;
 import javax.persistence.*;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
 import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
-import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
-import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategory;
+
 import org.hibernate.annotations.GenericGenerator;
 
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
@@ -30,7 +28,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.jpa.BaseId;
+import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
