@@ -81,7 +81,7 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
     @MapKeyColumn(name="prop_key", length=100)
     @Column(name="prop_value")
     @CollectionTable(name="FEED_PROPERTIES")
-    private Map<String, String> properties = new HashMap<>();
+    private Map<String, Object> properties = new HashMap<>();
     
     @Embedded
     private JpaFeedPrecondition precondition;
@@ -109,34 +109,34 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
     }
 
     @Override
-    public Map<String, String> getProperties() {
+    public Map<String, Object> getProperties() {
         return this.properties;
     }
 
     @Override
-    public void setProperties(Map<String, String> props) {
+    public void setProperties(Map<String, Object> props) {
         this.properties.clear();
-        for (Entry<String, String> entry : props.entrySet()) {
+        for (Entry<String, Object> entry : props.entrySet()) {
             this.properties.put(entry.getKey(), entry.getValue());
         }
     }
 
     @Override
-    public Map<String, String> mergeProperties(Map<String, String> props) {
-        for (Entry<String, String> entry : props.entrySet()) {
+    public Map<String, Object> mergeProperties(Map<String, Object> props) {
+        for (Entry<String, Object> entry : props.entrySet()) {
             this.properties.put(entry.getKey(), entry.getValue());
         }
         return this.properties;
     }
 
     @Override
-    public String setProperty(String key, String value) {
-        return this.properties.put(key, value);
+    public void setProperty(String key, Object value) {
+         this.properties.put(key, value);
     }
 
     @Override
-    public String removeProperty(String key) {
-        return this.properties.remove(key);
+    public void removeProperty(String key) {
+         this.properties.remove(key);
     }
 
     public ID getId() {
