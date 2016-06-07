@@ -11,17 +11,17 @@ import org.springframework.context.annotation.Configuration;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
-import com.thinkbiganalytics.metadata.modeshape.generic.JcrGenericEntityProvider;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
 
@@ -40,8 +40,8 @@ public class JcrProviderConfig {
 
 
     @Bean
-    public GenericEntityProvider genericEntitiyProvider() {
-        return new JcrGenericEntityProvider();
+    public ExtensibleEntityProvider genericEntitiyProvider() {
+        return new JcrExtensibleEntityProvider();
     }
 
     @Bean

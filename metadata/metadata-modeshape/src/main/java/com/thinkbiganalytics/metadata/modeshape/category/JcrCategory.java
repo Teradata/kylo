@@ -2,8 +2,8 @@ package com.thinkbiganalytics.metadata.modeshape.category;
 
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
 import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;

@@ -3,28 +3,23 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.common;
 
-import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
-
-import com.thinkbiganalytics.metadata.core.BaseId;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
-
-
 import java.io.Serializable;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
+import com.thinkbiganalytics.metadata.core.BaseId;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+
 /**
  *
  * @author Sean Felten
  */
-public class JcrEntity  extends JcrObject implements GenericEntity {
+public class JcrEntity  extends JcrObject implements ExtensibleEntity {
 
 
 

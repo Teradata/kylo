@@ -1,13 +1,13 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.modeshape.generic;
+package com.thinkbiganalytics.metadata.modeshape.extension;
 
 import java.util.Map;
 
 import javax.jcr.nodetype.NodeType;
 
-import com.thinkbiganalytics.metadata.api.generic.GenericType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
@@ -15,19 +15,19 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
  *
  * @author Sean Felten
  */
-public class JcrGenericType implements GenericType {
+public class JcrExtensibleType implements ExtensibleType {
     
     private final NodeType nodeType;
 
     /**
      * 
      */
-    public JcrGenericType(NodeType nodeDef) {
+    public JcrExtensibleType(NodeType nodeDef) {
         this.nodeType = nodeDef;
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.generic.GenericType#getName()
+     * @see com.thinkbiganalytics.metadata.api.extension.ExtensibleType#getName()
      */
     @Override
     public String getName() {
@@ -35,27 +35,27 @@ public class JcrGenericType implements GenericType {
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.generic.GenericType#getParentType()
+     * @see com.thinkbiganalytics.metadata.api.extension.ExtensibleType#getParentType()
      */
     @Override
-    public GenericType getParentType() {
+    public ExtensibleType getParentType() {
         // TODO Auto-generated method stub
         return null;
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.generic.GenericType#getProperyTypes()
+     * @see com.thinkbiganalytics.metadata.api.extension.ExtensibleType#getProperyTypes()
      */
     @Override
-    public Map<String, GenericType.PropertyType> getProperyTypes() {
+    public Map<String, ExtensibleType.PropertyType> getProperyTypes() {
         return JcrUtil.getPropertyTypes(this.nodeType);
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.generic.GenericType#getPropertyType(java.lang.String)
+     * @see com.thinkbiganalytics.metadata.api.extension.ExtensibleType#getPropertyType(java.lang.String)
      */
     @Override
-    public GenericType.PropertyType getPropertyType(String name) {
+    public ExtensibleType.PropertyType getPropertyType(String name) {
         return JcrUtil.getPropertyType(this.nodeType, name);
     }
 

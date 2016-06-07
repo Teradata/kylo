@@ -12,11 +12,11 @@
  *             datasource
  *         "templates"
  *             template
- *         "generic"
+ *         "extensions"
  *             "types"
- *                 genericType
+ *                 typeDescriptor
  *             "entities"
- *                 genericEntity
+ *                 extensibleEntity
  */
 <jcr = 'http://www.jcp.org/jcr/1.0'>
 <tba = 'http://thinkbiganalytics.com/metadata'>
@@ -28,8 +28,8 @@
 [tba:metadataFolder] 
 	+ feeds (tba:feedsFolder) = tba:feedsFolder autocreated mandatory
 	+ datasources (tba:datasourcesFolder) = tba:datasourcesFolder autocreated mandatory
-	+ generic (tba:genericFolder) = tba:genericFolder autocreated mandatory
 	+ templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
+	+ extensions (tba:extensionsFolder) = tba:extensionsFolder autocreated mandatory
 
 [tba:feedsFolder] > nt:folder 
 	+ category (tba:categoryFolder) = tba:categoryFolder autocreated mandatory
@@ -45,7 +45,7 @@
 
 [tba:feedDestinationFolder] > nt:folder 
 
-[tba:genericFolder] > nt:folder 
+[tba:extensionsFolder] > nt:folder 
 	+ types (tba:typesFolder) = tba:typesFolder autocreated mandatory
 	+ entities (tba:entitiesFolder) = tba:entitiesFolder autocreated mandatory
 
@@ -60,7 +60,7 @@
 /*
  * // Predefined Entities ////
  */
-tba:typeDescriptor] > nt:hierarchyNode, mix:title
+[tba:typeDescriptor] > nt:hierarchyNode, mix:title
     + * (tba:fieldDescriptor) sns
 
 [tba:fieldDescriptor] > nt:hierarchyNode, mix:title
@@ -86,7 +86,6 @@ tba:typeDescriptor] > nt:hierarchyNode, mix:title
 - tba:iconColor (STRING)
 - tba:nifiTemplateId (STRING)
 
-
 [tba:category] > tba:entity, mix:referenceable, mix:title, tba:propertied 
 	- tba:systemName (STRING) mandatory
 	- tba:state (LONG)
@@ -94,8 +93,8 @@ tba:typeDescriptor] > nt:hierarchyNode, mix:title
 	+ * (tba:feed) sns
 
 [tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied 
-	+ tba:sources (tba:feedSource)  sns
-	+ tba:destinations (tba:feedDestination)  sns
+	+ tba:sources (tba:feedSource) sns
+	+ tba:destinations (tba:feedDestination) sns
 	- tba:systemName (STRING) mandatory
 	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'

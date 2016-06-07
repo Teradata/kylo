@@ -5,7 +5,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
-import com.thinkbiganalytics.metadata.modeshape.generic.JcrGenericEntity;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
 
 import java.io.Serializable;
 

@@ -1,12 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
-import com.thinkbiganalytics.metadata.api.BaseProvider;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
-import org.modeshape.jcr.api.JcrTools;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +10,13 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
+
+import org.modeshape.jcr.api.JcrTools;
+
+import com.thinkbiganalytics.metadata.api.BaseProvider;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  * Created by sr186054 on 6/5/16.

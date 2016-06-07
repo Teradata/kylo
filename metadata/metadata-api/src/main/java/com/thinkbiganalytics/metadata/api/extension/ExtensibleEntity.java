@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.generic;
+package com.thinkbiganalytics.metadata.api.extension;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -10,7 +10,7 @@ import java.util.Map;
  *
  * @author Sean Felten
  */
-public interface GenericEntity {
+public interface ExtensibleEntity {
 
     interface ID extends Serializable { }
     

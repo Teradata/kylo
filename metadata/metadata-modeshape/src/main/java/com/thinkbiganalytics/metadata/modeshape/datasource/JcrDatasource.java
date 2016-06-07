@@ -1,18 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.datasource;
 
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
-import com.thinkbiganalytics.metadata.modeshape.generic.JcrGenericEntity;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
-import org.joda.time.DateTime;
-
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -20,6 +7,16 @@ import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+
+import org.joda.time.DateTime;
+
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  * Created by sr186054 on 6/5/16.

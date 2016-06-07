@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.modeshape.generic;
+package com.thinkbiganalytics.metadata.modeshape.extension;
 
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -21,10 +21,10 @@ import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.NodeTypeTemplate;
 import javax.jcr.nodetype.PropertyDefinitionTemplate;
 
-import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
-import com.thinkbiganalytics.metadata.api.generic.GenericEntity.ID;
-import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
-import com.thinkbiganalytics.metadata.api.generic.GenericType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity.ID;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -33,22 +33,22 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
  *
  * @author Sean Felten
  */
-public class JcrGenericEntityProvider implements GenericEntityProvider {
+public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
 
     /**
      * 
      */
-    public JcrGenericEntityProvider() {
+    public JcrExtensibleEntityProvider() {
     }
 
     @Override
-    public GenericType createType(String name, Map<String, GenericType.PropertyType> props) {
+    public ExtensibleType createType(String name, Map<String, ExtensibleType.PropertyType> props) {
         return createType(name, null, props);
     }
 
     @Override
     @SuppressWarnings("unchecked")
-    public GenericType createType(String name, GenericType supertype, Map<String, GenericType.PropertyType> props) {
+    public ExtensibleType createType(String name, ExtensibleType supertype, Map<String, ExtensibleType.PropertyType> props) {
         try {
             Session session = getSession();
             NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
@@ -56,14 +56,14 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
             nodeTemplate.setName(JcrMetadataAccess.TBA_PREFIX + ":" + name);
             
             if (supertype != null) {
-                JcrGenericType superImpl = (JcrGenericType) supertype;
+                JcrExtensibleType superImpl = (JcrExtensibleType) supertype;
                 String supername = superImpl.getJcrName();
                 nodeTemplate.setDeclaredSuperTypeNames(new String[] { "tba:genericEntity", supername });
             } else {
                 nodeTemplate.setDeclaredSuperTypeNames(new String[] { "tba:genericEntity" });
             }
             
-            for (Entry<String, GenericType.PropertyType> entry : props.entrySet()) {
+            for (Entry<String, ExtensibleType.PropertyType> entry : props.entrySet()) {
                 PropertyDefinitionTemplate propDef = typeMgr.createPropertyDefinitionTemplate();
                 propDef.setName(entry.getKey());
                 propDef.setRequiredType(JcrUtil.asCode(entry.getValue()));
@@ -76,19 +76,19 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
                 session.getRootNode().addNode("metadata/generic/entities/" + name, "nt:folder");
             }
             
-            return new JcrGenericType(nodeType);
+            return new JcrExtensibleType(nodeType);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create new generic type: " + name, e);
         }
     }
     
     @Override
-    public GenericType getType(String name) {
+    public ExtensibleType getType(String name) {
         Session session = getSession();
         try {
             NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
             NodeType nodeType = typeMgr.getNodeType(JcrMetadataAccess.TBA_PREFIX + ":" + name);
-            return new JcrGenericType(nodeType);
+            return new JcrExtensibleType(nodeType);
         } catch (NoSuchNodeTypeException e) {
             return null;
         } catch (RepositoryException e) {
@@ -97,10 +97,10 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
     }
     
     @Override
-    public List<GenericType> getTypes() {
+    public List<ExtensibleType> getTypes() {
         Session session = getSession();
         try {
-            List<GenericType> list = new ArrayList<GenericType>();
+            List<ExtensibleType> list = new ArrayList<ExtensibleType>();
             NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
             NodeTypeIterator typeItr = typeMgr.getPrimaryNodeTypes();
             NodeType genericType = typeMgr.getNodeType("tba:genericEntity");
@@ -109,7 +109,7 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
                 NodeType nodeType = (NodeType) typeItr.next();
                 
                 if (nodeType.isNodeType(genericType.getName()) && ! nodeType.equals(genericType)) {
-                    list.add(new JcrGenericType(nodeType));
+                    list.add(new JcrExtensibleType(nodeType));
                 }
             }
             
@@ -120,8 +120,8 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
     }
     
     @Override
-    public GenericEntity createEntity(GenericType type, Map<String, Object> props) {
-        JcrGenericType typeImpl = (JcrGenericType) type;
+    public ExtensibleEntity createEntity(ExtensibleType type, Map<String, Object> props) {
+        JcrExtensibleType typeImpl = (JcrExtensibleType) type;
         Session session = getSession();
         
         try {
@@ -129,22 +129,22 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
             Node entNode = typesNode.addNode(UUID.randomUUID().toString(), typeImpl.getJcrName());
             entNode = JcrUtil.setProperties(session, entNode, props);
             
-            return new JcrGenericEntity(entNode);
+            return new JcrExtensibleEntity(entNode);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create new generic entity of type: " + typeImpl.getName(), e);
         }
     }
 
     @Override
-    public GenericEntity getEntity(ID id) {
-        JcrGenericEntity.EntityId idImpl = (JcrGenericEntity.EntityId) id;
+    public ExtensibleEntity getEntity(ID id) {
+        JcrExtensibleEntity.EntityId idImpl = (JcrExtensibleEntity.EntityId) id;
         
         try {
             Session session = getSession();
             Node node = session.getNodeByIdentifier(idImpl.getIdValue());
             
             if (node != null) {
-                return new JcrGenericEntity(node);
+                return new JcrExtensibleEntity(node);
             } else {
                 return null;
             }
@@ -154,8 +154,8 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
     }
     
     @Override
-    public List<GenericEntity> getEntities() {
-        List<GenericEntity> list = new ArrayList<>();
+    public List<ExtensibleEntity> getEntities() {
+        List<ExtensibleEntity> list = new ArrayList<>();
         Session session = getSession();
         
         try {
@@ -168,7 +168,7 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
                 
                 while (entityItr.hasNext()) {
                     Node entNode = (Node) entityItr.next();
-                    list.add(new JcrGenericEntity(entNode));
+                    list.add(new JcrExtensibleEntity(entNode));
                 }
             }
             
@@ -184,7 +184,7 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
      * @return
      * @throws RepositoryException
      */
-    public Map<String,GenericType.PropertyType> getPropertyTypes(String nodeType) {
+    public Map<String,ExtensibleType.PropertyType> getPropertyTypes(String nodeType) {
         try {
         NodeTypeManager typeMgr = getSession().getWorkspace().getNodeTypeManager();
         NodeType type = typeMgr.getNodeType(nodeType);

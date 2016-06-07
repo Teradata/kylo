@@ -14,17 +14,17 @@ import org.testng.annotations.Test;
 
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
-import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
-import com.thinkbiganalytics.metadata.api.generic.GenericType;
-import com.thinkbiganalytics.metadata.api.generic.GenericType.PropertyType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType.PropertyType;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class })
 public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTests {
 
     @Inject
-    private GenericEntityProvider provider;
+    private ExtensibleEntityProvider provider;
     
     @Inject
     private MetadataAccess metadata;
@@ -35,12 +35,12 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
         String typeName = metadata.commit(new Command<String>() {
             @Override
             public String execute() {
-                Map<String, GenericType.PropertyType> fields = new HashMap<>();
+                Map<String, ExtensibleType.PropertyType> fields = new HashMap<>();
                 fields.put("name", PropertyType.STRING);
                 fields.put("description", PropertyType.STRING);
                 fields.put("age", PropertyType.LONG);
                 
-                GenericType type = provider.createType("Person", fields);
+                ExtensibleType type = provider.createType("Person", fields);
                 
                 return type.getName();
             }
@@ -54,7 +54,7 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
         boolean found = metadata.commit(new Command<Boolean>() {
             @Override
             public Boolean execute() {
-                GenericType type = provider.getType("Person");
+                ExtensibleType type = provider.getType("Person");
                 
                 return type != null;
             }
@@ -68,7 +68,7 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
         int size = metadata.commit(new Command<Integer>() {
             @Override
             public Integer execute() {
-                List<GenericType> types = provider.getTypes();
+                List<ExtensibleType> types = provider.getTypes();
                 
                 return types.size();
             }
@@ -79,17 +79,17 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
     
     @Test(dependsOnMethods="testCreateType")
     public void testCreateEntity() {
-        GenericEntity.ID id = metadata.commit(new Command<GenericEntity.ID>() {
+        ExtensibleEntity.ID id = metadata.commit(new Command<ExtensibleEntity.ID>() {
             @Override
-            public GenericEntity.ID execute() {
-                GenericType type = provider.getType("Person");
+            public ExtensibleEntity.ID execute() {
+                ExtensibleType type = provider.getType("Person");
                 
                 Map<String, Object> props = new HashMap<>();
                 props.put("name", "Bob");
                 props.put("description", "Silly");
                 props.put("age", 50);
                 
-                GenericEntity entity = provider.createEntity(type, props);
+                ExtensibleEntity entity = provider.createEntity(type, props);
                 
                 return entity.getId();
             }
@@ -103,12 +103,12 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
         String typeName = metadata.commit(new Command<String>() {
             @Override
             public String execute() {
-                List<GenericEntity> list = provider.getEntities();
+                List<ExtensibleEntity> list = provider.getEntities();
                 
                 assertThat(list).isNotNull().hasSize(1);
                 
-                GenericEntity.ID id = list.get(0).getId();
-                GenericEntity entity = provider.getEntity(id);
+                ExtensibleEntity.ID id = list.get(0).getId();
+                ExtensibleEntity entity = provider.getEntity(id);
                 
                 assertThat(entity).isNotNull();
                 assertThat(entity.getProperty("name")).isEqualTo("Bob");

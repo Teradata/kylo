@@ -1,26 +1,13 @@
 package com.thinkbiganalytics.metadata.modeshape.generic;
 
-import com.thinkbiganalytics.metadata.api.Command;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
-import com.thinkbiganalytics.metadata.api.generic.GenericType;
-import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
-import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,13 +16,27 @@ import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
+import com.thinkbiganalytics.metadata.api.Command;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
+import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 
 /**
  * Created by sr186054 on 6/4/16.
@@ -48,7 +49,7 @@ public class JcrPropertyTest {
 
 
     @Inject
-    private GenericEntityProvider provider;
+    private ExtensibleEntityProvider provider;
 
     @Inject
     CategoryProvider categoryProvider;
@@ -74,11 +75,18 @@ public class JcrPropertyTest {
 
     @Test
     public void testGetPropertyTypes() throws RepositoryException {
-        Map<String, GenericType.PropertyType> propertyTypeMap = metadata.commit(new Command<Map<String, GenericType.PropertyType>>() {
+        Map<String, FieldDescriptor.Type> propertyTypeMap = metadata.commit(new Command<Map<String, FieldDescriptor.Type>>() {
             @Override
-            public Map<String, GenericType.PropertyType> execute() {
-                Map<String, GenericType.PropertyType> m = ((JcrGenericEntityProvider) provider).getPropertyTypes("tba:feed");
-                return m;
+            public Map<String, FieldDescriptor.Type> execute() {
+                ExtensibleType feedType = provider.getType("tba:feed");
+                Set<FieldDescriptor> fields = feedType.getPropertyDescriptors();
+                Map<String, FieldDescriptor.Type> map = new HashMap<>();
+                
+                for (FieldDescriptor field : fields) {
+                    map.put(field.getName(), field.getType());
+                }
+                
+                return map;
             }
         });
         log.info("Property Types {} ", propertyTypeMap);

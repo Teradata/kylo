@@ -3,17 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
-import com.thinkbiganalytics.metadata.api.generic.GenericType;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.modeshape.jcr.api.JcrTools;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -39,11 +28,18 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
-import javax.jcr.nodetype.NodeDefinition;
-import javax.jcr.nodetype.NodeType;
-import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.modeshape.jcr.api.JcrTools;
+
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 /**
  * @author Sean Felten
@@ -111,114 +107,6 @@ public class JcrUtil {
             return entNode;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to set properties", e);
-        }
-    }
-
-    public static Map<String, GenericType.PropertyType> getPropertyTypes(Node node) {
-        try {
-            return getPropertyTypes(node.getPrimaryNodeType());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to access property types", e);
-        }
-    }
-
-    public static Map<String, GenericType.PropertyType> getPropertyTypes(NodeType type) {
-        Map<String, GenericType.PropertyType> typeMap = new HashMap<>();
-        PropertyDefinition[] propDefs = type.getDeclaredPropertyDefinitions();
-
-        for (PropertyDefinition def : propDefs) {
-            String propName = def.getName();
-            GenericType.PropertyType propType = asType(def.getRequiredType());
-            typeMap.put(propName, propType);
-        }
-
-        return typeMap;
-    }
-
-    public static GenericType.PropertyType getPropertyType(NodeType type, String name) {
-        PropertyDefinition[] propDefs = type.getDeclaredPropertyDefinitions();
-
-        for (PropertyDefinition def : propDefs) {
-            String propName = def.getName();
-
-            if (propName.equalsIgnoreCase(name)) {
-                return asType(def.getRequiredType());
-            }
-        }
-
-        // Not found
-        throw new UnknownPropertyException(name);
-    }
-
-    /**
-     * Return the nodes Super Type properties, own properties, and referencing node Entities
-     */
-    public static Map<String, GenericType.PropertyType> getAllPropertyTypes(NodeType type, boolean includeChildNodes) {
-        Map<String, GenericType.PropertyType> typeMap = new HashMap<>();
-        String thisTypeName = type.getName();
-
-        //Add the Super Types
-        NodeType[] superTypes = type.getDeclaredSupertypes();
-        if (superTypes != null) {
-            for (NodeType superType : superTypes) {
-                if (!typeMap.containsKey(superType.getName()) && !thisTypeName.equalsIgnoreCase(superType.getName())) {
-                    typeMap.putAll(getAllPropertyTypes(superType, includeChildNodes));
-                }
-            }
-        }
-        //add this nodes properties
-        typeMap.putAll(getPropertyTypes(type));
-
-        if (includeChildNodes) {
-            //Add the child Node Entities
-            NodeDefinition[] childNodes = type.getChildNodeDefinitions();
-
-            if (childNodes != null) {
-                for (NodeDefinition childNode : childNodes) {
-                    NodeType[] childTypes = childNode.getRequiredPrimaryTypes();
-
-                    if (childTypes != null) {
-                        for (NodeType childType : childTypes) {
-                            if (!typeMap.containsKey(childType.getName()) && !thisTypeName.equalsIgnoreCase(childType.getName())) {
-                                typeMap.put(childType.getName(), GenericType.PropertyType.ENTITY);
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return typeMap;
-    }
-
-    public static GenericType.PropertyType asType(Property prop) {
-        // STRING, BOOLEAN, LONG, DOUBLE, PATH, ENTITY
-        try {
-            int code = prop.getType();
-
-            return asType(code);
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to access property type", e);
-        }
-    }
-
-    public static GenericType.PropertyType asType(int code) {
-        // STRING, BOOLEAN, LONG, DOUBLE, PATH, ENTITY
-        if (code == PropertyType.BOOLEAN) {
-            return GenericType.PropertyType.BOOLEAN;
-        } else if (code == PropertyType.STRING) {
-            return GenericType.PropertyType.STRING;
-        } else if (code == PropertyType.LONG) {
-            return GenericType.PropertyType.LONG;
-        } else if (code == PropertyType.DOUBLE) {
-            return GenericType.PropertyType.DOUBLE;
-        } else if (code == PropertyType.PATH) {
-            return GenericType.PropertyType.PATH;
-        } else if (code == PropertyType.REFERENCE) {
-//                return prop.get
-            return GenericType.PropertyType.ENTITY;  // TODO look up relationship
-        } else {
-            // Use string by default
-            return GenericType.PropertyType.STRING;
         }
     }
 
@@ -367,81 +255,19 @@ public class JcrUtil {
 
     }
 
-    public static int getJCRPropertyType(Object obj) {
-        if (obj instanceof String) {
-            return PropertyType.STRING;
-        }
-        if (obj instanceof Double) {
-            return PropertyType.DOUBLE;
-        }
-        if (obj instanceof Float) {
-            return PropertyType.DOUBLE;
-        }
-        if (obj instanceof Long) {
-            return PropertyType.LONG;
-        }
-        if (obj instanceof Integer) {
-            return PropertyType.LONG;
-        }
-        if (obj instanceof Boolean) {
-            return PropertyType.BOOLEAN;
-        }
-        if (obj instanceof Calendar) {
-            return PropertyType.DATE;
-        }
-        if (obj instanceof Binary) {
-            return PropertyType.BINARY;
-        }
-        if (obj instanceof InputStream) {
-            return PropertyType.BINARY;
-        }
-        if (obj instanceof Node) {
-            return PropertyType.REFERENCE;
-        }
-        return PropertyType.UNDEFINED;
-    }
-
-    public static int asCode(GenericType.PropertyType type) {
-        switch (type) {
-            case BOOLEAN:
-                return PropertyType.BOOLEAN;
-            case DOUBLE:
-                return PropertyType.DOUBLE;
-            case INTEGER:
-                return PropertyType.LONG;
-            case LONG:
-                return PropertyType.LONG;
-            case STRING:
-                return PropertyType.STRING;
-            case PATH:
-                return PropertyType.PATH;
-            case ENTITY:
-                return PropertyType.REFERENCE;
-            default:
-                return PropertyType.STRING;
-        }
-    }
-
     public static Value asValue(ValueFactory factory, Object obj) {
         // STRING, BOOLEAN, LONG, DOUBLE, PATH, ENTITY
         try {
-            switch (getJCRPropertyType(obj)) {
-                case PropertyType.STRING:
-                    return factory.createValue((String) obj);
-                case PropertyType.BOOLEAN:
-                    return factory.createValue((Boolean) obj);
-                case PropertyType.DATE:
-                    return factory.createValue((Calendar) obj);
-                case PropertyType.LONG:
-                    return obj instanceof Long ? factory.createValue(((Long) obj).longValue()) : factory.createValue(((Integer) obj).longValue());
-                case PropertyType.DOUBLE:
-                    return obj instanceof Double ? factory.createValue((Double) obj) : factory.createValue(((Float) obj).doubleValue());
-                case PropertyType.BINARY:
-                    return factory.createValue((InputStream) obj);
-                case PropertyType.REFERENCE:
-                    return factory.createValue((Node) obj);
-                default:
-                    return (obj != null ? factory.createValue(obj.toString()) : factory.createValue(StringUtils.EMPTY));
+            if (obj instanceof String) {
+                return factory.createValue((String) obj);
+            } else if (obj instanceof Integer || obj instanceof Long) {
+                return factory.createValue(obj.toString(), PropertyType.LONG);
+            } else if (obj instanceof Float || obj instanceof Double) {
+                return factory.createValue(obj.toString(), PropertyType.DOUBLE);
+//        } else if (obj instanceof ExtensibleEntity) {
+//            return factory.createValue((String) obj);
+            } else {
+                return factory.createValue(obj.toString());
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Invalid value format", e);

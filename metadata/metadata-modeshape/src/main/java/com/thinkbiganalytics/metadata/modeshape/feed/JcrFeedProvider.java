@@ -3,13 +3,22 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -25,16 +34,6 @@ import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 /**
  *
@@ -73,7 +72,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
-    public FeedSource ensureFeedSource(ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID dsId) {
+    public FeedSource ensureFeedSource(Feed.ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID dsId) {
         JcrFeed feed = (JcrFeed) findById(feedId);
         FeedSource source = feed.getSource(dsId);
         if (source == null) {
@@ -94,13 +93,13 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
-    public FeedSource ensureFeedSource(ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id, com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID slaId) {
+    public FeedSource ensureFeedSource(Feed.ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id, com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID slaId) {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public FeedDestination ensureFeedDestination(ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID dsId) {
+    public FeedDestination ensureFeedDestination(Feed.ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID dsId) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -147,12 +146,12 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
-    public Feed ensurePrecondition(ID feedId,  String name, String descr, List<List<Metric>> metrics) {
+    public Feed ensurePrecondition(Feed.ID feedId,  String name, String descr, List<List<Metric>> metrics) {
         return null;
     }
 
     @Override
-    public Feed updatePrecondition(ID feedId, List<List<Metric>> metrics) {
+    public Feed updatePrecondition(Feed.ID feedId, List<List<Metric>> metrics) {
         // TODO Auto-generated method stub
         return null;
     }
@@ -163,7 +162,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
-    public Feed getFeed(ID id) {
+    public Feed getFeed(Feed.ID id) {
         return findById(id);
     }
 
@@ -224,7 +223,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
-    public ID resolveFeed(Serializable fid) {
+    public Feed.ID resolveFeed(Serializable fid) {
         return resolveId(fid);
     }
 
@@ -239,7 +238,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
-    public boolean enableFeed(ID id) {
+    public boolean enableFeed(Feed.ID id) {
 
         Feed feed = getFeed(id);
         if (!feed.getState().equals(Feed.State.ENABLED)) {
@@ -251,7 +250,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
-    public boolean disableFeed(ID id) {
+    public boolean disableFeed(Feed.ID id) {
         Feed feed = getFeed(id);
         if (!feed.getState().equals(Feed.State.DISABLED)) {
             feed.setState(Feed.State.DISABLED);
