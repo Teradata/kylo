@@ -8,5 +8,7 @@ import com.thinkbiganalytics.metadata.api.BaseProvider;
 public interface CategoryProvider extends BaseProvider<Category,Category.ID>{
     Category findBySystemName(String systemName);
 
+    Category ensureCategory(String systemName);
+
 
 }

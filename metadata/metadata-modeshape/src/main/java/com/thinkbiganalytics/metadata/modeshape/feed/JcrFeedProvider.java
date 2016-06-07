@@ -7,6 +7,8 @@ import java.io.Serializable;
 import java.util.List;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
@@ -29,7 +31,7 @@ import javax.jcr.Node;
 public class JcrFeedProvider extends BaseJcrProvider<JcrFeed,Feed.ID> implements FeedProvider {
 
     @Inject
-    JcrCategoryProvider categoryPovider;
+    CategoryProvider categoryPovider;
 
     @Override
     public String getNodeType() {
@@ -44,21 +46,6 @@ public class JcrFeedProvider extends BaseJcrProvider<JcrFeed,Feed.ID> implements
     @Override
     public Class<? extends JcrEntity> getJcrEntityClass() {
         return JcrFeed.class;
-    }
-
-
-    public JcrFeed createFeed(String categorySystemName, String feedSystemName, String feedDisplayName) {
-        String categoryPath = EntityUtil.pathForCategory(categorySystemName);
-        Node feedNode = createEntityNode(categoryPath,feedSystemName);
-        JcrFeed feed = new JcrFeed(feedNode);
-        feed.setSystemName(feedSystemName);
-        feed.setTitle(feedDisplayName);
-        return feed;
-    }
-
-    public JcrFeed createFeed(Category.ID categoryId, String feedSystemName, String feedDisplayName) {
-        Category category = ((JcrCategoryProvider)categoryPovider).findById(categoryId);
-       return createFeed(category.getName(),feedSystemName,feedDisplayName);
     }
 
 
@@ -88,26 +75,43 @@ public class JcrFeedProvider extends BaseJcrProvider<JcrFeed,Feed.ID> implements
     }
 
     @Override
-    public Feed ensureFeed(String name, String descr) {
-        // TODO Auto-generated method stub
-        return null;
+    public Feed ensureFeed(Category.ID categoryId, String feedSystemName) {
+        Category category = categoryPovider.findById(categoryId);
+        return ensureFeed(category.getName(),feedSystemName);
     }
 
     @Override
-    public Feed ensureFeed(String name, String descr, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID destId) {
-        // TODO Auto-generated method stub
-        return null;
+    public Feed ensureFeed(String categorySystemName, String feedSystemName) {
+        String categoryPath = EntityUtil.pathForCategory(categorySystemName);
+        Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName);
+        JcrFeed feed = new JcrFeed(feedNode);
+        feed.setSystemName(feedSystemName);
+        return feed;
     }
 
     @Override
-    public Feed ensureFeed(String name, String descr, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID srcId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID destId) {
-        // TODO Auto-generated method stub
-        return null;
+    public Feed ensureFeed(String categorySystemName, String feedSystemName, String descr) {
+        Feed feed = ensureFeed(categorySystemName,feedSystemName);
+        feed.setDescription(descr);
+        return feed;
     }
 
     @Override
-    public Feed ensurePrecondition(ID feedId, String name, String descr, List<List<Metric>> metrics) {
-        // TODO Auto-generated method stub
+    public Feed ensureFeed(String categorySystemName, String feedSystemName, String descr, Datasource.ID destId) {
+        Feed feed = ensureFeed(categorySystemName,feedSystemName,descr);
+        //TODO add/find datasources
+        return feed;
+    }
+
+    @Override
+    public Feed ensureFeed(String categorySystemName, String feedSystemName, String descr, Datasource.ID srcId, Datasource.ID destId) {
+        Feed feed = ensureFeed(categorySystemName,feedSystemName,descr);
+        //TODO add/find datasources
+        return feed;
+    }
+
+    @Override
+    public Feed ensurePrecondition(ID feedId,  String name, String descr, List<List<Metric>> metrics) {
         return null;
     }
 

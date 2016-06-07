@@ -18,6 +18,7 @@ import javax.inject.Inject;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
+import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
@@ -152,9 +153,19 @@ public class InMemoryFeedProvider implements FeedProvider {
         
         return ensureFeedDestination(feed, ds);
     }
-    
+
     @Override
-    public Feed ensureFeed(String name, String descr, ID destId) {
+    public Feed ensureFeed(Category.ID categoryId, String feedSystemName) {
+       throw new UnsupportedOperationException("Unable to ensure feed by categoryId with InMemoryProvider");
+    }
+
+    @Override
+    public Feed ensureFeed(String categorySystemName, String feedSystemName) {
+        return ensureFeed(categorySystemName,feedSystemName,null);
+    }
+
+    @Override
+    public Feed ensureFeed(String categorySystemName,String name, String descr, ID destId) {
         Datasource dds = this.datasetProvider.getDatasource(destId);
     
         if (dds == null) {
@@ -168,7 +179,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Feed ensureFeed(String name, String descr, ID srcId, ID destId) {
+    public Feed ensureFeed(String categorySystemName,String name, String descr, ID srcId, ID destId) {
         Datasource sds = this.datasetProvider.getDatasource(srcId);
         Datasource dds = this.datasetProvider.getDatasource(destId);
 
@@ -189,7 +200,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Feed ensureFeed(String name, String descr) {
+    public Feed ensureFeed(String categorySystemName,String name, String descr) {
         synchronized (this.feeds) {
             for (Feed feed : this.feeds.values()) {
                 if (feed.getName().equals(name)) {

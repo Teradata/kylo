@@ -8,6 +8,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,10 +40,11 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     }
 
 
-    public Category createCategory(Map<String, Object> props) {
+    public Category ensureCategory(String systemName){
         String path = EntityUtil.pathForCategory();
-        String systemName = (String)props.get(AbstractJcrSystemEntity.SYSTEM_NAME);
-        return createEntity(path,systemName, props);
+        Map<String,Object> props = new HashMap<>();
+        props.put(JcrCategory.SYSTEM_NAME,systemName);
+        return findOrCreateEntity(path, systemName,props);
     }
     /*
     @Override

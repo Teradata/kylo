@@ -7,10 +7,8 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericType;
-import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryPovider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 
@@ -71,24 +69,27 @@ public class JcrPropertyTest {
             public JcrFeed execute() {
 
                 Map<String, Object> props = new HashMap<String, Object>();
-                props.put(JcrCategory.TITLE, "my category");
-                props.put(JcrCategory.SYSTEM_NAME, "my_category");
-                props.put(JcrCategory.DESCRIPTION, "my cat desc");
+                String categorySystemName = "my_category";
 
-                Category category = ((JcrCategoryPovider) categoryProvider).createCategory(props);
+                JcrCategory category = (JcrCategory)categoryProvider.ensureCategory(categorySystemName);
+                category.setDescription("my category desc");
+                category.setTitle("my category");
+
+                String feedSystemName = "my_feed";
 
                 props = new HashMap<String, Object>();
                 props.put(JcrCategory.TITLE, "my feed");
                 props.put(JcrCategory.SYSTEM_NAME, "my_feed");
                 props.put(JcrCategory.DESCRIPTION, "my feed desc");
 
-                JcrFeed feed = ((JcrFeedProvider) feedProvider).createFeed(category.getId(), props);
+                JcrFeed feed = (JcrFeed)feedProvider.ensureFeed (categorySystemName, feedSystemName);
+                feed.setTitle("my feed");
+                feed.setDescription("my feed desc");
 
                 Map<String, Object> otherProperties = new HashMap<String, Object>();
                 otherProperties.put("prop1", "my prop1");
+                otherProperties.put("prop2", "my prop2");
                 feed.setProperties(otherProperties);
-
-                category.getFeeds();
 
                 return feed;
 

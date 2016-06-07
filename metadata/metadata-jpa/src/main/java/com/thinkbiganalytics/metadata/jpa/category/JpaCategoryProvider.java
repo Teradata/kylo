@@ -31,8 +31,17 @@ public class JpaCategoryProvider extends BaseJpaProvider<Category,Category.ID> i
         return category;
     }
 
+    @Override
+    public Category ensureCategory(String systemName) {
+      Category c = findBySystemName(systemName);
+        if(c == null){
+            JpaCategory cat = new JpaCategory();
+            cat.setName(systemName);
+            c = create(cat);
+        }
+        return c;
 
-
+    }
 
     @Override
     public Category.ID resolveId(Serializable fid) {

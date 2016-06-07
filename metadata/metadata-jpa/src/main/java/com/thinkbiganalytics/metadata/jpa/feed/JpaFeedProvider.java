@@ -17,6 +17,9 @@ import javax.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.google.common.base.Predicate;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -59,9 +62,29 @@ public class JpaFeedProvider implements FeedProvider{
     @Inject 
     private FeedPreconditionService preconditionService;
 
+    @Inject
+    private CategoryProvider categoryProvider;
+
+
+    @Override
+    public Feed ensureFeed(Category.ID categoryId, String feedSystemName) {
+        Category category = categoryProvider.findById(categoryId);
+        if(category == null) {
+            throw new CategoryNotFoundException("Unable to ensure feed of name "+feedSystemName+" because the Category does not exist",categoryId);
+        }
+        else {
+            return ensureFeed(category.getName(),feedSystemName);
+        }
+    }
+
+    @Override
+    public Feed ensureFeed(String categorySystemName, String feedSystemName) {
+        return ensureFeed(categorySystemName,feedSystemName,null);
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID)
-     */
+         * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID)
+         */
     @Override
     public FeedSource ensureFeedSource(ID feedId, Datasource.ID dsId) {
         return ensureFeedSource(feedId, dsId, null);
@@ -153,28 +176,35 @@ public class JpaFeedProvider implements FeedProvider{
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeed(java.lang.String, java.lang.String)
      */
     @Override
-    public Feed ensureFeed(String name, String descr) {
-        return ensureFeed(name, descr, null, null);
+    public Feed ensureFeed(String categorySystemName,String name, String descr) {
+        return ensureFeed(categorySystemName,name, descr, null, null);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeed(java.lang.String, java.lang.String, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID)
      */
     @Override
-    public Feed ensureFeed( String name, String descr, Datasource.ID destId) {
-        return ensureFeed(name, descr, null, destId);
+    public Feed ensureFeed(String categorySystemName, String name, String descr, Datasource.ID destId) {
+        return ensureFeed(categorySystemName,name, descr, null, destId);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeed(java.lang.String, java.lang.String, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID)
      */
     @Override
-    public Feed ensureFeed(String name, String descr, Datasource.ID srcId, Datasource.ID destId) {
+    public Feed ensureFeed(String categorySystemName, String name, String descr, Datasource.ID srcId, Datasource.ID destId) {
         JpaFeed feed = null;
-        List<Feed> feeds = getFeeds(feedCriteria().name(name));
+        List<Feed> feeds = getFeeds(feedCriteria().name(name).category(categorySystemName));
         
         if (feeds.isEmpty()) {
             feed = new JpaFeed(name, descr);
+            Category category = categoryProvider.findBySystemName(categorySystemName);
+            if(category != null){
+                feed.setCategory(category);
+            }
+            else {
+                throw new CategoryNotFoundException("Unable to find Category for "+categorySystemName+" while attempting to create feed "+name,null);
+            }
             this.entityMgr.persist(feed);
         } else {
             feed = (JpaFeed) feeds.get(0);

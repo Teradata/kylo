@@ -49,7 +49,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     /**
      * Creates a new Entity Node object for a Parent Path, relative Path and node type
      */
-    public Node createEntityNode(String parentPath, String relPath) {
+    public Node findOrCreateEntityNode(String parentPath, String relPath) {
         Session session = getSession();
 
         try {
@@ -63,13 +63,13 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     }
 
 
-    public T createEntity(String path, String relPath, Map<String, Object> props) {
-        return createEntity(path, relPath, null, props);
+    public T findOrCreateEntity(String path, String relPath, Map<String, Object> props) {
+        return findOrCreateEntity(path, relPath, null, props);
     }
 
-    public T createEntity(String path, String relPath, Object[] constructorArgs, Map<String, Object> props) {
+    public T findOrCreateEntity(String path, String relPath, Object[] constructorArgs, Map<String, Object> props) {
         Session session = getSession();
-        Node entNode = createEntityNode(path, relPath);
+        Node entNode = findOrCreateEntityNode(path, relPath);
         entNode = JcrUtil.setProperties(session, entNode, props);
         return (T) JcrUtil.createJcrObject(entNode, getJcrEntityClass(), constructorArgs);
     }
