@@ -1,34 +1,22 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
 import com.thinkbiganalytics.metadata.api.BaseProvider;
-import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.apache.poi.ss.formula.functions.T;
 import org.modeshape.jcr.api.JcrTools;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 
 /**
@@ -46,72 +34,78 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
     public abstract Class<? extends T> getEntityClass();
 
-    public  abstract Class<? extends JcrEntity> getJcrEntityClass() ;
+    public abstract Class<? extends JcrEntity> getJcrEntityClass();
 
     /**
      * return the JCR NodeType for this entity (i.e. tba:category, tba:feed)
-     * @return
      */
     public abstract String getNodeType();
 
-    public BaseJcrProvider(){
-        this.entityClass = (Class<T>)getEntityClass();
+    public BaseJcrProvider() {
+        this.entityClass = (Class<T>) getEntityClass();
         this.jcrEntityClass = getJcrEntityClass();
     }
 
     /**
      * Creates a new Entity Node object for a Parent Path, relative Path and node type
-     * @param parentPath
-     * @param relPath
-     * @return
      */
-    public Node createEntityNode( String parentPath, String relPath) {
+    public Node createEntityNode(String parentPath, String relPath) {
         Session session = getSession();
 
         try {
-        Node typesNode = session.getNode(parentPath);
-        JcrTools tools = new JcrTools();
-        Node entNode =    tools.findOrCreateChild(typesNode, relPath, getNodeType());
-        return entNode;
+            Node typesNode = session.getNode(parentPath);
+            JcrTools tools = new JcrTools();
+            Node entNode = tools.findOrCreateChild(typesNode, relPath, getNodeType());
+            return entNode;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create new entity of type: " + getEntityClass(), e);
         }
     }
 
 
-
-    public  T createEntity(String path, String relPath, Map<String, Object> props) {
+    public T createEntity(String path, String relPath, Map<String, Object> props) {
         return createEntity(path, relPath, null, props);
     }
 
-    public  T createEntity(String path, String relPath, Object[] constructorArgs,Map<String, Object> props) {
+    public T createEntity(String path, String relPath, Object[] constructorArgs, Map<String, Object> props) {
         Session session = getSession();
-            Node entNode =createEntityNode(path,relPath);
-            entNode = JcrUtil.setProperties(session, entNode, props);
-           return (T)JcrUtil.createJcrObject(entNode, getJcrEntityClass(), constructorArgs);
+        Node entNode = createEntityNode(path, relPath);
+        entNode = JcrUtil.setProperties(session, entNode, props);
+        return (T) JcrUtil.createJcrObject(entNode, getJcrEntityClass(), constructorArgs);
     }
-
-
 
 
     @Override
     public T findById(PK id) {
         try {
-        Node node =  getSession().getNodeByIdentifier(id.toString());
-        if(node != null){
-            return (T) constructEntity(node);
+            Node node = getSession().getNodeByIdentifier(id.toString());
+            if (node != null) {
+                return (T) constructEntity(node);
+            } else {
+                return null;
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failure while finding entity by ID: " + id, e);
         }
-            else {
-            return null;
-        }
-    } catch (RepositoryException e) {
-        throw new MetadataRepositoryException("Failure while finding entity by ID: " + id, e);
-    }
     }
 
-    protected T constructEntity(Node node){
-        T entity = (T) JcrUtil.createJcrObject(node,getJcrEntityClass());
+    protected T constructEntity(Node node) {
+        T entity = (T) JcrUtil.createJcrObject(node, getJcrEntityClass());
         return entity;
+    }
+
+    public List<T> find2(String queryExpression) {
+
+        try {
+            org.modeshape.jcr.api.query.Query query = (org.modeshape.jcr.api.query.Query)getSession().getWorkspace().getQueryManager().createQuery(queryExpression, "JCR-SQL2");
+            org.modeshape.jcr.api.query.QueryResult result =query.explain();
+            String plan = result.getPlan();
+            System.out.println(plan);
+          return  find(queryExpression);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failure while finding entity ", e);
+        }
+
     }
 
     public List<T> find(String query) {
@@ -119,43 +113,44 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         JcrTools tools = new JcrTools();
         try {
             QueryResult result = tools.printQuery(getSession(), query);
-            if(result != null) {
+            if (result != null) {
                 NodeIterator nodeIterator = result.getNodes();
-                while(nodeIterator.hasNext()){
+                while (nodeIterator.hasNext()) {
                     Node node = nodeIterator.nextNode();
                     T entity = constructEntity(node);
                     entities.add(entity);
                 }
             }
             return entities;
-        }catch (RepositoryException e) {
+        } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(), e);
         }
     }
 
     public T findFirst(String query) {
+
         JcrTools tools = new JcrTools();
         try {
             QueryResult result = tools.printQuery(getSession(), query);
-            if(result != null) {
+            if (result != null) {
                 NodeIterator nodeIterator = result.getNodes();
-                if(nodeIterator.hasNext()){
+                if (nodeIterator.hasNext()) {
                     Node node = nodeIterator.nextNode();
                     T entity = constructEntity(node);
-                   return entity;
+                    return entity;
                 }
             }
             return null;
-        }catch (RepositoryException e) {
+        } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(), e);
         }
     }
 
     @Override
-    public List<T> findAll(){
+    public List<T> findAll() {
 
-        String jcrQuery = "SELECT * FROM ["+getNodeType()+"]";
-     return find(jcrQuery);
+        String jcrQuery = "SELECT * FROM [" + getNodeType() + "]";
+        return find(jcrQuery);
 
     }
 
@@ -181,7 +176,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
     @Override
     public void delete(T t) {
-        if(t != null) {
+        if (t != null) {
             if (t instanceof JcrObject) {
                 JcrObject jcrObject = (JcrObject) t;
                 jcrObject.remove();
@@ -202,14 +197,6 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     public PK resolveId(Serializable fid) {
         return (PK) new JcrEntity.EntityId(fid);
     }
-
-
-
-
-
-
-
-
 
 
 }

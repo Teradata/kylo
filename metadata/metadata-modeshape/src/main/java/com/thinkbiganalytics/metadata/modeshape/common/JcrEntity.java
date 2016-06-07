@@ -6,12 +6,9 @@ package com.thinkbiganalytics.metadata.modeshape.common;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
 
 import com.thinkbiganalytics.metadata.core.BaseId;
-import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
-import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
-import org.apache.poi.ss.formula.functions.T;
 
 import java.io.Serializable;
 import java.util.UUID;

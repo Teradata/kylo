@@ -14,7 +14,7 @@ import java.util.Map;
 /**
  * Created by sr186054 on 6/6/16.
  */
-public class JcrCategoryPovider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider {
+public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider {
 
     @Override
     public Category findBySystemName(String systemName) {

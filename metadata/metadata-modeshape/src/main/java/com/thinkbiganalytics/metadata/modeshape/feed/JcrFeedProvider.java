@@ -5,7 +5,6 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -14,11 +13,8 @@ import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryPovider;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -33,7 +29,7 @@ import javax.jcr.Node;
 public class JcrFeedProvider extends BaseJcrProvider<JcrFeed,Feed.ID> implements FeedProvider {
 
     @Inject
-    JcrCategoryPovider categoryPovider;
+    JcrCategoryProvider categoryPovider;
 
     @Override
     public String getNodeType() {
@@ -50,14 +46,19 @@ public class JcrFeedProvider extends BaseJcrProvider<JcrFeed,Feed.ID> implements
         return JcrFeed.class;
     }
 
-    public JcrFeed createFeed(Category.ID categoryId, Map<String,Object> props) {
-        Category category = ((JcrCategoryPovider)categoryPovider).findById(categoryId);
-        String systemName = (String)props.get(AbstractJcrSystemEntity.SYSTEM_NAME);
-        String categoryPath = EntityUtil.pathForCategory(category.getName());
-        Node feedNode = createEntityNode(categoryPath,systemName);
+
+    public JcrFeed createFeed(String categorySystemName, String feedSystemName, String feedDisplayName) {
+        String categoryPath = EntityUtil.pathForCategory(categorySystemName);
+        Node feedNode = createEntityNode(categoryPath,feedSystemName);
         JcrFeed feed = new JcrFeed(feedNode);
-        feed.setSystemName(systemName);
+        feed.setSystemName(feedSystemName);
+        feed.setTitle(feedDisplayName);
         return feed;
+    }
+
+    public JcrFeed createFeed(Category.ID categoryId, String feedSystemName, String feedDisplayName) {
+        Category category = ((JcrCategoryProvider)categoryPovider).findById(categoryId);
+       return createFeed(category.getName(),feedSystemName,feedDisplayName);
     }
 
 

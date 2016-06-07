@@ -15,4 +15,5 @@ public interface FeedCriteria extends MetadataCriteria<FeedCriteria> {
     FeedCriteria sourceDatasource(Datasource.ID id, Datasource.ID... others);
     FeedCriteria destinationDatasource(Datasource.ID id, Datasource.ID... others);
     FeedCriteria name(String name);
+    FeedCriteria category(String category);
 }

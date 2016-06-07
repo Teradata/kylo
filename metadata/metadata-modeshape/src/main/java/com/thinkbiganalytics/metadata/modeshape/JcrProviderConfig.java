@@ -16,7 +16,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryPovider;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.generic.JcrGenericEntityProvider;
 
@@ -54,7 +54,7 @@ public class JcrProviderConfig {
 
     @Bean
     public CategoryProvider categoryProvider() {
-        return new JcrCategoryPovider();
+        return new JcrCategoryProvider();
     }
 
     @Bean

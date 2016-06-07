@@ -373,6 +373,7 @@ public class JpaFeedProvider implements FeedProvider{
         private String name;
         private Set<Datasource.ID> sourceIds = new HashSet<>();
         private Set<Datasource.ID> destIds = new HashSet<>();
+        private String category;
         
         @Override
         protected void applyFilter(StringBuilder queryStr, HashMap<String, Object> params) {
@@ -382,6 +383,10 @@ public class JpaFeedProvider implements FeedProvider{
             if (this.name != null) {
                 cond.append("name = :name");
                 params.put("name", this.name);
+            }
+            if (this.category != null) {
+                cond.append("category = :category");
+                params.put("category", this.category);
             }
             
             applyIdFilter(cond, join, this.sourceIds, "sources", params);
@@ -412,6 +417,9 @@ public class JpaFeedProvider implements FeedProvider{
         @Override
         public boolean apply(Feed input) {
             if (this.name != null && ! name.equals(input.getName())) return false;
+            if(this.category != null && input.getCategory() != null && !this.category.equals(input.getCategory().getName())){
+                return false;
+            }
             if (! this.destIds.isEmpty()) {
                 List<FeedDestination> destinations = input.getDestinations();
                 for (FeedDestination dest : destinations) {
@@ -456,6 +464,12 @@ public class JpaFeedProvider implements FeedProvider{
         @Override
         public FeedCriteria name(String name) {
             this.name = name;
+            return this;
+        }
+
+        @Override
+        public FeedCriteria category(String category) {
+            this.category = category;
             return this;
         }
     }
