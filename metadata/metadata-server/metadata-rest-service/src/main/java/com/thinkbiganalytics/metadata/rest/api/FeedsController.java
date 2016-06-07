@@ -351,7 +351,7 @@ public class FeedsController {
                 com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
-                    Map<String, String> domainProps = domain.getProperties();
+                    Map<String, Object> domainProps = domain.getProperties();
                     Properties newProps = new Properties();
                     
                     newProps.putAll(domainProps);
@@ -377,7 +377,7 @@ public class FeedsController {
                 com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
-                    Map<String, String> domainProps = updateProperties(props, domain, false);
+                    Map<String, Object> domainProps = updateProperties(props, domain, false);
                     Properties newProps = new Properties();
                     
                     newProps.putAll(domainProps);
@@ -404,7 +404,7 @@ public class FeedsController {
                 com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
-                    Map<String, String> domainProps = updateProperties(props, domain, true);
+                    Map<String, Object> domainProps = updateProperties(props, domain, true);
                     Properties newProps = new Properties();
                     
                     newProps.putAll(domainProps);
@@ -484,10 +484,10 @@ public class FeedsController {
         });
     }
 
-    private Map<String, String> updateProperties(final Properties props,
+    private Map<String, Object> updateProperties(final Properties props,
                                                  com.thinkbiganalytics.metadata.api.feed.Feed domain,
                                                  boolean replace) {
-        Map<String, String> domainProps = domain.getProperties();
+        Map<String, Object> domainProps = domain.getProperties();
         
         if (replace) {
             domainProps.clear();
@@ -533,7 +533,7 @@ public class FeedsController {
     }
     
     private void ensureProperties(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
-        Map<String, String> domainProps = domainFeed.getProperties();
+        Map<String, Object> domainProps = domainFeed.getProperties();
         Properties props = feed.getProperties();
         
         for (String key : feed.getProperties().stringPropertyNames()) {
