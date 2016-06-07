@@ -94,7 +94,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         return entity;
     }
 
-    public List<T> find2(String queryExpression) {
+    public List<T> findWithExplainPlan(String queryExpression) {
 
         try {
             org.modeshape.jcr.api.query.Query query = (org.modeshape.jcr.api.query.Query)getSession().getWorkspace().getQueryManager().createQuery(queryExpression, "JCR-SQL2");
