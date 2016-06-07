@@ -7,6 +7,7 @@ import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
 import com.thinkbiganalytics.nifi.security.SecurityUtil;
 
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnDisabled;
@@ -287,25 +288,31 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
 
         String principal = this.principal;
         String keyTab =  this.keytab;
-        String HadoopConfigurationResources = hadoopConfiguraiton;
+        String hadoopConfigurationResources = hadoopConfiguraiton;
+
+        // If all 3 fields are filled out then assume kerberos is enabled and we want to authenticate the user
+        boolean loadConfigurationForKerberosAuthentication = false;
+        if (!(StringUtils.isEmpty(principal) && StringUtils.isEmpty(keyTab) && StringUtils.isEmpty(hadoopConfigurationResources))) {
+            loadConfigurationForKerberosAuthentication = true;
+        }
 
         //Get Security class object reference
-        ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
-
         Configuration configuration  = null;
-        try
-        {
-            configuration =  applySecurityObject.getConfigurationFromResources(HadoopConfigurationResources);
-        }
-        catch(Exception hadoopConfigException)
-        {
-            loggerInstance.error("Unable to get Hadoop Configuration resources . Loading default hadoop configuration." + hadoopConfigException.getMessage());
+        ApplySecurityPolicy applySecurityObject = null;
+        if(loadConfigurationForKerberosAuthentication) {
+            applySecurityObject = new ApplySecurityPolicy();
 
-            //Load default configuration if unable to load from property descriptor.
-            configuration = new Configuration();
+            try {
+                configuration = applySecurityObject.getConfigurationFromResources(hadoopConfigurationResources);
+            } catch (Exception hadoopConfigException) {
+                loggerInstance.error("Unable to get Hadoop Configuration resources . Loading default hadoop configuration." + hadoopConfigException.getMessage());
+
+                //Load default configuration if unable to load from property descriptor.
+                configuration = new Configuration();
+            }
         }
 
-        if(SecurityUtil.isSecurityEnabled(configuration))  // Check if kerberos security is enabled in cluster
+        if(loadConfigurationForKerberosAuthentication && SecurityUtil.isSecurityEnabled(configuration))  // Check if kerberos security is enabled in cluster
         {
             if(principal.equals("") && keyTab.equals("") )
             {
@@ -317,7 +324,7 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
 
                 loggerInstance.info("User anuthentication initiated");
 
-                boolean authenticationStatus = applySecurityObject.validateUserWithKerberos((ProcessorLog)loggerInstance,HadoopConfigurationResources,principal,keyTab);
+                boolean authenticationStatus = applySecurityObject.validateUserWithKerberos((ProcessorLog)loggerInstance,hadoopConfigurationResources,principal,keyTab);
                 if (authenticationStatus)
                 {
                     loggerInstance.info("User authenticated successfully.");
