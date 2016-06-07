@@ -11,13 +11,13 @@ import java.util.Map;
  */
 public interface Propertied {
     
-    Map<String, String> getProperties();
+    Map<String, Object> getProperties();
     
-    void setProperties(Map<String, String> props);
+    void setProperties(Map<String, Object> props);
     
-    Map<String, String> mergeProperties(Map<String, String> props);
+    Map<String, Object> mergeProperties(Map<String, Object> props);
     
-    String setProperty(String key, String value);
+    void setProperty(String key, Object value);
 
-    String removeProperty(String key);
+    void removeProperty(String key);
 }
