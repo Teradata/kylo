@@ -114,25 +114,48 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         return entity;
     }
 
-    @Override
-    public List<T> findAll(){
+    public List<T> find(String query) {
         List<T> entities = new ArrayList<>();
         JcrTools tools = new JcrTools();
+        try {
+            QueryResult result = tools.printQuery(getSession(), query);
+            if(result != null) {
+                NodeIterator nodeIterator = result.getNodes();
+                while(nodeIterator.hasNext()){
+                    Node node = nodeIterator.nextNode();
+                    T entity = constructEntity(node);
+                    entities.add(entity);
+                }
+            }
+            return entities;
+        }catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(), e);
+        }
+    }
+
+    public T findFirst(String query) {
+        JcrTools tools = new JcrTools();
+        try {
+            QueryResult result = tools.printQuery(getSession(), query);
+            if(result != null) {
+                NodeIterator nodeIterator = result.getNodes();
+                if(nodeIterator.hasNext()){
+                    Node node = nodeIterator.nextNode();
+                    T entity = constructEntity(node);
+                   return entity;
+                }
+            }
+            return null;
+        }catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(), e);
+        }
+    }
+
+    @Override
+    public List<T> findAll(){
+
         String jcrQuery = "SELECT * FROM ["+getNodeType()+"]";
-      try {
-          QueryResult result = tools.printQuery(getSession(), jcrQuery);
-          if(result != null) {
-              NodeIterator nodeIterator = result.getNodes();
-              while(nodeIterator.hasNext()){
-                  Node node = nodeIterator.nextNode();
-                  T entity = constructEntity(node);
-                  entities.add(entity);
-              }
-          }
-          return entities;
-      }catch (RepositoryException e) {
-          throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(), e);
-      }
+     return find(jcrQuery);
 
     }
 

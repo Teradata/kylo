@@ -18,7 +18,9 @@ public class JcrCategoryPovider extends BaseJcrProvider<Category, Category.ID> i
 
     @Override
     public Category findBySystemName(String systemName) {
-        return null;
+
+        String query =  "SELECT * FROM ["+getNodeType()+"] as cat WHERE cat.["+JcrCategory.SYSTEM_NAME+"] = '"+systemName+"'";
+        return findFirst(query);
     }
 
     @Override

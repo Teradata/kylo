@@ -59,8 +59,8 @@
 [tba:propertied] mixin
 	+ tba:properties (tba:properties) COPY
 
-[tba:properties] 
-	- * (UNDEFINED) multiple COPY
+[tba:properties]
+	- * (UNDEFINED)  COPY
 
 [tba:entity] > mix:lastModified, nt:hierarchyNode 
 
