@@ -101,22 +101,15 @@ tba:typeDescriptor] > nt:hierarchyNode, mix:title
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:category (REFERENCE) mandatory
 	- tba:template (REFERENCE)
-/*
- * - preconditon (tba:feedPrecondition)
- */
-
+//  - preconditon (tba:feedPrecondition)
 
 [tba:feedConnection] > tba:extensibleEntity, mix:referenceable
 	- tba:datasource (WEAKREFERENCE) mandatory COPY
 
 [tba:feedSource] > tba:feedConnection
 
-
 [tba:feedDestination] > tba:feedConnection 
-/*
- * + fieldPolicies (tba:fieldPolicy) sns
- */
-
+//  + fieldPolicies (tba:fieldPolicy) sns
 
 [tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied 
     - tba:systemName (STRING) mandatory

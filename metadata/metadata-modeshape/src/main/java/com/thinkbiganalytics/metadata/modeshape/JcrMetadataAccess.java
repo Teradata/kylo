@@ -50,10 +50,16 @@ public class JcrMetadataAccess implements MetadataAccess {
                     R result = cmd.execute();
                     activeSession.get().save();
                     return result;
+                } catch (RepositoryException e) {
+                    activeSession.get().refresh(false);
+                    // TODO Use a better exception
+                    throw new RuntimeException(e);
                 } finally {
                     activeSession.get().logout();
                     activeSession.remove();
                 }
+            } catch (RuntimeException e) {
+                throw e;
             } catch (RepositoryException e) {
                 // TODO Use a better exception
                 throw new RuntimeException(e);
@@ -68,7 +74,26 @@ public class JcrMetadataAccess implements MetadataAccess {
      */
     @Override
     public <R> R read(Command<R> cmd) {
-        // TODO Handle rollback/read-only support
-        return commit(cmd);
+        Session session = activeSession.get();
+        
+        if (session == null) {
+            try {
+                activeSession.set(this.repository.login());
+                try {
+                    return cmd.execute();
+                } finally {
+                    activeSession.get().refresh(false);
+                    activeSession.get().logout();
+                    activeSession.remove();
+                }
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (RepositoryException e) {
+                // TODO Use a better exception
+                throw new RuntimeException(e);
+            }
+        } else {
+            return cmd.execute();
+        }
     }
 }

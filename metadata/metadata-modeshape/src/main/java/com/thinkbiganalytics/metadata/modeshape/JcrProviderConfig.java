@@ -3,7 +3,11 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
-import com.thinkbiganalytics.metadata.api.Command;
+import javax.annotation.PostConstruct;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -21,14 +25,6 @@ import com.thinkbiganalytics.metadata.modeshape.generic.JcrGenericEntityProvider
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import javax.annotation.PostConstruct;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
 /**
  *
  * @author Sean Felten
@@ -38,20 +34,7 @@ public class JcrProviderConfig {
     
     @PostConstruct
     public void initializeMetadata() {
-        // TODO: Delegate this and other setup behavior to a JCR metadata configurator os some kind.
-        metadataAccess().commit(new Command<String>() {
-            @Override
-            public String execute() {
-                try {
-                    Session session = JcrMetadataAccess.getActiveSession();
-                    Node metadataNode = session.getRootNode().addNode("metadata", "tba:metadataFolder");
-
-                    return metadataNode.getPath();
-                } catch (RepositoryException e) {
-                    throw new MetadataRepositoryException("Could not create initial JCR metadata", e);
-                }
-            }
-        });
+        jcrConfigurator().configure();
     }                
     
 
@@ -122,6 +105,11 @@ public class JcrProviderConfig {
     @Bean
     public MetadataAccess metadataAccess() {
         return new JcrMetadataAccess();
+    }
+    
+    @Bean
+    public MetadataJcrConfigurator jcrConfigurator() {
+        return new MetadataJcrConfigurator();
     }
     
 }
