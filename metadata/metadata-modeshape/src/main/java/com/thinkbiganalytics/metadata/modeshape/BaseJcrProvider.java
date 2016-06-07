@@ -5,6 +5,7 @@ import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
@@ -137,22 +138,40 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
     @Override
     public T create(T t) {
-        throw new UnsupportedOperationException();
+        try {
+            getSession().save();
+            return t;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to save session", e);
+        }
     }
 
     @Override
     public T update(T t) {
-        throw new UnsupportedOperationException();
+        try {
+            getSession().save();
+            return t;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to save session", e);
+        }
     }
 
     @Override
     public void delete(T t) {
-        throw new UnsupportedOperationException();
+        if(t != null) {
+            if (t instanceof JcrObject) {
+                JcrObject jcrObject = (JcrObject) t;
+                jcrObject.remove();
+            } else {
+                throw new UnsupportedOperationException();
+            }
+        }
     }
 
     @Override
     public void deleteById(PK id) {
-        throw new UnsupportedOperationException();
+        T item = findById(id);
+        delete(item);
     }
 
 

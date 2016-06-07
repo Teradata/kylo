@@ -38,6 +38,59 @@ public class JcrObject {
         }
     }
 
+    public boolean isNew(){
+        return this.node.isNew();
+    }
+
+    public boolean isModified(){
+        return this.node.isModified();
+    }
+
+    public void refresh(boolean keepChanges) {
+        try {
+            this.node.refresh(keepChanges);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to refresh Node. ",e);
+        }
+    }
+
+    public String getPath() {
+        try {
+            return this.node.getPath();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to get the Path", e);
+        }
+    }
+
+    public String getNodeName(){
+        try {
+        return this.node.getName();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to get the Path", e);
+        }
+    }
+
+    public void remove(){
+        try {
+            this.node.remove();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to remove the node", e);
+        }
+    }
+
+    public boolean isLive(){
+        if(this.node != null) {
+            try {
+                if(this.node.getSession() != null) {
+                    return this.node.getSession().isLive();
+                }
+            } catch (RepositoryException e) {
+
+            }
+        }
+        return false;
+    }
+
     public Map<String, Object> getProperties() {
         return JcrUtil.getProperties(this.node);
     }
