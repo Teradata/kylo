@@ -1,7 +1,17 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
+
+import com.thinkbiganalytics.metadata.api.generic.GenericType;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.modeshape.jcr.api.JcrTools;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -24,17 +34,7 @@ import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
-import com.thinkbiganalytics.metadata.api.generic.GenericType;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.modeshape.jcr.api.JcrTools;
-
 /**
- *
  * @author Sean Felten
  */
 public class JcrUtil {
@@ -277,69 +277,79 @@ public class JcrUtil {
         }
     }
 
-    public static Node getNode(Node parentNode,String name){
+    public static Node getNode(Node parentNode, String name) {
         try {
             return parentNode.getNode(name);
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the Node named"+name, e);
+            throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
     }
 
-    public static <T extends JcrObject> List<T> getNodes(Node parentNode,String name, Class<T> type){
+    public static <T extends JcrObject> List<T> getNodes(Node parentNode, String name, Class<T> type) {
         List<T> list = new ArrayList<>();
         try {
 
-            javax.jcr.NodeIterator nodeItr = parentNode.getNodes(name);
-            if(nodeItr != null) {
-                while(nodeItr.hasNext()){
+            javax.jcr.NodeIterator nodeItr = null;
+            if (StringUtils.isBlank(name)) {
+                nodeItr = parentNode.getNodes();
+            } else {
+                nodeItr = parentNode.getNodes(name);
+            }
+            if (nodeItr != null) {
+                while (nodeItr.hasNext()) {
                     Node n = nodeItr.nextNode();
                     T entity = ConstructorUtils.invokeConstructor(type, n);
                     list.add(entity);
                 }
             }
-        } catch (RepositoryException |InvocationTargetException |NoSuchMethodException |InstantiationException |IllegalAccessException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the Node named"+name, e);
+        } catch (RepositoryException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
         return list;
     }
 
-    public static <T extends JcrObject>  T getNode(Node parentNode,String name, Class<T> type){
+    public static <T extends JcrObject> T getNode(Node parentNode, String name, Class<T> type) {
         T entity = null;
         try {
             Node n = parentNode.getNode(name);
             entity = ConstructorUtils.invokeConstructor(type, n);
-        } catch (RepositoryException |InvocationTargetException |NoSuchMethodException |InstantiationException |IllegalAccessException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the Node named"+name, e);
+        } catch (RepositoryException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
         return entity;
     }
 
-    public static <T extends JcrObject>  T getOrCreateNode(Node parentNode,String name, String nodeType, Class<T> type){
-        return getOrCreateNode(parentNode,name,nodeType,type,null);
+    public static <T extends JcrObject> T getOrCreateNode(Node parentNode, String name, String nodeType, Class<T> type) {
+        return getOrCreateNode(parentNode, name, nodeType, type, null);
     }
+
     /**
      * gets a node cast as a type
-     * @param name
-     * @param type
-     * @param <T>
-     * @return
      */
-    public static <T extends JcrObject>  T getOrCreateNode(Node parentNode,String name, String nodeType, Class<T> type, Object[] constructorArgs){
+    public static <T extends JcrObject> T getOrCreateNode(Node parentNode, String name, String nodeType, Class<T> type, Object[] constructorArgs) {
         T entity = null;
         try {
             JcrTools tools = new JcrTools();
             Node n = tools.findOrCreateChild(parentNode, name, nodeType);
-            if (constructorArgs != null) {
-                constructorArgs = ArrayUtils.add(constructorArgs, n);
-            }
-            else {
-                constructorArgs = new Object[] {n};
-            }
+            entity = createJcrObject(n, type, constructorArgs);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
+        }
+        return entity;
+    }
 
+    public static <T extends JcrObject> T createJcrObject(Node node, Class<T> type, Object[] constructorArgs) {
+        T entity = null;
+        try {
+            if (constructorArgs != null) {
+                constructorArgs = ArrayUtils.add(constructorArgs, 0, node);
+            } else {
+                constructorArgs = new Object[]{node};
+            }
 
             entity = ConstructorUtils.invokeConstructor(type, constructorArgs);
-        } catch (RepositoryException |InvocationTargetException |NoSuchMethodException |InstantiationException |IllegalAccessException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the Node named"+name, e);
+        } catch (InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
+            throw new MetadataRepositoryException("Failed to createJcrObject for node " + type, e);
         }
         return entity;
     }

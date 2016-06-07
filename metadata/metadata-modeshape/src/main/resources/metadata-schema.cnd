@@ -4,8 +4,8 @@
  * 
  *     "metadata"
  *         "feeds"
- *             category*
- *                 feed*
+ *             categorySystemName*
+ *                 feedSystemName*
  *                     feedSource*
  *                     feedDestination*
  *         "datasources"
@@ -16,8 +16,7 @@
  *             "entities"
  *                 genericEntity
  */
-
-<jcr='http://www.jcp.org/jcr/1.0'>
+<jcr = 'http://www.jcp.org/jcr/1.0'>
 <tba = 'http://thinkbiganalytics.com/metadata'>
 
 
@@ -43,11 +42,9 @@
 
 [tba:feedDestinationFolder] > nt:folder 
 
-[tba:propertiesFolder] > nt:folder 
-
 [tba:genericFolder] > nt:folder 
-	+ types (tba:typesFolder) = tba:typesFolder autocreated mandatory COPY
-	+ entities (tba:entitiesFolder) = tba:entitiesFolder autocreated mandatory COPY
+	+ types (tba:typesFolder) = tba:typesFolder autocreated mandatory
+	+ entities (tba:entitiesFolder) = tba:entitiesFolder autocreated mandatory
 
 [tba:datasourcesFolder] > nt:folder 
 
@@ -59,21 +56,27 @@
 /*
  * // Predefined Entities ////
  */
-[tba:propertied]
-	+ tba:properties (tba:properties) sns
+[tba:propertied] mixin
+	+ tba:properties (tba:properties) COPY
 
-[tba:properties]
-    - * (undefined) multiple
+[tba:properties] 
+	- * (UNDEFINED) multiple COPY
 
 [tba:entity] > mix:lastModified, nt:hierarchyNode 
 
 [tba:genericEntity] > tba:entity 
 
-[tba:feed] > mix:referenceable, mix:title, tba:entity, tba:propertied 
-	+ tba:sources (tba:feedSource) sns
-	+ tba:destinations (tba:feedDestination) sns
+[tba:category] > mix:referenceable, mix:title, tba:entity, tba:propertied 
 	- tba:systemName (STRING) mandatory
-	- tba:state (LONG) COPY
+	- tba:state (LONG)
+	- tba:initialized (BOOLEAN) = 'false'
+	+ * (tba:feed) sns
+
+[tba:feed] > mix:referenceable, mix:title, tba:entity, tba:propertied
+	+ tba:sources (tba:feedSource)  sns
+	+ tba:destinations (tba:feedDestination)  sns
+	- tba:systemName (STRING) mandatory
+	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'
 
 
@@ -81,7 +84,7 @@
  * - preconditon (tba:feedPrecondition)
  */
 [tba:feedConnection] > mix:referenceable, tba:entity 
-	- tba:datasource (WEAKREFERENCE) mandatory
+	- tba:datasource (WEAKREFERENCE) mandatory COPY
 
 [tba:feedSource] > tba:feedConnection 
 
@@ -92,7 +95,7 @@
  * + fieldPolicies (tba:fieldPolicy) sns
  */
 [tba:datasource] > mix:referenceable, mix:title, tba:entity, tba:propertied 
-	+ tba:feedSources (tba:feedSource) sns
-	+ tba:feedDestinations (tba:feedDestination) sns
-	- tba:feedSources (REFERENCE) multiple
+	+ tba:feedSources (tba:feedSource) COPY sns
+	+ tba:feedDestinations (tba:feedDestination) COPY sns
+	- tba:feedSources (REFERENCE) multiple COPY
 

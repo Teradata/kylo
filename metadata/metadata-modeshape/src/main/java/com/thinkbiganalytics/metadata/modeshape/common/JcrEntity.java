@@ -3,17 +3,10 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.common;
 
+import com.google.common.base.MoreObjects;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.modeshape.jcr.api.JcrTools;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -68,6 +61,11 @@ public class JcrEntity  extends JcrObject implements GenericEntity {
         }
         
         public String getIdValue() {
+            return idValue;
+        }
+
+        @Override
+        public String toString() {
             return idValue;
         }
     }

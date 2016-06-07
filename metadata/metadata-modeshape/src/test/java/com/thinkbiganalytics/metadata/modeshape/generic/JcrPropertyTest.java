@@ -7,7 +7,6 @@ import com.thinkbiganalytics.metadata.api.generic.GenericType;
 import com.thinkbiganalytics.metadata.modeshape.BaseProvider;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 
 import org.junit.Test;
@@ -62,36 +61,38 @@ public class JcrPropertyTest {
             @Override
             public JcrFeed execute() {
 
-                Map<String,Object> props = new HashMap<String, Object>();
-                props.put(JcrCategory.TITLE,"my category");
-                props.put(JcrCategory.SYSTEM_NAME,"my_category");
-                props.put(JcrCategory.DESCRIPTION,"my cat desc");
+                Map<String, Object> props = new HashMap<String, Object>();
+                props.put(JcrCategory.TITLE, "my category");
+                props.put(JcrCategory.SYSTEM_NAME, "my_category");
+                props.put(JcrCategory.DESCRIPTION, "my cat desc");
 
                 JcrCategory category = baseProvider.createCategory(props);
 
-                JcrFeed feed = baseProvider.createFeed(category.getId());
-                feed.setSystemName("my_feed");
-                feed.setDescription("My feed description");
-                feed.setTitle("My Feed");
+                props = new HashMap<String, Object>();
+                props.put(JcrCategory.TITLE, "my feed");
+                props.put(JcrCategory.SYSTEM_NAME, "my_feed");
+                props.put(JcrCategory.DESCRIPTION, "my feed desc");
 
-                Map<String,Object> otherProperties = new HashMap<String, Object>();
-                otherProperties.put("prop1","my prop1");
+                JcrFeed feed = baseProvider.createFeed(category.getId(), props);
+
+                Map<String, Object> otherProperties = new HashMap<String, Object>();
+                otherProperties.put("prop1", "my prop1");
                 feed.setProperties(otherProperties);
+
+                category.getFeeds();
 
                 return feed;
 
             }
         });
 
-
-       JcrFeed readFeed = metadata.read(new Command<JcrFeed>() {
+        JcrFeed readFeed = metadata.read(new Command<JcrFeed>() {
             @Override
             public JcrFeed execute() {
-                JcrFeed f =  baseProvider.getEntity(feed.getId(),JcrFeed.class);
+                JcrFeed f = baseProvider.getEntity(feed.getId(), JcrFeed.class);
                 return f;
             }
         });
-
 
 
     }
