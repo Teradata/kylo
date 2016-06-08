@@ -60,7 +60,7 @@
 	+ tba:properties (tba:properties) COPY
 
 [tba:properties]
-	- * (UNDEFINED)  COPY
+	- * (UNDEFINED) multiple COPY
 
 [tba:entity] > mix:lastModified, nt:hierarchyNode 
 
@@ -86,7 +86,8 @@
 [tba:feedConnection] > mix:referenceable, tba:entity 
 	- tba:datasource (WEAKREFERENCE) mandatory COPY
 
-[tba:feedSource] > tba:feedConnection 
+[tba:feedSource] > tba:feedConnection
+
 
 [tba:feedDestination] > tba:feedConnection 
 
@@ -94,8 +95,10 @@
 /*
  * + fieldPolicies (tba:fieldPolicy) sns
  */
-[tba:datasource] > mix:referenceable, mix:title, tba:entity, tba:propertied 
+[tba:datasource] > mix:referenceable, mix:title, tba:entity, tba:propertied
+    - tba:systemName (STRING) mandatory
+	- tba:state (LONG)
+	- tba:initialized (BOOLEAN) = 'false'
 	+ tba:feedSources (tba:feedSource) COPY sns
 	+ tba:feedDestinations (tba:feedDestination) COPY sns
-	- tba:feedSources (REFERENCE) multiple COPY
 

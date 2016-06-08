@@ -27,9 +27,9 @@ public interface Datasource extends Serializable {
     
     DateTime getCreatedTime();
     
-    Set<FeedSource> getFeedSources();
+    Set<? extends FeedSource> getFeedSources();
     
-    Set<FeedDestination> getFeedDestinations();
+    Set<? extends FeedDestination> getFeedDestinations();
     
     // TODO add type/schema/format related properties
 

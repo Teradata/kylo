@@ -188,7 +188,7 @@ public class JcrGenericEntityProvider implements GenericEntityProvider {
         try {
         NodeTypeManager typeMgr = getSession().getWorkspace().getNodeTypeManager();
         NodeType type = typeMgr.getNodeType(nodeType);
-        return JcrUtil.getAllPropertyTypes(type);
+            return JcrUtil.getAllPropertyTypes(type, false);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve list of property types for node "+nodeType, e);
         }

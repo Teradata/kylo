@@ -24,7 +24,7 @@ import javax.jcr.query.QueryResult;
  */
 public abstract class BaseJcrProvider<T, PK extends Serializable> implements BaseProvider<T, PK> {
 
-    private Session getSession() {
+    protected Session getSession() {
         return JcrMetadataAccess.getActiveSession();
     }
 
@@ -74,6 +74,14 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         return (T) JcrUtil.createJcrObject(entNode, getJcrEntityClass(), constructorArgs);
     }
 
+public Node getNodeByIdentifier(PK id){
+    try {
+    Node node = getSession().getNodeByIdentifier(id.toString());
+        return node;
+} catch (RepositoryException e) {
+        throw new MetadataRepositoryException("Failure while finding entity by ID: " + id, e);
+    }
+}
 
     @Override
     public T findById(PK id) {

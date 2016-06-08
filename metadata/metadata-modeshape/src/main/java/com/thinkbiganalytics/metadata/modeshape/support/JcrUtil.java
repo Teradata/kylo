@@ -8,18 +8,26 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.modeshape.jcr.api.JcrTools;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
@@ -29,7 +37,6 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
-import javax.jcr.ValueFormatException;
 import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
@@ -50,10 +57,11 @@ public class JcrUtil {
         }
     }
 
+
     public static Object getProperty(Node node, String name) {
         try {
             Property prop = node.getProperty(name);
-            return asValue(prop);
+            return asValue(prop, node.getSession());
         } catch (PathNotFoundException e) {
             throw new UnknownPropertyException(name, e);
         } catch (RepositoryException e) {
@@ -133,7 +141,7 @@ public class JcrUtil {
     /**
      * Return the nodes Super Type properties, own properties, and referencing node Entities
      */
-    public static Map<String, GenericType.PropertyType> getAllPropertyTypes(NodeType type) {
+    public static Map<String, GenericType.PropertyType> getAllPropertyTypes(NodeType type, boolean includeChildNodes) {
         Map<String, GenericType.PropertyType> typeMap = new HashMap<>();
         String thisTypeName = type.getName();
 
@@ -142,24 +150,26 @@ public class JcrUtil {
         if (superTypes != null) {
             for (NodeType superType : superTypes) {
                 if (!typeMap.containsKey(superType.getName()) && !thisTypeName.equalsIgnoreCase(superType.getName())) {
-                    typeMap.putAll(getAllPropertyTypes(superType));
+                    typeMap.putAll(getAllPropertyTypes(superType, includeChildNodes));
                 }
             }
         }
         //add this nodes properties
         typeMap.putAll(getPropertyTypes(type));
 
-        //Add the child Node Entities
-        NodeDefinition[] childNodes = type.getChildNodeDefinitions();
+        if (includeChildNodes) {
+            //Add the child Node Entities
+            NodeDefinition[] childNodes = type.getChildNodeDefinitions();
 
-        if (childNodes != null) {
-            for (NodeDefinition childNode : childNodes) {
-                NodeType[] childTypes = childNode.getRequiredPrimaryTypes();
+            if (childNodes != null) {
+                for (NodeDefinition childNode : childNodes) {
+                    NodeType[] childTypes = childNode.getRequiredPrimaryTypes();
 
-                if (childTypes != null) {
-                    for (NodeType childType : childTypes) {
-                        if (!typeMap.containsKey(childType.getName()) && !thisTypeName.equalsIgnoreCase(childType.getName())) {
-                            typeMap.put(childType.getName(), GenericType.PropertyType.ENTITY);
+                    if (childTypes != null) {
+                        for (NodeType childType : childTypes) {
+                            if (!typeMap.containsKey(childType.getName()) && !thisTypeName.equalsIgnoreCase(childType.getName())) {
+                                typeMap.put(childType.getName(), GenericType.PropertyType.ENTITY);
+                            }
                         }
                     }
                 }
@@ -200,41 +210,183 @@ public class JcrUtil {
         }
     }
 
+    public static Object asValue(Value value) {
+        try {
+            switch (value.getType()) {
+                case (PropertyType.DECIMAL):
+                    return value.getDecimal();
+                case (PropertyType.STRING):
+                    return value.getString();
+                case (PropertyType.DOUBLE):
+                    return Double.valueOf(value.getDouble());
+                case (PropertyType.LONG):
+                    return Long.valueOf(value.getLong());
+                case (PropertyType.BOOLEAN):
+                    return Boolean.valueOf(value.getBoolean());
+                case (PropertyType.DATE):
+                    return value.getDate().getTime();
+                case (PropertyType.BINARY):
+                    return IOUtils.toByteArray(value.getBinary().getStream());
+                default:
+                    return null;
+            }
+        } catch (RepositoryException | IOException e) {
+            throw new MetadataRepositoryException("Failed to access property type", e);
+        }
+    }
+
+
     public static Object asValue(Property prop) {
+        return asValue(prop, null);
+    }
+
+    public static Object asValue(Property prop, Session session) {
         // STRING, BOOLEAN, LONG, DOUBLE, PATH, ENTITY
         try {
             int code = prop.getType();
-
-            if (code == PropertyType.BOOLEAN) {
-                return prop.getBoolean();
-            } else if (code == PropertyType.STRING) {
-                return prop.getString();
-            } else if (code == PropertyType.LONG) {
-                return prop.getLong();
-            } else if (code == PropertyType.DOUBLE) {
-                return prop.getDouble();
-            } else if (code == PropertyType.PATH) {
-                return prop.getPath();
-            } else if (code == PropertyType.REFERENCE) {
-//                return prop.get
-                return null;  // TODO look up relationship
+            if (prop.isMultiple()) {
+                List<Object> objects = new ArrayList<>();
+                Value[] values = prop.getValues();
+                if (values != null) {
+                    for (Value value : values) {
+                        Object o = asValue(value);
+                        objects.add(o);
+                    }
+                }
+                if (objects.size() == 1) {
+                    return objects.get(0);
+                } else if (objects.size() > 1) {
+                    return objects;
+                } else {
+                    return null;
+                }
             } else {
-                return prop.getString();
+
+                if (code == PropertyType.BOOLEAN) {
+                    return prop.getBoolean();
+                } else if (code == PropertyType.STRING) {
+                    return prop.getString();
+                } else if (code == PropertyType.LONG) {
+                    return prop.getLong();
+                } else if (code == PropertyType.DOUBLE) {
+                    return prop.getDouble();
+                } else if (code == PropertyType.PATH) {
+                    return prop.getPath();
+                } else if (code == PropertyType.REFERENCE) {
+                    String nodeIdentifier = prop.getValue().getString();
+                    return lookupNodeReference(nodeIdentifier, session);
+                } else if (code == PropertyType.WEAKREFERENCE) {
+                    String nodeIdentifier = prop.getValue().getString();
+                    return lookupNodeReference(nodeIdentifier, session);
+                } else {
+                    return asValue(prop.getValue());
+                    //return prop.getString();
+                }
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access property type", e);
         }
     }
 
+    public static Node lookupNodeReference(String nodeIdentifier, Session session) {
+        Node n = null;
+        if (session != null) {
+            try {
+                n = session.getNodeByIdentifier(nodeIdentifier);
+            } catch (RepositoryException e) {
+
+            }
+        }
+        return n;
+    }
+
     public static void setProperty(Node node, String name, Object value) {
-        // Letting the value be converted from string.
-        // TODO do proper conversion
+
         try {
-            node.setProperty(name, value.toString());
+            if (node == null) {
+                throw new IllegalArgumentException("Cannot set a property on a null-node!");
+            }
+            if (name == null) {
+                throw new IllegalArgumentException("Cannot set a property without a provided name");
+            }
+
+            if (value == null) {
+                node.setProperty(name, (Value) null);
+            } else if (value instanceof JcrObject) {
+                node.setProperty(name, ((JcrObject) value).getNode());
+            } else if (value instanceof Value) {
+                node.setProperty(name, (Value) value);
+            } else if (value instanceof Node) {
+                node.setProperty(name, (Node) value);
+            } else if (value instanceof Binary) {
+                node.setProperty(name, (Binary) value);
+            } else if (value instanceof Calendar) {
+                node.setProperty(name, (Calendar) value);
+            } else if (value instanceof Date) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime((Date) value);
+                node.setProperty(name, cal);
+            } else if (value instanceof BigDecimal) {
+                node.setProperty(name, (BigDecimal) value);
+            } else if (value instanceof String) {
+                node.setProperty(name, (String) value);
+            } else if (value instanceof Long) {
+                node.setProperty(name, ((Long) value).longValue());
+            } else if (value instanceof Double) {
+                node.setProperty(name, (Double) value);
+            } else if (value instanceof Boolean) {
+                node.setProperty(name, (Boolean) value);
+            } else if (value instanceof InputStream) {
+                node.setProperty(name, (InputStream) value);
+            } else if (value instanceof Collection) {
+                String[] list = new String[((Collection<Object>) value).size()];
+                int pos = 0;
+                for (Object cal : (Collection<Object>) value) {
+                    list[pos] = cal.toString();
+                    pos += 1;
+                }
+                node.setProperty(name, list);
+            } else {
+                throw new MetadataRepositoryException("Cannot set property to a value of type " + value.getClass());
+            }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to set property value: " + name + "=" + value, e);
         }
 
+    }
+
+    public static int getJCRPropertyType(Object obj) {
+        if (obj instanceof String) {
+            return PropertyType.STRING;
+        }
+        if (obj instanceof Double) {
+            return PropertyType.DOUBLE;
+        }
+        if (obj instanceof Float) {
+            return PropertyType.DOUBLE;
+        }
+        if (obj instanceof Long) {
+            return PropertyType.LONG;
+        }
+        if (obj instanceof Integer) {
+            return PropertyType.LONG;
+        }
+        if (obj instanceof Boolean) {
+            return PropertyType.BOOLEAN;
+        }
+        if (obj instanceof Calendar) {
+            return PropertyType.DATE;
+        }
+        if (obj instanceof Binary) {
+            return PropertyType.BINARY;
+        }
+        if (obj instanceof InputStream) {
+            return PropertyType.BINARY;
+        }
+        if (obj instanceof Node) {
+            return PropertyType.REFERENCE;
+        }
+        return PropertyType.UNDEFINED;
     }
 
     public static int asCode(GenericType.PropertyType type) {
@@ -261,18 +413,25 @@ public class JcrUtil {
     public static Value asValue(ValueFactory factory, Object obj) {
         // STRING, BOOLEAN, LONG, DOUBLE, PATH, ENTITY
         try {
-            if (obj instanceof String) {
-                return factory.createValue((String) obj);
-            } else if (obj instanceof Integer || obj instanceof Long) {
-                return factory.createValue(obj.toString(), PropertyType.LONG);
-            } else if (obj instanceof Float || obj instanceof Double) {
-                return factory.createValue(obj.toString(), PropertyType.DOUBLE);
-//        } else if (obj instanceof GenericEntity) {
-//            return factory.createValue((String) obj);
-            } else {
-                return factory.createValue(obj.toString());
+            switch (getJCRPropertyType(obj)) {
+                case PropertyType.STRING:
+                    return factory.createValue((String) obj);
+                case PropertyType.BOOLEAN:
+                    return factory.createValue((Boolean) obj);
+                case PropertyType.DATE:
+                    return factory.createValue((Calendar) obj);
+                case PropertyType.LONG:
+                    return obj instanceof Long ? factory.createValue(((Long) obj).longValue()) : factory.createValue(((Integer) obj).longValue());
+                case PropertyType.DOUBLE:
+                    return obj instanceof Double ? factory.createValue((Double) obj) : factory.createValue(((Float) obj).doubleValue());
+                case PropertyType.BINARY:
+                    return factory.createValue((InputStream) obj);
+                case PropertyType.REFERENCE:
+                    return factory.createValue((Node) obj);
+                default:
+                    return (obj != null ? factory.createValue(obj.toString()) : factory.createValue(StringUtils.EMPTY));
             }
-        } catch (ValueFormatException e) {
+        } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Invalid value format", e);
         }
     }
@@ -285,6 +444,10 @@ public class JcrUtil {
         }
     }
 
+
+    /**
+     * get All Child nodes under a parentNode and create the wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
+     */
     public static <T extends JcrObject> List<T> getNodes(Node parentNode, String name, Class<T> type) {
         List<T> list = new ArrayList<>();
         try {
@@ -308,6 +471,9 @@ public class JcrUtil {
         return list;
     }
 
+    /**
+     * Get a child node relative to the parentNode and create the Wrapper object
+     */
     public static <T extends JcrObject> T getNode(Node parentNode, String name, Class<T> type) {
         T entity = null;
         try {
@@ -319,12 +485,15 @@ public class JcrUtil {
         return entity;
     }
 
+    /**
+     * Get or Create a node relative to the Parent Node and return the Wrapper JcrObject
+     */
     public static <T extends JcrObject> T getOrCreateNode(Node parentNode, String name, String nodeType, Class<T> type) {
         return getOrCreateNode(parentNode, name, nodeType, type, null);
     }
 
     /**
-     * gets a node cast as a type
+     * Get or Create a node relative to the Parent Node and return the Wrapper JcrObject
      */
     public static <T extends JcrObject> T getOrCreateNode(Node parentNode, String name, String nodeType, Class<T> type, Object[] constructorArgs) {
         T entity = null;
@@ -338,11 +507,24 @@ public class JcrUtil {
         return entity;
     }
 
+    /**
+     * Create a new JcrObject (Wrapper Object) that invokes a constructor with at least parameter of type Node
+     */
     public static <T extends JcrObject> T createJcrObject(Node node, Class<T> type) {
-        return createJcrObject(node,type,null);
+        return createJcrObject(node, type, null);
     }
 
+    /**
+     * Create a new JcrObject (Wrapper Object) that invokes a constructor with at least parameter of type Node
+     */
     public static <T extends JcrObject> T createJcrObject(Node node, Class<T> type, Object[] constructorArgs) {
+        return constructNodeObject(node, type, constructorArgs);
+    }
+
+    /**
+     * Create a new Node Wrapper Object that invokes a constructor with at least parameter of type Node
+     */
+    public static <T extends Object> T constructNodeObject(Node node, Class<T> type, Object[] constructorArgs) {
         T entity = null;
         try {
             if (constructorArgs != null) {

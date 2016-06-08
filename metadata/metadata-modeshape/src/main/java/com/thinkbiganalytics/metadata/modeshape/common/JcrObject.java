@@ -3,13 +3,7 @@ package com.thinkbiganalytics.metadata.modeshape.common;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.modeshape.jcr.api.JcrTools;
 
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 
 import javax.jcr.Node;
@@ -100,7 +94,17 @@ public class JcrObject {
     }
 
     public <T> T getProperty(String name, Class<T> type) {
-        return (T) JcrUtil.getProperty(this.node, name);
+        Object o = JcrUtil.getProperty(this.node, name);
+        if (!o.getClass().isAssignableFrom(type)) {
+            //if it cant be matched and it is a Node > JcrObject, do the conversion
+            if (o instanceof Node && JcrObject.class.isAssignableFrom(type)) {
+                return JcrUtil.constructNodeObject((Node) o, type, null);
+            } else {
+                throw new MetadataRepositoryException("Unable to convert Property " + name + " to type " + type);
+            }
+        } else {
+            return (T) o;
+        }
     }
 
     public void setProperty(String name, Object value) {
@@ -108,6 +112,9 @@ public class JcrObject {
     }
 
 
+    public Node getNode() {
+        return this.node;
+    }
 
 
 

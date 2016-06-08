@@ -4,11 +4,14 @@ import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericType;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 
@@ -43,6 +46,9 @@ public class JcrPropertyTest {
     CategoryProvider categoryProvider;
 
     @Inject
+    DatasourceProvider datasourceProvider;
+
+    @Inject
     FeedProvider feedProvider;
 
     @Inject
@@ -68,23 +74,18 @@ public class JcrPropertyTest {
             @Override
             public JcrFeed execute() {
 
-                Map<String, Object> props = new HashMap<String, Object>();
                 String categorySystemName = "my_category";
 
                 JcrCategory category = (JcrCategory)categoryProvider.ensureCategory(categorySystemName);
                 category.setDescription("my category desc");
                 category.setTitle("my category");
-
                 String feedSystemName = "my_feed";
 
-                props = new HashMap<String, Object>();
-                props.put(JcrCategory.TITLE, "my feed");
-                props.put(JcrCategory.SYSTEM_NAME, "my_feed");
-                props.put(JcrCategory.DESCRIPTION, "my feed desc");
+                JcrDatasource datasource = (JcrDatasource) datasourceProvider.ensureDatasource("mysql.table", "mysql table source");
+                datasource.setProperty(JcrDatasource.TYPE_NAME, "Database");
 
-                JcrFeed feed = (JcrFeed)feedProvider.ensureFeed (categorySystemName, feedSystemName);
+                JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, " my feed desc", datasource.getId(), null);
                 feed.setTitle("my feed");
-                feed.setDescription("my feed desc");
 
                 Map<String, Object> otherProperties = new HashMap<String, Object>();
                 otherProperties.put("prop1", "my prop1");
@@ -100,6 +101,12 @@ public class JcrPropertyTest {
             @Override
             public JcrFeed execute() {
                 JcrFeed f = ((JcrFeedProvider) feedProvider).findById(feed.getId());
+                List<JcrSource> sources = f.getSources();
+                if (sources != null) {
+                    for (JcrSource source : sources) {
+                        Map<String, Object> dataSourceProperties = ((JcrDatasource) source.getDatasource()).getAllProperties();
+                    }
+                }
                 List<Category> categoryList = categoryProvider.findAll();
                 return f;
             }

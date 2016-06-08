@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.modeshape.category;
 
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
@@ -14,6 +15,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -35,9 +37,9 @@ public class JcrCategory extends AbstractJcrSystemEntity implements Category{
     }
 
 
-    public List<Feed> getFeeds(){
+    public List<? extends Feed> getFeeds() {
         List<JcrFeed> feeds = JcrUtil.getNodes(this.node,null,JcrFeed.class);
-       return null;
+        return feeds;
     }
 
     @Override

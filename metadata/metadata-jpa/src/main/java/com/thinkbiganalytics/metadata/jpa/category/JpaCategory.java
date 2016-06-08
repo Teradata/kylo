@@ -55,7 +55,7 @@ public class JpaCategory extends AbstractAuditedEntity implements Category {
     }
 
     @Override
-    public List<Feed> getFeeds() {
+    public List<? extends Feed> getFeeds() {
         return feeds;
     }
 

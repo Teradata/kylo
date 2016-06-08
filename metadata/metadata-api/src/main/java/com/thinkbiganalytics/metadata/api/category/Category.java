@@ -18,7 +18,7 @@ public interface Category {
 
     ID getId();
 
-    List<Feed> getFeeds();
+    List<? extends Feed> getFeeds();
 
     String getDisplayName();
 

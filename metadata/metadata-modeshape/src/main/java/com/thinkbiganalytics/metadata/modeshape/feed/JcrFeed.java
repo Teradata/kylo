@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -29,9 +31,8 @@ import javax.jcr.RepositoryException;
  */
 public class JcrFeed extends AbstractJcrSystemEntity implements Feed {
 
-    public static final String FEED_TYPE = "tba:feed";
+    public static final String NODE_TYPE = "tba:feed";
     public static final String SOURCE_NAME = "tba:sources";
-    public static final String SOURCE_TYPE = "tba:feedSource";
     public static final String DESTINATION_NAME = "tba:destinations";
 
 
@@ -103,23 +104,65 @@ public class JcrFeed extends AbstractJcrSystemEntity implements Feed {
     }
 
     @Override
-    public FeedSource getSource(Datasource.ID id) {
-        return null;
+    public FeedSource getSource(final Datasource.ID id) {
+        FeedSource source = null;
+        List<JcrSource> sources = getSources();
+        if (sources != null && !sources.isEmpty()) {
+            source = Iterables.tryFind(sources, new Predicate<JcrSource>() {
+                @Override
+                public boolean apply(JcrSource jcrSource) {
+                    return jcrSource.getDatasource().getId().equals(id);
+                }
+            }).orNull();
+        }
+        return source;
     }
 
     @Override
-    public FeedSource getSource(FeedSource.ID id) {
-        return null;
+    public FeedSource getSource(final FeedSource.ID id) {
+        FeedSource source = null;
+        List<JcrSource> sources = getSources();
+        if (sources != null && !sources.isEmpty()) {
+            source = Iterables.tryFind(sources, new Predicate<JcrSource>() {
+                @Override
+                public boolean apply(JcrSource jcrSource) {
+                    return jcrSource.getId().equals(id);
+                }
+            }).orNull();
+        }
+        return source;
+
     }
 
     @Override
-    public FeedDestination getDestination(Datasource.ID id) {
-        return null;
+    public FeedDestination getDestination(final Datasource.ID id) {
+        FeedDestination destination = null;
+        List<JcrDestination> destinations = getDestinations();
+        if (destinations != null && !destinations.isEmpty()) {
+            destination = Iterables.tryFind(destinations, new Predicate<JcrDestination>() {
+                @Override
+                public boolean apply(JcrDestination jcrDestination) {
+                    return jcrDestination.getDatasource().getId().equals(id);
+                }
+            }).orNull();
+        }
+        return destination;
     }
 
     @Override
-    public FeedDestination getDestination(FeedDestination.ID id) {
-        return null;
+    public FeedDestination getDestination(final FeedDestination.ID id) {
+
+        FeedDestination destination = null;
+        List<JcrDestination> destinations = getDestinations();
+        if (destinations != null && !destinations.isEmpty()) {
+            destination = Iterables.tryFind(destinations, new Predicate<JcrDestination>() {
+                @Override
+                public boolean apply(JcrDestination jcrDestination) {
+                    return jcrDestination.getId().equals(id);
+                }
+            }).orNull();
+        }
+        return destination;
     }
 
     @Override
