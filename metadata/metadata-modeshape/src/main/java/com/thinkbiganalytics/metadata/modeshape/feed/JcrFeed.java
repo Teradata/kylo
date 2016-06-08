@@ -34,10 +34,20 @@ public class JcrFeed extends AbstractJcrSystemEntity implements Feed {
     public static final String NODE_TYPE = "tba:feed";
     public static final String SOURCE_NAME = "tba:sources";
     public static final String DESTINATION_NAME = "tba:destinations";
+    public static final String CATEGORY = "tba:category";
 
 
     public JcrFeed(Node node) {
         super(node);
+    }
+
+    public JcrFeed(Node node, JcrCategory category) {
+        super(node);
+        setProperty(CATEGORY, category);
+
+        Object o = getProperty(CATEGORY);
+        int i = 0;
+
     }
 
     @Override
@@ -56,11 +66,15 @@ public class JcrFeed extends AbstractJcrSystemEntity implements Feed {
     }
 
     public JcrCategory getCategory() {
+
+        return JcrUtil.getNode(this.node, JcrFeed.CATEGORY, JcrCategory.class);
+        /*
         try {
             return new JcrCategory(node.getParent());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to find Category for feed " + getTitle(), e);
         }
+        */
     }
 
 

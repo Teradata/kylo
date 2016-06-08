@@ -8,9 +8,14 @@ import com.thinkbiganalytics.metadata.api.generic.GenericEntity;
 import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
+
+import org.jcrom.util.JcrUtils;
 
 import java.io.Serializable;
+import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.jcr.Node;
@@ -21,6 +26,32 @@ import javax.jcr.RepositoryException;
  * @author Sean Felten
  */
 public class JcrEntity  extends JcrObject implements GenericEntity {
+
+
+
+    public static String TAGGABLE_NAME = JcrPropertyConstants.TAGGABLE;
+
+    public void setTags(Set<String> tags){
+        setProperty(TAGGABLE_NAME, tags);
+    }
+
+    public Set<String> addTag(String tag){
+        Set<String> tags = getPropertyAsSet(TAGGABLE_NAME, String.class);
+        if(!tags.contains(tag)) {
+            tags.add(tag);
+            setTags(tags);
+        }
+        return tags;
+    }
+
+    public boolean hasTag(String tag){
+        Set<String> tags = getPropertyAsSet(TAGGABLE_NAME, String.class);
+        return tags.contains(tag);
+    }
+
+    public Set<String> getTags(){
+        return getPropertyAsSet(TAGGABLE_NAME,String.class);
+    }
 
     /**
      *

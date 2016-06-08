@@ -30,7 +30,7 @@ import javax.persistence.Column;
 public class JcrCategory extends AbstractJcrSystemEntity implements Category{
 
     public static String CATEGORY_NAME = "tba:category";
-    public static String CATEGORY_TYPE = "tba:category";
+    public static String NODE_TYPE = "tba:category";
 
     public JcrCategory(Node node) {
         super(node);

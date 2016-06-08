@@ -56,13 +56,17 @@
 /*
  * // Predefined Entities ////
  */
+
+[tba:taggable] mixin
+  - tba:tags (STRING) multiple
+
 [tba:propertied] mixin
 	+ tba:properties (tba:properties) COPY
 
 [tba:properties]
 	- * (UNDEFINED) multiple COPY
 
-[tba:entity] > mix:lastModified, nt:hierarchyNode 
+[tba:entity] > mix:lastModified, nt:hierarchyNode, tba:taggable
 
 [tba:genericEntity] > tba:entity 
 
@@ -78,6 +82,7 @@
 	- tba:systemName (STRING) mandatory
 	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'
+	- tba:category (REFERENCE) mandatory
 
 
 /*

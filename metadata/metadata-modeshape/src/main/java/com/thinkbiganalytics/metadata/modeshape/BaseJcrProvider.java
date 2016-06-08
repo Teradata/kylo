@@ -118,9 +118,8 @@ public Node getNodeByIdentifier(PK id){
 
     public List<T> find(String query) {
         List<T> entities = new ArrayList<>();
-        JcrTools tools = new JcrTools();
         try {
-            QueryResult result = tools.printQuery(getSession(), query);
+            QueryResult result = JcrUtil.query(getSession(), query);
             if (result != null) {
                 NodeIterator nodeIterator = result.getNodes();
                 while (nodeIterator.hasNext()) {
@@ -136,10 +135,8 @@ public Node getNodeByIdentifier(PK id){
     }
 
     public T findFirst(String query) {
-
-        JcrTools tools = new JcrTools();
         try {
-            QueryResult result = tools.printQuery(getSession(), query);
+            QueryResult result = JcrUtil.query(getSession(), query);
             if (result != null) {
                 NodeIterator nodeIterator = result.getNodes();
                 if (nodeIterator.hasNext()) {

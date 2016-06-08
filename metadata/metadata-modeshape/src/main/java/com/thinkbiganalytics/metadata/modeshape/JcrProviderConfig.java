@@ -21,6 +21,7 @@ import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.generic.JcrGenericEntityProvider;
+import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 
 /**
  *
@@ -62,6 +63,11 @@ public class JcrProviderConfig {
     @Bean
     public FeedProvider feedProvider() {
         return new JcrFeedProvider();
+    }
+
+    @Bean
+    public TagProvider tagProvider() {
+        return new TagProvider();
     }
 
     @Bean

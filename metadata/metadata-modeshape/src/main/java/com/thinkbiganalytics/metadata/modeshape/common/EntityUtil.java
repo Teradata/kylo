@@ -33,6 +33,10 @@ public class EntityUtil {
     }
 
 
+    public static String asQueryProperty(String prop) {
+        return "[" + prop + "]";
+    }
+
 }
 
 

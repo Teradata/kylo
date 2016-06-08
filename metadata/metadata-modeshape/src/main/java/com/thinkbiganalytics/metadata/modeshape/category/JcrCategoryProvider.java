@@ -26,7 +26,7 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public String getNodeType() {
-        return JcrCategory.CATEGORY_TYPE;
+        return JcrCategory.NODE_TYPE;
     }
 
     @Override
