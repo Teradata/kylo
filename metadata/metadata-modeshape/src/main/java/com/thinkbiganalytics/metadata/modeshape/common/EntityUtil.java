@@ -32,6 +32,11 @@ public class EntityUtil {
         return Paths.get("/metadata", "datasources").toString();
     }
 
+    public static String pathForTemplates() {
+        return Paths.get("/metadata", "templates").toString();
+    }
+
+
 
     public static String asQueryProperty(String prop) {
         return "[" + prop + "]";

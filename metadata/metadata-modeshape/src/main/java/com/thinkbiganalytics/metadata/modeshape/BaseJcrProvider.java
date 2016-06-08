@@ -116,6 +116,23 @@ public Node getNodeByIdentifier(PK id){
 
     }
 
+    public List<Node> findNodes(String query) {
+        List<Node> entities = new ArrayList<>();
+        try {
+            QueryResult result = JcrUtil.query(getSession(), query);
+            if (result != null) {
+                NodeIterator nodeIterator = result.getNodes();
+                while (nodeIterator.hasNext()) {
+                    Node node = nodeIterator.nextNode();
+                    entities.add(node);
+                }
+            }
+            return entities;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(), e);
+        }
+    }
+
     public List<T> find(String query) {
         List<T> entities = new ArrayList<>();
         try {

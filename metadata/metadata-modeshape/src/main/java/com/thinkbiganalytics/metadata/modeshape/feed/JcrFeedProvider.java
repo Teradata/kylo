@@ -54,8 +54,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         return JcrFeed.NODE_TYPE;
     }
 
+
     @Override
-    public Class<? extends JcrFeed> getEntityClass() {
+    public Class<JcrFeed> getEntityClass() {
         return JcrFeed.class;
     }
 

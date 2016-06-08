@@ -5,6 +5,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
 import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
+import com.thinkbiganalytics.metadata.jpa.category.JpaCategoryProvider;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
 
 import javax.persistence.NoResultException;
@@ -14,7 +15,7 @@ import java.util.List;
 /**
  * Created by sr186054 on 5/3/16.
  */
-public class JpaFeedManagerCategoryProvider extends BaseJpaProvider<FeedManagerCategory,FeedManagerCategory.ID> implements FeedManagerCategoryProvider {
+public class JpaFeedManagerCategoryProvider extends JpaCategoryProvider implements FeedManagerCategoryProvider {
 
     @Override
     public Class<? extends FeedManagerCategory> getEntityClass() {

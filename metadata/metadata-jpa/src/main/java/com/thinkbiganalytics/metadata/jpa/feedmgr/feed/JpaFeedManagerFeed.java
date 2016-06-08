@@ -21,7 +21,7 @@ import javax.persistence.*;
 @NamedQueries(
         {@NamedQuery(
                 name = FeedManagerNamedQueries.FEED_FIND_BY_SYSTEM_NAME,
-                query = "select feed FROM JpaFeedManagerFeed as feed INNER JOIN FETCH feed.category as c WHERE feed.name = :systemName"
+                query = "select feed FROM JpaFeedManagerFeed as feed INNER JOIN FETCH feed.category as c WHERE feed.name = :systemName and c.name = :categorySystemName"
         ),
                 @NamedQuery(name = FeedManagerNamedQueries.FEED_FIND_BY_TEMPLATE_ID,
                         query = "FROM JpaFeedManagerFeed as feed WHERE feed.template.id = :templateId"),

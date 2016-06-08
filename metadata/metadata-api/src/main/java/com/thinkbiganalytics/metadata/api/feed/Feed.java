@@ -37,13 +37,13 @@ public interface Feed<C extends Category> extends Propertied, Serializable {
     
     FeedPrecondition getPrecondition();
     
-    List<FeedSource> getSources();
+    List<? extends FeedSource> getSources();
     
     FeedSource getSource(Datasource.ID id);
     
     FeedSource getSource(FeedSource.ID id);
 
-    List<FeedDestination> getDestinations();
+    List<? extends FeedDestination> getDestinations();
 
     FeedDestination getDestination(Datasource.ID id);
 

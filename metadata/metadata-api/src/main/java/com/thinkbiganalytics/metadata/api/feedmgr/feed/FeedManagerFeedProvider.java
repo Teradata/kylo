@@ -11,11 +11,11 @@ import java.util.List;
 /**
  * Created by sr186054 on 5/4/16.
  */
-public interface FeedManagerFeedProvider extends BaseProvider<FeedManagerFeed,Feed.ID> {
+public interface FeedManagerFeedProvider extends BaseProvider<Feed, Feed.ID> {
 
-    FeedManagerFeed findBySystemName(String systemName);
+    FeedManagerFeed findBySystemName(String categorySystemName, String systemName);
 
-    List<FeedManagerFeed> findByTemplateId(FeedManagerTemplate.ID templateId);
+    List<? extends FeedManagerFeed> findByTemplateId(FeedManagerTemplate.ID templateId);
 
-    List<FeedManagerFeed> findByCategoryId(FeedManagerCategory.ID categoryId);
+    List<? extends FeedManagerFeed> findByCategoryId(FeedManagerCategory.ID categoryId);
 }

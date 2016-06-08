@@ -8,6 +8,9 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericType;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
@@ -17,8 +20,6 @@ import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
-import com.thinkbiganalytics.metadata.modeshape.jcrom.FeedJcromProvider;
-import com.thinkbiganalytics.metadata.modeshape.jcrom.JcromFeed;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 
 import org.junit.Test;
@@ -31,9 +32,9 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 import javax.inject.Inject;
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
@@ -58,9 +59,11 @@ public class JcrPropertyTest {
     @Inject
     FeedProvider feedProvider;
 
+    @Inject
+    FeedManagerFeedProvider feedManagerFeedProvider;
 
     @Inject
-    FeedJcromProvider feedJcromProvider;
+    FeedManagerTemplateProvider feedManagerTemplateProvider;
 
     @Inject
     TagProvider tagProvider;
@@ -154,8 +157,42 @@ public class JcrPropertyTest {
 
     }
 
+    @Test
+    public void queryTest() {
+
+        //final String query = "select e.* from [tba:feed] as e  join [tba:category] c on e.[tba:category].[tba:systemName] = c.[tba:systemName] where  c.[tba:systemName] = $category ";
+        final String query = "select e.* from [tba:feed] as e join [tba:category] as c on e.[tba:category] = c.id";
+
+        metadata.read(new Command<Object>() {
+            @Override
+            public Object execute() {
+
+                List<Node> feeds = ((JcrFeedProvider) feedProvider).findNodes(query);
+                return feeds;
+            }
+        });
+    }
+
+    @Test
+    public void testFeedManager() {
+        FeedManagerFeed feed = metadata.read(new Command<FeedManagerFeed>() {
+            @Override
+            public FeedManagerFeed execute() {
+                List<Feed> feeds = feedManagerFeedProvider.findAll();
+                if (feeds != null) {
+                    return (FeedManagerFeed) feeds.get(0);
+                }
+                return null;
+            }
+        });
+
+    }
+
 
 }
+
+
+
 
 
 

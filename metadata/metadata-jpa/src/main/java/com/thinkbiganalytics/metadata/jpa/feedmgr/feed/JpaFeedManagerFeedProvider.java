@@ -17,7 +17,7 @@ import java.util.List;
 /**
  * Created by sr186054 on 5/3/16.
  */
-public class JpaFeedManagerFeedProvider extends BaseJpaProvider<FeedManagerFeed,Feed.ID>  implements FeedManagerFeedProvider{
+public class JpaFeedManagerFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements FeedManagerFeedProvider {
 
 
     @Override
@@ -30,13 +30,14 @@ public class JpaFeedManagerFeedProvider extends BaseJpaProvider<FeedManagerFeed,
         return new JpaFeed.FeedId(fid);
     }
 
-    public FeedManagerFeed findBySystemName(String systemName) {
+    public FeedManagerFeed findBySystemName(String categorySystemName, String systemName) {
 
         FeedManagerFeed feed =  null;
         try {
             feed = (FeedManagerFeed) entityManager.createNamedQuery(FeedManagerNamedQueries.FEED_FIND_BY_SYSTEM_NAME)
                     .setParameter("systemName", systemName)
-                    .getSingleResult();
+                .setParameter("categorySystemName", categorySystemName)
+                .getSingleResult();
         }catch(NoResultException e){
             e.printStackTrace();
         }
@@ -66,4 +67,6 @@ public class JpaFeedManagerFeedProvider extends BaseJpaProvider<FeedManagerFeed,
         }
         return feeds;
     }
+
+
 }

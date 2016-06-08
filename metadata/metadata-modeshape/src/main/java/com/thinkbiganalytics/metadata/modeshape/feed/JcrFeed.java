@@ -8,6 +8,7 @@ import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
@@ -16,6 +17,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 
 import org.joda.time.DateTime;
 
@@ -29,12 +31,14 @@ import javax.jcr.RepositoryException;
 /**
  * Created by sr186054 on 6/4/16.
  */
-public class JcrFeed extends AbstractJcrSystemEntity implements Feed {
+public class JcrFeed<C extends Category> extends AbstractJcrSystemEntity implements Feed<C> {
 
     public static final String NODE_TYPE = "tba:feed";
     public static final String SOURCE_NAME = "tba:sources";
     public static final String DESTINATION_NAME = "tba:destinations";
     public static final String CATEGORY = "tba:category";
+
+    public static final String TEMPLATE = "tba:template";
 
 
     public JcrFeed(Node node) {
@@ -44,10 +48,6 @@ public class JcrFeed extends AbstractJcrSystemEntity implements Feed {
     public JcrFeed(Node node, JcrCategory category) {
         super(node);
         setProperty(CATEGORY, category);
-
-        Object o = getProperty(CATEGORY);
-        int i = 0;
-
     }
 
     @Override
@@ -65,24 +65,24 @@ public class JcrFeed extends AbstractJcrSystemEntity implements Feed {
         }
     }
 
-    public JcrCategory getCategory() {
+    public C getCategory() {
 
-        return JcrUtil.getNode(this.node, JcrFeed.CATEGORY, JcrCategory.class);
-        /*
-        try {
-            return new JcrCategory(node.getParent());
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to find Category for feed " + getTitle(), e);
-        }
-        */
+        return (C) JcrUtil.getNode(this.node, JcrFeed.CATEGORY, JcrCategory.class);
     }
 
+    public FeedManagerTemplate getTemplate() {
+        return getProperty(TEMPLATE, JcrFeedTemplate.class);
+    }
 
-    public List<JcrSource> getSources() {
+    public void setTemplate(FeedManagerTemplate template) {
+        setProperty(TEMPLATE, template);
+    }
+
+    public List<? extends FeedSource> getSources() {
         return JcrUtil.getNodes(this.node, SOURCE_NAME, JcrSource.class);
     }
 
-    public List<JcrDestination> getDestinations() {
+    public List<? extends FeedDestination> getDestinations() {
         return JcrUtil.getNodes(this.node, DESTINATION_NAME, JcrDestination.class);
     }
 
@@ -120,12 +120,12 @@ public class JcrFeed extends AbstractJcrSystemEntity implements Feed {
     @Override
     public FeedSource getSource(final Datasource.ID id) {
         FeedSource source = null;
-        List<JcrSource> sources = getSources();
+        List<FeedSource> sources = (List<FeedSource>) getSources();
         if (sources != null && !sources.isEmpty()) {
-            source = Iterables.tryFind(sources, new Predicate<JcrSource>() {
+            source = Iterables.tryFind(sources, new Predicate<FeedSource>() {
                 @Override
-                public boolean apply(JcrSource jcrSource) {
-                    return jcrSource.getDatasource().getId().equals(id);
+                public boolean apply(FeedSource jcrSource) {
+                    return jcrSource.getDatasource().equals(id);
                 }
             }).orNull();
         }
@@ -135,11 +135,11 @@ public class JcrFeed extends AbstractJcrSystemEntity implements Feed {
     @Override
     public FeedSource getSource(final FeedSource.ID id) {
         FeedSource source = null;
-        List<JcrSource> sources = getSources();
+        List<FeedSource> sources = (List<FeedSource>) getSources();
         if (sources != null && !sources.isEmpty()) {
-            source = Iterables.tryFind(sources, new Predicate<JcrSource>() {
+            source = Iterables.tryFind(sources, new Predicate<FeedSource>() {
                 @Override
-                public boolean apply(JcrSource jcrSource) {
+                public boolean apply(FeedSource jcrSource) {
                     return jcrSource.getId().equals(id);
                 }
             }).orNull();
@@ -151,11 +151,11 @@ public class JcrFeed extends AbstractJcrSystemEntity implements Feed {
     @Override
     public FeedDestination getDestination(final Datasource.ID id) {
         FeedDestination destination = null;
-        List<JcrDestination> destinations = getDestinations();
+        List<FeedDestination> destinations = (List<FeedDestination>) getDestinations();
         if (destinations != null && !destinations.isEmpty()) {
-            destination = Iterables.tryFind(destinations, new Predicate<JcrDestination>() {
+            destination = Iterables.tryFind(destinations, new Predicate<FeedDestination>() {
                 @Override
-                public boolean apply(JcrDestination jcrDestination) {
+                public boolean apply(FeedDestination jcrDestination) {
                     return jcrDestination.getDatasource().getId().equals(id);
                 }
             }).orNull();
@@ -167,11 +167,11 @@ public class JcrFeed extends AbstractJcrSystemEntity implements Feed {
     public FeedDestination getDestination(final FeedDestination.ID id) {
 
         FeedDestination destination = null;
-        List<JcrDestination> destinations = getDestinations();
+        List<FeedDestination> destinations = (List<FeedDestination>) getDestinations();
         if (destinations != null && !destinations.isEmpty()) {
-            destination = Iterables.tryFind(destinations, new Predicate<JcrDestination>() {
+            destination = Iterables.tryFind(destinations, new Predicate<FeedDestination>() {
                 @Override
-                public boolean apply(JcrDestination jcrDestination) {
+                public boolean apply(FeedDestination jcrDestination) {
                     return jcrDestination.getId().equals(id);
                 }
             }).orNull();

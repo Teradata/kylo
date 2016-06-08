@@ -10,6 +10,8 @@
  *                     feedDestination*
  *         "datasources"
  *             datasource
+ *         "templates"
+ *             template
  *         "generic"
  *             "types"
  *                 genericType
@@ -27,6 +29,7 @@
 	+ feeds (tba:feedsFolder) = tba:feedsFolder autocreated mandatory
 	+ datasources (tba:datasourcesFolder) = tba:datasourcesFolder autocreated mandatory
 	+ generic (tba:genericFolder) = tba:genericFolder autocreated mandatory
+	+ templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
 
 [tba:feedsFolder] > nt:folder 
 	+ category (tba:categoryFolder) = tba:categoryFolder autocreated mandatory
@@ -52,6 +55,7 @@
 
 [tba:entitiesFolder] > nt:folder 
 
+[tba:templatesFolder] > nt:folder
 
 /*
  * // Predefined Entities ////
@@ -68,7 +72,16 @@
 
 [tba:entity] > mix:lastModified, nt:hierarchyNode, tba:taggable
 
-[tba:genericEntity] > tba:entity 
+[tba:genericEntity] > tba:entity
+
+[tba:feedTemplate] > mix:title,tba:entity, tba:propertied
+- tba:defineTable (BOOLEAN) = 'false'
+- tba:dataTransformation (BOOLEAN) = 'false'
+- tba:allowPreconditions (BOOLEAN) = 'false'
+- tba:icon (STRING)
+- tba:iconColor (STRING)
+- tba:nifiTemplateId (STRING)
+
 
 [tba:category] > mix:referenceable, mix:title, tba:entity, tba:propertied 
 	- tba:systemName (STRING) mandatory
@@ -83,6 +96,7 @@
 	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:category (REFERENCE) mandatory
+	- tba:template (REFERENCE)
 
 
 /*
