@@ -120,7 +120,11 @@ public class JcrObject {
     }
 
     public <T> T getProperty(String name, Class<T> type,boolean allowNotFound) {
-        Object o = JcrUtil.getProperty(this.node, name,allowNotFound);
+      return getPropertyFromNode(this.node,name,type,allowNotFound);
+    }
+
+    protected <T> T getPropertyFromNode(Node node, String name, Class<T> type, boolean allowNotFound){
+        Object o = JcrUtil.getProperty(node, name,allowNotFound);
         if(allowNotFound && o == null){
             return null;
         }

@@ -48,7 +48,7 @@ public class JcrFeedManagerCategory extends JcrCategory implements FeedManagerCa
     @Override
     public List<? extends Feed> getFeeds() {
 
-        List<JcrFeedManagerFeed> feeds = JcrUtil.getNodes(this.node, null, JcrFeedManagerFeed.class);
+        List<JcrFeedManagerFeed> feeds = JcrUtil.getChildrenMatchingNodeType(this.node, "tba:feed", JcrFeedManagerFeed.class);
         return feeds;
     }
 }

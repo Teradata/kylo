@@ -11,11 +11,14 @@ import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
+import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
@@ -66,6 +69,9 @@ public class JcrPropertyTest {
 
     @Inject
     FeedManagerTemplateProvider feedManagerTemplateProvider;
+
+    @Inject
+    FeedManagerCategoryProvider feedManagerCategoryProvider;
 
     @Inject
     TagProvider tagProvider;
@@ -170,7 +176,7 @@ public class JcrPropertyTest {
     public void queryTest() {
 
         //final String query = "select e.* from [tba:feed] as e  join [tba:category] c on e.[tba:category].[tba:systemName] = c.[tba:systemName] where  c.[tba:systemName] = $category ";
-        final String query = "select e.* from [tba:feed] as e join [tba:category] as c on e.[tba:category] = c.id";
+        final String query = "select e.* from [tba:feed] as e join [tba:category] as c on e.[tba:category] = c.[jcr:uuid]";
 
         metadata.read(new Command<Object>() {
             @Override
@@ -180,6 +186,28 @@ public class JcrPropertyTest {
                 return feeds;
             }
         });
+
+        metadata.read(new Command<Object>() {
+            @Override
+            public Object execute() {
+                List<FeedManagerCategory> c = feedManagerCategoryProvider.findAll();
+                if (c != null)
+                {
+                    for (FeedManagerCategory cat : c) {
+                        JcrFeedManagerCategory jcrFeedManagerCategory = (JcrFeedManagerCategory) cat;
+                        List<? extends Feed> categoryFeeds = jcrFeedManagerCategory.getFeeds();
+                        if (categoryFeeds != null) {
+                            for (Feed feed : categoryFeeds) {
+                                log.info("Feed for category {} is {}", cat.getName(), feed.getName());
+                            }
+                        }
+
+                    }
+                }
+                return null;
+            }
+        });
+
     }
 
     @Test

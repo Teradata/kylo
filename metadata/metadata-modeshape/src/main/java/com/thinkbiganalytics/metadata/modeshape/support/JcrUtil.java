@@ -3,6 +3,16 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.modeshape.jcr.api.JcrTools;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -32,16 +42,6 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.modeshape.jcr.api.JcrTools;
-
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 /**
  * @author Sean Felten
@@ -336,6 +336,21 @@ public class JcrUtil {
         }
     }
 
+    public static <T extends JcrObject> List<T> getChildrenMatchingNodeType(Node parentNode, String childNodeType, Class<T> type) {
+
+        try {
+            String
+                query =
+                "Select child.* from [" + parentNode.getPrimaryNodeType() + "] as parent inner join [" + childNodeType + "] as child ON ISCHILDNODE(child,parent) WHERE parent.[jcr:uuid]  = '"
+                + parentNode.getIdentifier() + "'";
+            return find(parentNode.getSession(), query, type);
+
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to find Children matching type " + childNodeType, e);
+        }
+
+    }
+
     /**
      * get All Child nodes under a parentNode and create the wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
      */
@@ -431,11 +446,14 @@ public class JcrUtil {
         return entity;
     }
 
-
     public static <T extends Object> List<T> find(Session session, String query, Class<T> type) {
+        return find(session, query, null, type);
+    }
+
+    public static <T extends Object> List<T> find(Session session, String query, Map<String, String> bindParams, Class<T> type) {
         JcrTools tools = new JcrTools();
         try {
-            QueryResult result = query(session, query);
+            QueryResult result = query(session, query, bindParams);
             return queryResultToList(result, type);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to findAll for query : " + query, e);
@@ -471,12 +489,15 @@ public class JcrUtil {
         return entities;
     }
 
-
     public static <T extends Object> T findFirst(Session session, String query, Class<T> type) {
+        return findFirst(session, query, null, type);
+    }
+
+    public static <T extends Object> T findFirst(Session session, String query, Map<String, String> bindParams, Class<T> type) {
 
         JcrTools tools = new JcrTools();
         try {
-            QueryResult result = query(session, query);
+            QueryResult result = query(session, query, bindParams);
             List<T> list = queryResultToList(result, type, 1);
             if (list != null && list.size() > 0) {
                 return list.get(0);

@@ -1,28 +1,20 @@
 package com.thinkbiganalytics.metadata.modeshape.category;
 
-import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
-import java.util.UUID;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.persistence.Column;
 
 /**
  * Created by sr186054 on 6/5/16.
@@ -38,7 +30,7 @@ public class JcrCategory extends AbstractJcrSystemEntity implements Category{
 
 
     public List<? extends Feed> getFeeds() {
-        List<JcrFeed> feeds = JcrUtil.getNodes(this.node,null,JcrFeed.class);
+        List<JcrFeed> feeds = JcrUtil.getChildrenMatchingNodeType(this.node, "tba:feed", JcrFeed.class);
         return feeds;
     }
 

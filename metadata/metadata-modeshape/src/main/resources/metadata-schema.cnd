@@ -74,7 +74,7 @@
 [tba:properties] 
 	- * (UNDEFINED) COPY
 
-[tba:entity] > nt:hierarchyNode, mix:lastModified
+[tba:entity] > nt:hierarchyNode, mix:lastModified, tba:taggable
 
 [tba:extensibleEntity] > tba:entity 
 
@@ -85,6 +85,7 @@
 - tba:icon (STRING)
 - tba:iconColor (STRING)
 - tba:nifiTemplateId (STRING)
+- tba:json (STRING)
 
 [tba:category] > tba:entity, mix:referenceable, mix:title, tba:propertied 
 	- tba:systemName (STRING) mandatory
@@ -100,6 +101,7 @@
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:category (REFERENCE) mandatory
 	- tba:template (REFERENCE)
+	- tba:json (STRING)
 //  - preconditon (tba:feedPrecondition)
 
 [tba:feedConnection] > tba:extensibleEntity, mix:referenceable

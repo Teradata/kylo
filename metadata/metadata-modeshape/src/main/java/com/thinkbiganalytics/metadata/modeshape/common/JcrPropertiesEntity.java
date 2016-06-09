@@ -77,6 +77,21 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
     }
 
 
+
+    @Override
+    public <T> T getProperty(String name, Class<T> type, boolean allowNotFound) {
+
+        try {
+            if (JcrUtil.hasProperty(this.node.getPrimaryNodeType(), name)) {
+               return super.getProperty(name, type,allowNotFound);
+            } else {
+                return getPropertiesObject().getProperty(name, type,allowNotFound);
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to get Property " + name );
+        }
+
+    }
     /**
      * Override
      * if the incoming name matches that of a primary property on this Node then set it, otherwise add it the mixin bag of properties
