@@ -3,17 +3,17 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.common;
 
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
+import com.thinkbiganalytics.metadata.core.BaseId;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+
 import java.io.Serializable;
 import java.util.Set;
 import java.util.UUID;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
-import com.thinkbiganalytics.metadata.core.BaseId;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
 /**
  *
@@ -30,8 +30,8 @@ public class JcrEntity  extends JcrObject implements ExtensibleEntity {
     }
 
     public Set<String> addTag(String tag){
-        Set<String> tags = getPropertyAsSet(TAGGABLE_NAME, String.class);
-        if(!tags.contains(tag)) {
+        Set<String> tags = getTags();
+        if (!hasTag(tag)) {
             tags.add(tag);
             setTags(tags);
         }
