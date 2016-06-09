@@ -1,6 +1,8 @@
 package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.metadata.api.Command;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import org.slf4j.Logger;
@@ -23,26 +25,35 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     @Inject
     TemplateModelTransform templateModelTransform;
 
+    @Inject
+    MetadataAccess metadataAccess;
+
     @Override
     @Transactional(transactionManager = "metadataTransactionManager")
-    protected RegisteredTemplate saveRegisteredTemplate(RegisteredTemplate registeredTemplate) {
-        //ensure that the incoming template name doesnt already exist.
-        //if so remove and replace with this one
-        RegisteredTemplate template = getRegisteredTemplateByName(registeredTemplate.getTemplateName());
-        if(template != null && !template.getId().equalsIgnoreCase(registeredTemplate.getId())){
-            //Warning cant save.. duplicate Name
-            log.error("Unable to save template {}.  There is already a template with this name registered in the system",registeredTemplate.getTemplateName());
-            return null;
-        }
-        else {
-            log.info("About to save Registered Template {} ({}), nifi template Id of {} ",registeredTemplate.getTemplateName(),registeredTemplate.getId(),registeredTemplate.getNifiTemplateId());
-            FeedManagerTemplate domain = templateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(registeredTemplate);
-            log.info("Domain Object is {} ({}), nifi template Id of {}",domain.getName(),domain.getId(),domain.getNifiTemplateId());
-            domain = templateProvider.update(domain);
-            //query it back to display to the ui
-            domain = templateProvider.findById(domain.getId());
-            return templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domain);
-        }
+    protected RegisteredTemplate saveRegisteredTemplate(final RegisteredTemplate registeredTemplate) {
+        return metadataAccess.commit(new Command<RegisteredTemplate>() {
+            @Override
+            public RegisteredTemplate execute() {
+                //ensure that the incoming template name doesnt already exist.
+                //if so remove and replace with this one
+                RegisteredTemplate template = getRegisteredTemplateByName(registeredTemplate.getTemplateName());
+                if (template != null && !template.getId().equalsIgnoreCase(registeredTemplate.getId())) {
+                    //Warning cant save.. duplicate Name
+                    log.error("Unable to save template {}.  There is already a template with this name registered in the system", registeredTemplate.getTemplateName());
+                    return null;
+                } else {
+                    log.info("About to save Registered Template {} ({}), nifi template Id of {} ", registeredTemplate.getTemplateName(), registeredTemplate.getId(),
+                             registeredTemplate.getNifiTemplateId());
+                    FeedManagerTemplate domain = templateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(registeredTemplate);
+                    log.info("Domain Object is {} ({}), nifi template Id of {}", domain.getName(), domain.getId(), domain.getNifiTemplateId());
+                    domain = templateProvider.update(domain);
+                    //query it back to display to the ui
+                    domain = templateProvider.findById(domain.getId());
+                    return templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domain);
+                }
+            }
+        });
+
     }
 
     @Override
@@ -54,59 +65,90 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
 
     @Override
-    public RegisteredTemplate getRegisteredTemplate(String templateId) {
-        RegisteredTemplate registeredTemplate = null;
-        FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
-        FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
-        if(domainTemplate != null) {
-            //transform it
-            registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domainTemplate);
-        }
-        return registeredTemplate;
+    public RegisteredTemplate getRegisteredTemplate(final String templateId) {
+        return metadataAccess.read(new Command<RegisteredTemplate>() {
+            @Override
+            public RegisteredTemplate execute() {
+                RegisteredTemplate registeredTemplate = null;
+                FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
+                FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
+                if (domainTemplate != null) {
+                    //transform it
+                    registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domainTemplate);
+                }
+                return registeredTemplate;
+            }
+        });
+
     }
 
-    public void deleteRegisteredTemplate(String templateId)
+    public void deleteRegisteredTemplate(final String templateId)
     {
-        FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
-        FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
-        //only allow deletion if there are no feeds
-        if(domainTemplate != null && (domainTemplate.getFeeds() == null || domainTemplate.getFeeds().size() ==0)) {
-            templateProvider.deleteById(domainId);
-        }
+        metadataAccess.commit(new Command<Boolean>() {
+            @Override
+            public Boolean execute() {
+                FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
+                FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
+                //only allow deletion if there are no feeds
+                if (domainTemplate != null && (domainTemplate.getFeeds() == null || domainTemplate.getFeeds().size() == 0)) {
+                    templateProvider.deleteById(domainId);
+                }
+                return true;
+            }
+        });
+
     }
     @Override
-    public RegisteredTemplate getRegisteredTemplateByName(String templateName) {
-        RegisteredTemplate registeredTemplate = null;
-        FeedManagerTemplate template = templateProvider.findByName(templateName);
-        if(template != null) {
-            //transform it
-            registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
-        }
-        return registeredTemplate;
+    public RegisteredTemplate getRegisteredTemplateByName(final String templateName) {
+        return metadataAccess.read(new Command<RegisteredTemplate>() {
+            @Override
+            public RegisteredTemplate execute() {
+                RegisteredTemplate registeredTemplate = null;
+                FeedManagerTemplate template = templateProvider.findByName(templateName);
+                if (template != null) {
+                    //transform it
+                    registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
+                }
+                return registeredTemplate;
+            }
+        });
+
     }
 
     @Override
-    public RegisteredTemplate getRegisteredTemplateForNifiProperties(String nifiTemplateId, String nifiTemplateName) {
-        RegisteredTemplate registeredTemplate =null;
-        FeedManagerTemplate template = templateProvider.findByNifiTemplateId(nifiTemplateId);
-        if(template == null){
-            template = templateProvider.findByName(nifiTemplateName);
-        }
-        if(template != null){
-            registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
-        }
-        return registeredTemplate;
+    public RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName) {
+        return metadataAccess.read(new Command<RegisteredTemplate>() {
+            @Override
+            public RegisteredTemplate execute() {
+                RegisteredTemplate registeredTemplate = null;
+                FeedManagerTemplate template = templateProvider.findByNifiTemplateId(nifiTemplateId);
+                if (template == null) {
+                    template = templateProvider.findByName(nifiTemplateName);
+                }
+                if (template != null) {
+                    registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
+                }
+                return registeredTemplate;
+            }
+        });
+
 
     }
 
     @Override
     public List<RegisteredTemplate> getRegisteredTemplates() {
-        List<RegisteredTemplate> registeredTemplates = null;
-        List<FeedManagerTemplate> templates = templateProvider.findAll();
-        if(templates != null) {
-            registeredTemplates = templateModelTransform.domainToRegisteredTemplate(templates);
-        }
-        return registeredTemplates;
+        return metadataAccess.read(new Command<List<RegisteredTemplate>>() {
+            @Override
+            public List<RegisteredTemplate> execute() {
+                List<RegisteredTemplate> registeredTemplates = null;
+                List<FeedManagerTemplate> templates = templateProvider.findAll();
+                if (templates != null) {
+                    registeredTemplates = templateModelTransform.domainToRegisteredTemplate(templates);
+                }
+                return registeredTemplates;
+            }
+        });
+
     }
 
 

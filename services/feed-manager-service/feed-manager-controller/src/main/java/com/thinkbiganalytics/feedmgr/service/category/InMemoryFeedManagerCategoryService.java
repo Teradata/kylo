@@ -78,15 +78,6 @@ public class InMemoryFeedManagerCategoryService implements FeedManagerCategorySe
     return categories.values();
   }
 
-  @Override
-  public FeedCategory getCategoryByName(final String name) {
-    return Iterables.tryFind(categories.values(), new Predicate<FeedCategory>() {
-      @Override
-      public boolean apply(FeedCategory feedCategory) {
-        return feedCategory.getName().equalsIgnoreCase(name);
-      }
-    }).orNull();
-  }
 
   @Override
   public FeedCategory getCategoryBySystemName(final String name) {

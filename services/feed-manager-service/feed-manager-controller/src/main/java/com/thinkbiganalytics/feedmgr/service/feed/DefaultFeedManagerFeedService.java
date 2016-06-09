@@ -79,34 +79,63 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         });
         return feedMetadata;
     }
+    /*
+
+     return metadataAccess.read(new Command<FeedMetadata>() {
+            @Override
+            public FeedMetadata execute() {
+                return null;
+            }
+        });
+
+     */
 
     @Override
-    public FeedMetadata getFeedById(String id) {
-        return getFeedById(id, false);
+    public FeedMetadata getFeedById(final String id) {
+        return metadataAccess.read(new Command<FeedMetadata>() {
+            @Override
+            public FeedMetadata execute() {
+                return getFeedById(id, false);
+            }
+        });
+
     }
 
     @Override
-    public FeedMetadata getFeedById(String id, boolean refreshTargetTableSchema) {
-        FeedMetadata feedMetadata = null;
-        FeedManagerFeed.ID domainId = feedManagerFeedProvider.resolveId(id);
-        FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(domainId);
-        if (domainFeed != null) {
-            feedMetadata = feedModelTransform.DOMAIN_TO_FEED.apply(domainFeed);
-        }
-        if (refreshTargetTableSchema && feedMetadata != null) {
-            feedModelTransform.refreshTableSchemaFromHive(feedMetadata);
-        }
-        return feedMetadata;
+    public FeedMetadata getFeedById(final String id, final boolean refreshTargetTableSchema) {
+        return metadataAccess.read(new Command<FeedMetadata>() {
+            @Override
+            public FeedMetadata execute() {
+
+                FeedMetadata feedMetadata = null;
+                FeedManagerFeed.ID domainId = feedManagerFeedProvider.resolveId(id);
+                FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(domainId);
+                if (domainFeed != null) {
+                    feedMetadata = feedModelTransform.DOMAIN_TO_FEED.apply(domainFeed);
+                }
+                if (refreshTargetTableSchema && feedMetadata != null) {
+                    feedModelTransform.refreshTableSchemaFromHive(feedMetadata);
+                }
+                return feedMetadata;
+            }
+        });
+
     }
 
     @Override
     public Collection<FeedMetadata> getFeeds() {
-        Collection<FeedMetadata> feeds = null;
-        List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
-        if (domainFeeds != null) {
-            feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
-        }
-        return feeds;
+        return metadataAccess.read(new Command<Collection<FeedMetadata>>() {
+            @Override
+            public Collection<FeedMetadata> execute() {
+                Collection<FeedMetadata> feeds = null;
+                List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
+                if (domainFeeds != null) {
+                    feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
+                }
+                return feeds;
+            }
+        });
+
     }
 
     @Override
@@ -134,102 +163,155 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     }
 
     @Override
-    public List<FeedSummary> getFeedSummaryForCategory(String categoryId) {
-        List<FeedSummary> summaryList = new ArrayList<>();
-        FeedManagerCategory.ID categoryDomainId = categoryProvider.resolveId(categoryId);
-        List<? extends FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByCategoryId(categoryDomainId);
-        if (domainFeeds != null && !domainFeeds.isEmpty()) {
-            List<FeedMetadata> feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
-            for (FeedMetadata feed : feeds) {
-                summaryList.add(new FeedSummary(feed));
+    public List<FeedSummary> getFeedSummaryForCategory(final String categoryId) {
+        return metadataAccess.read(new Command<List<FeedSummary>>() {
+            @Override
+            public List<FeedSummary> execute() {
+                List<FeedSummary> summaryList = new ArrayList<>();
+                FeedManagerCategory.ID categoryDomainId = categoryProvider.resolveId(categoryId);
+                List<? extends FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByCategoryId(categoryDomainId);
+                if (domainFeeds != null && !domainFeeds.isEmpty()) {
+                    List<FeedMetadata> feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
+                    for (FeedMetadata feed : feeds) {
+                        summaryList.add(new FeedSummary(feed));
+                    }
+                }
+                return summaryList;
             }
-        }
-        return summaryList;
+        });
+
     }
 
     @Override
-    public List<FeedMetadata> getFeedsWithTemplate(String registeredTemplateId) {
-        List<FeedMetadata> feedMetadatas = null;
-        FeedManagerTemplate.ID templateDomainId = templateProvider.resolveId(registeredTemplateId);
-        List<? extends FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByTemplateId(templateDomainId);
-        if (domainFeeds != null) {
-            feedMetadatas = feedModelTransform.domainToFeedMetadata(domainFeeds);
-        }
-        return feedMetadatas;
+    public List<FeedMetadata> getFeedsWithTemplate(final String registeredTemplateId) {
+        return metadataAccess.read(new Command<List<FeedMetadata>>() {
+            @Override
+            public List<FeedMetadata> execute() {
+                List<FeedMetadata> feedMetadatas = null;
+                FeedManagerTemplate.ID templateDomainId = templateProvider.resolveId(registeredTemplateId);
+                List<? extends FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByTemplateId(templateDomainId);
+                if (domainFeeds != null) {
+                    feedMetadatas = feedModelTransform.domainToFeedMetadata(domainFeeds);
+                }
+                return feedMetadatas;
+            }
+        });
+
     }
 
     @Override
-    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException {
-        return templateRestProvider.getRegisteredTemplate(templateId);
+    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId) throws JerseyClientException {
+        return metadataAccess.read(new Command<RegisteredTemplate>() {
+            @Override
+            public RegisteredTemplate execute() {
+                return templateRestProvider.getRegisteredTemplate(templateId);
+            }
+        });
+
     }
 
     @Transactional(transactionManager = "metadataTransactionManager")
     public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
+
         if (feedMetadata.getState() == null) {
             feedMetadata.setState(Feed.State.ENABLED.name());
         }
         return super.createFeed(feedMetadata);
+
+
     }
+
 
     @Override
     @Transactional(transactionManager = "metadataTransactionManager")
-    public void saveFeed(FeedMetadata feed) {
-        //if this is the first time saving this feed create a new one
-        FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
-        if (domainFeed.getState() == null) {
-            domainFeed.setState(Feed.State.ENABLED);
-        }
-        domainFeed = feedManagerFeedProvider.update(domainFeed);
+    public void saveFeed(final FeedMetadata feed) {
+        metadataAccess.commit(new Command<FeedMetadata>() {
+            @Override
+            public FeedMetadata execute() {
+                //if this is the first time saving this feed create a new one
+                FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
+                if (domainFeed.getState() == null) {
+                    domainFeed.setState(Feed.State.ENABLED);
+                }
+                domainFeed = feedManagerFeedProvider.update(domainFeed);
 
-        //merge in preconditions if they exist
-        List<GenericUIPrecondition> preconditions = feed.getSchedule().getPreconditions();
-        if (preconditions != null) {
-            List<List<com.thinkbiganalytics.metadata.sla.api.Metric>> domainMetrics = new ArrayList<>();
-            domainMetrics.add(new ArrayList<Metric>(FeedManagerPreconditionService.uiPreconditionToFeedPrecondition(feed, preconditions)));
-            feedProvider.updatePrecondition(domainFeed.getId(), domainMetrics);
-        }
+                //merge in preconditions if they exist
+                List<GenericUIPrecondition> preconditions = feed.getSchedule().getPreconditions();
+                if (preconditions != null) {
+                    List<List<com.thinkbiganalytics.metadata.sla.api.Metric>> domainMetrics = new ArrayList<>();
+                    domainMetrics.add(new ArrayList<Metric>(FeedManagerPreconditionService.uiPreconditionToFeedPrecondition(feed, preconditions)));
+                    feedProvider.updatePrecondition(domainFeed.getId(), domainMetrics);
+                }
+                return feed;
+            }
+        });
+
 
     }
 
     @Transactional(transactionManager = "metadataTransactionManager")
-    private boolean enableFeed(Feed.ID feedId) {
-        return feedProvider.enableFeed(feedId);
+    private boolean enableFeed(final Feed.ID feedId) {
+        return metadataAccess.commit(new Command<Boolean>() {
+            @Override
+            public Boolean execute() {
+                return feedProvider.enableFeed(feedId);
+            }
+        });
+
     }
 
     @Transactional(transactionManager = "metadataTransactionManager")
-    private boolean disableFeed(Feed.ID feedId) {
-        return feedProvider.disableFeed(feedId);
-    }
-
-    public FeedSummary enableFeed(String feedId) {
-        if (StringUtils.isNotBlank(feedId)) {
-            FeedMetadata feedMetadata = getFeedById(feedId);
-            Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            boolean enabled = enableFeed(domainId);
-            //re fetch it
-            if (enabled) {
-                feedMetadata.setState(Feed.State.ENABLED.name());
+    private boolean disableFeed(final Feed.ID feedId) {
+        return metadataAccess.commit(new Command<Boolean>() {
+            @Override
+            public Boolean execute() {
+                return feedProvider.disableFeed(feedId);
             }
-            FeedSummary feedSummary = new FeedSummary(feedMetadata);
-            return feedSummary;
-        }
-        return null;
+        });
 
     }
 
-    public FeedSummary disableFeed(String feedId) {
-        if (StringUtils.isNotBlank(feedId)) {
-            FeedMetadata feedMetadata = getFeedById(feedId);
-            Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            boolean enabled = disableFeed(domainId);
-            //re fetch it
-            if (enabled) {
-                feedMetadata.setState(Feed.State.DISABLED.name());
+    public FeedSummary enableFeed(final String feedId) {
+        return metadataAccess.commit(new Command<FeedSummary>() {
+            @Override
+            public FeedSummary execute() {
+                if (StringUtils.isNotBlank(feedId)) {
+                    FeedMetadata feedMetadata = getFeedById(feedId);
+                    Feed.ID domainId = feedProvider.resolveFeed(feedId);
+                    boolean enabled = enableFeed(domainId);
+                    //re fetch it
+                    if (enabled) {
+                        feedMetadata.setState(Feed.State.ENABLED.name());
+                    }
+                    FeedSummary feedSummary = new FeedSummary(feedMetadata);
+                    return feedSummary;
+                }
+                return null;
             }
-            FeedSummary feedSummary = new FeedSummary(feedMetadata);
-            return feedSummary;
-        }
-        return null;
+        });
+
+
+    }
+
+    public FeedSummary disableFeed(final String feedId) {
+        return metadataAccess.commit(new Command<FeedSummary>() {
+            @Override
+            public FeedSummary execute() {
+                if (StringUtils.isNotBlank(feedId)) {
+                    FeedMetadata feedMetadata = getFeedById(feedId);
+                    Feed.ID domainId = feedProvider.resolveFeed(feedId);
+                    boolean enabled = disableFeed(domainId);
+                    //re fetch it
+                    if (enabled) {
+                        feedMetadata.setState(Feed.State.DISABLED.name());
+                    }
+                    FeedSummary feedSummary = new FeedSummary(feedMetadata);
+                    return feedSummary;
+                }
+                return null;
+            }
+        });
+
     }
 
 
