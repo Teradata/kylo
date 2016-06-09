@@ -65,8 +65,6 @@ public interface MetadataService {
 
     Collection<FeedCategory> getCategories();
 
-    FeedCategory getCategoryByName(String name);
-
     FeedCategory getCategoryBySystemName(final String name);
 
     void saveCategory(FeedCategory category);

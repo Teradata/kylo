@@ -35,6 +35,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.support.Constants;
+import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
@@ -301,11 +302,11 @@ public class TemplatesRestController {
         getMetadataService().registerTemplate(registeredTemplate);
         if(registeredTemplate.isReusableTemplate()){
             //attempt to auto create the Feed using this template
-            FeedMetadata metadata = metadataService.getFeedByName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME,registeredTemplate.getTemplateName());
+            FeedMetadata metadata = metadataService.getFeedByName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME, registeredTemplate.getTemplateName());
             if(metadata == null) {
                 metadata = new FeedMetadata();
 
-                FeedCategory category = metadataService.getCategoryByName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME);
+                FeedCategory category = metadataService.getCategoryBySystemName(TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
                 if(category == null){
                     category = new FeedCategory();
                     category.setName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME);

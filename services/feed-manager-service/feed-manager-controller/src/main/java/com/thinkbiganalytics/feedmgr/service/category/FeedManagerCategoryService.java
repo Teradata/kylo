@@ -12,8 +12,6 @@ public interface FeedManagerCategoryService {
 
   Collection<FeedCategory> getCategories();
 
-  FeedCategory getCategoryByName(String name);
-
   FeedCategory getCategoryById(String id);
 
   FeedCategory getCategoryBySystemName(String name);

@@ -208,10 +208,7 @@ public class FeedManagerMetadataService implements MetadataService {
         return categoryProvider.getCategories();
     }
 
-    @Override
-    public FeedCategory getCategoryByName(String name) {
-        return categoryProvider.getCategoryByName(name);
-    }
+
 
     @Override
     public FeedCategory getCategoryBySystemName(String name) {
