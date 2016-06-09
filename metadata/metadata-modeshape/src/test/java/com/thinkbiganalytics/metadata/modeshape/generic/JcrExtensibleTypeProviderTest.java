@@ -17,31 +17,54 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType.PropertyType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class })
-public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTests {
+public class JcrExtensibleTypeProviderTest extends AbstractTestNGSpringContextTests {
 
     @Inject
-    private ExtensibleEntityProvider provider;
+    private ExtensibleTypeProvider typeProvider;
+    
+    @Inject
+    private ExtensibleEntityProvider entityProvider;
     
     @Inject
     private MetadataAccess metadata;
     
 
     @Test
-    public void testCreateType() {
+    public void testGetAllDefaultTypes() {
+        int size = metadata.commit(new Command<Integer>() {
+            @Override
+            public Integer execute() {
+                List<ExtensibleType> types = typeProvider.getTypes();
+                
+                return types.size();
+            }
+        });
+        
+        // Feed + FeedConnection + FeedSource + FeedDestination + Datasource = 5
+        assertThat(size).isEqualTo(5);
+    }
+
+    @Test(dependsOnMethods="testGetAllDefaultTypes")
+    public void testCreatePersonType() {
         String typeName = metadata.commit(new Command<String>() {
             @Override
             public String execute() {
-                Map<String, ExtensibleType.PropertyType> fields = new HashMap<>();
-                fields.put("name", PropertyType.STRING);
-                fields.put("description", PropertyType.STRING);
-                fields.put("age", PropertyType.LONG);
-                
-                ExtensibleType type = provider.createType("Person", fields);
-                
+                ExtensibleType type = typeProvider.buildType("Person")
+                                .field("name")
+                                    .type(FieldDescriptor.Type.STRING)
+                                    .displayName("Person name")
+                                    .description("The name of the person")
+                                    .required()
+                                    .add()
+                                .addField("description", FieldDescriptor.Type.STRING)
+                                .addField("age", FieldDescriptor.Type.INTEGER)
+                                .build();
+                                  
                 return type.getName();
             }
         });
@@ -49,12 +72,12 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
         assertThat(typeName).isNotNull().isEqualTo("Person");
     }
     
-    @Test(dependsOnMethods="testCreateType")
-    public void getPersonType() {
+    @Test(dependsOnMethods="testCreatePersonType")
+    public void testGetPersonType() {
         boolean found = metadata.commit(new Command<Boolean>() {
             @Override
             public Boolean execute() {
-                ExtensibleType type = provider.getType("Person");
+                ExtensibleType type = typeProvider.getType("Person");
                 
                 return type != null;
             }
@@ -63,33 +86,34 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
         assertThat(found).isTrue();
     }
     
-    @Test(dependsOnMethods="testCreateType")
-    public void getAllType() {
+    @Test(dependsOnMethods="testCreatePersonType")
+    public void testGetAllTypes() {
         int size = metadata.commit(new Command<Integer>() {
             @Override
             public Integer execute() {
-                List<ExtensibleType> types = provider.getTypes();
+                List<ExtensibleType> types = typeProvider.getTypes();
                 
                 return types.size();
             }
         });
         
-        assertThat(size).isEqualTo(1);
+        // Person + Feed + FeedConnection + FeedSource + FeedDestination + Datasource = 5
+        assertThat(size).isEqualTo(6);
     }
     
-    @Test(dependsOnMethods="testCreateType")
+    @Test(dependsOnMethods="testCreatePersonType")
     public void testCreateEntity() {
         ExtensibleEntity.ID id = metadata.commit(new Command<ExtensibleEntity.ID>() {
             @Override
             public ExtensibleEntity.ID execute() {
-                ExtensibleType type = provider.getType("Person");
+                ExtensibleType type = typeProvider.getType("Person");
                 
                 Map<String, Object> props = new HashMap<>();
                 props.put("name", "Bob");
                 props.put("description", "Silly");
                 props.put("age", 50);
                 
-                ExtensibleEntity entity = provider.createEntity(type, props);
+                ExtensibleEntity entity = entityProvider.createEntity(type, props);
                 
                 return entity.getId();
             }
@@ -98,17 +122,17 @@ public class JcrGenericEntityProviderTest extends AbstractTestNGSpringContextTes
         assertThat(id).isNotNull();
     }
     
-    @Test(dependsOnMethods="testCreateEntity")
+    @Test(dependsOnMethods="testCreatePersonType")
     public void testGetEntity() {
         String typeName = metadata.commit(new Command<String>() {
             @Override
             public String execute() {
-                List<ExtensibleEntity> list = provider.getEntities();
+                List<ExtensibleEntity> list = entityProvider.getEntities();
                 
                 assertThat(list).isNotNull().hasSize(1);
                 
                 ExtensibleEntity.ID id = list.get(0).getId();
-                ExtensibleEntity entity = provider.getEntity(id);
+                ExtensibleEntity entity = entityProvider.getEntity(id);
                 
                 assertThat(entity).isNotNull();
                 assertThat(entity.getProperty("name")).isEqualTo("Bob");

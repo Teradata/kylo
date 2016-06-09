@@ -86,7 +86,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
      */
     public void setProperty(String name, Object value) {
         try {
-            if (JcrUtil.getAllPropertyTypes(this.node.getPrimaryNodeType(), false).containsKey(name)) {
+            if (JcrUtil.hasProperty(this.node.getPrimaryNodeType(), name)) {
                 super.setProperty(name, value);
             } else {
                 getPropertiesObject().setProperty(name, value);

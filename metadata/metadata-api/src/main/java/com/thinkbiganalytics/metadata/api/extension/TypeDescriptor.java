@@ -7,7 +7,10 @@ package com.thinkbiganalytics.metadata.api.extension;
  *
  * @author Sean Felten
  */
-public interface PropertyDescriptor {
+public interface TypeDescriptor {
+    
+    String getTitle();
+    
+    String getDescription();
 
-    Class<?> getDataType();
 }

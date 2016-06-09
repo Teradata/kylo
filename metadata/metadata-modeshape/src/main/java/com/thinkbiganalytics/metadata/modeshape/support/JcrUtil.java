@@ -28,6 +28,8 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
+import javax.jcr.nodetype.NodeType;
+import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 
@@ -109,6 +111,17 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Failed to set properties", e);
         }
     }
+    
+    public static boolean hasProperty(NodeType type, String propName) {
+        for (PropertyDefinition propDef : type.getPropertyDefinitions()) {
+            if (propDef.getName().equals(propName)) {
+                return true;
+            }
+        }
+        
+        return false;
+    }
+    
 
     public static Object asValue(Value value) {
         try {
@@ -255,19 +268,60 @@ public class JcrUtil {
 
     }
 
+    public static int getJCRPropertyType(Object obj) {
+        if (obj instanceof String) {
+            return PropertyType.STRING;
+        }
+        if (obj instanceof Double) {
+            return PropertyType.DOUBLE;
+        }
+        if (obj instanceof Float) {
+            return PropertyType.DOUBLE;
+        }
+        if (obj instanceof Long) {
+            return PropertyType.LONG;
+        }
+        if (obj instanceof Integer) {
+            return PropertyType.LONG;
+        }
+        if (obj instanceof Boolean) {
+            return PropertyType.BOOLEAN;
+        }
+        if (obj instanceof Calendar) {
+            return PropertyType.DATE;
+        }
+        if (obj instanceof Binary) {
+            return PropertyType.BINARY;
+        }
+        if (obj instanceof InputStream) {
+            return PropertyType.BINARY;
+        }
+        if (obj instanceof Node) {
+            return PropertyType.REFERENCE;
+        }
+        return PropertyType.UNDEFINED;
+    }
+
     public static Value asValue(ValueFactory factory, Object obj) {
         // STRING, BOOLEAN, LONG, DOUBLE, PATH, ENTITY
         try {
-            if (obj instanceof String) {
-                return factory.createValue((String) obj);
-            } else if (obj instanceof Integer || obj instanceof Long) {
-                return factory.createValue(obj.toString(), PropertyType.LONG);
-            } else if (obj instanceof Float || obj instanceof Double) {
-                return factory.createValue(obj.toString(), PropertyType.DOUBLE);
-//        } else if (obj instanceof ExtensibleEntity) {
-//            return factory.createValue((String) obj);
-            } else {
-                return factory.createValue(obj.toString());
+            switch (getJCRPropertyType(obj)) {
+                case PropertyType.STRING:
+                    return factory.createValue((String) obj);
+                case PropertyType.BOOLEAN:
+                    return factory.createValue((Boolean) obj);
+                case PropertyType.DATE:
+                    return factory.createValue((Calendar) obj);
+                case PropertyType.LONG:
+                    return obj instanceof Long ? factory.createValue(((Long) obj).longValue()) : factory.createValue(((Integer) obj).longValue());
+                case PropertyType.DOUBLE:
+                    return obj instanceof Double ? factory.createValue((Double) obj) : factory.createValue(((Float) obj).doubleValue());
+                case PropertyType.BINARY:
+                    return factory.createValue((InputStream) obj);
+                case PropertyType.REFERENCE:
+                    return factory.createValue((Node) obj);
+                default:
+                    return (obj != null ? factory.createValue(obj.toString()) : factory.createValue(StringUtils.EMPTY));
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Invalid value format", e);

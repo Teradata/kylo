@@ -3,7 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.api.extension;
 
-import java.util.Map;
+import java.util.Set;
 
 /**
  *
@@ -11,13 +11,11 @@ import java.util.Map;
  */
 public interface ExtensibleType {
     
-    enum PropertyType { STRING, BOOLEAN, INTEGER, LONG, DOUBLE, PATH, ENTITY } // TODO need more like DATE
-
     String getName();
     
     ExtensibleType getParentType();
     
-    Map<String, ExtensibleType.PropertyType> getProperyTypes();
+    Set<FieldDescriptor> getPropertyDescriptors();
 
-    ExtensibleType.PropertyType getPropertyType(String name);
+    FieldDescriptor getPropertyDescriptor(String name);
 }

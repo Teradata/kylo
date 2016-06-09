@@ -21,8 +21,9 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -49,7 +50,7 @@ public class JcrPropertyTest {
 
 
     @Inject
-    private ExtensibleEntityProvider provider;
+    private ExtensibleTypeProvider provider;
 
     @Inject
     CategoryProvider categoryProvider;

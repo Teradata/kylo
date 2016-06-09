@@ -12,6 +12,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
@@ -20,6 +21,7 @@ import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntityProvider;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
@@ -37,10 +39,14 @@ public class JcrProviderConfig {
         jcrConfigurator().configure();
     }                
     
-
-
+    
     @Bean
-    public ExtensibleEntityProvider genericEntitiyProvider() {
+    public ExtensibleTypeProvider extensibleTypeProvider() {
+        return new JcrExtensibleTypeProvider();
+    }
+    
+    @Bean
+    public ExtensibleEntityProvider extensibleEntityProvider() {
         return new JcrExtensibleEntityProvider();
     }
 

@@ -3,6 +3,9 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -15,6 +18,7 @@ import javax.jcr.nodetype.PropertyDefinition;
 
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 
 /**
  *
@@ -44,24 +48,33 @@ public class MetadataJcrConfigurator {
     
 
     protected void ensureTypes(Session session) throws RepositoryException {
-        Node typesNode = session.getRootNode().getNode("/metadata/generic/types");
+        Node typesNode = session.getRootNode().getNode(ExtensionsConstants.TYPES);
         NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
         NodeTypeIterator typeItr = typeMgr.getPrimaryNodeTypes();
+        NodeType extensionsType = typeMgr.getNodeType(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE);
         
         while (typeItr.hasNext()) {
             NodeType type = (NodeType) typeItr.next();
             
-            if (! typesNode.hasNode(type.getName())) {
-                Node descrNode = typesNode.addNode(type.getName());
-                descrNode.setProperty("jcr:title", type.getName().replaceAll("^.*:", ""));
+            if (type.isNodeType(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE) && 
+                            ! type.equals(extensionsType) && 
+                            ! typesNode.hasNode(type.getName())) {
+                Node descrNode = typesNode.addNode(type.getName(), ExtensionsConstants.TYPE_DESCRIPTOR_TYPE);
+                
+                descrNode.setProperty("jcr:title", simpleName(type.getName()));
                 descrNode.setProperty("jcr:description", "");
                 
                 PropertyDefinition[] defs = type.getPropertyDefinitions();
                 
                 for (PropertyDefinition def : defs) {
-                    Node propNode = descrNode.addNode(def.getName());
-                    propNode.setProperty("jcr:title", def.getName().replace("^.*:", ""));
-                    propNode.setProperty("jcr:description", "");
+                    String fieldName = def.getName();
+                    String prefix = namePrefix(fieldName);
+                    
+                    if (! ExtensionsConstants.STD_PREFIXES.contains(prefix) && ! descrNode.hasNode(fieldName)) {
+                        Node propNode = descrNode.addNode(def.getName(), ExtensionsConstants.FIELD_DESCRIPTOR_TYPE);
+                        propNode.setProperty("jcr:title", def.getName().replace("^.*:", ""));
+                        propNode.setProperty("jcr:description", "");
+                    }
                 }
             }
         }
@@ -77,10 +90,29 @@ public class MetadataJcrConfigurator {
         }
     }
 
-
     protected void ensureLayout(Session session) throws RepositoryException {
         if (! session.getRootNode().hasNode("metadata")) {
             session.getRootNode().addNode("metadata", "tba:metadataFolder");
+        }
+    }
+    
+    private String namePrefix(String name) {
+        Matcher m = ExtensionsConstants.NAME_PATTERN.matcher(name);
+        
+        if (m.matches()) {
+            return m.group(1);
+        } else {
+            return null;
+        }
+    }
+    
+    private String simpleName(String name) {
+        Matcher m = ExtensionsConstants.NAME_PATTERN.matcher(name);
+        
+        if (m.matches()) {
+            return m.group(2);
+        } else {
+            return null;
         }
     }
 }
