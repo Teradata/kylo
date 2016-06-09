@@ -2,6 +2,7 @@ package com.thinkbiganalytics.feedmgr.service.category;
 
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import org.springframework.transaction.annotation.Transactional;
@@ -13,34 +14,40 @@ import java.util.List;
 /**
  * Created by sr186054 on 5/4/16.
  */
-public class JpaFeedManagerCategoryService implements FeedManagerCategoryService {
+public class DefaultFeedManagerCategoryService implements FeedManagerCategoryService {
 
     @Inject
     FeedManagerCategoryProvider categoryProvider;
 
+    @Inject
+    CategoryModelTransform categoryModelTransform;
+
+    @Inject
+    MetadataAccess metadataAccess;
+
     @Override
     public Collection<FeedCategory> getCategories() {
        List<FeedManagerCategory> domainCategories = categoryProvider.findAll();
-       return CategoryModelTransform.domainToFeedCategory(domainCategories);
+        return categoryModelTransform.domainToFeedCategory(domainCategories);
     }
 
     @Override
     public FeedCategory getCategoryByName(String name) {
        FeedManagerCategory domainCategory = categoryProvider.findBySystemName(name);
-        return CategoryModelTransform.DOMAIN_TO_FEED_CATEGORY.apply(domainCategory);
+        return categoryModelTransform.DOMAIN_TO_FEED_CATEGORY.apply(domainCategory);
     }
 
     @Override
     public FeedCategory getCategoryById(String id) {
         FeedManagerCategory.ID domainId = categoryProvider.resolveId(id);
         FeedManagerCategory domainCategory = categoryProvider.findById(domainId);
-        return CategoryModelTransform.DOMAIN_TO_FEED_CATEGORY.apply(domainCategory);
+        return categoryModelTransform.DOMAIN_TO_FEED_CATEGORY.apply(domainCategory);
     }
 
     @Override
     public FeedCategory getCategoryBySystemName(String name) {
         FeedManagerCategory domainCategory = categoryProvider.findBySystemName(name);
-        return CategoryModelTransform.DOMAIN_TO_FEED_CATEGORY.apply(domainCategory);
+        return categoryModelTransform.DOMAIN_TO_FEED_CATEGORY.apply(domainCategory);
     }
 
     @Override
@@ -60,7 +67,7 @@ public class JpaFeedManagerCategoryService implements FeedManagerCategoryService
                 }
             }
         }
-        FeedManagerCategory domainCategory = CategoryModelTransform.FEED_CATEGORY_TO_DOMAIN.apply(category);
+        FeedManagerCategory domainCategory = categoryModelTransform.FEED_CATEGORY_TO_DOMAIN.apply(category);
        categoryProvider.update(domainCategory);
 
     }

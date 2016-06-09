@@ -184,8 +184,8 @@ public class FeedManagerMetadataService implements MetadataService {
     }
 
     @Override
-    public FeedMetadata getFeedByName(String feedName) {
-        return feedProvider.getFeedByName(feedName);
+    public FeedMetadata getFeedByName(String categoryName, String feedName) {
+        return feedProvider.getFeedByName(categoryName, feedName);
     }
 
     @Override

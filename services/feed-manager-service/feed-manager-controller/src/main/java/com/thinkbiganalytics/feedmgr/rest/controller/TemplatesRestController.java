@@ -223,7 +223,8 @@ public class TemplatesRestController {
 
         //if savedFeedId is passed in merge the properties with the saved values
         if(feedName != null) {
-            FeedMetadata feedMetadata = getMetadataService().getFeedByName(feedName);
+            //TODO pass in the Category to this method
+            FeedMetadata feedMetadata = getMetadataService().getFeedByName("",feedName);
 
             if (feedMetadata != null) {
                 List<NifiProperty> list = new ArrayList<>();
@@ -300,7 +301,7 @@ public class TemplatesRestController {
         getMetadataService().registerTemplate(registeredTemplate);
         if(registeredTemplate.isReusableTemplate()){
             //attempt to auto create the Feed using this template
-            FeedMetadata metadata = metadataService.getFeedByName(registeredTemplate.getTemplateName());
+            FeedMetadata metadata = metadataService.getFeedByName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME,registeredTemplate.getTemplateName());
             if(metadata == null) {
                 metadata = new FeedMetadata();
 

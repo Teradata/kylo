@@ -16,4 +16,8 @@ public interface FeedManagerCategory extends Category{
     String getIcon();
 
     String getIconColor();
+
+    void setIcon(String icon);
+
+    void setIconColor(String iconColor);
 }

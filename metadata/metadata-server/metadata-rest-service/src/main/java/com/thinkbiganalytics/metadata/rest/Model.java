@@ -224,8 +224,8 @@ public class Model {
                 Collection<FeedDestination> destinations =Collections2.transform(domain.getDestinations(), DOMAIN_TO_FEED_DESTINATION) ;
                 feed.setDestinations(new HashSet<FeedDestination>(destinations));
                 
-                for (Entry<String, String> entry : domain.getProperties().entrySet()) {
-                    feed.getProperties().setProperty(entry.getKey(), entry.getValue());
+                for (Entry<String, Object> entry : domain.getProperties().entrySet()) {
+                    feed.getProperties().setProperty(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
                 }
                 
                 return feed;

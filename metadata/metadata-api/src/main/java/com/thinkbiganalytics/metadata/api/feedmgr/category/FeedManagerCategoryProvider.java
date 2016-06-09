@@ -9,8 +9,8 @@ import java.io.Serializable;
 /**
  * Created by sr186054 on 5/4/16.
  */
-public interface FeedManagerCategoryProvider extends CategoryProvider {
-    FeedManagerCategory findBySystemName(String systemName);
+public interface FeedManagerCategoryProvider extends CategoryProvider<FeedManagerCategory> {
+
 
 
 }

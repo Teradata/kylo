@@ -37,4 +37,26 @@ public interface FeedManagerTemplate {
     DateTime getCreatedTime();
 
     DateTime getModifiedTime();
+
+
+    void setNifiTemplateId(String nifiTemplateId);
+
+    void setAllowPreconditions(boolean allowedPreconditions);
+
+    void setDefineTable(boolean defineTable);
+
+    void setDataTransformation(boolean dataTransformation);
+
+    void setName(String name);
+
+    void setIcon(String icon);
+
+    void setIconColor(String iconColor);
+
+    void setDescription(String description);
+
+    void setJson(String json);
+
+
+
 }

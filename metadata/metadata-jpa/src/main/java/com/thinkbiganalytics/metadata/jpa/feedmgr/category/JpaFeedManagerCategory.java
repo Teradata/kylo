@@ -34,6 +34,11 @@ public class JpaFeedManagerCategory  extends JpaCategory implements FeedManagerC
     }
 
 
+    public JpaFeedManagerCategory(String name) {
+        super(name);
+    }
+
+
     public String getIcon() {
         return icon;
     }

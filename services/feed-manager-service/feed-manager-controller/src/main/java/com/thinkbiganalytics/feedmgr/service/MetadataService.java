@@ -55,7 +55,7 @@ public interface MetadataService {
 
     List<FeedSummary> getFeedSummaryForCategory(String categoryId);
 
-    FeedMetadata getFeedByName(String feedName);
+    FeedMetadata getFeedByName(String categoryName, String feedName);
 
     FeedMetadata getFeedById(String feedId);
 

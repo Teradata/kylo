@@ -44,6 +44,14 @@ public class JpaFeedManagerTemplateProvider  extends BaseJpaProvider<FeedManager
         return template;
     }
 
+    public FeedManagerTemplate ensureTemplate(String name) {
+        FeedManagerTemplate template = findByName(name);
+        if (template == null) {
+            template = new JpaFeedManagerTemplate(name);
+        }
+        return template;
+    }
+
     @Override
     public FeedManagerTemplate.ID resolveId(Serializable fid) {
         return new JpaFeedManagerTemplate.FeedManagerTemplateId(fid);

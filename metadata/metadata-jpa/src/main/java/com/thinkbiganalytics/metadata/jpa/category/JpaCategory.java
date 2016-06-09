@@ -54,6 +54,11 @@ public class JpaCategory extends AbstractAuditedEntity implements Category {
 
     }
 
+    public JpaCategory(String systemName){
+        this.id = JpaCategory.CategoryId.create();
+        this.setName(systemName);
+    }
+
     @Override
     public List<? extends Feed> getFeeds() {
         return feeds;

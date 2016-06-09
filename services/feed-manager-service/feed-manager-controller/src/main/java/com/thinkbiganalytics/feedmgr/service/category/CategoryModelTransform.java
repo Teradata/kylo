@@ -5,21 +5,31 @@ import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
-import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategory;
+import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.inject.Inject;
+
 /**
  * Created by sr186054 on 5/4/16.
  */
 public class CategoryModelTransform {
 
-    public static Function<FeedManagerCategory, FeedCategory>
+    @Inject
+    FeedModelTransform feedModelTransform;
+
+
+    @Inject
+    FeedManagerCategoryProvider categoryProvider;
+
+    public Function<FeedManagerCategory, FeedCategory>
             DOMAIN_TO_FEED_CATEGORY =
             new Function<FeedManagerCategory, FeedCategory>() {
                 @Override
@@ -27,7 +37,7 @@ public class CategoryModelTransform {
                     FeedCategory category = new FeedCategory();
                     category.setId(domainCategory.getId().toString());
                     if(domainCategory.getFeeds() != null){
-                       List<FeedSummary> summaries = FeedModelTransform.domainToFeedSummary(domainCategory.getFeeds());
+                        List<FeedSummary> summaries = feedModelTransform.domainToFeedSummary(domainCategory.getFeeds());
                         category.setFeeds(summaries);
                         category.setRelatedFeeds(summaries.size());
                     }
@@ -41,7 +51,7 @@ public class CategoryModelTransform {
                 }
             };
 
-    public static Function<FeedManagerCategory, FeedCategory>
+    public Function<FeedManagerCategory, FeedCategory>
             DOMAIN_TO_FEED_CATEGORY_SIMPLE =
             new Function<FeedManagerCategory, FeedCategory>() {
                 @Override
@@ -58,17 +68,25 @@ public class CategoryModelTransform {
                 }
             };
 
-    public static Function<FeedCategory, FeedManagerCategory>
+    public Function<FeedCategory, FeedManagerCategory>
             FEED_CATEGORY_TO_DOMAIN =
             new Function<FeedCategory,FeedManagerCategory>() {
                 @Override
                 public FeedManagerCategory apply(FeedCategory feedCategory) {
-                    JpaFeedManagerCategory.CategoryId domainId = feedCategory.getId() != null ? new JpaFeedManagerCategory.CategoryId(feedCategory.getId()): JpaFeedManagerCategory.CategoryId.create();
-                   if(feedCategory.getId() == null){
-                       feedCategory.setId(domainId.toString());
+                    Category.ID domainId = feedCategory.getId() != null ? categoryProvider.resolveId(feedCategory.getId()) : null;
+                    FeedManagerCategory category = null;
+                    if (domainId != null) {
+                        category = (FeedManagerCategory) categoryProvider.findById(domainId);
+                        if (category == null) {
+                            throw new CategoryNotFoundException("Unable to find Category ", domainId);
+                        }
                    }
-                    JpaFeedManagerCategory
-                            category = new JpaFeedManagerCategory(domainId);
+
+                    if (category == null) {
+                        category = categoryProvider.ensureCategory(feedCategory.getSystemName());
+                    }
+                    domainId = category.getId();
+                    feedCategory.setId(domainId.toString());
                     category.setDisplayName(feedCategory.getName());
                     category.setName(feedCategory.getSystemName());
                     category.setDescription(feedCategory.getDescription());
@@ -80,15 +98,15 @@ public class CategoryModelTransform {
                 }
             };
 
-    public static List<FeedCategory> domainToFeedCategory(Collection<FeedManagerCategory> domain) {
+    public List<FeedCategory> domainToFeedCategory(Collection<FeedManagerCategory> domain) {
         return new ArrayList<>(Collections2.transform(domain, DOMAIN_TO_FEED_CATEGORY));
     }
 
-    public static List<FeedCategory> domainToFeedCategorySimple(Collection<FeedManagerCategory> domain) {
+    public List<FeedCategory> domainToFeedCategorySimple(Collection<FeedManagerCategory> domain) {
         return new ArrayList<>(Collections2.transform(domain, DOMAIN_TO_FEED_CATEGORY_SIMPLE));
     }
 
-    public static List<FeedManagerCategory> feedCategoryToDomain(Collection<FeedCategory> feedCategories) {
+    public List<FeedManagerCategory> feedCategoryToDomain(Collection<FeedCategory> feedCategories) {
         return new ArrayList<>(Collections2.transform(feedCategories, FEED_CATEGORY_TO_DOMAIN));
     }
 }

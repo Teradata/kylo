@@ -11,4 +11,6 @@ public interface FeedManagerTemplateProvider  extends BaseProvider<FeedManagerTe
      FeedManagerTemplate findByName(String name);
 
      FeedManagerTemplate findByNifiTemplateId(String nifiTemplateId);
+
+     FeedManagerTemplate ensureTemplate(String name);
 }

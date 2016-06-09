@@ -6,6 +6,9 @@ import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+
+import org.neo4j.cypher.internal.compiler.v2_1.functions.E;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -15,7 +18,7 @@ import java.util.Map;
 /**
  * Created by sr186054 on 6/6/16.
  */
-public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider {
+public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider<Category> {
 
     @Override
     public Category findBySystemName(String systemName) {

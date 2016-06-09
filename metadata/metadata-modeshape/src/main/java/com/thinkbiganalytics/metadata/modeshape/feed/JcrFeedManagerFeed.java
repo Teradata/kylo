@@ -49,4 +49,12 @@ public class JcrFeedManagerFeed<C extends JcrFeedManagerCategory> extends JcrFee
     public String getNifiProcessGroupId() {
         return getProperty(PROCESS_GROUP_ID, String.class);
     }
+
+    public void setNifiProcessGroupId(String id) {
+        setProperty(PROCESS_GROUP_ID, id);
+    }
+
+    public void setVersion(Integer version) {
+
+    }
 }

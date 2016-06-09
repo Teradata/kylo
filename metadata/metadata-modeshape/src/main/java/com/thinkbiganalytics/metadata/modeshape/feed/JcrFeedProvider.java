@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
@@ -44,7 +44,7 @@ import javax.jcr.RepositoryException;
 public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider {
 
     @Inject
-    CategoryProvider categoryPovider;
+    CategoryProvider<Category> categoryProvider;
 
     @Inject
     DatasourceProvider datasourceProvider;
@@ -67,7 +67,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
 
     /**
-     * 
+     *
      */
     public JcrFeedProvider() {
         // TODO Auto-generated constructor stub
@@ -108,14 +108,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public Feed ensureFeed(Category.ID categoryId, String feedSystemName) {
-        Category category = categoryPovider.findById(categoryId);
+        Category category = categoryProvider.findById(categoryId);
         return ensureFeed(category.getName(),feedSystemName);
     }
 
     @Override
     public Feed ensureFeed(String categorySystemName, String feedSystemName) {
         String categoryPath = EntityUtil.pathForCategory(categorySystemName);
-        JcrCategory category = (JcrCategory) categoryPovider.findBySystemName(categorySystemName);
+        JcrCategory category = (JcrCategory) categoryProvider.findBySystemName(categorySystemName);
         Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName);
 
         JcrFeed feed = new JcrFeed(feedNode, category);
@@ -179,6 +179,18 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         if (criteria != null) {
             Criteria criteriaImpl = (Criteria) criteria;
             return criteriaImpl.select(getSession(), JcrFeed.NODE_TYPE, Feed.class, JcrFeed.class);
+        }
+        return null;
+    }
+
+    @Override
+    public Feed findBySystemName(String categorySystemName, String systemName) {
+        FeedCriteria c = feedCriteria();
+        c.category(categorySystemName);
+        c.name(systemName);
+        List<Feed> feeds = getFeeds(c);
+        if (feeds != null && !feeds.isEmpty()) {
+            return feeds.get(0);
         }
         return null;
     }
@@ -267,6 +279,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 params.put("name", this.name);
             }
             if (this.category != null) {
+                //TODO FIX SQL
                 join.append(
                     " join [" + JcrCategory.NODE_TYPE + "] c on e." + EntityUtil.asQueryProperty(JcrFeed.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c." + EntityUtil
                         .asQueryProperty(JcrCategory.SYSTEM_NAME));

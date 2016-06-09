@@ -16,6 +16,10 @@ public class JcrFeedManagerCategory extends JcrCategory implements FeedManagerCa
         super(node);
     }
 
+    public JcrFeedManagerCategory(JcrCategory category) {
+        super(category.getNode());
+    }
+
     @Override
     public String getIcon() {
         return getProperty(ICON, String.class);

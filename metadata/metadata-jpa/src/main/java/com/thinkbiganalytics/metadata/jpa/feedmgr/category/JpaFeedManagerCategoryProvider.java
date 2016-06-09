@@ -5,6 +5,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
 import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
+import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
 import com.thinkbiganalytics.metadata.jpa.category.JpaCategoryProvider;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
 
@@ -15,7 +16,7 @@ import java.util.List;
 /**
  * Created by sr186054 on 5/3/16.
  */
-public class JpaFeedManagerCategoryProvider extends JpaCategoryProvider implements FeedManagerCategoryProvider {
+public class JpaFeedManagerCategoryProvider extends BaseJpaProvider<FeedManagerCategory, Category.ID> implements FeedManagerCategoryProvider {
 
     @Override
     public Class<? extends FeedManagerCategory> getEntityClass() {
@@ -35,6 +36,17 @@ public class JpaFeedManagerCategoryProvider extends JpaCategoryProvider implemen
         return category;
     }
 
+    @Override
+    public FeedManagerCategory ensureCategory(String systemName) {
+        FeedManagerCategory c = findBySystemName(systemName);
+        if (c == null) {
+            JpaFeedManagerCategory cat = new JpaFeedManagerCategory(systemName);
+            c = create(cat);
+        }
+        return c;
+
+
+    }
 
     @Override
     public Category.ID resolveId(Serializable fid) {

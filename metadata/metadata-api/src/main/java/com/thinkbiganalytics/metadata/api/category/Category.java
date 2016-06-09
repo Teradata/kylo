@@ -35,4 +35,13 @@ public interface Category {
 
     DateTime getModifiedTime();
 
+    void setDisplayName(String displayName);
+
+    void setName(String name);
+
+    void setCreatedTime(DateTime createdTime);
+    void setModifiedTime(DateTime modifiedTime);
+
+
+
 }

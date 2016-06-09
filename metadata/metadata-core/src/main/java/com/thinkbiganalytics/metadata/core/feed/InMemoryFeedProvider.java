@@ -276,6 +276,18 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
+    public Feed findBySystemName(String categorySystemName, String systemName) {
+        FeedCriteria c = feedCriteria();
+        c.category(categorySystemName);
+        c.name(systemName);
+        List<Feed> feeds = getFeeds(c);
+        if (feeds != null && !feeds.isEmpty()) {
+            return feeds.get(0);
+        }
+        return null;
+    }
+
+    @Override
     public List<Feed> getFeeds(FeedCriteria criteria) {
         Criteria critImpl = (Criteria) criteria;
         Iterator<Feed> filtered = Iterators.filter(this.feeds.values().iterator(), critImpl);
@@ -432,4 +444,7 @@ public class InMemoryFeedProvider implements FeedProvider {
         }
         
     }
+
+
+
 }

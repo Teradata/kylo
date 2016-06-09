@@ -7,6 +7,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.metadata.api.Command;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
@@ -30,7 +32,7 @@ import javax.inject.Inject;
 /**
  * Created by sr186054 on 5/4/16.
  */
-public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService implements FeedManagerFeedService {
+public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
     private FeedProvider feedProvider;
@@ -52,7 +54,11 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     FeedManagerPreconditionService feedPreconditionModelTransform;
 
     @Inject
-    FeedModelTransformer feedModelTransformer;
+    FeedModelTransform feedModelTransform;
+
+
+    @Inject
+    MetadataAccess metadataAccess;
 
     @Override
     public List<FeedMetadata> getReusableFeeds() {
@@ -60,12 +66,17 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     }
 
     @Override
-    public FeedMetadata getFeedByName(String feedName) {
-        FeedMetadata feedMetadata = null;
-        FeedManagerFeed domainFeed = feedManagerFeedProvider.findBySystemName(feedName);
-        if (domainFeed != null) {
-            feedMetadata = FeedModelTransform.DOMAIN_TO_FEED.apply(domainFeed);
-        }
+    public FeedMetadata getFeedByName(final String categoryName, final String feedName) {
+        FeedMetadata feedMetadata = metadataAccess.read(new Command<FeedMetadata>() {
+            @Override
+            public FeedMetadata execute() {
+                FeedManagerFeed domainFeed = feedManagerFeedProvider.findBySystemName(categoryName, feedName);
+                if (domainFeed != null) {
+                    return feedModelTransform.DOMAIN_TO_FEED.apply(domainFeed);
+                }
+                return null;
+            }
+        });
         return feedMetadata;
     }
 
@@ -80,10 +91,10 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
         FeedManagerFeed.ID domainId = feedManagerFeedProvider.resolveId(id);
         FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(domainId);
         if (domainFeed != null) {
-            feedMetadata = FeedModelTransform.DOMAIN_TO_FEED.apply(domainFeed);
+            feedMetadata = feedModelTransform.DOMAIN_TO_FEED.apply(domainFeed);
         }
         if (refreshTargetTableSchema && feedMetadata != null) {
-            feedModelTransformer.refreshTableSchemaFromHive(feedMetadata);
+            feedModelTransform.refreshTableSchemaFromHive(feedMetadata);
         }
         return feedMetadata;
     }
@@ -93,7 +104,7 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
         Collection<FeedMetadata> feeds = null;
         List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
         if (domainFeeds != null) {
-            feeds = FeedModelTransform.domainToFeedMetadata(domainFeeds);
+            feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
         }
         return feeds;
     }
@@ -126,9 +137,9 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     public List<FeedSummary> getFeedSummaryForCategory(String categoryId) {
         List<FeedSummary> summaryList = new ArrayList<>();
         FeedManagerCategory.ID categoryDomainId = categoryProvider.resolveId(categoryId);
-        List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByCategoryId(categoryDomainId);
+        List<? extends FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByCategoryId(categoryDomainId);
         if (domainFeeds != null && !domainFeeds.isEmpty()) {
-            List<FeedMetadata> feeds = FeedModelTransform.domainToFeedMetadata(domainFeeds);
+            List<FeedMetadata> feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
             for (FeedMetadata feed : feeds) {
                 summaryList.add(new FeedSummary(feed));
             }
@@ -140,9 +151,9 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     public List<FeedMetadata> getFeedsWithTemplate(String registeredTemplateId) {
         List<FeedMetadata> feedMetadatas = null;
         FeedManagerTemplate.ID templateDomainId = templateProvider.resolveId(registeredTemplateId);
-        List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByTemplateId(templateDomainId);
+        List<? extends FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByTemplateId(templateDomainId);
         if (domainFeeds != null) {
-            feedMetadatas = FeedModelTransform.domainToFeedMetadata(domainFeeds);
+            feedMetadatas = feedModelTransform.domainToFeedMetadata(domainFeeds);
         }
         return feedMetadatas;
     }
@@ -164,7 +175,7 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     @Transactional(transactionManager = "metadataTransactionManager")
     public void saveFeed(FeedMetadata feed) {
         //if this is the first time saving this feed create a new one
-        FeedManagerFeed domainFeed = feedModelTransformer.feedToDomain(feed);
+        FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
         if (domainFeed.getState() == null) {
             domainFeed.setState(Feed.State.ENABLED);
         }

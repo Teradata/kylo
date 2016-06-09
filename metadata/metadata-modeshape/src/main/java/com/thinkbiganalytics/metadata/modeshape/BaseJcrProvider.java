@@ -6,6 +6,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import org.modeshape.jcr.api.JcrTools;
+import org.neo4j.cypher.internal.compiler.v2_1.functions.E;
 
 import java.io.Serializable;
 import java.util.ArrayList;

@@ -27,11 +27,13 @@ public interface FeedProvider{
     
     Feed ensurePrecondition(Feed.ID feedId, String name, String descr, List<List<Metric>> metrics);
     Feed updatePrecondition(Feed.ID feedId, List<List<Metric>> metrics);
-    
+
+    Feed findBySystemName(String categorySystemName, String systemName);
+
     FeedCriteria feedCriteria();
     
     Feed getFeed(Feed.ID id);
-    List<Feed> getFeeds();
+    List<? extends Feed> getFeeds();
     List<Feed> getFeeds(FeedCriteria criteria);
     
     FeedSource getFeedSource(FeedSource.ID id);

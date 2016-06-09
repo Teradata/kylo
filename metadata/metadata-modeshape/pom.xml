@@ -54,10 +54,11 @@
             <groupId>org.modeshape</groupId>
             <artifactId>modeshape-common</artifactId>
         </dependency>
-        <dependency>
+       <!-- <dependency>
             <groupId>org.modeshape</groupId>
             <artifactId>modeshape-web-explorer</artifactId>
         </dependency>
+        -->
         <!--This examples uses Infinispan's JDBC cache store, which requires C3P0 and a JDBC database driver -->
         <!-- 
         <dependency>
@@ -69,7 +70,19 @@
             <artifactId>c3p0</artifactId>
         </dependency>
          -->
-        <dependency>
+      <dependency>
+        <groupId>org.apache.commons</groupId>
+        <artifactId>commons-lang3</artifactId>
+      </dependency>
+      <dependency>
+        <groupId>commons-io</groupId>
+        <artifactId>commons-io</artifactId>
+        <version>2.5</version>
+      </dependency>
+
+
+
+      <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
             <version>${jdbc.mysql.version}</version>
@@ -135,7 +148,6 @@
             <artifactId>hadoop-core</artifactId>
             <version>1.0.0</version>
         </dependency>
-
     </dependencies>
 
     <dependencyManagement>

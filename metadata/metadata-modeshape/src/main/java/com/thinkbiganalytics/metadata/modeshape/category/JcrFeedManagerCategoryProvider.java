@@ -3,32 +3,53 @@ package com.thinkbiganalytics.metadata.modeshape.category;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
+import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 6/8/16.
  */
-public class JcrFeedManagerCategoryProvider extends JcrCategoryProvider implements FeedManagerCategoryProvider {
+public class JcrFeedManagerCategoryProvider extends BaseJcrProvider<FeedManagerCategory, Category.ID> implements FeedManagerCategoryProvider {
+
+    @Inject
+    private JcrCategoryProvider categoryProvider;
+
+
 
     @Override
-    public FeedManagerCategory findBySystemName(String systemName) {
-        Category c = super.findBySystemName(systemName);
-        return (FeedManagerCategory) c;
+    public Class<? extends FeedManagerCategory> getEntityClass() {
+        return JcrFeedManagerCategory.class;
+    }
+
+
+    @Override
+    public Class<? extends JcrEntity> getJcrEntityClass() {
+
+        return JcrFeedManagerCategory.class;
     }
 
     @Override
     public String getNodeType() {
-        return super.getNodeType();
+        return categoryProvider.getNodeType();
     }
 
     @Override
-    public Class<? extends Category> getEntityClass() {
-        return JcrFeedManagerCategory.class;
+    public FeedManagerCategory findBySystemName(String systemName) {
+        JcrCategory c = (JcrCategory) categoryProvider.findBySystemName(systemName);
+        if (c != null) {
+            return new JcrFeedManagerCategory(c);
+        }
+        return null;
     }
 
     @Override
-    public Class<? extends JcrEntity> getJcrEntityClass() {
-        return JcrFeedManagerCategory.class;
+    public FeedManagerCategory ensureCategory(String systemName) {
+        JcrCategory c = (JcrCategory) categoryProvider.ensureCategory(systemName);
+        if (c != null) {
+            return new JcrFeedManagerCategory(c);
+        }
+        return null;
     }
-
 }

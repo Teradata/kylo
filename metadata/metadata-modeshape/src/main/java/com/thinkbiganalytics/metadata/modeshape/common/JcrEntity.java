@@ -11,7 +11,6 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 
-import org.jcrom.util.JcrUtils;
 
 import java.io.Serializable;
 import java.util.List;

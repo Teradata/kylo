@@ -82,4 +82,24 @@ public class JcrCategory extends AbstractJcrSystemEntity implements Category{
     public DateTime getModifiedTime() {
         return null;
     }
+
+    @Override
+    public void setDisplayName(String displayName) {
+        setTitle(displayName);
+    }
+
+    @Override
+    public void setName(String name) {
+        setSystemName(name);
+    }
+
+    @Override
+    public void setCreatedTime(DateTime createdTime) {
+
+    }
+
+    @Override
+    public void setModifiedTime(DateTime modifiedTime) {
+
+    }
 }

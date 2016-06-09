@@ -16,9 +16,12 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.generic.GenericEntityProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
@@ -78,14 +81,18 @@ public class JcrProviderConfig {
         return new JcrDatasourceProvider();
     }
 
+    @Bean
+    public FeedManagerCategoryProvider feedManagerCategoryProvider() {
+        return new JcrFeedManagerCategoryProvider();
+    }
 
     @Bean
-    public JcrFeedManagerFeedProvider feedManagerFeedProvider(){
+    public FeedManagerFeedProvider feedManagerFeedProvider(){
         return new JcrFeedManagerFeedProvider();
     }
 
     @Bean
-    FeedManagerTemplateProvider feedManagerTemplateProvider(){
+    public FeedManagerTemplateProvider feedManagerTemplateProvider(){
         return new JcrFeedTemplateProvider();
     }
 

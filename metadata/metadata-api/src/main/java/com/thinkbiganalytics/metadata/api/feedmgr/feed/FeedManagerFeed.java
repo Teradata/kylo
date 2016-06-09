@@ -28,4 +28,8 @@ public interface FeedManagerFeed<C extends FeedManagerCategory> extends Feed<C>{
 
     @Override
     C getCategory();
+
+    void setNifiProcessGroupId(String nifiProcessGroupId);
+
+    void setVersion(Integer version);
 }

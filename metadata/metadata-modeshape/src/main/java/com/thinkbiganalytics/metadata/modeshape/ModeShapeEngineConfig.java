@@ -3,7 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
-import com.thinkbiganalytics.metadata.modeshape.jcrom.JcromConfig;
 
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
@@ -29,7 +28,7 @@ import org.springframework.core.io.ClassPathResource;
  * @author Sean Felten
  */
 @Configuration
-@Import({JcrProviderConfig.class, JcromConfig.class})
+@Import({JcrProviderConfig.class})
 public class ModeShapeEngineConfig {
     
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);

@@ -13,13 +13,15 @@ import java.util.List;
 /**
  * Created by sr186054 on 5/4/16.
  */
-public class JpaFeedManagerTemplateService extends AbstractFeedManagerTemplateService implements FeedManagerTemplateService {
+public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTemplateService implements FeedManagerTemplateService {
 
-    private static final Logger log = LoggerFactory.getLogger(JpaFeedManagerTemplateService.class);
+    private static final Logger log = LoggerFactory.getLogger(DefaultFeedManagerTemplateService.class);
 
     @Inject
     FeedManagerTemplateProvider templateProvider;
 
+    @Inject
+    TemplateModelTransform templateModelTransform;
 
     @Override
     @Transactional(transactionManager = "metadataTransactionManager")
@@ -34,12 +36,12 @@ public class JpaFeedManagerTemplateService extends AbstractFeedManagerTemplateSe
         }
         else {
             log.info("About to save Registered Template {} ({}), nifi template Id of {} ",registeredTemplate.getTemplateName(),registeredTemplate.getId(),registeredTemplate.getNifiTemplateId());
-            FeedManagerTemplate domain = TemplateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(registeredTemplate);
+            FeedManagerTemplate domain = templateModelTransform.REGISTERED_TEMPLATE_TO_DOMAIN.apply(registeredTemplate);
             log.info("Domain Object is {} ({}), nifi template Id of {}",domain.getName(),domain.getId(),domain.getNifiTemplateId());
             domain = templateProvider.update(domain);
             //query it back to display to the ui
             domain = templateProvider.findById(domain.getId());
-            return TemplateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domain);
+            return templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domain);
         }
     }
 
@@ -58,7 +60,7 @@ public class JpaFeedManagerTemplateService extends AbstractFeedManagerTemplateSe
         FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);
         if(domainTemplate != null) {
             //transform it
-            registeredTemplate = TemplateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domainTemplate);
+            registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(domainTemplate);
         }
         return registeredTemplate;
     }
@@ -78,7 +80,7 @@ public class JpaFeedManagerTemplateService extends AbstractFeedManagerTemplateSe
         FeedManagerTemplate template = templateProvider.findByName(templateName);
         if(template != null) {
             //transform it
-             registeredTemplate = TemplateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
+            registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
         }
         return registeredTemplate;
     }
@@ -91,7 +93,7 @@ public class JpaFeedManagerTemplateService extends AbstractFeedManagerTemplateSe
             template = templateProvider.findByName(nifiTemplateName);
         }
         if(template != null){
-            registeredTemplate = TemplateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
+            registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
         }
         return registeredTemplate;
 
@@ -102,7 +104,7 @@ public class JpaFeedManagerTemplateService extends AbstractFeedManagerTemplateSe
         List<RegisteredTemplate> registeredTemplates = null;
         List<FeedManagerTemplate> templates = templateProvider.findAll();
         if(templates != null) {
-            registeredTemplates = TemplateModelTransform.domainToRegisteredTemplate(templates);
+            registeredTemplates = templateModelTransform.domainToRegisteredTemplate(templates);
         }
         return registeredTemplates;
     }

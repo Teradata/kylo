@@ -11,7 +11,7 @@ import java.io.Serializable;
 /**
  * Created by sr186054 on 5/3/16.
  */
-public class JpaCategoryProvider extends BaseJpaProvider<Category,Category.ID> implements CategoryProvider {
+public class JpaCategoryProvider extends BaseJpaProvider<Category,Category.ID> implements CategoryProvider<Category> {
 
     @Override
     public Class<? extends Category> getEntityClass() {
@@ -28,7 +28,7 @@ public class JpaCategoryProvider extends BaseJpaProvider<Category,Category.ID> i
         }catch(NoResultException e){
             e.printStackTrace();
         }
-        return category;
+        return  category;
     }
 
     @Override
@@ -39,7 +39,7 @@ public class JpaCategoryProvider extends BaseJpaProvider<Category,Category.ID> i
             cat.setName(systemName);
             c = create(cat);
         }
-        return c;
+        return  c;
 
     }
 

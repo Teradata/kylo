@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.jpa.AbstractMetadataCriteria;
+import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed.JpaFeedPrecondition;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
@@ -46,7 +47,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
  *
  * @author Sean Felten
  */
-public class JpaFeedProvider implements FeedProvider{
+public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements FeedProvider {
 
     @PersistenceContext
     @Inject
@@ -63,8 +64,17 @@ public class JpaFeedProvider implements FeedProvider{
     private FeedPreconditionService preconditionService;
 
     @Inject
-    private CategoryProvider categoryProvider;
+    private CategoryProvider<Category> categoryProvider;
 
+    @Override
+    public Class<? extends Feed> getEntityClass() {
+        return JpaFeed.class;
+    }
+
+    @Override
+    public ID resolveId(Serializable fid) {
+        return resolveFeed(fid);
+    }
 
     @Override
     public Feed ensureFeed(Category.ID categoryId, String feedSystemName) {
@@ -350,9 +360,21 @@ public class JpaFeedProvider implements FeedProvider{
         }
     }
 
+    @Override
+    public Feed findBySystemName(String categorySystemName, String systemName) {
+        FeedCriteria c = feedCriteria();
+        c.category(categorySystemName);
+        c.name(systemName);
+        List<Feed> feeds = getFeeds(c);
+        if (feeds != null && !feeds.isEmpty()) {
+            return feeds.get(0);
+        }
+        return null;
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#resolveSource(java.io.Serializable)
-     */
+         * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#resolveSource(java.io.Serializable)
+         */
     @Override
     public FeedSource.ID resolveSource(Serializable sid) {
         if (sid instanceof JpaFeedSource.SourceId) {

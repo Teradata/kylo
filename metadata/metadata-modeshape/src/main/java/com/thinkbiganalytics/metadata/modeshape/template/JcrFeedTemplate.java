@@ -107,4 +107,45 @@ public class JcrFeedTemplate extends AbstractJcrSystemEntity implements FeedMana
     public DateTime getModifiedTime() {
         return null;
     }
+
+
+    @Override
+    public void setNifiTemplateId(String nifiTemplateId) {
+        setProperty(NIFI_TEMPLATE_ID, nifiTemplateId);
+    }
+
+    @Override
+    public void setAllowPreconditions(boolean allowedPreconditions) {
+        setProperty(ALLOW_PRECONDITIONS, allowedPreconditions);
+    }
+
+    @Override
+    public void setDefineTable(boolean defineTable) {
+        setProperty(DEFINE_TABLE, defineTable);
+    }
+
+    @Override
+    public void setDataTransformation(boolean dataTransformation) {
+        setProperty(DATA_TRANSFORMATION, dataTransformation);
+    }
+
+    @Override
+    public void setName(String name) {
+        setTitle(name);
+    }
+
+    @Override
+    public void setIcon(String icon) {
+        setProperty(ICON, icon);
+    }
+
+    @Override
+    public void setIconColor(String iconColor) {
+        setProperty(ICON_COLOR, iconColor);
+    }
+
+    @Override
+    public void setJson(String json) {
+        setProperty(JSON, json);
+    }
 }

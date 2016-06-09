@@ -81,7 +81,7 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
     @MapKeyColumn(name="prop_key", length=100)
     @Column(name="prop_value")
     @CollectionTable(name="FEED_PROPERTIES")
-    private Map<String, Object> properties = new HashMap<>();
+    private Map<String, String> propertiesAsString = new HashMap<>();
     
     @Embedded
     private JpaFeedPrecondition precondition;
@@ -110,33 +110,51 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
 
     @Override
     public Map<String, Object> getProperties() {
-        return this.properties;
+        Map<String, Object> props = new HashMap<>();
+        if (propertiesAsString != null) {
+            for (Entry<String, String> entry : propertiesAsString.entrySet()) {
+                props.put(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
+            }
+        }
+        return props;
+    }
+
+
+    public Map<String, String> getPropertiesAsString() {
+        return propertiesAsString;
+    }
+
+    public void setPropertiesAsString(Map<String, String> props) {
+        this.propertiesAsString.clear();
+        for (Entry<String, String> entry : props.entrySet()) {
+            this.propertiesAsString.put(entry.getKey(), entry.getValue());
+        }
     }
 
     @Override
     public void setProperties(Map<String, Object> props) {
-        this.properties.clear();
+        this.propertiesAsString.clear();
         for (Entry<String, Object> entry : props.entrySet()) {
-            this.properties.put(entry.getKey(), entry.getValue());
+            this.propertiesAsString.put(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
         }
     }
 
     @Override
     public Map<String, Object> mergeProperties(Map<String, Object> props) {
         for (Entry<String, Object> entry : props.entrySet()) {
-            this.properties.put(entry.getKey(), entry.getValue());
+            this.propertiesAsString.put(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
         }
-        return this.properties;
+        return getProperties();
     }
 
     @Override
     public void setProperty(String key, Object value) {
-         this.properties.put(key, value);
+        this.propertiesAsString.put(key, value != null ? value.toString() : null);
     }
 
     @Override
     public void removeProperty(String key) {
-         this.properties.remove(key);
+        this.propertiesAsString.remove(key);
     }
 
     public ID getId() {

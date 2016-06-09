@@ -80,6 +80,11 @@ public class JpaFeedManagerTemplate extends AbstractAuditedEntity implements com
 
     }
 
+    public JpaFeedManagerTemplate(String name) {
+        this.id = JpaFeedManagerTemplate.FeedManagerTemplateId.create();
+        this.name = name;
+    }
+
     @Override
     public List<FeedManagerFeed> getFeeds() {
         return feeds;
