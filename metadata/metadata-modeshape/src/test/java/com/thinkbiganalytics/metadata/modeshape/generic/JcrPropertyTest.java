@@ -178,9 +178,9 @@ public class JcrPropertyTest {
         FeedManagerFeed feed = metadata.read(new Command<FeedManagerFeed>() {
             @Override
             public FeedManagerFeed execute() {
-                List<Feed> feeds = feedManagerFeedProvider.findAll();
+                List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
                 if (feeds != null) {
-                    return (FeedManagerFeed) feeds.get(0);
+                    return feeds.get(0);
                 }
                 return null;
             }
