@@ -6,7 +6,6 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 
@@ -92,5 +91,8 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         return null;
     }
 
+    public Datasource.ID resolveId(Serializable fid) {
+        return new JcrDatasource.DatasourceId(fid);
+    }
 
 }

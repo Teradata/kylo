@@ -3,6 +3,7 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
@@ -13,7 +14,6 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -23,7 +23,6 @@ import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.List;
-import java.util.Map;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -65,9 +64,29 @@ public class JcrFeed<C extends Category> extends AbstractJcrSystemEntity impleme
         }
     }
 
+    protected C getCategory(Class<? extends JcrCategory> categoryClass) {
+        C category = null;
+        try {
+            category = (C) getProperty(JcrFeed.CATEGORY, categoryClass);
+        } catch (Exception e) {
+            if (category == null) {
+                try {
+                    category = (C) JcrUtil.constructNodeObject(node.getParent(), categoryClass, null);
+                } catch (Exception e2) {
+                    throw new CategoryNotFoundException("Unable to find category on Feed for category type  " + categoryClass + ". Exception: " + e.getMessage(), null);
+                }
+            }
+        }
+        if (category == null) {
+            throw new CategoryNotFoundException("Unable to find category on Feed ", null);
+        }
+        return category;
+
+    }
+
     public C getCategory() {
 
-        return (C) JcrUtil.getNode(this.node, JcrFeed.CATEGORY, JcrCategory.class);
+        return (C) getCategory(JcrCategory.class);
     }
 
     public FeedManagerTemplate getTemplate() {

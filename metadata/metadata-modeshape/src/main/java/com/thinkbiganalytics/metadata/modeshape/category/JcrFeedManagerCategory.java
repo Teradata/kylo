@@ -1,6 +1,11 @@
 package com.thinkbiganalytics.metadata.modeshape.category;
 
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeed;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
+import java.util.List;
 
 import javax.jcr.Node;
 
@@ -22,12 +27,12 @@ public class JcrFeedManagerCategory extends JcrCategory implements FeedManagerCa
 
     @Override
     public String getIcon() {
-        return getProperty(ICON, String.class);
+        return getProperty(ICON, String.class, true);
     }
 
     @Override
     public String getIconColor() {
-        return getProperty(ICON_COLOR, String.class);
+        return getProperty(ICON_COLOR, String.class, true);
     }
 
 
@@ -37,5 +42,13 @@ public class JcrFeedManagerCategory extends JcrCategory implements FeedManagerCa
 
     public void setIconColor(String iconColor) {
         setProperty(ICON_COLOR, iconColor);
+    }
+
+
+    @Override
+    public List<? extends Feed> getFeeds() {
+
+        List<JcrFeedManagerFeed> feeds = JcrUtil.getNodes(this.node, null, JcrFeedManagerFeed.class);
+        return feeds;
     }
 }

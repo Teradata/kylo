@@ -1,13 +1,11 @@
 package com.thinkbiganalytics.metadata.modeshape.common;
 
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -117,9 +115,15 @@ public class JcrObject {
         }
         return new HashSet<T>();
     }
-
     public <T> T getProperty(String name, Class<T> type) {
-        Object o = JcrUtil.getProperty(this.node, name);
+        return getProperty(name,type,false);
+    }
+
+    public <T> T getProperty(String name, Class<T> type,boolean allowNotFound) {
+        Object o = JcrUtil.getProperty(this.node, name,allowNotFound);
+        if(allowNotFound && o == null){
+            return null;
+        }
         if (!o.getClass().isAssignableFrom(type)) {
             //if it cant be matched and it is a Node > JcrObject, do the conversion
             if (o instanceof Node && JcrObject.class.isAssignableFrom(type)) {

@@ -3,14 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
-import javax.annotation.PostConstruct;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
@@ -28,6 +20,14 @@ import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.generic.JcrGenericEntityProvider;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import javax.annotation.PostConstruct;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 /**
  *
@@ -95,6 +95,8 @@ public class JcrProviderConfig {
     public FeedManagerTemplateProvider feedManagerTemplateProvider(){
         return new JcrFeedTemplateProvider();
     }
+
+
 
 
 //    @Bean

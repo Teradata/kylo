@@ -203,7 +203,7 @@ public class FeedModelTransform {
             feedSummary.setCategoryIconColor(((FeedManagerCategory) feedManagerFeed.getCategory()).getIconColor());
             feedSummary.setCategoryName(feedManagerFeed.getCategory().getDisplayName());
             feedSummary.setSystemCategoryName(feedManagerFeed.getCategory().getName());
-            feedSummary.setUpdateDate(feedManagerFeed.getModifiedTime().toDate());
+            feedSummary.setUpdateDate(feedManagerFeed.getModifiedTime() != null ? feedManagerFeed.getModifiedTime().toDate(): null);
             feedSummary.setFeedName(feedManagerFeed.getDisplayName());
             feedSummary.setSystemFeedName(feedManagerFeed.getName());
             feedSummary.setActive(feedManagerFeed.getState() != null ? feedManagerFeed.getState().equals(Feed.State.ENABLED) : false);

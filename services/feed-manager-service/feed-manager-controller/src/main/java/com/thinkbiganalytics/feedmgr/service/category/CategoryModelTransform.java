@@ -9,6 +9,7 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
+
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -45,8 +46,8 @@ public class CategoryModelTransform {
                     category.setIcon(domainCategory.getIcon());
                     category.setName(domainCategory.getDisplayName());
                     category.setDescription(domainCategory.getDescription());
-                    category.setCreateDate(domainCategory.getCreatedTime().toDate());
-                    category.setUpdateDate(domainCategory.getModifiedTime().toDate());
+                    category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
+                    category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
                     return category;
                 }
             };
@@ -62,8 +63,8 @@ public class CategoryModelTransform {
                     category.setIcon(domainCategory.getIcon());
                     category.setName(domainCategory.getDisplayName());
                     category.setDescription(domainCategory.getDescription());
-                      category.setCreateDate(domainCategory.getCreatedTime().toDate());
-                      category.setUpdateDate(domainCategory.getModifiedTime().toDate());
+                    category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
+                    category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
                     return category;
                 }
             };

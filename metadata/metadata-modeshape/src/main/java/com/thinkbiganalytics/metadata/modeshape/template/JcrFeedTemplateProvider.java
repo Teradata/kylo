@@ -1,15 +1,13 @@
 package com.thinkbiganalytics.metadata.modeshape.template;
 
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -58,5 +56,9 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
         bindParams.put("nifiTemplateId", nifiTemplateId);
         return JcrUtil.findFirst(getSession(), query, JcrFeedTemplate.class);
 
+    }
+
+    public FeedManagerTemplate.ID resolveId(Serializable fid) {
+        return new JcrFeedTemplate.FeedTemplateId(fid);
     }
 }

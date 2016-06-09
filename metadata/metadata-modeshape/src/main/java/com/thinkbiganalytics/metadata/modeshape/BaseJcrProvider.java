@@ -6,7 +6,6 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import org.modeshape.jcr.api.JcrTools;
-import org.neo4j.cypher.internal.compiler.v2_1.functions.E;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,7 +16,6 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 
 /**
@@ -213,12 +211,6 @@ public Node getNodeByIdentifier(PK id){
     public void deleteById(PK id) {
         T item = findById(id);
         delete(item);
-    }
-
-
-    @Override
-    public PK resolveId(Serializable fid) {
-        return (PK) new JcrEntity.EntityId(fid);
     }
 
 

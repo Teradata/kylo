@@ -3,16 +3,11 @@ package com.thinkbiganalytics.metadata.modeshape.category;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-
-import org.neo4j.cypher.internal.compiler.v2_1.functions.E;
 
 import java.io.Serializable;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -56,4 +51,8 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         return new JcrCategory.CategoryId(fid);
     }
     */
+
+    public Category.ID resolveId(Serializable fid) {
+        return new JcrCategory.CategoryId(fid);
+    }
 }

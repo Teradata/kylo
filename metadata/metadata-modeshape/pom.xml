@@ -46,10 +46,23 @@
             <groupId>org.modeshape</groupId>
             <artifactId>modeshape-jcr-api</artifactId>
         </dependency>
+      <!--
+       need to use a later version of HikariCP because of this bug:   https://github.com/brettwooldridge/HikariCP/issues/495 -->
         <dependency>
             <groupId>org.modeshape</groupId>
             <artifactId>modeshape-jcr</artifactId>
+          <exclusions>
+            <exclusion>
+              <groupId>com.zaxxer</groupId>
+              <artifactId>HikariCP</artifactId>
+            </exclusion>
+          </exclusions>
         </dependency>
+      <dependency>
+        <groupId>com.zaxxer</groupId>
+        <artifactId>HikariCP</artifactId>
+        <version>2.4.4</version>
+      </dependency>
         <dependency>
             <groupId>org.modeshape</groupId>
             <artifactId>modeshape-common</artifactId>

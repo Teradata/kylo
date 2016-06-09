@@ -37,13 +37,11 @@ import javax.jcr.PropertyIterator;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.jcr.UnsupportedRepositoryOperationException;
 import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeDefinition;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
-import javax.jcr.query.InvalidQueryException;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
 
@@ -65,11 +63,19 @@ public class JcrUtil {
 
 
     public static Object getProperty(Node node, String name) {
+        return getProperty(node, name, false);
+    }
+
+    public static Object getProperty(Node node, String name, boolean allowNotFound) {
         try {
             Property prop = node.getProperty(name);
             return asValue(prop, node.getSession());
         } catch (PathNotFoundException e) {
-            throw new UnknownPropertyException(name, e);
+            if (allowNotFound) {
+                return null;
+            } else {
+                throw new UnknownPropertyException(name, e);
+            }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access property: " + name, e);
         }

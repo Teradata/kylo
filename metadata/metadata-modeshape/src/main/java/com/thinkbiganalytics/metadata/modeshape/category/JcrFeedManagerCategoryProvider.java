@@ -1,10 +1,13 @@
 package com.thinkbiganalytics.metadata.modeshape.category;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+
+import java.io.Serializable;
 
 import javax.inject.Inject;
 
@@ -14,7 +17,7 @@ import javax.inject.Inject;
 public class JcrFeedManagerCategoryProvider extends BaseJcrProvider<FeedManagerCategory, Category.ID> implements FeedManagerCategoryProvider {
 
     @Inject
-    private JcrCategoryProvider categoryProvider;
+    private CategoryProvider categoryProvider;
 
 
 
@@ -32,7 +35,7 @@ public class JcrFeedManagerCategoryProvider extends BaseJcrProvider<FeedManagerC
 
     @Override
     public String getNodeType() {
-        return categoryProvider.getNodeType();
+        return ((JcrCategoryProvider) categoryProvider).getNodeType();
     }
 
     @Override
@@ -51,5 +54,9 @@ public class JcrFeedManagerCategoryProvider extends BaseJcrProvider<FeedManagerC
             return new JcrFeedManagerCategory(c);
         }
         return null;
+    }
+
+    public Category.ID resolveId(Serializable fid) {
+        return new JcrCategory.CategoryId(fid);
     }
 }

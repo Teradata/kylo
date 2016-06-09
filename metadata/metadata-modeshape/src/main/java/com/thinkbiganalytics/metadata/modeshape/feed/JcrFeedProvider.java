@@ -3,12 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
@@ -32,6 +26,11 @@ import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.jcr.Node;
@@ -372,6 +371,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             this.category = category;
             return this;
         }
+    }
+
+    public Feed.ID resolveId(Serializable fid) {
+        return new JcrFeed.FeedId(fid);
     }
 
 }

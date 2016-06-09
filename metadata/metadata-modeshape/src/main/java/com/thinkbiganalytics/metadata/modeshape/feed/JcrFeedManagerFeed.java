@@ -57,4 +57,9 @@ public class JcrFeedManagerFeed<C extends JcrFeedManagerCategory> extends JcrFee
     public void setVersion(Integer version) {
 
     }
+
+    public C getCategory() {
+
+        return (C) getCategory(JcrFeedManagerCategory.class);
+    }
 }
