@@ -5,12 +5,13 @@ import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 import javax.inject.Inject;
-import java.util.List;
 
 /**
  * Created by sr186054 on 5/4/16.
@@ -29,7 +30,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     MetadataAccess metadataAccess;
 
     @Override
-    @Transactional(transactionManager = "metadataTransactionManager")
+    //@Transactional(transactionManager = "metadataTransactionManager")
     protected RegisteredTemplate saveRegisteredTemplate(final RegisteredTemplate registeredTemplate) {
         return metadataAccess.commit(new Command<RegisteredTemplate>() {
             @Override
@@ -57,7 +58,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     }
 
     @Override
-    @Transactional(transactionManager = "metadataTransactionManager")
+    //@Transactional(transactionManager = "metadataTransactionManager")
     public void registerTemplate(RegisteredTemplate registeredTemplate) {
         saveRegisteredTemplate(registeredTemplate);
     }
