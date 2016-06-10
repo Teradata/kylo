@@ -100,7 +100,7 @@
 	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:category (REFERENCE) mandatory
-	- tba:template (REFERENCE)
+	- tba:feedTemplate (REFERENCE)
 	- tba:json (STRING)
 //  - preconditon (tba:feedPrecondition)
 

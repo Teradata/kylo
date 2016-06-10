@@ -186,7 +186,7 @@ public class FeedModelTransform {
                     feed.setCategory(feedCategory);
                 }
                 feed.setState(domain.getState() != null ? domain.getState().name() : null);
-                feed.setVersion(domain.getVersion().longValue());
+                feed.setVersion(domain.getVersion() != null ? domain.getVersion().longValue() : null);
                 return feed;
             }
         };

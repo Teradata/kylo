@@ -21,7 +21,6 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -210,20 +209,18 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     }
 
-    @Transactional(transactionManager = "metadataTransactionManager")
-    public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
-
+    // @Transactional(transactionManager = "metadataTransactionManager")
+    public NifiFeed createFeed(final FeedMetadata feedMetadata) throws JerseyClientException {
         if (feedMetadata.getState() == null) {
             feedMetadata.setState(Feed.State.ENABLED.name());
         }
         return super.createFeed(feedMetadata);
 
-
     }
 
 
     @Override
-    @Transactional(transactionManager = "metadataTransactionManager")
+    //@Transactional(transactionManager = "metadataTransactionManager")
     public void saveFeed(final FeedMetadata feed) {
         metadataAccess.commit(new Command<FeedMetadata>() {
             @Override
@@ -249,7 +246,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     }
 
-    @Transactional(transactionManager = "metadataTransactionManager")
+    // @Transactional(transactionManager = "metadataTransactionManager")
     private boolean enableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(new Command<Boolean>() {
             @Override
@@ -260,7 +257,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     }
 
-    @Transactional(transactionManager = "metadataTransactionManager")
+    // @Transactional(transactionManager = "metadataTransactionManager")
     private boolean disableFeed(final Feed.ID feedId) {
         return metadataAccess.commit(new Command<Boolean>() {
             @Override

@@ -42,7 +42,7 @@ public class JcrFeedManagerFeed<C extends JcrFeedManagerCategory> extends JcrFee
 
     @Override
     public FeedManagerTemplate getTemplate() {
-        return getProperty(FEED_TEMPLATE, JcrFeedTemplate.class);
+        return getProperty(FEED_TEMPLATE, JcrFeedTemplate.class, true);
     }
 
     @Override
