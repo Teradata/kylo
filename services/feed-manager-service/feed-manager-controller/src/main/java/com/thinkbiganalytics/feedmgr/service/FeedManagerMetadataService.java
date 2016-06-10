@@ -10,6 +10,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.metadata.api.Command;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -41,6 +43,9 @@ public class FeedManagerMetadataService implements MetadataService {
     @Inject
     NifiRestClient nifiRestClient;
 
+    @Inject
+    MetadataAccess metadataAccess;
+
 
     public FeedManagerMetadataService() {
 
@@ -67,9 +72,19 @@ public class FeedManagerMetadataService implements MetadataService {
     }
 
     @Override
-    @Transactional(transactionManager = "metadataTransactionManager")
-    public RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException {
-        return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
+    //@Transactional(transactionManager = "metadataTransactionManager")
+    public RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId) throws JerseyClientException {
+        return metadataAccess.read(new Command<RegisteredTemplate>() {
+            @Override
+            public RegisteredTemplate execute() {
+                try {
+                    return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
+                } catch (JerseyClientException e) {
+                    throw new RuntimeException("Unable to get Tempaltes for id of " + templateId);
+                }
+            }
+        });
+
     }
 
     @Override

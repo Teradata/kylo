@@ -6,11 +6,13 @@ import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
+
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.inject.Inject;
 import java.util.Collection;
 import java.util.List;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 5/4/16.
@@ -65,7 +67,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     }
 
     @Override
-    @Transactional(transactionManager = "metadataTransactionManager")
+  //  @Transactional(transactionManager = "metadataTransactionManager")
     public void saveCategory(final FeedCategory category) {
         metadataAccess.commit(new Command<FeedCategory>() {
             @Override
