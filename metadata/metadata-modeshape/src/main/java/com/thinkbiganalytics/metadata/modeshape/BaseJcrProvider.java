@@ -3,6 +3,8 @@ package com.thinkbiganalytics.metadata.modeshape;
 import com.thinkbiganalytics.metadata.api.BaseProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import org.modeshape.jcr.api.JcrTools;
@@ -70,7 +72,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     public T findOrCreateEntity(String path, String relPath, Object[] constructorArgs, Map<String, Object> props) {
         Session session = getSession();
         Node entNode = findOrCreateEntityNode(path, relPath);
-        entNode = JcrUtil.setProperties(session, entNode, props);
+        entNode = JcrPropertyUtil.setProperties(session, entNode, props);
         return (T) JcrUtil.createJcrObject(entNode, getJcrEntityClass(), constructorArgs);
     }
 
@@ -125,7 +127,7 @@ public Node getNodeByIdentifier(PK id){
     public List<Node> findNodes(String query) {
         List<Node> entities = new ArrayList<>();
         try {
-            QueryResult result = JcrUtil.query(getSession(), query);
+            QueryResult result = JcrQueryUtil.query(getSession(), query);
             if (result != null) {
                 NodeIterator nodeIterator = result.getNodes();
                 while (nodeIterator.hasNext()) {
@@ -142,7 +144,7 @@ public Node getNodeByIdentifier(PK id){
     public List<T> find(String query) {
         List<T> entities = new ArrayList<>();
         try {
-            QueryResult result = JcrUtil.query(getSession(), query);
+            QueryResult result = JcrQueryUtil.query(getSession(), query);
             if (result != null) {
                 NodeIterator nodeIterator = result.getNodes();
                 while (nodeIterator.hasNext()) {
@@ -159,7 +161,7 @@ public Node getNodeByIdentifier(PK id){
 
     public T findFirst(String query) {
         try {
-            QueryResult result = JcrUtil.query(getSession(), query);
+            QueryResult result = JcrQueryUtil.query(getSession(), query);
             if (result != null) {
                 NodeIterator nodeIterator = result.getNodes();
                 if (nodeIterator.hasNext()) {

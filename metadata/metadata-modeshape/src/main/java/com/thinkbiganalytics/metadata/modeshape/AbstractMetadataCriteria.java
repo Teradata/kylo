@@ -2,20 +2,15 @@ package com.thinkbiganalytics.metadata.modeshape;
 
 import com.thinkbiganalytics.metadata.api.MetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
-import org.modeshape.jcr.api.JcrTools;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
-import javax.persistence.Query;
 
 /**
  * Created by sr186054 on 6/7/16.
@@ -54,8 +49,8 @@ public abstract class AbstractMetadataCriteria<C extends MetadataCriteria<C>> im
 
         QueryResult result = null;
         try {
-            result = JcrUtil.query(session, queryStr.toString(), bindParams);
-            return (List<E>) JcrUtil.queryResultToList(result, jcrClass);
+            result = JcrQueryUtil.query(session, queryStr.toString(), bindParams);
+            return (List<E>) JcrQueryUtil.queryResultToList(result, jcrClass);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to execute Criteria Query for " + type + ".  Query is: " + queryStr.toString(), e);
         }

@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.modeshape.common;
 
 import com.thinkbiganalytics.metadata.api.Propertied;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.util.HashMap;
@@ -82,7 +83,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
     public <T> T getProperty(String name, Class<T> type, boolean allowNotFound) {
 
         try {
-            if (JcrUtil.hasProperty(this.node.getPrimaryNodeType(), name)) {
+            if (JcrPropertyUtil.hasProperty(this.node.getPrimaryNodeType(), name)) {
                return super.getProperty(name, type,allowNotFound);
             } else {
                 return getPropertiesObject().getProperty(name, type,allowNotFound);
@@ -101,7 +102,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
      */
     public void setProperty(String name, Object value) {
         try {
-            if (JcrUtil.hasProperty(this.node.getPrimaryNodeType(), name)) {
+            if (JcrPropertyUtil.hasProperty(this.node.getPrimaryNodeType(), name)) {
                 super.setProperty(name, value);
             } else {
                 getPropertiesObject().setProperty(name, value);

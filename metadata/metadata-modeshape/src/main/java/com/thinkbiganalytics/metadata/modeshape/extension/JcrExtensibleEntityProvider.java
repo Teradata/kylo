@@ -3,6 +3,14 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.extension;
 
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity.ID;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -12,14 +20,6 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity.ID;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  *
@@ -43,7 +43,7 @@ public class JcrExtensibleEntityProvider implements ExtensibleEntityProvider {
             }
             
             Node entNode = typesNode.addNode(typeImpl.getName() + "-" + UUID.randomUUID().toString(), typeImpl.getJcrName());
-            entNode = JcrUtil.setProperties(session, entNode, props);
+            entNode = JcrPropertyUtil.setProperties(session, entNode, props);
             
             return new JcrExtensibleEntity(entNode);
         } catch (RepositoryException e) {

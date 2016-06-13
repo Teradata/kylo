@@ -38,6 +38,8 @@ public class JcrFeed<C extends Category> extends AbstractJcrSystemEntity impleme
     public static final String CATEGORY = "tba:category";
 
     public static final String TEMPLATE = "tba:template";
+    public static final String SCHEDULE_PERIOD = "tba:schedulingPeriod"; // Cron expression, or Timer Expression
+    public static final String SCHEDULE_STRATEGY = "tba:schedulingStrategy"; //CRON_DRIVEN, TIMER_DRIVEN
 
 
     public JcrFeed(Node node) {
@@ -223,5 +225,18 @@ public class JcrFeed<C extends Category> extends AbstractJcrSystemEntity impleme
         return null;
     }
 
+    public String getSchedulePeriod(){
+        return getProperty(SCHEDULE_PERIOD,String.class);
+    }
+    public void setSchedulePeriod(String schedulePeriod){
+        setProperty(SCHEDULE_PERIOD,schedulePeriod);
+    }
+
+    public String getScheduleStrategy(){
+        return getProperty(SCHEDULE_STRATEGY,String.class);
+    }
+    public void setScheduleStrategy(String scheduleStrategy){
+        setProperty(SCHEDULE_STRATEGY,scheduleStrategy);
+    }
 
 }

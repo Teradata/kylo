@@ -11,7 +11,7 @@ import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -80,7 +80,7 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
         String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e WHERE e." + EntityUtil.asQueryProperty(JcrFeedManagerFeed.TEMPLATE) + " = $id";
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("id", templateId.toString());
-        return JcrUtil.find(getSession(), query, JcrFeedManagerFeed.class);
+        return JcrQueryUtil.find(getSession(), query, JcrFeedManagerFeed.class);
     }
 
     @Override
@@ -94,8 +94,8 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
         bindParams.put("id", categoryId.toString());
 
         try {
-            QueryResult result = JcrUtil.query(getSession(),query,bindParams);
-            return JcrUtil.queryResultToList(result,JcrFeedManagerFeed.class);
+            QueryResult result = JcrQueryUtil.query(getSession(),query,bindParams);
+            return JcrQueryUtil.queryResultToList(result, JcrFeedManagerFeed.class);
         } catch (RepositoryException e) {
           throw new MetadataRepositoryException("Unable to getFeeds for Category ",e);
         }

@@ -2,6 +2,7 @@ package com.thinkbiganalytics.metadata.modeshape.common;
 
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.util.Collection;
@@ -90,17 +91,17 @@ public class JcrObject {
     }
 
     public Map<String, Object> getProperties() {
-        return JcrUtil.getProperties(this.node);
+        return JcrPropertyUtil.getProperties(this.node);
     }
 
     public Object getProperty(String name) {
-        return JcrUtil.getProperty(this.node, name);
+        return JcrPropertyUtil.getProperty(this.node, name);
     }
 
     public <T> Set<T> getPropertyAsSet(String name, Class<T> objectType) {
         Object o = null;
         try {
-            o = JcrUtil.getProperty(this.node, name);
+            o = JcrPropertyUtil.getProperty(this.node, name);
         } catch (UnknownPropertyException e) {
 
         }
@@ -124,7 +125,7 @@ public class JcrObject {
     }
 
     protected <T> T getPropertyFromNode(Node node, String name, Class<T> type, boolean allowNotFound){
-        Object o = JcrUtil.getProperty(node, name,allowNotFound);
+        Object o = JcrPropertyUtil.getProperty(node, name,allowNotFound);
         if(allowNotFound && o == null){
             return null;
         }
@@ -141,7 +142,7 @@ public class JcrObject {
     }
 
     public void setProperty(String name, Object value) {
-        JcrUtil.setProperty(this.node, name, value);
+        JcrPropertyUtil.setProperty(this.node, name, value);
     }
 
 

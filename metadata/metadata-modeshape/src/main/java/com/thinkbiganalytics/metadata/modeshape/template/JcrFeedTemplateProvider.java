@@ -5,7 +5,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplatePr
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,7 +47,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
             String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeedTemplate.NODE_TYPE) + " as e where e." + EntityUtil.asQueryProperty(JcrFeedTemplate.TITLE) + " = $title";
             Map<String, String> bindParams = new HashMap<>();
             bindParams.put("title", name);
-            return JcrUtil.findFirst(getSession(), query, bindParams, JcrFeedTemplate.class);
+            return JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrFeedTemplate.class);
         } else {
             return null;
         }
@@ -60,7 +60,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
             "SELECT * from " + EntityUtil.asQueryProperty(JcrFeedTemplate.NODE_TYPE) + " as e where e." + EntityUtil.asQueryProperty(JcrFeedTemplate.NIFI_TEMPLATE_ID) + " = $nifiTemplateId";
         Map<String, String> bindParams = new HashMap<>();
         bindParams.put("nifiTemplateId", nifiTemplateId);
-        return JcrUtil.findFirst(getSession(), query, bindParams, JcrFeedTemplate.class);
+        return JcrQueryUtil.findFirst(getSession(), query, bindParams, JcrFeedTemplate.class);
 
     }
 
