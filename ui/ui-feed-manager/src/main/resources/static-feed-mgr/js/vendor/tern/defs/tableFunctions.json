@@ -1259,6 +1259,15 @@
     "!sparkType": "dataframe"
   },
 
+  "!MACHINE_LEARNING_FUNCTIONS": "Functions for performing machine learning operations on DataFrame objects.",
+
+  "transform": {
+    "!type": "fn(modelPath: string)",
+    "!doc": "Transforms the dataset. (Spark 1.6)",
+    "!spark": ".transform(org.apache.spark.ml.PipelineModel.load(%s).transform)",
+    "!sparkType": "dataframe"
+  },
+
   "!WINDOW_SPEC_FUNCTIONS": "Functions for creating WindowSpec objects.",
 
   "orderBy": {
