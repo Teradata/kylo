@@ -27,7 +27,7 @@ import org.springframework.core.io.ClassPathResource;
  * @author Sean Felten
  */
 @Configuration
-@Import({JcrProviderConfig.class})
+@Import({MetadataJcrConfig.class})
 public class ModeShapeEngineConfig {
     
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);

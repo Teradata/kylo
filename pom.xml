@@ -12,7 +12,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <java.version>1.7</java.version>
+        <java.version>1.8</java.version>
         <!-- dependencies -->
         <activemq.version>5.13.1</activemq.version>
         <avro.version>1.7.7</avro.version>
@@ -37,7 +37,6 @@
         <hive.version>0.14.0</hive.version>
         <httpclient.version>4.5.1</httpclient.version>
         <jackson.version>2.6.2</jackson.version>
-        <java.version>1.7</java.version>
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <jersey.version>2.22.2</jersey.version>
         <joda.time.version>2.9.2</joda.time.version>
@@ -602,8 +601,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.2</version>
                 <configuration>
-                    <source>1.7</source>
-                    <target>1.7</target>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
                 </configuration>
             </plugin>
             <plugin>

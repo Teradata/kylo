@@ -3,8 +3,10 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.extension;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -13,6 +15,8 @@ import javax.jcr.nodetype.PropertyDefinition;
 
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity.ID;
+import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
@@ -22,6 +26,7 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
  */
 public class JcrExtensibleType implements ExtensibleType {
     
+    private TypeId id;
     private Node typeNode;
     private final NodeType nodeType;
 
@@ -31,6 +36,20 @@ public class JcrExtensibleType implements ExtensibleType {
     public JcrExtensibleType(Node typeNode, NodeType nodeDef) {
         this.typeNode = typeNode;
         this.nodeType = nodeDef;
+        try {
+            this.id = new TypeId(this.typeNode.getIdentifier());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
+        }
+
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.extension.ExtensibleType#getId()
+     */
+    @Override
+    public ID getId() {
+        return this.id;
     }
 
     /* (non-Javadoc)
@@ -46,7 +65,18 @@ public class JcrExtensibleType implements ExtensibleType {
      */
     @Override
     public ExtensibleType getParentType() {
-        // TODO Auto-generated method stub
+        try {
+            for (NodeType parent : this.nodeType.getDeclaredSupertypes()) {
+                if (parent.isNodeType(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE) && 
+                                ! parent.getName().equals(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE)) {
+                    Node supertypeNode = this.typeNode.getParent().getNode(parent.getName());
+                    return new JcrExtensibleType(supertypeNode, parent);
+                }
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to get parent type for type: " + this.nodeType.getName(), e);
+        }
+        
         return null;
     }
 
@@ -55,7 +85,7 @@ public class JcrExtensibleType implements ExtensibleType {
     }
 
     @Override
-    public Set<FieldDescriptor> getPropertyDescriptors() {
+    public Set<FieldDescriptor> getFieldDescriptors() {
         try {
             Set<FieldDescriptor> set = new HashSet<>();
             
@@ -73,7 +103,7 @@ public class JcrExtensibleType implements ExtensibleType {
     }
     
     @Override
-    public FieldDescriptor getPropertyDescriptor(String name) {
+    public FieldDescriptor getFieldDescriptor(String name) {
         try {
             for (PropertyDefinition def : this.nodeType.getPropertyDefinitions()) {
                 if (def.getName().equalsIgnoreCase(name)) {
@@ -87,5 +117,42 @@ public class JcrExtensibleType implements ExtensibleType {
             throw new MetadataRepositoryException("Unable to get property descriptor for type: " + this.nodeType.getName(), e);
         }
     }
+    
+    
+    
+    public static class TypeId extends BaseId implements ID {
+        
+        private static final long serialVersionUID = -7707175033124386499L;
+        
+        private String idValue;
+
+        public TypeId() {
+        }
+
+        public TypeId(Serializable ser) {
+            super(ser);
+        }
+
+        public String getIdValue() {
+            return idValue;
+        }
+
+        @Override
+        public String toString() {
+            return idValue;
+        }
+
+        @Override
+        public UUID getUuid() {
+           return UUID.fromString(idValue);
+        }
+
+        @Override
+        public void setUuid(UUID uuid) {
+            this.idValue = uuid.toString();
+
+        }
+    }
+
 
 }

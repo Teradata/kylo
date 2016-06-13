@@ -22,7 +22,7 @@ import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class })
-public class JcrExtensibleTypeProviderTest extends AbstractTestNGSpringContextTests {
+public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests {
 
     @Inject
     private ExtensibleTypeProvider typeProvider;
@@ -59,10 +59,10 @@ public class JcrExtensibleTypeProviderTest extends AbstractTestNGSpringContextTe
                                     .type(FieldDescriptor.Type.STRING)
                                     .displayName("Person name")
                                     .description("The name of the person")
-                                    .required()
+                                    .required(true)
                                     .add()
                                 .addField("description", FieldDescriptor.Type.STRING)
-                                .addField("age", FieldDescriptor.Type.INTEGER)
+                                .addField("age", FieldDescriptor.Type.LONG)
                                 .build();
                                   
                 return type.getName();
@@ -74,16 +74,35 @@ public class JcrExtensibleTypeProviderTest extends AbstractTestNGSpringContextTe
     
     @Test(dependsOnMethods="testCreatePersonType")
     public void testGetPersonType() {
-        boolean found = metadata.commit(new Command<Boolean>() {
+        final ExtensibleType.ID id = metadata.commit(new Command<ExtensibleType.ID>() {
             @Override
-            public Boolean execute() {
+            public ExtensibleType.ID execute() {
                 ExtensibleType type = typeProvider.getType("Person");
                 
-                return type != null;
+                return type.getId();
             }
         });
         
-        assertThat(found).isTrue();
+        assertThat(id).isNotNull();
+        
+        Map<String, FieldDescriptor.Type> fields = metadata.commit(new Command<Map<String, FieldDescriptor.Type>>() {
+            @Override
+            public Map<String, FieldDescriptor.Type> execute() {
+                ExtensibleType type = typeProvider.getType("Person");
+                Map<String, FieldDescriptor.Type> fields = new HashMap<>();
+                
+                for (FieldDescriptor descr : type.getFieldDescriptors()) {
+                    fields.put(descr.getName(), descr.getType());
+                }
+                
+                return fields;
+            }
+        });
+        
+        assertThat(fields).isNotNull();
+        assertThat(fields).containsEntry("name", FieldDescriptor.Type.STRING);
+        assertThat(fields).containsEntry("description", FieldDescriptor.Type.STRING);
+        assertThat(fields).containsEntry("age", FieldDescriptor.Type.LONG);
     }
     
     @Test(dependsOnMethods="testCreatePersonType")

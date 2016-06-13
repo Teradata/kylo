@@ -5,12 +5,14 @@ package com.thinkbiganalytics.metadata.server;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Import;
 
 /**
  *
  * @author Sean Felten
  */
 @SpringBootApplication
+//@Import({ ServerConfiguration.class })
 public class Server {
 
     /**

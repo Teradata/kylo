@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.api.extension;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -11,11 +12,15 @@ import java.util.Set;
  */
 public interface ExtensibleType {
     
+    interface ID extends Serializable { }
+
+    ID getId();
+    
     String getName();
     
     ExtensibleType getParentType();
     
-    Set<FieldDescriptor> getPropertyDescriptors();
+    Set<FieldDescriptor> getFieldDescriptors();
 
-    FieldDescriptor getPropertyDescriptor(String name);
+    FieldDescriptor getFieldDescriptor(String name);
 }

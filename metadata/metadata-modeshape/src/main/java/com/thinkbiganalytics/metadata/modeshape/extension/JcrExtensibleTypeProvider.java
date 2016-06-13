@@ -3,11 +3,13 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.extension;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
@@ -23,6 +25,7 @@ import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeBuilder;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.FieldDescriptorBuilder;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType.ID;
 import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor.Type;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -41,6 +44,33 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
     public JcrExtensibleTypeProvider() {
     }
 
+    
+    @Override
+    public ID resolve(Serializable ser) {
+        if (ser instanceof ID) {
+            return (ID) ser;
+        } else {
+            return new JcrExtensibleType.TypeId(ser);
+        }
+    }
+    
+    @Override
+    public ExtensibleType getType(ID id) {
+        JcrExtensibleType.TypeId typeId = (JcrExtensibleType.TypeId) id;
+        Session session = getSession();
+        try {
+            Node typeNode = session.getNodeByIdentifier(typeId.getIdValue());
+            NodeType nodeType = session.getWorkspace().getNodeTypeManager().getNodeType(typeNode.getName());
+            
+            return new JcrExtensibleType(typeNode, nodeType);
+        } catch (ItemNotFoundException e) {
+            return null;
+        } catch (NoSuchNodeTypeException e) {
+            return null;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failure retriving exstenible type with ID: " + id, e);
+        }
+    }
 
     @Override
     public ExtensibleType getType(String name) {
@@ -70,6 +100,12 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
         return getTypesList(type.getName());
     }
     
+    @Override
+    public boolean deleteType(ID id) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+    
     /**
      * Return the Property names and types for a given NodeType (i.e. pass in tba:feed)
      * @param nodeType
@@ -78,7 +114,7 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
      */
     public Set<FieldDescriptor> getPropertyDescriptors(String nodeType) {
         ExtensibleType type = getType(nodeType);
-        return type.getPropertyDescriptors();
+        return type.getFieldDescriptors();
     }
 
     @Override
@@ -86,6 +122,12 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
         return new TypeBuilder(name);
     }
 
+    @Override
+    public ExtensibleTypeBuilder updateType(ID id) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
     private List<ExtensibleType> getTypesList(String typeName) {
         Session session = getSession();
         
@@ -182,17 +224,64 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
             throw new MetadataRepositoryException("Failed to create new extensible type: " + typeBldr.name, e);
         }
     }
+    
+    @SuppressWarnings("unchecked")
+    private ExtensibleType updateType(TypeBuilder typeBldr, Set<FieldBuilder> fieldBldrs) {
+        try {
+            Session session = getSession();
+            Node typeNode = session.getNodeByIdentifier(typeBldr.id.getIdValue());
+            
+            NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
+            NodeTypeTemplate nodeTemplate = typeMgr.createNodeTypeTemplate();
+            nodeTemplate.setName(typeNode.getName());
+            
+            // TODO Do we allow change of supertype?
+//            if (typeBldr.supertype != null) {
+//                JcrExtensibleType superImpl = (JcrExtensibleType) typeBldr.supertype;
+//                String supername = superImpl.getJcrName();
+//                nodeTemplate.setDeclaredSuperTypeNames(new String[] { ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE, supername });
+//            } else {
+//                nodeTemplate.setDeclaredSuperTypeNames(new String[] { ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE });
+//            }
+            
+            for (FieldBuilder bldr : fieldBldrs) {
+                PropertyDefinitionTemplate propDef = typeMgr.createPropertyDefinitionTemplate();
+                propDef.setName(bldr.name);
+                propDef.setRequiredType(asCode(bldr.type));
+                propDef.setMandatory(bldr.required);
+                propDef.setMultiple(bldr.collection);
+                nodeTemplate.getPropertyDefinitionTemplates().add(propDef);
+                
+                Node fieldNode = typeNode.addNode(bldr.name, ExtensionsConstants.FIELD_DESCRIPTOR_TYPE);
+                fieldNode.setProperty("jcr:title", bldr.displayName);
+                fieldNode.setProperty("jcr:description", bldr.description);
+            }
+            
+            NodeType nodeType = typeMgr.registerNodeType(nodeTemplate, true);
+            
+            return new JcrExtensibleType(typeNode, nodeType);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to create new extensible type: " + typeBldr.name, e);
+        }
+    }
 
     private class TypeBuilder implements ExtensibleTypeBuilder {
         
+        private final JcrExtensibleType.TypeId id;
+        private final String name;
         private Set<FieldBuilder> fieldBuilders = new HashSet<>();
         private ExtensibleType supertype;
-        private String name;
         private String displayName;
         private String description;
 
         public TypeBuilder(String name) {
             this.name = name;
+            this.id = null;
+        }
+        
+        public TypeBuilder(JcrExtensibleType.TypeId id) {
+            this.name = null;
+            this.id = id;
         }
 
         @Override
@@ -225,7 +314,11 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
 
         @Override
         public ExtensibleType build() {
-            return createType(this, this.fieldBuilders);
+            if (this.name != null) {
+                return createType(this, this.fieldBuilders);
+            } else {
+                return updateType(this, this.fieldBuilders);
+            }
         }
     }
     
@@ -268,14 +361,14 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
         }
 
         @Override
-        public FieldDescriptorBuilder collection() {
-            this.collection = true;
+        public FieldDescriptorBuilder collection(boolean flag) {
+            this.collection = flag;
             return this;
         }
 
         @Override
-        public FieldDescriptorBuilder required() {
-            this.required = true;
+        public FieldDescriptorBuilder required(boolean flag) {
+            this.required = flag;
             return this;
         }
 

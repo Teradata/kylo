@@ -17,6 +17,8 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
@@ -32,7 +34,7 @@ import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider
  * @author Sean Felten
  */
 @Configuration
-public class JcrProviderConfig {
+public class MetadataJcrConfig {
     
     @PostConstruct
     public void initializeMetadata() {
@@ -84,6 +86,11 @@ public class JcrProviderConfig {
     public FeedManagerTemplateProvider feedManagerTemplateProvider(){
         return new JcrFeedTemplateProvider();
     }
+    
+    @Bean
+    public DataOperationsProvider dataOperationsProvider() {
+        return new InMemoryDataOperationsProvider();
+    }
 
 
 
@@ -96,11 +103,6 @@ public class JcrProviderConfig {
 //    @Bean
 //    public DatasourceProvider datasetProvider() {
 //        return new InMemoryDatasourceProvider();
-//    }
-//    
-//    @Bean
-//    public DataOperationsProvider dataOperationsProvider() {
-//        return new InMemoryDataOperationsProvider();
 //    }
 //    
 //    @Bean

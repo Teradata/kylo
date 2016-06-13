@@ -86,7 +86,7 @@ public class JcrPropertyTest {
             @Override
             public Map<String, FieldDescriptor.Type> execute() {
                 ExtensibleType feedType = provider.getType("tba:feed");
-                Set<FieldDescriptor> fields = feedType.getPropertyDescriptors();
+                Set<FieldDescriptor> fields = feedType.getFieldDescriptors();
                 Map<String, FieldDescriptor.Type> map = new HashMap<>();
                 
                 for (FieldDescriptor field : fields) {

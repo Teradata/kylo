@@ -17,9 +17,9 @@ public interface FieldDescriptorBuilder {
     
     FieldDescriptorBuilder description(String descr);
     
-    FieldDescriptorBuilder collection();
+    FieldDescriptorBuilder collection(boolean flag);
     
-    FieldDescriptorBuilder required();
+    FieldDescriptorBuilder required(boolean flag);
     
     ExtensibleTypeBuilder add();
 }

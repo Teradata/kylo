@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.api.extension;
 
+import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
@@ -12,13 +13,17 @@ import java.util.Set;
  */
 public interface ExtensibleTypeProvider {
     
+    ExtensibleType.ID resolve(Serializable ser); 
+    
     ExtensibleTypeBuilder buildType(String name);
-
-//    ExtensibleType createType(String name, Set<FieldDescriptor> props);
-//    
-//    ExtensibleType createType(String name, ExtensibleType supertype, Set<FieldDescriptor> props);
+    
+    ExtensibleTypeBuilder updateType(ExtensibleType.ID id);
+    
+    ExtensibleType getType(ExtensibleType.ID id);
     
     ExtensibleType getType(String name);
+    
+    boolean deleteType(ExtensibleType.ID id);
     
     List<ExtensibleType> getTypes();
     
