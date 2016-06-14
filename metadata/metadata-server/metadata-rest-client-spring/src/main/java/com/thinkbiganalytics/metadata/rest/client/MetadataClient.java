@@ -37,6 +37,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableField;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
+import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescriptor;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependency;
@@ -53,6 +54,7 @@ public class MetadataClient {
     
     public static final List<MediaType> ACCEPT_TYPES = Collections.unmodifiableList(Arrays.asList(MediaType.APPLICATION_JSON));
     
+    public static final ParameterizedTypeReference<List<ExtensibleTypeDescriptor>> TYPE_LIST = new ParameterizedTypeReference<List<ExtensibleTypeDescriptor>>() { };
     public static final ParameterizedTypeReference<List<Feed>> FEED_LIST = new ParameterizedTypeReference<List<Feed>>() { };
     public static final ParameterizedTypeReference<List<Datasource>> DATASOURCE_LIST = new ParameterizedTypeReference<List<Datasource>>() { };
     public static final ParameterizedTypeReference<List<Metric>> METRIC_LIST = new ParameterizedTypeReference<List<Metric>>() { };
@@ -78,6 +80,14 @@ public class MetadataClient {
         mapper.registerModule(new JodaModule());
         mapper.setSerializationInclusion(Include.NON_NULL);
         return mapper;
+    }
+
+    public List<ExtensibleTypeDescriptor> getExtensibleTypes() {
+        return get(Paths.get("extension", "type"), null, TYPE_LIST);
+    }
+
+    public ExtensibleTypeDescriptor getExtensibleType(String nameOrId) {
+        return get(Paths.get("extension", "type", nameOrId), ExtensibleTypeDescriptor.class);
     }
 
     public FeedBuilder buildFeed(String name) {

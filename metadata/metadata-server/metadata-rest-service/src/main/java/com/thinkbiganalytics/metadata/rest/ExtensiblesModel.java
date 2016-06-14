@@ -22,11 +22,13 @@ public class ExtensiblesModel {
             public ExtensibleTypeDescriptor apply(ExtensibleType domain) {
                 ExtensibleTypeDescriptor typeDescr = new ExtensibleTypeDescriptor();
                 
+                typeDescr.setId(domain.getId().toString());
                 typeDescr.setName(domain.getName());
-//                typeDescr.setCreatedTime(domain.getCreatedTime());
-//                typeDescr.setModifiedTime(domain.getModifiedTime());
-//                descr.setDisplayName(domain.getDiplayName());  
-//                descr.setDescription(domain.getDesciption());
+                typeDescr.setSupertype(domain.getSupertype() != null ? domain.getSupertype().getName() : null);
+                typeDescr.setCreatedTime(domain.getCreatedTime());
+                typeDescr.setModifiedTime(domain.getModifiedTime());
+                typeDescr.setDisplayName(domain.getDiplayName());  
+                typeDescr.setDescription(domain.getDesciption());
                 
                 for (com.thinkbiganalytics.metadata.api.extension.FieldDescriptor field : domain.getFieldDescriptors()) {
                     FieldDescriptor fieldDescr = new FieldDescriptor();

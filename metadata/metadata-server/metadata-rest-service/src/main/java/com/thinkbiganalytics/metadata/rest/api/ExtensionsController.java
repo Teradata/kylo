@@ -34,7 +34,7 @@ import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescrip
  */
 @Component
 @Path("/extension")
-public class ExtentionsController {
+public class ExtensionsController {
     
     @Inject
     private MetadataAccess metadata;
@@ -52,13 +52,26 @@ public class ExtentionsController {
         });
     }
     
-    @Path("type/{id}")
+    @Path("type/{nameOrId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public ExtensibleTypeDescriptor getType(@PathParam("id") String id) {
+    public ExtensibleTypeDescriptor getType(@PathParam("nameOrId") String id) {
         return metadata.read(() -> {
-            ExtensibleType.ID domainId = this.typeProvider.resolve(id);
-            ExtensibleType type = this.typeProvider.getType(domainId);
+            ExtensibleType.ID domainId = null;
+            String name = null;
+            ExtensibleType type = null;
+            
+            try {
+                domainId = this.typeProvider.resolve(id);
+            } catch (IllegalArgumentException e) {
+                name = id;
+            }
+            
+            if (domainId != null) {
+                type = this.typeProvider.getType(domainId);
+            } else {
+                type = this.typeProvider.getType(name);
+            }
             
             if (type != null) {
                 return ExtensiblesModel.DOMAIN_TO_TYPE.apply(type);

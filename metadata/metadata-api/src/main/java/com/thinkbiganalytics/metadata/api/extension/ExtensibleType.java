@@ -6,6 +6,8 @@ package com.thinkbiganalytics.metadata.api.extension;
 import java.io.Serializable;
 import java.util.Set;
 
+import org.joda.time.DateTime;
+
 /**
  *
  * @author Sean Felten
@@ -16,9 +18,17 @@ public interface ExtensibleType {
 
     ID getId();
     
+    ExtensibleType getSupertype();
+    
     String getName();
     
-    ExtensibleType getParentType();
+    String getDiplayName();
+    
+    String getDesciption();
+    
+    DateTime getCreatedTime();
+    
+    DateTime getModifiedTime();
     
     Set<FieldDescriptor> getFieldDescriptors();
 

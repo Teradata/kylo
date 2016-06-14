@@ -13,9 +13,10 @@ import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
+import org.joda.time.DateTime;
+
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity.ID;
 import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -64,7 +65,7 @@ public class JcrExtensibleType implements ExtensibleType {
      * @see com.thinkbiganalytics.metadata.api.extension.ExtensibleType#getParentType()
      */
     @Override
-    public ExtensibleType getParentType() {
+    public ExtensibleType getSupertype() {
         try {
             for (NodeType parent : this.nodeType.getDeclaredSupertypes()) {
                 if (parent.isNodeType(ExtensionsConstants.EXTENSIBLE_ENTITY_TYPE) && 
@@ -78,6 +79,42 @@ public class JcrExtensibleType implements ExtensibleType {
         }
         
         return null;
+    }
+
+    @Override
+    public String getDiplayName() {
+        try {
+            return this.typeNode.getProperty("jcr:title").getString();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get the display name (title) for type: " + this.nodeType.getName(), e);
+        }
+    }
+
+    @Override
+    public String getDesciption() {
+        try {
+            return this.typeNode.getProperty("jcr:description").getString();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get the description of type: " + this.nodeType.getName(), e);
+        }
+    }
+
+    @Override
+    public DateTime getCreatedTime() {
+        try {
+            return new DateTime(this.typeNode.getProperty("jcr:created").getDate());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get created time for type: " + this.nodeType.getName(), e);
+        }
+    }
+    
+    @Override
+    public DateTime getModifiedTime() {
+        try {
+            return new DateTime(this.typeNode.getProperty("jcr:lastModified").getDate());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get modified time for type: " + this.nodeType.getName(), e);
+        }
     }
 
     public String getJcrName() {
@@ -153,6 +190,8 @@ public class JcrExtensibleType implements ExtensibleType {
 
         }
     }
+
+
 
 
 }

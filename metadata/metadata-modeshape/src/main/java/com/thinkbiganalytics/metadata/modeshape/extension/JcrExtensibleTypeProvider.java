@@ -124,8 +124,8 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
 
     @Override
     public ExtensibleTypeBuilder updateType(ID id) {
-        // TODO Auto-generated method stub
-        return null;
+        JcrExtensibleType.TypeId typeId = (JcrExtensibleType.TypeId) id;
+        return new TypeBuilder(typeId);
     }
     
     private List<ExtensibleType> getTypesList(String typeName) {

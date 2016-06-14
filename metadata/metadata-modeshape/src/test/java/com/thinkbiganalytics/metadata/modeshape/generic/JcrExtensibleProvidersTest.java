@@ -51,22 +51,41 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
 
     @Test(dependsOnMethods="testGetAllDefaultTypes")
     public void testCreatePersonType() {
-        String typeName = metadata.commit(new Command<String>() {
-            @Override
-            public String execute() {
-                ExtensibleType type = typeProvider.buildType("Person")
-                                .field("name")
-                                    .type(FieldDescriptor.Type.STRING)
-                                    .displayName("Person name")
-                                    .description("The name of the person")
-                                    .required(true)
-                                    .add()
-                                .addField("description", FieldDescriptor.Type.STRING)
-                                .addField("age", FieldDescriptor.Type.LONG)
-                                .build();
-                                  
-                return type.getName();
-            }
+        String typeName = metadata.commit(() ->  {
+            ExtensibleType type = typeProvider.buildType("Person")
+                            .field("name")
+                                .type(FieldDescriptor.Type.STRING)
+                                .displayName("Person name")
+                                .description("The name of the person")
+                                .required(true)
+                                .add()
+                            .addField("description", FieldDescriptor.Type.STRING)
+                            .addField("age", FieldDescriptor.Type.LONG)
+                            .build();
+                              
+            return type.getName();
+        });
+        
+        assertThat(typeName).isNotNull().isEqualTo("Person");
+    }
+    
+    @Test(dependsOnMethods="testCreatePersonType")
+    public void testCreateEmployeeType() {
+        String typeName = metadata.commit(() -> {
+            ExtensibleType person = typeProvider.getType("Person");
+            ExtensibleType emp = typeProvider.buildType("Employee")
+                            .supertype(person)
+                            .field("name")
+                                .type(FieldDescriptor.Type.STRING)
+                                .displayName("Person name")
+                                .description("The name of the person")
+                                .required(true)
+                                .add()
+                            .addField("description", FieldDescriptor.Type.STRING)
+                            .addField("age", FieldDescriptor.Type.LONG)
+                            .build();
+            
+            return emp.getSupertype().getName();
         });
         
         assertThat(typeName).isNotNull().isEqualTo("Person");
@@ -74,29 +93,23 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
     
     @Test(dependsOnMethods="testCreatePersonType")
     public void testGetPersonType() {
-        final ExtensibleType.ID id = metadata.commit(new Command<ExtensibleType.ID>() {
-            @Override
-            public ExtensibleType.ID execute() {
-                ExtensibleType type = typeProvider.getType("Person");
-                
-                return type.getId();
-            }
+        final ExtensibleType.ID id = metadata.commit(() -> {
+            ExtensibleType type = typeProvider.getType("Person");
+            
+            return type.getId();
         });
         
         assertThat(id).isNotNull();
         
-        Map<String, FieldDescriptor.Type> fields = metadata.commit(new Command<Map<String, FieldDescriptor.Type>>() {
-            @Override
-            public Map<String, FieldDescriptor.Type> execute() {
-                ExtensibleType type = typeProvider.getType("Person");
-                Map<String, FieldDescriptor.Type> fields = new HashMap<>();
-                
-                for (FieldDescriptor descr : type.getFieldDescriptors()) {
-                    fields.put(descr.getName(), descr.getType());
-                }
-                
-                return fields;
+        Map<String, FieldDescriptor.Type> fields = metadata.commit(() -> {
+            ExtensibleType type = typeProvider.getType("Person");
+            Map<String, FieldDescriptor.Type> map = new HashMap<>();
+            
+            for (FieldDescriptor descr : type.getFieldDescriptors()) {
+                map.put(descr.getName(), descr.getType());
             }
+            
+            return map;
         });
         
         assertThat(fields).isNotNull();
@@ -107,35 +120,29 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
     
     @Test(dependsOnMethods="testCreatePersonType")
     public void testGetAllTypes() {
-        int size = metadata.commit(new Command<Integer>() {
-            @Override
-            public Integer execute() {
-                List<ExtensibleType> types = typeProvider.getTypes();
-                
-                return types.size();
-            }
+        int size = metadata.commit(() -> {
+            List<ExtensibleType> types = typeProvider.getTypes();
+            
+            return types.size();
         });
         
-        // Person + Feed + FeedConnection + FeedSource + FeedDestination + Datasource = 5
-        assertThat(size).isEqualTo(6);
+        // 5 + Person + Employee = 7
+        assertThat(size).isEqualTo(7);
     }
     
     @Test(dependsOnMethods="testCreatePersonType")
     public void testCreateEntity() {
-        ExtensibleEntity.ID id = metadata.commit(new Command<ExtensibleEntity.ID>() {
-            @Override
-            public ExtensibleEntity.ID execute() {
-                ExtensibleType type = typeProvider.getType("Person");
-                
-                Map<String, Object> props = new HashMap<>();
-                props.put("name", "Bob");
-                props.put("description", "Silly");
-                props.put("age", 50);
-                
-                ExtensibleEntity entity = entityProvider.createEntity(type, props);
-                
-                return entity.getId();
-            }
+        ExtensibleEntity.ID id = metadata.commit(() -> {
+            ExtensibleType type = typeProvider.getType("Person");
+            
+            Map<String, Object> props = new HashMap<>();
+            props.put("name", "Bob");
+            props.put("description", "Silly");
+            props.put("age", 50);
+            
+            ExtensibleEntity entity = entityProvider.createEntity(type, props);
+            
+            return entity.getId();
         });
         
         assertThat(id).isNotNull();
@@ -143,21 +150,18 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
     
     @Test(dependsOnMethods="testCreatePersonType")
     public void testGetEntity() {
-        String typeName = metadata.commit(new Command<String>() {
-            @Override
-            public String execute() {
-                List<ExtensibleEntity> list = entityProvider.getEntities();
-                
-                assertThat(list).isNotNull().hasSize(1);
-                
-                ExtensibleEntity.ID id = list.get(0).getId();
-                ExtensibleEntity entity = entityProvider.getEntity(id);
-                
-                assertThat(entity).isNotNull();
-                assertThat(entity.getProperty("name")).isEqualTo("Bob");
-                
-                return entity.getTypeName();
-            }
+        String typeName = metadata.commit(() ->  {
+            List<ExtensibleEntity> list = entityProvider.getEntities();
+            
+            assertThat(list).isNotNull().hasSize(1);
+            
+            ExtensibleEntity.ID id = list.get(0).getId();
+            ExtensibleEntity entity = entityProvider.getEntity(id);
+            
+            assertThat(entity).isNotNull();
+            assertThat(entity.getProperty("name")).isEqualTo("Bob");
+            
+            return entity.getTypeName();
         });
         
         assertThat(typeName).isEqualTo("Person");

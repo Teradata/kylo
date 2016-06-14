@@ -62,7 +62,7 @@
 /*
  * // Predefined Entities ////
  */
-[tba:typeDescriptor] > nt:hierarchyNode, mix:title
+[tba:typeDescriptor] > nt:hierarchyNode, mix:title, mix:lastModified
     + * (tba:fieldDescriptor) sns
 
 [tba:fieldDescriptor] > nt:hierarchyNode, mix:title
