@@ -34,11 +34,6 @@ public class TableMergeSyncSupport implements Serializable {
         this.conn = conn;
     }
 
-    protected TableMergeSyncSupport() {
-        // for unit testing
-
-    }
-
     public void enableDynamicPartitions() {
         doExecuteSQL("set hive.exec.dynamic.partition=true");
         doExecuteSQL("set hive.exec.dynamic.partition.mode=nonstrict");
