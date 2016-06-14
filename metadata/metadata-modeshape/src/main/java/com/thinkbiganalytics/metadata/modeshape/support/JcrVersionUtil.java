@@ -2,6 +2,9 @@ package com.thinkbiganalytics.metadata.modeshape.support;
 
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -9,6 +12,8 @@ import javax.jcr.Session;
 import javax.jcr.lock.LockManager;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.version.Version;
+import javax.jcr.version.VersionHistory;
+import javax.jcr.version.VersionIterator;
 import javax.jcr.version.VersionManager;
 
 /**
@@ -122,5 +127,26 @@ public class JcrVersionUtil {
             throw new MetadataRepositoryException("Could not perform unlock", e);
         }
     }
+
+    public List<Version> getVersions(Node node) {
+        String nodeName = null;
+        try {
+            nodeName = node.getName();
+            List<Version> versions = new ArrayList<>();
+            VersionHistory history = JcrVersionUtil.getVersionManager(node.getSession()).getVersionHistory(node.getPath());
+            VersionIterator itr = history.getAllVersions();
+            while (itr.hasNext()) {
+                Version version = itr.nextVersion();
+                versions.add(version);
+            }
+            return versions;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to find Version History for " + nodeName, e);
+        }
+
+    }
+
+
+
 
 }

@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.modeshape;
 
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 
 import org.modeshape.jcr.api.txn.TransactionManagerLookup;
@@ -73,7 +74,7 @@ public class JcrMetadataAccess implements MetadataAccess {
      * Check out the node and add it to the Set of checked out nodes
      */
     public void checkoutNode(Node n) throws RepositoryException {
-        if (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n))) {
+        if (JcrUtil.isVersionable(n) && (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n)))) {
             JcrVersionUtil.checkout(n);
             checkedOutNodes.get().add(n);
         }

@@ -95,7 +95,9 @@ public class JcrPropertyUtil {
         ValueFactory factory;
         try {
             factory = session.getValueFactory();
+
             if (props != null) {
+                ((JcrMetadataAccess) metadataAccess).checkoutNode(entNode);
                 for (Map.Entry<String, Object> entry : props.entrySet()) {
                     Value value = asValue(factory, entry.getValue());
                     entNode.setProperty(entry.getKey(), value);
