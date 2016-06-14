@@ -9,7 +9,6 @@ import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
@@ -33,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.testng.Assert;
 
 import java.util.HashMap;
 import java.util.List;
@@ -116,7 +116,6 @@ public class JcrPropertyTest {
             }
         });
 
-
         final JcrFeed feed = metadata.commit(new Command<JcrFeed>() {
             @Override
             public JcrFeed execute() {
@@ -154,8 +153,8 @@ public class JcrPropertyTest {
             @Override
             public JcrFeed execute() {
                 JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(feed.getId());
-                printVersions(f);
-
+                int versions = printVersions(f);
+                Assert.assertEquals(versions, 2, "Expecting 2 versions: jcr:rootVersion, 1.0");
                 Map<String, Object> props = f.getAllProperties();
                 List<JcrSource> sources = f.getSources();
                 if (sources != null) {
@@ -185,28 +184,16 @@ public class JcrPropertyTest {
             @Override
             public JcrFeed execute() {
                 JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(feed.getId());
-                printVersions(f);
+                int versions = printVersions(f);
+                Assert.assertEquals(versions, 3, "Expecting 2 versions: jcr:rootVersion, 1.0, 1.1");
                 return f;
-            }
-        });
-
-        List<Feed> feeds = metadata.read(new Command<List<Feed>>() {
-            @Override
-            public List<Feed> execute() {
-
-                FeedCriteria criteria = feedProvider.feedCriteria();
-                criteria.category("my_category");
-                // List<Feed> feedsList = feedProvider.getFeeds(criteria);
-
-                //   return feedsList;
-                return null;
             }
         });
 
 
     }
 
-    private void printVersions(JcrObject o) {
+    private int printVersions(JcrObject o) {
         List<Version> versions = JcrVersionUtil.getVersions(o.getNode());
         int versionCount = versions.size();
         log.info(" {}. Version count: {}", o.getNodeName(), versionCount);
@@ -217,6 +204,7 @@ public class JcrPropertyTest {
                 e.printStackTrace();
             }
         }
+        return versionCount;
     }
 
     @Test
