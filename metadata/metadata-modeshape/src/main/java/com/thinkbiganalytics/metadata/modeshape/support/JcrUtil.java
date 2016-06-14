@@ -176,6 +176,7 @@ public class JcrUtil {
             try {
                 String versionName = JcrVersionUtil.getBaseVersion(node).getName();
                 obj.setVersionName(versionName);
+                obj.setVersionableIdentifier(JcrVersionUtil.getBaseVersion(node).getContainingHistory().getVersionableIdentifier());
             } catch (RepositoryException e) {
               //this is fine... versionName is a nice to have on the object
             }
