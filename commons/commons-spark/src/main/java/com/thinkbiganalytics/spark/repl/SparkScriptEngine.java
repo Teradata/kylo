@@ -50,7 +50,15 @@ public class SparkScriptEngine extends ScriptEngine {
     @Override
     protected SparkContext createSparkContext() {
         // Let Spark know where to find class files
-        this.conf.set("spark.repl.class.uri", getInterpreter().classServerUri());
+        SparkIMain interpreter = getInterpreter();
+        this.conf.set("spark.repl.class.outputDir", interpreter.getClassOutputDirectory().getAbsolutePath());
+
+        try {
+            this.conf.set("spark.repl.class.uri", interpreter.classServerUri());
+        }
+        catch (NoSuchMethodError e) {
+            log.debug("Missing SparkIMain.classServerUri() method. This should only happen on Spark 2.0+ or CDH 5.7+.");
+        }
 
         // The SparkContext ClassLoader is needed during initialization (only for YARN master)
         Thread currentThread = Thread.currentThread();
