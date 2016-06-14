@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.inject.Inject;
 import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
@@ -40,7 +39,6 @@ import javax.jcr.nodetype.PropertyDefinition;
  */
 public class JcrPropertyUtil {
 
-    @Inject
     static MetadataAccess metadataAccess;
 
 

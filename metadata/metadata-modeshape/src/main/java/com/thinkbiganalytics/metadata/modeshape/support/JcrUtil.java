@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
+import com.thinkbiganalytics.metadata.modeshape.JcrVersionableNodeTypes;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
@@ -25,12 +26,15 @@ import javax.jcr.nodetype.NodeType;
 public class JcrUtil {
 
 
+    public static JcrVersionableNodeTypes jcrVersionableTypes;
+
+
     /**
      * Checks whether the given mixin node type is in effect for the given node.
      *
      * @param node      the node
      * @param mixinType the mixin node type
-     * @return <code>true</code> when the misin node type is present, <code>false</code> instead.
+     * @return <code>true</code> when the mixin node type is present, <code>false</code> instead.
      */
     public static boolean hasMixinType(Node node, String mixinType) throws RepositoryException {
         for (NodeType nodeType : node.getMixinNodeTypes()) {
@@ -46,10 +50,17 @@ public class JcrUtil {
     }
 
     public static boolean isVersionable(Node node) {
+        String name = "";
+        boolean versionable = false;
         try {
-            return hasMixinType(node, "mix:versionable");
+            name = node.getName();
+            versionable = hasMixinType(node, "mix:versionable");
+            if (!versionable) {
+                versionable = jcrVersionableTypes.isVersionable(node);
+            }
+            return versionable;
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to check if versionable");
+            throw new MetadataRepositoryException("Unable to check if versionable for Node " + name, e);
         }
     }
 
@@ -182,5 +193,7 @@ public class JcrUtil {
         return entity;
     }
 
-
+    public static void setJcrVersionableTypes(JcrVersionableNodeTypes jcrVersionableTypes) {
+        JcrUtil.jcrVersionableTypes = jcrVersionableTypes;
+    }
 }

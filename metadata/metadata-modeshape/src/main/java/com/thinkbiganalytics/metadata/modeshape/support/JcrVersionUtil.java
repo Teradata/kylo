@@ -128,7 +128,7 @@ public class JcrVersionUtil {
         }
     }
 
-    public List<Version> getVersions(Node node) {
+    public static List<Version> getVersions(Node node) {
         String nodeName = null;
         try {
             nodeName = node.getName();

@@ -24,6 +24,7 @@ import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 
 import org.junit.Test;
@@ -41,6 +42,7 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.version.Version;
 
 /**
  * Created by sr186054 on 6/4/16.
@@ -102,17 +104,29 @@ public class JcrPropertyTest {
 
     @Test
     public void testFeed() {
+        String categorySystemName = "my_category";
+        Category category = metadata.commit(new Command<Category>() {
+            @Override
+            public Category execute() {
+                JcrCategory category = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
+                category.setDescription("my category desc");
+                category.setTitle("my category");
+                categoryProvider.update(category);
+                return category;
+            }
+        });
+
+
         final JcrFeed feed = metadata.commit(new Command<JcrFeed>() {
             @Override
             public JcrFeed execute() {
 
                 String categorySystemName = "my_category";
 
-                JcrCategory category = (JcrCategory)categoryProvider.ensureCategory(categorySystemName);
+                JcrCategory category = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
                 category.setDescription("my category desc");
                 category.setTitle("my category");
                 categoryProvider.update(category);
-
 
                 JcrDatasource datasource = (JcrDatasource) datasourceProvider.ensureDatasource("mysql.table", "mysql table source");
                 datasource.setProperty(JcrDatasource.TYPE_NAME, "Database");
@@ -134,10 +148,14 @@ public class JcrPropertyTest {
             }
         });
 
+        //read and find feed verisons and ensure props
+
         JcrFeed readFeed = metadata.read(new Command<JcrFeed>() {
             @Override
             public JcrFeed execute() {
                 JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(feed.getId());
+                printVersions(f);
+
                 Map<String, Object> props = f.getAllProperties();
                 List<JcrSource> sources = f.getSources();
                 if (sources != null) {
@@ -145,13 +163,29 @@ public class JcrPropertyTest {
                         Map<String, Object> dataSourceProperties = ((JcrDatasource) source.getDatasource()).getAllProperties();
                     }
                 }
-
-                long start = System.currentTimeMillis();
-                List<Category> categoryList = categoryProvider.findAll();
-                long end = System.currentTimeMillis();
-                System.out.println("Total time: " + (end - start) + " ms returned: " + categoryList.size() + " results");
-
                 List<JcrObject> taggedObjects = tagProvider.findByTag("feedTag");
+                return f;
+            }
+        });
+
+        //update the feed again
+
+        Feed updateFeed = metadata.commit(new Command<Feed>() {
+            @Override
+            public Feed execute() {
+                JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(feed.getId());
+                f.setDescription("My Feed Updated Description");
+                ((JcrFeedProvider) feedProvider).update(f);
+                return f;
+            }
+        });
+
+        //read it again and find the versions
+        readFeed = metadata.read(new Command<JcrFeed>() {
+            @Override
+            public JcrFeed execute() {
+                JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(feed.getId());
+                printVersions(f);
                 return f;
             }
         });
@@ -170,6 +204,19 @@ public class JcrPropertyTest {
         });
 
 
+    }
+
+    private void printVersions(JcrObject o) {
+        List<Version> versions = JcrVersionUtil.getVersions(o.getNode());
+        int versionCount = versions.size();
+        log.info(" {}. Version count: {}", o.getNodeName(), versionCount);
+        for (Version v : versions) {
+            try {
+                log.info("Version: {}", v.getName());
+            } catch (RepositoryException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     @Test
