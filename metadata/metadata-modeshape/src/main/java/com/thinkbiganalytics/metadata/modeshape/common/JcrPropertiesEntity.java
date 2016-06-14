@@ -77,16 +77,28 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
 
     }
 
+    public <T> T getProperty(String name, Class<T> type) {
+        return getProperty(name, type, false);
+    }
+
 
 
     @Override
     public <T> T getProperty(String name, Class<T> type, boolean allowNotFound) {
 
         try {
-            if (JcrPropertyUtil.hasProperty(this.node.getPrimaryNodeType(), name)) {
-               return super.getProperty(name, type,allowNotFound);
+            if ("nt:frozenNode".equalsIgnoreCase(this.node.getPrimaryNodeType().getName())) {
+                T item = super.getProperty(name, type, true);
+                if (item == null) {
+                    item = getPropertiesObject().getProperty(name, type, allowNotFound);
+                }
+                return item;
             } else {
-                return getPropertiesObject().getProperty(name, type,allowNotFound);
+                if (JcrPropertyUtil.hasProperty(this.node.getPrimaryNodeType(), name)) {
+                    return super.getProperty(name, type, allowNotFound);
+                } else {
+                    return getPropertiesObject().getProperty(name, type, allowNotFound);
+                }
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to get Property " + name );

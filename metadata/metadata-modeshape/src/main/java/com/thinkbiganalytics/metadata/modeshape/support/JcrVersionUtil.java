@@ -149,6 +149,7 @@ public class JcrVersionUtil {
             VersionHistory history = JcrVersionUtil.getVersionManager(node.getSession()).getVersionHistory(node.getPath());
             VersionIterator itr = history.getAllVersions();
 
+
             while (itr.hasNext()) {
                 Version version = itr.nextVersion();
                 versions.add(version);
@@ -178,7 +179,10 @@ public class JcrVersionUtil {
             @Override
             public boolean apply(Version version) {
                 try {
-                    return version.getName().equalsIgnoreCase(versionName);
+                    String identifier = node.getIdentifier();
+                    String frozenIdentifer = JcrPropertyUtil.getString(version.getFrozenNode(), "jcr:frozenUuid");
+
+                    return version.getName().equalsIgnoreCase(versionName) && frozenIdentifer.equalsIgnoreCase(identifier);
                 } catch (RepositoryException e) {
 
                 }

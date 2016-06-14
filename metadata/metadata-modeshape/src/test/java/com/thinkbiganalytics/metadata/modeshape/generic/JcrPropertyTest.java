@@ -131,7 +131,7 @@ public class JcrPropertyTest {
                 datasource.setProperty(JcrDatasource.TYPE_NAME, "Database");
 
                 String feedSystemName = "my_feed";
-                JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, " my feed desc", datasource.getId(), null);
+                JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, "my feed desc", datasource.getId(), null);
                 feed.setTitle("my feed");
                 feed.addTag("my tag");
                 feed.addTag("my second tag");
@@ -156,14 +156,18 @@ public class JcrPropertyTest {
                 int versions = printVersions(f);
                 Assert.assertEquals(versions, 2, "Expecting 2 versions: jcr:rootVersion, 1.0");
 
-                Map<String, Object> props = f.getAllProperties();
                 List<JcrSource> sources = f.getSources();
                 if (sources != null) {
                     for (JcrSource source : sources) {
                         Map<String, Object> dataSourceProperties = ((JcrDatasource) source.getDatasource()).getAllProperties();
+                        String type = (String) dataSourceProperties.get(JcrDatasource.TYPE_NAME);
+                        //assert the type of datasource matches what was created "Database"
+                        Assert.assertEquals("Database", type);
                     }
                 }
-                List<JcrObject> taggedObjects = tagProvider.findByTag("feedTag");
+                List<JcrObject> taggedObjects = tagProvider.findByTag("my tag");
+                //assert we got 1 feed back
+                Assert.assertEquals(1, taggedObjects.size());
                 return f;
             }
         });
@@ -194,7 +198,6 @@ public class JcrPropertyTest {
                 Assert.assertEquals(versions, 3, "Expecting 2 versions: jcr:rootVersion, 1.0, 1.1");
                 JcrFeed v1 = JcrVersionUtil.getVersionedNode(f, "1.0", JcrFeed.class);
                 JcrFeed v11 = JcrVersionUtil.getVersionedNode(f, "1.1", JcrFeed.class);
-                JcrFeed vRoot = JcrVersionUtil.getVersionedNode(f, "jcr:rootVersion", JcrFeed.class);
                 String v1Prop1 = v1.getProperty("prop1", String.class);
                 String v11Prop1 = v11.getProperty("prop1", String.class);
                 JcrFeed baseVersion = JcrVersionUtil.getVersionedNode(JcrVersionUtil.getBaseVersion(f.getNode()), JcrFeed.class);
@@ -203,6 +206,8 @@ public class JcrPropertyTest {
 
                 Assert.assertEquals(v1Prop1, "my prop1");
                 Assert.assertEquals(v11Prop1, "my updated prop1");
+                Assert.assertEquals(v1.getDescription(), "my feed desc");
+                Assert.assertEquals(v11.getDescription(), "My Feed Updated Description");
                 return f;
             }
         });
