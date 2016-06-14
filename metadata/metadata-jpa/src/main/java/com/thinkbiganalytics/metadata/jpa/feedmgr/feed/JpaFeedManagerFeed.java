@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.metadata.jpa.feedmgr.feed;
 
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
@@ -9,7 +7,17 @@ import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategory;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.template.JpaFeedManagerTemplate;
 
-import javax.persistence.*;
+import org.apache.commons.lang3.StringUtils;
+
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.Lob;
+import javax.persistence.ManyToOne;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
+import javax.persistence.PrimaryKeyJoinColumn;
+import javax.persistence.Table;
 
 
 /**
@@ -99,5 +107,13 @@ public class JpaFeedManagerFeed<C extends JpaFeedManagerCategory> extends JpaFee
 
     public void setNifiProcessGroupId(String nifiProcessGroupId) {
         this.nifiProcessGroupId = nifiProcessGroupId;
+    }
+
+    @Override
+    public void setVersionName(String version) {
+        if (StringUtils.isNotBlank(version)) {
+            Long l = new Long(version);
+            setVersion(l.intValue());
+        }
     }
 }

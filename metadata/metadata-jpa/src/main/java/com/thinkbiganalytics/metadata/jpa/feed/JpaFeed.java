@@ -3,6 +3,25 @@
  */
 package com.thinkbiganalytics.metadata.jpa.feed;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
+import com.thinkbiganalytics.jpa.AuditTimestampListener;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.core.BaseId;
+import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
+import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
+import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
+import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.Obligation;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
+import org.hibernate.annotations.GenericGenerator;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,27 +32,29 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.persistence.*;
-
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
-import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
-
-import org.hibernate.annotations.GenericGenerator;
-
-import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
-import com.thinkbiganalytics.jpa.AuditTimestampListener;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.core.BaseId;
-import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
-import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.Obligation;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Version;
 
 /**
  *
@@ -301,6 +322,10 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
 
     public Integer getVersion() {
         return version;
+    }
+
+    public String getVersionName() {
+        return version + "";
     }
 
     public void setVersion(Integer version) {

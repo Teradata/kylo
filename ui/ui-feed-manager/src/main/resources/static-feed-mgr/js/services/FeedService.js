@@ -38,7 +38,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         createFeedModel : {},
         editFeedModel : {},
         getNewCreateFeedModel : function(){
-            return  {id:null,version:null,templateId:'',feedName:'',description:null,systemFeedName:'',inputProcessorType:'',inputProcessor:null,nonInputProcessors:[],properties:[], schedule:{schedulingPeriod:'* * * * * ?',schedulingStrategy:'CRON_DRIVEN', concurrentTasks:1},defineTable:false,allowPreconditions:false,dataTransformationFeed:false,table:{tableSchema:{name:null,fields:[]},sourceTableSchema:{name:null,fields:[]},method:'MANUAL',existingTableName:null,targetMergeStrategy:'DEDUPE_AND_MERGE',feedFormat:"ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n' STORED AS TEXTFILE",targetFormat:null,fieldPolicies:[],partitions:[],options:{compress:false,compressionFormat:null,auditLogging:true,encrypt:false,trackHistory:false}, securityGroups:[], sourceTableIncrementalDateField:null}, category:{id:null,name:null},  dataOwner:'',tags:[], reusableFeed:false, dataTransformation:{visualQuery:{sql:null,selectedColumnsAndTablesJson:null,chartViewModelJson:null},dataTransformScript:null,formulas:[],state:'NEW'}};
+            return  {id:null,versionName:null,templateId:'',feedName:'',description:null,systemFeedName:'',inputProcessorType:'',inputProcessor:null,nonInputProcessors:[],properties:[], schedule:{schedulingPeriod:'* * * * * ?',schedulingStrategy:'CRON_DRIVEN', concurrentTasks:1},defineTable:false,allowPreconditions:false,dataTransformationFeed:false,table:{tableSchema:{name:null,fields:[]},sourceTableSchema:{name:null,fields:[]},method:'MANUAL',existingTableName:null,targetMergeStrategy:'DEDUPE_AND_MERGE',feedFormat:"ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n' STORED AS TEXTFILE",targetFormat:null,fieldPolicies:[],partitions:[],options:{compress:false,compressionFormat:null,auditLogging:true,encrypt:false,trackHistory:false}, securityGroups:[], sourceTableIncrementalDateField:null}, category:{id:null,name:null},  dataOwner:'',tags:[], reusableFeed:false, dataTransformation:{visualQuery:{sql:null,selectedColumnsAndTablesJson:null,chartViewModelJson:null},dataTransformScript:null,formulas:[],state:'NEW'}};
         },
         newCreateFeed:function(){
             this.createFeedModel = this.getNewCreateFeedModel();
@@ -184,11 +184,11 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
 
                     //update the feed versionId and internal id upon save
                     model.id = response.data.feedMetadata.id;
-                    model.version = response.data.feedMetadata.version;
+                    model.versionName = response.data.feedMetadata.versionName;
 
                     $mdToast.show(
                         $mdToast.simple()
-                            .textContent('Saved the Feed, version '+model.version)
+                            .textContent('Saved the Feed, version '+model.versionName)
                             .hideDelay(3000)
                     );
                     deferred.resolve(response);

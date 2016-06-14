@@ -3,14 +3,14 @@
  */
 package com.thinkbiganalytics.metadata.api.feed;
 
-import java.io.Serializable;
-import java.util.List;
-
+import com.thinkbiganalytics.metadata.api.Propertied;
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.Propertied;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import java.io.Serializable;
+import java.util.List;
 
 /**
  *
@@ -60,7 +60,7 @@ public interface Feed<C extends Category> extends Propertied, Serializable {
 
      C getCategory();
 
-    Integer getVersion();
+    String getVersionName();
 
 
     DateTime getCreatedTime();
