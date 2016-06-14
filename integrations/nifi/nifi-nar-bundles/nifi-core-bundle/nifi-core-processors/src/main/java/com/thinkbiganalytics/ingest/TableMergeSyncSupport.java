@@ -421,7 +421,6 @@ public class TableMergeSyncSupport implements Serializable {
 //    }
 
 
-
     protected void doExecuteSQL(String sql) {
 
         try (final Statement st = conn.createStatement()) {
