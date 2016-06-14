@@ -136,6 +136,8 @@ public class MergeTable extends AbstractProcessor {
         try (final Connection conn = thriftService.getConnection()) {
 
             TableMergeSyncSupport mergeSupport = new TableMergeSyncSupport(conn);
+            mergeSupport.enableDynamicPartitions();
+
             PartitionSpec partitionSpec = new PartitionSpec(partitionSpecString);
 
             List<PartitionBatch> batches = null;

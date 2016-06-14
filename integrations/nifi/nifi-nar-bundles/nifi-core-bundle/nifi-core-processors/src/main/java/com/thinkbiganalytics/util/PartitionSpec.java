@@ -89,6 +89,31 @@ public class PartitionSpec {
         return "partition (" + StringUtils.join(parts, ",") + ")";
     }
 
+    public String toDynamicPartitionSpec() {
+        String[] parts = new String[keys.size()];
+        for (int i = 0; i < keys.size(); i++) {
+            parts[i] = keys.get(i).getKey();
+        }
+        return "partition (" + toPartitionSelectSQL() + ")";
+    }
+
+    public String toPartitionSelectSQL() {
+        String[] parts = new String[keys.size()];
+        for (int i = 0; i < keys.size(); i++) {
+            parts[i] = keys.get(i).getKey();
+        }
+        return StringUtils.join(parts, ",");
+    }
+
+    public String toDynamicSelectSQLSpec() {
+        String[] parts = new String[keys.size()];
+        for (int i = 0; i < keys.size(); i++) {
+            parts[i] = keys.get(i).getFormula() + " " + keys.get(i).getKey();
+        }
+        return StringUtils.join(parts, ",");
+    }
+
+
     /**
      * Generates a select statement that will find all unique data partitions in the source table
      */
