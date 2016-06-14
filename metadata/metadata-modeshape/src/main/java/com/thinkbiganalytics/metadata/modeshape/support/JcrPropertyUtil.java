@@ -92,7 +92,7 @@ public class JcrPropertyUtil {
             factory = session.getValueFactory();
 
             if (props != null) {
-                JcrMetadataAccess.checkoutNode(entNode);
+                JcrMetadataAccess.ensureCheckoutNode(entNode);
                 for (Map.Entry<String, Object> entry : props.entrySet()) {
                     Value value = asValue(factory, entry.getValue());
                     entNode.setProperty(entry.getKey(), value);
@@ -211,7 +211,7 @@ public class JcrPropertyUtil {
         //ensure checked out
 
         try {
-            JcrMetadataAccess.checkoutNode(node);
+            JcrMetadataAccess.ensureCheckoutNode(node);
 
             if (node == null) {
                 throw new IllegalArgumentException("Cannot set a property on a null-node!");
