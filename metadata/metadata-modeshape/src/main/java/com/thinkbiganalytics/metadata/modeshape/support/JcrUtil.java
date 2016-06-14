@@ -171,7 +171,16 @@ public class JcrUtil {
      * Create a new JcrObject (Wrapper Object) that invokes a constructor with at least parameter of type Node
      */
     public static <T extends JcrObject> T createJcrObject(Node node, Class<T> type, Object[] constructorArgs) {
-        return constructNodeObject(node, type, constructorArgs);
+        T obj = constructNodeObject(node, type, constructorArgs);
+        if(JcrUtil.isVersionable(obj) && !node.isNew()){
+            try {
+                String versionName = JcrVersionUtil.getBaseVersion(node).getName();
+                obj.setVersionName(versionName);
+            } catch (RepositoryException e) {
+              //this is fine... versionName is a nice to have on the object
+            }
+        }
+        return obj;
     }
 
     /**

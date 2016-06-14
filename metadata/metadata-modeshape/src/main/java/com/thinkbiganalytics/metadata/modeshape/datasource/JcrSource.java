@@ -1,13 +1,8 @@
 package com.thinkbiganalytics.metadata.modeshape.datasource;
 
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import java.io.Serializable;
@@ -33,7 +28,7 @@ public class JcrSource extends JcrFeedConnection implements FeedSource {
     @Override
     public FeedSourceId getId() {
         try {
-            return new JcrSource.FeedSourceId(this.node.getIdentifier());
+            return new JcrSource.FeedSourceId(getObjectId());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }

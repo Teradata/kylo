@@ -42,6 +42,7 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 import javax.jcr.version.Version;
 
 /**
@@ -152,6 +153,7 @@ public class JcrPropertyTest {
         JcrFeed readFeed = metadata.read(new Command<JcrFeed>() {
             @Override
             public JcrFeed execute() {
+                Session s = null;
                 JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(feed.getId());
                 int versions = printVersions(f);
                 Assert.assertEquals(versions, 2, "Expecting 2 versions: jcr:rootVersion, 1.0");
@@ -208,6 +210,10 @@ public class JcrPropertyTest {
                 Assert.assertEquals(v11Prop1, "my updated prop1");
                 Assert.assertEquals(v1.getDescription(), "my feed desc");
                 Assert.assertEquals(v11.getDescription(), "My Feed Updated Description");
+                String v = v11.getVersionName();
+                Feed.ID v1Id = v1.getId();
+                Feed.ID v11Id = v11.getId();
+                Feed.ID baseID = baseVersion.getId();
                 return f;
             }
         });

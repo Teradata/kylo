@@ -141,6 +141,7 @@ public class JcrVersionUtil {
         }
     }
 
+
     public static List<Version> getVersions(Node node) {
         String nodeName = null;
         try {
@@ -148,7 +149,7 @@ public class JcrVersionUtil {
             List<Version> versions = new ArrayList<>();
             VersionHistory history = JcrVersionUtil.getVersionManager(node.getSession()).getVersionHistory(node.getPath());
             VersionIterator itr = history.getAllVersions();
-
+            String id = history.getVersionableIdentifier();
 
             while (itr.hasNext()) {
                 Version version = itr.nextVersion();
@@ -168,7 +169,11 @@ public class JcrVersionUtil {
             versionName = version.getName();
             Node node = version.getFrozenNode();
             nodeName = node.getName();
-            return JcrUtil.constructNodeObject(node, type, constructorArgs);
+            String entityId = version.getContainingHistory().getVersionableIdentifier();
+            T obj = JcrUtil.constructNodeObject(node, type, constructorArgs);
+            obj.setVersionName(versionName);
+            obj.setVersionableIdentifier(entityId);
+            return obj;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to find Version " + versionName + " for Node " + nodeName, e);
         }
@@ -181,7 +186,6 @@ public class JcrVersionUtil {
                 try {
                     String identifier = node.getIdentifier();
                     String frozenIdentifer = JcrPropertyUtil.getString(version.getFrozenNode(), "jcr:frozenUuid");
-
                     return version.getName().equalsIgnoreCase(versionName) && frozenIdentifer.equalsIgnoreCase(identifier);
                 } catch (RepositoryException e) {
 

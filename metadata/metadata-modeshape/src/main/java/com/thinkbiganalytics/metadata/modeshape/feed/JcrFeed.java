@@ -56,7 +56,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     @Override
     public FeedId getId() {
         try {
-            return new JcrFeed.FeedId(this.node.getIdentifier());
+            return new JcrFeed.FeedId(getObjectId());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }
@@ -108,7 +108,6 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public List<? extends FeedDestination> getDestinations() {
         return JcrUtil.getNodes(this.node, DESTINATION_NAME, JcrDestination.class);
     }
-
 
 
     @Override
@@ -213,11 +212,6 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     @Override
     public void setState(State state) {
 
-    }
-
-    @Override
-    public Integer getVersion() {
-        return null;
     }
 
 

@@ -36,7 +36,7 @@ public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements D
     @Override
     public DatasourceId getId() {
         try {
-            return new JcrDatasource.DatasourceId(this.node.getIdentifier());
+            return new JcrDatasource.DatasourceId(getObjectId());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }

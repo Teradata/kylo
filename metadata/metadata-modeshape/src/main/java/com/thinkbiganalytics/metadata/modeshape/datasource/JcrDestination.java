@@ -1,11 +1,8 @@
 package com.thinkbiganalytics.metadata.modeshape.datasource;
 
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertiesEntity;
-import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
 
 import java.io.Serializable;
 
@@ -30,7 +27,7 @@ public class JcrDestination extends JcrFeedConnection implements FeedDestination
     @Override
     public FeedDestinationId getId() {
         try {
-            return new JcrDestination.FeedDestinationId(this.node.getIdentifier());
+            return new JcrDestination.FeedDestinationId(getObjectId());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }

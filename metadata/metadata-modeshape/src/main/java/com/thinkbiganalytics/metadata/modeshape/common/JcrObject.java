@@ -18,8 +18,23 @@ import javax.jcr.RepositoryException;
  */
 public class JcrObject {
 
+    private String identifier;
+
+    private String nodeType;
 
     protected final Node node;
+
+    private String versionName;
+
+    private String versionableIdentifier;
+
+    public String getObjectId() throws RepositoryException {
+        if ("nt:frozenNode".equalsIgnoreCase(this.nodeType)) {
+            return this.versionableIdentifier;
+        } else {
+            return this.identifier;
+        }
+    }
 
 
     /**
@@ -27,6 +42,14 @@ public class JcrObject {
      */
     public JcrObject(Node node) {
         this.node = node;
+        String nodeName = null;
+        try {
+            nodeName = node.getName();
+            this.identifier = this.node.getIdentifier();
+            this.nodeType = this.node.getPrimaryNodeType().getName();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to create JcrObject from node " + nodeName, e);
+        }
     }
 
     public String getTypeName() {
@@ -150,7 +173,19 @@ public class JcrObject {
         return this.node;
     }
 
+    public String getVersionName() {
+        return versionName;
+    }
 
+    public void setVersionName(String versionName) {
+        this.versionName = versionName;
+    }
 
+    public String getVersionableIdentifier() {
+        return versionableIdentifier;
+    }
 
+    public void setVersionableIdentifier(String versionableIdentifier) {
+        this.versionableIdentifier = versionableIdentifier;
+    }
 }

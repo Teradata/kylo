@@ -60,7 +60,7 @@ public class JcrEntity  extends JcrObject implements ExtensibleEntity {
     @Override
     public ID getId() {
         try {
-            return new EntityId(this.node.getIdentifier());
+            return new EntityId(getObjectId());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }

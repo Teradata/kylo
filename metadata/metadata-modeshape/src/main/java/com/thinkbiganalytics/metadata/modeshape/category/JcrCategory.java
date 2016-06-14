@@ -35,7 +35,7 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     @Override
     public CategoryId getId() {
         try {
-            return new JcrCategory.CategoryId(this.node.getIdentifier());
+            return new JcrCategory.CategoryId(getObjectId());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }
