@@ -23,8 +23,6 @@ import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntityPro
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
 
@@ -102,12 +100,6 @@ public class MetadataJcrConfig {
         return new SimpleChangeEventDispatcher();
     }
 
-
-    @Bean
-    public JcrVersionableNodeTypes versionableTypes() {
-        return new JcrVersionableNodeTypes();
-    }
-
 //    @Bean
 //    public FeedProvider feedProvider() {
 //        return new InMemoryFeedProvider();
@@ -133,23 +125,5 @@ public class MetadataJcrConfig {
         return new MetadataJcrConfigurator();
     }
 
-    @Bean
-    public JcrPropertyUtil jcrPropertyUtil() {
-        JcrPropertyUtil p = new JcrPropertyUtil();
-        p.setMetadataAccess(metadataAccess());
-        return p;
-    }
-
-    @Bean
-    public JcrVersionableNodeTypes jcrVersionableTypes() {
-        return new JcrVersionableNodeTypes();
-    }
-
-    @Bean
-    public JcrUtil jcrUtil() {
-        JcrUtil p = new JcrUtil();
-        p.setJcrVersionableTypes(jcrVersionableTypes());
-        return p;
-    }
     
 }

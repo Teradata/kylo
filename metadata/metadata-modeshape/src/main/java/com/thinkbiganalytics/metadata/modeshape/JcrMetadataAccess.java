@@ -72,8 +72,10 @@ public class JcrMetadataAccess implements MetadataAccess {
 
     /**
      * Check out the node and add it to the Set of checked out nodes
+     * //ensureCheckout
+     *
      */
-    public void checkoutNode(Node n) throws RepositoryException {
+    public static void checkoutNode(Node n) throws RepositoryException {
         if (JcrUtil.isVersionable(n) && (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n)))) {
             JcrVersionUtil.checkout(n);
             checkedOutNodes.get().add(n);

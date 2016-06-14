@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.support;
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
@@ -38,8 +37,6 @@ import javax.jcr.nodetype.PropertyDefinition;
  * Created by sr186054 on 6/13/16.
  */
 public class JcrPropertyUtil {
-
-    static MetadataAccess metadataAccess;
 
 
     public static String getString(Node node, String name) {
@@ -95,7 +92,7 @@ public class JcrPropertyUtil {
             factory = session.getValueFactory();
 
             if (props != null) {
-                ((JcrMetadataAccess) metadataAccess).checkoutNode(entNode);
+                JcrMetadataAccess.checkoutNode(entNode);
                 for (Map.Entry<String, Object> entry : props.entrySet()) {
                     Value value = asValue(factory, entry.getValue());
                     entNode.setProperty(entry.getKey(), value);
@@ -212,10 +209,9 @@ public class JcrPropertyUtil {
 
     public static void setProperty(Node node, String name, Object value) {
         //ensure checked out
-        JcrMetadataAccess jcrMetadataAccess = (JcrMetadataAccess) metadataAccess;
 
         try {
-            jcrMetadataAccess.checkoutNode(node);
+            JcrMetadataAccess.checkoutNode(node);
 
             if (node == null) {
                 throw new IllegalArgumentException("Cannot set a property on a null-node!");
@@ -330,7 +326,4 @@ public class JcrPropertyUtil {
         }
     }
 
-    public static void setMetadataAccess(MetadataAccess metadataAccess) {
-        JcrPropertyUtil.metadataAccess = metadataAccess;
-    }
 }

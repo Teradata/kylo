@@ -10,7 +10,6 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.modeshape.JcrVersionable;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
@@ -29,7 +28,6 @@ import javax.jcr.RepositoryException;
 /**
  * Created by sr186054 on 6/4/16.
  */
-@JcrVersionable(nodeType = "tba:feed")
 public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntity implements Feed<C> {
 
     public static final String NODE_TYPE = "tba:feed";
