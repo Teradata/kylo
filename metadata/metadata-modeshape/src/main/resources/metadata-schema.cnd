@@ -87,13 +87,13 @@
 - tba:nifiTemplateId (STRING)
 - tba:json (STRING)
 
-[tba:category] > tba:entity, mix:referenceable, mix:title, tba:propertied 
+[tba:category] > tba:entity, mix:referenceable, mix:title, tba:propertied
 	- tba:systemName (STRING) mandatory
 	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'
 	+ * (tba:feed) sns
 
-[tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied 
+[tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, mix:versionable
 	+ tba:sources (tba:feedSource) sns
 	+ tba:destinations (tba:feedDestination) sns
 	- tba:systemName (STRING) mandatory
@@ -102,6 +102,8 @@
 	- tba:category (REFERENCE) mandatory
 	- tba:feedTemplate (REFERENCE)
 	- tba:json (STRING)
+	- tba:schedulingPeriod (STRING)
+	- tba:schedulingStrategy (STRING)
 //  - preconditon (tba:feedPrecondition)
 
 [tba:feedConnection] > tba:extensibleEntity, mix:referenceable

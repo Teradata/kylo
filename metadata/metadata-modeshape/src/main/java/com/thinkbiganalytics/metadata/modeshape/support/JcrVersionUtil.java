@@ -47,6 +47,7 @@ public class JcrVersionUtil {
         getVersionManager(node.getSession()).checkout(node.getPath());
     }
 
+
     /**
      * Creates for the given node a new version and returns that version. Put the node into the checked-in state.
      *
@@ -88,6 +89,7 @@ public class JcrVersionUtil {
             throw new MetadataRepositoryException("Could not perform check-out", e);
         }
     }
+
 
     /**
      * Places a lock on the given node.

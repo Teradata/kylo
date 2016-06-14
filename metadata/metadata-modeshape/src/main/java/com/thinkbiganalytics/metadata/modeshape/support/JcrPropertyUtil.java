@@ -1,11 +1,14 @@
 package com.thinkbiganalytics.metadata.modeshape.support;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.jcr.Binary;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
@@ -35,6 +39,9 @@ import javax.jcr.nodetype.PropertyDefinition;
  * Created by sr186054 on 6/13/16.
  */
 public class JcrPropertyUtil {
+
+    @Inject
+    static MetadataAccess metadataAccess;
 
 
     public static String getString(Node node, String name) {
@@ -126,7 +133,7 @@ public class JcrPropertyUtil {
                 case (PropertyType.BOOLEAN):
                     return Boolean.valueOf(value.getBoolean());
                 case (PropertyType.DATE):
-                    return value.getDate().getTime();
+                    return new DateTime(value.getDate().getTime());
                 case (PropertyType.BINARY):
                     return IOUtils.toByteArray(value.getBinary().getStream());
                 default:
@@ -202,9 +209,14 @@ public class JcrPropertyUtil {
         return n;
     }
 
+
     public static void setProperty(Node node, String name, Object value) {
+        //ensure checked out
+        JcrMetadataAccess jcrMetadataAccess = (JcrMetadataAccess) metadataAccess;
 
         try {
+            jcrMetadataAccess.checkoutNode(node);
+
             if (node == null) {
                 throw new IllegalArgumentException("Cannot set a property on a null-node!");
             }
@@ -254,6 +266,7 @@ public class JcrPropertyUtil {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to set property value: " + name + "=" + value, e);
         }
+        //save it
 
     }
 
@@ -317,4 +330,7 @@ public class JcrPropertyUtil {
         }
     }
 
+    public static void setMetadataAccess(MetadataAccess metadataAccess) {
+        JcrPropertyUtil.metadataAccess = metadataAccess;
+    }
 }

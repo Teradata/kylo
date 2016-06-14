@@ -41,9 +41,13 @@ public class JcrUtil {
         return false;
     }
 
-    private boolean checkIfVersionable(JcrObject jcrObject) {
+    public static boolean isVersionable(JcrObject jcrObject) {
+        return isVersionable(jcrObject.getNode());
+    }
+
+    public static boolean isVersionable(Node node) {
         try {
-            return hasMixinType(jcrObject.getNode(), "mix:versionable");
+            return hasMixinType(node, "mix:versionable");
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to check if versionable");
         }
@@ -127,8 +131,18 @@ public class JcrUtil {
         T entity = null;
         try {
             JcrTools tools = new JcrTools();
+
+            //if versionable checkout
+            //   if(isVersionable(parentNode)){
+            //     JcrVersionUtil.checkout(parentNode);
+            //  }
             Node n = tools.findOrCreateChild(parentNode, name, nodeType);
             entity = createJcrObject(n, type, constructorArgs);
+            //save ??
+            //   JcrVersionUtil.checkinRecursively(n);
+            //  if(isVersionable(parentNode)){
+            //       JcrVersionUtil.checkin(parentNode);
+            //    }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
