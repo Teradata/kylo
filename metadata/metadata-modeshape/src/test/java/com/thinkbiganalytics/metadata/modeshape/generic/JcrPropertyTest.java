@@ -155,6 +155,7 @@ public class JcrPropertyTest {
                 JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(feed.getId());
                 int versions = printVersions(f);
                 Assert.assertEquals(versions, 2, "Expecting 2 versions: jcr:rootVersion, 1.0");
+
                 Map<String, Object> props = f.getAllProperties();
                 List<JcrSource> sources = f.getSources();
                 if (sources != null) {
@@ -174,6 +175,11 @@ public class JcrPropertyTest {
             public Feed execute() {
                 JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(feed.getId());
                 f.setDescription("My Feed Updated Description");
+
+                Map<String, Object> otherProperties = new HashMap<String, Object>();
+                otherProperties.put("prop1", "my updated prop1");
+                f.setProperties(otherProperties);
+
                 ((JcrFeedProvider) feedProvider).update(f);
                 return f;
             }
@@ -186,6 +192,17 @@ public class JcrPropertyTest {
                 JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(feed.getId());
                 int versions = printVersions(f);
                 Assert.assertEquals(versions, 3, "Expecting 2 versions: jcr:rootVersion, 1.0, 1.1");
+                JcrFeed v1 = JcrVersionUtil.getVersionedNode(f, "1.0", JcrFeed.class);
+                JcrFeed v11 = JcrVersionUtil.getVersionedNode(f, "1.1", JcrFeed.class);
+                JcrFeed vRoot = JcrVersionUtil.getVersionedNode(f, "jcr:rootVersion", JcrFeed.class);
+                String v1Prop1 = v1.getProperty("prop1", String.class);
+                String v11Prop1 = v11.getProperty("prop1", String.class);
+                JcrFeed baseVersion = JcrVersionUtil.getVersionedNode(JcrVersionUtil.getBaseVersion(f.getNode()), JcrFeed.class);
+
+                //Assert the Props get versioned
+
+                Assert.assertEquals(v1Prop1, "my prop1");
+                Assert.assertEquals(v11Prop1, "my updated prop1");
                 return f;
             }
         });
@@ -200,6 +217,7 @@ public class JcrPropertyTest {
         for (Version v : versions) {
             try {
                 log.info("Version: {}", v.getName());
+
             } catch (RepositoryException e) {
                 e.printStackTrace();
             }

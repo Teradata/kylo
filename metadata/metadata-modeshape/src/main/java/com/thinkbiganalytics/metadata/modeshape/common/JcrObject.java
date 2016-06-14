@@ -65,7 +65,7 @@ public class JcrObject {
         try {
         return this.node.getName();
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to get the Path", e);
+            throw new MetadataRepositoryException("Unable to get the Node Name", e);
         }
     }
 

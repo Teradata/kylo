@@ -1,6 +1,9 @@
 package com.thinkbiganalytics.metadata.modeshape.support;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -128,6 +131,16 @@ public class JcrVersionUtil {
         }
     }
 
+    public static Version getBaseVersion(Node node) {
+        String nodeName = null;
+        try {
+            nodeName = node.getName();
+            return JcrVersionUtil.getVersionManager(node.getSession()).getBaseVersion(node.getPath());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to find Base Version for " + nodeName, e);
+        }
+    }
+
     public static List<Version> getVersions(Node node) {
         String nodeName = null;
         try {
@@ -135,6 +148,7 @@ public class JcrVersionUtil {
             List<Version> versions = new ArrayList<>();
             VersionHistory history = JcrVersionUtil.getVersionManager(node.getSession()).getVersionHistory(node.getPath());
             VersionIterator itr = history.getAllVersions();
+
             while (itr.hasNext()) {
                 Version version = itr.nextVersion();
                 versions.add(version);
@@ -144,6 +158,47 @@ public class JcrVersionUtil {
             throw new MetadataRepositoryException("Unable to find Version History for " + nodeName, e);
         }
 
+    }
+
+    public static <T extends JcrObject> T getVersionedNode(Version version, Class<T> type, Object[] constructorArgs) {
+        String nodeName = null;
+        String versionName = null;
+        try {
+            versionName = version.getName();
+            Node node = version.getFrozenNode();
+            nodeName = node.getName();
+            return JcrUtil.constructNodeObject(node, type, constructorArgs);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to find Version " + versionName + " for Node " + nodeName, e);
+        }
+    }
+
+    public static Version findVersion(Node node, final String versionName) {
+        Version version = Iterables.tryFind(getVersions(node), new Predicate<Version>() {
+            @Override
+            public boolean apply(Version version) {
+                try {
+                    return version.getName().equalsIgnoreCase(versionName);
+                } catch (RepositoryException e) {
+
+                }
+                return false;
+            }
+        }).orNull();
+        return version;
+    }
+
+
+    public static <T extends JcrObject> T getVersionedNode(Version version, Class<T> type) {
+        return getVersionedNode(version, type, null);
+    }
+
+    public static <T extends JcrObject> T getVersionedNode(JcrObject node, String versionNumber, Class<T> type) {
+        Version version = findVersion(node.getNode(), versionNumber);
+        if (version != null) {
+            return getVersionedNode(version, type);
+        }
+        throw new MetadataRepositoryException("Unable to find Version " + versionNumber + " for Node " + node.getNodeName());
     }
 
 
