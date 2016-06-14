@@ -11,5 +11,10 @@ public class JcrPropertyConstants {
 
     public static final String TAGGABLE = "tba:tags";
 
+    public static final String CREATED_TIME = "jcr:created";
+    public static final String CREATED_BY = "jcr:createdBy";
+    public static final String MODIFIED_TIME = "jcr:lastModified";
+    public static final String MODIFIED_BY = "jcr:lastModifiedBy";
+
 
 }

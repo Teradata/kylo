@@ -12,14 +12,12 @@ import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
-
-import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.List;
@@ -30,12 +28,14 @@ import javax.jcr.RepositoryException;
 /**
  * Created by sr186054 on 6/4/16.
  */
-public class JcrFeed<C extends Category> extends AbstractJcrSystemEntity implements Feed<C> {
+public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntity implements Feed<C> {
 
     public static final String NODE_TYPE = "tba:feed";
     public static final String SOURCE_NAME = "tba:sources";
     public static final String DESTINATION_NAME = "tba:destinations";
     public static final String CATEGORY = "tba:category";
+
+    public static final String STATE = "tba:state";
 
     public static final String TEMPLATE = "tba:template";
     public static final String SCHEDULE_PERIOD = "tba:schedulingPeriod"; // Cron expression, or Timer Expression
@@ -108,10 +108,6 @@ public class JcrFeed<C extends Category> extends AbstractJcrSystemEntity impleme
     }
 
 
-    @Override
-    public DateTime getModifiedTime() {
-        return null;
-    }
 
     @Override
     public String getName() {
@@ -126,6 +122,8 @@ public class JcrFeed<C extends Category> extends AbstractJcrSystemEntity impleme
     @Override
     public State getState() {
         return null;
+        //return
+        //   getProperty(STATE);
     }
 
     @Override
@@ -220,10 +218,6 @@ public class JcrFeed<C extends Category> extends AbstractJcrSystemEntity impleme
         return null;
     }
 
-    @Override
-    public DateTime getCreatedTime() {
-        return null;
-    }
 
     public String getSchedulePeriod(){
         return getProperty(SCHEDULE_PERIOD,String.class);

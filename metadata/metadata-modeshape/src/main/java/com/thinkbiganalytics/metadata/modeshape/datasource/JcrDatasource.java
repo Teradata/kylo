@@ -1,5 +1,13 @@
 package com.thinkbiganalytics.metadata.modeshape.datasource;
 
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
@@ -8,20 +16,10 @@ import java.util.Set;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
-import org.joda.time.DateTime;
-
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
 /**
  * Created by sr186054 on 6/5/16.
  */
-public class JcrDatasource extends AbstractJcrSystemEntity implements Datasource {
+public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements Datasource {
 
     public static final String NODE_TYPE = "tba:datasource";
     public static final String SOURCE_NAME = "tba:feedSources";
@@ -71,10 +69,6 @@ public class JcrDatasource extends AbstractJcrSystemEntity implements Datasource
         return super.getProperty(DESCRIPTION, String.class);
     }
 
-    @Override
-    public DateTime getCreatedTime() {
-        return null;
-    }
 
     @Override
     public Set<? extends FeedSource> getFeedSources() {

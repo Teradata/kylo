@@ -1,14 +1,10 @@
 package com.thinkbiganalytics.metadata.modeshape.template;
 
-import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
-
-import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.List;
@@ -19,7 +15,7 @@ import javax.jcr.RepositoryException;
 /**
  * Created by sr186054 on 6/8/16.
  */
-public class JcrFeedTemplate extends AbstractJcrSystemEntity implements FeedManagerTemplate {
+public class JcrFeedTemplate extends AbstractJcrAuditableSystemEntity implements FeedManagerTemplate {
 
     public static String NODE_TYPE = "tba:feedTemplate";
 
@@ -96,16 +92,6 @@ public class JcrFeedTemplate extends AbstractJcrSystemEntity implements FeedMana
     @Override
     public String getJson() {
         return getProperty(JSON, String.class);
-    }
-
-    @Override
-    public DateTime getCreatedTime() {
-        return null;
-    }
-
-    @Override
-    public DateTime getModifiedTime() {
-        return null;
     }
 
 

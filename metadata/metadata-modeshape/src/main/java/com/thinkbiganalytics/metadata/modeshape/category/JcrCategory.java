@@ -3,12 +3,10 @@ package com.thinkbiganalytics.metadata.modeshape.category;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-
-import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.List;
@@ -19,7 +17,7 @@ import javax.jcr.RepositoryException;
 /**
  * Created by sr186054 on 6/5/16.
  */
-public class JcrCategory extends AbstractJcrSystemEntity implements Category{
+public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Category {
 
     public static String CATEGORY_NAME = "tba:category";
     public static String NODE_TYPE = "tba:category";
@@ -65,15 +63,6 @@ public class JcrCategory extends AbstractJcrSystemEntity implements Category{
         return null;
     }
 
-    @Override
-    public DateTime getCreatedTime() {
-        return null;
-    }
-
-    @Override
-    public DateTime getModifiedTime() {
-        return null;
-    }
 
     @Override
     public void setDisplayName(String displayName) {
@@ -85,13 +74,5 @@ public class JcrCategory extends AbstractJcrSystemEntity implements Category{
         setSystemName(name);
     }
 
-    @Override
-    public void setCreatedTime(DateTime createdTime) {
 
-    }
-
-    @Override
-    public void setModifiedTime(DateTime modifiedTime) {
-
-    }
 }
