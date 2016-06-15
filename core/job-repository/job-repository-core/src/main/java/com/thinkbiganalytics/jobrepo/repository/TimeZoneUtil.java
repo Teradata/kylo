@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.jobrepo.repository;
 
+import org.joda.time.DateTimeZone;
+
+import java.util.Date;
 import java.util.TimeZone;
 
 /**
@@ -40,6 +43,16 @@ public class TimeZoneUtil {
       diff = (Math.abs(fromOffset)+toOffset);
     }
     return diff;
+  }
+
+  public static Date convertToUTC(Date date) {
+    DateTimeZone tz = DateTimeZone.getDefault();
+    Date utc = new Date(tz.convertLocalToUTC(date.getTime(), false));
+    return utc;
+  }
+
+  public static Date getUTCTime() {
+    return convertToUTC(new Date());
   }
 
 
