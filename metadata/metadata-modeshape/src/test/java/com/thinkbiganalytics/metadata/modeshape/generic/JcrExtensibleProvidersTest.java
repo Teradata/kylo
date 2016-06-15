@@ -12,7 +12,6 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
 
-import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
@@ -21,7 +20,8 @@ import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 
-@SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class })
+@SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrExtensibleProvidersTestConfig.class })
+//@SpringApplicationConfiguration(classes = { JcrExtensibleProvidersTestConfig.class })
 public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests {
 
     @Inject
@@ -36,13 +36,10 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
 
     @Test
     public void testGetAllDefaultTypes() {
-        int size = metadata.commit(new Command<Integer>() {
-            @Override
-            public Integer execute() {
-                List<ExtensibleType> types = typeProvider.getTypes();
-                
-                return types.size();
-            }
+        int size = metadata.commit(() -> {
+            List<ExtensibleType> types = typeProvider.getTypes();
+            
+            return types.size();
         });
         
         // Feed + FeedConnection + FeedSource + FeedDestination + Datasource = 5

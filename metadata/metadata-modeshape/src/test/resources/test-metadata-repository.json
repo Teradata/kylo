@@ -1,0 +1,32 @@
+{
+    "name" : "metadata-repository",
+    "node-types" : ["metadata-schema.cnd"],
+    "workspaces" : {
+        "predefined" : ["metadata"],
+        "default" : "default",
+        "allowCreation" : true
+    },
+    "security" : {
+        "anonymous" : {
+            "roles" : ["readonly","readwrite","admin"],
+            "useOnFailedLogin" : false
+        }
+    },
+    "node-types" : ["metadata-schema.cnd"],
+    "storage" : {
+        "persistence" : {
+            "type" : "db",
+            "connectionUrl": "jdbc:h2:file:./target/content/db;DB_CLOSE_ON_EXIT=FALSE",
+            "createOnStart" : true,
+            "dropOnExit" : true
+        },
+        "binaryStorage" : {
+            "type" : "file",
+            "directory": "target/content/binaries",
+            "minimumBinarySizeInBytes" : 999
+        }
+    },
+    "garbageCollection" : {
+        "initialTime": "17:00"
+    }
+}
