@@ -233,7 +233,11 @@ public class FeedMetadata implements UIFeed{
 
     public Long getVersion(){
         if(StringUtils.isNotBlank(versionName)){
-            return new Long(versionName);
+            try {
+                return new Long(versionName);
+            } catch (NumberFormatException e) {
+                return 0L;
+            }
         }
         else {
             return version;
@@ -341,7 +345,7 @@ public class FeedMetadata implements UIFeed{
     }
 
     public String getState() {
-        return state;
+        return this.state;
     }
 
     public void setState(String state) {

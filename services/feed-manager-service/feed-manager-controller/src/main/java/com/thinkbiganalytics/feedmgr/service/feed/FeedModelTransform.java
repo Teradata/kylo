@@ -136,9 +136,9 @@ public class FeedModelTransform {
         domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
         domain.setJson(ObjectMapperSerializer.serialize(feedMetadata));
-        if (feedMetadata.getVersion() == null) {
-            feedMetadata.setVersion(1L);
-        }
+       // if (feedMetadata.getVersion() == null) {
+       //     feedMetadata.setVersion(1L);
+       // }
 
         //Datasource datasource = NifiFeedDatasourceFactory.transformSources(feedMetadata);
         // feedProvider.ensureFeedSource()
