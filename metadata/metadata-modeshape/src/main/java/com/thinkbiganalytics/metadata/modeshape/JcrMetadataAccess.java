@@ -44,7 +44,9 @@ public class JcrMetadataAccess implements MetadataAccess {
     };
 
     private static final ThreadLocal<Set<Node>> checkedOutNodes = new ThreadLocal<Set<Node>>() {
-
+        protected java.util.Set<Node> initialValue() {
+            return new HashSet<>();
+        };
     };
 
     @Inject
@@ -86,12 +88,10 @@ public class JcrMetadataAccess implements MetadataAccess {
      */
     public static void checkinNodes() throws RepositoryException {
         Set<Node> checkedOutNodes = getCheckedoutNodes();
-        if (checkedOutNodes != null && !checkedOutNodes.isEmpty()) {
-            for (Iterator<Node> itr = checkedOutNodes.iterator(); itr.hasNext(); ) {
-                Node element = itr.next();
-                JcrVersionUtil.checkin(element);
-                itr.remove();
-            }
+        for (Iterator<Node> itr = checkedOutNodes.iterator(); itr.hasNext(); ) {
+            Node element = itr.next();
+            JcrVersionUtil.checkin(element);
+            itr.remove();
         }
     }
     
@@ -101,14 +101,10 @@ public class JcrMetadataAccess implements MetadataAccess {
     @Override
     public <R> R commit(Command<R> cmd) {
         Session session = activeSession.get();
-        Set<Node> checkedOutNodes = getCheckedoutNodes();
         
         if (session == null) {
             try {
 
-                if (checkedOutNodes == null) {
-                    this.checkedOutNodes.set(new HashSet<>());
-                }
                 activeSession.set(this.repository.login());
 
                 TransactionManager txnMgr = this.txnLookup.getTransactionManager();
@@ -139,10 +135,7 @@ public class JcrMetadataAccess implements MetadataAccess {
                 } finally {
                     activeSession.get().logout();
                     activeSession.remove();
-                    if(this.checkedOutNodes.get() != null) {
-                        this.checkedOutNodes.get().clear();
-                    }
-                    this.checkedOutNodes.remove();
+                    checkedOutNodes.remove();
                 }
             } catch (RuntimeException e) {
                 throw e;
