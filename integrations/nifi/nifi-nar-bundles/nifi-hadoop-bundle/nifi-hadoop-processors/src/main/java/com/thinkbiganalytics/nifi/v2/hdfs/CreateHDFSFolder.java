@@ -152,7 +152,7 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
 
             String principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
             String keyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
-            String HadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
+            String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
 
             if(SecurityUtil.isSecurityEnabled(configuration))
             {
@@ -166,7 +166,7 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
                 try {
                     getLogger().info("User anuthentication initiated");
                     ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
-                    boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(getLogger(),HadoopConfigurationResources,principal,keyTab);
+                    boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(getLogger(),hadoopConfigurationResources,principal,keyTab);
                     if (authenticationStatus)
                     {
                         getLogger().info("User authenticated successfully.");
