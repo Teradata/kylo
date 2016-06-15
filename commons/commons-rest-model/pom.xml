@@ -14,7 +14,10 @@
 
 
     <dependencies>
-
+        <dependency>
+            <groupId>org.glassfish.jersey.ext</groupId>
+            <artifactId>jersey-bean-validation</artifactId>
+        </dependency>
 
     </dependencies>
 

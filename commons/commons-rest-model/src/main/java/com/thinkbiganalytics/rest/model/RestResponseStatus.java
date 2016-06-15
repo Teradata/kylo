@@ -1,56 +1,68 @@
 package com.thinkbiganalytics.rest.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
  * Created by sr186054 on 9/22/15.
  */
 public class RestResponseStatus {
+
     public static final String STATUS_SUCCESS = "success";
     public static final String STATUS_ERROR = "error";
 
-    public String status;
-    public String message;
-    public boolean handledException; // mark true if you dont want the AngularHttpInterceptor to take care of this automatically
+    private String status;
+    private String message;
+    private String developerMessage;
     private String url;
-    private Map<String,String> properties = new HashMap<>();
+    private boolean validationError;
+    private Map<String, String> properties;
+    private List<ValidationError> validationErrors;
 
-    public RestResponseStatus() {
-
-
-    }
-
-    public RestResponseStatus(ResponseStatusBuilder builder){
+    private RestResponseStatus(ResponseStatusBuilder builder) {
         this.status = builder.status;
         this.message = builder.message;
+        this.developerMessage = builder.developerMessage;
         this.url = builder.url;
         this.properties = builder.properties;
-        this.handledException = builder.handledException;
+        this.validationError = builder.validationError;
+        this.validationErrors = builder.validationErrors;
     }
 
-    public static class ResponseStatusBuilder{
+    public static class ResponseStatusBuilder {
+
         private String status;
         private String message;
+        private String developerMessage;
         private String url;
-        public boolean handledException;
-        private Map<String,String> properties = new HashMap<>();
+        private boolean validationError;
 
-        public ResponseStatusBuilder(){
+        private Map<String, String> properties = new HashMap<>();
+        private List<ValidationError> validationErrors = new ArrayList<ValidationError>();
+
+        public ResponseStatusBuilder() {
 
         }
+
         public ResponseStatusBuilder message(String message) {
             this.message = message;
             return this;
         }
 
-        public ResponseStatusBuilder properties(Map<String,String> properties){
+        public ResponseStatusBuilder properties(Map<String, String> properties) {
             this.properties.putAll(properties);
             return this;
         }
 
         public ResponseStatusBuilder property(String key, String value) {
-            this.properties.put(key,value);
+            this.properties.put(key, value);
+            return this;
+        }
+
+        public ResponseStatusBuilder validationErrors(ValidationError error) {
+            validationErrors.add(error);
             return this;
         }
 
@@ -59,20 +71,23 @@ public class RestResponseStatus {
             return this;
         }
 
-        public ResponseStatusBuilder messageFromException(Throwable e) {
-            this.message = e.getMessage();
+        public ResponseStatusBuilder validationError(boolean validationError) {
+            this.validationError = validationError;
             return this;
         }
 
-        public ResponseStatusBuilder handledException(boolean handledException){
-            this.handledException = handledException;
+        public ResponseStatusBuilder setDeveloperMessage(Throwable e) {
+            this.developerMessage = e.getMessage();
             return this;
         }
-        public RestResponseStatus buildSuccess(){
+
+        public RestResponseStatus buildSuccess() {
             this.status = RestResponseStatus.STATUS_SUCCESS;
             return new RestResponseStatus(this);
         }
-        public RestResponseStatus buildError(){
+
+
+        public RestResponseStatus buildError() {
             this.status = RestResponseStatus.STATUS_ERROR;
             return new RestResponseStatus(this);
         }
@@ -96,8 +111,12 @@ public class RestResponseStatus {
         return message;
     }
 
-    public boolean isHandledException() {
-        return handledException;
+    public String getDeveloperMessage() {
+        return developerMessage;
+    }
+
+    public boolean isValidationError() {
+        return validationError;
     }
 
     public String getUrl() {
@@ -106,5 +125,9 @@ public class RestResponseStatus {
 
     public Map<String, String> getProperties() {
         return properties;
+    }
+
+    public List<ValidationError> getValidationErrors() {
+        return validationErrors;
     }
 }
