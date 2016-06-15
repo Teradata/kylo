@@ -14,6 +14,10 @@ import org.glassfish.jersey.server.ResourceConfig;
 import org.springframework.beans.factory.config.PropertyOverrideConfigurer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
+import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfiguration;
+import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
+import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 
@@ -28,7 +32,7 @@ import scala.runtime.BoxedUnit;
 /**
  * Instantiates a REST server for executing Spark scripts.
  */
-@SpringBootApplication
+@SpringBootApplication(exclude = {VelocityAutoConfiguration.class, WebSocketAutoConfiguration.class})  // ignore auto-configuration classes outside Spark Shell
 public class SparkShellApp {
 
     /**
@@ -39,6 +43,16 @@ public class SparkShellApp {
      */
     public static void main(String[] args) throws Exception {
         SpringApplication.run(SparkShellApp.class, args);
+    }
+
+    /**
+     * Gets the factory for the embedded web server.
+     *
+     * @return the embedded servlet container factory
+     */
+    @Bean
+    public EmbeddedServletContainerFactory getEmbeddedServletContainer () {
+        return new TomcatEmbeddedServletContainerFactory();
     }
 
     /**
