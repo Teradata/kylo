@@ -103,6 +103,10 @@ public class JcrPropertyTest {
 
     }
 
+
+    /**
+     * Creates a new Category Creates a new Feed Updates the Feed Get Feed and its versions Validates Feed is versioned along with its properties and can successfully return a version
+     */
     @Test
     public void testFeed() {
         String categorySystemName = "my_category";
@@ -213,7 +217,10 @@ public class JcrPropertyTest {
                 String v = v11.getVersionName();
                 Feed.ID v1Id = v1.getId();
                 Feed.ID v11Id = v11.getId();
-                Feed.ID baseID = baseVersion.getId();
+                Feed.ID baseId = baseVersion.getId();
+                //assert all ids are equal
+                Assert.assertEquals(v1Id, v11Id);
+                Assert.assertEquals(v1Id, baseId);
                 return f;
             }
         });
