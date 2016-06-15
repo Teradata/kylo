@@ -244,8 +244,6 @@ public class JcrPropertyUtil {
                 node.setProperty(name, cal);
             } else if (value instanceof BigDecimal) {
                 node.setProperty(name, (BigDecimal) value);
-            } else if (value instanceof String) {
-                node.setProperty(name, (String) value);
             } else if (value instanceof Long) {
                 node.setProperty(name, ((Long) value).longValue());
             } else if (value instanceof Double) {
@@ -263,7 +261,7 @@ public class JcrPropertyUtil {
                 }
                 node.setProperty(name, list);
             } else {
-                throw new MetadataRepositoryException("Cannot set property to a value of type " + value.getClass());
+                node.setProperty(name, value.toString());
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to set property value: " + name + "=" + value, e);
