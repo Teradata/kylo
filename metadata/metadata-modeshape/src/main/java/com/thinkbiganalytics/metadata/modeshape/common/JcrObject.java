@@ -5,6 +5,8 @@ import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -140,7 +142,7 @@ public class JcrObject {
         return new HashSet<T>();
     }
     public <T> T getProperty(String name, Class<T> type) {
-        return getProperty(name,type,false);
+        return getProperty(name, type, false);
     }
 
     public <T> T getProperty(String name, Class<T> type,boolean allowNotFound) {
@@ -151,6 +153,13 @@ public class JcrObject {
         Object o = JcrPropertyUtil.getProperty(node, name,allowNotFound);
         if(allowNotFound && o == null){
             return null;
+        }
+        if (type.isEnum()) {
+            String savedType = o.toString();
+            if (StringUtils.isNotBlank(savedType)) {
+                Class<? extends Enum> x = (Class<? extends Enum>) type;
+                return (T) Enum.valueOf(x, savedType);
+            }
         }
         if (!o.getClass().isAssignableFrom(type)) {
             //if it cant be matched and it is a Node > JcrObject, do the conversion

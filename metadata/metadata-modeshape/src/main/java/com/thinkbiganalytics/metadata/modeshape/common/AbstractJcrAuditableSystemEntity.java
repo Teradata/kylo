@@ -31,11 +31,11 @@ public class AbstractJcrAuditableSystemEntity extends AbstractJcrSystemEntity {
     }
 
     public void setCreatedTime(DateTime createdTime) {
-        setProperty(JcrPropertyConstants.CREATED_TIME, createdTime);
+       // setProperty(JcrPropertyConstants.CREATED_TIME, createdTime);
     }
 
     public void setModifiedTime(DateTime modifiedTime) {
-        setProperty(JcrPropertyConstants.CREATED_TIME, modifiedTime);
+       // setProperty(JcrPropertyConstants.CREATED_TIME, modifiedTime);
     }
 
 }

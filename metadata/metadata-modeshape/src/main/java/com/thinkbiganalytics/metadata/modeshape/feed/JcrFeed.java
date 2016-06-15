@@ -120,9 +120,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public State getState() {
-        return null;
-        //return
-        //   getProperty(STATE);
+        return getProperty(STATE, Feed.State.class);
     }
 
     @Override
@@ -209,7 +207,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public void setState(State state) {
-
+        setProperty(STATE, state);
     }
 
 

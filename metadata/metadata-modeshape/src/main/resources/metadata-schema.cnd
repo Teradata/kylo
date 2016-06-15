@@ -99,7 +99,7 @@
 	+ tba:sources (tba:feedSource) sns
 	+ tba:destinations (tba:feedDestination) sns
 	- tba:systemName (STRING) mandatory
-	- tba:state (LONG)
+	- tba:state (STRING)
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:category (REFERENCE) mandatory
 	- tba:feedTemplate (REFERENCE)
@@ -118,8 +118,10 @@
 
 [tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied 
     - tba:systemName (STRING) mandatory
-	- tba:state (LONG)
+	- tba:state (STRING)
 	- tba:initialized (BOOLEAN) = 'false'
 	+ tba:feedSources (tba:feedSource) COPY sns
 	+ tba:feedDestinations (tba:feedDestination) COPY sns
 
+[tba:file] > tba:datasource
+ - tba:fileName (STRING)

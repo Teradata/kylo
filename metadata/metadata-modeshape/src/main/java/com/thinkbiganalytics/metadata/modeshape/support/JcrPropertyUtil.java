@@ -222,6 +222,8 @@ public class JcrPropertyUtil {
 
             if (value == null) {
                 node.setProperty(name, (Value) null);
+            } else if (value instanceof Enum) {
+                node.setProperty(name, ((Enum) value).name());
             } else if (value instanceof JcrObject) {
                 node.setProperty(name, ((JcrObject) value).getNode());
             } else if (value instanceof Value) {
@@ -232,6 +234,10 @@ public class JcrPropertyUtil {
                 node.setProperty(name, (Binary) value);
             } else if (value instanceof Calendar) {
                 node.setProperty(name, (Calendar) value);
+            } else if (value instanceof DateTime) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(((DateTime) value).toDate());
+                node.setProperty(name, cal);
             } else if (value instanceof Date) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime((Date) value);
