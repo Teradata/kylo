@@ -270,7 +270,12 @@ public class ExportImportTemplateService {
         //register it in the system
         metadataService.registerTemplate(template);
         //get the new template
-        template = metadataService.getRegisteredTemplateByName(template.getTemplateName());
+        if(StringUtils.isNotBlank(template.getId())) {
+            template = metadataService.getRegisteredTemplate(template.getId());
+        }
+        else {
+            template = metadataService.getRegisteredTemplateByName(template.getTemplateName());
+        }
         Map<String,Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
         NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(template.getNifiTemplateId(), configProperties,createReusableFlow);
         if (newTemplateInstance.isSuccess()) {
