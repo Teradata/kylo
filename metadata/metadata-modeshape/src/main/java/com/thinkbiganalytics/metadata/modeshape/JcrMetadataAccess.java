@@ -22,10 +22,7 @@ import javax.jcr.Node;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-import javax.transaction.HeuristicMixedException;
-import javax.transaction.HeuristicRollbackException;
 import javax.transaction.NotSupportedException;
-import javax.transaction.RollbackException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
 
@@ -127,7 +124,7 @@ public class JcrMetadataAccess implements MetadataAccess {
 
                     txnMgr.commit();
                     return result;
-                } catch (RepositoryException | NotSupportedException | SystemException | HeuristicMixedException e) {
+                } catch (Exception e) {
                     log.warn("Exception while execution a transactional operation - rollng back", e);
                     
                     try {
@@ -135,12 +132,6 @@ public class JcrMetadataAccess implements MetadataAccess {
                     } catch (SystemException se) {
                         log.error("Failed to rollback tranaction as a result of other transactional errors", se);
                     }
-                    
-                    activeSession.get().refresh(false);
-                    // TODO Use a better exception
-                    throw new RuntimeException(e);
-                } catch (RollbackException | HeuristicRollbackException e) {
-                    log.warn("Failed to commmit the transational operation due to a rollback", e);
                     
                     activeSession.get().refresh(false);
                     // TODO Use a better exception
