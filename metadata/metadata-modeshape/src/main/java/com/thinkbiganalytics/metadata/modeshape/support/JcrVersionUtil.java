@@ -133,6 +133,9 @@ public class JcrVersionUtil {
 
     public static Version getBaseVersion(Node node) {
         String nodeName = null;
+        if(!JcrUtil.isVersionable(node)) {
+            return null;
+        }
         try {
             nodeName = node.getName();
             return JcrVersionUtil.getVersionManager(node.getSession()).getBaseVersion(node.getPath());
@@ -144,6 +147,9 @@ public class JcrVersionUtil {
 
     public static List<Version> getVersions(Node node) {
         String nodeName = null;
+        if(!JcrUtil.isVersionable(node)) {
+            return null;
+        }
         try {
             nodeName = node.getName();
             List<Version> versions = new ArrayList<>();
@@ -165,6 +171,7 @@ public class JcrVersionUtil {
     public static <T extends JcrObject> T getVersionedNode(Version version, Class<T> type, Object[] constructorArgs) {
         String nodeName = null;
         String versionName = null;
+
         try {
             versionName = version.getName();
             Node node = version.getFrozenNode();
@@ -180,6 +187,9 @@ public class JcrVersionUtil {
     }
 
     public static Version findVersion(Node node, final String versionName) {
+        if(!JcrUtil.isVersionable(node)) {
+            return null;
+        }
         Version version = Iterables.tryFind(getVersions(node), new Predicate<Version>() {
             @Override
             public boolean apply(Version version) {
