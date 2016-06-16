@@ -26,7 +26,7 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
     val DISPLAY_NAME_PREFIX = "col"
 
     /** Pattern for field names */
-    val FIELD_PATTERN = Pattern.compile("^[a-zA-Z0-9]+$")
+    val FIELD_PATTERN = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$")
 
     /** Evaluates this transform script and stores the result in a Hive table. */
     def run(): Any = {
