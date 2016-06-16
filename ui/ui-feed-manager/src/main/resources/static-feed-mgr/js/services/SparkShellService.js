@@ -927,11 +927,14 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          * @throws {ParseException} if the expression cannot be converted to a string
          */
         toString: function(expression) {
-            if (expression.type === SparkType.LITERAL) {
-                return (expression.source.charAt(0) === "\"") ? expression.source : "\"" + expression.source + "\"";
-            } else {
+            if (expression.type !== SparkType.LITERAL) {
                 throw new ParseException("Expression cannot be converted to a string: " + expression.type, expression.start);
+            } if (expression.source.charAt(0) === "\"") {
+                return expression.source;
+            } if (expression.source.charAt(0) === "'") {
+                return "\"" + expression.source.substr(1, expression.source.length - 2) + "\"";
             }
+            return "\"" + expression.source + "\"";
         },
 
         /**
