@@ -162,12 +162,13 @@ public class FeedMigrationService {
         }
     }
 
-    public void migrate() {
+    public DataMigration migrate() {
         //LOCK
         dataMigration = new DataMigration();
         migrateCategories();
         migrateTemplates();
         migrateFeeds();
+        return dataMigration;
 
     }
 

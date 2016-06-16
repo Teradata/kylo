@@ -279,6 +279,18 @@ app.config(function($stateProvider,$urlRouterProvider) {
             breadcrumbRoot:true,
             displayName:'Visual Query'
         }
+    }).state('admin-modeshape-migration', {
+        url: '/admin-modeshape-migration',
+        params: {},
+        views: {
+            'content': {
+                templateUrl: 'js/admin/modeshape-migration.html'
+            }
+        },
+        data: {
+            breadcrumbRoot: true,
+            displayName: 'Modeshape Migration'
+        }
     })
 
 

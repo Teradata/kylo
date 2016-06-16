@@ -37,7 +37,7 @@ public class JerseyConfig extends ResourceConfig {
         //packages("com.thinkbiganalytics");
         packages("com.thinkbiganalytics.ui.rest.controller", "com.thinkbiganalytics.servicemonitor.rest.controller", "com.thinkbiganalytics.scheduler.rest.controller",
                  "com.thinkbiganalytics.jobrepo.rest.controller", "com.thinkbiganalytics.hive.rest.controller",
-                 "com.thinkbiganalytics.feedmgr.rest.controller", "com.thinkbiganalytics.policy.rest.controller", "com.thinkbiganalytics.metadata.rest.api");
+                 "com.thinkbiganalytics.feedmgr.rest.controller", "com.thinkbiganalytics.policy.rest.controller", "com.thinkbiganalytics.metadata.rest.api", "com.thinkbiganalytics.metadata.migration.rest.controller");
 
         register(JacksonFeature.class);
         register(MultiPartFeature.class);

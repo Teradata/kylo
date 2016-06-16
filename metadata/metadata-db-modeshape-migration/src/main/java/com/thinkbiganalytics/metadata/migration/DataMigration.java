@@ -76,5 +76,79 @@ public class DataMigration {
         return null;
     }
 
+    public void clear() {
+        databaseCategoryToJcrMap.clear();
+        jcrCategoryToDatabaseMap.clear();
+        categories.clear();
+        databaseTemplateToJcrMap.clear();
+        jcrTemplateToDatabaseMap.clear();
+        templates.clear();
+
+        databaseFeedToJcrMap.clear();
+        jcrFeedToDatabaseMap.clear();
+        feeds.clear();
+
+    }
+
+    public Statistics getStatistics() {
+        Statistics stats = new Statistics();
+        stats.setDatabaseCategoryToJcrMap(databaseCategoryToJcrMap);
+        stats.setDatabaseFeedToJcrMap(databaseFeedToJcrMap);
+        stats.setDatabaseTemplateToJcrMap(databaseTemplateToJcrMap);
+        return stats;
+    }
+
+    public class Statistics {
+
+        private Map<Category.ID, Category.ID> databaseCategoryToJcrMap = new HashMap<>();
+        private Map<FeedManagerTemplate.ID, FeedManagerTemplate.ID> databaseTemplateToJcrMap = new HashMap<>();
+        private Map<Feed.ID, Feed.ID> databaseFeedToJcrMap = new HashMap<>();
+
+        private Integer templatesMigrated = 0;
+        private Integer categoriesMigrated = 0;
+        private Integer feedsMigrated = 0;
+
+        public Map<Category.ID, Category.ID> getDatabaseCategoryToJcrMap() {
+            return databaseCategoryToJcrMap;
+        }
+
+        public void setDatabaseCategoryToJcrMap(Map<Category.ID, Category.ID> databaseCategoryToJcrMap) {
+            this.databaseCategoryToJcrMap = databaseCategoryToJcrMap;
+            this.categoriesMigrated = this.databaseCategoryToJcrMap.size();
+        }
+
+        public Map<FeedManagerTemplate.ID, FeedManagerTemplate.ID> getDatabaseTemplateToJcrMap() {
+            return databaseTemplateToJcrMap;
+        }
+
+        public void setDatabaseTemplateToJcrMap(
+            Map<FeedManagerTemplate.ID, FeedManagerTemplate.ID> databaseTemplateToJcrMap) {
+            this.databaseTemplateToJcrMap = databaseTemplateToJcrMap;
+            this.templatesMigrated = this.databaseTemplateToJcrMap.size();
+        }
+
+        public Map<Feed.ID, Feed.ID> getDatabaseFeedToJcrMap() {
+            return databaseFeedToJcrMap;
+        }
+
+        public void setDatabaseFeedToJcrMap(Map<Feed.ID, Feed.ID> databaseFeedToJcrMap) {
+            this.databaseFeedToJcrMap = databaseFeedToJcrMap;
+            this.feedsMigrated = this.databaseFeedToJcrMap.size();
+        }
+
+
+        public Integer getTemplatesMigrated() {
+            return templatesMigrated;
+        }
+
+        public Integer getCategoriesMigrated() {
+            return categoriesMigrated;
+        }
+
+        public Integer getFeedsMigrated() {
+            return feedsMigrated;
+        }
+    }
+
 
 }
