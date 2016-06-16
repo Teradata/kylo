@@ -33,7 +33,6 @@
                 $http.post("/proxy/v1/jpa2modeshape/migrate").then(function (response) {
 
                     self.status = "Finished migrating data.";
-                    console.log('response', response)
                     self.templatesMigrated = response.data.templatesMigrated;
                     self.categoriesMigrated = response.data.categoriesMigrated;
                     self.feedsMigrated = response.data.feedsMigrated;

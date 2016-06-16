@@ -114,7 +114,7 @@ public class DataMigration {
 
         public void setDatabaseCategoryToJcrMap(Map<Category.ID, Category.ID> databaseCategoryToJcrMap) {
             this.databaseCategoryToJcrMap = databaseCategoryToJcrMap;
-            this.categoriesMigrated = this.databaseCategoryToJcrMap.size();
+            this.categoriesMigrated = databaseCategoryToJcrMap.size();
         }
 
         public Map<FeedManagerTemplate.ID, FeedManagerTemplate.ID> getDatabaseTemplateToJcrMap() {
@@ -124,7 +124,7 @@ public class DataMigration {
         public void setDatabaseTemplateToJcrMap(
             Map<FeedManagerTemplate.ID, FeedManagerTemplate.ID> databaseTemplateToJcrMap) {
             this.databaseTemplateToJcrMap = databaseTemplateToJcrMap;
-            this.templatesMigrated = this.databaseTemplateToJcrMap.size();
+            this.templatesMigrated = databaseTemplateToJcrMap.size();
         }
 
         public Map<Feed.ID, Feed.ID> getDatabaseFeedToJcrMap() {
@@ -133,7 +133,7 @@ public class DataMigration {
 
         public void setDatabaseFeedToJcrMap(Map<Feed.ID, Feed.ID> databaseFeedToJcrMap) {
             this.databaseFeedToJcrMap = databaseFeedToJcrMap;
-            this.feedsMigrated = this.databaseFeedToJcrMap.size();
+            this.feedsMigrated = databaseFeedToJcrMap.size();
         }
 
 
@@ -148,6 +148,8 @@ public class DataMigration {
         public Integer getFeedsMigrated() {
             return feedsMigrated;
         }
+
+
     }
 
 

@@ -11,12 +11,14 @@
     </header-section>
     <body-section class="md-padding">
       <div layout="column">
-        <md-button class="md-raised" ng-click="vm.migrate($event)" ng-disabled="vm.migratingData">
+        <md-button class="md-raised md-primary" ng-click="vm.migrate($event)" ng-disabled="vm.migratingData">
           Migrate Data
         </md-button>
+        <span flex></span>
       </div>
-      <div layout="row" ng-if="vm.showMigrationResults">
+      <div layout="row" ng-if="vm.showMigrationResults" class="layout-padding-top">
         <div class="md-subheader">{{vm.status}}</div>
+        <div class="layout-padding-top">
         <table>
           <tr>
             <td>Templates Migrated:</td>
@@ -31,6 +33,7 @@
             <td>{{vm.feedsMigrated}}</td>
           </tr>
         </table>
+        </div>
       </div>
     </body-section>
   </card-layout>
