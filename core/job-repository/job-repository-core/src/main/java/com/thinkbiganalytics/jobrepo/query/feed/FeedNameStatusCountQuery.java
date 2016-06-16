@@ -1,12 +1,12 @@
 package com.thinkbiganalytics.jobrepo.query.feed;
 
 
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.AbstractConstructedQuery;
 import com.thinkbiganalytics.jobrepo.query.builder.Query;
 import com.thinkbiganalytics.jobrepo.query.builder.QueryBuilder;
 import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
 import com.thinkbiganalytics.jobrepo.query.model.JobStatusCountResult;
-import com.thinkbiganalytics.jobrepo.query.support.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.support.FeedQueryUtil;
 
 import org.springframework.jdbc.core.RowMapper;

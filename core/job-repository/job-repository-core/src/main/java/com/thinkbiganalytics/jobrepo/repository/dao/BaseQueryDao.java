@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.jobrepo.repository.dao;
 
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.AbstractConstructedQuery;
 import com.thinkbiganalytics.jobrepo.query.ConstructedQuery;
 import com.thinkbiganalytics.jobrepo.query.builder.Query;
@@ -7,7 +8,6 @@ import com.thinkbiganalytics.jobrepo.query.builder.QueryFactory;
 import com.thinkbiganalytics.jobrepo.query.rowmapper.LongRowMapper;
 import com.thinkbiganalytics.jobrepo.query.rowmapper.ObjectRowMapper;
 import com.thinkbiganalytics.jobrepo.query.substitution.DatabaseQuerySubstitutionFactory;
-import com.thinkbiganalytics.jobrepo.query.support.DatabaseType;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;

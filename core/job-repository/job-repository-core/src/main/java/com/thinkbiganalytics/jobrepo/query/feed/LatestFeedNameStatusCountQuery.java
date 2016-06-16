@@ -1,8 +1,8 @@
 package com.thinkbiganalytics.jobrepo.query.feed;
 
 
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.builder.QueryBuilder;
-import com.thinkbiganalytics.jobrepo.query.support.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.support.FeedQueryUtil;
 
 /**

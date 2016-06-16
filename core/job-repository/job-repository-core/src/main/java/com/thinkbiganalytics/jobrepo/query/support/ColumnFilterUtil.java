@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.jobrepo.query.support;
 
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.job.JobQueryConstants;
 import com.thinkbiganalytics.jobrepo.query.substitution.DatabaseQuerySubstitution;
 import com.thinkbiganalytics.jobrepo.query.substitution.DatabaseQuerySubstitutionFactory;

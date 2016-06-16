@@ -1,11 +1,11 @@
 package com.thinkbiganalytics.jobrepo.query;
 
 
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.builder.DefaultQueryBuilder;
 import com.thinkbiganalytics.jobrepo.query.builder.QueryBuilder;
 import com.thinkbiganalytics.jobrepo.query.support.ColumnFilter;
 import com.thinkbiganalytics.jobrepo.query.support.ColumnFilterUtil;
-import com.thinkbiganalytics.jobrepo.query.support.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.support.OrderBy;
 
 import org.springframework.jdbc.core.RowMapper;
