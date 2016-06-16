@@ -39,7 +39,7 @@ public class MetadataClientTest {
     }
     
     
-    @Test
+//    @Test
     public void testGetExtensibleTypes() {
         List<ExtensibleTypeDescriptor> types = client.getExtensibleTypes();
         
@@ -49,7 +49,7 @@ public class MetadataClientTest {
             .isNotEmpty();
     }
     
-    @Test
+//    @Test
     public void testGetExtensibleTypeByName() {
         ExtensibleTypeDescriptor type = client.getExtensibleType("feed");
         
@@ -57,7 +57,7 @@ public class MetadataClientTest {
         assertThat(type.getName()).isEqualTo("feed");
     }
     
-    @Test(dependsOnMethods="testGetExtensibleTypeByName")
+//    @Test(dependsOnMethods="testGetExtensibleTypeByName")
     public void testGetExtensibleTypeById() {
         ExtensibleTypeDescriptor feed = client.getExtensibleType("feed");
         ExtensibleTypeDescriptor type = client.getExtensibleType(feed.getId());
@@ -66,7 +66,7 @@ public class MetadataClientTest {
         assertThat(type.getName()).isEqualTo("feed");
     }
     
-    @Test()
+//    @Test()
     public void testCreateFeedSubtype() {
         ExtensibleTypeDescriptor subtype = new ExtensibleTypeDescriptor("testFeed", "feed");
     }
