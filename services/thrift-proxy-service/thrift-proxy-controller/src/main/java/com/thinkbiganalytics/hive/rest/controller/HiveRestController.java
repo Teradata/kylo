@@ -8,14 +8,14 @@ import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.hive.service.HiveMetastoreService;
 import com.thinkbiganalytics.hive.service.HiveService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
-import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 import javax.annotation.PostConstruct;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -34,12 +34,15 @@ import io.swagger.annotations.Api;
 @Path("/v1/hive")
 public class HiveRestController {
 
+    private static final Logger log = LoggerFactory.getLogger(HiveRestController.class);
+
+
     @Autowired
     HiveService hiveService;
 
     @Autowired
     HiveMetastoreService hiveMetadataService;
-    
+
     public HiveService getHiveService(){
         return hiveService;
     }
@@ -53,25 +56,9 @@ public class HiveRestController {
     }
     @PostConstruct
     private void init() {
-        int i  = 0;
+
     }
 
-    /*
-    @DELETE
-    @Path("/schemas/{schema}/tables/{table}")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response dropTable(@PathParam("schema") String schema, @PathParam("table") String table) {
-
-        boolean success = false;
-        try {
-            success = getHiveService().dropTable(schema, table);
-        } catch (DataAccessException e) {
-            e.printStackTrace();
-        }
-        String json ="{success:"+success+"}";
-        return Response.ok(asJson(json)).build();
-    }
-    */
 
     @GET
     @Path("/table-columns")
@@ -79,9 +66,10 @@ public class HiveRestController {
     public Response getTableColumns() {
         List<DatabaseMetadata> list = null;
         try {
-        list = getHiveMetadataService().getTableColumns();
+            list = getHiveMetadataService().getTableColumns();
         } catch (DataAccessException e) {
-            e.printStackTrace();
+            log.error("Error Querying Hive Tables  for columns from the Metastore ",e);
+            throw e;
         }
         return Response.ok(asJson(list)).build();
     }
@@ -94,7 +82,8 @@ public class HiveRestController {
         try {
             list = getHiveService().browse(schema, table, where, limit);
         } catch (DataAccessException e) {
-            e.printStackTrace();
+            log.error("Error Querying Hive Tables  for schema: "+schema+", table: "+table+" where: "+where+", limit: "+limit,e);
+            throw e;
         }
         return Response.ok(asJson(list)).build();
     }
@@ -108,7 +97,8 @@ public class HiveRestController {
         try {
             list = getHiveService().browse(query);
         } catch (DataAccessException e) {
-            e.printStackTrace();
+            log.error("Error Querying Hive for query: "+query,e);
+            throw e;
         }
         return Response.ok(asJson(list)).build();
     }
@@ -118,11 +108,12 @@ public class HiveRestController {
     @Path("/query-result")
     @Produces({MediaType.APPLICATION_JSON })
     public Response queryResult(@QueryParam("query") String query) {
-       QueryResult list = null;
+        QueryResult list = null;
         try {
             list = getHiveService().query(query);
         } catch (DataAccessException e) {
-            e.printStackTrace();
+            log.error("Error Querying Hive for query: " + query);
+            throw e;
         }
         return Response.ok(asJson(list)).build();
     }
@@ -152,12 +143,13 @@ public class HiveRestController {
     @Produces({MediaType.APPLICATION_JSON })
     public Response getAllTableSchemas()
     {
-      //  List<TableSchema> schemas = getHiveService().getAllTableSchemas();
+        //  List<TableSchema> schemas = getHiveService().getAllTableSchemas();
         List<TableSchema> schemas = null;
         try {
             schemas = getHiveMetadataService().getTableSchemas();
         }catch(DataAccessException e){
-            e.printStackTrace();
+            log.error("Error listing Hive Table schemas from the metastore ",e);
+            throw e;
         }
         return Response.ok(asJson(schemas)).build();
     }
@@ -172,9 +164,10 @@ public class HiveRestController {
         List<String> tables = null;
         //List<String> tables = getHiveService().getAllTables();
         try {
-       tables = getHiveMetadataService().getAllTables();
-        }catch(DataAccessException e){
-            e.printStackTrace();
+            tables = getHiveMetadataService().getAllTables();
+        } catch (DataAccessException e) {
+            log.error("Error listing Hive Tables from the metastore ",e);
+            throw e;
         }
         return Response.ok(asJson(tables)).build();
     }
@@ -194,7 +187,7 @@ public class HiveRestController {
         try {
             json = mapper.writeValueAsString(object);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            log.error("Error converting object to JSON String ",e);
         }
         return json;
     }
