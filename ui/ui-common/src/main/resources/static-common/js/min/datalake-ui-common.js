@@ -2760,7 +2760,7 @@ angular.module(COMMON_APP_MODULE_NAME).factory('Utils', function ($timeout) {
     };
     return data;
 
-});app.directive("verticalSectionLayout", function()  {
+});angular.module(COMMON_APP_MODULE_NAME).directive("verticalSectionLayout", function()  {
     return {
         restrict: 'E',
         scope: {showVerticalCheck:'=?',allowEdit:'=?',sectionTitle:'@',formName:'@',onDelete:'&?',allowDelete:'=?', onEdit:'&', onSaveEdit:'&',onCancelEdit:'&',editable:'=?',keepEditableAfterSave:'=?'},
@@ -2817,11 +2817,8 @@ angular.module(COMMON_APP_MODULE_NAME).factory('Utils', function ($timeout) {
 
         }
     };
-});/*
- * Copyright (c) 2015.
- */
-
-app.directive('tbaViewTypeSelection', function() {
+});
+angular.module(COMMON_APP_MODULE_NAME).directive('tbaViewTypeSelection', function() {
     return {
         restrict: 'E',
         templateUrl: 'js/shared/view-type-selection/view-type-selection-template.html',

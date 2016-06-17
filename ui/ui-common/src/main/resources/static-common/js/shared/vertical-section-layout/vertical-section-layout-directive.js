@@ -1,4 +1,5 @@
-app.directive("verticalSectionLayout", function()  {
+
+angular.module(COMMON_APP_MODULE_NAME).directive("verticalSectionLayout", function()  {
     return {
         restrict: 'E',
         scope: {showVerticalCheck:'=?',allowEdit:'=?',sectionTitle:'@',formName:'@',onDelete:'&?',allowDelete:'=?', onEdit:'&', onSaveEdit:'&',onCancelEdit:'&',editable:'=?',keepEditableAfterSave:'=?'},
