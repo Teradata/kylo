@@ -25,6 +25,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.JDBCException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -211,28 +212,40 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}/profile-summary")
     @Produces({MediaType.APPLICATION_JSON})
+    //TODO rework and move logic to proper Service/provider class
     public Response profileSummary(@PathParam("feedId") String feedId) throws JerseyClientException {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String profileTable = feedMetadata.getProfileTableName();
         String query = "SELECT * from " + profileTable + " where columnname = '(ALL)'";
-        QueryResult results = hiveService.query(query);
-        List<Map<String, Object>> rows = new ArrayList<>();
-        rows.addAll(results.getRows());
-        //add in the archive date time fields if applicipable
-        String ARCHIVE_PROCESSOR_TYPE = "com.thinkbiganalytics.nifi.GetTableData";
-        if (feedMetadata.getInputProcessorType().equalsIgnoreCase(ARCHIVE_PROCESSOR_TYPE)) {
-            NifiProperty property = NifiPropertyUtil.findPropertyByProcessorType(feedMetadata.getProperties(), ARCHIVE_PROCESSOR_TYPE, "Date Field");
-            if (property != null && property.getValue() != null) {
-                String field = property.getValue();
-                if (field.contains(".")) {
-                    field = StringUtils.substringAfterLast(field, ".");
-                }
-                query = "SELECT * from " + profileTable + " where metrictype IN('MIN_TIMESTAMP','MAX_TIMESTAMP') AND columnname = '" + field + "'";
 
-                QueryResult dateRows = hiveService.query(query);
-                if (dateRows != null && !dateRows.isEmpty()) {
-                    rows.addAll(dateRows.getRows());
+        List<Map<String, Object>> rows = new ArrayList<>();
+        try {
+            QueryResult results = hiveService.query(query);
+
+            rows.addAll(results.getRows());
+            //add in the archive date time fields if applicipable
+            String ARCHIVE_PROCESSOR_TYPE = "com.thinkbiganalytics.nifi.GetTableData";
+            if (feedMetadata.getInputProcessorType().equalsIgnoreCase(ARCHIVE_PROCESSOR_TYPE)) {
+                NifiProperty property = NifiPropertyUtil.findPropertyByProcessorType(feedMetadata.getProperties(), ARCHIVE_PROCESSOR_TYPE, "Date Field");
+                if (property != null && property.getValue() != null) {
+                    String field = property.getValue();
+                    if (field.contains(".")) {
+                        field = StringUtils.substringAfterLast(field, ".");
+                    }
+                    query = "SELECT * from " + profileTable + " where metrictype IN('MIN_TIMESTAMP','MAX_TIMESTAMP') AND columnname = '" + field + "'";
+
+                    QueryResult dateRows = hiveService.query(query);
+                    if (dateRows != null && !dateRows.isEmpty()) {
+                        rows.addAll(dateRows.getRows());
+                    }
                 }
+            }
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+            if (e.getCause() instanceof org.apache.hive.service.cli.HiveSQLException && e.getCause().getMessage().contains("Table not found")) {
+                //this exception is ok to swallow since it just means no profile data exists yet
+            } else {
+                throw e;
             }
         }
 
