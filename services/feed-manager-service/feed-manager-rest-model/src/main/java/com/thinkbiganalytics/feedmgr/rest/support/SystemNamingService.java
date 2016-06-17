@@ -19,7 +19,11 @@ public class SystemNamingService {
   public static String generateSystemName(String name){
     String[] controlChars = {"\"","'","!","@","#","$","%","^","&","*","(",")"};
     //first trim it
-    String systemName = name.trim().replaceAll(" +", "_");
+    String systemName = StringUtils.trimToEmpty(name);
+    if (StringUtils.isBlank(systemName)) {
+      return systemName;
+    }
+    systemName = systemName.replaceAll(" +", "_");
     int i = 0;
 
     StringBuilder s = new StringBuilder();
