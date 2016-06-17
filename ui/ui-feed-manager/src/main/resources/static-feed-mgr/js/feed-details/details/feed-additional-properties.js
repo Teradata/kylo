@@ -30,6 +30,7 @@
 
         this.model = FeedService.editFeedModel;
         this.editModel = {};
+        this.editableSection = false;
 
         this.feedTagService = FeedTagService;
         self.tagChips = {};
@@ -77,6 +78,31 @@
             self.model.dataOwner = self.editModel.dataOwner;
             FeedService.saveFeedModel(FeedService.editFeedModel);
         }
+
+        this.onSave = function (ev) {
+            //save changes to the model
+            FeedService.showFeedSavingDialog(ev, "Saving Feed " + self.model.feedName, self.model.feedName);
+            var copy = angular.copy(FeedService.editFeedModel);
+
+            copy.tags = self.editModel.tags;
+            copy.dataOwner = self.editModel.dataOwner;
+
+            FeedService.saveFeedModel(copy).then(function (response) {
+                FeedService.hideFeedSavingDialog();
+                self.editableSection = false;
+                //save the changes back to the model
+                self.model.tags = self.editModel.tags;
+                self.model.dataOwner = self.editModel.dataOwner;
+            }, function (response) {
+                FeedService.hideFeedSavingDialog();
+                FeedService.buildErrorData(self.model.feedName, response.data);
+                FeedService.showFeedErrorsDialog();
+                //make it editable
+                self.editableSection = true;
+            });
+        }
+
+
 
 
     };

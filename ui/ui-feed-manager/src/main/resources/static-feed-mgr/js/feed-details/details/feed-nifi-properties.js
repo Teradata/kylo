@@ -21,6 +21,7 @@
 
         this.model = FeedService.editFeedModel;
         this.editModel = {};
+        this.editableSection = false;
         this.INCREMENTAL_DATE_PROPERTY_KEY = 'Date Field';
 
         $scope.$watch(function () {
@@ -103,23 +104,44 @@
 
         }
         this.onSave = function () {
-            //save changes to the model
-            self.model.inputProcessors = self.editModel.inputProcessors;
-            self.model.nonInputProcessors = self.editModel.nonInputProcessors;
-            self.model.inputProcessorId = self.editModel.inputProcessorId;
-            self.model.inputProcessor = self.editModel.inputProcessor;
+            FeedService.showFeedSavingDialog(ev, "Saving Feed " + self.model.feedName, self.model.feedName);
+            var copy = angular.copy(FeedService.editFeedModel);
+
+            copy.inputProcessors = self.editModel.inputProcessors;
+            copy.nonInputProcessors = self.editModel.nonInputProcessors;
+            copy.inputProcessorId = self.editModel.inputProcessorId;
+            copy.inputProcessor = self.editModel.inputProcessor;
 
             //table type is edited here so need tup update that prop as well
-            self.model.table.tableType = self.editModel.table.tableType
+            copy.table.tableType = self.editModel.table.tableType
 
-            if (self.editModel.table.incrementalDateField) {
+            if (copy.table.incrementalDateField) {
                 findIncrementalDateFieldProperty().value = self.editModel.table.incrementalDateField;
-                self.model.table.incrementalDateField = self.editModel.table.incrementalDateField;
+                copy.table.incrementalDateField = self.editModel.table.incrementalDateField;
             }
 
             //update the db properties
 
-            FeedService.saveFeedModel(self.model);
+            FeedService.saveFeedModel(copy).then(function (response) {
+                FeedService.hideFeedSavingDialog();
+                self.editableSection = false;
+
+                self.model.inputProcessors = self.editModel.inputProcessors;
+                self.model.nonInputProcessors = self.editModel.nonInputProcessors;
+                self.model.inputProcessorId = self.editModel.inputProcessorId;
+                self.model.inputProcessor = self.editModel.inputProcessor;
+                self.model.table.tableType = self.editModel.table.tableType;
+                self.model.table.incrementalDateField = self.editModel.table.incrementalDateField;
+                self.model.inputProcessorType = self.editModel.inputProcessorType;
+
+            }, function (response) {
+                FeedService.hideFeedSavingDialog();
+                console.log('ERRORS were found ', response)
+                FeedService.buildErrorData(self.model.feedName, response.data);
+                FeedService.showFeedErrorsDialog();
+                //make it editable
+                self.editableSection = true;
+            });
         }
 
     };

@@ -1,7 +1,7 @@
 app.directive("verticalSectionLayout", function()  {
     return {
         restrict: 'E',
-        scope: {showVerticalCheck:'=?',allowEdit:'=?',sectionTitle:'@',formName:'@',onDelete:'&?',allowDelete:'=?', onEdit:'&', onSaveEdit:'&',onCancelEdit:'&',editable:'=?'},
+        scope: {showVerticalCheck:'=?',allowEdit:'=?',sectionTitle:'@',formName:'@',onDelete:'&?',allowDelete:'=?', onEdit:'&', onSaveEdit:'&',onCancelEdit:'&',editable:'=?',keepEditableAfterSave:'=?'},
         transclude: {
             'readonly':'?readonlySection',
             'editable':'?editableSection'
@@ -21,27 +21,32 @@ app.directive("verticalSectionLayout", function()  {
             if($scope.allowEdit == undefined ){
                 $scope.allowEdit = true;
             }
+            if($scope.keepEditableAfterSave == undefined){
+                $scope.keepEditableAfterSave = false;
+            }
 
 
 
-            $scope.edit = function(){
+            $scope.edit = function(ev){
                 $scope.editable = true;
-                $scope.onEdit();
+                $scope.onEdit(ev);
             }
 
-            $scope.cancel = function(){
-                $scope.onCancelEdit();
+            $scope.cancel = function(ev){
+                $scope.onCancelEdit(ev);
                 $scope.editable = false;
             }
 
-            $scope.save = function(){
-                $scope.onSaveEdit();
-                $scope.editable = false;
+            $scope.save = function(ev){
+                $scope.onSaveEdit(ev);
+                if(!$scope.keepEditableAfterSave) {
+                    $scope.editable = false;
+                }
             }
 
-            $scope.delete = function() {
+            $scope.delete = function(ev) {
                 if($scope.onDelete){
-                    $scope.onDelete();
+                    $scope.onDelete(ev);
                 }
             }
 

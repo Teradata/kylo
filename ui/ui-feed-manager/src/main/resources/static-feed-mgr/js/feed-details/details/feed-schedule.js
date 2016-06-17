@@ -30,6 +30,7 @@
 
         this.model = FeedService.editFeedModel;
         this.editModel = {};
+        this.editableSection = false;
 
 
         $scope.$watch(function(){
@@ -62,20 +63,23 @@
         this.onCancel = function() {
 
         }
-        this.onSave = function() {
+        this.onSave = function (ev) {
             //save changes to the model
-            self.model.schedule = self.editModel.schedule;
-            FeedService.saveFeedModel(FeedService.editFeedModel);
-            //save it
-            /*
-            FeedService.saveFeedModel(FeedService.editFeedModel).then(function(response){
-                //TODO account for any warnings
-
-            }, function(err){
-                console.log('error!',err)
-                self.showCompleteDialog(err);
+            FeedService.showFeedSavingDialog(ev, "Saving Feed " + self.model.feedName, self.model.feedName);
+            var copy = angular.copy(FeedService.editFeedModel);
+            copy.schedule = self.editModel.schedule;
+            FeedService.saveFeedModel(copy).then(function (response) {
+                FeedService.hideFeedSavingDialog();
+                self.editableSection = false;
+                //save the changes back to the model
+                self.model.schedule = self.editModel.schedule;
+            }, function (response) {
+                FeedService.hideFeedSavingDialog();
+                FeedService.buildErrorData(self.model.feedName, response.data);
+                FeedService.showFeedErrorsDialog();
+                //make it editable
+                self.editableSection = true;
             });
-            */
         }
 
 
