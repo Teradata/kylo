@@ -103,7 +103,7 @@
         this.onCancel = function () {
 
         }
-        this.onSave = function () {
+        this.onSave = function (ev) {
             FeedService.showFeedSavingDialog(ev, "Saving Feed " + self.model.feedName, self.model.feedName);
             var copy = angular.copy(FeedService.editFeedModel);
 
