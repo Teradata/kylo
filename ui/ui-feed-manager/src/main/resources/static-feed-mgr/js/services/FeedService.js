@@ -249,6 +249,8 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         },
         getSystemName: function (feedName) {
 
+            return $http.get(RestUrlService.GET_SYSTEM_NAME, {params: {name: feedName}});
+            /*
             var controlChars = ["\"","'","!","@","#","$","%","^","&","*","(",")"];
             var systemName = feedName;
             //remove control chars
@@ -264,6 +266,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             systemName = spacesToUnderscore(systemName);
             systemName = systemName.split("__").join("_");
             return systemName;
+             */
 
          },
         getColumnDefinitionByName:function(name) {
