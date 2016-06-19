@@ -2,6 +2,7 @@ package com.thinkbiganalytics.feedmgr.rest.support;
 
 import com.google.common.base.CaseFormat;
 
+import org.apache.commons.lang3.CharUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import java.text.CharacterIterator;
@@ -35,7 +36,7 @@ public class SystemNamingService {
           char prevChar = systemName.charAt(i - 1);
           char nextChar = systemName.charAt(i + 1);
 
-          if (Character.isUpperCase(prevChar) && (Character.isUpperCase(nextChar) || '_' == nextChar || '-' == nextChar)) {
+          if (Character.isUpperCase(prevChar) && (Character.isUpperCase(nextChar) || CharUtils.isAsciiNumeric(nextChar) || '_' == nextChar || '-' == nextChar)) {
             char lowerChar = Character.toLowerCase(systemName.charAt(i));
             s.append(lowerChar);
           } else {
@@ -43,7 +44,7 @@ public class SystemNamingService {
           }
         } else if (i > 0 && i == systemName.length() - 1) {
           char prevChar = systemName.charAt(i - 1);
-          if (Character.isUpperCase(prevChar)) {
+          if (Character.isUpperCase(prevChar) && !CharUtils.isAsciiNumeric(systemName.charAt(i))) {
             char lowerChar = Character.toLowerCase(systemName.charAt(i));
             s.append(lowerChar);
           } else {

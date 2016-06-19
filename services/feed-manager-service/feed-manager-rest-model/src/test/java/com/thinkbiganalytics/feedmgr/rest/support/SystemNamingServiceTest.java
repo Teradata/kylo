@@ -24,6 +24,22 @@ public class SystemNamingServiceTest {
         name = "MY_TESTFeedName";
         systemName = SystemNamingService.generateSystemName(name);
         Assert.assertEquals("my_test_feed_name", systemName);
+
+        name = "ALPHA1";
+        systemName = SystemNamingService.generateSystemName(name);
+        Assert.assertEquals("alpha1", systemName);
+
+        name = "myALPHA13242";
+        systemName = SystemNamingService.generateSystemName(name);
+        Assert.assertEquals("my_alpha13242", systemName);
+
+        name = "ALPHA13242";
+        systemName = SystemNamingService.generateSystemName(name);
+        Assert.assertEquals("alpha13242", systemName);
+
+        name = "ALPHA13242TEST";
+        systemName = SystemNamingService.generateSystemName(name);
+        Assert.assertEquals("alpha13242_test", systemName);
     }
 
 
