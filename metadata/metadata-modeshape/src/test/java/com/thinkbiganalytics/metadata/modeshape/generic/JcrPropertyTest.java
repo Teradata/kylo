@@ -121,9 +121,9 @@ public class JcrPropertyTest {
             }
         });
 
-        final JcrFeed feed = metadata.commit(new Command<JcrFeed>() {
+        final JcrFeed.FeedId createdFeedId = metadata.commit(new Command<JcrFeed.FeedId>() {
             @Override
-            public JcrFeed execute() {
+            public JcrFeed.FeedId execute() {
 
                 String categorySystemName = "my_category";
 
@@ -147,18 +147,18 @@ public class JcrPropertyTest {
                 otherProperties.put("prop2", "my prop2");
                 feed.setProperties(otherProperties);
 
-                return feed;
+                return feed.getId();
 
             }
         });
 
         //read and find feed verisons and ensure props
 
-        JcrFeed readFeed = metadata.read(new Command<JcrFeed>() {
+        JcrFeed.FeedId readFeedId = metadata.read(new Command<JcrFeed.FeedId>() {
             @Override
-            public JcrFeed execute() {
+            public JcrFeed.FeedId execute() {
                 Session s = null;
-                JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(feed.getId());
+                JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(createdFeedId);
                 int versions = printVersions(f);
                 Assert.assertEquals(versions, 2, "Expecting 2 versions: jcr:rootVersion, 1.0");
 
@@ -174,16 +174,16 @@ public class JcrPropertyTest {
                 List<JcrObject> taggedObjects = tagProvider.findByTag("my tag");
                 //assert we got 1 feed back
                 Assert.assertEquals(1, taggedObjects.size());
-                return f;
+                return f.getId();
             }
         });
 
         //update the feed again
 
-        Feed updateFeed = metadata.commit(new Command<Feed>() {
+        JcrFeed.FeedId updatedFeed = metadata.commit(new Command<JcrFeed.FeedId>() {
             @Override
-            public Feed execute() {
-                JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(feed.getId());
+            public JcrFeed.FeedId execute() {
+                JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(createdFeedId);
                 f.setDescription("My Feed Updated Description");
 
                 Map<String, Object> otherProperties = new HashMap<String, Object>();
@@ -191,15 +191,15 @@ public class JcrPropertyTest {
                 f.setProperties(otherProperties);
 
                 ((JcrFeedProvider) feedProvider).update(f);
-                return f;
+                return f.getId();
             }
         });
 
         //read it again and find the versions
-        readFeed = metadata.read(new Command<JcrFeed>() {
+        readFeedId = metadata.read(new Command<JcrFeed.FeedId>() {
             @Override
-            public JcrFeed execute() {
-                JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(feed.getId());
+            public JcrFeed.FeedId execute() {
+                JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(updatedFeed);
                 int versions = printVersions(f);
                 Assert.assertEquals(versions, 3, "Expecting 2 versions: jcr:rootVersion, 1.0, 1.1");
                 JcrFeed v1 = JcrVersionUtil.getVersionedNode(f, "1.0", JcrFeed.class);
@@ -221,7 +221,7 @@ public class JcrPropertyTest {
                 //assert all ids are equal
                 Assert.assertEquals(v1Id, v11Id);
                 Assert.assertEquals(v1Id, baseId);
-                return f;
+                return f.getId();
             }
         });
 
