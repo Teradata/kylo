@@ -1,14 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.support;
 
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -33,23 +24,86 @@ import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+
 /**
  * Created by sr186054 on 6/13/16.
  */
 public class JcrPropertyUtil {
 
+    protected static final ObjectWriter writer;
+    protected static final ObjectReader reader;
 
+    static {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JodaModule());
+        mapper.setSerializationInclusion(Include.NON_NULL);
+        
+        mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
+                 .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+                 .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+                 .withIsGetterVisibility(JsonAutoDetect.Visibility.NONE) );
+        
+        reader = mapper.reader();
+        writer = mapper.writer();
+    }
+
+    
     public static String getString(Node node, String name) {
         try {
             Property prop = node.getProperty(name);
             return prop.getString();
         } catch (PathNotFoundException e) {
-            throw new UnknownPropertyException(name, e);
+            return null;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access property: " + name, e);
+        }
+    }
+    
+    public static <E extends Enum<E>> E getEnum(Node node, String name, Class<E> enumType, E defaultValue) {
+        try {
+            Property prop = node.getProperty(name);
+            return Enum.valueOf(enumType, prop.getString());
+        } catch (PathNotFoundException e) {
+            return defaultValue;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access property: " + name, e);
         }
     }
 
+    
+    public static <T> T getJsonObject(Node node, String name, Class<T> type) {
+        try {
+            String json = getString(node, name);
+            
+            return reader.forType(type).readValue(json);
+        } catch (IOException e) {
+            throw new MetadataRepositoryException("Failed to deserialize JSON property: " + name, e);
+        }
+    }
+    
+    public static <T> void setJsonObject(Node node, String name, Object value) {
+        try {
+            String json = writer.forType(value.getClass()).writeValueAsString(value);
+            
+            setProperty(node, name, json);
+        } catch (IOException e) {
+            throw new MetadataRepositoryException("Failed to serialize JSON property: " + value, e);
+        }
+    }
 
     public static Object getProperty(Node node, String name) {
         return getProperty(node, name, false);

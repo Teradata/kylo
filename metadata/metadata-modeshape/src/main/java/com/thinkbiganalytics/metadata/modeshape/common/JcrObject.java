@@ -20,10 +20,6 @@ import javax.jcr.RepositoryException;
  */
 public class JcrObject {
 
-    private String identifier;
-
-    private String nodeType;
-
     protected final Node node;
 
     private String versionName;
@@ -31,10 +27,10 @@ public class JcrObject {
     private String versionableIdentifier;
 
     public String getObjectId() throws RepositoryException {
-        if ("nt:frozenNode".equalsIgnoreCase(this.nodeType)) {
+        if (this.node.isNodeType("nt:frozenNode")) {
             return this.versionableIdentifier;
         } else {
-            return this.identifier;
+            return this.node.getIdentifier();
         }
     }
 
@@ -47,8 +43,6 @@ public class JcrObject {
         String nodeName = null;
         try {
             nodeName = node.getName();
-            this.identifier = this.node.getIdentifier();
-            this.nodeType = this.node.getPrimaryNodeType().getName();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to create JcrObject from node " + nodeName, e);
         }

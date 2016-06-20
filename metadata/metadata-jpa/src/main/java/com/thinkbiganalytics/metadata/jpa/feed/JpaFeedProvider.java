@@ -249,7 +249,7 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
                 slaBldr.obligationGroupBuilder(Condition.SUFFICIENT)
                     .obligationBuilder()
                         .metric(list)
-                        .add()
+                        .build()
                     .build();
             }
             
@@ -281,7 +281,7 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
                 slaBldr.obligationGroupBuilder(Condition.SUFFICIENT)
                     .obligationBuilder()
                         .metric(list)
-                        .add()
+                        .build()
                     .build();
             }
             

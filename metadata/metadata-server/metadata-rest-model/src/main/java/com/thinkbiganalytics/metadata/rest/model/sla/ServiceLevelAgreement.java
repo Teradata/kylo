@@ -3,13 +3,15 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.sla;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.common.collect.Lists;
 
 /**
  *
@@ -22,37 +24,41 @@ public class ServiceLevelAgreement {
     private String id;
     private String name;
     private String description;
-    private ObligationGroup defaultGroup = new ObligationGroup("REQUIRED");
-    private List<ObligationGroup> groups = new ArrayList<>();
+    private ObligationGroup defaultGroup;
+    private List<ObligationGroup> groups;
     
     public ServiceLevelAgreement() {
+        this.defaultGroup = new ObligationGroup("REQUIRED");
+        this.groups = Lists.newArrayList(this.defaultGroup);
     }
     
     public ServiceLevelAgreement(String id, String name, String description) {
-        super();
+        this();
         this.id = id;
         this.name = name;
         this.description = description;
-        this.defaultGroup = null;
-        this.groups = null;
+    }
+    
+    public ServiceLevelAgreement(String name, Metric... metrics) {
+        this(null, name, "", metrics);
+    }
+    
+    public ServiceLevelAgreement(String id, String name, String description, Metric... metrics) {
+        this(id, name, description, new Obligation("", metrics));
     }
 
     public ServiceLevelAgreement(String id, String name, String description, Obligation... obligations) {
-        super();
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.groups = null;
+        this(id, name, description);
         
-
+        for (Obligation ob : obligations) {
+            this.defaultGroup.addObligation(ob);
+        }
     }
 
     public ServiceLevelAgreement(String id, String name, String description, ObligationGroup... groups) {
-        super();
-        this.id = id;
-        this.name = name;
-        this.description = description;
-        this.groups = Arrays.asList(groups);
+        this(id, name, description);
+
+        this.groups.addAll(Arrays.asList(groups));
     }
 
     public String getId() {
@@ -79,12 +85,11 @@ public class ServiceLevelAgreement {
         this.description = description;
     }
 
+    @JsonIgnore
     public List<Obligation> getObligations() {
-        if (! this.defaultGroup.getObligations().isEmpty() && this.groups.isEmpty()) {
-            return this.defaultGroup.getObligations();
-        } else {
-            return null;
-        }
+        return this.groups.stream()
+                        .flatMap((grp) -> grp.getObligations().stream())
+                        .collect(Collectors.toList());
     }
     
     public void addObligation(Obligation ob) {
@@ -92,32 +97,16 @@ public class ServiceLevelAgreement {
     }
 
     public List<ObligationGroup> getGroups() {
-        List<ObligationGroup> all = new ArrayList<>();
-        
-        if (! this.defaultGroup.getObligations().isEmpty()) {
-            all.add(defaultGroup);
-        }
-        
-        all.addAll(this.groups);
-        
-        return all;
+        return this.groups.stream().filter(grp -> ! grp.getObligations().isEmpty()).collect(Collectors.toList());
     }
 
     public void setGroups(List<ObligationGroup> groups) {
-        this.groups = new ArrayList<>(groups);
         this.defaultGroup.getObligations().clear();
+        this.groups = Lists.asList(this.defaultGroup, groups.toArray(new ObligationGroup[groups.size()]));
     }
     
     public void addGroup(ObligationGroup group) {
         this.groups.add(group);
-    }
-    
-    protected ObligationGroup getDefaultGroup() {
-        return defaultGroup;
-    }
-    
-    protected void setDefaultGroup(ObligationGroup defaultGroup) {
-        this.defaultGroup = defaultGroup;
     }
 
 }

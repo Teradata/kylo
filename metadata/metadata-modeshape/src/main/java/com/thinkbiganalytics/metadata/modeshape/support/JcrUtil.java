@@ -3,14 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.modeshape.jcr.api.JcrTools;
-
+import java.io.IOException;
+import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
@@ -19,12 +13,24 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.modeshape.jcr.api.JcrTools;
+
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+
 /**
  * @author Sean Felten
  */
 public class JcrUtil {
-
-
 
 
     /**
@@ -142,7 +148,7 @@ public class JcrUtil {
     /**
      * Get or Create a node relative to the Parent Node and return the Wrapper JcrObject
      */
-    public static <T extends JcrObject> T getOrCreateNode(Node parentNode, String name, String nodeType, Class<T> type, Object[] constructorArgs) {
+    public static <T extends JcrObject> T getOrCreateNode(Node parentNode, String name, String nodeType, Class<T> type, Object... constructorArgs) {
         T entity = null;
         try {
             JcrTools tools = new JcrTools();
@@ -164,17 +170,69 @@ public class JcrUtil {
         return entity;
     }
 
+    public static <T extends Serializable> T getGenericJson(Node parent, String nodeName) {
+        try {
+            Node jsonNode = parent.getNode(nodeName);
+            
+            return getGenericJson(jsonNode);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to deserialize generic JSON node", e);
+        }
+    }
+    
+    public static <T extends Serializable> T getGenericJson(Node jsonNode) {
+        try {
+            String className = jsonNode.getProperty("tba:type").getString();
+            @SuppressWarnings("unchecked")
+            Class<T> type = (Class<T>) Class.forName(className);
+            
+            return JcrPropertyUtil.getJsonObject(jsonNode, "tba:json", type);
+        } catch (RepositoryException | ClassNotFoundException | ClassCastException e) {
+            throw new MetadataRepositoryException("Failed to deserialize generic JSON property", e);
+        }
+    }
+    
+    public static <T extends Serializable> void addGenericJson(Node parent, String nodeName, T object) {
+        try {
+            Node jsonNode = parent.addNode(nodeName, "tba:genericJson");
+            
+            JcrPropertyUtil.setProperty(jsonNode, "tba:type", object.getClass().getName());
+            JcrPropertyUtil.setJsonObject(jsonNode, "tba:json", object);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to add a generic JSON node to the parent node: " + parent, e);
+        }
+    }
+    
     /**
      * Create a new JcrObject (Wrapper Object) that invokes a constructor with at least parameter of type Node
      */
-    public static <T extends JcrObject> T createJcrObject(Node node, Class<T> type) {
-        return createJcrObject(node, type, null);
+    public static <T extends JcrObject> T addJcrObject(Node parent, String name, String nodeType, Class<T> type) {
+        return addJcrObject(parent, name, nodeType, type, new Object[0]);
+    }
+    
+    /**
+     * Create a new JcrObject (Wrapper Object) that invokes a constructor with at least parameter of type Node
+     */
+    public static <T extends JcrObject> T addJcrObject(Node parent, String name, String nodeType, Class<T> type, Object... constructorArgs) {
+        try {
+            Node child = parent.addNode(name, nodeType);
+            return createJcrObject(child, type, constructorArgs);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to add new createJcrObject child node " + type, e);
+        }
     }
 
     /**
      * Create a new JcrObject (Wrapper Object) that invokes a constructor with at least parameter of type Node
      */
-    public static <T extends JcrObject> T createJcrObject(Node node, Class<T> type, Object[] constructorArgs) {
+    public static <T extends JcrObject> T createJcrObject(Node node, Class<T> type) {
+        return createJcrObject(node, type, new Object[0]);
+    }
+
+    /**
+     * Create a new JcrObject (Wrapper Object) that invokes a constructor with at least parameter of type Node
+     */
+    public static <T extends JcrObject> T createJcrObject(Node node, Class<T> type, Object... constructorArgs) {
         T obj = constructNodeObject(node, type, constructorArgs);
         if(JcrUtil.isVersionable(obj) && !node.isNew()){
             try {
@@ -191,7 +249,7 @@ public class JcrUtil {
     /**
      * Create a new Node Wrapper Object that invokes a constructor with at least parameter of type Node
      */
-    public static <T extends Object> T constructNodeObject(Node node, Class<T> type, Object[] constructorArgs) {
+    public static <T extends Object> T constructNodeObject(Node node, Class<T> type, Object... constructorArgs) {
         T entity = null;
         try {
             if (constructorArgs != null) {

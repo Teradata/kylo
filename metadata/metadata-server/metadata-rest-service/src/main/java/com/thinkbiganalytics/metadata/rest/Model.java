@@ -15,12 +15,14 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.jcr.RepositoryException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.rest.model.feed.*;
 import org.joda.time.Period;
+import org.modeshape.jcr.api.JcrTools;
 import org.quartz.CronExpression;
 
 import com.google.common.base.Function;
@@ -31,6 +33,7 @@ import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.feed.Feed.State;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceSchedule;
+import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
@@ -51,6 +54,10 @@ import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
+import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
@@ -480,6 +487,31 @@ public class Model {
         return new HashSet<>(Collections2.transform(metrics, METRIC_TO_DOMAIN));
     }
     
+    public static ServiceLevelAgreement generateDomain(com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement model,
+                                                       ServiceLevelAgreementProvider provider) {
+        ServiceLevelAgreementBuilder slaBldr = provider.builder()
+            .name(model.getName())
+            .description(model.getDescription());
+        
+        for (com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup grp : model.getGroups()) {
+            ObligationGroupBuilder grpBldr = slaBldr.obligationGroupBuilder(ObligationGroup.Condition.valueOf(grp.getCondition()));
+            
+            for (com.thinkbiganalytics.metadata.rest.model.sla.Obligation ob : grp.getObligations()) {
+                ObligationBuilder<?> obBldr = grpBldr.obligationBuilder().description(ob.getDescription());
+                
+                for (Metric metric : ob.getMetrics()) {
+                    obBldr.metric(METRIC_TO_DOMAIN.apply(metric));
+                }
+                
+                obBldr.build();
+            }
+            
+            grpBldr.build();
+        }
+        
+        return slaBldr.build();
+    }
+    
     public static <D extends com.thinkbiganalytics.metadata.sla.api.Metric> D toDomain(Metric model) {
         @SuppressWarnings("unchecked")
         D result = (D) METRIC_TO_DOMAIN.apply(model);
@@ -487,6 +519,13 @@ public class Model {
     }
     
     public static com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement toModel(ServiceLevelAgreement domain, boolean deep) {
+//try {
+//    new JcrTools(true).printSubgraph(((JcrServiceLevelAgreement) domain).getNode());
+//} catch (RepositoryException e) {
+//    // TODO Auto-generated catch block
+//    e.printStackTrace();
+//}
+
         com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement sla 
             = new com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement(domain.getId().toString(), 
                                                                                       domain.getName(), 

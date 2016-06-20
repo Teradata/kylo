@@ -44,6 +44,7 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependency;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 
 /**
@@ -106,6 +107,10 @@ public class MetadataClient {
         form.add("datasourceId", datasourceId);
         
         return post(Paths.get("feed", feedId, "destination"), form, Feed.class);
+    }
+    
+    public ServiceLevelAgreement createSla(ServiceLevelAgreement sla) {
+        return post(Paths.get("sla"), sla, ServiceLevelAgreement.class);
     }
 
     public Feed setPrecondition(String feedId, Metric... metrics) {

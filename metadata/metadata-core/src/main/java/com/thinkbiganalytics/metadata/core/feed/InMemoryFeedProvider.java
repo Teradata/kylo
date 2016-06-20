@@ -233,7 +233,7 @@ public class InMemoryFeedProvider implements FeedProvider {
                 slaBldr.obligationGroupBuilder(Condition.SUFFICIENT)
                     .obligationBuilder()
                         .metric(list)
-                        .add()
+                        .build()
                     .build();
             }
             

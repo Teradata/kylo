@@ -106,6 +106,7 @@ public Node getNodeByIdentifier(PK id){
     }
 
     protected T constructEntity(Node node) {
+        @SuppressWarnings("unchecked")
         T entity = (T) JcrUtil.createJcrObject(node, getJcrEntityClass());
         return entity;
     }

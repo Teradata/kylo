@@ -34,14 +34,9 @@ public interface ObligationBuilder<B> {
     ObligationBuilder<B> metric(Collection<Metric> metrics);
     
     /**
-     * Builds the obligation but does not add it yet to the SLA
-     * @return the built obligation 
-     */
-    Obligation build();
-    
-    /**
      * Builds the obligation and adds it to the SLA that is being built
      * @return the SLA builder that produced this builder
      */
-    B add();
+    B build();
+    
 }

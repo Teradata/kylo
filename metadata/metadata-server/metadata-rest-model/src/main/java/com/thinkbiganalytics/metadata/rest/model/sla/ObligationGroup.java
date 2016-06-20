@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.rest.model.sla;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -18,22 +19,29 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ObligationGroup {
 
-    private String condition;
-    private List<Obligation> obligations;
+    private String condition = "REQUIRED";
+    private List<Obligation> obligations = new ArrayList<>();
 
     public ObligationGroup() {
-        this.obligations = new ArrayList<>();
+        super();
     }
     
     public ObligationGroup(String condition) {
         this();
         this.condition = condition;
     }
+    
+    public ObligationGroup(Obligation... obligations) {
+        this("REQUIRED", Arrays.asList(obligations));
+    }
+    
+    public ObligationGroup(String condition, Obligation... obligations) {
+        this(condition, Arrays.asList(obligations));
+    }
 
     public ObligationGroup(String condition, List<Obligation> obligations) {
-        super();
-        this.condition = condition;
-        this.obligations = obligations;
+        this(condition);
+        this.obligations.addAll(obligations);
     }
 
     public String getCondition() {

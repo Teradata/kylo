@@ -280,6 +280,7 @@ public class FeedsController {
     }
 
     @POST
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Feed createFeed(final Feed feed, @QueryParam("ensure") @DefaultValue("true") final boolean ensure) {
         LOG.debug("Create feed (ensure={}) {}", ensure, feed);

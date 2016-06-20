@@ -19,9 +19,7 @@ import javax.jcr.RepositoryException;
  *
  * @author Sean Felten
  */
-public class JcrEntity  extends JcrObject implements ExtensibleEntity {
-
-
+public class JcrEntity extends JcrObject implements ExtensibleEntity {
 
     public static String TAGGABLE_NAME = JcrPropertyConstants.TAGGABLE;
 

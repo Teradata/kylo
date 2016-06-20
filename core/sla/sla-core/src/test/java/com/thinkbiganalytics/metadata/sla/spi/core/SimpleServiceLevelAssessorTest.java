@@ -32,7 +32,7 @@ public class SimpleServiceLevelAssessorTest {
                 .obligationBuilder()
                     .description("test")
                     .metric(new TestMetric(1, "1"))
-                    .add()
+                    .build()
                 .build();
         
         ServiceLevelAssessment assessment = this.assessor.assess(sla);
@@ -59,7 +59,7 @@ public class SimpleServiceLevelAssessorTest {
                 .obligationBuilder()
                     .description("test")
                     .metric(new TestMetric(1, "1"))
-                    .add()
+                    .build()
                 .build();
         
         ServiceLevelAssessment assessment = this.assessor.assess(sla);
@@ -85,7 +85,7 @@ public class SimpleServiceLevelAssessorTest {
                 .obligationBuilder()
                     .description("test")
                     .metric(new TestMetric(1, "1"))
-                    .add()
+                    .build()
                 .build();
         
         ServiceLevelAssessment assessment = this.assessor.assess(sla);
@@ -111,7 +111,7 @@ public class SimpleServiceLevelAssessorTest {
                 .obligationBuilder()
                     .description("test")
                     .metric(new TestMetric(1, "1"))
-                    .add()
+                    .build()
                 .build();
         
         ServiceLevelAssessment assessment = this.assessor.assess(sla);
@@ -138,7 +138,7 @@ public class SimpleServiceLevelAssessorTest {
                 .obligationBuilder()
                     .description("test")
                     .metric(new TestMetric(1, "1"))
-                    .add()
+                    .build()
                 .build();
         
         ServiceLevelAssessment assessment = this.assessor.assess(sla);
@@ -162,7 +162,7 @@ public class SimpleServiceLevelAssessorTest {
                 .obligationBuilder()
                     .description("test")
                     .metric(new TestMetric(1, "1"))
-                    .add()
+                    .build()
                 .build();
         
         this.assessor.assess(sla);
@@ -178,13 +178,13 @@ public class SimpleServiceLevelAssessorTest {
                     .obligationBuilder()
                         .description("test")
                         .metric(new TestMetric(1, "1"))
-                        .add()
+                        .build()
                     .build()
                 .obligationGroupBuilder(Condition.REQUIRED)
                     .obligationBuilder()
                         .description("test")
                         .metric(new TestMetric(0, "fail"))
-                        .add()
+                        .build()
                     .build()    
                 .build();
         
@@ -212,13 +212,13 @@ public class SimpleServiceLevelAssessorTest {
                     .obligationBuilder()
                         .description("test")
                         .metric(new TestMetric(0, "fail"))
-                        .add()
+                        .build()
                     .build()
                 .obligationGroupBuilder(Condition.SUFFICIENT)
                     .obligationBuilder()
                         .description("test")
                         .metric(new TestMetric(1, "1"))
-                        .add()
+                        .build()
                     .build()    
                 .build();
         
@@ -246,13 +246,13 @@ public class SimpleServiceLevelAssessorTest {
                     .obligationBuilder()
                         .description("test")
                         .metric(new TestMetric(0, "fail"))
-                        .add()
+                        .build()
                     .build()
                 .obligationGroupBuilder(Condition.SUFFICIENT)
                     .obligationBuilder()
                         .description("test")
                         .metric(new TestMetric(1, "1"))
-                        .add()
+                        .build()
                     .build()    
                 .build();
         
@@ -280,13 +280,13 @@ public class SimpleServiceLevelAssessorTest {
                         .obligationBuilder()
                         .description("test")
                         .metric(new TestMetric(1, "1"))
-                        .add()
+                        .build()
                     .build()
                 .obligationGroupBuilder(Condition.SUFFICIENT)
                     .obligationBuilder()
                         .description("test")
                         .metric(new TestMetric(0, "fail"))
-                        .add()
+                        .build()
                     .build()    
                 .build();
         
@@ -314,13 +314,13 @@ public class SimpleServiceLevelAssessorTest {
                     .obligationBuilder()
                         .description("test")
                         .metric(new TestMetric(0, "fail"))
-                        .add()
+                        .build()
                     .build()
                 .obligationGroupBuilder(Condition.OPTIONAL)
                     .obligationBuilder()
                         .description("test")
                         .metric(new TestMetric(1, "1"))
-                        .add()
+                        .build()
                     .build()    
                 .build();
         

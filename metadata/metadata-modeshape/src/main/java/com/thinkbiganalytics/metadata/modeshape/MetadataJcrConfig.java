@@ -3,6 +3,11 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import javax.annotation.PostConstruct;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -23,13 +28,10 @@ import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntityPro
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
+import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
-
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import javax.annotation.PostConstruct;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 /**
  *
@@ -109,11 +111,11 @@ public class MetadataJcrConfig {
 //    public DatasourceProvider datasetProvider() {
 //        return new InMemoryDatasourceProvider();
 //    }
-//    
-//    @Bean
-//    public ServiceLevelAgreementProvider slaProvider() {
-//        return new InMemorySLAProvider();
-//    }
+    
+    @Bean
+    public ServiceLevelAgreementProvider slaProvider() {
+        return new JcrServiceLevelAgreementProvider();
+    }
     
     @Bean
     public MetadataAccess metadataAccess() {

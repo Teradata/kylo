@@ -3,6 +3,17 @@
  */
 package com.thinkbiganalytics.metadata.core.feed;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.UUID;
+
+import org.joda.time.DateTime;
+
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -10,22 +21,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-
-import org.joda.time.DateTime;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
 
 /**
  *
@@ -203,7 +199,7 @@ public class BaseFeed implements Feed {
     }
     
     public FeedPrecondition setPrecondition(ServiceLevelAgreement sla) {
-        this.precondition = new FeedPreconditionImpl(sla);
+        this.precondition = new FeedPreconditionImpl(this, sla);
         return this.precondition;
     }
     
@@ -303,6 +299,8 @@ public class BaseFeed implements Feed {
     
     private class Source extends Data implements FeedSource {
 
+        private static final long serialVersionUID = -2407190619538717445L;
+        
         private SourceId id;
         private ServiceLevelAgreement agreement;
         
@@ -325,6 +323,8 @@ public class BaseFeed implements Feed {
     
     private class Destination extends Data implements FeedDestination {
 
+        private static final long serialVersionUID = -6990911423133789381L;
+        
         private DestinationId id;
         
         public Destination(Datasource ds) {
@@ -340,28 +340,16 @@ public class BaseFeed implements Feed {
     
     protected static class FeedPreconditionImpl implements FeedPrecondition {
         private ServiceLevelAgreement sla;
+        private BaseFeed feed;
         
-        public FeedPreconditionImpl(ServiceLevelAgreement sla) {
+        public FeedPreconditionImpl(BaseFeed feed, ServiceLevelAgreement sla) {
             this.sla = sla;
+            this.feed = feed;
         }
 
         @Override
-        public String getName() {
-            return this.sla.getName();
-        }
-        
-        @Override
-        public String getDescription() {
-            return this.sla.getDescription();
-        }
-
-        @Override
-        public Set<Metric> getMetrics() {
-            Set<Metric> set = new HashSet<>();
-            for (Obligation ob : this.sla.getObligations()) {
-                set.addAll(ob.getMetrics());
-            }
-            return set;
+        public Feed<?> getFeed() {
+            return this.feed;
         }
         
         @Override

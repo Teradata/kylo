@@ -21,6 +21,7 @@ import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parent;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -381,30 +382,19 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         @OneToOne(fetch=FetchType.EAGER)
         private JpaServiceLevelAgreement sla;
         
+        @Parent
+        private Feed<?> feed;
+        
         public JpaFeedPrecondition() {
         }
         
         public JpaFeedPrecondition(JpaServiceLevelAgreement sla) {
             this.sla = sla;
         }
-
-        @Override
-        public String getName() {
-            return this.sla.getName();
-        }
         
         @Override
-        public String getDescription() {
-            return this.sla.getDescription();
-        }
-
-        @Override
-        public Set<Metric> getMetrics() {
-            Set<Metric> set = new HashSet<>();
-            for (Obligation ob : this.sla.getObligations()) {
-                set.addAll(ob.getMetrics());
-            }
-            return set;
+        public Feed<?> getFeed() {
+            return this.feed;
         }
         
         @Override
