@@ -21,7 +21,6 @@ import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrExtensibleProvidersTestConfig.class })
-//@SpringApplicationConfiguration(classes = { JcrExtensibleProvidersTestConfig.class })
 public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests {
 
     @Inject
@@ -42,8 +41,8 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             return types.size();
         });
         
-        // Feed + FeedConnection + FeedSource + FeedDestination + Datasource = 5
-        assertThat(size).isEqualTo(5);
+        // Feed + SLA + metric + FeedConnection + FeedSource + FeedDestination + Datasource = 7
+        assertThat(size).isEqualTo(7);
     }
 
     @Test(dependsOnMethods="testGetAllDefaultTypes")
@@ -123,8 +122,8 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             return types.size();
         });
         
-        // 5 + Person + Employee = 7
-        assertThat(size).isEqualTo(7);
+        // 7 + Person + Employee = 9
+        assertThat(size).isEqualTo(9);
     }
     
     @Test(dependsOnMethods="testCreatePersonType")

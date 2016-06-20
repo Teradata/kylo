@@ -11,7 +11,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
-import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 
 /**
@@ -27,7 +26,7 @@ public class ServiceLevelAgreementClientTest {
         client = new MetadataClient(URI.create("http://localhost:8077/api/metadata/"));
     }
 
-    @Test
+//    @Test
     public void testCreateSLA() {
         ServiceLevelAgreement sla = new ServiceLevelAgreement("TestSLA1", 
                                         FeedExecutedSinceFeedMetric.named("FeedA", "FeedX"),

@@ -30,6 +30,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.jpa.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
@@ -237,62 +238,32 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensurePrecondition(com.thinkbiganalytics.metadata.api.feed.Feed.ID, java.lang.String, java.lang.String, java.util.List)
      */
     @Override
-    public Feed ensurePrecondition(ID feedId, String name, String descr, List<List<Metric>> metrics) {
+    public Feed createPrecondition(ID feedId, String descr, List<Metric> metrics) {
         JpaFeed feed = (JpaFeed) getFeed(feedId);
         
         if (feed != null) {
-            ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder()
-                    .name(name)
-                    .description(descr);
-            
-            for (List<Metric> list : metrics) {
-                slaBldr.obligationGroupBuilder(Condition.SUFFICIENT)
-                    .obligationBuilder()
-                        .metric(list)
+            ServiceLevelAgreement sla = this.slaProvider.builder()
+                    .name("Precondition for feed " + feed.getName() + " (" + feed.getId() + ")")
+                    .description(descr)
+                    .obligationBuilder(Condition.SUFFICIENT)
+                        .metric(metrics)
                         .build()
                     .build();
-            }
-            
-            JpaServiceLevelAgreement sla = (JpaServiceLevelAgreement) slaBldr.build();
             
             this.preconditionService.watchFeed(feed);
             
-            feed.setPrecondition(sla);
+            feed.setPrecondition((JpaFeedPrecondition) sla);
             this.entityMgr.merge(feed);
             return feed;
         } else {
             throw new FeedNotFoundExcepton(feedId);
         }
     }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#updatePrecondition(com.thinkbiganalytics.metadata.api.feed.Feed.ID, java.util.List)
-     */
+    
     @Override
-    public Feed updatePrecondition(ID feedId, List<List<Metric>> metrics) {
-        JpaFeed feed = (JpaFeed) getFeed(feedId);
-        
-        if (feed != null) {
-            JpaFeed.JpaFeedPrecondition precond = (JpaFeedPrecondition) feed.getPrecondition();
-            ServiceLevelAgreement.ID slaId = precond.getAgreement().getId();
-            ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder(slaId);
-            
-            for (List<Metric> list : metrics) {
-                slaBldr.obligationGroupBuilder(Condition.SUFFICIENT)
-                    .obligationBuilder()
-                        .metric(list)
-                        .build()
-                    .build();
-            }
-            
-            JpaServiceLevelAgreement sla = (JpaServiceLevelAgreement) slaBldr.build();
-            
-            feed.setPrecondition(sla);
-            this.entityMgr.merge(feed);
-            return feed;
-        } else {
-            throw new FeedNotFoundExcepton(feedId);
-        }
+    public PreconditionBuilder buildPrecondition(ID feedId) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     /* (non-Javadoc)

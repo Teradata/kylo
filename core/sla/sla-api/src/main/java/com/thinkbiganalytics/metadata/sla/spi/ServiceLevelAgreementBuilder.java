@@ -11,7 +11,6 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  * A builder for creating new SLAs.
  * @author Sean Felten
  */
-//public interface ServiceLevelAgreementBuilder extends ObligationGroupBuilder {
 public interface ServiceLevelAgreementBuilder {
 
     /**

@@ -3,28 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
-import com.google.common.base.Predicate;
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.modeshape.AbstractMetadataCriteria;
-import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
-import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -35,6 +13,39 @@ import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
+import com.google.common.base.Predicate;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.event.FeedNotFoundExcepton;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
+import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
+import com.thinkbiganalytics.metadata.modeshape.AbstractMetadataCriteria;
+import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
+import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
+import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.Obligation;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+
 /**
  *
  * @author Sean Felten
@@ -43,6 +54,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Inject
     CategoryProvider<Category> categoryProvider;
+    
+    @Inject
+    private ServiceLevelAgreementProvider slaProvider;
 
     @Inject
     DatasourceProvider datasourceProvider;
@@ -64,16 +78,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
 
-    /**
-     *
-     */
-    public JcrFeedProvider() {
-        // TODO Auto-generated constructor stub
-    }
-
     @Override
     public FeedSource ensureFeedSource(Feed.ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID dsId) {
-        JcrFeed feed = (JcrFeed) findById(feedId);
+        JcrFeed<?> feed = (JcrFeed) findById(feedId);
         FeedSource source = feed.getSource(dsId);
         if (source == null) {
             JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
@@ -116,7 +123,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         JcrCategory category = (JcrCategory) categoryProvider.findBySystemName(categorySystemName);
         Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName);
         boolean versionable = JcrUtil.isVersionable(feedNode);
-        JcrFeed feed = new JcrFeed(feedNode, category);
+        JcrFeed<?> feed = new JcrFeed(feedNode, category);
 
         feed.setSystemName(feedSystemName);
         return feed;
@@ -146,14 +153,48 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
-    public Feed ensurePrecondition(Feed.ID feedId,  String name, String descr, List<List<Metric>> metrics) {
-        return null;
+    public Feed createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics) {
+        JcrFeed<?> feed = (JcrFeed<?>) findById(feedId);
+        
+        ServiceLevelAgreementBuilder slaBldr = buildPrecondition(feed)
+                        .name("Precondition for feed " + feedId)
+                        .description(descr);
+        
+        slaBldr.obligationGroupBuilder(Condition.REQUIRED)
+            .obligationBuilder()
+                .metric(metrics)
+                .build()
+            .build();
+        
+        return feed;
     }
-
+    
     @Override
-    public Feed updatePrecondition(Feed.ID feedId, List<List<Metric>> metrics) {
-        // TODO Auto-generated method stub
-        return null;
+    public PreconditionBuilder buildPrecondition(ID feedId) {
+        JcrFeed<?> feed = (JcrFeed<?>) findById(feedId);
+        
+        return buildPrecondition(feed);
+    }
+    
+    private PreconditionBuilder buildPrecondition(JcrFeed<?> feed) {
+        try {
+            if (feed != null) {
+                Node feedNode = feed.getNode();
+                
+                if (feedNode.hasProperty("tba:precondition")) {
+                    Node slaNode = feed.getNode().getProperty("tba:sla").getNode();
+                    slaNode.remove();
+                }
+                
+                ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder();
+                
+                return new JcrPreconditionbuilder(slaBldr, feed);
+            } else {
+                throw new FeedNotFoundExcepton(feed.getId());
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to create the precondition for feed " + feed.getId(), e);
+        }
     }
 
     @Override
@@ -374,6 +415,57 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     public Feed.ID resolveId(Serializable fid) {
         return new JcrFeed.FeedId(fid);
+    }
+    
+
+    protected JcrFeed<?> setupPrecondition(JcrFeed<?> feed, ServiceLevelAgreement sla) {
+//        this.preconditionService.watchFeed(feed);
+        feed.setPrecondition((JcrServiceLevelAgreement) sla);
+        return feed;
+    }
+    
+
+    
+    private class JcrPreconditionbuilder implements PreconditionBuilder {
+        private final ServiceLevelAgreementBuilder slaBuilder;
+        private final JcrFeed<?> feed;
+        
+        public JcrPreconditionbuilder(ServiceLevelAgreementBuilder slaBuilder, JcrFeed<?> feed) {
+            super();
+            this.slaBuilder = slaBuilder;
+            this.feed = feed;
+        }
+
+        public ServiceLevelAgreementBuilder name(String name) {
+            return slaBuilder.name(name);
+        }
+
+        public ServiceLevelAgreementBuilder description(String description) {
+            return slaBuilder.description(description);
+        }
+
+        public ServiceLevelAgreementBuilder obligation(Obligation obligation) {
+            return slaBuilder.obligation(obligation);
+        }
+
+        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder() {
+            return slaBuilder.obligationBuilder();
+        }
+
+        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder(Condition condition) {
+            return slaBuilder.obligationBuilder(condition);
+        }
+
+        public ObligationGroupBuilder obligationGroupBuilder(Condition condition) {
+            return slaBuilder.obligationGroupBuilder(condition);
+        }
+
+        public ServiceLevelAgreement build() {
+            ServiceLevelAgreement sla = slaBuilder.build();
+            
+            setupPrecondition(feed, sla);
+            return sla;
+        }
     }
 
 }

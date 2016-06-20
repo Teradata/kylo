@@ -232,13 +232,9 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 }
                 domainFeed = feedManagerFeedProvider.update(domainFeed);
 
-                //merge in preconditions if they exist
                 List<GenericUIPrecondition> preconditions = feed.getSchedule().getPreconditions();
-                if (preconditions != null) {
-                    List<List<com.thinkbiganalytics.metadata.sla.api.Metric>> domainMetrics = new ArrayList<>();
-                    domainMetrics.add(new ArrayList<Metric>(FeedManagerPreconditionService.uiPreconditionToFeedPrecondition(feed, preconditions)));
-                    feedProvider.updatePrecondition(domainFeed.getId(), domainMetrics);
-                }
+                List<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics = FeedManagerPreconditionService.uiPreconditionToFeedPrecondition(feed, preconditions);
+                feedProvider.createPrecondition(domainFeed.getId(), "", domainMetrics);
                 return feed;
             }
         });

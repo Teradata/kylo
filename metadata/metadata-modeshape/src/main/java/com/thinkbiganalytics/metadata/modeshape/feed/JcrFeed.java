@@ -1,5 +1,11 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import java.io.Serializable;
+import java.util.List;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -16,14 +22,9 @@ import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSyste
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
+import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
-
-import java.io.Serializable;
-import java.util.List;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 /**
  * Created by sr186054 on 6/4/16.
@@ -221,8 +222,13 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public String getScheduleStrategy(){
         return getProperty(SCHEDULE_STRATEGY,String.class);
     }
+    
     public void setScheduleStrategy(String scheduleStrategy){
         setProperty(SCHEDULE_STRATEGY,scheduleStrategy);
+    }
+    
+    public void setPrecondition(JcrServiceLevelAgreement sla) {
+//        Node precondNode
     }
 
 }

@@ -4,6 +4,9 @@
 package com.thinkbiganalytics.metadata.core.feed;
 
 import java.io.Serializable;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -27,14 +30,18 @@ import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
 import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.DestinationId;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.FeedId;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.FeedPreconditionImpl;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.SourceId;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
@@ -215,7 +222,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
     
     @Override
-    public Feed ensurePrecondition(Feed.ID feedId, String name, String descr, List<List<Metric>> metrics) {
+    public Feed createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
         
         if (feed != null) {
@@ -225,40 +232,39 @@ public class InMemoryFeedProvider implements FeedProvider {
                 this.slaProvider.removeAgreement(precond.getAgreement().getId());
             }
             
-            ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder()
-                    .name(name)
-                    .description(descr);
-            
-            for (List<Metric> list : metrics) {
-                slaBldr.obligationGroupBuilder(Condition.SUFFICIENT)
-                    .obligationBuilder()
-                        .metric(list)
+            ServiceLevelAgreement sla = this.slaProvider.builder()
+                    .name("Precondition for feed " + feed.getName() + " (" + feed.getId() + ")")
+                    .description(descr)
+                    .obligationBuilder(Condition.REQUIRED)
+                        .metric(metrics)
                         .build()
                     .build();
-            }
             
-            this.preconditionService.watchFeed(feed);
-            
-            feed.setPrecondition(slaBldr.build());
-            return feed;
+            return setupPrecondition(feed, sla);
         } else {
             throw new FeedCreateException("A feed with the given ID does not exists: " + feedId);
         }
     }
+
+    private Feed setupPrecondition(BaseFeed feed, ServiceLevelAgreement sla) {
+        this.preconditionService.watchFeed(feed);
+        
+        feed.setPrecondition(sla);
+        return feed;
+    }
     
     @Override
-    public Feed updatePrecondition(Feed.ID feedId, List<List<Metric>> metrics) {
-        String name = "Feed " + feedId + " Precondtion";
-        StringBuilder descr = new StringBuilder();
-        for (List<Metric> list : metrics) {
-            for (Metric metric : list) {
-                descr.append(metric.getClass().getSimpleName()).append(", ");
-            }
-            descr.append(" | ");
-        }
+    public PreconditionBuilder buildPrecondition(final Feed.ID feedId) {
+        BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
         
-        return ensurePrecondition(feedId, name, descr.toString(), metrics);
-   }
+        if (feed != null) {
+            ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder();
+            return new PreconditionbuilderImpl(slaBldr, feed);
+        } else {
+            throw new FeedCreateException("A feed with the given ID does not exists: " + feedId);
+        }
+
+    }
     
     @Override
     public FeedCriteria feedCriteria() {
@@ -445,6 +451,47 @@ public class InMemoryFeedProvider implements FeedProvider {
         
     }
 
+    
+    private class PreconditionbuilderImpl implements PreconditionBuilder {
+        private final ServiceLevelAgreementBuilder slaBuilder;
+        private final BaseFeed feed;
+        
+        public PreconditionbuilderImpl(ServiceLevelAgreementBuilder slaBuilder, BaseFeed feed) {
+            super();
+            this.slaBuilder = slaBuilder;
+            this.feed = feed;
+        }
 
+        public ServiceLevelAgreementBuilder name(String name) {
+            return slaBuilder.name(name);
+        }
+
+        public ServiceLevelAgreementBuilder description(String description) {
+            return slaBuilder.description(description);
+        }
+
+        public ServiceLevelAgreementBuilder obligation(Obligation obligation) {
+            return slaBuilder.obligation(obligation);
+        }
+
+        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder() {
+            return slaBuilder.obligationBuilder();
+        }
+
+        public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder(Condition condition) {
+            return slaBuilder.obligationBuilder(condition);
+        }
+
+        public ObligationGroupBuilder obligationGroupBuilder(Condition condition) {
+            return slaBuilder.obligationGroupBuilder(condition);
+        }
+
+        public ServiceLevelAgreement build() {
+            ServiceLevelAgreement sla = slaBuilder.build();
+            
+            setupPrecondition(feed, sla);
+            return sla;
+        }
+    }
 
 }
