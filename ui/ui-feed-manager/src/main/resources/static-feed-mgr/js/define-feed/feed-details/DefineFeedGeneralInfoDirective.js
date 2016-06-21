@@ -51,6 +51,7 @@
             }
         }
 
+
       //  getRegisteredTemplates();
 
         function validate(){
@@ -80,8 +81,11 @@
        var feedNameWatch = $scope.$watch(function(){
             return self.model.feedName;
         },function(newVal) {
-            self.model.systemFeedName = FeedService.getSystemName(newVal);
-            validate();
+           FeedService.getSystemName(newVal).then(function (response) {
+               self.model.systemFeedName = response.data;
+               validate();
+           });
+
         });
 
         $scope.$watch(function(){

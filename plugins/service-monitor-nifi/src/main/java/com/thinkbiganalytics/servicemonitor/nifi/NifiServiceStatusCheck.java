@@ -2,7 +2,6 @@ package com.thinkbiganalytics.servicemonitor.nifi;
 
 
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.rest.JerseyClientException;
 import com.thinkbiganalytics.servicemonitor.check.ServiceStatusCheck;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceComponent;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceStatusResponse;
@@ -47,7 +46,7 @@ public class NifiServiceStatusCheck implements ServiceStatusCheck {
       component =
           new DefaultServiceComponent.Builder(componentName + " - " + nifiVersion, ServiceComponent.STATE.UP)
               .message("Nifi is up.").properties(properties).build();
-    } catch (JerseyClientException e) {
+    } catch (Exception e) {
       component = new DefaultServiceComponent.Builder(componentName, ServiceComponent.STATE.DOWN).exception(e).build();
     }
 

@@ -9,6 +9,7 @@ import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.TableType;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -43,10 +44,14 @@ import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.THRIFT_SE
 
 
 @EventDriven
-@InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
+@InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
 @Tags({"hive", "ddl", "register", "thinkbig"})
 @CapabilityDescription("Creates a set of standard feed tables managed by the Think Big platform. ")
 public class RegisterFeedTables extends AbstractProcessor {
+
+    private static String DEFAULT_STORAGE_FORMAT = "STORED AS ORC";
+
+    private static String DEFAULT_FEED_FORMAT_OPTIONS = "ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\n' STORED AS TEXTFILE";
 
     /**
      * Specify creation of all tables
@@ -119,6 +124,16 @@ public class RegisterFeedTables extends AbstractProcessor {
             String specString = context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue();
             ColumnSpec[] columnSpecs = ColumnSpec.createFromString(specString);
             String tableType = context.getProperty(TABLE_TYPE).evaluateAttributeExpressions(flowFile).getValue();
+
+            // Maintain backward compatibility
+            if (StringUtils.isEmpty(targetFormatOptions)) {
+                targetFormatOptions = DEFAULT_STORAGE_FORMAT;
+            }
+
+            if (StringUtils.isEmpty(feedFormatOptions)) {
+                feedFormatOptions = DEFAULT_FEED_FORMAT_OPTIONS;
+            }
+
             TableRegisterSupport register = new TableRegisterSupport(conn);
 
             Boolean result;

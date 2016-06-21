@@ -3,8 +3,9 @@ package com.thinkbiganalytics.jobrepo.nifi.config;
 
 import com.thinkbiganalytics.jobrepo.nifi.provenance.FlowFileEventProvider;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.InMemoryFlowFileEventProvider;
-import com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventStartupListener;
+import com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventApplicationStartupListener;
 import com.thinkbiganalytics.jobrepo.repository.dao.NifJobRepositoryFactoryBean;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -20,6 +21,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 public class DatabaseConfig {
+
     @Autowired
     private Environment env;
 
@@ -36,12 +38,11 @@ public class DatabaseConfig {
     private PlatformTransactionManager transactionManager;
 
 
-
     @Bean(name = "nifiJobRepository")
     public NifJobRepositoryFactoryBean nifiJobRepository(@Qualifier("dataSource") DataSource dataSource) {
         NifJobRepositoryFactoryBean repository = new NifJobRepositoryFactoryBean();
         repository.setDataSource(dataSource);
-       // PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
+        // PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
         repository.setTransactionManager(transactionManager);
         return repository;
     }
@@ -52,8 +53,8 @@ public class DatabaseConfig {
     }
 
     @Bean
-    public ProvenanceEventStartupListener provenanceEventStartupListener() {
-        return new ProvenanceEventStartupListener();
+    public ProvenanceEventApplicationStartupListener provenanceEventStartupListener() {
+        return new ProvenanceEventApplicationStartupListener();
     }
 
 

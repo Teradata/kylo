@@ -27,7 +27,11 @@
         this.loading = false;
         function getProfileHistory(){
             self.loading = true;
+            self.showNoResults = false;
             var successFn = function (response) {
+                if (response.data.length == 0) {
+                    self.showNoResults = true;
+                }
             var dataMap = {};
                 var dataArr = [];
              var columns = HiveService.getColumnNamesForQueryResult(response);

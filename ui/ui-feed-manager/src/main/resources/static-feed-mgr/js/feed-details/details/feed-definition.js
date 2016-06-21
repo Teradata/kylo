@@ -21,7 +21,7 @@
         var self = this;
 
         this.model = FeedService.editFeedModel;
-
+        this.editableSection = false;
 
         $scope.$watch(function(){
             return FeedService.editFeedModel;
@@ -49,16 +49,31 @@
         this.onCancel = function() {
 
         }
-        this.onSave = function() {
-            //save changes to the model
-            var copy = angular.copy(self.model);
-            self.model.feedName = self.editModel.feedName;
-            self.model.systemFeedName = self.editModel.systemFeedName;
-            self.model.description = self.editModel.description;
-            self.model.templateId = self.editModel.templateId;
-            FeedService.saveFeedModel(FeedService.editFeedModel).then(function(){},function(err) {
-                console.log('ERROR ... rollback ')
 
+        this.onSave = function (ev) {
+            //save changes to the model
+            FeedService.showFeedSavingDialog(ev, "Saving Feed " + self.model.feedName, self.model.feedName);
+            var copy = angular.copy(FeedService.editFeedModel);
+
+            copy.feedName = self.editModel.feedName;
+            copy.systemFeedName = self.editModel.systemFeedName;
+            copy.description = self.editModel.description;
+            copy.templateId = self.editModel.templateId;
+
+            FeedService.saveFeedModel(copy).then(function (response) {
+                FeedService.hideFeedSavingDialog();
+                self.editableSection = false;
+                //save the changes back to the model
+                self.model.feedName = self.editModel.feedName;
+                self.model.systemFeedName = self.editModel.systemFeedName;
+                self.model.description = self.editModel.description;
+                self.model.templateId = self.editModel.templateId;
+            }, function (response) {
+                FeedService.hideFeedSavingDialog();
+                FeedService.buildErrorData(self.model.feedName, response.data);
+                FeedService.showFeedErrorsDialog();
+                //make it editable
+                self.editableSection = true;
             });
         }
 

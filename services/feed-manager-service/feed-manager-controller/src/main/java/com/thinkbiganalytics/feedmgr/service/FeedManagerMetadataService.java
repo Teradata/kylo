@@ -73,24 +73,23 @@ public class FeedManagerMetadataService implements MetadataService {
 
     @Override
     //@Transactional(transactionManager = "metadataTransactionManager")
-    public RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId) throws JerseyClientException {
+    public RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId) {
         return metadataAccess.read(new Command<RegisteredTemplate>() {
             @Override
             public RegisteredTemplate execute() {
-                try {
-                    return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
-                } catch (JerseyClientException e) {
-                    throw new RuntimeException("Unable to get Tempaltes for id of " + templateId);
-                }
+                return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
             }
         });
 
     }
-
     @Override
-    public RegisteredTemplate getRegisteredTemplateForNifiProperties(String nifiTemplateId, String nifiTemplateName) {
-        return templateProvider.getRegisteredTemplateForNifiProperties(nifiTemplateId, nifiTemplateName);
-    }
+    public RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName) {
+        return metadataAccess.read(new Command<RegisteredTemplate>() {
+            public RegisteredTemplate execute() {
+                return templateProvider.getRegisteredTemplateForNifiProperties(nifiTemplateId, nifiTemplateName);
+            }
+        });
+       }
 
     public void deleteRegisteredTemplate(String templateId) {
         templateProvider.deleteRegisteredTemplate(templateId);
@@ -103,7 +102,7 @@ public class FeedManagerMetadataService implements MetadataService {
     }
 
     @Override
-    public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
+    public NifiFeed createFeed(FeedMetadata feedMetadata) {
         NifiFeed feed = feedProvider.createFeed(feedMetadata);
         if (feed.isSuccess()) {
             //requery to get the latest version
@@ -123,25 +122,21 @@ public class FeedManagerMetadataService implements MetadataService {
         boolean updatedNifi = false;
         if (feedSummary != null && feedSummary.getState().equals(state.name())) {
 
-            try {
-                ProcessGroupDTO group = nifiRestClient.getProcessGroupByName("root", feedSummary.getSystemCategoryName());
-                if (group != null) {
-                    ProcessGroupDTO feed = nifiRestClient.getProcessGroupByName(group.getId(), feedSummary.getSystemFeedName());
-                    if (feed != null) {
-                        ProcessGroupEntity entity = null;
-                        if (state.equals(Feed.State.ENABLED)) {
-                            entity = nifiRestClient.startAll(feed.getId(), feed.getParentGroupId());
-                        } else if (state.equals(Feed.State.DISABLED)) {
-                            entity = nifiRestClient.stopInputs(feed.getId());
-                        }
+            ProcessGroupDTO group = nifiRestClient.getProcessGroupByName("root", feedSummary.getSystemCategoryName());
+            if (group != null) {
+                ProcessGroupDTO feed = nifiRestClient.getProcessGroupByName(group.getId(), feedSummary.getSystemFeedName());
+                if (feed != null) {
+                    ProcessGroupEntity entity = null;
+                    if (state.equals(Feed.State.ENABLED)) {
+                        entity = nifiRestClient.startAll(feed.getId(), feed.getParentGroupId());
+                    } else if (state.equals(Feed.State.DISABLED)) {
+                        entity = nifiRestClient.stopInputs(feed.getId());
+                    }
 
-                        if (entity != null) {
-                            updatedNifi = true;
-                        }
+                    if (entity != null) {
+                        updatedNifi = true;
                     }
                 }
-            } catch (JerseyClientException e) {
-                e.printStackTrace();
             }
         }
         return updatedNifi;

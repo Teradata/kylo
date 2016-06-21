@@ -54,7 +54,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Inject
     CategoryProvider<Category> categoryProvider;
-    
+
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
 
@@ -155,39 +155,39 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Feed createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics) {
         JcrFeed<?> feed = (JcrFeed<?>) findById(feedId);
-        
+
         ServiceLevelAgreementBuilder slaBldr = buildPrecondition(feed)
-                        .name("Precondition for feed " + feedId)
-                        .description(descr);
-        
+            .name("Precondition for feed " + feedId)
+            .description(descr);
+
         slaBldr.obligationGroupBuilder(Condition.REQUIRED)
             .obligationBuilder()
-                .metric(metrics)
-                .build()
+            .metric(metrics)
+            .build()
             .build();
-        
+
         return feed;
     }
-    
+
     @Override
     public PreconditionBuilder buildPrecondition(ID feedId) {
         JcrFeed<?> feed = (JcrFeed<?>) findById(feedId);
-        
+
         return buildPrecondition(feed);
     }
-    
+
     private PreconditionBuilder buildPrecondition(JcrFeed<?> feed) {
         try {
             if (feed != null) {
                 Node feedNode = feed.getNode();
-                
+
                 if (feedNode.hasProperty("tba:precondition")) {
                     Node slaNode = feed.getNode().getProperty("tba:sla").getNode();
                     slaNode.remove();
                 }
-                
+
                 ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder();
-                
+
                 return new JcrPreconditionbuilder(slaBldr, feed);
             } else {
                 throw new FeedNotFoundExcepton(feed.getId());
@@ -416,20 +416,20 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     public Feed.ID resolveId(Serializable fid) {
         return new JcrFeed.FeedId(fid);
     }
-    
+
 
     protected JcrFeed<?> setupPrecondition(JcrFeed<?> feed, ServiceLevelAgreement sla) {
 //        this.preconditionService.watchFeed(feed);
         feed.setPrecondition((JcrServiceLevelAgreement) sla);
         return feed;
     }
-    
 
-    
+
+
     private class JcrPreconditionbuilder implements PreconditionBuilder {
         private final ServiceLevelAgreementBuilder slaBuilder;
         private final JcrFeed<?> feed;
-        
+
         public JcrPreconditionbuilder(ServiceLevelAgreementBuilder slaBuilder, JcrFeed<?> feed) {
             super();
             this.slaBuilder = slaBuilder;
@@ -462,7 +462,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
         public ServiceLevelAgreement build() {
             ServiceLevelAgreement sla = slaBuilder.build();
-            
+
             setupPrecondition(feed, sla);
             return sla;
         }

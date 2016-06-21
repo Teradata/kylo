@@ -4,15 +4,22 @@ import com.thinkbiganalytics.jobrepo.JobRepoApplicationStartupListener;
 import com.thinkbiganalytics.jobrepo.nifi.model.FlowFileComponent;
 import com.thinkbiganalytics.jobrepo.nifi.model.NifiJobExecution;
 import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.jobrepo.nifi.provenance.*;
+import com.thinkbiganalytics.jobrepo.nifi.provenance.FlowFileEventProvider;
+import com.thinkbiganalytics.jobrepo.nifi.provenance.InMemoryFlowFileEventProvider;
+import com.thinkbiganalytics.jobrepo.nifi.provenance.NifiComponentFlowData;
+import com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventApplicationStartupListener;
+import com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventListener;
+import com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventReceiver;
+import com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceFeedManager;
 import com.thinkbiganalytics.jobrepo.repository.JobRepository;
 import com.thinkbiganalytics.jobrepo.repository.dao.NifiJobRepository;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.rest.JerseyClientException;
+
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
+import org.apache.nifi.web.api.entity.AboutEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.joda.time.DateTime;
 import org.junit.Before;
@@ -25,12 +32,18 @@ import org.mockito.stubbing.Answer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.when;
 
 /**
  * Created by sr186054 on 5/25/16.
@@ -51,7 +64,7 @@ public class ProvenanceEventReceiverTest {
     private NifiComponentFlowData nifiComponentFlowData;
 
     @Mock
-    private ProvenanceEventStartupListener provenanceEventStartupListener;
+    private ProvenanceEventApplicationStartupListener provenanceEventStartupListener;
 
     @Mock
     private JobRepoApplicationStartupListener jobRepoApplicationStartupListener;
@@ -74,6 +87,8 @@ public class ProvenanceEventReceiverTest {
     private AtomicBoolean finished = new AtomicBoolean(false);
 
     private AtomicLong nifiJobRepositoryId = new AtomicLong(0L);
+
+    private long startTime;
 
 
     @Test
@@ -126,19 +141,19 @@ public class ProvenanceEventReceiverTest {
 
     private void setupMockNifiRestClient() {
         //  ProcessGroupEntity processGroupEntity = nifiRestClient.getRootProcessGroup();
-        try {
+
             doAnswer(getRootProcessGroup()).when(this.nifiRestClient).getRootProcessGroup();
 
-        } catch (JerseyClientException e) {
-            e.printStackTrace();
-        }
+        doAnswer(new Answer() {
+            @Override
+            public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
+                AboutEntity e = new AboutEntity();
+                return e;
+            }
+        }).when(this.nifiRestClient).getNifiVersion();
 
         //   Set<ProcessorDTO> processorDTOs = nifiRestClient.getProcessorsForFlow(feedProcessGroupId);
-        try {
-            doAnswer(getProcessorsForFlow()).when(this.nifiRestClient).getProcessorsForFlow(any(String.class));
-        } catch (JerseyClientException e) {
-            e.printStackTrace();
-        }
+        doAnswer(getProcessorsForFlow()).when(this.nifiRestClient).getProcessorsForFlow(any(String.class));
 
         NifiComponentFlowData aSpy = Mockito.spy(nifiComponentFlowData);
         doAnswer(getFeedProcessGroup()).when(aSpy).getFeedProcessGroup(any(ProvenanceEventRecordDTO.class));
@@ -207,9 +222,14 @@ public class ProvenanceEventReceiverTest {
 
     @Test
     public void testJms() {
-
+        this.startTime = System.currentTimeMillis();
+        final Integer timeNifiIsDownOnStartup = 10;// seconds
         //Simulate the Startup of Pipline Controller by simulating processing of Ops Manager to query for running jobs and get those events
-        doAnswer(onStartup()).when(this.provenanceEventStartupListener).onStartup(any(DateTime.class));
+        doAnswer(onStartup(true)).when(this.provenanceEventStartupListener).onStartup(any(DateTime.class));
+
+        doAnswer(isConnectedToNifi(timeNifiIsDownOnStartup)).when(this.provenanceFeedManager).isConnectedToNifi();
+
+
         //setup Mocks
         setupMockNifiJobRepository();
         setupMockNifiRestClient();
@@ -220,7 +240,7 @@ public class ProvenanceEventReceiverTest {
 
 
         //process JMS Nifi Events in another thread
-        simulateNifiEvents();
+        simulateNifiEvents(20, 1000, 1000);
         //startup the application
         this.provenanceEventStartupListener.onStartup(new DateTime());
         //Simulate running events for some time
@@ -250,19 +270,27 @@ public class ProvenanceEventReceiverTest {
     /**
      * Simulate JMS Queue sending in 100 events
      */
-    private void simulateNifiEvents() {
+    private void simulateNifiEvents(final Integer eventCount, final long startupSleep, final long eventSleep) {
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
-                for (int i = 0; i < 100; i++) {
+                for (int i = 0; i < eventCount; i++) {
                     ProvenanceEventDTO event = newEvent();
                     provenanceEventReceiver.receiveTopic(event);
                     //simulate wait when startup is processing backlog
                     if (!startupFinished.get()) {
                         try {
-                            Thread.sleep(300);
+                            Thread.sleep(startupSleep);
                         } catch (InterruptedException e) {
                             e.printStackTrace();
+                        }
+                    } else {
+                        if (eventSleep > 0L) {
+                            try {
+                                Thread.sleep(eventSleep);
+                            } catch (InterruptedException e) {
+                                e.printStackTrace();
+                            }
                         }
                     }
                 }
@@ -313,7 +341,7 @@ public class ProvenanceEventReceiverTest {
 
     }
 
-    private Answer onStartup() {
+    private Answer onStartup(final boolean isError) {
         return new Answer<Void>() {
             @Override
             public Void answer(InvocationOnMock invocationOnMock) throws Throwable {
@@ -322,9 +350,28 @@ public class ProvenanceEventReceiverTest {
                 //Wait 5 seconds
                 processAndWait(5000);
                 //call the method
+                if (isError) {
+                    provenanceEventReceiver.onStartupConnectionError();
+                }
                 provenanceEventReceiver.onEventsInitialized();
                 startupFinished.set(true);
                 return null;
+
+            }
+        };
+    }
+
+    private Answer isConnectedToNifi(final Integer timeNifiIsDownOnStartup) {
+        return new Answer<Boolean>() {
+            @Override
+            public Boolean answer(InvocationOnMock invocationOnMock) throws Throwable {
+                long now = System.currentTimeMillis();
+                long diffSeconds = (now - startTime) / 1000;
+                if (diffSeconds > timeNifiIsDownOnStartup) {
+                    return true;
+                } else {
+                    return false;
+                }
 
             }
         };

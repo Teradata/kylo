@@ -1,6 +1,6 @@
 angular.module(MODULE_FEED_MGR).filter('feedSystemName', ['FeedService',function(FeedService) {
     return function(feeedName) {
-        return FeedService.getSystemName(feeedName);
+      return feedName;
     };
 }]);
 

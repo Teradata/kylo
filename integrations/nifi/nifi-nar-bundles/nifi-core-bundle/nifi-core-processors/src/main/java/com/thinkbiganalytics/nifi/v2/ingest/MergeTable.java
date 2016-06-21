@@ -11,6 +11,7 @@ import com.thinkbiganalytics.util.ComponentAttributes;
 import com.thinkbiganalytics.util.PartitionBatch;
 import com.thinkbiganalytics.util.PartitionSpec;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
@@ -129,6 +130,9 @@ public class MergeTable extends AbstractProcessor {
         String feedPartitionValue = context.getProperty(FEED_PARTITION).evaluateAttributeExpressions(flowFile).getValue();
         String mergeStrategyValue = context.getProperty(MERGE_STRATEGY).evaluateAttributeExpressions(flowFile).getValue();
 
+        // Maintain default for backward compatibility
+        if (StringUtils.isEmpty(mergeStrategyValue)) mergeStrategyValue = STRATEGY_DEDUPE_MERGE;
+
         logger.info("Using Source: " + sourceTable + " Target: " + targetTable + " feed partition:" + feedPartitionValue + " partSpec: " + partitionSpecString);
 
         final StopWatch stopWatch = new StopWatch(true);
@@ -136,6 +140,8 @@ public class MergeTable extends AbstractProcessor {
         try (final Connection conn = thriftService.getConnection()) {
 
             TableMergeSyncSupport mergeSupport = new TableMergeSyncSupport(conn);
+            mergeSupport.enableDynamicPartitions();
+
             PartitionSpec partitionSpec = new PartitionSpec(partitionSpecString);
 
             List<PartitionBatch> batches = null;

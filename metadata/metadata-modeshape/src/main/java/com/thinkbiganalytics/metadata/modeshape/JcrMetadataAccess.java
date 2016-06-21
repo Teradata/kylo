@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
@@ -32,11 +32,11 @@ import javax.transaction.TransactionManager;
  * @author Sean Felten
  */
 public class JcrMetadataAccess implements MetadataAccess {
-    
+
     private static final Logger log = LoggerFactory.getLogger(JcrMetadataAccess.class);
-    
+
     public static final String TBA_PREFIX = "tba";
-    
+
     private static final ThreadLocal<Session> activeSession = new ThreadLocal<Session>() {
         protected Session initialValue() {
             return null;
@@ -52,7 +52,7 @@ public class JcrMetadataAccess implements MetadataAccess {
     @Inject
     @Named("metadataJcrRepository")
     private Repository repository;
-    
+
     @Inject
     private TransactionManagerLookup txnLookup;
 
@@ -94,26 +94,26 @@ public class JcrMetadataAccess implements MetadataAccess {
             itr.remove();
         }
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.MetadataAccess#commit(com.thinkbiganalytics.metadata.api.Command)
      */
     @Override
     public <R> R commit(Command<R> cmd) {
         Session session = activeSession.get();
-        
+
         if (session == null) {
             try {
 
                 activeSession.set(this.repository.login());
 
                 TransactionManager txnMgr = this.txnLookup.getTransactionManager();
-                
+
                 try {
                     txnMgr.begin();
-                    
+
                     R result = cmd.execute();
-                    
+
                     activeSession.get().save();
 
                     checkinNodes();
@@ -122,13 +122,13 @@ public class JcrMetadataAccess implements MetadataAccess {
                     return result;
                 } catch (Exception e) {
                     log.warn("Exception while execution a transactional operation - rollng back", e);
-                    
+
                     try {
                         txnMgr.rollback();
                     } catch (SystemException se) {
                         log.error("Failed to rollback tranaction as a result of other transactional errors", se);
                     }
-                    
+
                     activeSession.get().refresh(false);
                     // TODO Use a better exception
                     throw new RuntimeException(e);
@@ -154,16 +154,16 @@ public class JcrMetadataAccess implements MetadataAccess {
     @Override
     public <R> R read(Command<R> cmd) {
         Session session = activeSession.get();
-        
+
         if (session == null) {
             try {
                 activeSession.set(this.repository.login());
-                
+
                 TransactionManager txnMgr = this.txnLookup.getTransactionManager();
-                
+
                 try {
                     txnMgr.begin();
-                    
+
                     return cmd.execute();
                 } catch (SystemException | NotSupportedException e) {
                     // TODO Use a better exception
@@ -174,7 +174,7 @@ public class JcrMetadataAccess implements MetadataAccess {
                     } catch (SystemException e) {
                         log.error("Failed to rollback transaction", e);
                     }
-                    
+
                     activeSession.get().refresh(false);
                     activeSession.get().logout();
                     activeSession.remove();

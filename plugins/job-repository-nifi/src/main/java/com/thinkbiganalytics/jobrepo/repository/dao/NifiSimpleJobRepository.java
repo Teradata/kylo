@@ -9,9 +9,16 @@ import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.jobrepo.nifi.support.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.nifi.support.NifiSpringBatchTransformer;
 import com.thinkbiganalytics.jobrepo.service.ExecutionContextValuesService;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.batch.core.*;
+import org.springframework.batch.core.BatchStatus;
+import org.springframework.batch.core.ExitStatus;
+import org.springframework.batch.core.JobExecution;
+import org.springframework.batch.core.JobInstance;
+import org.springframework.batch.core.JobParameter;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.repository.dao.ExecutionContextDao;
 import org.springframework.batch.core.repository.dao.JobExecutionDao;
 import org.springframework.batch.core.repository.dao.JobInstanceDao;
@@ -20,12 +27,17 @@ import org.springframework.batch.item.ExecutionContext;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.util.Assert;
 
-import java.util.*;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by sr186054 on 3/2/16.
  */
 public class NifiSimpleJobRepository implements NifiJobRepository {
+
     private static final Logger LOG = LoggerFactory.getLogger(NifiSimpleJobRepository.class);
 
 
@@ -40,7 +52,8 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
     private NifiPipelineControllerDao nifiPipelineControllerDao;
 
 
-    public NifiSimpleJobRepository(JobInstanceDao jobInstanceDao, JobExecutionDao jobExecutionDao, StepExecutionDao stepExecutionDao, ExecutionContextDao ecDao, JobParametersDao jobParametersDao, NifiPipelineControllerDao nifiPipelineControllerDao, ExecutionContextValuesService executionContextValuesService) {
+    public NifiSimpleJobRepository(JobInstanceDao jobInstanceDao, JobExecutionDao jobExecutionDao, StepExecutionDao stepExecutionDao, ExecutionContextDao ecDao, JobParametersDao jobParametersDao,
+                                   NifiPipelineControllerDao nifiPipelineControllerDao, ExecutionContextValuesService executionContextValuesService) {
         this.jobInstanceDao = jobInstanceDao;
         this.jobExecutionDao = jobExecutionDao;
         this.stepExecutionDao = stepExecutionDao;
@@ -80,6 +93,10 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
             nifiJobExecution.setJobInstanceId(jobInstance.getInstanceId());
             return jobInstance;
         }
+    }
+
+    public Long findJobExecutionId(Long eventId, String flowfileUuid) {
+        return nifiPipelineControllerDao.findJobExecutionId(eventId, flowfileUuid);
     }
 
 
@@ -270,7 +287,8 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
 
         } else {
             Long jobExecutionId = flowFileComponent.getJobExecution() != null ? flowFileComponent.getJobExecution().getJobExecutionId() : null;
-            LOG.error("Unable to assign step execution context data to step.  StepExecution for JobExecutionId of {} is null for Component {}.  Execution Map is {} ", jobExecutionId, flowFileComponent, allAttrs);
+            LOG.error("Unable to assign step execution context data to step.  StepExecution for JobExecutionId of {} is null for Component {}.  Execution Map is {} ", jobExecutionId,
+                      flowFileComponent, allAttrs);
         }
     }
 

@@ -14,7 +14,6 @@ import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
-import com.thinkbiganalytics.rest.JerseyClientException;
 import com.thinkbiganalytics.schema.TextFileParser;
 
 import org.apache.commons.lang3.StringUtils;
@@ -25,6 +24,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.JDBCException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
 import java.io.InputStream;
@@ -84,7 +84,7 @@ public class FeedRestController {
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
+    public Response createFeed(FeedMetadata feedMetadata) {
         NifiFeed feed = null;
         try {
             feed = getMetadataService().createFeed(feedMetadata);
@@ -107,7 +107,7 @@ public class FeedRestController {
     @Path("/enable/{feedId}")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response enableFeed(@PathParam("feedId") String feedId) throws JerseyClientException {
+    public Response enableFeed(@PathParam("feedId") String feedId) {
         FeedSummary feed = getMetadataService().enableFeed(feedId);
         return Response.ok(feed).build();
     }
@@ -116,7 +116,7 @@ public class FeedRestController {
     @Path("/disable/{feedId}")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response disableFeed(@PathParam("feedId") String feedId) throws JerseyClientException {
+    public Response disableFeed(@PathParam("feedId") String feedId) {
         FeedSummary feed = getMetadataService().disableFeed(feedId);
         return Response.ok(feed).build();
     }
@@ -124,7 +124,7 @@ public class FeedRestController {
     @GET
     @Path("/reusable-feeds")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getReusableFeeds() throws JerseyClientException {
+    public Response getReusableFeeds() {
         List<FeedMetadata> reusableFeeds = getMetadataService().getReusableFeeds();
         return Response.ok(reusableFeeds).build();
     }
@@ -133,7 +133,7 @@ public class FeedRestController {
     @GET
     @Path("/reusable-feed-input-ports")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getReusableFeedInputPorts() throws JerseyClientException {
+    public Response getReusableFeedInputPorts() {
         List<FeedMetadata> reusableFeeds = getMetadataService().getReusableFeeds();
         Map<String, Set<PortDTO>> portMap = new HashMap<>();
         for (FeedMetadata metadata : reusableFeeds) {
@@ -165,7 +165,7 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getFeed(@PathParam("feedId") String feedId) throws JerseyClientException {
+    public Response getFeed(@PathParam("feedId") String feedId) {
         FeedMetadata feed = getMetadataService().getFeedById(feedId, true);
 
         return Response.ok(feed).build();
@@ -175,7 +175,7 @@ public class FeedRestController {
     @Path("/{feedId}/merge-template")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response mergeTemplate(@PathParam("feedId") String feedId, FeedMetadata feed) throws JerseyClientException {
+    public Response mergeTemplate(@PathParam("feedId") String feedId, FeedMetadata feed) {
         //gets the feed data and then gets the latest template associated with that feed and merges the properties into the feed
         RegisteredTemplate registeredTemplate = null;
         try {
@@ -211,28 +211,40 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}/profile-summary")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response profileSummary(@PathParam("feedId") String feedId) throws JerseyClientException {
+    //TODO rework and move logic to proper Service/provider class
+    public Response profileSummary(@PathParam("feedId") String feedId) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String profileTable = feedMetadata.getProfileTableName();
         String query = "SELECT * from " + profileTable + " where columnname = '(ALL)'";
-        QueryResult results = hiveService.query(query);
-        List<Map<String, Object>> rows = new ArrayList<>();
-        rows.addAll(results.getRows());
-        //add in the archive date time fields if applicipable
-        String ARCHIVE_PROCESSOR_TYPE = "com.thinkbiganalytics.nifi.GetTableData";
-        if (feedMetadata.getInputProcessorType().equalsIgnoreCase(ARCHIVE_PROCESSOR_TYPE)) {
-            NifiProperty property = NifiPropertyUtil.findPropertyByProcessorType(feedMetadata.getProperties(), ARCHIVE_PROCESSOR_TYPE, "Date Field");
-            if (property != null && property.getValue() != null) {
-                String field = property.getValue();
-                if (field.contains(".")) {
-                    field = StringUtils.substringAfterLast(field, ".");
-                }
-                query = "SELECT * from " + profileTable + " where metrictype IN('MIN_TIMESTAMP','MAX_TIMESTAMP') AND columnname = '" + field + "'";
 
-                QueryResult dateRows = hiveService.query(query);
-                if (dateRows != null && !dateRows.isEmpty()) {
-                    rows.addAll(dateRows.getRows());
+        List<Map<String, Object>> rows = new ArrayList<>();
+        try {
+            QueryResult results = hiveService.query(query);
+
+            rows.addAll(results.getRows());
+            //add in the archive date time fields if applicipable
+            String ARCHIVE_PROCESSOR_TYPE = "com.thinkbiganalytics.nifi.GetTableData";
+            if (feedMetadata.getInputProcessorType().equalsIgnoreCase(ARCHIVE_PROCESSOR_TYPE)) {
+                NifiProperty property = NifiPropertyUtil.findPropertyByProcessorType(feedMetadata.getProperties(), ARCHIVE_PROCESSOR_TYPE, "Date Field");
+                if (property != null && property.getValue() != null) {
+                    String field = property.getValue();
+                    if (field.contains(".")) {
+                        field = StringUtils.substringAfterLast(field, ".");
+                    }
+                    query = "SELECT * from " + profileTable + " where metrictype IN('MIN_TIMESTAMP','MAX_TIMESTAMP') AND columnname = '" + field + "'";
+
+                    QueryResult dateRows = hiveService.query(query);
+                    if (dateRows != null && !dateRows.isEmpty()) {
+                        rows.addAll(dateRows.getRows());
+                    }
                 }
+            }
+        } catch (DataAccessException e) {
+            e.printStackTrace();
+            if (e.getCause() instanceof org.apache.hive.service.cli.HiveSQLException && e.getCause().getMessage().contains("Table not found")) {
+                //this exception is ok to swallow since it just means no profile data exists yet
+            } else {
+                throw e;
             }
         }
 
@@ -243,7 +255,7 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}/profile-stats")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response profileStats(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) throws JerseyClientException {
+    public Response profileStats(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String profileTable = feedMetadata.getProfileTableName();
         String query = "SELECT * from " + profileTable + " where processing_dttm = '" + processingdttm + "'";
@@ -254,7 +266,7 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}/profile-invalid-results")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response queryProfileInvalidResults(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) throws JerseyClientException {
+    public Response queryProfileInvalidResults(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String table = feedMetadata.getInvalidTableName();
         String query = "SELECT * from " + table + " where processing_dttm  = '" + processingdttm + "'";
@@ -265,7 +277,7 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}/profile-valid-results")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response queryProfileValidResults(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) throws JerseyClientException {
+    public Response queryProfileValidResults(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String table = feedMetadata.getValidTableName();
         String query = "SELECT * from " + table + " where processing_dttm  = '" + processingdttm + "'";

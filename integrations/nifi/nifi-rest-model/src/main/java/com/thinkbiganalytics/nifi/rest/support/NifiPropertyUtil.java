@@ -99,16 +99,18 @@ public class NifiPropertyUtil {
 
     public static List<NifiProperty> getProperties(ProcessGroupDTO processGroupDTO) {
         List<NifiProperty> properties = new ArrayList<NifiProperty>();
+        if (processGroupDTO != null) {
 
-        if(processGroupDTO.getContents().getProcessors() != null && !processGroupDTO.getContents().getProcessors().isEmpty()){
-            for(ProcessorDTO processorDTO : processGroupDTO.getContents().getProcessors()){
-                properties.addAll(NifiPropertyUtil.getPropertiesForProcessor(processGroupDTO, processorDTO));
+            if (processGroupDTO.getContents().getProcessors() != null && !processGroupDTO.getContents().getProcessors().isEmpty()) {
+                for (ProcessorDTO processorDTO : processGroupDTO.getContents().getProcessors()) {
+                    properties.addAll(NifiPropertyUtil.getPropertiesForProcessor(processGroupDTO, processorDTO));
+                }
             }
-        }
 
-        if(processGroupDTO.getContents().getProcessGroups() != null && !processGroupDTO.getContents().getProcessGroups().isEmpty()) {
-            for (ProcessGroupDTO groupDTO : processGroupDTO.getContents().getProcessGroups()) {
-                properties.addAll(NifiPropertyUtil.getProperties(groupDTO));
+            if (processGroupDTO.getContents().getProcessGroups() != null && !processGroupDTO.getContents().getProcessGroups().isEmpty()) {
+                for (ProcessGroupDTO groupDTO : processGroupDTO.getContents().getProcessGroups()) {
+                    properties.addAll(NifiPropertyUtil.getProperties(groupDTO));
+                }
             }
         }
         return properties;

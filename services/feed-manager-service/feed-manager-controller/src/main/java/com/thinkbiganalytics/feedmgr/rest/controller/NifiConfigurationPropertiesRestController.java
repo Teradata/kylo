@@ -1,10 +1,20 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
+import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
+import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
+import com.thinkbiganalytics.feedmgr.support.Constants;
+import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+
+import org.apache.nifi.web.api.dto.PortDTO;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.entity.InputPortsEntity;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 
 import javax.ws.rs.GET;
@@ -12,19 +22,6 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
-import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
-import org.apache.nifi.web.api.dto.PortDTO;
-import org.apache.nifi.web.api.dto.ProcessGroupDTO;
-import org.apache.nifi.web.api.entity.InputPortsEntity;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.rest.JerseyClientException;
-import com.thinkbiganalytics.feedmgr.support.Constants;
 
 import io.swagger.annotations.Api;
 
@@ -36,40 +33,40 @@ import io.swagger.annotations.Api;
 @Component
 public class NifiConfigurationPropertiesRestController {
 
-  @Autowired
-  private NifiRestClient nifiRestClient;
+    @Autowired
+    private NifiRestClient nifiRestClient;
 
     @Autowired
-    private  SpringEnvironmentProperties environmentProperties;
+    private SpringEnvironmentProperties environmentProperties;
 
     public NifiConfigurationPropertiesRestController() {
     }
 
     @GET
     @Path("/configuration/properties")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response getFeeds(){
-       Map<String,Object> properties = environmentProperties.getPropertiesStartingWith(PropertyExpressionResolver.configPropertyPrefix);
-        if(properties == null){
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getFeeds() {
+        Map<String, Object> properties = environmentProperties.getPropertiesStartingWith(PropertyExpressionResolver.configPropertyPrefix);
+        if (properties == null) {
             properties = new HashMap<>();
         }
         return Response.ok(properties).build();
     }
 
-  @GET
-  @Path("/reusable-input-ports")
-  @Produces({MediaType.APPLICATION_JSON })
-  public Response getReusableFeedInputPorts( ) throws JerseyClientException {
-    Set<PortDTO> ports = new HashSet<>();
-    ProcessGroupDTO processGroup = nifiRestClient.getProcessGroupByName("root", SystemNamingService.generateSystemName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME));
-    if(processGroup != null) {
-        //fetch the ports
-        InputPortsEntity inputPortsEntity = nifiRestClient.getInputPorts(processGroup.getId());
-        if (inputPortsEntity != null && inputPortsEntity.getInputPorts() != null && !inputPortsEntity.getInputPorts().isEmpty()) {
-          ports.addAll(inputPortsEntity.getInputPorts());
+    @GET
+    @Path("/reusable-input-ports")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getReusableFeedInputPorts() {
+        Set<PortDTO> ports = new HashSet<>();
+        ProcessGroupDTO processGroup = nifiRestClient.getProcessGroupByName("root", SystemNamingService.generateSystemName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME));
+        if (processGroup != null) {
+            //fetch the ports
+            InputPortsEntity inputPortsEntity = nifiRestClient.getInputPorts(processGroup.getId());
+            if (inputPortsEntity != null && inputPortsEntity.getInputPorts() != null && !inputPortsEntity.getInputPorts().isEmpty()) {
+                ports.addAll(inputPortsEntity.getInputPorts());
+            }
         }
+        return Response.ok(ports).build();
     }
-    return Response.ok(ports).build();
-  }
 
 }

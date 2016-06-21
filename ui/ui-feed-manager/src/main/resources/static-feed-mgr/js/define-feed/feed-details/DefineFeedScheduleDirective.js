@@ -22,7 +22,7 @@
         };
     }
 
-    var controller =  function($scope, $http,$mdDialog,$mdToast,RestUrlService, FeedService, StateService,StepperService,   CategoriesService,BroadcastService) {
+    var controller =  function($scope, $http,$mdDialog,$mdToast,RestUrlService, FeedService, StateService,StepperService,   CategoriesService,BroadcastService,FeedCreationErrorService) {
 
         var self = this;
 
@@ -138,32 +138,13 @@
               //  self.showCompleteDialog();
             }, function(response){
                 self.createdFeed = response.data;
-               // CategoriesService.reload();
-              //  StateService.navigateToDefineFeedComplete(self.createdFeed,err)
-                self.showErrorDialog();
+                FeedCreationErrorService.buildErrorData(self.model.feedName,self.createdFeed);
+                hideProgress();
+                FeedCreationErrorService.showErrorDialog();
             });
         }
 
-        this.showErrorDialog = function() {
-            hideProgress();
 
-            $mdDialog.show({
-                controller: FeedErrorDialogController,
-                templateUrl: 'js/define-feed/feed-error-dialog.html',
-                parent: angular.element(document.body),
-                clickOutsideToClose:false,
-                fullscreen: true,
-                locals : {
-                    feedName:self.model.feedName,
-                    createdFeed : self.createdFeed
-                }
-            })
-                .then(function(msg) {
-
-                }, function() {
-
-                });
-        };
 
 
 
@@ -203,85 +184,7 @@
 })();
 
 
-function FeedErrorDialogController($scope, $mdDialog, $mdToast, $http, StateService,CategoriesService, feedName, createdFeed ){
-    var self = this;
 
-    $scope.feedName = feedName;
-    $scope.createdFeed = createdFeed;
-    $scope.isValid = false;
-    $scope.message = '';
-    $scope.feedErrorsData = {};
-    $scope.feedErrorsCount = 0;
-
-    function groupAndCountErrorsBySeverity(){
-        var count = 0;
-        var errorMap = {"FATAL":[],"WARN":[]};
-
-        if(createdFeed.errorMessages != null && createdFeed.errorMessages.length >0){
-            angular.forEach(createdFeed.errorMessages,function(msg){
-                errorMap['FATAL'].push({category:'General',message:msg});
-                count++;
-            })
-        }
-
-        if(createdFeed.feedProcessGroup != null) {
-            angular.forEach(createdFeed.feedProcessGroup.errors, function (processor) {
-                if (processor.validationErrors) {
-                    angular.forEach(processor.validationErrors, function (error) {
-                        var copy = {};
-                        angular.extend(copy, error);
-                        angular.extend(copy, processor);
-                        copy.validationErrors = null;
-                        errorMap[error.severity].push(copy);
-                        count++;
-                    });
-                }
-            });
-        }
-        $scope.feedErrorsData = errorMap;
-        $scope.feedErrorsCount = count;
-    }
-    if(createdFeed != null){
-        groupAndCountErrorsBySeverity();
-
-        if($scope.feedErrorsCount >0){
-
-             if($scope.feedErrorsCount >0) {
-                message = "Error creating the feed, " + feedName;
-                message += " " + $scope.feedErrorsCount + " invalid items.";
-                $scope.isValid = false;
-            }
-            else {
-                message = "Created the feed with but errors exist. ";
-                message += " " + $scope.feedErrorsCount + " invalid items.";
-                $scope.isValid = true;
-                CategoriesService.reload();
-            }
-        }
-        else {
-            $scope.isValid = true;
-        }
-        $scope.message = message;
-    }
-    else {
-        $scope.message = 'Error creating feed.'
-    }
-
-    $scope.fixErrors = function() {
-        $mdDialog.hide('fixErrors');
-    }
-
-
-    $scope.hide = function() {
-        $mdDialog.hide();
-    };
-
-    $scope.cancel = function() {
-        $mdDialog.cancel();
-    };
-
-
-};
 
 
 
@@ -298,10 +201,6 @@ function FeedErrorDialogController($scope, $mdDialog, $mdToast, $http, StateServ
                   });
         })
 
-        //select all feeds in the system for depends on
-
-
-        //$scope.policyRules = field[policyParameter];
         var arr = feed.schedule.preconditions;
 
         if(arr != null && arr != undefined)

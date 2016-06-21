@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.api;
 
@@ -35,14 +35,14 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 @Component
 @Path("/sla")
 public class ServiceLevelAgreementController {
-    
+
     private static final Logger log = LoggerFactory.getLogger(ServiceLevelAgreementController.class);
-    
+
     @Inject
     private ServiceLevelAgreementProvider provider;
-    
+
     @Inject ServiceLevelAssessor assessor;
-    
+
     @Inject
     private MetadataAccess metadata;
 
@@ -51,37 +51,37 @@ public class ServiceLevelAgreementController {
     @Produces(MediaType.APPLICATION_JSON)
     public ServiceLevelAgreement createAgreement(ServiceLevelAgreement agreement) {
         log.debug("POST Create SLA {}", agreement);
-        
+
         return this.metadata.commit(() -> {
-            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement domainSla 
+            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement domainSla
                 = Model.generateDomain(agreement, this.provider);
-                
+
             return Model.DOMAIN_TO_SLA.apply(domainSla);
         });
     }
-    
+
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     public List<ServiceLevelAgreement> getAgreements() {
         log.debug("GET all SLA's");
-        
+
         return this.metadata.commit(() -> {
             List<com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement> list = this.provider.getAgreements();
-                
+
             return Lists.transform(list, Model.DOMAIN_TO_SLA);
         });
     }
-    
+
     @GET
     @Path("{id}")
     @Produces(MediaType.APPLICATION_JSON)
     public ServiceLevelAgreement getAgreement(@PathParam("id") String idValue) {
         log.debug("GET SLA by ID: {}", idValue);
-        
+
         return this.metadata.commit(() -> {
             com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID id = this.provider.resolve(idValue);
             com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla = this.provider.getAgreement(id);
-            
+
             if (sla != null) {
                 return Model.DOMAIN_TO_SLA.apply(sla);
             } else {
@@ -89,21 +89,21 @@ public class ServiceLevelAgreementController {
             }
         });
     }
-    
+
     @GET
     @Path("{id}/assessment")
     @Produces(MediaType.APPLICATION_JSON)
     public ServiceLevelAssessment assessAgreement(@PathParam("id") String idValue) {
         log.debug("GET SLA by ID: {}", idValue);
-        
+
         return this.metadata.commit(() -> {
             com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID id = this.provider.resolve(idValue);
             com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla = this.provider.getAgreement(id);
             com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment assessment = this.assessor.assess(sla);
-            
+
             return Model.DOMAIN_TO_SLA_ASSMT.apply(assessment);
         });
     }
-    
+
 
 }

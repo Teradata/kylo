@@ -1,10 +1,10 @@
 package com.thinkbiganalytics.jobrepo.query;
 
 
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.builder.Query;
 import com.thinkbiganalytics.jobrepo.query.builder.QueryFactory;
 import com.thinkbiganalytics.jobrepo.query.feed.FeedAverageRunTimesQuery;
-import com.thinkbiganalytics.jobrepo.query.feed.FeedHealthCheckDataQuery;
 import com.thinkbiganalytics.jobrepo.query.feed.FeedHealthQuery;
 import com.thinkbiganalytics.jobrepo.query.feed.FeedNameStatusCountQuery;
 import com.thinkbiganalytics.jobrepo.query.feed.FeedQuery;
@@ -17,9 +17,7 @@ import com.thinkbiganalytics.jobrepo.query.feed.LatestOperationalFeedQuery;
 import com.thinkbiganalytics.jobrepo.query.feed.MaxFeedQuery;
 import com.thinkbiganalytics.jobrepo.query.job.JobQuery;
 import com.thinkbiganalytics.jobrepo.query.job.RunningJobsStartedBeforeSpecifiedTimeQuery;
-import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
 import com.thinkbiganalytics.jobrepo.query.support.ColumnFilter;
-import com.thinkbiganalytics.jobrepo.query.support.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.support.OrderBy;
 import com.thinkbiganalytics.jobrepo.query.support.OrderByClause;
 import com.thinkbiganalytics.jobrepo.query.support.QueryColumnFilterSqlString;

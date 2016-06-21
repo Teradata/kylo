@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.jobrepo.query.support;
+package com.thinkbiganalytics.jdbc.util;
 
 import org.springframework.jdbc.support.JdbcUtils;
 import org.springframework.jdbc.support.MetaDataAccessException;
@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 
 /**
  * Taken from Spring Batch
+ *
  */
 public enum DatabaseType {
   DERBY("Apache Derby"),

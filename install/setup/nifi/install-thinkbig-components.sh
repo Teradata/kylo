@@ -3,6 +3,7 @@ NIFI_SETUP_DIR=/opt/thinkbig/setup/nifi
 echo "Copying the configuration files"
 cp $NIFI_SETUP_DIR/logback.xml /opt/nifi/current/conf
 cp $NIFI_SETUP_DIR/nifi.properties /opt/nifi/current/conf
+cp $NIFI_SETUP_DIR/bootstrap.conf /opt/nifi/current/conf
 
 echo "Installing the thinkbig libraries to the NiFi lib"
 mkdir /opt/nifi/current/lib/app

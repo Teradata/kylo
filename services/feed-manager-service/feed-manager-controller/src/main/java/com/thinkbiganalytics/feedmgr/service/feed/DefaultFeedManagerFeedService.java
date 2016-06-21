@@ -199,7 +199,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     }
 
     @Override
-    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId) throws JerseyClientException {
+    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId)  {
         return metadataAccess.read(new Command<RegisteredTemplate>() {
             @Override
             public RegisteredTemplate execute() {
@@ -210,7 +210,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     }
 
     // @Transactional(transactionManager = "metadataTransactionManager")
-    public NifiFeed createFeed(final FeedMetadata feedMetadata) throws JerseyClientException {
+    public NifiFeed createFeed(final FeedMetadata feedMetadata)  {
         if (feedMetadata.getState() == null) {
             feedMetadata.setState(Feed.State.ENABLED.name());
         }

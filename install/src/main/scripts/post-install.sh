@@ -15,12 +15,12 @@ echo "   - Installed thinkbig-ui to '$rpmInstallDir/thinkbig-ui'"
 
 cat << EOF > $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh
   #!/bin/bash
-  java \$THINKBIG_UI_OPTS -cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/* com.thinkbiganalytics.ThinkbigDataLakeUiApplication --pgrep-marker=$pgrepMarkerThinkbigUi > /dev/null 2>&1 &
+  java \$THINKBIG_UI_OPTS -cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/* com.thinkbiganalytics.ThinkbigDataLakeUiApplication --pgrep-marker=$pgrepMarkerThinkbigUi > /var/log/thinkbig-ui/thinkbig-ui.log 2>&1 &
 EOF
 cat << EOF > $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui-with-debug.sh
   #!/bin/bash
   JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8008
-  java \$THINKBIG_UI_OPTS \$JAVA_DEBUG_OPTS --cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/* com.thinkbiganalytics.app.Application --pgrep-marker=$pgrepMarkerThinkbigUi
+  java \$THINKBIG_UI_OPTS \$JAVA_DEBUG_OPTS --cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/* com.thinkbiganalytics.app.Application --pgrep-marker=$pgrepMarkerThinkbigUi > /var/log/thinkbig-ui/thinkbig-ui.log 2>&1 &
 EOF
 chmod +x $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh
 chmod +x $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui-with-debug.sh
@@ -39,7 +39,7 @@ cat << EOF > /etc/init.d/thinkbig-ui
             echo Already running.
           else
             echo Starting thinkbig-ui ...
-            su - $RUN_AS_USER -c "$rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh"
+            su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh"
         fi
       ;;
     stop)
@@ -84,12 +84,12 @@ echo "   - Installed thinkbig-services to '$rpmInstallDir/thinkbig-services'"
 
 cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
   #!/bin/bash
-  java \$THINKBIG_SERVICES_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /dev/null 2>&1 &
+  java \$THINKBIG_SERVICES_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
 EOF
 cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
   #!/bin/bash
   JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8008
-  java \$THINKBIG_SERVICES_OPTS \$JAVA_DEBUG_OPTS --cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/* com.thinkbiganalytics.hive.server.Application --pgrep-marker=$pgrepMarkerThinkbigServices
+  java \$THINKBIG_SERVICES_OPTS \$JAVA_DEBUG_OPTS --cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/* com.thinkbiganalytics.hive.server.Application --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
 EOF
 chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
 chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
@@ -108,7 +108,7 @@ cat << EOF > /etc/init.d/thinkbig-services
             echo Already running.
           else
             echo Starting thinkbig-services ...
-            su - $RUN_AS_USER -c "$rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh"
+            su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh"
         fi
       ;;
     stop)
@@ -175,7 +175,7 @@ cat << EOF > /etc/init.d/thinkbig-spark-shell
             echo Already running.
           else
             echo Starting thinkbig-spark-shell ...
-            su - $RUN_AS_USER -c "$rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh" >> "\$stdout_log" 2>> "\$stderr_log" &
+            su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh" >> "\$stdout_log" 2>> "\$stderr_log" &
         fi
       ;;
     stop)
@@ -221,7 +221,17 @@ chmod +x $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh
 
 }
 
-chown -R thinkbig:users /opt/thinkbig
+chown -R thinkbig:thinkbig /opt/thinkbig
+
+mkdir /var/log/thinkbig-services
+mkdir /var/log/thinkbig-ui
+mkdir /var/log/thinkbig-spark-shell
+
+chmod 744 /var/log/thinkbig-services
+chmod 744 /var/log/thinkbig-ui
+chmod 744 /var/log/thinkbig-spark-shell
+
+chown thinkbig:thinkbig /var/log/thinkbig*
 
 echo "   INSTALL COMPLETE"
 echo "   - Please configure the application using the property files and scripts located under the '$rpmInstallDir/thinkbig-ui/conf' and '$rpmInstallDir/thinkbig-services/conf' folder.  See deployment guide for details."

@@ -3,7 +3,11 @@
  */
 package com.thinkbiganalytics.nifi.v2.thrift;
 
+import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
+import com.thinkbiganalytics.nifi.security.SecurityUtil;
+
 import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnDisabled;
@@ -15,6 +19,7 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -27,6 +32,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.dbcp.BasicDataSource;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.nifi.annotation.documentation.CapabilityDescription;
+import org.apache.nifi.annotation.documentation.Tags;
+import org.apache.nifi.annotation.lifecycle.OnDisabled;
+import org.apache.nifi.annotation.lifecycle.OnEnabled;
+import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.ValidationContext;
+import org.apache.nifi.components.ValidationResult;
+import org.apache.nifi.components.Validator;
+import org.apache.nifi.controller.AbstractControllerService;
+import org.apache.nifi.controller.ConfigurationContext;
+import org.apache.nifi.logging.ComponentLog;
+import org.apache.nifi.logging.ProcessorLog;
+import org.apache.nifi.processor.exception.ProcessException;
+import org.apache.nifi.processor.util.StandardValidators;
+import org.apache.nifi.reporting.InitializationException;
+import org.apache.nifi.util.NiFiProperties;
+
 /**
  * Implementation of for Database Connection Pooling Service. Apache DBCP is used for connection pooling functionality.
  */
@@ -34,6 +59,9 @@ import java.util.concurrent.TimeUnit;
 @CapabilityDescription("Provides a Thrift connection service.")
 public class ThriftConnectionPool extends AbstractControllerService implements ThriftService {
 
+    private String hadoopConfiguraiton;
+    private String principal;
+    private String keytab;
 
     public static final PropertyDescriptor DATABASE_URL = new PropertyDescriptor.Builder()
             .name("Database Connection URL")
@@ -96,6 +124,27 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
             .sensitive(false)
             .build();
 
+    public static final PropertyDescriptor HADOOP_CONFIGURATION_RESOURCES = new PropertyDescriptor.Builder()
+        .name("Hadoop Configuration Resources")
+        .description("A file or comma separated list of files which contains the Hadoop file system configuration. Without this, Hadoop "
+                     + "will search the classpath for a 'core-site.xml' and 'hdfs-site.xml' file or will revert to a default configuration.")
+        .required(false).addValidator(createMultipleFilesExistValidator())
+        .build();
+
+    public static final PropertyDescriptor KERBEROS_PRINCIPAL = new PropertyDescriptor.Builder()
+        .name("Kerberos Principal")
+        .required(false)
+        .description("Kerberos principal to authenticate as. Requires nifi.kerberos.krb5.file to be set in your nifi.properties")
+        .addValidator(kerberosConfigValidator())
+        .build();
+
+    public static final PropertyDescriptor KERBEROS_KEYTAB = new PropertyDescriptor.Builder()
+        .name("Kerberos Keytab").required(false)
+        .description("Kerberos keytab associated with the principal. Requires nifi.kerberos.krb5.file to be set in your nifi.properties")
+        .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
+        .addValidator(kerberosConfigValidator())
+        .build();
+
     private static final List<PropertyDescriptor> properties;
 
     static {
@@ -107,6 +156,9 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         props.add(DB_PASSWORD);
         props.add(MAX_WAIT_TIME);
         props.add(MAX_TOTAL_CONNECTIONS);
+        props.add(HADOOP_CONFIGURATION_RESOURCES);
+        props.add(KERBEROS_PRINCIPAL);
+        props.add(KERBEROS_KEYTAB);
 
         properties = Collections.unmodifiableList(props);
     }
@@ -138,6 +190,11 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         final String passw = context.getProperty(DB_PASSWORD).getValue();
         final Long maxWaitMillis = context.getProperty(MAX_WAIT_TIME).asTimePeriod(TimeUnit.MILLISECONDS);
         final Integer maxTotal = context.getProperty(MAX_TOTAL_CONNECTIONS).asInteger();
+        //Kerberos Property
+        this.hadoopConfiguraiton = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
+        this.principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
+        this.keytab = context.getProperty(KERBEROS_KEYTAB).getValue();
+
 
         dataSource = new BasicDataSource();
         dataSource.setDriverClassName(drv);
@@ -203,11 +260,158 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
     @Override
     public Connection getConnection() throws ProcessException {
         try {
-            final Connection con = dataSource.getConnection();
-            return con;
+            if (kerberosAuthentication())
+            {
+                final Connection con = dataSource.getConnection();
+                return con;
+            }
+
+            getLogger().error("Unable to get connection from pool , returning null");
+            return null;
         } catch (final SQLException e) {
             throw new ProcessException(e);
         }
+    }
+
+    /**
+     * Invoke kerberos aauthentication code and validate user with given keytab.
+     *
+     * @return false
+     */
+    @SuppressWarnings("static-access")
+    protected boolean kerberosAuthentication()
+    {
+        ComponentLog loggerInstance ;
+        loggerInstance = getLogger();
+
+        //Kerberos Security Validation
+
+        String principal = this.principal;
+        String keyTab =  this.keytab;
+        String hadoopConfigurationResources = hadoopConfiguraiton;
+
+        // If all 3 fields are filled out then assume kerberos is enabled and we want to authenticate the user
+        boolean loadConfigurationForKerberosAuthentication = false;
+        if (!(StringUtils.isEmpty(principal) && StringUtils.isEmpty(keyTab) && StringUtils.isEmpty(hadoopConfigurationResources))) {
+            loadConfigurationForKerberosAuthentication = true;
+        }
+
+        //Get Security class object reference
+        Configuration configuration  = null;
+        ApplySecurityPolicy applySecurityObject = null;
+        if(loadConfigurationForKerberosAuthentication) {
+            applySecurityObject = new ApplySecurityPolicy();
+
+            try {
+                configuration = applySecurityObject.getConfigurationFromResources(hadoopConfigurationResources);
+            } catch (Exception hadoopConfigException) {
+                loggerInstance.error("Unable to get Hadoop Configuration resources . Loading default hadoop configuration." + hadoopConfigException.getMessage());
+
+                //Load default configuration if unable to load from property descriptor.
+                configuration = new Configuration();
+            }
+        }
+
+        if(loadConfigurationForKerberosAuthentication && SecurityUtil.isSecurityEnabled(configuration))  // Check if kerberos security is enabled in cluster
+        {
+            if(principal.equals("") && keyTab.equals("") )
+            {
+                loggerInstance.error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster.");
+                return false;
+            }
+
+            try {
+
+                loggerInstance.info("User anuthentication initiated");
+
+                boolean authenticationStatus = applySecurityObject.validateUserWithKerberos((ProcessorLog)loggerInstance,hadoopConfigurationResources,principal,keyTab);
+                if (authenticationStatus)
+                {
+                    loggerInstance.info("User authenticated successfully.");
+                    return true;
+                }
+                else
+                {
+                    loggerInstance.error("User authentication failed.");
+                    return false;
+                }
+
+            } catch (Exception unknownException) {
+                loggerInstance.error("Kerberos : Unable to validate user - " + unknownException.getMessage());
+                unknownException.printStackTrace();
+                return false;
+            }
+
+        }
+
+        return true;
+    }
+
+
+    /*
+     * Validates that one or more files exist, as specified in a single property.
+     */
+    public static final Validator createMultipleFilesExistValidator() {
+        return new Validator() {
+            @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+                final String[] files = input.split(",");
+                for (String filename : files) {
+                    try {
+                        final File file = new File(filename.trim());
+                        final boolean valid = file.exists() && file.isFile();
+                        if (!valid) {
+                            final String message = "File " + file + " does not exist or is not a file";
+                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                        }
+                    } catch (SecurityException e) {
+                        final String message = "Unable to access " + filename + " due to " + e.getMessage();
+                        return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                    }
+                }
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            }
+
+        };
+    }
+
+    public static final Validator kerberosConfigValidator()
+    {
+        return new Validator() {
+
+            @Override
+            public ValidationResult validate(String subject, String input, ValidationContext context) {
+
+
+
+                File nifiProperties =  NiFiProperties.getInstance().getKerberosConfigurationFile();
+
+
+                // Check that the Kerberos configuration is set
+                if (nifiProperties == null) {
+                    return new ValidationResult.Builder()
+                        .subject(subject).input(input).valid(false)
+                        .explanation("you are missing the nifi.kerberos.krb5.file property which "
+                                     + "must be set in order to use Kerberos")
+                        .build();
+                }
+
+                // Check that the Kerberos configuration is readable
+                if (!nifiProperties.canRead()) {
+                    return new ValidationResult.Builder().subject(subject).input(input).valid(false)
+                        .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
+                                                   + "and nifi has adequate permissions", nifiProperties.getAbsoluteFile()))
+                        .build();
+                }
+
+                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+            }
+
+
+
+
+
+        };
     }
 
     @Override

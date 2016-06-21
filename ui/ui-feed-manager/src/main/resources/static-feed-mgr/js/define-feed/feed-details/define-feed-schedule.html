@@ -3,7 +3,10 @@
         <div layout="row" layout-align="space-between-center" flex>
             <h2 class="md-title" flex>Schedule</h2><h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
         </div>
-      <div class="md-subheader">Schedule and create the feed</div>
+      <div layout="row" layout-align="space-between-center" flex>
+        <div class="md-subheader" flex>Schedule and create the feed</div>
+        <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
+      </div>
     </header-section>
     <body-section md-content >
 <ng-form name="defineFeedForm">

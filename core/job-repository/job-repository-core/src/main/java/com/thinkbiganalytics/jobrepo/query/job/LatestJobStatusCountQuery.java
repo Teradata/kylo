@@ -1,8 +1,8 @@
 package com.thinkbiganalytics.jobrepo.query.job;
 
 
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.builder.QueryBuilder;
-import com.thinkbiganalytics.jobrepo.query.support.DatabaseType;
 
 /**
  * Created by sr186054 on 9/2/15.

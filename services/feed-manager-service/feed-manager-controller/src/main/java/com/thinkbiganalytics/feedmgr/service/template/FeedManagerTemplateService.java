@@ -2,7 +2,6 @@ package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.rest.JerseyClientException;
 
 import java.util.List;
 
@@ -11,23 +10,23 @@ import java.util.List;
  */
 public interface FeedManagerTemplateService {
 
-  String templateIdForTemplateName(String templateName);
+    String templateIdForTemplateName(String templateName);
 
-  void registerTemplate(RegisteredTemplate registeredTemplate);
+    void registerTemplate(RegisteredTemplate registeredTemplate);
 
-  List<NifiProperty> getTemplateProperties(String templateId);
+    List<NifiProperty> getTemplateProperties(String templateId);
 
-  RegisteredTemplate getRegisteredTemplate(String templateId);
+    RegisteredTemplate getRegisteredTemplate(String templateId);
 
-  RegisteredTemplate getRegisteredTemplateByName(String templateName);
+    RegisteredTemplate getRegisteredTemplateByName(String templateName);
 
-  RegisteredTemplate getRegisteredTemplateForNifiProperties(String nifiTemplateId, String nifiTemplateName);
+    RegisteredTemplate getRegisteredTemplateForNifiProperties(String nifiTemplateId, String nifiTemplateName);
 
-  RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException;
+    RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
 
-  public void deleteRegisteredTemplate(String templateId);
+    void deleteRegisteredTemplate(String templateId);
 
-  List<RegisteredTemplate> getRegisteredTemplates();
+    List<RegisteredTemplate> getRegisteredTemplates();
 
 
 }

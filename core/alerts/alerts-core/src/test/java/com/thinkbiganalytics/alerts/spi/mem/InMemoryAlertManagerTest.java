@@ -64,6 +64,7 @@ public class InMemoryAlertManagerTest {
         assertThat(alert.getLevel()).isEqualTo(Alert.Level.INFO);
         assertThat(alert.getDescription()).isEqualTo("test");
         assertThat((String) alert.getContent()).isEqualTo("content");
+
     }
 
     @Test

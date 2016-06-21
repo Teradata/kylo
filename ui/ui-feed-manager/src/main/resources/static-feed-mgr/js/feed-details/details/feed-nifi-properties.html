@@ -1,4 +1,5 @@
-<vertical-section-layout section-title="Feed Details" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.model.state == 'ENABLED'">
+<vertical-section-layout section-title="Feed Details" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.model.state == 'ENABLED'"
+                         editable="vm.editableSection" keep-editable-after-save="true">
 
     <readonly-section>
         <div layout="column" >
@@ -10,23 +11,23 @@
                 </div>
             </div>
 
-            <div layout="row" ng-repeat="property in ::vm.model.inputProcessor.properties" class="layout-padding-top-bottom" >
-                <span flex="25" class="property-name" ng-if="property.key != 'Backoff Period'">{{::property.key}}</span>
+            <div layout="row" ng-repeat="property in vm.model.inputProcessor.properties" class="layout-padding-top-bottom">
+                <span flex="25" class="property-name" ng-if="property.key != 'Backoff Period'">{{property.key}}</span>
                 <span flex="25" class="property-name" ng-if="property.key == 'Backoff Period'" >Source Retention Period</span>
 
                 <div flex>
-                    <span ng-if="property.key != 'Backoff Period'">{{::property.value}}</span>
+                    <span ng-if="property.key != 'Backoff Period'">{{property.value}}</span>
                     <span ng-if="property.key == 'Backoff Period'">{{property.value | nifiTimeUnit}}</span>
                 </div>
             </div>
 
 
-            <div layout="column" ng-repeat="processor in ::vm.model.nonInputProcessors" class="layout-padding-top-bottom">
-               <div layout="row" ng-repeat="property in ::processor.properties" class="layout-padding-top-bottom">
-                    <span flex="25" class="property-name">{{::property.key}}</span>
+            <div layout="column" ng-repeat="processor in vm.model.nonInputProcessors" class="layout-padding-top-bottom">
+                <div layout="row" ng-repeat="property in processor.properties" class="layout-padding-top-bottom">
+                    <span flex="25" class="property-name">{{property.key}}</span>
 
                     <div flex>
-                        {{::property.value}}
+                        {{property.value}}
                     </div>
                 </div>
 

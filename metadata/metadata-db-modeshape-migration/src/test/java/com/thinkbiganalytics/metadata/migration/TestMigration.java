@@ -3,6 +3,7 @@ package com.thinkbiganalytics.metadata.migration;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ import javax.inject.Inject;
 @RunWith(SpringJUnit4ClassRunner.class)
 @TestPropertySource(locations = "classpath:application.properties")
 @SpringApplicationConfiguration(classes = TestConfig.class)
+@Ignore
 public class TestMigration {
 
     @Autowired
@@ -34,6 +36,7 @@ public class TestMigration {
     FeedManagerTemplateProvider templateProvider;
 
     @Test
+    @Ignore
     public void testMigration() {
 
         feedMigrationService.migrate();

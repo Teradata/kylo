@@ -127,8 +127,6 @@
                             self.model.nonInputProcessors = nonInputProcessors;
                             self.loadingFeedData = false;
                             FeedService.updateEditModelStateIcon();
-
-                            console.log('this.model', self.model)
                         }
                     }, function (err) {
                         //handle err

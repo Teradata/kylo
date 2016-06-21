@@ -1,20 +1,30 @@
 package com.thinkbiganalytics.jobrepo.nifi.model;
 
-import com.fasterxml.jackson.annotation.*;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+
 import org.apache.nifi.web.api.dto.provenance.AttributeDTO;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
  * Created by sr186054 on 2/24/16.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProvenanceEventRecordDTO  implements RunStatus, Serializable {
+public class ProvenanceEventRecordDTO implements RunStatus, Serializable {
 
     @JsonProperty("nifiEventId")
     private Long nifiEventId;
@@ -62,13 +72,12 @@ public class ProvenanceEventRecordDTO  implements RunStatus, Serializable {
     private String sourceConnectionIdentifier;
 
 
-
     public ProvenanceEventRecordDTO() {
         runStatusContext = new RunStatusContext();
     }
 
     public ProvenanceEventRecordDTO(ProvenanceEventRecordDTO other) {
-        this(other.getEventId(),  other);
+        this(other.getEventId(), other);
         this.nifiEventId = other.nifiEventId;
         this.runStatusContext = other.runStatusContext;
         this.flowFileComponent = other.flowFileComponent;
@@ -82,8 +91,8 @@ public class ProvenanceEventRecordDTO  implements RunStatus, Serializable {
     private boolean hasChanged(ProvenanceEventAttributeDTO attributeDTO) {
         boolean changed = false;
         if ((attributeDTO.getPreviousValue() == null && attributeDTO.getValue() != null)
-                || (attributeDTO.getValue() == null && attributeDTO.getPreviousValue() != null)
-                || (attributeDTO.getPreviousValue() != null && attributeDTO.getValue() != null && !attributeDTO.getPreviousValue().equalsIgnoreCase(attributeDTO.getValue()))) {
+            || (attributeDTO.getValue() == null && attributeDTO.getPreviousValue() != null)
+            || (attributeDTO.getPreviousValue() != null && attributeDTO.getValue() != null && !attributeDTO.getPreviousValue().equalsIgnoreCase(attributeDTO.getValue()))) {
             changed = true;
         }
         return changed;
@@ -540,7 +549,7 @@ public class ProvenanceEventRecordDTO  implements RunStatus, Serializable {
     }
 
     public Collection<ProvenanceEventAttributeDTO> getAttributes() {
-        if(attributes == null){
+        if (attributes == null) {
             attributes = new ArrayList<>();
         }
         return attributes;
@@ -550,10 +559,10 @@ public class ProvenanceEventRecordDTO  implements RunStatus, Serializable {
         this.attributes = attributes;
     }
 
-    public  List<ProvenanceEventAttributeDTO> getAttributesFromNifi(Collection<AttributeDTO> attributes) {
+    public List<ProvenanceEventAttributeDTO> getAttributesFromNifi(Collection<AttributeDTO> attributes) {
         List<ProvenanceEventAttributeDTO> attrs = new ArrayList<>();
-        if(attributes != null && !attributes.isEmpty()) {
-            for(AttributeDTO attributeDTO: attributes){
+        if (attributes != null && !attributes.isEmpty()) {
+            for (AttributeDTO attributeDTO : attributes) {
                 ProvenanceEventAttributeDTO provenanceEventAttributeDTO = new ProvenanceEventAttributeDTO();
                 provenanceEventAttributeDTO.setName(attributeDTO.getName());
                 provenanceEventAttributeDTO.setPreviousValue(attributeDTO.getPreviousValue());
@@ -743,9 +752,11 @@ public class ProvenanceEventRecordDTO  implements RunStatus, Serializable {
     @Override
     public String toString() {
         return MoreObjects.toStringHelper(this)
-                .add("eventId", this.getEventId() == null ? nifiEventId : this.getEventId())
-                .add("eventTime", this.getEventTime())
-                .add("eventType", this.getEventType())
-                .toString();
+            .add("eventId", this.getEventId() == null ? nifiEventId : this.getEventId())
+            .add("flowfile", this.getFlowFileUuid())
+            .add("eventTime", this.getEventTime())
+            .add("eventType", this.getEventType())
+            .add("parents", this.getFlowFile() != null ? this.getFlowFile().getParents().size() : null)
+            .toString();
     }
 }

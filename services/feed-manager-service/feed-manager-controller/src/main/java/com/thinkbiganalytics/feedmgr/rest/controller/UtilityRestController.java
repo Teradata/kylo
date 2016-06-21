@@ -1,5 +1,14 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
+import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
+import com.thinkbiganalytics.feedmgr.service.UIService;
+import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
+
+import org.quartz.CronExpression;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
+import org.springframework.stereotype.Component;
+
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -13,15 +22,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-
-import org.quartz.CronExpression;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Component;
-
-import com.thinkbiganalytics.feedmgr.service.UIService;
-import com.thinkbiganalytics.rest.JerseyClientException;
-import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
 import io.swagger.annotations.Api;
 
@@ -40,18 +40,18 @@ public class UtilityRestController {
     }
 
 
-
     @GET
     @Path("/cron-expression/validate")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response validateCronExpression(@QueryParam("cronExpression") String cronExpression) throws JerseyClientException{
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response validateCronExpression(@QueryParam("cronExpression") String cronExpression) {
         boolean valid = CronExpression.isValidExpression(cronExpression);
-       return Response.ok("{\"valid\":"+valid+"}").build();
+        return Response.ok("{\"valid\":" + valid + "}").build();
     }
+
     @GET
     @Path("/cron-expression/preview")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response previewCronExpression(@QueryParam("cronExpression") String cronExpression, @QueryParam("number") @DefaultValue("3")  Integer number) throws JerseyClientException{
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response previewCronExpression(@QueryParam("cronExpression") String cronExpression, @QueryParam("number") @DefaultValue("3") Integer number) {
         List<Date> dates = new ArrayList<>();
         try {
             dates = CronExpressionUtil.getNextFireTimes(cronExpression, number);
@@ -63,10 +63,18 @@ public class UtilityRestController {
 
 
     @GET
+    @Path("/system-name")
+    @Produces(MediaType.TEXT_PLAIN)
+    public Response generateSystemName(@QueryParam("name") String name) {
+        String systemName = SystemNamingService.generateSystemName(name);
+        return Response.ok(systemName).build();
+    }
+
+    @GET
     @Path("/codemirror-types")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response codeMirrorTypes() throws JerseyClientException{
-       Map<String,String> types = UIService.getInstance().getCodeMirrorTypes();
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response codeMirrorTypes() {
+        Map<String, String> types = UIService.getInstance().getCodeMirrorTypes();
         return Response.ok(types).build();
     }
 
@@ -74,8 +82,8 @@ public class UtilityRestController {
     @GET
     @Path("/pipeline-controller/url")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response pipelineControllerUrl(){
-       String url = env.getProperty("thinkbig.pipelinecontroller.url");
+    public Response pipelineControllerUrl() {
+        String url = env.getProperty("thinkbig.pipelinecontroller.url");
         return Response.ok(url).build();
     }
 

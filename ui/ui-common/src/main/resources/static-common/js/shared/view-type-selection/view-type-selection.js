@@ -1,8 +1,5 @@
-/*
- * Copyright (c) 2015.
- */
 
-app.directive('tbaViewTypeSelection', function() {
+angular.module(COMMON_APP_MODULE_NAME).directive('tbaViewTypeSelection', function() {
     return {
         restrict: 'E',
         templateUrl: 'js/shared/view-type-selection/view-type-selection-template.html',

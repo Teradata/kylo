@@ -4,11 +4,15 @@ package com.thinkbiganalytics.hive.service;
 import com.thinkbiganalytics.db.model.schema.DatabaseMetadata;
 import com.thinkbiganalytics.db.model.schema.Field;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.support.MetaDataAccessException;
 import org.springframework.stereotype.Service;
 
 import java.sql.ResultSet;
@@ -27,6 +31,10 @@ import javax.sql.DataSource;
 @Service("hiveMetastoreService")
 public class HiveMetastoreService {
 
+    private static final Logger log = LoggerFactory.getLogger(HiveMetastoreService.class);
+
+
+
     @Inject
     @Qualifier("hiveMetatoreJdbcTemplate")
     private JdbcTemplate hiveMetatoreJdbcTemplate;
@@ -37,12 +45,34 @@ public class HiveMetastoreService {
     }
 
 
+    private DatabaseType metastoreDatabaseType = null;
+
+    private DatabaseType getMetastoreDatabaseType(){
+        if(metastoreDatabaseType == null){
+            try {
+                metastoreDatabaseType = DatabaseType.fromMetaData(getDataSource());
+                return metastoreDatabaseType;
+            } catch (MetaDataAccessException e) {
+                log.error("Unable to determine Metastore Database Type.  Using default type of "+DatabaseType.MYSQL+". "+e.getMessage(),e);
+            }
+            return DatabaseType.MYSQL;
+        }
+        return metastoreDatabaseType;
+    }
+
+
 
     public  List<DatabaseMetadata> getTableColumns() throws DataAccessException{
 
         List<DatabaseMetadata> metadata = new ArrayList<>();
 
         String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, c.COLUMN_NAME FROM COLUMNS_V2 c JOIN TBLS t ON c.CD_ID=t.TBL_ID JOIN DBS d on d.DB_ID = t.DB_ID ORDER BY d.NAME, t.TBL_NAME";
+        if(DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())){
+            query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\", c.\"COLUMN_NAME\" FROM \"COLUMNS_V2\" c JOIN \"TBLS\" t ON c.\"CD_ID\"= t.\"TBL_ID\"\n"
+                    + " JOIN \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" ORDER BY d.\"NAME\", t.\"TBL_NAME\"";
+        }
+
+
        metadata = hiveMetatoreJdbcTemplate.query(query, new RowMapper<DatabaseMetadata>() {
             @Override
             public DatabaseMetadata mapRow(ResultSet rs, int i) throws SQLException {
@@ -62,7 +92,9 @@ public class HiveMetastoreService {
     public List<String> getAllTables() throws DataAccessException{
         List<String> allTables = new ArrayList<>();
         String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME FROM TBLS t JOIN DBS d on d.DB_ID = t.DB_ID ORDER BY d.NAME, t.TBL_NAME";
-
+        if(DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())){
+            query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\" FROM \"TBLS\" t JOIN \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" ORDER BY d.\"NAME\", t.\"TBL_NAME\"";
+        }
         allTables = hiveMetatoreJdbcTemplate.query(query, new RowMapper<String>() {
             @Override
             public String mapRow(ResultSet rs, int i) throws SQLException {
@@ -78,6 +110,11 @@ public class HiveMetastoreService {
     public  List<TableSchema> getTableSchemas() throws DataAccessException{
 
         String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, c.COLUMN_NAME, c. TYPE_NAME FROM COLUMNS_V2 c JOIN TBLS t ON c.CD_ID=t.TBL_ID JOIN DBS d on d.DB_ID = t.DB_ID";
+        if(DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())){
+            query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\", c.\"COLUMN_NAME\", c.\"TYPE_NAME\" FROM \"COLUMNS_V2\" c \n"
+                    + "JOIN \"TBLS\" t ON c.\"CD_ID\"=t.\"TBL_ID\" \n"
+                    + "JOIN \"DBS\" d on d.\"DB_ID\"= t.\"DB_ID\"";
+        }
        final List<TableSchema> metadata = new ArrayList<>();
         final Map<String,Map<String,TableSchema>> databaseTables = new HashMap<>();
 

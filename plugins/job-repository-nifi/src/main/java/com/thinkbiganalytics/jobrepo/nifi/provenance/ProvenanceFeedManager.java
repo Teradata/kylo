@@ -8,7 +8,11 @@ import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
 import com.thinkbiganalytics.jobrepo.nifi.model.FlowFileComponent;
 import com.thinkbiganalytics.jobrepo.nifi.model.NifiJobExecution;
 import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
+import com.thinkbiganalytics.jobrepo.repository.JobRepository;
 import com.thinkbiganalytics.jobrepo.repository.dao.NifiJobRepository;
+import com.thinkbiganalytics.nifi.rest.client.NifiConnectionException;
+
 import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
@@ -17,7 +21,13 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 2/26/16.
@@ -35,9 +45,14 @@ public class ProvenanceFeedManager {
     @Autowired
     private NifiJobRepository jobRepository;
 
+    @Inject
+    private JobRepository executedJobsRepository;
 
     @Autowired
     private NifiComponentFlowData nifiComponentFlowData;
+
+    @Autowired
+    private ProvenanceEventExecutedJob provenanceEventExecutedJob;
 
 
     public ProvenanceFeedManager() {
@@ -101,13 +116,8 @@ public class ProvenanceFeedManager {
 
 
     /**
-     * If a processor throws a runtime exception a ProvenanceEvent may not be recorded.
-     * The Processor will log the error to the BulletinBoard.
-     * This method will check the BulletinBoard for any errors that have not been processed, create the missing Event and Component
-     * and mark it as failed with the correct log message as the Execution details.
-     *
-     * @param event
-     * @return
+     * If a processor throws a runtime exception a ProvenanceEvent may not be recorded. The Processor will log the error to the BulletinBoard. This method will check the BulletinBoard for any errors
+     * that have not been processed, create the missing Event and Component and mark it as failed with the correct log message as the Execution details.
      */
     public boolean processBulletinsAndFailComponents(ProvenanceEventRecordDTO event) {
         boolean failedStep = false;
@@ -150,7 +160,7 @@ public class ProvenanceFeedManager {
                 jobExecution.addComponentToOrder(failedEventAndComponent.getFlowFileComponent());
                 if (!warnings.containsAll(otherBulletins)) {
                     if (failedEventAndComponent.getFlowFileComponent().isRunning()
-                            || failedEventAndComponent.getFlowFileComponent().getEndTime() == null) {
+                        || failedEventAndComponent.getFlowFileComponent().getEndTime() == null) {
                         failedEventAndComponent.markFailed();
                         failedEventAndComponent.getFlowFileComponent().markFailed();
                     }
@@ -189,7 +199,7 @@ public class ProvenanceFeedManager {
                     if (event.hasJobExecution()) {
                         Map<String, Object> details = new HashMap<>();
                         details.put("Additional Bulletin Messages",
-                                "Bulletin messages were found for components in the flow that were already completed.");
+                                    "Bulletin messages were found for components in the flow that were already completed.");
                         for (BulletinDTO bulletinDTO : otherBulletins) {
                             String json = objectMapperSerializer.serialize(bulletinDTO);
                             details.put("Bulletin Id:" + bulletinDTO.getId(), json);
@@ -206,7 +216,7 @@ public class ProvenanceFeedManager {
     }
 
 
-    public NifiJobExecution feedStart(ProvenanceEventRecordDTO event) {
+    public NifiJobExecution feedStart(ProvenanceEventRecordDTO event) throws NifiConnectionException {
         //get the Feed Name associated with this events component
 //        registerFlowFileWithFeed(event.getFlowFile().getUuid(), event.getComponentId());
 
@@ -216,7 +226,9 @@ public class ProvenanceFeedManager {
             LOG.info("unable to start feed for event: {}, feedName: {} and Process Group: {} ", event, feedName, feedGroup);
             //remove the event from the flow file
             event.getFlowFile().removeEvent(event);
-            throw new UnsupportedOperationException("Unable to Start feed for incoming Provenance Event of " + event + ".  Unable to find the correct Nifi Feed Process Group related to this event.  For More information query Nifi for this event at: http://localhost:8079/nifi-api/controller/provenance/events/" + event.getEventId());
+            throw new UnsupportedOperationException("Unable to Start feed for incoming Provenance Event of " + event
+                                                    + ".  Unable to find the correct Nifi Feed Process Group related to this event.  For More information query Nifi for this event at: http://localhost:8079/nifi-api/controller/provenance/events/"
+                                                    + event.getEventId());
         }
 
         //TODO figure out how to deal with Restarts reusing the same Job Instance
@@ -323,19 +335,18 @@ public class ProvenanceFeedManager {
                         event.getFlowFileComponent().markFailed();
                     }
                     LOG.info("Fail Step due to bulletin errors that were not all WARNING {}, {}, {}",
-                            event.getFlowFileComponent(), bulletins.size(), bulletins);
+                             event.getFlowFileComponent(), bulletins.size(), bulletins);
                     jobRepository.failStep(event.getFlowFileComponent());
                     event.getFlowFileComponent().getJobExecution().addFailedComponent(event.getFlowFileComponent());
                 } else {
                     LOG.info("Completing Component {} ({}) with WARNINGS", event.getFlowFileComponent().getComponetName(),
-                            event.getId());
+                             event.getId());
                     jobRepository.completeStep(event.getFlowFileComponent());
 
                 }
                 event.getFlowFileComponent().getJobExecution().addBulletinErrors(bulletins);
             } else {
                 //check to see if the event autoterminated by a failure relationship.  if so fail the flow
-
 
                 if (failComponent) {
                     if (event.getFlowFileComponent().isRunning() || event.getFlowFileComponent().getEndTime() == null) {
@@ -373,7 +384,6 @@ public class ProvenanceFeedManager {
                 jobRepository.failJobExecution(jobExecution);
                 LOG.info("Failing Job " + jobExecution.getJobExecutionId() + ", " + jobExecution.getFailedComponents().size() + " Failed Components exist");
             } else {
-
 
                 //if it is a Check Data Job ensure the Validation string is true or otherwise fail the job
                 if (event.getFlowFileComponent().getJobExecution().isCheckDataJob()) {
@@ -413,6 +423,23 @@ public class ProvenanceFeedManager {
 
     }
 
+    /**
+     * Get a NifiJobExecution for an event and flowfile id
+     */
+    public NifiJobExecution getNifiJobExection(Long nifiEventId, String flowfileUuid) {
+        Long jobExecutionId = jobRepository.findJobExecutionId(nifiEventId, flowfileUuid);
+        if (jobExecutionId != null) {
+            ExecutedJob job = executedJobsRepository.findByExecutionId(jobExecutionId.toString());
+            if (job != null) {
+                return provenanceEventExecutedJob.processExecutedJob(job);
+            }
+        }
+        return null;
+    }
+
+    public boolean isConnectedToNifi() {
+        return this.nifiComponentFlowData.isConnectedToNifi();
+    }
 
     public void setJobRepository(NifiJobRepository jobRepository) {
         this.jobRepository = jobRepository;

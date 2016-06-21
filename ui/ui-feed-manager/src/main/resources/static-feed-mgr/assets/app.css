@@ -792,6 +792,10 @@ thinkbig-stepper .step-complete {
   /* */
 }
 
+card-layout header-section h2 {
+  margin-bottom: 8px;
+  margin-top:8px;
+}
 
 
 .md-subheader.left-aligned .md-subheader-inner {

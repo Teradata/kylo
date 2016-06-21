@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.jobrepo.query.builder;
 
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.ConstructedQuery;
-import com.thinkbiganalytics.jobrepo.query.support.DatabaseType;
 
 import java.lang.reflect.Constructor;
 
