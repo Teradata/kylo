@@ -128,7 +128,7 @@ public class TextFileParser {
                 List<String> values = field.getSampleValues();
                 for (String value : values) {
                     try {
-                        Long.parseLong(value);
+                        Integer.parseInt(value);
                         field.setDataType("int");
                     } catch (NumberFormatException e) {
                         try {
