@@ -23,10 +23,8 @@ import com.thinkbiganalytics.metadata.core.feed.precond.FeedExecutedSinceFeedAss
 import com.thinkbiganalytics.metadata.core.feed.precond.FeedExecutedSinceScheduleAssessor;
 import com.thinkbiganalytics.metadata.core.feed.precond.WithinScheduleAssessor;
 import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
-import com.thinkbiganalytics.metadata.event.ChangeEventDispatcher;
-import com.thinkbiganalytics.metadata.event.ReactorContiguration;
-import com.thinkbiganalytics.metadata.event.jms.JmsChangeEventDispatcher;
 import com.thinkbiganalytics.metadata.event.jms.MetadataJmsConfig;
+import com.thinkbiganalytics.metadata.event.reactor.ReactorContiguration;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.rest.RestConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
@@ -78,12 +76,6 @@ public class ServerConfiguration {
                 return cmd.execute();
             }
         };
-    }
-    
-    @Bean
-    public ChangeEventDispatcher changeEventDispatcher() {
-        return new JmsChangeEventDispatcher();
-//        return new SimpleChangeEventDispatcher();
     }
     
     @Bean

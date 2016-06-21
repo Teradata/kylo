@@ -3,38 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.core.op;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.ComparisonChain;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Ordering;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
-import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.DataOperation;
-import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
-import com.thinkbiganalytics.metadata.api.op.DataOperationCriteria;
-import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
-import com.thinkbiganalytics.metadata.api.op.Dataset.ChangeType;
-import com.thinkbiganalytics.metadata.api.op.DatasetCriteria;
-import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
-import com.thinkbiganalytics.metadata.core.dataset.files.BaseFileList;
-import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableUpdate;
-import com.thinkbiganalytics.metadata.event.ChangeEventDispatcher;
-
-import org.joda.time.DateTime;
-import org.springframework.util.StringUtils;
-
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
@@ -50,6 +18,36 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import javax.inject.Inject;
+
+import org.joda.time.DateTime;
+import org.springframework.util.StringUtils;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Ordering;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
+import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.op.DataOperation;
+import com.thinkbiganalytics.metadata.api.op.DataOperation.State;
+import com.thinkbiganalytics.metadata.api.op.DataOperationCriteria;
+import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
+import com.thinkbiganalytics.metadata.api.op.Dataset.ChangeType;
+import com.thinkbiganalytics.metadata.api.op.DatasetCriteria;
+import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
+import com.thinkbiganalytics.metadata.core.dataset.files.BaseFileList;
+import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableUpdate;
 
 /**
  *
@@ -73,8 +71,6 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     private DatasourceProvider datasetProvider;
     @Inject
     private FeedProvider feedProvider;
-    @Inject
-    private ChangeEventDispatcher dispatcher;
     
     private Map<DataOperation.ID, DataOperation> operations = new ConcurrentHashMap<>();
     private Map<Datasource.ID, List<Dataset<Datasource, ChangeSet>>> changeSets = new ConcurrentHashMap<>();
@@ -83,14 +79,6 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         super();
     }
     
-    public InMemoryDataOperationsProvider(DatasourceProvider datasetProvider, FeedProvider feedProvider,
-            ChangeEventDispatcher dispatcher) {
-        super();
-        this.datasetProvider = datasetProvider;
-        this.feedProvider = feedProvider;
-        this.dispatcher = dispatcher;
-    }
-
     @Inject
     public void setDatasourceProvider(DatasourceProvider datasetProvider) {
         this.datasetProvider = datasetProvider;
@@ -99,11 +87,6 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
     @Inject
     public void setFeedProvider(FeedProvider feedProvider) {
         this.feedProvider = feedProvider;
-    }
-
-    @Inject
-    public void setDispatcher(ChangeEventDispatcher dispatcher) {
-        this.dispatcher = dispatcher;
     }
 
     /* (non-Javadoc)
@@ -189,7 +172,7 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
         op = new BaseDataOperation(op, msg, (Dataset<Datasource, ChangeSet>) changes);
         
         this.operations.put(id, op);
-        this.dispatcher.nofifyChange(changes);
+//        this.dispatcher.nofifyChange(changes);
         
         return op;
     }
@@ -277,30 +260,6 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
 
         Collections.sort(resultList, critImpl);
         return resultList;
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.datasource.Datasource, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
-     */
-    @Override
-    public void addListener(DataChangeEventListener<Datasource, ChangeSet> listener) {
-        if(dispatcher != null) {
-            this.dispatcher.addListener(listener);
-        }
-    }
-    
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
-     */
-    public void addListener(DirectoryDatasource ds, DataChangeEventListener<DirectoryDatasource, FileList> listener) {
-        this.dispatcher.addListener(ds, listener);
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
-     */
-    public void addListener(HiveTableDatasource ds, DataChangeEventListener<HiveTableDatasource, HiveTableUpdate> listener) {
-        this.dispatcher.addListener(ds, listener);
     }
 
     
