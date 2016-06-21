@@ -4,7 +4,6 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
-import com.thinkbiganalytics.rest.JerseyClientException;
 
 import java.util.Collection;
 import java.util.List;
@@ -32,7 +31,7 @@ public interface FeedManagerFeedService {
 
     List<FeedMetadata> getFeedsWithTemplate(String registeredTemplateId);
 
-    NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException;
+    NifiFeed createFeed(FeedMetadata feedMetadata);
 
     void saveFeed(FeedMetadata feed);
 

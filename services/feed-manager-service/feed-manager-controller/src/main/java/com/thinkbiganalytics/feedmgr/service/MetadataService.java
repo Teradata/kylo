@@ -8,7 +8,6 @@ import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.springframework.stereotype.Service;
 
@@ -29,7 +28,7 @@ public interface MetadataService {
 
     RegisteredTemplate getRegisteredTemplateByName(String templateName);
 
-    RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException;
+    RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
 
     RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName);
 
@@ -39,7 +38,7 @@ public interface MetadataService {
 
     List<RegisteredTemplate> getRegisteredTemplates();
 
-    NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException;
+    NifiFeed createFeed(FeedMetadata feedMetadata);
 
     void saveFeed(FeedMetadata feed);
 

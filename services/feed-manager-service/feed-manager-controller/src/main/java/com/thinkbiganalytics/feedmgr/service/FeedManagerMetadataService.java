@@ -13,7 +13,6 @@ import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
@@ -68,7 +67,7 @@ public class FeedManagerMetadataService implements MetadataService {
 
     @Override
     @Transactional(transactionManager = "metadataTransactionManager")
-    public RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException {
+    public RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) {
         return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
     }
 
@@ -88,7 +87,7 @@ public class FeedManagerMetadataService implements MetadataService {
     }
 
     @Override
-    public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
+    public NifiFeed createFeed(FeedMetadata feedMetadata) {
         NifiFeed feed = feedProvider.createFeed(feedMetadata);
         if (feed.isSuccess()) {
             //requery to get the latest version
@@ -108,25 +107,21 @@ public class FeedManagerMetadataService implements MetadataService {
         boolean updatedNifi = false;
         if (feedSummary != null && feedSummary.getState().equals(state.name())) {
 
-            try {
-                ProcessGroupDTO group = nifiRestClient.getProcessGroupByName("root", feedSummary.getSystemCategoryName());
-                if (group != null) {
-                    ProcessGroupDTO feed = nifiRestClient.getProcessGroupByName(group.getId(), feedSummary.getSystemFeedName());
-                    if (feed != null) {
-                        ProcessGroupEntity entity = null;
-                        if (state.equals(Feed.State.ENABLED)) {
-                            entity = nifiRestClient.startAll(feed.getId(), feed.getParentGroupId());
-                        } else if (state.equals(Feed.State.DISABLED)) {
-                            entity = nifiRestClient.stopInputs(feed.getId());
-                        }
+            ProcessGroupDTO group = nifiRestClient.getProcessGroupByName("root", feedSummary.getSystemCategoryName());
+            if (group != null) {
+                ProcessGroupDTO feed = nifiRestClient.getProcessGroupByName(group.getId(), feedSummary.getSystemFeedName());
+                if (feed != null) {
+                    ProcessGroupEntity entity = null;
+                    if (state.equals(Feed.State.ENABLED)) {
+                        entity = nifiRestClient.startAll(feed.getId(), feed.getParentGroupId());
+                    } else if (state.equals(Feed.State.DISABLED)) {
+                        entity = nifiRestClient.stopInputs(feed.getId());
+                    }
 
-                        if (entity != null) {
-                            updatedNifi = true;
-                        }
+                    if (entity != null) {
+                        updatedNifi = true;
                     }
                 }
-            } catch (JerseyClientException e) {
-                e.printStackTrace();
             }
         }
         return updatedNifi;

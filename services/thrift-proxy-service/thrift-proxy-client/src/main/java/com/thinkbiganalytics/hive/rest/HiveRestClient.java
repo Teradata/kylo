@@ -5,7 +5,6 @@ import com.thinkbiganalytics.db.model.query.QueryResult;
 import com.thinkbiganalytics.db.model.schema.DatabaseMetadata;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.rest.JerseyClientConfig;
-import com.thinkbiganalytics.rest.JerseyClientException;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 
 import java.util.HashMap;
@@ -30,46 +29,47 @@ public class HiveRestClient extends JerseyRestClient {
         return target.path(apiPath);
     }
 
-    public List<String> getSchemas() throws JerseyClientException {
+    public List<String> getSchemas() {
         List<String> list = get("/schemas", null, List.class);
          return list;
     }
 
-    public List<TableSchema> getAllTableSchemas() throws JerseyClientException {
+    public List<TableSchema> getAllTableSchemas() {
         List<TableSchema> list = get("/table-schemas", null, List.class);
         return list;
     }
 
-    public List<DatabaseMetadata> getTablesAndColumns() throws JerseyClientException {
+    public List<DatabaseMetadata> getTablesAndColumns() {
         List<DatabaseMetadata> list = get("/table-columns", null, List.class);
         return list;
     }
 
 
-    public List<String> getTables() throws JerseyClientException {
+    public List<String> getTables() {
         List<String> list = get("/tables", null, List.class);
         return list;
     }
 
-    public TableSchema getTable(String schema, String table) throws JerseyClientException {
+    public TableSchema getTable(String schema, String table) {
         TableSchema tableSchema = get("/schemas/"+schema+"/tables/"+table, null, TableSchema.class);
         return tableSchema;
     }
-    public QueryResult browse(String schema, String table, String where) throws JerseyClientException {
+
+    public QueryResult browse(String schema, String table, String where) {
         Map<String,Object>params = new HashMap<>();
         params.put("where",where);
         QueryResult rows = get("/browse/"+schema+"/"+table, params, QueryResult.class);
         return rows;
     }
 
-    public QueryResult query(String query) throws JerseyClientException {
+    public QueryResult query(String query) {
         Map<String,Object>params = new HashMap<>();
         params.put("query",query);
         QueryResult rows = get("/query", params, QueryResult.class);
         return rows;
     }
 
-    public QueryResult queryResult(String query) throws JerseyClientException {
+    public QueryResult queryResult(String query) {
         Map<String,Object>params = new HashMap<>();
         params.put("query",query);
         QueryResult rows = get("/query-result", params, QueryResult.class);

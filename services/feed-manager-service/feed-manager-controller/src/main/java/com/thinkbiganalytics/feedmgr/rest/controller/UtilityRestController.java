@@ -2,7 +2,6 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.UIService;
-import com.thinkbiganalytics.rest.JerseyClientException;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
 import org.quartz.CronExpression;
@@ -41,17 +40,17 @@ public class UtilityRestController {
     }
 
 
-
     @GET
     @Path("/cron-expression/validate")
-    @Produces({MediaType.APPLICATION_JSON })
+    @Produces({MediaType.APPLICATION_JSON})
     public Response validateCronExpression(@QueryParam("cronExpression") String cronExpression) {
         boolean valid = CronExpression.isValidExpression(cronExpression);
-       return Response.ok("{\"valid\":"+valid+"}").build();
+        return Response.ok("{\"valid\":" + valid + "}").build();
     }
+
     @GET
     @Path("/cron-expression/preview")
-    @Produces({MediaType.APPLICATION_JSON })
+    @Produces({MediaType.APPLICATION_JSON})
     public Response previewCronExpression(@QueryParam("cronExpression") String cronExpression, @QueryParam("number") @DefaultValue("3") Integer number) {
         List<Date> dates = new ArrayList<>();
         try {
@@ -73,9 +72,9 @@ public class UtilityRestController {
 
     @GET
     @Path("/codemirror-types")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response codeMirrorTypes() throws JerseyClientException{
-       Map<String,String> types = UIService.getInstance().getCodeMirrorTypes();
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response codeMirrorTypes() {
+        Map<String, String> types = UIService.getInstance().getCodeMirrorTypes();
         return Response.ok(types).build();
     }
 
@@ -83,8 +82,8 @@ public class UtilityRestController {
     @GET
     @Path("/pipeline-controller/url")
     @Produces(MediaType.TEXT_PLAIN)
-    public Response pipelineControllerUrl(){
-       String url = env.getProperty("thinkbig.pipelinecontroller.url");
+    public Response pipelineControllerUrl() {
+        String url = env.getProperty("thinkbig.pipelinecontroller.url");
         return Response.ok(url).build();
     }
 

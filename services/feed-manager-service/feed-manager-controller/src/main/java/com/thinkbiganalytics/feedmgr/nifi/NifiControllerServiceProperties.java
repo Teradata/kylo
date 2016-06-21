@@ -1,16 +1,17 @@
 package com.thinkbiganalytics.feedmgr.nifi;
 
 import com.google.common.base.CaseFormat;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.entity.ControllerServiceEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.ConfigurableEnvironment;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -21,6 +22,8 @@ import java.util.Map;
  */
 @Service
 public class NifiControllerServiceProperties {
+
+    private static final Logger log = LoggerFactory.getLogger(NifiControllerServiceProperties.class);
 
     public static String ENVIRONMENT_PROPERTY_SERVICE_PREFIX = "nifi.service.";
 
@@ -128,9 +131,9 @@ public class NifiControllerServiceProperties {
     public ControllerServiceDTO getControllerServiceByName(String serviceName) {
         ControllerServiceDTO controllerService = null;
             try {
-                controllerService = nifiRestClient.getControllerServiceByName("NODE", serviceName);
-            }catch (JerseyClientException e) {
-
+                controllerService = nifiRestClient.getControllerServiceByName(null, serviceName);
+            } catch (NifiClientRuntimeException e) {
+                log.error("Unable to find Nifi Controller Service with name: " + serviceName + ".  " + e.getMessage(), e);
             }
 
         return controllerService;
@@ -139,12 +142,12 @@ public class NifiControllerServiceProperties {
     public ControllerServiceDTO getControllerServiceById(String serviceId) {
         ControllerServiceDTO controllerService = null;
         try {
-            ControllerServiceEntity entity = nifiRestClient.getControllerService("NODE", serviceId);
+            ControllerServiceEntity entity = nifiRestClient.getControllerService(null, serviceId);
             if (entity != null && entity.getControllerService() != null) {
                 controllerService = entity.getControllerService();
             }
-        }catch(JerseyClientException e) {
-
+        } catch (NifiComponentNotFoundException e) {
+            log.error("Unable to find Nifi Controller Service with ID: " + serviceId + ".  " + e.getMessage(), e);
         }
         return controllerService;
     }

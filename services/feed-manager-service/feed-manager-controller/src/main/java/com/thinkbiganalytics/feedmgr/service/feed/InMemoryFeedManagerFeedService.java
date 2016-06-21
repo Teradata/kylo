@@ -12,7 +12,6 @@ import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.rest.JerseyClientException;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -183,7 +182,7 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
     }
 
     @Override
-    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException {
+    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) {
         return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
     }
 

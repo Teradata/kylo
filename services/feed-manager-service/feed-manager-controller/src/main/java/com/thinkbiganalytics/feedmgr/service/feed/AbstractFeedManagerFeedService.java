@@ -6,11 +6,11 @@ import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.nifi.feedmgr.CreateFeedBuilder;
+import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
-import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,32 +34,29 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
     @Autowired
     PropertyExpressionResolver propertyExpressionResolver;
 
-    protected abstract RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException;
+    protected abstract RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
 
 
-
-    public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
+    public NifiFeed createFeed(FeedMetadata feedMetadata) {
         NifiFeed feed = null;
         //replace expressions with values
-        if(feedMetadata.getTable() != null) {
+        if (feedMetadata.getTable() != null) {
             feedMetadata.getTable().updateMetadataFieldValues();
         }
-        if(feedMetadata.getSchedule() != null) {
+        if (feedMetadata.getSchedule() != null) {
             feedMetadata.getSchedule().updateDependentFeedNamesString();
         }
 
-        if(feedMetadata.getProperties() == null) {
+        if (feedMetadata.getProperties() == null) {
             feedMetadata.setProperties(new ArrayList<NifiProperty>());
         }
         //get all the properties for the metadata
         RegisteredTemplate
-                registeredTemplate = getRegisteredTemplateWithAllProperties(feedMetadata.getTemplateId());
+            registeredTemplate = getRegisteredTemplateWithAllProperties(feedMetadata.getTemplateId());
 
-
-
-        List<NifiProperty> matchedProperties =  NifiPropertyUtil
-                .matchAndSetPropertyByIdKey(registeredTemplate.getProperties(), feedMetadata.getProperties());
-        if(matchedProperties.size() == 0){
+        List<NifiProperty> matchedProperties = NifiPropertyUtil
+            .matchAndSetPropertyByIdKey(registeredTemplate.getProperties(), feedMetadata.getProperties());
+        if (matchedProperties.size() == 0) {
             NifiPropertyUtil.matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties());
         }
         feedMetadata.setProperties(registeredTemplate.getProperties());
@@ -68,7 +65,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
         //store all input related properties as well
         List<NifiProperty> inputProperties = NifiPropertyUtil
-                .findInputProperties(registeredTemplate.getProperties());
+            .findInputProperties(registeredTemplate.getProperties());
 
         ///store only those matched and resolved in the final metadata store
         Set<NifiProperty> updatedProperties = new HashSet<>();
@@ -77,48 +74,47 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         updatedProperties.addAll(inputProperties);
         feedMetadata.setProperties(new ArrayList<NifiProperty>(updatedProperties));
 
-
         CreateFeedBuilder
-                feedBuilder = nifiRestClient.newFeedBuilder(registeredTemplate.getNifiTemplateId(), feedMetadata.getCategory().getSystemName(), feedMetadata.getSystemFeedName());
+            feedBuilder = nifiRestClient.newFeedBuilder(registeredTemplate.getNifiTemplateId(), feedMetadata.getCategory().getSystemName(), feedMetadata.getSystemFeedName());
 
-        if(registeredTemplate.isReusableTemplate()){
+        if (registeredTemplate.isReusableTemplate()) {
             feedBuilder.setReusableTemplate(true);
             feedMetadata.setIsReusableFeed(true);
-        }
-        else {
+        } else {
             feedBuilder.inputProcessorType(feedMetadata.getInputProcessorType())
-                    .feedSchedule(feedMetadata.getSchedule()).properties( feedMetadata.getProperties());
-            if(registeredTemplate.usesReusableTemplate())
-            {
+                .feedSchedule(feedMetadata.getSchedule()).properties(feedMetadata.getProperties());
+            if (registeredTemplate.usesReusableTemplate()) {
                 ReusableTemplateConnectionInfo reusableInfo = registeredTemplate.getReusableTemplateConnections().get(0);
                 //TODO change FeedBuilder to accept a List of ReusableTemplateConnectionInfo objects
                 feedBuilder.reusableTemplateInputPortName(reusableInfo.getReusableTemplateInputPortName()).feedOutputPortName(reusableInfo.getFeedOutputPortName());
             }
         }
         NifiProcessGroup
-                entity = feedBuilder.build();
-
+            entity = feedBuilder.build();
 
         feed = new NifiFeed(feedMetadata, entity);
         if (entity.isSuccess()) {
             feedMetadata.setNifiProcessGroupId(entity.getProcessGroupEntity().getProcessGroup().getId());
 
-
             try {
-             saveFeed(feedMetadata);
+                saveFeed(feedMetadata);
                 feed.setSuccess(true);
-            }catch (Exception e){
+            } catch (Exception e) {
                 feed.setSuccess(false);
                 feed.addErrorMessage(e);
             }
 
-        }
-        else {
+        } else {
             feed.setSuccess(false);
         }
-        if(!feed.isSuccess()){
-            if(!entity.isRolledBack()){
-                feedBuilder.rollback();
+        if (!feed.isSuccess()) {
+            if (!entity.isRolledBack()) {
+                try {
+                    feedBuilder.rollback();
+                } catch (FeedRollbackException rollbackException) {
+                    log.error("Error rolling back feed {}. {} ", feedMetadata.getCategoryAndFeedName(), rollbackException.getMessage());
+                    feed.addErrorMessage("Error occurred in rolling back the Feed.");
+                }
                 entity.setRolledBack(true);
             }
         }

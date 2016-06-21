@@ -16,7 +16,6 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.annotation.Transactional;
@@ -148,12 +147,12 @@ public class JpaFeedManagerFeedService extends AbstractFeedManagerFeedService im
     }
 
     @Override
-    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException {
+    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) {
         return templateRestProvider.getRegisteredTemplate(templateId);
     }
 
     @Transactional(transactionManager = "metadataTransactionManager")
-    public NifiFeed createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
+    public NifiFeed createFeed(FeedMetadata feedMetadata) {
         if (feedMetadata.getState() == null) {
             feedMetadata.setState(Feed.State.ENABLED.name());
         }

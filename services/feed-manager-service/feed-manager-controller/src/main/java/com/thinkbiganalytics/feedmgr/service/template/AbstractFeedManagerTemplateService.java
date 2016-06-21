@@ -1,11 +1,11 @@
 package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
-import com.thinkbiganalytics.rest.JerseyClientException;
+
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,12 +28,9 @@ public abstract class AbstractFeedManagerTemplateService {
     public String templateIdForTemplateName(String templateName) {
 
         TemplateDTO templateDTO = null;
-        try {
-            templateDTO = nifiRestClient.getTemplateByName(templateName);
-        } catch (JerseyClientException e) {
-            e.printStackTrace();
-        }
-        if(templateDTO != null){
+        templateDTO = nifiRestClient.getTemplateByName(templateName);
+
+        if (templateDTO != null) {
             return templateDTO.getId();
         }
         return null;
@@ -50,15 +47,15 @@ public abstract class AbstractFeedManagerTemplateService {
 
 
     /**
-     * Get Registered Template for incoming RegisteredTemplate.id or Nifi Template Id
-     * if there is no RegisteredTEmplate matching the incoming id it is assumed to be a new Tempate and it tries to fetch it from Nifi
+     * Get Registered Template for incoming RegisteredTemplate.id or Nifi Template Id if there is no RegisteredTEmplate matching the incoming id it is assumed to be a new Tempate and it tries to fetch
+     * it from Nifi
      */
-    public RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) throws JerseyClientException {
+    public RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) {
         RegisteredTemplate registeredTemplate = getRegisteredTemplate(templateId);
         //if it is null check to see if the template exists in nifi and is already registered
-        if(registeredTemplate == null){
-            log.info("Attempt to get Template with ID {}, returned Null.  This ID must be one registed in Nifi... attempt to query Nifi for this template ",templateId);
-            registeredTemplate = getRegisteredTemplateForNifiProperties(templateId,null);
+        if (registeredTemplate == null) {
+            log.info("Attempt to get Template with ID {}, returned Null.  This ID must be one registed in Nifi... attempt to query Nifi for this template ", templateId);
+            registeredTemplate = getRegisteredTemplateForNifiProperties(templateId, null);
         }
         if (registeredTemplate == null) {
             List<NifiProperty> properties = nifiRestClient.getPropertiesForTemplate(templateId);
@@ -71,7 +68,7 @@ public abstract class AbstractFeedManagerTemplateService {
                 registeredTemplate.setTemplateName(templateDTO.getName());
             }
         } else {
-           registeredTemplate = mergeRegisteredTemplateProperties(registeredTemplate);
+            registeredTemplate = mergeRegisteredTemplateProperties(registeredTemplate);
 
         }
         return registeredTemplate;
@@ -79,21 +76,21 @@ public abstract class AbstractFeedManagerTemplateService {
 
     /**
      * Ensure that the NIFI template Ids are correct and match our metadata for the Template Name
-     * @param template
      */
-    private void syncTemplateId(RegisteredTemplate template){
+    private void syncTemplateId(RegisteredTemplate template) {
         String oldId = template.getNifiTemplateId();
         String nifiTemplateId = templateIdForTemplateName(template.getTemplateName());
         template.setNifiTemplateId(nifiTemplateId);
 
         RegisteredTemplate t = getRegisteredTemplate(template.getId());
         template.setProperties(t.getProperties());
-        if(!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
+        if (!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
             log.info("Updating Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId, template.getNifiTemplateId());
         }
         saveRegisteredTemplate(template);
-        if(!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
-            log.info("Successfully updated and synchronized Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId, template.getNifiTemplateId());
+        if (!oldId.equalsIgnoreCase(template.getNifiTemplateId())) {
+            log.info("Successfully updated and synchronized Registered Template {} with new Nifi Template Id.  Old Id: {}, New Id: {} ", template.getTemplateName(), oldId,
+                     template.getNifiTemplateId());
         }
     }
 
@@ -104,26 +101,27 @@ public abstract class AbstractFeedManagerTemplateService {
     public abstract RegisteredTemplate getRegisteredTemplate(String id);
 
 
+    public RegisteredTemplate mergeRegisteredTemplateProperties(RegisteredTemplate registeredTemplate) {
 
-    public RegisteredTemplate mergeRegisteredTemplateProperties(RegisteredTemplate registeredTemplate) throws JerseyClientException {
-
-        if(registeredTemplate != null){
-            log.info("Merging properties for template {} ({})",registeredTemplate.getTemplateName(),registeredTemplate.getId());
+        if (registeredTemplate != null) {
+            log.info("Merging properties for template {} ({})", registeredTemplate.getTemplateName(), registeredTemplate.getId());
             List<NifiProperty> properties = null;
             int matchCount = 0;
             try {
                 properties = nifiRestClient.getPropertiesForTemplate(registeredTemplate.getNifiTemplateId());
                 List<NifiProperty> matchedProperties = NifiPropertyUtil
-                        .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties());
+                    .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties());
                 matchCount = matchedProperties.size();
-            }catch(JerseyClientException e) {
+            } catch (NifiClientRuntimeException e) {
 
             }
-            if(properties == null || matchCount == 0) {
-                log.info("Unable to find Nifi Template associated with saved Id of {}.  Possibly the Nifi Template was updated and saved again.  Attempt to query Nifi for template with the name of {}",registeredTemplate.getNifiTemplateId(),registeredTemplate.getTemplateName());
+            if (properties == null || matchCount == 0) {
+                log.info(
+                    "Unable to find Nifi Template associated with saved Id of {}.  Possibly the Nifi Template was updated and saved again.  Attempt to query Nifi for template with the name of {}",
+                    registeredTemplate.getNifiTemplateId(), registeredTemplate.getTemplateName());
                 //sync templateId for name
                 properties = nifiRestClient.getPropertiesForTemplateByName(registeredTemplate.getTemplateName());
-                if(properties != null) {
+                if (properties != null) {
                     //   property = NifiPropertyUtil.findPropertyByProcessorType(properties, "com.thinkbiganalytics.nifi.GetTableData", "Archive Unit");
                     NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties());
                     //    registeredTemplate.setProperties(properties);
@@ -131,7 +129,7 @@ public abstract class AbstractFeedManagerTemplateService {
                 syncTemplateId(registeredTemplate);
 
             }
-            if(properties == null){
+            if (properties == null) {
                 properties = new ArrayList<>();
             }
             //merge with the registered properties
@@ -141,14 +139,11 @@ public abstract class AbstractFeedManagerTemplateService {
 
             registeredTemplate = copy;
 
-        }
-        else {
+        } else {
             log.info("Unable to merge Registered Template.  It is null");
         }
         return registeredTemplate;
     }
-
-
 
 
 }

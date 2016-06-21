@@ -3,6 +3,8 @@ package com.thinkbiganalytics.nifi.feedmgr;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.ControllerServiceProperty;
 import com.thinkbiganalytics.nifi.rest.model.ControllerServicePropertyHolder;
@@ -13,7 +15,6 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
-import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
@@ -69,12 +70,12 @@ public class TemplateCreationHelper {
         this.restClient = restClient;
     }
 
-    public FlowSnippetEntity instantiateFlowFromTemplate(String processGroupId, String templateId) throws JerseyClientException {
+    public FlowSnippetEntity instantiateFlowFromTemplate(String processGroupId, String templateId) throws NifiComponentNotFoundException {
         return restClient.instantiateFlowFromTemplate(processGroupId, templateId);
     }
 
 
-    public void snapshotControllerServiceReferences() throws JerseyClientException {
+    public void snapshotControllerServiceReferences() throws TemplateCreationException {
         ControllerServicesEntity controllerServiceEntity = restClient.getControllerServices();
         if (controllerServiceEntity != null) {
             snapshotControllerServices = controllerServiceEntity.getControllerServices();
@@ -93,7 +94,7 @@ public class TemplateCreationHelper {
     /**
      * Try to see if there are processors that use process groups and then
      */
-    public ControllerServicePropertyHolder validatePropertiesWithControllerServices(ProcessGroupDTO processGroupDTO) throws JerseyClientException {
+    public ControllerServicePropertyHolder validatePropertiesWithControllerServices(ProcessGroupDTO processGroupDTO) throws NifiClientRuntimeException {
         List<ControllerServiceProperty> controllerServiceProperties = new ArrayList<>();
 
         Map<String, ProcessorDTO> processors = NifiProcessUtil.getProcessorsMap(processGroupDTO);
@@ -163,7 +164,7 @@ public class TemplateCreationHelper {
     /**
      * Compare the services in Nifi with the ones from the snapshot and return any that are not in the snapshot
      */
-    public Set<ControllerServiceDTO> identifyNewlyCreatedControllerServiceReferences() throws JerseyClientException {
+    public Set<ControllerServiceDTO> identifyNewlyCreatedControllerServiceReferences() {
         Set<ControllerServiceDTO> newServices = new HashSet<>();
         ControllerServicesEntity controllerServiceEntity = restClient.getControllerServices();
         if (controllerServiceEntity != null) {
@@ -187,8 +188,8 @@ public class TemplateCreationHelper {
         try {
             ControllerServiceEntity entity = restClient.enableControllerService(serviceId);
             return entity;
-        } catch (JerseyClientException e) {
-            if (e.getCause().getMessage().contains("409")) {
+        } catch (NifiClientRuntimeException e) {
+            if (e.is409Error()) {
                 //wait and try again
                 Integer attempt = controllerServiceEnableAttempts.get(serviceId);
                 if (attempt == null) {
@@ -255,7 +256,8 @@ public class TemplateCreationHelper {
 
                 try {
                     restClient.deleteControllerService(serviceToDelete.getId());
-                } catch (JerseyClientException e) {
+                } catch (NifiClientRuntimeException e) {
+                    log.error("Exception while attempting to mergeControllerServices.  Unable to delete Service {}. {}", serviceToDelete.getId(), e.getMessage());
 
                 }
             }
@@ -381,7 +383,7 @@ public class TemplateCreationHelper {
                 }
             }
 
-        } catch (JerseyClientException e) {
+        } catch (NifiClientRuntimeException e) {
             errors.add(new NifiError(NifiError.SEVERITY.FATAL, "Error trying to identify Controller Services. " + e.getMessage(),
                                      NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
         }
@@ -408,8 +410,9 @@ public class TemplateCreationHelper {
             if (servicesToDelete != null && !servicesToDelete.isEmpty()) {
                 try {
                     restClient.deleteControllerServices(servicesToDelete);
-                } catch (JerseyClientException e) {
-
+                } catch (NifiClientRuntimeException e) {
+                    log.info("error attempting to cleanup controller services while trying to delete Services: " + e.getMessage()
+                             + ".  It might be wise to login to NIFI and verify there are not extra controller services");
                 }
             }
         }
@@ -418,7 +421,7 @@ public class TemplateCreationHelper {
     /**
      * When versioning we want to delete only the input port connections. keep output port connections in place as they may still have data running through them that should flow through the system
      */
-    private void deleteInputPortConnections(ProcessGroupDTO processGroup) throws JerseyClientException {
+    private void deleteInputPortConnections(ProcessGroupDTO processGroup) throws NifiClientRuntimeException {
         ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(processGroup.getParentGroupId());
         if (connectionsEntity != null) {
 
@@ -434,14 +437,14 @@ public class TemplateCreationHelper {
                         try {
                             restClient.stopInputPort(connection.getSource().getGroupId(), connection.getSource().getId());
                             log.info("Stopped input port {} for connection: {} ", connection.getSource().getId(), connection.getId());
-                        } catch (JerseyClientException e) {
+                        } catch (NifiClientRuntimeException e) {
                             log.info("Error stopping the input port {} for connection: {} prior to deleting the connection.", connection.getSource().getId(), connection.getId());
 
                         }
                     }
                     try {
                         restClient.deleteConnection(connection, false);
-                    } catch (JerseyClientException e) {
+                    } catch (NifiClientRuntimeException e) {
                         if (connection != null && connection.getSource() != null && connection.getDestination() != null) {
                             log.info("Error deleting the connection Source/Dest {}/{}, Connection Id: {}.", connection.getSource().getName(), connection.getDestination().getName(),
                                      connection.getId());
@@ -453,7 +456,7 @@ public class TemplateCreationHelper {
         }
     }
 
-    public void versionProcessGroup(ProcessGroupDTO processGroup) throws JerseyClientException {
+    public void versionProcessGroup(ProcessGroupDTO processGroup) {
         log.info("Versioning Process Group {} ", processGroup.getName());
 
         restClient.disableAllInputProcessors(processGroup.getId());
@@ -462,13 +465,13 @@ public class TemplateCreationHelper {
         try {
             restClient.stopInputs(processGroup.getId());
             log.error("Stopped Input Ports for {}, ", processGroup.getName());
-        } catch (JerseyClientException e) {
+        } catch (Exception e) {
             log.error("Error trying to stop Input Ports for {} while creating a new version ", processGroup.getName());
         }
         //delete input connections
         try {
             deleteInputPortConnections(processGroup);
-        } catch (JerseyClientException e) {
+        } catch (NifiClientRuntimeException e) {
             log.error("Error trying to delete input port connections for Process Group {} while creating a new version. ", processGroup.getName());
         }
 
@@ -485,7 +488,7 @@ public class TemplateCreationHelper {
         if (newProcessGroup.isSuccess()) {
             try {
                 restClient.markProcessorGroupAsRunning(newProcessGroup.getProcessGroupEntity().getProcessGroup());
-            } catch (JerseyClientException e) {
+            } catch (NifiClientRuntimeException e) {
                 String errorMsg = "Unable to mark feed as " + NifiProcessUtil.PROCESS_STATE.RUNNING + ".";
                 newProcessGroup
                     .addError(newProcessGroup.getProcessGroupEntity().getProcessGroup().getId(), "", NifiError.SEVERITY.WARN, errorMsg,
@@ -499,14 +502,14 @@ public class TemplateCreationHelper {
         //1 startAll
         try {
             restClient.startAll(feedProcessGroup.getProcessGroup().getId(), feedProcessGroup.getProcessGroup().getParentGroupId());
-        } catch (JerseyClientException e) {
+        } catch (NifiClientRuntimeException e) {
             log.error("Error trying to mark connection ports Running for {}", feedProcessGroup.getProcessGroup().getName());
         }
 
         Set<PortDTO> ports = null;
         try {
             ports = restClient.getPortsForProcessGroup(feedProcessGroup.getProcessGroup().getParentGroupId());
-        } catch (JerseyClientException e) {
+        } catch (NifiClientRuntimeException e) {
             log.error("Error getPortsForProcessGroup {}", feedProcessGroup.getProcessGroup().getName());
         }
         if (ports != null && !ports.isEmpty()) {
@@ -515,13 +518,13 @@ public class TemplateCreationHelper {
                 if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())) {
                     try {
                         restClient.startInputPort(feedProcessGroup.getProcessGroup().getParentGroupId(), port.getId());
-                    } catch (JerseyClientException e) {
+                    } catch (NifiClientRuntimeException e) {
                         log.error("Error starting Input Port {} for process group {}", port.getName(), feedProcessGroup.getProcessGroup().getName());
                     }
                 } else if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name())) {
                     try {
                         restClient.startOutputPort(feedProcessGroup.getProcessGroup().getParentGroupId(), port.getId());
-                    } catch (JerseyClientException e) {
+                    } catch (NifiClientRuntimeException e) {
                         log.error("Error starting Output Port {} for process group {}", port.getName(), feedProcessGroup.getProcessGroup().getName());
                     }
                 }

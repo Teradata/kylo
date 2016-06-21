@@ -14,7 +14,6 @@ import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
-import com.thinkbiganalytics.rest.JerseyClientException;
 import com.thinkbiganalytics.schema.TextFileParser;
 
 import org.apache.commons.lang3.StringUtils;
@@ -85,7 +84,7 @@ public class FeedRestController {
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response createFeed(FeedMetadata feedMetadata) throws JerseyClientException {
+    public Response createFeed(FeedMetadata feedMetadata) {
         NifiFeed feed = null;
         try {
             feed = getMetadataService().createFeed(feedMetadata);
@@ -108,7 +107,7 @@ public class FeedRestController {
     @Path("/enable/{feedId}")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response enableFeed(@PathParam("feedId") String feedId) throws JerseyClientException {
+    public Response enableFeed(@PathParam("feedId") String feedId) {
         FeedSummary feed = getMetadataService().enableFeed(feedId);
         return Response.ok(feed).build();
     }
@@ -117,7 +116,7 @@ public class FeedRestController {
     @Path("/disable/{feedId}")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response disableFeed(@PathParam("feedId") String feedId) throws JerseyClientException {
+    public Response disableFeed(@PathParam("feedId") String feedId) {
         FeedSummary feed = getMetadataService().disableFeed(feedId);
         return Response.ok(feed).build();
     }
@@ -125,7 +124,7 @@ public class FeedRestController {
     @GET
     @Path("/reusable-feeds")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getReusableFeeds() throws JerseyClientException {
+    public Response getReusableFeeds() {
         List<FeedMetadata> reusableFeeds = getMetadataService().getReusableFeeds();
         return Response.ok(reusableFeeds).build();
     }
@@ -134,7 +133,7 @@ public class FeedRestController {
     @GET
     @Path("/reusable-feed-input-ports")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getReusableFeedInputPorts() throws JerseyClientException {
+    public Response getReusableFeedInputPorts() {
         List<FeedMetadata> reusableFeeds = getMetadataService().getReusableFeeds();
         Map<String, Set<PortDTO>> portMap = new HashMap<>();
         for (FeedMetadata metadata : reusableFeeds) {
@@ -166,7 +165,7 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response getFeed(@PathParam("feedId") String feedId) throws JerseyClientException {
+    public Response getFeed(@PathParam("feedId") String feedId) {
         FeedMetadata feed = getMetadataService().getFeedById(feedId, true);
 
         return Response.ok(feed).build();
@@ -176,7 +175,7 @@ public class FeedRestController {
     @Path("/{feedId}/merge-template")
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response mergeTemplate(@PathParam("feedId") String feedId, FeedMetadata feed) throws JerseyClientException {
+    public Response mergeTemplate(@PathParam("feedId") String feedId, FeedMetadata feed) {
         //gets the feed data and then gets the latest template associated with that feed and merges the properties into the feed
         RegisteredTemplate registeredTemplate = null;
         try {
@@ -213,7 +212,7 @@ public class FeedRestController {
     @Path("/{feedId}/profile-summary")
     @Produces({MediaType.APPLICATION_JSON})
     //TODO rework and move logic to proper Service/provider class
-    public Response profileSummary(@PathParam("feedId") String feedId) throws JerseyClientException {
+    public Response profileSummary(@PathParam("feedId") String feedId) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String profileTable = feedMetadata.getProfileTableName();
         String query = "SELECT * from " + profileTable + " where columnname = '(ALL)'";
@@ -256,7 +255,7 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}/profile-stats")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response profileStats(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) throws JerseyClientException {
+    public Response profileStats(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String profileTable = feedMetadata.getProfileTableName();
         String query = "SELECT * from " + profileTable + " where processing_dttm = '" + processingdttm + "'";
@@ -267,7 +266,7 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}/profile-invalid-results")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response queryProfileInvalidResults(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) throws JerseyClientException {
+    public Response queryProfileInvalidResults(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String table = feedMetadata.getInvalidTableName();
         String query = "SELECT * from " + table + " where processing_dttm  = '" + processingdttm + "'";
@@ -278,7 +277,7 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}/profile-valid-results")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response queryProfileValidResults(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) throws JerseyClientException {
+    public Response queryProfileValidResults(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String table = feedMetadata.getValidTableName();
         String query = "SELECT * from " + table + " where processing_dttm  = '" + processingdttm + "'";

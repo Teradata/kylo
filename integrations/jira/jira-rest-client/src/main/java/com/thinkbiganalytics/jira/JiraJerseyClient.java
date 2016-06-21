@@ -6,16 +6,29 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.rest.JerseyClientException;
+import com.thinkbiganalytics.jira.domain.CreateIssue;
+import com.thinkbiganalytics.jira.domain.CreateMeta;
+import com.thinkbiganalytics.jira.domain.GetIssue;
+import com.thinkbiganalytics.jira.domain.Issue;
+import com.thinkbiganalytics.jira.domain.IssueBuilder;
+import com.thinkbiganalytics.jira.domain.IssueType;
+import com.thinkbiganalytics.jira.domain.Project;
+import com.thinkbiganalytics.jira.domain.ServerInfo;
+import com.thinkbiganalytics.jira.domain.User;
 import com.thinkbiganalytics.rest.JerseyRestClient;
-import com.thinkbiganalytics.jira.domain.*;
 import com.thinkbiganalytics.rest.JodaTimeMapperProvider;
+
 import org.apache.commons.lang3.StringUtils;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.GenericType;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 /**
  * Created by sr186054 on 10/15/15.
@@ -60,7 +73,7 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
             GetIssue getIssue = get("issue/" + key, null, GetIssue.class);
             Issue issue = new Issue(getIssue);
             return issue;
-        } catch (JerseyClientException e) {
+        } catch (Exception e) {
             throw new JiraException("Error getting Issue: " + key, e);
         }
 
@@ -72,9 +85,9 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
      * @param projectKey
      * @param username
      * @return
-     * @throws JerseyClientException
+     * @
      */
-    public User getAssignableUser(String projectKey, String username) throws JerseyClientException {
+    public User getAssignableUser(String projectKey, String username) {
 
         Map<String, Object> params = new HashMap<String, Object>();
         params.put("project", projectKey);
@@ -99,7 +112,7 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
         User user = null;
         try {
             user = getAssignableUser(projectKey, username);
-        } catch (JerseyClientException e) {
+        } catch (Exception e) {
         }
         return user != null;
     }
@@ -121,7 +134,7 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
 
             CreateMeta createData = get("/issue/createmeta", params, CreateMeta.class);
             return createData;
-        } catch (JerseyClientException e) {
+        } catch (Exception e) {
             throw new JiraException("Error getting Create Metadata for Project " + projectKey, e);
         }
     }
@@ -270,7 +283,7 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
             issue = getIssue(response.getKey());
             LOG.info("Created JIRA Issue {}, - {}",issue.getKey(),issue.getSummary());
 
-        } catch (JerseyClientException e) {
+        } catch (Exception e) {
             String message = "Error Creating Issue " + issue;
             throw new JiraException(message, e);
         }
@@ -301,7 +314,7 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
         try {
        serverInfo = get("/serverInfo",null,ServerInfo.class);
 
-        } catch (JerseyClientException e) {
+        } catch (Exception e) {
             String message = "Error getting serverinfo "+e.getMessage();
             throw new JiraException(message, e);
         }

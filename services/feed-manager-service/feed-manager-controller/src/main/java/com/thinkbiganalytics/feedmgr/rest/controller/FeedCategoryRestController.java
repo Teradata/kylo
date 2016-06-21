@@ -1,5 +1,16 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
+import com.thinkbiganalytics.feedmgr.InvalidOperationException;
+import com.thinkbiganalytics.feedmgr.rest.beanvalidation.NewFeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
+
+import org.apache.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -13,18 +24,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.apache.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import com.thinkbiganalytics.feedmgr.InvalidOperationException;
-import com.thinkbiganalytics.feedmgr.rest.beanvalidation.NewFeedCategory;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
-import com.thinkbiganalytics.feedmgr.service.MetadataService;
-import com.thinkbiganalytics.rest.JerseyClientException;
-import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
-
 import io.swagger.annotations.Api;
 
 /**
@@ -34,6 +33,7 @@ import io.swagger.annotations.Api;
 @Path("/v1/feedmgr/categories")
 @Component
 public class FeedCategoryRestController {
+
     private static final Logger LOG = Logger.getLogger(FeedCategoryRestController.class);
 
     @Autowired
@@ -42,20 +42,20 @@ public class FeedCategoryRestController {
     public FeedCategoryRestController() {
     }
 
-    private MetadataService getMetadataService(){
+    private MetadataService getMetadataService() {
         return metadataService;
     }
 
     @GET
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response getCategories() throws JerseyClientException{
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getCategories() {
         Collection<FeedCategory> categories = getMetadataService().getCategories();
-       return Response.ok(categories).build();
+        return Response.ok(categories).build();
     }
 
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-    @Produces({MediaType.APPLICATION_JSON })
+    @Produces({MediaType.APPLICATION_JSON})
     public Response saveCategory(@NewFeedCategory FeedCategory feedCategory) {
         getMetadataService().saveCategory(feedCategory);
         return Response.ok(feedCategory).build();
@@ -63,20 +63,19 @@ public class FeedCategoryRestController {
 
     @DELETE
     @Path("/{categoryId}")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response deleteCategory(@UUID @PathParam("categoryId")String categoryId) throws InvalidOperationException {
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response deleteCategory(@UUID @PathParam("categoryId") String categoryId) throws InvalidOperationException {
         getMetadataService().deleteCategory(categoryId);
         return Response.ok().build();
     }
 
     @GET
     @Path("/{categoryId}/feeds")
-    @Produces({MediaType.APPLICATION_JSON })
-    public Response getCategory(@UUID @PathParam("categoryId")String categoryId) {
-        List<FeedSummary> summaryList  = getMetadataService().getFeedSummaryForCategory(categoryId);
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getCategory(@UUID @PathParam("categoryId") String categoryId) {
+        List<FeedSummary> summaryList = getMetadataService().getFeedSummaryForCategory(categoryId);
         return Response.ok(summaryList).build();
     }
-
 
 
 }

@@ -1,24 +1,21 @@
 package com.thinkbiganalytics.feedmgr.nifi;
 
+import com.thinkbiganalytics.db.PoolingDataSourceService;
+import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.schema.DBSchemaParser;
+
+import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
 import java.util.List;
 import java.util.Map;
 
 import javax.sql.DataSource;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.web.api.dto.ControllerServiceDTO;
-import org.apache.nifi.web.api.entity.ControllerServiceEntity;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
-import org.springframework.stereotype.Service;
-
-import com.thinkbiganalytics.db.PoolingDataSourceService;
-import com.thinkbiganalytics.db.model.schema.TableSchema;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.rest.JerseyClientException;
-import com.thinkbiganalytics.schema.DBSchemaParser;
 
 /**
  * Created by sr186054 on 1/28/16.
@@ -34,7 +31,7 @@ public class DBCPConnectionPoolTableInfo {
     @Autowired
     NifiRestClient nifiRestClient;
 
- public  List<String> getTableNamesForControllerService(String serviceId,String serviceName, String schema) throws JerseyClientException {
+    public List<String> getTableNamesForControllerService(String serviceId, String serviceName, String schema) {
      ControllerServiceDTO controllerService = getControllerService(serviceId,serviceName);
 
      if(controllerService != null) {
@@ -74,8 +71,7 @@ return controllerService;
     }
 
 
-    public TableSchema describeTableForControllerService(String serviceId, String serviceName,String schema,String tableName) throws
-                                                                                                           JerseyClientException {
+    public TableSchema describeTableForControllerService(String serviceId, String serviceName, String schema, String tableName) {
 
         ControllerServiceDTO controllerService = getControllerService(serviceId, serviceName);
         if(controllerService != null) {
