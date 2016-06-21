@@ -16,7 +16,7 @@
     "storage" : {
         "persistence" : {
             "type" : "db",
-            "connectionUrl": "jdbc:mysql://localhost:3306/metadata",
+            "connectionUrl": "jdbc:mysql://localhost:3306/thinkbig",
             "driver": "com.mysql.jdbc.Driver",
             "username": "root",
             "createOnStart" : true,
@@ -25,7 +25,7 @@
         "binaryStorage" : {
             "type" : "file",
             "directory": "target/content/binaries",
-            "minimumBinarySizeInBytes" : 999
+            "minimumBinarySizeInBytes" : 5000000
         }
     },
     "garbageCollection" : {
