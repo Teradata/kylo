@@ -20,7 +20,7 @@
             "driver": "com.mysql.jdbc.Driver",
             "username": "root",
             "createOnStart" : true,
-            "dropOnExit" : true
+            "dropOnExit" : false
         },
         "binaryStorage" : {
             "type" : "file",
