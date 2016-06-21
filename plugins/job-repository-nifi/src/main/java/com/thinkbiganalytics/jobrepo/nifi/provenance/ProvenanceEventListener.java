@@ -91,7 +91,7 @@ public class ProvenanceEventListener {
             log.info("Starting Feed for event {} ", event);
             provenanceFeedManager.feedStart(event);
         }
-        log.info("receiveEvent {}, event.hasJobExecution() = {} ", event, event.hasJobExecution());
+        log.debug("receiveEvent {}, event.hasJobExecution() = {} ", event, event.hasJobExecution());
 
         //only update if the event has a Job execution on it
         if (event.hasJobExecution()) {
@@ -200,7 +200,7 @@ public class ProvenanceEventListener {
         FlowFileEvents flowFile = flowFileEventProvider.getFlowFile(flowFileId);
 
         ProvenanceEventRecordDTO previousEvent = flowFile.getPreviousEventInCurrentFlowFile(event);
-        log.info("updateEventRunContext for {}.  Previous Event in FlowFile is {} ", event, previousEvent);
+        log.debug("updateEventRunContext for {}.  Previous Event in FlowFile is {} ", event, previousEvent);
 
         //We get the events after they actual complete, so the Start Time is really the previous event in the flowfile
         DateTime startTime = getStepStartTime(event);
@@ -233,11 +233,11 @@ public class ProvenanceEventListener {
         if ((previousEvent != null && !previousEvent.getComponentId().equalsIgnoreCase(event.getComponentId()))) {
             if (previousEvent.markCompleted()) {
                 eventCounter.decrementAndGet();
-                log.info("MARKING PREVIOUS EVENT {} as Complete.", previousEvent);
+                log.debug("MARKING PREVIOUS EVENT {} as Complete.", previousEvent);
                 markEventComplete(previousEvent);
             }
             if (isCompletionEvent(event)) {
-                log.info("MARKING EVENT {} as Complete.", event);
+                log.debug("MARKING EVENT {} as Complete.", event);
                 markEventComplete(event);
             }
         }
@@ -255,7 +255,7 @@ public class ProvenanceEventListener {
                 eventCounter.decrementAndGet();
             }
             //mark the component as complete
-            log.info("DROP EVENT {} MARK as completed ", event);
+            log.debug("DROP EVENT {} MARK as completed ", event);
             markEventComplete(event);
           /*  if (flowFile.markComponentComplete(event.getComponentId(), new DateTime())) {
                 provenanceFeedManager.componentCompleted(event);
