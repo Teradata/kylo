@@ -193,7 +193,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 return feedMetadatas;
             }
         });
-
     }
 
     @Override

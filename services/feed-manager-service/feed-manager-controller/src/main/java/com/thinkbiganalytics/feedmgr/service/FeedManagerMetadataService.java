@@ -15,11 +15,9 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.List;
@@ -142,35 +140,50 @@ public class FeedManagerMetadataService implements MetadataService {
         return updatedNifi;
     }
 
-    @Transactional(transactionManager = "metadataTransactionManager")
+    //@Transactional(transactionManager = "metadataTransactionManager")
     public FeedSummary enableFeed(String feedId) {
-        FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
-        if (!feedMetadata.getState().equals(Feed.State.ENABLED.name())) {
-            FeedSummary feedSummary = feedProvider.enableFeed(feedId);
+        return metadataAccess.commit(new Command<FeedSummary>() {
+            @Override
+            public FeedSummary execute() {
+                FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
+                if (!feedMetadata.getState().equals(Feed.State.ENABLED.name())) {
+                    FeedSummary feedSummary = feedProvider.enableFeed(feedId);
 
-            boolean updatedNifi = updateNifiFeedRunningStatus(feedSummary, Feed.State.ENABLED);
-            if (!updatedNifi) {
-                //rollback
-                throw new RuntimeException("Unable to enable Feed " + feedId);
+                    boolean updatedNifi = updateNifiFeedRunningStatus(feedSummary, Feed.State.ENABLED);
+                    if (!updatedNifi) {
+                        //rollback
+                        throw new RuntimeException("Unable to enable Feed " + feedId);
+                    }
+                    return feedSummary;
+                }
+                return new FeedSummary(feedMetadata);
+
             }
-            return feedSummary;
-        }
-        return new FeedSummary(feedMetadata);
+        });
+
     }
 
-    @Transactional(transactionManager = "metadataTransactionManager")
-    public FeedSummary disableFeed(String feedId) {
-        FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
-        if (!feedMetadata.getState().equals(Feed.State.DISABLED.name())) {
-            FeedSummary feedSummary = feedProvider.disableFeed(feedId);
-            boolean updatedNifi = updateNifiFeedRunningStatus(feedSummary, Feed.State.DISABLED);
-            if (!updatedNifi) {
-                //rollback
-                throw new RuntimeException("Unable to disable Feed " + feedId);
+    //@Transactional(transactionManager = "metadataTransactionManager")
+    public FeedSummary disableFeed( final String feedId) {
+        return metadataAccess.commit(new Command<FeedSummary>() {
+
+            @Override
+            public FeedSummary execute() {
+                FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
+                if (!feedMetadata.getState().equals(Feed.State.DISABLED.name())) {
+                    FeedSummary feedSummary = feedProvider.disableFeed(feedId);
+                    boolean updatedNifi = updateNifiFeedRunningStatus(feedSummary, Feed.State.DISABLED);
+                    if (!updatedNifi) {
+                        //rollback
+                        throw new RuntimeException("Unable to disable Feed " + feedId);
+                    }
+                    return feedSummary;
+                }
+                return new FeedSummary(feedMetadata);
             }
-            return feedSummary;
-        }
-        return new FeedSummary(feedMetadata);
+
+
+        });
     }
 
     @Override
