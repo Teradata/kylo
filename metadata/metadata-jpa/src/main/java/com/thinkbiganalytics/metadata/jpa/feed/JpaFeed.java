@@ -16,8 +16,6 @@ import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
 import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import org.hibernate.annotations.GenericGenerator;
@@ -26,11 +24,9 @@ import org.hibernate.annotations.Parent;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -396,7 +392,11 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         public Feed<?> getFeed() {
             return this.feed;
         }
-        
+
+        public void setFeed(Feed<?> feed) {
+            this.feed = feed;
+        }
+
         @Override
         public ServiceLevelAgreement getAgreement() {
             return sla;

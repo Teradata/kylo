@@ -49,7 +49,7 @@ import javax.jcr.version.Version;
  * Created by sr186054 on 6/4/16.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {ModeShapeEngineConfig.class})
+@ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrExtensibleProvidersTestConfig.class })
 public class JcrPropertyTest {
 
     private static final Logger log = LoggerFactory.getLogger(JcrPropertyTest.class);

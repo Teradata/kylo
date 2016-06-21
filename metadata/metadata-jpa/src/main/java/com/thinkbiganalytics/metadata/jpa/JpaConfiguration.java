@@ -11,6 +11,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryPr
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.jpa.category.JpaCategoryProvider;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasourceProvider;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedProvider;
@@ -129,6 +130,8 @@ public class JpaConfiguration {
     }
 
 
+
+
     @Bean
     public FeedManagerFeedProvider jpaFeedManagerFeedProvider() {
         return new JpaFeedManagerFeedProvider();
@@ -142,6 +145,11 @@ public class JpaConfiguration {
     @Bean
     public CategoryProvider jpaCategoryProvider() {
         return new JpaCategoryProvider();
+    }
+
+    @Bean
+    public FeedPreconditionService preconditionService() {
+        return new FeedPreconditionService();
     }
 
 

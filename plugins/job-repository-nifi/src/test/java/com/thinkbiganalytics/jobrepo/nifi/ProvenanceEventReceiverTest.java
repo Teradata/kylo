@@ -89,7 +89,7 @@ public class ProvenanceEventReceiverTest {
     private AtomicLong nifiJobRepositoryId = new AtomicLong(0L);
 
     private long startTime;
-
+    final Integer timeNifiIsDownOnStartup = 10;// seconds
 
     @Test
     public void testBacklog() {
@@ -136,6 +136,7 @@ public class ProvenanceEventReceiverTest {
         doNothing().when(this.nifiJobRepository).completeStep(any(FlowFileComponent.class));
         doNothing().when(this.nifiJobRepository).completeJobExecution(any(NifiJobExecution.class));
 
+        when(this.nifiJobRepository.findJobExecutionId(any(Long.class), any(String.class))).thenReturn(null);
     }
 
 
@@ -157,6 +158,8 @@ public class ProvenanceEventReceiverTest {
 
         NifiComponentFlowData aSpy = Mockito.spy(nifiComponentFlowData);
         doAnswer(getFeedProcessGroup()).when(aSpy).getFeedProcessGroup(any(ProvenanceEventRecordDTO.class));
+        doAnswer(isConnectedToNifi(timeNifiIsDownOnStartup)).when(aSpy).isConnectedToNifi();
+
         provenanceFeedManager.setNifiComponentFlowData(aSpy);
 
 
@@ -223,11 +226,9 @@ public class ProvenanceEventReceiverTest {
     @Test
     public void testJms() {
         this.startTime = System.currentTimeMillis();
-        final Integer timeNifiIsDownOnStartup = 10;// seconds
+
         //Simulate the Startup of Pipline Controller by simulating processing of Ops Manager to query for running jobs and get those events
         doAnswer(onStartup(true)).when(this.provenanceEventStartupListener).onStartup(any(DateTime.class));
-
-        doAnswer(isConnectedToNifi(timeNifiIsDownOnStartup)).when(this.provenanceFeedManager).isConnectedToNifi();
 
 
         //setup Mocks

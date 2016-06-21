@@ -66,9 +66,6 @@
     </dependency>
 
 
-    <!-- METADATA JARS... TODO change to point to datalake project after refactor -->
-
-
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>thinkbig-metadata-api</artifactId>
