@@ -3,14 +3,14 @@
  */
 package com.thinkbiganalytics.metadata.api.feed;
 
-import com.thinkbiganalytics.metadata.api.Propertied;
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import java.io.Serializable;
+import java.util.List;
 
 import org.joda.time.DateTime;
 
-import java.io.Serializable;
-import java.util.List;
+import com.thinkbiganalytics.metadata.api.Propertied;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 
 /**
  *

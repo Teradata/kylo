@@ -1,11 +1,9 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.api.event;
+package com.thinkbiganalytics.metadata.api.feed;
 
 import com.thinkbiganalytics.metadata.api.MetadataException;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 
 /**
  *
@@ -17,12 +15,12 @@ public class FeedNotFoundExcepton extends MetadataException {
 
     private Feed.ID id;
 
-    public FeedNotFoundExcepton(ID id) {
+    public FeedNotFoundExcepton(Feed.ID id) {
         super();
         this.id = id;
     }
     
-    public FeedNotFoundExcepton(String message, ID id) {
+    public FeedNotFoundExcepton(String message, Feed.ID id) {
         super(message);
         this.id = id;
     }

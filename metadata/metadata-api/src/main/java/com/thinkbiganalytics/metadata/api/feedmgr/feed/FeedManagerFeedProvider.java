@@ -1,13 +1,12 @@
 package com.thinkbiganalytics.metadata.api.feedmgr.feed;
 
+import java.util.List;
+
 import com.thinkbiganalytics.metadata.api.BaseProvider;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-
-import java.util.List;
 
 /**
  * Created by sr186054 on 5/4/16.

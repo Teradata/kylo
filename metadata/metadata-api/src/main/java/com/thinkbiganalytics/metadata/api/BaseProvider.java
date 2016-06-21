@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.metadata.api;
 
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-
 import java.io.Serializable;
 import java.util.List;
 

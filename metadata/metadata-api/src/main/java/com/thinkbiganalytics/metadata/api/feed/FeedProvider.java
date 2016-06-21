@@ -7,7 +7,6 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 
 public interface FeedProvider{
 

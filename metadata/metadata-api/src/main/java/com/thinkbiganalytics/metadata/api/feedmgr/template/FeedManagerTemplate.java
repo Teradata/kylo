@@ -1,10 +1,11 @@
 package com.thinkbiganalytics.metadata.api.feedmgr.template;
 
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import org.joda.time.DateTime;
-
 import java.io.Serializable;
 import java.util.List;
+
+import org.joda.time.DateTime;
+
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 
 /**
  * Created by sr186054 on 5/4/16.

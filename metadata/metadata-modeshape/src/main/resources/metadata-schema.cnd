@@ -119,6 +119,7 @@
 
 [tba:feedPrecondition] > nt:hierarchyNode, mix:lastModified
     - tba:sla (REFERENCE) mandatory
+    + tba:lastAssessment (tba:serviceLevelAssessment)
     // TODO: when to check conditions (schedule, event, ...)
 
 [tba:sla] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
@@ -137,8 +138,29 @@
 [tba:metric] > tba:extensibleEntity, mix:title
     + tba:json (tba:genericJson) mandatory
 
+[tba:serviceLevelAssessment] > nt:hierarchyNode
+    - tba:sla (WEAKREFERENCE) mandatory
+    - tba:message (STRING) 
+    - tba:result (STRING) mandatory
+    + tba:obligationAssessments (tba:obligationAssessment) sns
+    
+[tba:obligationAssessment] > nt:hierarchyNode
+    - tba:obligation (WEAKREFERENCE) mandatory
+    - tba:message (STRING) 
+    - tba:result (STRING) mandatory
+    + tba:metricAssessments (tba:metricAssessment) sns
+    
+[tba:metricAssessment] > nt:hierarchyNode
+    - tba:metric (WEAKREFERENCE) mandatory
+    - tba:message (STRING) 
+    - tba:result (STRING) mandatory
+    + tba:resource (nt:resource) 
+    
+    
 
 
+
+/* -=-=-=-==-=-=- Deprecated -=-=-=-=-=-=-=-= */
 
 [tba:feedConnection] > tba:extensibleEntity, mix:referenceable
 	- tba:datasource (WEAKREFERENCE) mandatory COPY
