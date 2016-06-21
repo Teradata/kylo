@@ -17,8 +17,6 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -233,8 +231,10 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 domainFeed = feedManagerFeedProvider.update(domainFeed);
 
                 List<GenericUIPrecondition> preconditions = feed.getSchedule().getPreconditions();
-                List<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics = FeedManagerPreconditionService.uiPreconditionToFeedPrecondition(feed, preconditions);
-                feedProvider.createPrecondition(domainFeed.getId(), "", domainMetrics);
+                if(preconditions != null) {
+                    List<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics = FeedManagerPreconditionService.uiPreconditionToFeedPrecondition(feed, preconditions);
+                    feedProvider.createPrecondition(domainFeed.getId(), "", domainMetrics);
+                }
                 return feed;
             }
         });
