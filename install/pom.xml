@@ -149,6 +149,11 @@
                     ../services/service-app/src/main/config/rpm-build/log4j.properties
                   </location>
                 </source>
+                <source>
+                  <location>
+                    ../metadata/metadata-modeshape/src/main/resources/metadata-repository.json
+                  </location>
+                </source>
               </sources>
             </mapping>
             <mapping>
