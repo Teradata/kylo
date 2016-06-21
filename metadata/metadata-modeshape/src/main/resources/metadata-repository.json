@@ -24,7 +24,7 @@
         },
         "binaryStorage" : {
             "type" : "file",
-            "directory": "target/content/binaries",
+            "directory": "/var/thinkbig/modeshape",
             "minimumBinarySizeInBytes" : 5000000
         }
     },
