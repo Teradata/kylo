@@ -1,0 +1,178 @@
+
+/*
+ * Defines the following structure and node types:
+ * 
+ *     "metadata"
+ *         "feeds"
+ *             categorySystemName*
+ *                 feedSystemName*
+ *                     feedSource*
+ *                     feedDestination*
+ *         "datasources"
+ *             datasource
+ *         "templates"
+ *             template
+ *         "sla"
+ *             sla*
+ *         "extensions"
+ *             "types"
+ *                 typeDescriptor
+ *             "entities"
+ *                 extensibleEntity
+ */
+<jcr = 'http://www.jcp.org/jcr/1.0'>
+<nt='http://www.jcp.org/jcr/nt/1.0'>
+<mix='http://www.jcp.org/jcr/mix/1.0'>
+<tba = 'http://thinkbiganalytics.com/metadata'>
+
+
+/*
+ * // Tree structure /////
+ */
+[tba:metadataFolder] 
+	+ feeds (tba:feedsFolder) = tba:feedsFolder autocreated mandatory
+	+ datasources (tba:datasourcesFolder) = tba:datasourcesFolder autocreated mandatory
+	+ templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
+	+ sla (tba:slaFolder) = tba:slaFolder autocreated mandatory
+	+ extensions (tba:extensionsFolder) = tba:extensionsFolder autocreated mandatory
+
+[tba:feedsFolder] > nt:folder 
+	+ category (tba:categoryFolder) = tba:categoryFolder autocreated mandatory
+
+[tba:categoryFolder] > nt:folder 
+	+ feed (tba:feedFolder) = tba:feedFolder autocreated
+
+[tba:feedFolder] > nt:folder 
+	+ feedSource (tba:feedSourceFolder) = tba:feedSourceFolder autocreated
+	+ feedDestination (tba:feedDestinationFolder) = tba:feedDestinationFolder autocreated
+
+[tba:feedSourceFolder] > nt:folder 
+
+[tba:feedDestinationFolder] > nt:folder 
+
+[tba:extensionsFolder] > nt:folder 
+	+ types (tba:typesFolder) = tba:typesFolder autocreated mandatory
+	+ entities (tba:entitiesFolder) = tba:entitiesFolder autocreated mandatory
+
+[tba:datasourcesFolder] > nt:folder 
+
+[tba:typesFolder] > nt:folder 
+
+[tba:entitiesFolder] > nt:folder 
+
+[tba:templatesFolder] > nt:folder
+
+[tba:slaFolder] > nt:folder
+
+/*
+ * // Predefined types ////
+ */
+[tba:genericJson] > nt:hierarchyNode
+    - tba:type (STRING)
+    - tba:json (STRING)
+    
+[tba:typeDescriptor] > nt:hierarchyNode, mix:title, mix:lastModified
+    + * (tba:fieldDescriptor) sns
+
+[tba:fieldDescriptor] > nt:hierarchyNode, mix:title
+    
+[tba:taggable] mixin
+  - tba:tags (STRING) multiple
+
+[tba:propertied] mixin
+	+ tba:properties (tba:properties) COPY
+
+[tba:properties] 
+	- * (UNDEFINED) COPY
+
+[tba:entity] > nt:hierarchyNode, mix:lastModified, tba:taggable
+
+[tba:extensibleEntity] > tba:entity 
+
+[tba:feedTemplate] > tba:entity, mix:title, tba:propertied
+    - tba:defineTable (BOOLEAN) = 'false'
+    - tba:dataTransformation (BOOLEAN) = 'false'
+    - tba:allowPreconditions (BOOLEAN) = 'false'
+    - tba:icon (STRING)
+    - tba:iconColor (STRING)
+    - tba:nifiTemplateId (STRING)
+    - tba:json (STRING)
+
+[tba:category] > tba:entity, mix:referenceable, mix:title, tba:propertied
+	- tba:systemName (STRING) mandatory
+	- tba:state (LONG)
+	- tba:initialized (BOOLEAN) = 'false'
+	+ * (tba:feed) sns
+
+[tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, mix:versionable
+	+ tba:sources (tba:feedSource) sns
+	+ tba:destinations (tba:feedDestination) sns
+    + tba:precondition (tba:feedPrecondition)
+	- tba:systemName (STRING) mandatory
+	- tba:state (STRING)
+	- tba:initialized (BOOLEAN) = 'false'
+	- tba:category (REFERENCE) mandatory
+	- tba:feedTemplate (REFERENCE)
+	- tba:json (STRING)
+	- tba:schedulingPeriod (STRING)
+	- tba:schedulingStrategy (STRING)
+
+[tba:feedPrecondition] > nt:hierarchyNode, mix:lastModified
+    - tba:sla (REFERENCE) mandatory
+    + tba:lastAssessment (tba:serviceLevelAssessment)
+    // TODO: when to check conditions (schedule, event, ...)
+
+[tba:sla] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
+    - tba:defaultGroup (REFERENCE)
+    + tba:groups (tba:obligationGroup) sns
+//    + tba:defaultGroup (tba:obligationGroup) mandatory
+
+[tba:obligationGroup] > nt:hierarchyNode
+    - tba:condition (STRING) = 'REQUIRED' mandatory
+    + tba:obligations (tba:obligation) sns
+    
+[tba:obligation] > nt:hierarchyNode
+    - tba:description (STRING)
+    + tba:metrics (tba:metric) sns
+
+[tba:metric] > tba:extensibleEntity, mix:title
+    + tba:json (tba:genericJson) mandatory
+
+[tba:serviceLevelAssessment] > nt:hierarchyNode
+    - tba:sla (WEAKREFERENCE) mandatory
+    - tba:message (STRING) 
+    - tba:result (STRING) mandatory
+    + tba:obligationAssessments (tba:obligationAssessment) sns
+    
+[tba:obligationAssessment] > nt:hierarchyNode
+    - tba:obligation (WEAKREFERENCE) mandatory
+    - tba:message (STRING) 
+    - tba:result (STRING) mandatory
+    + tba:metricAssessments (tba:metricAssessment) sns
+    
+[tba:metricAssessment] > nt:hierarchyNode
+    - tba:metric (WEAKREFERENCE) mandatory
+    - tba:message (STRING) 
+    - tba:result (STRING) mandatory
+    + tba:resource (nt:resource) 
+    
+    
+
+
+
+/* -=-=-=-==-=-=- Deprecated -=-=-=-=-=-=-=-= */
+
+[tba:feedConnection] > tba:extensibleEntity, mix:referenceable
+	- tba:datasource (WEAKREFERENCE) mandatory COPY
+
+[tba:feedSource] > tba:feedConnection
+
+[tba:feedDestination] > tba:feedConnection 
+//  + fieldPolicies (tba:fieldPolicy) sns
+
+[tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied 
+    - tba:systemName (STRING) mandatory
+	- tba:state (STRING)
+	- tba:initialized (BOOLEAN) = 'false'
+	+ tba:feedSources (tba:feedSource) COPY sns
+	+ tba:feedDestinations (tba:feedDestination) COPY sns

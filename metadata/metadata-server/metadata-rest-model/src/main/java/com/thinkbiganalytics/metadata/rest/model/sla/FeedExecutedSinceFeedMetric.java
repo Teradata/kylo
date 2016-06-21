@@ -36,7 +36,7 @@ public class FeedExecutedSinceFeedMetric extends DependentFeedMetric {
     public FeedExecutedSinceFeedMetric() {
         super();
     }
-
+    
     public String getSinceFeedId() {
         return sinceFeedId;
     }

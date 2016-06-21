@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
@@ -97,7 +98,7 @@ public class FeedsController {
             @Override
             public Feed execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
                 
                 return Model.DOMAIN_TO_FEED.apply(domain);
             }
@@ -115,7 +116,7 @@ public class FeedsController {
             @Override
             public FeedDependency execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                com.thinkbiganalytics.metadata.api.feed.Feed startDomain = feedProvider.getFeed(domainId);
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> startDomain = feedProvider.getFeed(domainId);
                 
                 if (startDomain != null) {
                     return collectFeedDependencies(startDomain, assessPrecond);
@@ -136,7 +137,7 @@ public class FeedsController {
             @Override
             public List<FeedSource> execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
                     return new ArrayList<>(Collections2.transform(domain.getSources(), Model.DOMAIN_TO_FEED_SOURCE));
@@ -158,7 +159,7 @@ public class FeedsController {
             public FeedSource execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
                 com.thinkbiganalytics.metadata.api.feed.FeedSource.ID domainSrcId = feedProvider.resolveSource(srcId);
-                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
                     com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc = domain.getSource(domainSrcId);
@@ -185,7 +186,7 @@ public class FeedsController {
             @Override
             public List<FeedDestination> execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
                     return new ArrayList<>(Collections2.transform(domain.getDestinations(), Model.DOMAIN_TO_FEED_DESTINATION));
@@ -207,7 +208,7 @@ public class FeedsController {
             public FeedDestination execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
                 com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID domainDestId = feedProvider.resolveDestination(destId);
-                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
                     com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest = domain.getDestination(domainDestId);
@@ -234,7 +235,7 @@ public class FeedsController {
             @Override
             public FeedPrecondition execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
                     return Model.DOMAIN_TO_FEED_PRECOND.apply(domain.getPrecondition());
@@ -255,7 +256,7 @@ public class FeedsController {
             @Override
             public ServiceLevelAssessment execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
                     com.thinkbiganalytics.metadata.api.feed.FeedPrecondition precond = domain.getPrecondition();
@@ -280,6 +281,7 @@ public class FeedsController {
     }
 
     @POST
+    @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public Feed createFeed(final Feed feed, @QueryParam("ensure") @DefaultValue("true") final boolean ensure) {
         LOG.debug("Create feed (ensure={}) {}", ensure, feed);
@@ -293,7 +295,7 @@ public class FeedsController {
                 Collection<com.thinkbiganalytics.metadata.api.feed.Feed> existing = feedProvider.getFeeds(crit);
                 
                 if (existing.isEmpty()) {
-                    com.thinkbiganalytics.metadata.api.feed.Feed domainFeed = feedProvider.ensureFeed(feed.getSystemName(), feed.getDescription());
+                    com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed = feedProvider.ensureFeed(feed.getSystemName(), feed.getDescription());
                     
                     ensureDependentDatasources(feed, domainFeed);
                     ensurePrecondition(feed, domainFeed);
@@ -326,7 +328,7 @@ public class FeedsController {
             @Override
             public Feed execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
                     domain = Model.updateDomain(feed, domain);
@@ -348,10 +350,10 @@ public class FeedsController {
             @Override
             public Properties execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
-                    Map<String, String> domainProps = domain.getProperties();
+                    Map<String, Object> domainProps = domain.getProperties();
                     Properties newProps = new Properties();
                     
                     newProps.putAll(domainProps);
@@ -374,10 +376,10 @@ public class FeedsController {
             @Override
             public Properties execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
-                    Map<String, String> domainProps = updateProperties(props, domain, false);
+                    Map<String, Object> domainProps = updateProperties(props, domain, false);
                     Properties newProps = new Properties();
                     
                     newProps.putAll(domainProps);
@@ -401,10 +403,10 @@ public class FeedsController {
             @Override
             public Properties execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                com.thinkbiganalytics.metadata.api.feed.Feed domain = feedProvider.getFeed(domainId);
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
                 
                 if (domain != null) {
-                    Map<String, String> domainProps = updateProperties(props, domain, true);
+                    Map<String, Object> domainProps = updateProperties(props, domain, true);
                     Properties newProps = new Properties();
                     
                     newProps.putAll(domainProps);
@@ -470,24 +472,24 @@ public class FeedsController {
             @Override
             public Feed execute() {
                 com.thinkbiganalytics.metadata.api.feed.Feed.ID domainFeedId = feedProvider.resolveFeed(feedId);
-                List<List<com.thinkbiganalytics.metadata.sla.api.Metric>> domainMetrics = new ArrayList<>();
-                
-                for (List<Metric> metrics : precond.getMetricGroups()) {
-                    domainMetrics.add(new ArrayList<>(Collections2.transform(metrics, Model.METRIC_TO_DOMAIN)));
-                }
-                
-                com.thinkbiganalytics.metadata.api.feed.Feed domainFeed 
-                    = feedProvider.updatePrecondition(domainFeedId, domainMetrics);
+                List<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics
+                    = precond.getSla().getObligations().stream()
+                        .flatMap((grp) -> grp.getMetrics().stream())
+                        .map((metric) -> Model.METRIC_TO_DOMAIN.apply(metric))
+                        .collect(Collectors.toList());
+            
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed 
+                    = feedProvider.createPrecondition(domainFeedId, "", domainMetrics);
 
                 return Model.DOMAIN_TO_FEED.apply(domainFeed);
             }
         });
     }
 
-    private Map<String, String> updateProperties(final Properties props,
-                                                 com.thinkbiganalytics.metadata.api.feed.Feed domain,
+    private Map<String, Object> updateProperties(final Properties props,
+                                                 com.thinkbiganalytics.metadata.api.feed.Feed<?> domain,
                                                  boolean replace) {
-        Map<String, String> domainProps = domain.getProperties();
+        Map<String, Object> domainProps = domain.getProperties();
         
         if (replace) {
             domainProps.clear();
@@ -505,22 +507,22 @@ public class FeedsController {
         return Model.DOMAIN_TO_SLA_ASSMT.apply(assmt);
     }
 
-    private void ensurePrecondition(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
+    private void ensurePrecondition(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed) {
         FeedPrecondition precond = feed.getPrecondition();
         
         if (precond != null) {
-            List<List<com.thinkbiganalytics.metadata.sla.api.Metric>> domainMetrics = new ArrayList<>();
-            
-            for (List<Metric> metrics : precond.getMetricGroups()) {
-                domainMetrics.add(new ArrayList<>(Collections2.transform(metrics, Model.METRIC_TO_DOMAIN)));
-            }
-            
-            feedProvider.ensurePrecondition(domainFeed.getId(), "", "", domainMetrics);
+            List<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics
+                = precond.getSla().getObligations().stream()
+                    .flatMap((grp) -> grp.getMetrics().stream())
+                    .map((metric) -> Model.METRIC_TO_DOMAIN.apply(metric))
+                    .collect(Collectors.toList());
+    
+            feedProvider.createPrecondition(domainFeed.getId(), "", domainMetrics);
         }
         
     }
 
-    private void ensureDependentDatasources(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
+    private void ensureDependentDatasources(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed) {
         for (FeedSource src : feed.getSources()) {
             Datasource.ID dsId = this.datasetProvider.resolve(src.getId());
             feedProvider.ensureFeedSource(domainFeed.getId(), dsId);
@@ -532,8 +534,8 @@ public class FeedsController {
         }
     }
     
-    private void ensureProperties(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed domainFeed) {
-        Map<String, String> domainProps = domainFeed.getProperties();
+    private void ensureProperties(Feed feed, com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed) {
+        Map<String, Object> domainProps = domainFeed.getProperties();
         Properties props = feed.getProperties();
         
         for (String key : feed.getProperties().stringPropertyNames()) {
@@ -571,7 +573,7 @@ public class FeedsController {
             
             Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainChildFeeds = feedProvider.getFeeds(domainCrit);
             
-            for (com.thinkbiganalytics.metadata.api.feed.Feed childFeed : domainChildFeeds) {
+            for (com.thinkbiganalytics.metadata.api.feed.Feed<?> childFeed : domainChildFeeds) {
                 FeedDependency childDep = collectFeedDependencies(childFeed, assessPrecond);
                 feedDep.addDependecy(childDep);
             }

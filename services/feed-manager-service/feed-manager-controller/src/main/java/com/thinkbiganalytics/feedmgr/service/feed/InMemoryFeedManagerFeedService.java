@@ -111,13 +111,14 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
 
 
     @Override
-    public FeedMetadata getFeedByName(final String feedName) {
+    public FeedMetadata getFeedByName(final String categoryName,final String feedName) {
 
         if (feeds != null && !feeds.isEmpty()) {
             return Iterables.tryFind(feeds.values(), new Predicate<FeedMetadata>() {
                 @Override
                 public boolean apply(FeedMetadata metadata) {
-                    return metadata.getFeedName().equalsIgnoreCase(feedName);
+
+                    return metadata.getFeedName().equalsIgnoreCase(feedName) && metadata.getCategoryName().equalsIgnoreCase(categoryName);
                 }
             }).orNull();
         }
@@ -205,8 +206,8 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
             category = categoryProvider.getCategoryById(categoryId);
         }
         if (category == null) {
-            final String categoryName = feed.getCategory().getName();
-            category = categoryProvider.getCategoryByName(categoryName);
+            final String categoryName = feed.getCategory().getSystemName();
+            category = categoryProvider.getCategoryBySystemName(categoryName);
             feed.setCategory(category);
         }
         if (category != null) {

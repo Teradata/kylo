@@ -1,5 +1,6 @@
 {
     "name" : "metadata-repository",
+    "node-types" : ["metadata-schema.cnd"],
     "workspaces" : {
         "predefined" : ["metadata"],
         "default" : "default",
@@ -11,6 +12,7 @@
             "useOnFailedLogin" : false
         }
     },
+    "node-types" : ["metadata-schema.cnd"],
     "storage" : {
         "persistence" : {
             "type" : "db",
@@ -25,5 +27,8 @@
             "directory": "target/content/binaries",
             "minimumBinarySizeInBytes" : 999
         }
+    },
+    "garbageCollection" : {
+        "initialTime": "17:00"
     }
 }

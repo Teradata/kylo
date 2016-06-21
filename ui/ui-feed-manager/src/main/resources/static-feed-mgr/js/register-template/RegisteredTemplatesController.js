@@ -99,7 +99,6 @@
         }
 
         this.exportTemplate = function(event,template){
-            console.log('exportTemplate',template,RestUrlService.ADMIN_EXPORT_TEMPLATE_URL+"/"+template.id)
             var promise = $http.get( RestUrlService.ADMIN_EXPORT_TEMPLATE_URL+"/"+template.id);
         }
 

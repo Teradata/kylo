@@ -3,11 +3,13 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.sla;
 
+import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.google.common.collect.Lists;
 
 /**
  *
@@ -21,6 +23,10 @@ public class Obligation {
     private List<Metric> metrics;
 
     public Obligation() {
+    }
+    
+    public Obligation(String description, Metric... metrics) {
+        this(description, Arrays.asList(metrics));
     }
 
     public Obligation(String description, List<Metric> metrics) {

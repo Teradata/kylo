@@ -7,6 +7,8 @@ import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Date;
 import java.util.List;
 
@@ -72,7 +74,10 @@ public class FeedMetadata implements UIFeed{
     private boolean isReusableFeed;
 
 
+    //deprecated
     private Long version;
+
+    private String versionName;
 
 
    // private NifiProcessGroup nifiProcessGroup;
@@ -223,10 +228,28 @@ public class FeedMetadata implements UIFeed{
 
     public void setVersion(Long version){
         this.version = version;
+        setVersionName(version+"");
     }
 
     public Long getVersion(){
-        return version;
+        if(StringUtils.isNotBlank(versionName)){
+            try {
+                return new Long(versionName);
+            } catch (NumberFormatException e) {
+                return 0L;
+            }
+        }
+        else {
+            return version;
+        }
+    }
+
+    public void setVersionName(String versionName){
+        this.versionName = versionName;
+    }
+
+    public String getVersionName(){
+        return this.versionName;
     }
 
     @JsonIgnore
@@ -322,7 +345,7 @@ public class FeedMetadata implements UIFeed{
     }
 
     public String getState() {
-        return state;
+        return this.state;
     }
 
     public void setState(String state) {

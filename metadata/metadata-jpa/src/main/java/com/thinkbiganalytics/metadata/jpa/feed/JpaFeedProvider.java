@@ -17,18 +17,23 @@ import javax.persistence.PersistenceContext;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.google.common.base.Predicate;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.event.FeedNotFoundExcepton;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.jpa.AbstractMetadataCriteria;
+import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed.JpaFeedPrecondition;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
@@ -43,7 +48,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
  *
  * @author Sean Felten
  */
-public class JpaFeedProvider implements FeedProvider{
+public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements FeedProvider {
 
     @PersistenceContext
     @Inject
@@ -59,9 +64,38 @@ public class JpaFeedProvider implements FeedProvider{
     @Inject 
     private FeedPreconditionService preconditionService;
 
+    @Inject
+    private CategoryProvider<Category> categoryProvider;
+
+    @Override
+    public Class<? extends Feed> getEntityClass() {
+        return JpaFeed.class;
+    }
+
+    @Override
+    public ID resolveId(Serializable fid) {
+        return resolveFeed(fid);
+    }
+
+    @Override
+    public Feed ensureFeed(Category.ID categoryId, String feedSystemName) {
+        Category category = categoryProvider.findById(categoryId);
+        if(category == null) {
+            throw new CategoryNotFoundException("Unable to ensure feed of name "+feedSystemName+" because the Category does not exist",categoryId);
+        }
+        else {
+            return ensureFeed(category.getName(),feedSystemName);
+        }
+    }
+
+    @Override
+    public Feed ensureFeed(String categorySystemName, String feedSystemName) {
+        return ensureFeed(categorySystemName,feedSystemName,null);
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID)
-     */
+         * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeedSource(com.thinkbiganalytics.metadata.api.feed.Feed.ID, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID)
+         */
     @Override
     public FeedSource ensureFeedSource(ID feedId, Datasource.ID dsId) {
         return ensureFeedSource(feedId, dsId, null);
@@ -153,28 +187,35 @@ public class JpaFeedProvider implements FeedProvider{
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeed(java.lang.String, java.lang.String)
      */
     @Override
-    public Feed ensureFeed(String name, String descr) {
-        return ensureFeed(name, descr, null, null);
+    public Feed ensureFeed(String categorySystemName,String name, String descr) {
+        return ensureFeed(categorySystemName,name, descr, null, null);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeed(java.lang.String, java.lang.String, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID)
      */
     @Override
-    public Feed ensureFeed( String name, String descr, Datasource.ID destId) {
-        return ensureFeed(name, descr, null, destId);
+    public Feed ensureFeed(String categorySystemName, String name, String descr, Datasource.ID destId) {
+        return ensureFeed(categorySystemName,name, descr, null, destId);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensureFeed(java.lang.String, java.lang.String, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID)
      */
     @Override
-    public Feed ensureFeed(String name, String descr, Datasource.ID srcId, Datasource.ID destId) {
+    public Feed ensureFeed(String categorySystemName, String name, String descr, Datasource.ID srcId, Datasource.ID destId) {
         JpaFeed feed = null;
-        List<Feed> feeds = getFeeds(feedCriteria().name(name));
+        List<Feed> feeds = getFeeds(feedCriteria().name(name).category(categorySystemName));
         
         if (feeds.isEmpty()) {
             feed = new JpaFeed(name, descr);
+            Category category = categoryProvider.findBySystemName(categorySystemName);
+            if(category != null){
+                feed.setCategory(category);
+            }
+            else {
+                throw new CategoryNotFoundException("Unable to find Category for "+categorySystemName+" while attempting to create feed "+name,null);
+            }
             this.entityMgr.persist(feed);
         } else {
             feed = (JpaFeed) feeds.get(0);
@@ -197,62 +238,32 @@ public class JpaFeedProvider implements FeedProvider{
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#ensurePrecondition(com.thinkbiganalytics.metadata.api.feed.Feed.ID, java.lang.String, java.lang.String, java.util.List)
      */
     @Override
-    public Feed ensurePrecondition(ID feedId, String name, String descr, List<List<Metric>> metrics) {
+    public Feed createPrecondition(ID feedId, String descr, List<Metric> metrics) {
         JpaFeed feed = (JpaFeed) getFeed(feedId);
         
         if (feed != null) {
-            ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder()
-                    .name(name)
-                    .description(descr);
-            
-            for (List<Metric> list : metrics) {
-                slaBldr.obligationGroupBuilder(Condition.SUFFICIENT)
-                    .obligationBuilder()
-                        .metric(list)
-                        .add()
+            ServiceLevelAgreement sla = this.slaProvider.builder()
+                    .name("Precondition for feed " + feed.getName() + " (" + feed.getId() + ")")
+                    .description(descr)
+                    .obligationBuilder(Condition.SUFFICIENT)
+                        .metric(metrics)
+                        .build()
                     .build();
-            }
-            
-            JpaServiceLevelAgreement sla = (JpaServiceLevelAgreement) slaBldr.build();
             
             this.preconditionService.watchFeed(feed);
             
-            feed.setPrecondition(sla);
+            feed.setPrecondition((JpaFeedPrecondition) sla);
             this.entityMgr.merge(feed);
             return feed;
         } else {
             throw new FeedNotFoundExcepton(feedId);
         }
     }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#updatePrecondition(com.thinkbiganalytics.metadata.api.feed.Feed.ID, java.util.List)
-     */
+    
     @Override
-    public Feed updatePrecondition(ID feedId, List<List<Metric>> metrics) {
-        JpaFeed feed = (JpaFeed) getFeed(feedId);
-        
-        if (feed != null) {
-            JpaFeed.JpaFeedPrecondition precond = (JpaFeedPrecondition) feed.getPrecondition();
-            ServiceLevelAgreement.ID slaId = precond.getAgreement().getId();
-            ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder(slaId);
-            
-            for (List<Metric> list : metrics) {
-                slaBldr.obligationGroupBuilder(Condition.SUFFICIENT)
-                    .obligationBuilder()
-                        .metric(list)
-                        .add()
-                    .build();
-            }
-            
-            JpaServiceLevelAgreement sla = (JpaServiceLevelAgreement) slaBldr.build();
-            
-            feed.setPrecondition(sla);
-            this.entityMgr.merge(feed);
-            return feed;
-        } else {
-            throw new FeedNotFoundExcepton(feedId);
-        }
+    public PreconditionBuilder buildPrecondition(ID feedId) {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     /* (non-Javadoc)
@@ -320,9 +331,21 @@ public class JpaFeedProvider implements FeedProvider{
         }
     }
 
+    @Override
+    public Feed findBySystemName(String categorySystemName, String systemName) {
+        FeedCriteria c = feedCriteria();
+        c.category(categorySystemName);
+        c.name(systemName);
+        List<Feed> feeds = getFeeds(c);
+        if (feeds != null && !feeds.isEmpty()) {
+            return feeds.get(0);
+        }
+        return null;
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#resolveSource(java.io.Serializable)
-     */
+         * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#resolveSource(java.io.Serializable)
+         */
     @Override
     public FeedSource.ID resolveSource(Serializable sid) {
         if (sid instanceof JpaFeedSource.SourceId) {
@@ -373,6 +396,7 @@ public class JpaFeedProvider implements FeedProvider{
         private String name;
         private Set<Datasource.ID> sourceIds = new HashSet<>();
         private Set<Datasource.ID> destIds = new HashSet<>();
+        private String category;
         
         @Override
         protected void applyFilter(StringBuilder queryStr, HashMap<String, Object> params) {
@@ -382,6 +406,10 @@ public class JpaFeedProvider implements FeedProvider{
             if (this.name != null) {
                 cond.append("name = :name");
                 params.put("name", this.name);
+            }
+            if (this.category != null) {
+                cond.append("category = :category");
+                params.put("category", this.category);
             }
             
             applyIdFilter(cond, join, this.sourceIds, "sources", params);
@@ -412,6 +440,9 @@ public class JpaFeedProvider implements FeedProvider{
         @Override
         public boolean apply(Feed input) {
             if (this.name != null && ! name.equals(input.getName())) return false;
+            if(this.category != null && input.getCategory() != null && !this.category.equals(input.getCategory().getName())){
+                return false;
+            }
             if (! this.destIds.isEmpty()) {
                 List<FeedDestination> destinations = input.getDestinations();
                 for (FeedDestination dest : destinations) {
@@ -456,6 +487,12 @@ public class JpaFeedProvider implements FeedProvider{
         @Override
         public FeedCriteria name(String name) {
             this.name = name;
+            return this;
+        }
+
+        @Override
+        public FeedCriteria category(String category) {
+            this.category = category;
             return this;
         }
     }

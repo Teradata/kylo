@@ -7,16 +7,17 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
+import java.util.Set;
 
 import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
+import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescriptor;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
@@ -30,15 +31,44 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 //@Ignore  // Requires a running metadata server
 public class MetadataClientTest {
     
-    private static MetadataClient client;
+    private MetadataClient client;
 
     @BeforeClass
-    public static void connect() {
+    public void connect() {
         client = new MetadataClient(URI.create("http://localhost:8077/api/metadata/"));
     }
     
-    @Before
-    public void setUp() throws Exception {
+    
+//    @Test
+    public void testGetExtensibleTypes() {
+        List<ExtensibleTypeDescriptor> types = client.getExtensibleTypes();
+        
+        assertThat(types).extracting("name")
+            .contains("feed", "feedConnection", "feedSource", "feedDestination", "datasource");
+        assertThat(types.get(0).getFields()).extracting("name")
+            .isNotEmpty();
+    }
+    
+//    @Test
+    public void testGetExtensibleTypeByName() {
+        ExtensibleTypeDescriptor type = client.getExtensibleType("feed");
+        
+        assertThat(type).isNotNull();
+        assertThat(type.getName()).isEqualTo("feed");
+    }
+    
+//    @Test(dependsOnMethods="testGetExtensibleTypeByName")
+    public void testGetExtensibleTypeById() {
+        ExtensibleTypeDescriptor feed = client.getExtensibleType("feed");
+        ExtensibleTypeDescriptor type = client.getExtensibleType(feed.getId());
+        
+        assertThat(type).isNotNull();
+        assertThat(type.getName()).isEqualTo("feed");
+    }
+    
+//    @Test()
+    public void testCreateFeedSubtype() {
+        ExtensibleTypeDescriptor subtype = new ExtensibleTypeDescriptor("testFeed", "feed");
     }
 
 //    @Test

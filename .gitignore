@@ -18,3 +18,4 @@ derby.log
 **/node_modules/
 target/
 test-output/
+**/*.log

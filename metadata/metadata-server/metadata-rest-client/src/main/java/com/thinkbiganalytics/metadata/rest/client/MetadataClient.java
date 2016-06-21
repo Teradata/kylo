@@ -90,7 +90,7 @@ public class MetadataClient extends JerseyClient {
     }
     
     public Feed setPrecondition(String feedId, List<Metric> metrics) {
-        FeedPrecondition precond = new FeedPrecondition(metrics);
+        FeedPrecondition precond = new FeedPrecondition("Feed " + feedId + " Precondition", "", metrics);
         return post(Paths.get("feed", feedId, "precondition"), precond, Feed.class);
     }
 
@@ -150,10 +150,10 @@ public class MetadataClient extends JerseyClient {
         return get(Paths.get("dataop", id), DataOperation.class);
     }
 
-    private FeedPrecondition createTrigger(List<Metric> metrics) {
+    private FeedPrecondition createTrigger(String name, List<Metric> metrics) {
         if (! metrics.isEmpty()) {
-            FeedPrecondition trigger = new FeedPrecondition();
-            trigger.addMetrics(metrics);
+            FeedPrecondition trigger = new FeedPrecondition(name);
+            trigger.addMetrics("", metrics);
             return trigger;
         } else {
             return null;
@@ -272,7 +272,7 @@ public class MetadataClient extends JerseyClient {
             feed.setSystemName(this.systemName);
             feed.setDescription(this.description);
             feed.setOwner(this.owner);
-            feed.setPrecondition(createTrigger(this.preconditionMetrics));
+            feed.setPrecondition(createTrigger("Feed " + this.systemName + " Precondition", this.preconditionMetrics));
             
             return feed;
         }

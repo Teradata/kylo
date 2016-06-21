@@ -1,0 +1,40 @@
+<div ng-controller="ModeshapeMigrationController as vm">
+  <card-layout body-css="md-padding" class="centered">
+
+    <header-section>
+      <div layout="row" layout-align="space-between-center" flex>
+        <h2 class="md-title">Migrate to Modeshape</h2>
+        <span flex></span>
+        <ng-md-icon icon="merge_type" style="fill:#3483BA;padding-right:16px;" size="30"></ng-md-icon>
+      </div>
+      <div class="md-subheader">Migrate data from MySQL to Modeshape</div>
+    </header-section>
+    <body-section class="md-padding">
+      <div layout="column">
+        <md-button class="md-raised md-primary" ng-click="vm.migrate($event)" ng-disabled="vm.migratingData">
+          Migrate Data
+        </md-button>
+        <span flex></span>
+      </div>
+      <div layout="row" ng-if="vm.showMigrationResults" class="layout-padding-top">
+        <div class="md-subheader">{{vm.status}}</div>
+        <div class="layout-padding-top">
+        <table>
+          <tr>
+            <td>Templates Migrated:</td>
+            <td>{{vm.templatesMigrated}}</td>
+          </tr>
+          <tr>
+            <td>Categories Migrated:</td>
+            <td>{{vm.categoriesMigrated}}</td>
+          </tr>
+          <tr>
+            <td>Feeds Migrated:</td>
+            <td>{{vm.feedsMigrated}}</td>
+          </tr>
+        </table>
+        </div>
+      </div>
+    </body-section>
+  </card-layout>
+</div>

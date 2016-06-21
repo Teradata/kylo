@@ -1,12 +1,12 @@
 package com.thinkbiganalytics.metadata.api.category;
 
 
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import org.joda.time.DateTime;
-
 import java.io.Serializable;
 import java.util.List;
+
+import org.joda.time.DateTime;
+
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 
 /**
  * Created by sr186054 on 5/4/16.
@@ -18,7 +18,7 @@ public interface Category {
 
     ID getId();
 
-    List<Feed> getFeeds();
+    List<? extends Feed> getFeeds();
 
     String getDisplayName();
 
@@ -34,5 +34,14 @@ public interface Category {
     DateTime getCreatedTime();
 
     DateTime getModifiedTime();
+
+    void setDisplayName(String displayName);
+
+    void setName(String name);
+
+    void setCreatedTime(DateTime createdTime);
+    void setModifiedTime(DateTime modifiedTime);
+
+
 
 }

@@ -1,22 +1,10 @@
 package com.thinkbiganalytics.metadata.jpa.feedmgr.category;
 
-import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.jpa.BaseId;
-import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
 import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
-import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
-import com.thinkbiganalytics.metadata.jpa.feedmgr.feed.JpaFeedManagerFeed;
-import com.thinkbiganalytics.metadata.jpa.op.JpaDataOperation;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
-import java.io.Serializable;
-import java.util.List;
-import java.util.UUID;
 
 /**
  * Created by sr186054 on 5/3/16.
@@ -43,6 +31,11 @@ public class JpaFeedManagerCategory  extends JpaCategory implements FeedManagerC
 
     public JpaFeedManagerCategory(){
 
+    }
+
+
+    public JpaFeedManagerCategory(String name) {
+        super(name);
     }
 
 

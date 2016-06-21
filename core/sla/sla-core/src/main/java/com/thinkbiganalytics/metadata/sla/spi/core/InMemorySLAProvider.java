@@ -244,19 +244,14 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         }
 
         @Override
-        public Obligation build() {
+        @SuppressWarnings("unchecked")
+        public B build() {
             ObligationImpl ob = new ObligationImpl();
             ob.description = this.description;
             ob.metrics = this.metrics;
             ob.group = this.group;
-            return ob;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public B add() {
-            ObligationImpl ob = (ObligationImpl) build();
             this.group.getObligations().add(ob);
+            
             if (this.groupBuilder != null) {
                 return (B) this.groupBuilder;
             } else {

@@ -37,7 +37,6 @@
         <hive.version>0.14.0</hive.version>
         <httpclient.version>4.5.1</httpclient.version>
         <jackson.version>2.6.2</jackson.version>
-        <java.version>1.7</java.version>
         <javax.servlet.version>3.1.0</javax.servlet.version>
         <jersey.version>2.22.2</jersey.version>
         <joda.time.version>2.9.2</joda.time.version>

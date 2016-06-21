@@ -3,6 +3,26 @@
  */
 package com.thinkbiganalytics.metadata.jpa.feed;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
+import com.thinkbiganalytics.jpa.AuditTimestampListener;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.core.BaseId;
+import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
+import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
+import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
+import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.Obligation;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Parent;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,29 +33,29 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.persistence.*;
-
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
-import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
-import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
-import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
-import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategory;
-import org.hibernate.annotations.GenericGenerator;
-
-import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
-import com.thinkbiganalytics.jpa.AuditTimestampListener;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.jpa.BaseId;
-import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
-import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.Obligation;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import javax.persistence.CascadeType;
+import javax.persistence.CollectionTable;
+import javax.persistence.Column;
+import javax.persistence.ElementCollection;
+import javax.persistence.Embeddable;
+import javax.persistence.Embedded;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.FetchType;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.MapKeyColumn;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.Version;
 
 /**
  *
@@ -83,7 +103,7 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
     @MapKeyColumn(name="prop_key", length=100)
     @Column(name="prop_value")
     @CollectionTable(name="FEED_PROPERTIES")
-    private Map<String, String> properties = new HashMap<>();
+    private Map<String, String> propertiesAsString = new HashMap<>();
     
     @Embedded
     private JpaFeedPrecondition precondition;
@@ -111,34 +131,52 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
     }
 
     @Override
-    public Map<String, String> getProperties() {
-        return this.properties;
+    public Map<String, Object> getProperties() {
+        Map<String, Object> props = new HashMap<>();
+        if (propertiesAsString != null) {
+            for (Entry<String, String> entry : propertiesAsString.entrySet()) {
+                props.put(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
+            }
+        }
+        return props;
     }
 
-    @Override
-    public void setProperties(Map<String, String> props) {
-        this.properties.clear();
+
+    public Map<String, String> getPropertiesAsString() {
+        return propertiesAsString;
+    }
+
+    public void setPropertiesAsString(Map<String, String> props) {
+        this.propertiesAsString.clear();
         for (Entry<String, String> entry : props.entrySet()) {
-            this.properties.put(entry.getKey(), entry.getValue());
+            this.propertiesAsString.put(entry.getKey(), entry.getValue());
         }
     }
 
     @Override
-    public Map<String, String> mergeProperties(Map<String, String> props) {
-        for (Entry<String, String> entry : props.entrySet()) {
-            this.properties.put(entry.getKey(), entry.getValue());
+    public void setProperties(Map<String, Object> props) {
+        this.propertiesAsString.clear();
+        for (Entry<String, Object> entry : props.entrySet()) {
+            this.propertiesAsString.put(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
         }
-        return this.properties;
     }
 
     @Override
-    public String setProperty(String key, String value) {
-        return this.properties.put(key, value);
+    public Map<String, Object> mergeProperties(Map<String, Object> props) {
+        for (Entry<String, Object> entry : props.entrySet()) {
+            this.propertiesAsString.put(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
+        }
+        return getProperties();
     }
 
     @Override
-    public String removeProperty(String key) {
-        return this.properties.remove(key);
+    public void setProperty(String key, Object value) {
+        this.propertiesAsString.put(key, value != null ? value.toString() : null);
+    }
+
+    @Override
+    public void removeProperty(String key) {
+        this.propertiesAsString.remove(key);
     }
 
     public ID getId() {
@@ -287,6 +325,10 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         return version;
     }
 
+    public String getVersionName() {
+        return version + "";
+    }
+
     public void setVersion(Integer version) {
         this.version = version;
     }
@@ -340,30 +382,19 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         @OneToOne(fetch=FetchType.EAGER)
         private JpaServiceLevelAgreement sla;
         
+        @Parent
+        private Feed<?> feed;
+        
         public JpaFeedPrecondition() {
         }
         
         public JpaFeedPrecondition(JpaServiceLevelAgreement sla) {
             this.sla = sla;
         }
-
-        @Override
-        public String getName() {
-            return this.sla.getName();
-        }
         
         @Override
-        public String getDescription() {
-            return this.sla.getDescription();
-        }
-
-        @Override
-        public Set<Metric> getMetrics() {
-            Set<Metric> set = new HashSet<>();
-            for (Obligation ob : this.sla.getObligations()) {
-                set.addAll(ob.getMetrics());
-            }
-            return set;
+        public Feed<?> getFeed() {
+            return this.feed;
         }
         
         @Override

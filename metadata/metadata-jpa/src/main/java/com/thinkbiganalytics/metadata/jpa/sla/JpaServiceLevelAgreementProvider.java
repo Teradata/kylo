@@ -225,19 +225,14 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
         }
 
         @Override
-        public Obligation build() {
+        @SuppressWarnings("unchecked")
+        public B build() {
             JpaObligation ob = new JpaObligation();
             ob.setDescription(this.description);
             ob.setMetrics(this.metrics);
             ob.setGroup(this.group);
-            return ob;
-        }
-
-        @Override
-        @SuppressWarnings("unchecked")
-        public B add() {
-            JpaObligation ob = (JpaObligation) build();
             this.group.getObligations().add(ob);
+            
             if (this.groupBuilder != null) {
                 return (B) this.groupBuilder;
             } else {

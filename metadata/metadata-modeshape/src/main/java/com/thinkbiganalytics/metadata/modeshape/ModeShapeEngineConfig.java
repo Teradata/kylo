@@ -15,6 +15,8 @@ import org.modeshape.common.collection.Problems;
 import org.modeshape.jcr.JcrRepository;
 import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.RepositoryConfiguration;
+import org.modeshape.jcr.api.txn.TransactionManagerLookup;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -27,7 +29,8 @@ import org.springframework.core.io.ClassPathResource;
  * @author Sean Felten
  */
 @Configuration
-@Import({ JcrProviderConfig.class })
+@Import({MetadataJcrConfig.class})
+
 public class ModeShapeEngineConfig {
     
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);
@@ -49,6 +52,11 @@ public class ModeShapeEngineConfig {
         } else {
             log.info("ModeShap engine not reported as stopped");
         }
+    }
+    
+    @Bean
+    public TransactionManagerLookup transactionManagerLookup() throws IOException {
+        return metadataRepoConfig().getTransactionManagerLookup();
     }
     
     @Bean

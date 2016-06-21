@@ -15,7 +15,7 @@ public interface FeedManagerFeedService {
 
     List<FeedMetadata> getReusableFeeds();
 
-    FeedMetadata getFeedByName(String feedName);
+    FeedMetadata getFeedByName(String categoryName, String feedName);
 
     FeedMetadata getFeedById(String id);
 

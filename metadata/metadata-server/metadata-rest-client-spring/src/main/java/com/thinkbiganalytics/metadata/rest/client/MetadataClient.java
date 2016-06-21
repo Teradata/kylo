@@ -37,12 +37,14 @@ import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableField;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
+import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescriptor;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependency;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 
 /**
@@ -53,6 +55,7 @@ public class MetadataClient {
     
     public static final List<MediaType> ACCEPT_TYPES = Collections.unmodifiableList(Arrays.asList(MediaType.APPLICATION_JSON));
     
+    public static final ParameterizedTypeReference<List<ExtensibleTypeDescriptor>> TYPE_LIST = new ParameterizedTypeReference<List<ExtensibleTypeDescriptor>>() { };
     public static final ParameterizedTypeReference<List<Feed>> FEED_LIST = new ParameterizedTypeReference<List<Feed>>() { };
     public static final ParameterizedTypeReference<List<Datasource>> DATASOURCE_LIST = new ParameterizedTypeReference<List<Datasource>>() { };
     public static final ParameterizedTypeReference<List<Metric>> METRIC_LIST = new ParameterizedTypeReference<List<Metric>>() { };
@@ -80,6 +83,14 @@ public class MetadataClient {
         return mapper;
     }
 
+    public List<ExtensibleTypeDescriptor> getExtensibleTypes() {
+        return get(Paths.get("extension", "type"), null, TYPE_LIST);
+    }
+
+    public ExtensibleTypeDescriptor getExtensibleType(String nameOrId) {
+        return get(Paths.get("extension", "type", nameOrId), ExtensibleTypeDescriptor.class);
+    }
+
     public FeedBuilder buildFeed(String name) {
         return new FeedBuilderImpl(name);
     }
@@ -97,13 +108,17 @@ public class MetadataClient {
         
         return post(Paths.get("feed", feedId, "destination"), form, Feed.class);
     }
+    
+    public ServiceLevelAgreement createSla(ServiceLevelAgreement sla) {
+        return post(Paths.get("sla"), sla, ServiceLevelAgreement.class);
+    }
 
     public Feed setPrecondition(String feedId, Metric... metrics) {
         return setPrecondition(feedId, Arrays.asList(metrics));
     }
     
     public Feed setPrecondition(String feedId, List<Metric> metrics) {
-        FeedPrecondition precond = new FeedPrecondition(metrics);
+        FeedPrecondition precond = new FeedPrecondition("Feed " + feedId + " Precondition", "", metrics);
         return setPrecondition(feedId, precond);
     }
     
@@ -199,7 +214,7 @@ public class MetadataClient {
     private FeedPrecondition createTrigger(List<Metric> metrics) {
         if (! metrics.isEmpty()) {
             FeedPrecondition trigger = new FeedPrecondition();
-            trigger.addMetrics(metrics);
+            trigger.addMetrics("", metrics);
             return trigger;
         } else {
             return null;

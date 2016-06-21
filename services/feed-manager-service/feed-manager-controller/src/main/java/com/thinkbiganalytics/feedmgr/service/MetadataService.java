@@ -54,7 +54,7 @@ public interface MetadataService {
 
     List<FeedSummary> getFeedSummaryForCategory(String categoryId);
 
-    FeedMetadata getFeedByName(String feedName);
+    FeedMetadata getFeedByName(String categoryName, String feedName);
 
     FeedMetadata getFeedById(String feedId);
 
@@ -63,8 +63,6 @@ public interface MetadataService {
     List<FeedMetadata> getReusableFeeds();
 
     Collection<FeedCategory> getCategories();
-
-    FeedCategory getCategoryByName(String name);
 
     FeedCategory getCategoryBySystemName(final String name);
 

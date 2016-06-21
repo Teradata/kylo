@@ -12,6 +12,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.TemplateDtoWrapper;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.support.Constants;
+import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
@@ -185,9 +186,9 @@ public class TemplatesRestController {
         log.info("Returning Registered template for id {} as {} ", templateId, (registeredTemplate != null ? registeredTemplate.getTemplateName() : null));
 
         //if savedFeedId is passed in merge the properties with the saved values
-        if (feedName != null) {
-            FeedMetadata feedMetadata = getMetadataService().getFeedByName(feedName);
-
+        if(feedName != null) {
+            //TODO pass in the Category to this method
+            FeedMetadata feedMetadata = getMetadataService().getFeedByName("",feedName);
             if (feedMetadata != null) {
                 List<NifiProperty> list = new ArrayList<>();
                 for (NifiProperty p : registeredTemplate.getProperties()) {
@@ -261,12 +262,11 @@ public class TemplatesRestController {
         getMetadataService().registerTemplate(registeredTemplate);
         if (registeredTemplate.isReusableTemplate()) {
             //attempt to auto create the Feed using this template
-            FeedMetadata metadata = metadataService.getFeedByName(registeredTemplate.getTemplateName());
-            if (metadata == null) {
+            FeedMetadata metadata = metadataService.getFeedByName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME, registeredTemplate.getTemplateName());
+            if(metadata == null) {
                 metadata = new FeedMetadata();
-
-                FeedCategory category = metadataService.getCategoryByName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME);
-                if (category == null) {
+                FeedCategory category = metadataService.getCategoryBySystemName(TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
+                if(category == null){
                     category = new FeedCategory();
                     category.setName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME);
                     metadataService.saveCategory(category);

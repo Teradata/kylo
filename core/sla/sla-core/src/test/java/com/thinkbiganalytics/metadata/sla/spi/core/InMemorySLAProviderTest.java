@@ -28,12 +28,12 @@ public class InMemorySLAProviderTest {
             .obligationBuilder()
                 .description("testCreateSLA-o1")
                 .metric(createTestMetric("o1-m1"))
-                .add()
+                .build()
             .obligationBuilder()
                 .description("testCreateSLA-o2")
                 .metric(createTestMetric("o2-m1"))
                 .metric(createTestMetric("o2-m2"))
-                .add()
+                .build()
             .build().getId();
         
         assertThat(this.provider.getAgreements()).hasSize(1);

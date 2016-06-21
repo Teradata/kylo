@@ -54,7 +54,7 @@ public class JpaFeedProviderTest extends AbstractTransactionalTestNGSpringContex
 //    @Test(dependsOnMethods="testEnsureFeed")
     @Transactional
     public void testGetFeeds() {
-        List<Feed> list = this.feedProvider.getFeeds();
+        List<? extends Feed> list = this.feedProvider.getFeeds();
         
         assertThat(list).isNotNull().isNotEmpty();
     }

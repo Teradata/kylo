@@ -3,25 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.core.op;
 
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.io.StringWriter;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.inject.Inject;
-
-import org.joda.time.DateTime;
-import org.springframework.util.StringUtils;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Iterators;
@@ -50,6 +31,25 @@ import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.core.dataset.files.BaseFileList;
 import com.thinkbiganalytics.metadata.core.dataset.hive.BaseHiveTableUpdate;
 import com.thinkbiganalytics.metadata.event.ChangeEventDispatcher;
+
+import org.joda.time.DateTime;
+import org.springframework.util.StringUtils;
+
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.StringWriter;
+import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.inject.Inject;
 
 /**
  *
@@ -284,7 +284,9 @@ public class InMemoryDataOperationsProvider implements DataOperationsProvider {
      */
     @Override
     public void addListener(DataChangeEventListener<Datasource, ChangeSet> listener) {
-        this.dispatcher.addListener(listener);
+        if(dispatcher != null) {
+            this.dispatcher.addListener(listener);
+        }
     }
     
     /* (non-Javadoc)

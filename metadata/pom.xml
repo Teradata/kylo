@@ -12,6 +12,10 @@
     </parent>
     <packaging>pom</packaging>
     
+    <properties>
+        <reactor.version>2.0.8.RELEASE</reactor.version>
+    </properties>
+    
     <modules>
         <module>metadata-orientdb</module>
         <module>metadata-api</module>
@@ -19,6 +23,7 @@
         <module>metadata-server</module>
         <module>metadata-jpa</module>
         <module>metadata-modeshape</module>
+        <module>metadata-db-modeshape-migration</module>
     </modules>
     
     <dependencies>

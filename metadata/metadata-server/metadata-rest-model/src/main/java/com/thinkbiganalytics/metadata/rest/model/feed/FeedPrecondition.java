@@ -4,7 +4,6 @@
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -12,6 +11,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 
 /**
  *
@@ -22,30 +23,36 @@ import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedPrecondition implements Serializable {
 
-    private List<List<Metric>> metricGroups = new ArrayList<>();
-
+    private ServiceLevelAgreement sla;
+    
     public FeedPrecondition() {
+        this("Feed preconditon");
+    }
+    
+    public FeedPrecondition(String name) {
         super();
+        this.sla = new ServiceLevelAgreement("Feed ");
     }
     
-    public FeedPrecondition(List<Metric> metrics) {
-        this.addMetrics(metrics);
+    public FeedPrecondition(String name, String description, List<Metric> metrics) {
+        this(name);
+        this.addMetrics(description, metrics);
     }
     
-    public void addMetrics(Metric... metrics) {
-        addMetrics(Arrays.asList(metrics));
+    public void addMetrics(String description, Metric... metrics) {
+        addMetrics(description, Arrays.asList(metrics));
     }
     
-    public void addMetrics(List<Metric> metrics) {
-        List<Metric> list = new ArrayList<Metric>(metrics);
-        this.metricGroups.add(list);
+    public void addMetrics(String description, List<Metric> metrics) {
+        Obligation ob = new Obligation(description, metrics);
+        this.sla.addObligation(ob);
     }
-
-    public List<List<Metric>> getMetricGroups() {
-        return metricGroups;
+    
+    public ServiceLevelAgreement getSla() {
+        return sla;
     }
-
-    public void setMetricGroups(List<List<Metric>> metrics) {
-        this.metricGroups = new ArrayList<>(metrics);
+    
+    public void setSla(ServiceLevelAgreement sla) {
+        this.sla = sla;
     }
 }

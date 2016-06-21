@@ -1,14 +1,9 @@
 package com.thinkbiganalytics.metadata.jpa.feedmgr.template;
 
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.jpa.BaseId;
 import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
-import com.thinkbiganalytics.metadata.jpa.feedmgr.category.JpaFeedManagerCategory;
-import com.thinkbiganalytics.metadata.jpa.feedmgr.feed.JpaFeedManagerFeed;
 
 import javax.persistence.NoResultException;
 import java.io.Serializable;
@@ -45,6 +40,14 @@ public class JpaFeedManagerTemplateProvider  extends BaseJpaProvider<FeedManager
                     .getSingleResult();
         }catch(NoResultException e){
             // e.printStackTrace();
+        }
+        return template;
+    }
+
+    public FeedManagerTemplate ensureTemplate(String name) {
+        FeedManagerTemplate template = findByName(name);
+        if (template == null) {
+            template = new JpaFeedManagerTemplate(name);
         }
         return template;
     }

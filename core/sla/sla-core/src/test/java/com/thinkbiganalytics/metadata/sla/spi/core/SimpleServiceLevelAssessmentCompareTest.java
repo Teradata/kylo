@@ -30,7 +30,7 @@ public class SimpleServiceLevelAssessmentCompareTest {
                 .obligationBuilder()
                     .description("test")
                     .metric(new TestMetric(1, "1"))
-                    .add()
+                    .build()
                 .build();
         
         ServiceLevelAssessment assmt1 = this.assessor.assess(sla);
@@ -49,7 +49,7 @@ public class SimpleServiceLevelAssessmentCompareTest {
                 .obligationBuilder()
                     .description("test")
                     .metric(new TestMetric(1, "1"))
-                    .add()
+                    .build()
                 .build();
         
         ServiceLevelAssessment assmt1 = this.assessor.assess(sla);
@@ -68,7 +68,7 @@ public class SimpleServiceLevelAssessmentCompareTest {
                 .obligationBuilder()
                     .description("test")
                     .metric(metric)
-                    .add()
+                    .build()
                 .build();
         
         ServiceLevelAssessment assmt1 = this.assessor.assess(sla);
@@ -90,7 +90,7 @@ public class SimpleServiceLevelAssessmentCompareTest {
                 .obligationBuilder()
                     .description("aaa")
                     .metric(new TestMetric(1, "1"))
-                    .add()
+                    .build()
                 .build();
         
         ServiceLevelAssessment assmt1 = this.assessor.assess(sla);

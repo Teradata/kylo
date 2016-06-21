@@ -5,14 +5,13 @@ import com.thinkbiganalytics.es.ElasticSearch;
 import com.thinkbiganalytics.es.ElasticSearchClientConfig;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
-import com.thinkbiganalytics.feedmgr.service.category.JpaFeedManagerCategoryService;
+import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
+import com.thinkbiganalytics.feedmgr.service.category.DefaultFeedManagerCategoryService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
-import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransformer;
-import com.thinkbiganalytics.feedmgr.service.feed.JpaFeedManagerFeedService;
-import com.thinkbiganalytics.feedmgr.service.template.JpaFeedManagerTemplateService;
-import org.elasticsearch.client.transport.TransportClient;
-import org.elasticsearch.common.settings.Settings;
-import org.elasticsearch.common.transport.InetSocketTransportAddress;
+import com.thinkbiganalytics.feedmgr.service.feed.DefaultFeedManagerFeedService;
+import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplateService;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -26,9 +25,9 @@ import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
-import org.springframework.util.Assert;
+import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 
-import java.net.InetAddress;
+import org.springframework.util.Assert;
 
 /**
  * Created by sr186054 on 2/26/16.
@@ -47,24 +46,38 @@ public class FeedManagerConfiguration {
 
     @Bean
     public FeedManagerFeedService feedManagerFeedService(){
-        return new JpaFeedManagerFeedService();
+        return new DefaultFeedManagerFeedService();
     }
 
     @Bean
     public FeedManagerCategoryService feedManagerCategoryService(){
-        return new JpaFeedManagerCategoryService();
+        return new DefaultFeedManagerCategoryService();
     }
 
 
     @Bean
     public FeedManagerTemplateService feedManagerTemplateService(){
-        return new JpaFeedManagerTemplateService();
+        return new DefaultFeedManagerTemplateService();
     }
 
     @Bean
-    public FeedModelTransformer feedModelTransformer(){
-        return new FeedModelTransformer();
+    public FeedModelTransform feedModelTransformer(){
+        return new FeedModelTransform();
     }
+
+
+    @Bean
+    public TemplateModelTransform templateModelTransform(){
+        return new TemplateModelTransform();
+    }
+
+
+    @Bean
+    public CategoryModelTransform categoryModelTransform(){
+        return new CategoryModelTransform();
+    }
+
+
 
     @Bean
     public FeedManagerPreconditionService feedManagerPreconditionService() {

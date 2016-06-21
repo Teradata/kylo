@@ -4,7 +4,7 @@ import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.jpa.AuditTimestampListener;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.jpa.*;
+import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
 
@@ -54,8 +54,13 @@ public class JpaCategory extends AbstractAuditedEntity implements Category {
 
     }
 
+    public JpaCategory(String systemName){
+        this.id = JpaCategory.CategoryId.create();
+        this.setName(systemName);
+    }
+
     @Override
-    public List<Feed> getFeeds() {
+    public List<? extends Feed> getFeeds() {
         return feeds;
     }
 

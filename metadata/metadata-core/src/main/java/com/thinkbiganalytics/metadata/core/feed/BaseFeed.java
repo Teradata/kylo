@@ -6,25 +6,21 @@ package com.thinkbiganalytics.metadata.core.feed;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 import java.util.UUID;
 
-import com.thinkbiganalytics.metadata.api.category.Category;
 import org.joda.time.DateTime;
 
+import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
@@ -43,7 +39,7 @@ public class BaseFeed implements Feed {
     private Map<FeedSource.ID, FeedSource> sources = new HashMap<>();
     private Map<FeedDestination.ID, FeedDestination> destinations = new HashMap<>();
     private FeedPreconditionImpl precondition;
-    private Map<String, String> properties;
+    private Map<String, Object> properties;
     
 
     public BaseFeed(String name, String description) {
@@ -55,18 +51,18 @@ public class BaseFeed implements Feed {
     }
 
     @Override
-    public Map<String, String> getProperties() {
+    public Map<String, Object> getProperties() {
         return this.properties;
     }
 
     @Override
-    public void setProperties(Map<String, String> props) {
+    public void setProperties(Map<String, Object> props) {
         this.properties = props;
     }
 
     @Override
-    public Map<String, String> mergeProperties(Map<String, String> props) {
-        for (Entry<String, String> entry : props.entrySet()) {
+    public Map<String, Object> mergeProperties(Map<String, Object> props) {
+        for (Entry<String, Object> entry : props.entrySet()) {
             this.properties.put(entry.getKey(), entry.getValue());
         }
         return this.properties;
@@ -78,13 +74,13 @@ public class BaseFeed implements Feed {
     }
 
     @Override
-    public String setProperty(String key, String value) {
-        return this.properties.put(key, value);
+    public void setProperty(String key, Object value) {
+         this.properties.put(key, value);
     }
 
     @Override
-    public String removeProperty(String key) {
-        return this.properties.remove(key);
+    public void removeProperty(String key) {
+         this.properties.remove(key);
     }
 
     public ID getId() {
@@ -203,7 +199,7 @@ public class BaseFeed implements Feed {
     }
     
     public FeedPrecondition setPrecondition(ServiceLevelAgreement sla) {
-        this.precondition = new FeedPreconditionImpl(sla);
+        this.precondition = new FeedPreconditionImpl(this, sla);
         return this.precondition;
     }
     
@@ -275,11 +271,12 @@ public class BaseFeed implements Feed {
             super(ser);
         } 
     }
-
     @Override
-    public Integer getVersion() {
+    public String getVersionName() {
         return null;
     }
+
+
 
     private abstract class Data implements FeedConnection {
         
@@ -302,6 +299,8 @@ public class BaseFeed implements Feed {
     
     private class Source extends Data implements FeedSource {
 
+        private static final long serialVersionUID = -2407190619538717445L;
+        
         private SourceId id;
         private ServiceLevelAgreement agreement;
         
@@ -324,6 +323,8 @@ public class BaseFeed implements Feed {
     
     private class Destination extends Data implements FeedDestination {
 
+        private static final long serialVersionUID = -6990911423133789381L;
+        
         private DestinationId id;
         
         public Destination(Datasource ds) {
@@ -339,28 +340,16 @@ public class BaseFeed implements Feed {
     
     protected static class FeedPreconditionImpl implements FeedPrecondition {
         private ServiceLevelAgreement sla;
+        private BaseFeed feed;
         
-        public FeedPreconditionImpl(ServiceLevelAgreement sla) {
+        public FeedPreconditionImpl(BaseFeed feed, ServiceLevelAgreement sla) {
             this.sla = sla;
+            this.feed = feed;
         }
 
         @Override
-        public String getName() {
-            return this.sla.getName();
-        }
-        
-        @Override
-        public String getDescription() {
-            return this.sla.getDescription();
-        }
-
-        @Override
-        public Set<Metric> getMetrics() {
-            Set<Metric> set = new HashSet<>();
-            for (Obligation ob : this.sla.getObligations()) {
-                set.addAll(ob.getMetrics());
-            }
-            return set;
+        public Feed<?> getFeed() {
+            return this.feed;
         }
         
         @Override

@@ -5,20 +5,24 @@ import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.jpa.feedmgr.template.JpaFeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 5/4/16.
  */
 public class TemplateModelTransform {
 
+    @Inject
+    FeedManagerTemplateProvider templateProvider;
 
 
-    public static final Function<FeedManagerTemplate, RegisteredTemplate>
+    public final Function<FeedManagerTemplate, RegisteredTemplate>
             DOMAIN_TO_REGISTERED_TEMPLATE =
             new Function<FeedManagerTemplate, RegisteredTemplate>() {
                 @Override
@@ -36,16 +40,21 @@ public class TemplateModelTransform {
                 }
             };
 
-    public static final Function<RegisteredTemplate, FeedManagerTemplate>
+    public final Function<RegisteredTemplate, FeedManagerTemplate>
             REGISTERED_TEMPLATE_TO_DOMAIN =
             new Function<RegisteredTemplate,FeedManagerTemplate>() {
                 @Override
                 public FeedManagerTemplate apply(RegisteredTemplate registeredTemplate) {
                     //resolve the id
-                    JpaFeedManagerTemplate.FeedManagerTemplateId domainId = registeredTemplate.getId() != null ? new JpaFeedManagerTemplate.FeedManagerTemplateId(registeredTemplate.getId()): JpaFeedManagerTemplate.FeedManagerTemplateId.create();
-                    JpaFeedManagerTemplate
-                            domain = new JpaFeedManagerTemplate(domainId);
-                    registeredTemplate.setId(domainId.toString());
+                    FeedManagerTemplate.ID domainId = registeredTemplate.getId() != null ? templateProvider.resolveId(registeredTemplate.getId()) : null;
+                    FeedManagerTemplate domain = null;
+                    if (domainId != null) {
+                        domain = templateProvider.findById(domainId);
+                    }
+                    if (domain == null) {
+                        domain = templateProvider.ensureTemplate(registeredTemplate.getTemplateName());
+                    }
+                    domainId = domain.getId();
                     String json = ObjectMapperSerializer.serialize(registeredTemplate);
                     domain.setNifiTemplateId(registeredTemplate.getNifiTemplateId());
                     domain.setAllowPreconditions(registeredTemplate.isAllowPreconditions());
@@ -56,15 +65,18 @@ public class TemplateModelTransform {
                     domain.setIconColor(registeredTemplate.getIconColor());
                     domain.setDescription(registeredTemplate.getDescription());
                     domain.setJson(json);
+
+                    //assign the id back to the ui model
+                    registeredTemplate.setId(domainId.toString());
                     return domain;
                 }
             };
 
-    public static List<RegisteredTemplate> domainToRegisteredTemplate(Collection<FeedManagerTemplate> domain) {
+    public List<RegisteredTemplate> domainToRegisteredTemplate(Collection<FeedManagerTemplate> domain) {
         return new ArrayList<>(Collections2.transform(domain, DOMAIN_TO_REGISTERED_TEMPLATE));
     }
 
-    public static List<FeedManagerTemplate> registeredTemplateToDomain(Collection<RegisteredTemplate> registeredTemplates) {
+    public List<FeedManagerTemplate> registeredTemplateToDomain(Collection<RegisteredTemplate> registeredTemplates) {
         return new ArrayList<>(Collections2.transform(registeredTemplates, REGISTERED_TEMPLATE_TO_DOMAIN));
     }
 }

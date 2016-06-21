@@ -10,9 +10,12 @@ import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.metadata.api.Command;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
@@ -40,6 +43,9 @@ public class FeedManagerMetadataService implements MetadataService {
     @Inject
     NifiRestClient nifiRestClient;
 
+    @Inject
+    MetadataAccess metadataAccess;
+
 
     public FeedManagerMetadataService() {
 
@@ -66,15 +72,24 @@ public class FeedManagerMetadataService implements MetadataService {
     }
 
     @Override
-    @Transactional(transactionManager = "metadataTransactionManager")
-    public RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) {
-        return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
-    }
+    //@Transactional(transactionManager = "metadataTransactionManager")
+    public RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId) {
+        return metadataAccess.read(new Command<RegisteredTemplate>() {
+            @Override
+            public RegisteredTemplate execute() {
+                return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
+            }
+        });
 
-    @Override
-    public RegisteredTemplate getRegisteredTemplateForNifiProperties(String nifiTemplateId, String nifiTemplateName) {
-        return templateProvider.getRegisteredTemplateForNifiProperties(nifiTemplateId, nifiTemplateName);
     }
+    @Override
+    public RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName) {
+        return metadataAccess.read(new Command<RegisteredTemplate>() {
+            public RegisteredTemplate execute() {
+                return templateProvider.getRegisteredTemplateForNifiProperties(nifiTemplateId, nifiTemplateName);
+            }
+        });
+       }
 
     public void deleteRegisteredTemplate(String templateId) {
         templateProvider.deleteRegisteredTemplate(templateId);
@@ -179,8 +194,8 @@ public class FeedManagerMetadataService implements MetadataService {
     }
 
     @Override
-    public FeedMetadata getFeedByName(String feedName) {
-        return feedProvider.getFeedByName(feedName);
+    public FeedMetadata getFeedByName(String categoryName, String feedName) {
+        return feedProvider.getFeedByName(categoryName, feedName);
     }
 
     @Override
@@ -203,10 +218,7 @@ public class FeedManagerMetadataService implements MetadataService {
         return categoryProvider.getCategories();
     }
 
-    @Override
-    public FeedCategory getCategoryByName(String name) {
-        return categoryProvider.getCategoryByName(name);
-    }
+
 
     @Override
     public FeedCategory getCategoryBySystemName(String name) {

@@ -75,9 +75,10 @@
       <version>${project.version}</version>
     </dependency>
 
+
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
-      <artifactId>thinkbig-metadata-jpa</artifactId>
+      <artifactId>thinkbig-metadata-modeshape</artifactId>
       <version>${project.version}</version>
       <exclusions>
         <exclusion>
@@ -134,6 +135,8 @@
         </exclusion>
       </exclusions>
     </dependency>
+
+
 
     <dependency>
       <groupId>org.elasticsearch</groupId>
