@@ -50,7 +50,6 @@
 
     <build>
         <plugins>
-            <!-- use java 1.7 -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>

@@ -19,6 +19,7 @@
     <rpm.log.dir>/var/log</rpm.log.dir>
     <!-- override using property -Drpm.user -->
     <rpm.user>thinkbig</rpm.user>
+    <file.permissions>744</file.permissions>
   </properties>
   <build>
     <plugins>
@@ -50,7 +51,7 @@
             <!--  mappings -->
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-ui</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -61,7 +62,7 @@
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-ui/lib</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -74,7 +75,7 @@
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-ui/conf</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -97,7 +98,7 @@
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-ui/bin</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
             </mapping>
@@ -105,7 +106,7 @@
             <!-- thinkbig services mappings -->
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-services</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -116,7 +117,7 @@
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-services/lib</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -129,7 +130,7 @@
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-services/conf</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -152,26 +153,26 @@
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-services/bin</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-services/plugin</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-services/plugin/conf</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
             </mapping>
             <!-- thinkbig spark shell mappings -->
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-spark-shell</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -182,7 +183,7 @@
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-spark-shell</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -195,7 +196,7 @@
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-spark-shell/bin</directory>
-              <filemode>644</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
             </mapping>
@@ -203,7 +204,7 @@
             <!-- Conf/Setup -->
             <mapping>
               <directory>${rpm.install.dir}/setup/nifi</directory>
-              <filemode>744</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -294,7 +295,7 @@
             </mapping>
             <mapping>
                 <directory>${rpm.install.dir}/setup/sql</directory>
-                <filemode>744</filemode>
+                <filemode>${file.permissions}</filemode>
                 <username>${rpm.user}</username>
                 <groupname>${rpm.user}</groupname>
                 <sources>
@@ -305,7 +306,7 @@
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/setup/data</directory>
-              <filemode>744</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -314,20 +315,9 @@
                 </source>
               </sources>
             </mapping>
-           <!--mapping>
-              <directory>${rpm.install.dir}/setup/local_packages</directory>
-              <filemode>744</filemode>
-              <username>${rpm.user}</username>
-              <groupname>${rpm.user}</groupname>
-              <sources>
-                <source>
-                  <location>setup/local_packages</location>
-                </source>
-              </sources>
-            </mapping-->
             <mapping>
               <directory>${rpm.install.dir}/setup/activemq</directory>
-              <filemode>744</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -338,7 +328,7 @@
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/setup/elasticsearch</directory>
-              <filemode>744</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -348,8 +338,30 @@
               </sources>
             </mapping>
             <mapping>
+              <directory>${rpm.install.dir}/setup/dev</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>setup/dev</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/setup/java</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>setup/java</location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
               <directory>${rpm.install.dir}/setup</directory>
-              <filemode>744</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -363,7 +375,7 @@
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}</directory>
-              <filemode>744</filemode>
+              <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
               <sources>
@@ -373,17 +385,6 @@
                     <include>start-thinkbig-apps.sh</include>
                     <include>stop-thinkbig-apps.sh</include>
                   </includes>
-                </source>
-              </sources>
-            </mapping>
-            <mapping>
-              <directory>${rpm.install.dir}/setup/dev</directory>
-              <filemode>744</filemode>
-              <username>${rpm.user}</username>
-              <groupname>${rpm.user}</groupname>
-              <sources>
-                <source>
-                  <location>setup/dev</location>
                 </source>
               </sources>
             </mapping>
