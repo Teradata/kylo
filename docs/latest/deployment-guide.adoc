@@ -38,6 +38,11 @@ The Data Lake Accelerator services should be installed on an edge node.  The fol
 
 == Installation
 
+=== Java
+Data Lake Accelerator requires Java 8 for NiFi, thinkbig-ui, and thinkbig-services. If you already have Java 8 installed as the system level Java then you will not be required to follow the Java installation
+steps below. However, if Java 7 is the system version and you do not want to change it to Java 8 you can leverage the mentioned scripts below to download and configure Java 8 in the /opt/java directory. The scripts
+ will also modify the startup scripts for NiFi, thinkbig-ui and thinkbig-services to reference the /opt/java JAVA_HOME.
+
 === Procedure for installing all components on one edge node
 
 Follow the steps below to install the data lake accelerator. This procedure is also recommended for installing to a Hortonworks sandbox.
