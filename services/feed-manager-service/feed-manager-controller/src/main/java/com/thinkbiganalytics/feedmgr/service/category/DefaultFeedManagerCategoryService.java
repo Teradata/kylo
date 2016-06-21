@@ -7,8 +7,6 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 
-import org.springframework.transaction.annotation.Transactional;
-
 import java.util.Collection;
 import java.util.List;
 
@@ -97,7 +95,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     }
 
     @Override
-    @Transactional(transactionManager = "metadataTransactionManager")
+   // @Transactional(transactionManager = "metadataTransactionManager")
     public boolean deleteCategory(final String categoryId) throws InvalidOperationException {
         return metadataAccess.commit(new Command<Boolean>() {
             @Override
