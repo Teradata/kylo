@@ -17,6 +17,7 @@
         <module>metadata-api</module>
         <module>metadata-core</module>
         <module>metadata-server</module>
+        <module>metadata-jpa</module>
         <module>metadata-modeshape</module>
     </modules>
     

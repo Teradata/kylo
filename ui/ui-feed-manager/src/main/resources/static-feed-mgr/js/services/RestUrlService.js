@@ -23,6 +23,8 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
 
     this.PREVIEW_CRON_EXPRESSION_URL =this.ROOT+"/proxy/v1/feedmgr/util/cron-expression/preview";
 
+    this.GET_SYSTEM_NAME =this.ROOT+"/proxy/v1/feedmgr/util/system-name";
+
     this.CODE_MIRROR_TYPES_URL = this.ROOT+"/proxy/v1/feedmgr/util/codemirror-types";
 
 

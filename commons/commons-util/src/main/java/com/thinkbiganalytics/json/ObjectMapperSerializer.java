@@ -8,12 +8,16 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 
 /**
  * Created by sr186054 on 3/3/16.
  */
 public class ObjectMapperSerializer {
+    private static final Logger log = LoggerFactory.getLogger(ObjectMapperSerializer.class);
 
 
     private  static ObjectMapper mapper;
@@ -35,7 +39,7 @@ public class ObjectMapperSerializer {
         try {
             json = getMapper().writeValueAsString(obj);
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new RuntimeException("Error serializing object", e);
         }
         return json;
     }
@@ -44,8 +48,7 @@ public class ObjectMapperSerializer {
         try {
             return getMapper().readValue(json,clazz);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("error de-serializing object", e);
         }
-        return null;
     }
 }

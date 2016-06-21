@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.server;
+package com.thinkbiganalytics.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -37,7 +37,8 @@ public class JerseyConfig extends ResourceConfig {
         //packages("com.thinkbiganalytics");
         packages("com.thinkbiganalytics.ui.rest.controller", "com.thinkbiganalytics.servicemonitor.rest.controller", "com.thinkbiganalytics.scheduler.rest.controller",
                  "com.thinkbiganalytics.jobrepo.rest.controller", "com.thinkbiganalytics.hive.rest.controller",
-                 "com.thinkbiganalytics.feedmgr.rest.controller", "com.thinkbiganalytics.policy.rest.controller", "com.thinkbiganalytics.metadata.rest.api");
+                 "com.thinkbiganalytics.feedmgr.rest.controller", "com.thinkbiganalytics.policy.rest.controller", "com.thinkbiganalytics.metadata.rest.api",
+                 "com.thinkbiganalytics.rest.exception");
 
         register(JacksonFeature.class);
         register(MultiPartFeature.class);

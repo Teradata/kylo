@@ -18,10 +18,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
+import com.thinkbiganalytics.feedmgr.rest.beanvalidation.NewFeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.rest.JerseyClientException;
+import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 
 import io.swagger.annotations.Api;
 
@@ -54,7 +56,7 @@ public class FeedCategoryRestController {
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON })
-    public Response saveCategory(FeedCategory feedCategory) throws JerseyClientException{
+    public Response saveCategory(@NewFeedCategory FeedCategory feedCategory) {
         getMetadataService().saveCategory(feedCategory);
         return Response.ok(feedCategory).build();
     }
@@ -62,8 +64,7 @@ public class FeedCategoryRestController {
     @DELETE
     @Path("/{categoryId}")
     @Produces({MediaType.APPLICATION_JSON })
-    public Response deleteCategory(@PathParam("categoryId")String categoryId) throws JerseyClientException,
-                                                                                   InvalidOperationException {
+    public Response deleteCategory(@UUID @PathParam("categoryId")String categoryId) throws InvalidOperationException {
         getMetadataService().deleteCategory(categoryId);
         return Response.ok().build();
     }
@@ -71,7 +72,7 @@ public class FeedCategoryRestController {
     @GET
     @Path("/{categoryId}/feeds")
     @Produces({MediaType.APPLICATION_JSON })
-    public Response getCategory(@PathParam("categoryId")String categoryId) throws JerseyClientException{
+    public Response getCategory(@UUID @PathParam("categoryId")String categoryId) {
         List<FeedSummary> summaryList  = getMetadataService().getFeedSummaryForCategory(categoryId);
         return Response.ok(summaryList).build();
     }

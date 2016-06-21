@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.jobrepo.query.builder;
 
-import com.thinkbiganalytics.jobrepo.query.support.DatabaseType;
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 
 import java.util.HashMap;
 import java.util.Map;

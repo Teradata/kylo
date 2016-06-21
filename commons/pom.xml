@@ -13,6 +13,7 @@
         <module>commons-util</module>
         <module>commons-rest-model</module>
         <module>commons-rest-client</module>
+        <module>commons-jdbc</module>
         <module>commons-jpa</module>
         <module>commons-spark</module>
     </modules>

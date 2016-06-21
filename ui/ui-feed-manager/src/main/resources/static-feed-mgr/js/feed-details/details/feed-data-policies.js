@@ -20,6 +20,7 @@
         var self = this;
 
         this.model = FeedService.editFeedModel;
+        this.editableSection = false;
 
         $scope.$watch(function () {
             return FeedService.editFeedModel;
@@ -82,15 +83,34 @@
         this.onCancel = function () {
 
         }
-        this.onSave = function () {
-            //save changes to the model
-            self.model.table.targeFormat = self.editModel.table.targeFormat;
-            self.model.table.fieldPolicies = self.editModel.fieldPolicies;
-            self.model.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
-            self.model.table.options = self.editModel.table.options;
-            self.model.table.securityGroups = self.editModel.table.securityGroups;
 
-            FeedService.saveFeedModel(self.model);
+        this.onSave = function (ev) {
+            //save changes to the model
+            FeedService.showFeedSavingDialog(ev, "Saving Feed " + self.model.feedName, self.model.feedName);
+            var copy = angular.copy(FeedService.editFeedModel);
+
+            copy.table.targeFormat = self.editModel.table.targeFormat;
+            copy.table.fieldPolicies = self.editModel.fieldPolicies;
+            copy.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
+            copy.table.options = self.editModel.table.options;
+            copy.table.securityGroups = self.editModel.table.securityGroups;
+
+            FeedService.saveFeedModel(copy).then(function (response) {
+                FeedService.hideFeedSavingDialog();
+                self.editableSection = false;
+                //save the changes back to the model
+                self.model.table.targeFormat = self.editModel.table.targeFormat;
+                self.model.table.fieldPolicies = self.editModel.fieldPolicies;
+                self.model.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
+                self.model.table.options = self.editModel.table.options;
+                self.model.table.securityGroups = self.editModel.table.securityGroups;
+            }, function (response) {
+                FeedService.hideFeedSavingDialog();
+                FeedService.buildErrorData(self.model.feedName, response.data);
+                FeedService.showFeedErrorsDialog();
+                //make it editable
+                self.editableSection = true;
+            });
         }
 
         this.showFieldRuleDialog = function (field, policyParam) {

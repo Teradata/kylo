@@ -5,7 +5,7 @@
 /**
  *
  */
-angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdToast, RestUrlService, VisualQueryService,FeedCreationErrorService) {
+angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdToast,$mdDialog, RestUrlService, VisualQueryService,FeedCreationErrorService) {
 
 
     function trim(str) {
@@ -183,7 +183,28 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             // this.createFeedModel.table.tableSchema.fields = this.createFeedModel.table.columnDefinitions;
          //   this.createFeedModel.table.fieldPolicies = this.createFeedModel.table.columnPolicies;
         },
-
+        showFeedSavingDialog:function(ev,message,feedName){
+            $mdDialog.show({
+                controller: 'FeedSavingDialogController',
+                templateUrl: 'js/feed-details/details/feed-saving-dialog.html',
+                parent: angular.element(document.body),
+                targetEvent: ev,
+                clickOutsideToClose:false,
+                fullscreen: true,
+                locals : {
+                    message:message,
+                    feedName:feedName
+                }
+            })
+                .then(function(answer) {
+                    //do something with result
+                }, function() {
+                    //cancelled the dialog
+                });
+        },
+        hideFeedSavingDialog:function(){
+            $mdDialog.hide();
+        },
         saveFeedModel:function(model){
             var self = this;
             self.prepareModelForSave(model);
@@ -228,6 +249,8 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         },
         getSystemName: function (feedName) {
 
+            return $http.get(RestUrlService.GET_SYSTEM_NAME, {params: {name: feedName}});
+            /*
             var controlChars = ["\"","'","!","@","#","$","%","^","&","*","(",")"];
             var systemName = feedName;
             //remove control chars
@@ -243,6 +266,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             systemName = spacesToUnderscore(systemName);
             systemName = systemName.split("__").join("_");
             return systemName;
+             */
 
          },
         getColumnDefinitionByName:function(name) {
@@ -282,3 +306,30 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
 return data;
 
 });
+
+(function () {
+
+
+    var controller = function ($scope, $mdDialog, message,feedName){
+        var self = this;
+
+        $scope.feedName = feedName;
+        $scope.message = message;
+
+
+        $scope.hide = function() {
+            $mdDialog.hide();
+        };
+
+        $scope.cancel = function() {
+            $mdDialog.cancel();
+        };
+
+
+    };
+
+    angular.module(MODULE_FEED_MGR).controller('FeedSavingDialogController',controller);
+
+
+
+}());

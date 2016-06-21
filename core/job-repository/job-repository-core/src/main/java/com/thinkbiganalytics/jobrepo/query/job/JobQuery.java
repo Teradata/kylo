@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.jobrepo.query.job;
 
 
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
 import com.thinkbiganalytics.jobrepo.query.AbstractConstructedQuery;
 import com.thinkbiganalytics.jobrepo.query.builder.ColumnFilterQueryModifier;
@@ -11,7 +12,6 @@ import com.thinkbiganalytics.jobrepo.query.rowmapper.JobExecutionRowMapper;
 import com.thinkbiganalytics.jobrepo.query.substitution.DatabaseQuerySubstitutionFactory;
 import com.thinkbiganalytics.jobrepo.query.support.ColumnFilter;
 import com.thinkbiganalytics.jobrepo.query.support.ColumnFilterUtil;
-import com.thinkbiganalytics.jobrepo.query.support.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.support.OrderBy;
 
 import org.springframework.jdbc.core.RowMapper;

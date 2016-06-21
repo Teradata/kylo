@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.jobrepo.query.substitution;
 
 
-import com.thinkbiganalytics.jobrepo.query.support.DatabaseType;
+import com.thinkbiganalytics.jdbc.util.DatabaseType;
 import com.thinkbiganalytics.jobrepo.query.support.DatabaseUnsupportedException;
 
 import org.apache.commons.lang3.StringUtils;

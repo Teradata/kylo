@@ -2760,10 +2760,10 @@ angular.module(COMMON_APP_MODULE_NAME).factory('Utils', function ($timeout) {
     };
     return data;
 
-});app.directive("verticalSectionLayout", function()  {
+});angular.module(COMMON_APP_MODULE_NAME).directive("verticalSectionLayout", function()  {
     return {
         restrict: 'E',
-        scope: {showVerticalCheck:'=?',allowEdit:'=?',sectionTitle:'@',formName:'@',onDelete:'&?',allowDelete:'=?', onEdit:'&', onSaveEdit:'&',onCancelEdit:'&',editable:'=?'},
+        scope: {showVerticalCheck:'=?',allowEdit:'=?',sectionTitle:'@',formName:'@',onDelete:'&?',allowDelete:'=?', onEdit:'&', onSaveEdit:'&',onCancelEdit:'&',editable:'=?',keepEditableAfterSave:'=?'},
         transclude: {
             'readonly':'?readonlySection',
             'editable':'?editableSection'
@@ -2783,27 +2783,32 @@ angular.module(COMMON_APP_MODULE_NAME).factory('Utils', function ($timeout) {
             if($scope.allowEdit == undefined ){
                 $scope.allowEdit = true;
             }
+            if($scope.keepEditableAfterSave == undefined){
+                $scope.keepEditableAfterSave = false;
+            }
 
 
 
-            $scope.edit = function(){
+            $scope.edit = function(ev){
                 $scope.editable = true;
-                $scope.onEdit();
+                $scope.onEdit(ev);
             }
 
-            $scope.cancel = function(){
-                $scope.onCancelEdit();
+            $scope.cancel = function(ev){
+                $scope.onCancelEdit(ev);
                 $scope.editable = false;
             }
 
-            $scope.save = function(){
-                $scope.onSaveEdit();
-                $scope.editable = false;
+            $scope.save = function(ev){
+                $scope.onSaveEdit(ev);
+                if(!$scope.keepEditableAfterSave) {
+                    $scope.editable = false;
+                }
             }
 
-            $scope.delete = function() {
+            $scope.delete = function(ev) {
                 if($scope.onDelete){
-                    $scope.onDelete();
+                    $scope.onDelete(ev);
                 }
             }
 
@@ -2812,11 +2817,8 @@ angular.module(COMMON_APP_MODULE_NAME).factory('Utils', function ($timeout) {
 
         }
     };
-});/*
- * Copyright (c) 2015.
- */
-
-app.directive('tbaViewTypeSelection', function() {
+});
+angular.module(COMMON_APP_MODULE_NAME).directive('tbaViewTypeSelection', function() {
     return {
         restrict: 'E',
         templateUrl: 'js/shared/view-type-selection/view-type-selection-template.html',
