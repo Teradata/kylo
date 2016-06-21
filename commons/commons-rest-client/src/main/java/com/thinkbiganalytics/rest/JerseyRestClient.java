@@ -5,9 +5,8 @@
 package com.thinkbiganalytics.rest;
 
 import com.google.common.io.ByteStreams;
+
 import org.apache.commons.lang3.StringUtils;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.config.ConnectionConfig;
 import org.apache.http.config.Registry;
 import org.apache.http.config.RegistryBuilder;
 import org.apache.http.conn.socket.ConnectionSocketFactory;
@@ -19,7 +18,9 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.glassfish.jersey.SslConfigurator;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
 import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
-import org.glassfish.jersey.client.*;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.Boundary;
@@ -28,17 +29,20 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.client.*;
-import javax.ws.rs.core.*;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.SocketTimeoutException;
-import java.util.ArrayList;
 import java.util.Map;
 import java.util.concurrent.Future;
+
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.Form;
+import javax.ws.rs.core.GenericType;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 
 /**
  * Generic JerseyRestClient
@@ -75,33 +79,33 @@ public class JerseyRestClient {
 
             if (keyStoreFile != null) {
                 sslConfig = SslConfigurator.newInstance()
-                        .trustStoreBytes(keyStoreFile)
-                        .trustStorePassword(config.getKeystorePassword())
-                .keyStoreBytes(keyStoreFile)
-                .keyStorePassword(config.getKeystorePassword());
+                    .trustStoreBytes(keyStoreFile)
+                    .trustStorePassword(config.getKeystorePassword())
+                    .keyStoreBytes(keyStoreFile)
+                    .keyStorePassword(config.getKeystorePassword());
             } else {
                 sslConfig = SslConfigurator.newInstance()
-                        .trustStoreFile(config.getKeystorePath())
-                        .trustStorePassword(config.getKeystorePassword());
+                    .trustStoreFile(config.getKeystorePath())
+                    .trustStorePassword(config.getKeystorePassword());
             }
 
             try {
-                 sslContext = sslConfig.createSSLContext();
-            }catch(Exception e){
-                LOG.error("ERROR creating CLient SSL Context.  "+e.getMessage()+" Falling back to JIRA Client without SSL.  JIRA Integration will probably not work until this is fixed!");
+                sslContext = sslConfig.createSSLContext();
+            } catch (Exception e) {
+                LOG.error("ERROR creating CLient SSL Context.  " + e.getMessage() + " Falling back to JIRA Client without SSL.  JIRA Integration will probably not work until this is fixed!");
             }
         }
 
         ClientConfig clientConfig = new ClientConfig();
         // Add in Timeouts if configured.  Values are in milliseconds
-        if(config.getReadTimeout() != null) {
+        if (config.getReadTimeout() != null) {
             clientConfig.property(ClientProperties.READ_TIMEOUT, config.getReadTimeout());
         }
-        if(config.getConnectTimeout() != null) {
+        if (config.getConnectTimeout() != null) {
             clientConfig.property(ClientProperties.CONNECT_TIMEOUT, config.getConnectTimeout());
         }
 
-        if(useConnectionPooling) {
+        if (useConnectionPooling) {
 
             PoolingHttpClientConnectionManager connectionManager = null;
             if (sslContext != null) {
@@ -109,14 +113,13 @@ public class JerseyRestClient {
                 HostnameVerifier defaultHostnameVerifier = new DefaultHostnameVerifier();
 
                 LayeredConnectionSocketFactory sslSocketFactory = new SSLConnectionSocketFactory(
-                        sslContext,
-                        defaultHostnameVerifier);
+                    sslContext,
+                    defaultHostnameVerifier);
 
                 final Registry<ConnectionSocketFactory> registry = RegistryBuilder.<ConnectionSocketFactory>create()
-                        .register("http", PlainConnectionSocketFactory.getSocketFactory())
-                        .register("https", sslSocketFactory)
-                        .build();
-
+                    .register("http", PlainConnectionSocketFactory.getSocketFactory())
+                    .register("https", sslSocketFactory)
+                    .build();
 
                 connectionManager = new PoolingHttpClientConnectionManager(registry);
             } else {
@@ -133,7 +136,7 @@ public class JerseyRestClient {
         }
 
         clientConfig.register(MultiPartFeature.class);
-        if(sslContext != null) {
+        if (sslContext != null) {
             LOG.info("Created new Jersey Client with SSL");
             client = new JerseyClientBuilder().withConfig(clientConfig).sslContext(sslContext).build();
         } else {
@@ -144,21 +147,19 @@ public class JerseyRestClient {
         client.register(JacksonFeature.class);
         client.register(MultiPartFeature.class);
 
-        if(StringUtils.isNotBlank(getUsername())) {
+        if (StringUtils.isNotBlank(getUsername())) {
             HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), config.getPassword());
             client.register(feature);
         }
         this.uri = config.getUrl();
         this.username = config.getUsername();
 
-        if(StringUtils.isNotBlank(config.getHost()) && ! HOST_NOT_SET_VALUE.equals(config.getHost())) {
+        if (StringUtils.isNotBlank(config.getHost()) && !HOST_NOT_SET_VALUE.equals(config.getHost())) {
             this.isHostConfigured = true;
             LOG.info("Jersey Rest Client initialized");
-        }
-        else{
+        } else {
             LOG.info("Jersey Rest Client not initialized");
         }
-
 
 
     }
@@ -175,8 +176,6 @@ public class JerseyRestClient {
 
     /**
      * allow implementers to override to change the base target
-     *
-     * @return
      */
     protected WebTarget getBaseTarget() {
         WebTarget target = client.target(uri);
@@ -195,137 +194,64 @@ public class JerseyRestClient {
         return target;
     }
 
-    public <T> Future<T> getAsync(String path, Map<String, Object> params, Class<T> clazz) throws JerseyClientException {
+    public <T> Future<T> getAsync(String path, Map<String, Object> params, Class<T> clazz) {
         WebTarget target = buildTarget(path, params);
-        try {
-            return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).async().get(clazz);
-        } catch (ClientErrorException e) {
-            String msg = "Get Async Error for " + target.getUri().toString();
-            LOG.error(msg, e);
-            throw new JerseyClientException(msg, e);
-        }
+        return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).async().get(clazz);
     }
 
-    public <T> Future<T> getAsync(String path, Map<String, Object> params, GenericType<T> type) throws JerseyClientException {
+    public <T> Future<T> getAsync(String path, Map<String, Object> params, GenericType<T> type) {
         WebTarget target = buildTarget(path, params);
-        try {
-            return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).async().get(type);
-        } catch (ClientErrorException e) {
-            String msg = "Get Async Error for " + target.getUri().toString();
-            LOG.error(msg);
-            throw new JerseyClientException(msg, e);
-        }
+        return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE).async().get(type);
+
     }
 
-    public <T> T get(String path, Map<String, Object> params, Class<T> clazz) throws JerseyClientException {
+    public <T> T get(String path, Map<String, Object> params, Class<T> clazz) {
         WebTarget target = buildTarget(path, params);
-        try {
-            return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
-        } catch (Exception e) {
-            String msg = "Get Error for " + target.getUri().toString();
-            LOG.error(msg);
-            throw new JerseyClientException(msg, e);
-        }
+        return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(clazz);
     }
 
 
-    public <T> T get(String path, Map<String, Object> params, GenericType<T> type) throws JerseyClientException {
+    public <T> T get(String path, Map<String, Object> params, GenericType<T> type) {
         WebTarget target = buildTarget(path, params);
-        try {
-            return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(type);
-        } catch (ClientErrorException e) {
-            String msg = "Get Error for " + target.getUri().toString();
-            LOG.error(msg);
-            throw new JerseyClientException(msg, e);
-        }
+        return target.request(MediaType.APPLICATION_JSON_TYPE).accept(MediaType.APPLICATION_JSON_TYPE, MediaType.APPLICATION_XML_TYPE).get(type);
     }
 
-
-    public Response post(String path, Object o) throws JerseyClientException {
+    public Response post(String path, Object o) {
         WebTarget target = buildTarget(path, null);
-        try {
-            return target.request().post(Entity.entity(o, MediaType.APPLICATION_JSON_TYPE));
-        } catch (ClientErrorException e) {
-            String msg = "Post Error for " + target.getUri().toString();
-            LOG.error(msg);
-            throw new JerseyClientException(msg, e);
-        }
+        return target.request().post(Entity.entity(o, MediaType.APPLICATION_JSON_TYPE));
     }
 
-    public <T> T postMultiPart(String path, MultiPart object, Class<T> returnType) throws JerseyClientException {
+    public <T> T postMultiPart(String path, MultiPart object, Class<T> returnType) {
         WebTarget target = buildTarget(path, null);
-        try {
-            MediaType contentType = MediaType.MULTIPART_FORM_DATA_TYPE;
-            contentType = Boundary.addBoundary(contentType);
-
-            return target.request().post(Entity.entity(object, contentType), returnType);
-        } catch (ClientErrorException e) {
-            String msg = "Post Error for " + target.getUri().toString();
-            LOG.error(msg);
-            throw new JerseyClientException(msg, e);
-        }
+        MediaType contentType = MediaType.MULTIPART_FORM_DATA_TYPE;
+        contentType = Boundary.addBoundary(contentType);
+        return target.request().post(Entity.entity(object, contentType), returnType);
     }
 
-    public <T> T post(String path, Object object, Class<T> returnType) throws JerseyClientException {
+    public <T> T post(String path, Object object, Class<T> returnType) {
         WebTarget target = buildTarget(path, null);
-        try {
-            return target.request().post(Entity.entity(object, MediaType.APPLICATION_JSON), returnType);
-        } catch (ClientErrorException e) {
-            String msg = "Post Error for " + target.getUri().toString();
-            LOG.error(msg);
-            throw new JerseyClientException(msg, e);
-        }
+        return target.request().post(Entity.entity(object, MediaType.APPLICATION_JSON), returnType);
     }
 
-    public <T> T put(String path, Object object, Class<T> returnType) throws JerseyClientException {
+    public <T> T put(String path, Object object, Class<T> returnType) {
         WebTarget target = buildTarget(path, null);
-        try {
-            return target.request().put(Entity.entity(object, MediaType.APPLICATION_JSON), returnType);
-        } catch (ClientErrorException e) {
-            String msg = "Put Error for " + target.getUri().toString();
-            LOG.error(msg);
-            throw new JerseyClientException(msg, e);
-        }
+        return target.request().put(Entity.entity(object, MediaType.APPLICATION_JSON), returnType);
     }
 
-
-    public <T> T delete(String path,Map<String,Object> params,Class<T> returnType) throws JerseyClientException {
+    public <T> T delete(String path, Map<String, Object> params, Class<T> returnType) {
         WebTarget target = buildTarget(path, params);
-        try {
-
-            return target.request().delete(returnType);
-        } catch (ClientErrorException e) {
-            String msg = "Delete Error for " + target.getUri().toString();
-            LOG.error(msg);
-            throw new JerseyClientException(msg, e);
-        }
+        return target.request().delete(returnType);
     }
 
-    public <T> T postForm(String path, Form form,Class<T> returnType) throws JerseyClientException {
+    public <T> T postForm(String path, Form form, Class<T> returnType) {
         WebTarget target = buildTarget(path, null);
-        try {
-         //   Response response = target.request().post(Entity.entity(form,MediaType.APPLICATION_FORM_URLENCODED_TYPE));
-          //  return response;
-          return  target.request().post(Entity.entity(form,MediaType.APPLICATION_FORM_URLENCODED_TYPE), returnType);
-        } catch (ClientErrorException e) {
-            String msg = "Post Error for " + target.getUri().toString();
-            LOG.error(msg);
-            throw new JerseyClientException(msg, e);
-        }
+        return target.request().post(Entity.entity(form, MediaType.APPLICATION_FORM_URLENCODED_TYPE), returnType);
     }
 
-    public <T> Future<T> postAsync(String path, Object object, Class<T> returnType) throws JerseyClientException {
+    public <T> Future<T> postAsync(String path, Object object, Class<T> returnType) {
         WebTarget target = buildTarget(path, null);
-        try {
-            return target.request().async().post(Entity.entity(object, MediaType.APPLICATION_JSON), returnType);
-        } catch (ClientErrorException e) {
-            String msg = "Post Async Error for " + target.getUri().toString();
-            LOG.error(msg);
-            throw new JerseyClientException(msg, e);
-        }
+        return target.request().async().post(Entity.entity(object, MediaType.APPLICATION_JSON), returnType);
     }
-
-
 
 
 }
