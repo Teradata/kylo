@@ -227,7 +227,7 @@ public class ProvenanceEventReceiverTest {
         //Simulate the Startup of Pipline Controller by simulating processing of Ops Manager to query for running jobs and get those events
         doAnswer(onStartup(true)).when(this.provenanceEventStartupListener).onStartup(any(DateTime.class));
 
-        doAnswer(isConnectedToNifi(timeNifiIsDownOnStartup)).when(this.provenanceEventStartupListener).isConnectedToNifi();
+        doAnswer(isConnectedToNifi(timeNifiIsDownOnStartup)).when(this.provenanceFeedManager).isConnectedToNifi();
 
 
         //setup Mocks
@@ -240,7 +240,7 @@ public class ProvenanceEventReceiverTest {
 
 
         //process JMS Nifi Events in another thread
-        simulateNifiEvents(100, 1000, 1000);
+        simulateNifiEvents(20, 1000, 1000);
         //startup the application
         this.provenanceEventStartupListener.onStartup(new DateTime());
         //Simulate running events for some time
@@ -351,7 +351,7 @@ public class ProvenanceEventReceiverTest {
                 processAndWait(5000);
                 //call the method
                 if (isError) {
-                    provenanceEventReceiver.onStartupConnectionError(null, null);
+                    provenanceEventReceiver.onStartupConnectionError();
                 }
                 provenanceEventReceiver.onEventsInitialized();
                 startupFinished.set(true);
