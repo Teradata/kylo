@@ -72,5 +72,8 @@ fi
 
 if [ "$install_java" == "y"  ] || [ "$install_java" == "Y" ] ; then
     ./java/install-java8.sh
-    ./java/change-java-home.sh
+    ./java/change-thinkbig-java-home.sh
+    if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
+        ./java/change-nifi-java-home.sh
+    fi
 fi
