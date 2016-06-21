@@ -7,16 +7,20 @@ import com.thinkbiganalytics.jobrepo.nifi.model.FlowFileComponent;
 import com.thinkbiganalytics.jobrepo.nifi.model.FlowFileEvents;
 import com.thinkbiganalytics.jobrepo.nifi.model.NifiJobExecution;
 import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
+import com.thinkbiganalytics.nifi.rest.client.NifiConnectionException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
-import com.thinkbiganalytics.rest.JerseyClientException;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.BulletinBoardDTO;
 import org.apache.nifi.web.api.dto.BulletinDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.entity.AboutEntity;
 import org.apache.nifi.web.api.entity.BulletinBoardEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.slf4j.Logger;
@@ -24,13 +28,20 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by sr186054 on 2/26/16.
  */
 @Component
 public class NifiComponentFlowData {
+
     private static final Logger LOG = LoggerFactory.getLogger(NifiComponentFlowData.class);
 
 
@@ -50,7 +61,7 @@ public class NifiComponentFlowData {
     Map<String, ProcessorDTO> processorMap = new HashMap<>();
 
 
-    private void populateFeedFailureProcessorMap(ProcessGroupDTO feedGroup) {
+    private void populateFeedFailureProcessorMap(ProcessGroupDTO feedGroup) throws NifiConnectionException {
         Map<String, ProcessorDTO> failureMap = new HashMap<>();
         feedFailureProcessors.put(feedGroup, failureMap);
         try {
@@ -64,8 +75,12 @@ public class NifiComponentFlowData {
                 }
             }
 
-        } catch (JerseyClientException e) {
-            e.printStackTrace();
+        } catch (NifiClientRuntimeException e) {
+            if (e instanceof NifiConnectionException) {
+                throw e;
+            } else {
+                LOG.error("Error populateFeedFailureProcessorMap for Process Group {}, {} ", feedGroup.getId(), feedGroup.getName());
+            }
         }
     }
 
@@ -82,18 +97,23 @@ public class NifiComponentFlowData {
     }
 
 
-    public List<BulletinDTO> getBulletinsNotYetProcessed(ProvenanceEventRecordDTO event) {
+    public List<BulletinDTO> getBulletinsNotYetProcessed(ProvenanceEventRecordDTO event) throws NifiConnectionException {
         NifiJobExecution jobExecution = event.getFlowFileComponent().getJobExecution();
         List<BulletinDTO> dtos = new ArrayList<>();
         List<BulletinDTO> bulletinDTOList = getFeedBulletinsForComponentInFlowFile(event);
-        LOG.info("get Bulletins found ... {} bulletins",bulletinDTOList.size());
+        LOG.debug("get Bulletins found ... {} bulletins", bulletinDTOList.size());
         try {
             BulletinBoardEntity bulletinBoardEntity = nifiRestClient.getBulletins(null);
-            if(bulletinBoardEntity != null ){
-              List<BulletinDTO> b = bulletinBoardEntity.getBulletinBoard().getBulletins();
-                LOG.info("FULL Bulletins found ... {} bulletins", b.size());
+            if (bulletinBoardEntity != null) {
+                List<BulletinDTO> b = bulletinBoardEntity.getBulletinBoard().getBulletins();
+                LOG.debug("FULL Bulletins found ... {} bulletins", b.size());
             }
-        }catch(JerseyClientException e){
+        } catch (NifiClientRuntimeException e) {
+            if (e instanceof NifiConnectionException) {
+                throw e;
+            } else {
+                LOG.error("Error getBulletinsNotYetProcessed for ProvenanceEventRecordDTO EventID: {}, ComponentId: {} ", event.getId(), event.getComponentId());
+            }
 
         }
         for (BulletinDTO dto : bulletinDTOList) {
@@ -170,14 +190,15 @@ public class NifiComponentFlowData {
         provenanceEventRecordDTO.setFlowFileUuid(flowFile.getUuid());
         flowFile.addEventPriorTo(provenanceEventRecordDTO, event);
         flowFile.getOrAddComponent(componentId);
-        LOG.info("Added new Failure Event with id " + provenanceEventRecordDTO.getEventId() + " and time " + provenanceEventRecordDTO.getEventTime() + " with details " + provenanceEventRecordDTO.getDetails());
+        LOG.info("Added new Failure Event with id " + provenanceEventRecordDTO.getEventId() + " and time " + provenanceEventRecordDTO.getEventTime() + " with details " + provenanceEventRecordDTO
+            .getDetails());
         //mark the bulletins as processed for the job
         jobExecution.addBulletinErrors(dtos);
         return provenanceEventRecordDTO;
     }
 
 
-    public void setBulletinsToEventDetails(ProvenanceEventRecordDTO event) {
+    public void setBulletinsToEventDetails(ProvenanceEventRecordDTO event) throws NifiConnectionException {
         LOG.debug(" attempt to setBulletinsToEventDetails for " + event.getFlowFileComponent().getComponetName());
         List<BulletinDTO> bulletinDTOList = getFeedBulletinsForComponentInFlowFile(event);
         List<BulletinDTO> currentComponentErrors = new ArrayList<>();
@@ -208,7 +229,6 @@ public class NifiComponentFlowData {
             LOG.debug(" Bulletin Events for currentComponentErrors for " + event.getFlowFileComponent().getComponetName() + " are: " + currentComponentErrors.size());
             LOG.debug(" Found Bulletin Events otherComponents for " + otherComponents + " are: " + otherComponents.size());
 
-
             //add in the current component errors
             StringBuffer sb = null;
             for (BulletinDTO dto : currentComponentErrors) {
@@ -229,11 +249,11 @@ public class NifiComponentFlowData {
     }
 
 
-    public List<BulletinDTO> getFeedBulletinsForComponentInFlowFile(ProvenanceEventRecordDTO event) {
+    public List<BulletinDTO> getFeedBulletinsForComponentInFlowFile(ProvenanceEventRecordDTO event) throws NifiConnectionException {
         BulletinBoardEntity entity = null;
         ProcessGroupDTO feedGroup = getFeedProcessGroup(event);
         final String flowFileUUID = event.getFlowFileUuid();
-        if(feedGroup != null) {
+        if (feedGroup != null) {
             try {
                 entity = nifiRestClient.getBulletins(null); //feedGroup.getId());
                 if (entity != null) {
@@ -249,15 +269,19 @@ public class NifiComponentFlowData {
                     }));
 
                 }
-            } catch (JerseyClientException e) {
-                e.printStackTrace();
+            } catch (NifiClientRuntimeException e) {
+                if (e instanceof NifiConnectionException) {
+                    throw e;
+                } else {
+                    LOG.error("Error getFeedBulletinsForComponentInFlowFile for ProvenanceEventRecordDTO EventID: {}, ComponentId: {} ", event.getId(), event.getComponentId());
+                }
             }
         }
         return null;
     }
 
 
-    public List<BulletinDTO> getProcessorBulletinsForComponentInFlowFile(final String flowFileUUID, String componentId) {
+    public List<BulletinDTO> getProcessorBulletinsForComponentInFlowFile(final String flowFileUUID, String componentId) throws NifiConnectionException {
         BulletinBoardEntity entity = null;
         try {
             entity = nifiRestClient.getProcessorBulletins(componentId);
@@ -272,25 +296,28 @@ public class NifiComponentFlowData {
                 }));
 
             }
-        } catch (JerseyClientException e) {
-            e.printStackTrace();
+        } catch (NifiClientRuntimeException e) {
+            if (e instanceof NifiConnectionException) {
+                throw e;
+            } else {
+                LOG.error("Error getProcessorBulletinsForComponentInFlowFile flowfile: {}, ComponentId: {} ", flowFileUUID, componentId);
+            }
         }
         return null;
     }
 
-    public List<BulletinDTO> getProcessorBulletinsForComponentInFlowFile(FlowFileEvents rootFlowFile, String componentId) {
+    public List<BulletinDTO> getProcessorBulletinsForComponentInFlowFile(FlowFileEvents rootFlowFile, String componentId) throws NifiConnectionException {
         BulletinBoardEntity entity = null;
         try {
             entity = nifiRestClient.getProcessorBulletins(componentId);
             if (entity != null) {
                 final BulletinBoardDTO bulletinBoardDTO = entity.getBulletinBoard();
-               final Set<String> flowFileIds = rootFlowFile.getAllFlowFileIds();
+                final Set<String> flowFileIds = rootFlowFile.getAllFlowFileIds();
                 final NifiJobExecution jobExecution = rootFlowFile.getNifiJobExecution();
 
                 List<BulletinDTO> bulletins = Lists.newArrayList(Iterables.filter(bulletinBoardDTO.getBulletins(), new Predicate<BulletinDTO>() {
                     @Override
                     public boolean apply(BulletinDTO bulletinDTO) {
-
 
                         boolean match = flowFileIds.contains(getFlowFileUUIDFromBulletinMessage(bulletinDTO.getMessage()));
                         if (match && !jobExecution.isBulletinProcessed(bulletinDTO)) {
@@ -303,20 +330,23 @@ public class NifiComponentFlowData {
                 return bulletins;
 
             }
-        } catch (JerseyClientException e) {
-            e.printStackTrace();
+        } catch (NifiClientRuntimeException e) {
+            if (e instanceof NifiConnectionException) {
+                throw e;
+            } else {
+                LOG.error("Error getProcessorBulletinsForComponentInFlowFile for flowfile {} and componentId: {} ", rootFlowFile.getUuid(), componentId);
+            }
         }
         return null;
     }
 
 
-
-    public Set<ProcessorDTO> getEndingProcessors(ProvenanceEventRecordDTO event) {
+    public Set<ProcessorDTO> getEndingProcessors(ProvenanceEventRecordDTO event) throws NifiConnectionException {
         ProcessGroupDTO feedGroup = getFeedProcessGroup(event);
         return getEndingProcessors(feedGroup);
     }
 
-    public Set<String> getEndingProcessorIds(ProvenanceEventRecordDTO event) {
+    public Set<String> getEndingProcessorIds(ProvenanceEventRecordDTO event) throws NifiConnectionException {
         Set<String> ids = new HashSet<>();
         Set<ProcessorDTO> dtos = getEndingProcessors(event);
         if (dtos != null) {
@@ -328,14 +358,14 @@ public class NifiComponentFlowData {
     }
 
 
-    private Set<ProcessorDTO> getEndingProcessors(ProcessGroupDTO feedGroup) {
+    private Set<ProcessorDTO> getEndingProcessors(ProcessGroupDTO feedGroup) throws NifiConnectionException {
         LOG.debug("getEndingProcessors for {} ... feedGroup is null?? ", feedGroup, (feedGroup == null ? true : false));
         if (!feedEndingProcessors.containsKey(feedGroup)) {
             Set<ProcessorDTO> processorDTOs = new HashSet<>();
             try {
                 Set<NifiVisitableProcessor> processors = null;
-                NifiVisitableProcessGroup group =  nifiRestClient.getFlowOrder(feedGroup.getId());
-                if(group != null){
+                NifiVisitableProcessGroup group = nifiRestClient.getFlowOrder(feedGroup.getId());
+                if (group != null) {
                     processors = group.getEndingProcessors();
                 }
                 if (processors != null) {
@@ -344,8 +374,12 @@ public class NifiComponentFlowData {
                     }
                 }
                 feedEndingProcessors.put(feedGroup, processorDTOs);
-            } catch (JerseyClientException e) {
-                e.printStackTrace();
+            } catch (NifiClientRuntimeException e) {
+                if (e instanceof NifiConnectionException) {
+                    throw e;
+                } else {
+                    LOG.error("Error getEndingProcessors for ProcessGroupDTO {}, {} ", feedGroup.getId(), feedGroup.getName());
+                }
             }
         }
         return feedEndingProcessors.get(feedGroup);
@@ -353,7 +387,7 @@ public class NifiComponentFlowData {
     }
 
 
-    public Integer getEndingProcessorCount(ProvenanceEventRecordDTO event) {
+    public Integer getEndingProcessorCount(ProvenanceEventRecordDTO event) throws NifiConnectionException {
         ProcessGroupDTO feedGroup = getFeedProcessGroup(event);
         Set<ProcessorDTO> endingProcessors = getEndingProcessors(feedGroup);
         if (endingProcessors != null) {
@@ -365,9 +399,9 @@ public class NifiComponentFlowData {
     }
 
 
-    public boolean isFailureProcessor(ProvenanceEventRecordDTO event) {
+    public boolean isFailureProcessor(ProvenanceEventRecordDTO event) throws NifiConnectionException {
         ProcessGroupDTO feedGroup = getFeedProcessGroup(event);
-        if(feedGroup != null) {
+        if (feedGroup != null) {
             if (!feedFailureProcessors.containsKey(feedGroup)) {
                 LOG.debug("Check for Failure Processor on Feed Group " + feedGroup);
                 populateFeedFailureProcessorMap(feedGroup);
@@ -377,14 +411,13 @@ public class NifiComponentFlowData {
                 LOG.debug("Failure Processor Found:  {} ", event.getFlowFileComponent());
             }
             return feedFailureProcessors.get(feedGroup).containsKey(event.getComponentId());
-        }
-        else {
-            LOG.warn("Warning unable to find Feed Process Group for Event {} when checkign for isFailureProcessor",event);
+        } else {
+            LOG.warn("Warning unable to find Feed Process Group for Event {} when checkign for isFailureProcessor", event);
             return false;
         }
     }
 
-    public void populateGroupIdForEvent(ProvenanceEventRecordDTO event) {
+    public void populateGroupIdForEvent(ProvenanceEventRecordDTO event) throws NifiConnectionException {
         if (event.getGroupId() == null) {
             String componentId = event.getComponentId();
             String groupId = getGroupIdForComponent(event.getComponentId());
@@ -393,7 +426,7 @@ public class NifiComponentFlowData {
         }
     }
 
-    public String getGroupIdForComponent(String componentId) {
+    public String getGroupIdForComponent(String componentId) throws NifiConnectionException {
         String groupId = processorToGroupIdMap.get(componentId);
         if (groupId == null) {
             populateProcessorGroupIdMap(null);
@@ -402,7 +435,7 @@ public class NifiComponentFlowData {
     }
 
 
-    private void populateProcessorGroupIdMap(ProcessGroupDTO root) {
+    private void populateProcessorGroupIdMap(ProcessGroupDTO root) throws NifiConnectionException {
 
         try {
             if (root == null) {
@@ -417,14 +450,18 @@ public class NifiComponentFlowData {
                 processorToGroupIdMap.put(processorDTO.getId(), processorDTO.getParentGroupId());
             }
 
-        } catch (JerseyClientException e) {
-            e.printStackTrace();
+        } catch (NifiClientRuntimeException e) {
+            if (e instanceof NifiConnectionException) {
+                throw e;
+            } else {
+                LOG.error("Error populateProcessorGroupIdMap for ProcessGroupDTO {}, {} ", root.getId(), root.getName());
+            }
         }
 
     }
 
 
-    private void populateComponentIdFeedNameMap() {
+    private void populateComponentIdFeedNameMap() throws NifiConnectionException {
 
         try {
             ProcessGroupEntity processGroupEntity = nifiRestClient.getRootProcessGroup();
@@ -449,8 +486,12 @@ public class NifiComponentFlowData {
                     }
                 }
             }
-        } catch (JerseyClientException e) {
-            e.printStackTrace();
+        } catch (NifiClientRuntimeException e) {
+            LOG.error("Exception populateComponentIdFeedNameMap {} ", e.getMessage(), e);
+            if (e instanceof NifiConnectionException) {
+                throw e;
+            }
+
         }
 
     }
@@ -476,9 +517,16 @@ public class NifiComponentFlowData {
         return componentIdFeedProcessGroupMap.get(componentIdFeedNameMapKey(event));
     }
 
-    public Map<String, ProcessorDTO> getFeedProcessorsUsingFlowOrder(String feedName, String feedProcessGroupId) throws JerseyClientException {
-        //  LOG.info("getProcessorsForFlow for Feed "+feedName+" ID: "+feedProcessGroupId);
-        Set<ProcessorDTO> processorDTOs = nifiRestClient.getProcessorsForFlow(feedProcessGroupId);
+    public Map<String, ProcessorDTO> getFeedProcessorsUsingFlowOrder(String feedName, String feedProcessGroupId) throws NifiConnectionException {
+        LOG.debug("getFeedProcessorsUsingFlowOrder for Feed " + feedName + " ID: " + feedProcessGroupId);
+        Set<ProcessorDTO> processorDTOs = null;
+        try {
+
+            processorDTOs = nifiRestClient.getProcessorsForFlow(feedProcessGroupId);
+        } catch (NifiComponentNotFoundException e) {
+            //this is ok
+            LOG.error("Error getFeedProcessorsUsingFlowOrder {} ", e.getMessage(), e);
+        }
         Map<String, ProcessorDTO> feedProcessors = new HashMap<>();
 
         if (processorDTOs != null) {
@@ -492,7 +540,7 @@ public class NifiComponentFlowData {
     }
 
 
-    public String getFeedNameForComponentId(ProvenanceEventRecordDTO event) {
+    public String getFeedNameForComponentId(ProvenanceEventRecordDTO event) throws NifiConnectionException {
         String feedName = getFeedNameForEvent(event);
         boolean found = true;
         if (feedName == null) {
@@ -510,7 +558,7 @@ public class NifiComponentFlowData {
     }
 
 
-    public ProcessGroupDTO getFeedProcessGroup(ProvenanceEventRecordDTO event) {
+    public ProcessGroupDTO getFeedProcessGroup(ProvenanceEventRecordDTO event) throws NifiConnectionException {
         ProcessGroupDTO feedGroup = getFeedProcessGroupForEvent(event);
         boolean found = true;
         if (feedGroup == null) {
@@ -528,7 +576,7 @@ public class NifiComponentFlowData {
     }
 
 
-    public ProcessorDTO getFeedProcessor(ProvenanceEventRecordDTO event) {
+    public ProcessorDTO getFeedProcessor(ProvenanceEventRecordDTO event) throws NifiConnectionException {
         String componentId = event.getComponentId();
         ProcessGroupDTO feedGroup = getFeedProcessGroup(event);
         if (feedGroup != null) {
@@ -538,6 +586,17 @@ public class NifiComponentFlowData {
             }
         }
         return null;
+    }
+
+    public boolean isConnectedToNifi() {
+        try {
+            AboutEntity aboutEntity = nifiRestClient.getNifiVersion();
+            LOG.info("Successful connection to NIFI");
+            return true;
+        } catch (Exception e) {
+            LOG.info("Not connected to NIFI");
+            return false;
+        }
     }
 
     public void setNifiRestClient(NifiRestClient nifiRestClient) {

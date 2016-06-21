@@ -9,7 +9,7 @@ import com.thinkbiganalytics.jobrepo.nifi.support.NifiSpringBatchConstants;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
 import com.thinkbiganalytics.jobrepo.repository.dao.NifiJobRepository;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.rest.JerseyClientException;
+
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 import org.apache.nifi.web.api.entity.ProvenanceEventEntity;
 import org.slf4j.Logger;
@@ -19,16 +19,18 @@ import org.springframework.batch.core.ExitStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.StepExecution;
 import org.springframework.batch.core.explore.JobExplorer;
-import org.springframework.batch.core.launch.JobExecutionNotRunningException;
 import org.springframework.batch.core.launch.JobOperator;
-import org.springframework.batch.core.launch.NoSuchJobExecutionException;
-import org.springframework.batch.core.repository.JobExecutionAlreadyRunningException;
 import org.springframework.batch.core.repository.JobRepository;
-import org.springframework.transaction.annotation.Transactional;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
 
 import javax.inject.Inject;
 import javax.inject.Named;
-import java.util.*;
 
 /**
  * Created by sr186054 on 4/14/16.
@@ -37,7 +39,6 @@ import java.util.*;
 public class NifiJobService extends AbstractJobService {
 
     private static final Logger log = LoggerFactory.getLogger(NifiJobService.class);
-
 
     ///// INITIALL DELEGATE TO SPRING BATCH JobOperator and JobExplorer to do the work of start/stop/restart/etc
     /// LATER MOVE SPRING BATCH OUT OF this dependency
@@ -116,18 +117,23 @@ public class NifiJobService extends AbstractJobService {
                                 if (canReplay(event)) {
                                     //attempt to replay it
                                     try {
-                                        log.info("Restart Job Status... Attempt to Replay Nifi Event:  {}, Component: {} ({}), Flow File: {}, for  Step Execution {} ", event.getId(), event.getComponentName(), event.getComponentId(), event.getFlowFileUuid(), stepExecution.getId());
+                                        log.info("Restart Job Status... Attempt to Replay Nifi Event:  {}, Component: {} ({}), Flow File: {}, for  Step Execution {} ", event.getId(),
+                                                 event.getComponentName(), event.getComponentId(), event.getFlowFileUuid(), stepExecution.getId());
                                         ProvenanceEventEntity entity = nifiRestClient.replayProvenanceEvent(event.getEventId());
 
                                         if (entity != null) {
-                                            log.info("Successfully Restarted Job Status... for Nifi Event:  {}, Component: {}, Flow File: {}, for  Step Execution {}.  NEW data is:  {}, {}, {} ", event.getId(), event.getComponentName(), event.getFlowFileUuid(), stepExecution.getId(), entity.getProvenanceEvent().getEventId(), entity.getProvenanceEvent().getFlowFileUuid(), entity.getProvenanceEvent().getComponentId());
+                                            log.info("Successfully Restarted Job Status... for Nifi Event:  {}, Component: {}, Flow File: {}, for  Step Execution {}.  NEW data is:  {}, {}, {} ",
+                                                     event.getId(), event.getComponentName(), event.getFlowFileUuid(), stepExecution.getId(), entity.getProvenanceEvent().getEventId(),
+                                                     entity.getProvenanceEvent().getFlowFileUuid(), entity.getProvenanceEvent().getComponentId());
                                         }
                                         attemptToReplay = false;
                                         break;
 
-                                    } catch (JerseyClientException e) {
+                                    } catch (Exception e) {
+                                        //TODO CHANGE
                                         e.printStackTrace();
-                                        log.info("Error Restarting Provenance Event:  {}, Component: {}, Flow File: {}, for  Step Execution {} ", event.getId(), event.getComponentName(), event.getFlowFileUuid(), stepExecution.getId());
+                                        log.info("Error Restarting Provenance Event:  {}, Component: {}, Flow File: {}, for  Step Execution {} ", event.getId(), event.getComponentName(),
+                                                 event.getFlowFileUuid(), stepExecution.getId());
                                     }
                                 } else {
                                     log.info("Unable to replay event {}, {}, reason: {}", event.getEventId(), event.getComponentName(), event.getReplayExplanation());
@@ -155,7 +161,8 @@ public class NifiJobService extends AbstractJobService {
                     provenanceEventDTOs.add(provenanceEventEntity.getProvenanceEvent());
                 }
 
-            } catch (JerseyClientException e) {
+            } catch (Exception e) {
+                //TODO Change
 
             }
 
@@ -175,10 +182,10 @@ public class NifiJobService extends AbstractJobService {
     @Override
     public void abandonJobExecution(Long executionId) throws JobExecutionException {
         JobExecution execution = this.jobExplorer.getJobExecution(executionId);
-        if(execution != null) {
-        if (execution.getStartTime() == null) {
-            execution.setStartTime(DateTimeUtil.getUTCTime());
-        }
+        if (execution != null) {
+            if (execution.getStartTime() == null) {
+                execution.setStartTime(DateTimeUtil.getUTCTime());
+            }
             execution.setStatus(BatchStatus.ABANDONED);
             execution.setEndTime(DateTimeUtil.getUTCTime());
             this.jobRepository.update(execution);

@@ -3,9 +3,7 @@ package com.thinkbiganalytics.jobrepo.repository.dao;
 
 import com.thinkbiganalytics.jobrepo.nifi.model.FlowFileComponent;
 import com.thinkbiganalytics.jobrepo.nifi.model.NifiJobExecution;
-import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -13,26 +11,28 @@ import java.util.Map;
  */
 public interface NifiJobRepository {
 
-  Long createJobInstance(NifiJobExecution nifiJobExecution);
+    Long createJobInstance(NifiJobExecution nifiJobExecution);
 
-  Long saveJobExecution(NifiJobExecution nifiJobExecution);
+    Long saveJobExecution(NifiJobExecution nifiJobExecution);
 
-  void completeJobExecution(NifiJobExecution nifiJobExecution);
+    void completeJobExecution(NifiJobExecution nifiJobExecution);
 
-  void failJobExecution(NifiJobExecution nifiJobExecution);
+    void failJobExecution(NifiJobExecution nifiJobExecution);
 
-  Long saveStepExecution(FlowFileComponent flowFileComponent);
+    Long saveStepExecution(FlowFileComponent flowFileComponent);
 
-  void completeStep(FlowFileComponent flowFileComponent);
+    void completeStep(FlowFileComponent flowFileComponent);
 
-  void failStep(FlowFileComponent flowFileComponent);
+    void failStep(FlowFileComponent flowFileComponent);
 
-  void saveStepExecutionContext(FlowFileComponent flowFileComponent, Map<String, Object> attrs);
+    void saveStepExecutionContext(FlowFileComponent flowFileComponent, Map<String, Object> attrs);
 
-  void saveJobExecutionContext(NifiJobExecution jobExecution, Map<String, Object> attrs);
+    void saveJobExecutionContext(NifiJobExecution jobExecution, Map<String, Object> attrs);
 
-  Long getLastEventIdProcessedByPipelineController();
+    Long getLastEventIdProcessedByPipelineController();
 
-  void setAsCheckDataJob(Long jobExecutionId, String feedName);
+    void setAsCheckDataJob(Long jobExecutionId, String feedName);
+
+    Long findJobExecutionId(Long eventId, String flowfileUuid);
 
 }
