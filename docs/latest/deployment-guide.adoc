@@ -130,15 +130,15 @@ Follow the steps below to install the data lake accelerator manually. This metho
 
     You can leverage an existing ActiveMQ installation or follow the steps in the ActiveMQ script used by the wizard
 
-    /opt/thinkbig/setup/activemq/install-activemq.sh
+    $ /opt/thinkbig/setup/activemq/install-activemq.sh
 
     NOTE: If installing on a different node than NiFi and thinkbig-services you will need to update the following properties
 
-    /opt/nifi/ext-config/config.properties
+    $ /opt/nifi/ext-config/config.properties
 
         * spring.activemq.broker-url
 
-    /opt/thinkbig/thinkbig-services/conf/application.properties
+    $ /opt/thinkbig/thinkbig-services/conf/application.properties
 
         * jms.activemq.broker.url
 
@@ -149,10 +149,22 @@ Follow the steps below to install the data lake accelerator manually. This metho
     the wizard. There are two steps:
 
     1. Install NiFi
-    /opt/thinkbig/setup/nifi/install-nifi.sh
+    $ /opt/thinkbig/setup/nifi/install-nifi.sh
 
     2. Install Think Big specific components
-    /opt/thinkbig/setup/nifi/install-thinkbig-components.sh
+    $ /opt/thinkbig/setup/nifi/install-thinkbig-components.sh
+
+. Install Java 8
+
+    If you already have Java 8 installed as the system version of Java then you can skip this step. However, if you are deploying NiFi or the Think Big RPM on a box with Java 7 then you will want to follow the below steps
+
+    1. Install Java 8 in the /opt/java directory
+
+    $ /opt/thinkbig/setup/java/install-java8.sh
+
+    2. Update NiFi, thinkbig-ui, and thinkbig-services to use new Java version
+
+    $ /opt/thinkbig/setup/java/change-java-home.sh
 
 . Add nifi and thinkbig user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
 
