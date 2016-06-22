@@ -21,7 +21,7 @@ The Data Lake Accelerator services should be installed on an edge node.  The fol
 |===
 |Redhat/GNU/Linux distributions
 |RPM (for install)
-|Java 1.7 (or greater)
+|Java 1.8 (or greater)
 |Hadoop 2.4+
 |Spark 1.5.x+
 |Apache NiFi 0.5+ (or Hortonworks DataFlow)
@@ -34,7 +34,22 @@ The Data Lake Accelerator services should be installed on an edge node.  The fol
 |Platform|URL|Version
 
 |Hortonworks Sandbox|http://hortonworks.com/products/hortonworks-sandbox/| HDP 2.3, 2.4
+|Cloudera Sandobx|http://www.cloudera.com/downloads/quickstart_vms/5-7.html|5.7
 |===
+
+=== Prerequisites
+If installing in a new Hortonworks sandbox make sure to do the following first before running through the installation steps below.
+
+. Download and import the HDP sandbox
+. SSH into the box and change the password as prompted
+
+    $ ssh root@127.0.0.1 –p 2222
+
+. Run "ambari-admin-password-reset" to set the ambari admin password
+
+    [root@sandbox ~]# ambari-admin-password-reset
+
+. After ambari server starts login to the application and validate the dependent services are running (see above)
 
 == Installation
 
@@ -43,12 +58,13 @@ Data Lake Accelerator requires Java 8 for NiFi, thinkbig-ui, and thinkbig-servic
 steps below. However, if Java 7 is the system version and you do not want to change it to Java 8 you can leverage the mentioned scripts below to download and configure Java 8 in the /opt/java directory. The scripts
  will also modify the startup scripts for NiFi, thinkbig-ui and thinkbig-services to reference the /opt/java JAVA_HOME.
 
-=== Procedure for installing all components on one edge node
+=== Install Procedure 1:  Installing all components on one edge node with internet access
 
-Follow the steps below to install the data lake accelerator. This procedure is also recommended for installing to a Hortonworks sandbox.
+Follow the steps below to install the data lake accelerator. This procedure is also recommended for installing to a Hortonworks sandbox. The WGET command is used to download binaries
+so internet access is required.
 
 
-. Login to the host using root or sudo access
+. Login to the host using root. You can optionally add the "sudo" command in front of the below commands
 
 . R&D provides a pre-built RPM compiled against recent versions of Hadoop, Spark, and NiFi libraries.  Find and download the RPM file from artifactory and place on the
 host linux machine. You can
@@ -60,17 +76,20 @@ right click the download:
 
            $ rpm -ivh thinkbig-datalake-accelerator-<version>.noarch.rpm
 
-. Run the setup wizard - sudo /opt/thinkbig/setup/setup-wizard.sh
+. Run the setup wizard
+
+    $ /opt/thinkbig/setup/setup-wizard.sh
 
     Follow the directions and it will install the following:
     * MySQL or Postgres scripts into the local database
     * Elasticsearch
     * ActiveMQ
+    * Java 8 (If the system Java is 7 or below)
     * NiFi and the Think Big dependencies
 
-    Elasticsearch, NiFi, and ActiveMQ will be started when the wizard is finished
+    The Elasticsearch, NiFi, and ActiveMQ services will be started when the wizard is finished
 
-. Add nifi and thinkbig user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
+. Add "nifi" and "thinkbig" user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
 
     Hortonworks
     $ usermod -a -G hdfs nifi
@@ -81,8 +100,7 @@ right click the download:
       # Add nifi and hdfs to that group:
       $ usermod -a -G supergroup nifi
       $ usermod -a -G supergroup hdfs
-
-      Note: If you want to perform actions as a root user in a development environment run the below command
+      Optional: If you want to perform actions as a root user in a development environment run the below command
       $ usermod -a -G supergroup root
 
 . Create a dropzone folder on the edge node for file ingest, for example:
