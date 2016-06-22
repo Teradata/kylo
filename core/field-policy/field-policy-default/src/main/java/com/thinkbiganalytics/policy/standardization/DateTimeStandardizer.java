@@ -38,6 +38,15 @@ public class DateTimeStandardizer implements StandardizationPolicy {
     private OutputFormats outputFormat;
 
     /**
+     * Unix timestamp is in seconds.. not ms.  detect if the string has only 10 chars being its in seconds, not ms
+     * @param value
+     * @return
+     */
+    private boolean isInputUnixTimestamp(String value){
+        return StringUtils.isNotBlank(value) && StringUtils.isNumeric(value) && value.length() == 10;
+    }
+
+    /**
      * Whether the reference timezone is encoded in the ISO8601 date or specified as configuration
      */
     @PolicyProperty(name = "Input timezone", hint = "Input timezone (optional)", type = PolicyProperty.PROPERTY_TYPE.select,
@@ -139,9 +148,18 @@ public class DateTimeStandardizer implements StandardizationPolicy {
         if (valid) {
             try {
                 if (inputFormatter == null) {
-                    long lValue = Long.parseLong(value);
-                    return outputFormatter.print(lValue);
+                    if(isInputUnixTimestamp(value)) {
+                        //unix timestamp are in seconds
+                        long lValue = Long.parseLong(value);
+                        lValue *= 1000;
+                        return outputFormatter.print(lValue);
+                    }
+                    else {
+                        long lValue = Long.parseLong(value);
+                        return outputFormatter.print(lValue);
+                    }
                 }
+
 
                 DateTime dt = inputFormatter.parseDateTime(value);
                 return outputFormatter.print(dt);
