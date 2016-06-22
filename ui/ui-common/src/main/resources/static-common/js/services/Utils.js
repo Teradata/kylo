@@ -37,7 +37,6 @@ angular.module(COMMON_APP_MODULE_NAME).factory('Utils', function ($timeout) {
      * @param callbackFn  // the function to execute when the selector element is found in the DOM
      */
     waitForDomElementReady : function (selector, callbackFn) {
-
         if (waitForDomRetryCounts[selector] == undefined) {
             waitForDomRetryCounts[selector] = 0;
         }
@@ -50,7 +49,7 @@ angular.module(COMMON_APP_MODULE_NAME).factory('Utils', function ($timeout) {
 
             waitForDomRetryCounts[selector] += 1;
             if (waitForDomRetryCounts[selector] <= 50) {
-                $timeout(this.waitForDomElementReady, 5, false, selector, callbackFn);
+              $timeout(data.waitForDomElementReady, 5, false, selector, callbackFn);
             }
         }
     },
