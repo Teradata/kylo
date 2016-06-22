@@ -78,7 +78,7 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
     }
 
     public <T> T getProperty(String name, Class<T> type) {
-        return getProperty(name, type, false);
+        return getProperty(name, type, true);
     }
 
 
