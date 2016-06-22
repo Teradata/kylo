@@ -31,7 +31,6 @@ import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
-import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.jpa.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
@@ -41,7 +40,6 @@ import com.thinkbiganalytics.metadata.sla.api.AgreementNotFoundException;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 /**
@@ -60,9 +58,6 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
     
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
-    
-    @Inject 
-    private FeedPreconditionService preconditionService;
 
     @Inject
     private CategoryProvider<Category> categoryProvider;
@@ -249,8 +244,6 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
                         .metric(metrics)
                         .build()
                     .build();
-            
-            this.preconditionService.watchFeed(feed);
             
             feed.setPrecondition((JpaFeedPrecondition) sla);
             this.entityMgr.merge(feed);

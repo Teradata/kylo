@@ -4,9 +4,6 @@
 package com.thinkbiganalytics.metadata.core.feed;
 
 import java.io.Serializable;
-import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.Method;
-import java.lang.reflect.Proxy;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -15,7 +12,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import com.google.common.base.Predicate;
@@ -23,8 +19,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
@@ -62,12 +58,8 @@ public class InMemoryFeedProvider implements FeedProvider {
     
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
-    
-    @Inject 
-    private FeedPreconditionService preconditionService;
 
     
-//    private Map<Feed.ID, BaseFeed> feeds = new ConcurrentHashMap<>();
     private Map<Feed.ID, Feed> feeds = new ConcurrentHashMap<>();
     private Map<FeedSource.ID, BaseFeed> sources = new ConcurrentHashMap<>();
     private Map<FeedDestination.ID, BaseFeed> destinations = new ConcurrentHashMap<>();
@@ -80,15 +72,6 @@ public class InMemoryFeedProvider implements FeedProvider {
     public InMemoryFeedProvider(DatasourceProvider datasetProvider) {
         super();
         this.datasetProvider = datasetProvider;
-    }
-    
-    @PostConstruct
-    public void startup() {
-        for (Feed feed : getFeeds()) {
-            if (feed.getPrecondition() != null) {
-                this.preconditionService.watchFeed(feed);
-            }
-        }
     }
 
 
@@ -247,8 +230,6 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     private Feed setupPrecondition(BaseFeed feed, ServiceLevelAgreement sla) {
-        this.preconditionService.watchFeed(feed);
-        
         feed.setPrecondition(sla);
         return feed;
     }

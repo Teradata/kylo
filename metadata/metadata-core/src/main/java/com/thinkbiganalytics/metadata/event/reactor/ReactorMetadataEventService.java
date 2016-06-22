@@ -14,7 +14,6 @@ import org.springframework.core.ResolvableType;
 
 import com.thinkbiganalytics.metadata.api.event.EventMatcher;
 import com.thinkbiganalytics.metadata.api.event.MetadataEvent;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventFactory;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 

@@ -6,6 +6,7 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 /**
  *
@@ -36,6 +37,18 @@ public class JcrFeedPrecondition implements FeedPrecondition {
     public ServiceLevelAgreement getAgreement() {
         // TODO Auto-generated method stub
         return null;
+    }
+
+    @Override
+    public ServiceLevelAssessment getLastAssessment() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setLastAssessment(ServiceLevelAssessment assmnt) {
+        // TODO Auto-generated method stub
+        
     }
 
 }

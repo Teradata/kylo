@@ -17,6 +17,7 @@ import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parent;
@@ -400,6 +401,18 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         @Override
         public ServiceLevelAgreement getAgreement() {
             return sla;
+        }
+
+        @Override
+        public ServiceLevelAssessment getLastAssessment() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public void setLastAssessment(ServiceLevelAssessment assmnt) {
+            // TODO Auto-generated method stub
+            
         }
     }
 

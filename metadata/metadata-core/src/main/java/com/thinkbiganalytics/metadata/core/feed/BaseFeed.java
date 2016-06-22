@@ -22,6 +22,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 /**
  *
@@ -341,6 +342,7 @@ public class BaseFeed implements Feed {
     protected static class FeedPreconditionImpl implements FeedPrecondition {
         private ServiceLevelAgreement sla;
         private BaseFeed feed;
+        private ServiceLevelAssessment lastAssessment;
         
         public FeedPreconditionImpl(BaseFeed feed, ServiceLevelAgreement sla) {
             this.sla = sla;
@@ -355,6 +357,16 @@ public class BaseFeed implements Feed {
         @Override
         public ServiceLevelAgreement getAgreement() {
             return sla;
+        }
+        
+        @Override
+        public ServiceLevelAssessment getLastAssessment() {
+            return lastAssessment;
+        }
+        
+        @Override
+        public void setLastAssessment(ServiceLevelAssessment assmnt) {
+            this.lastAssessment = assmnt;
         }
     }
 
