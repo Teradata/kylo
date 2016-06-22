@@ -44,6 +44,8 @@ read -p "Would you like me to install a local nifi instance? Please enter y/n: "
 echo " ";
 read -p "Would you like me to download and install Java 8 in an /opt/java folder and setup the thinkbig apps to use that Java home? Please enter y/n: " install_java
 
+cd /opt/thinkbig/setup
+
 if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
     echo "Running the database scripts"
 
@@ -65,15 +67,15 @@ if [ "$install_activemq" == "y"  ] || [ "$install_activemq" == "Y" ] ; then
     ./activemq/install-activemq.sh
 fi
 
-if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
-    ./nifi/install-nifi.sh
-    ./nifi/install-thinkbig-components.sh
-fi
-
 if [ "$install_java" == "y"  ] || [ "$install_java" == "Y" ] ; then
     ./java/install-java8.sh
     ./java/change-thinkbig-java-home.sh
-    if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
+fi
+
+if [ "$install_nifi" == "y"  ] || [ "$install_nifi" == "Y" ] ; then
+    ./nifi/install-nifi.sh
+    if [ "$install_java" == "y"  ] || [ "$install_java" == "Y" ] ; then
         ./java/change-nifi-java-home.sh
     fi
+    ./nifi/install-thinkbig-components.sh
 fi
