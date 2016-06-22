@@ -9,6 +9,7 @@ mysql -e "show databases;"
 
 echo "Uninstalling NiFi"
 service nifi stop
+chkconfig nifi off
 rm -rf /opt/nifi
 rm -rf /var/log/nifi
 rm -f /etc/init.d/nifi
@@ -24,5 +25,8 @@ userdel activemq
 echo "Uninstalling elasticsearch"
 rpm -e elasticsearch
 rm -rf /var/lib/elasticsearch/
+
+echo "Uninstalling /opt/java"
+rm -rf /opt/java
 
 echo "Uninstall complete. You should now be able to re-install the RPM and run the setup wizard to get a clean install"
