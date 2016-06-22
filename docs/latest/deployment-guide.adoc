@@ -251,8 +251,11 @@ TBD - Not yet supported
 
 You can adjust the memory setting for each services using the below environment variables
 
-    export THINKBIG_UI_OPTS=Xmx4g
-    export THINKBIG_SERVICES_OPTS=Xmx4g
+    /opt/thinkbig/thinkbig-ui/bin/run-thinkbig-ui.sh
+    export THINKBIG_UI_OPTS= -Xmx4g
+
+    /opt/thinkbig/thinkbig-services/bin/run-thinkbig-services.sh
+    export THINKBIG_SERVICES_OPTS= -Xmx4g
     
 The setting above would set the Java maximum heap size to 4 GB.    
 
