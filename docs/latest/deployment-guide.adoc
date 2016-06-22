@@ -343,9 +343,13 @@ The configuration is setup to work out of the box with the Hortonworks sandbox. 
     metadata.datasource.password=cloudera
     hive.metastore.datasource.password=cloudera
 
-    .. Update the hive username
+    .. Update the Hive username
 
     hive.datasource.username=hive
+    
+    .. Update the Hive Metastore URL
+    
+    hive.metastore.datasource.url=jdbc:mysql://localhost:3306/metastore
 
     .. Update the following parameters
 
