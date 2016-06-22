@@ -7,14 +7,14 @@
     <parent>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <artifactId>thinkbig-field-policy-service</artifactId>
-        <version>0.2.0</version>
+        <version>0.3.0-SNAPSHOT</version>
     </parent>
 
     <dependencies>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-commons-rest-model</artifactId>
-            <version>0.2.0</version>
+            <version>0.3.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>

@@ -4,7 +4,7 @@
   <parent>
     <groupId>com.thinkbiganalytics.metadata</groupId>
     <artifactId>thinkbig-metadata</artifactId>
-    <version>0.2.0</version>
+    <version>0.3.0-SNAPSHOT</version>
   </parent>
   <artifactId>thinkbig-metadata-db-modeshape-migration</artifactId>
 

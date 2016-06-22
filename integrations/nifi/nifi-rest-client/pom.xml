@@ -8,7 +8,7 @@
   <parent>
     <artifactId>thinkbig-nifi</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.2.0</version>
+    <version>0.3.0-SNAPSHOT</version>
   </parent>
 
 
@@ -17,13 +17,13 @@
     <dependency>
       <artifactId>thinkbig-nifi-rest-model</artifactId>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <version>0.2.0</version>
+      <version>0.3.0-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <artifactId>thinkbig-commons-rest-client</artifactId>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <version>0.2.0</version>
+      <version>0.3.0-SNAPSHOT</version>
     </dependency>
 
     <dependency>

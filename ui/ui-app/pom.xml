@@ -8,7 +8,7 @@
     <parent>
         <artifactId>thinkbig-ui</artifactId>
         <groupId>com.thinkbiganalytics.datalake</groupId>
-        <version>0.2.0</version>
+        <version>0.3.0-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -37,25 +37,25 @@
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-ui-common</artifactId>
-            <version>0.2.0</version>
+            <version>0.3.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-ui-operations-manager</artifactId>
-            <version>0.2.0</version>
+            <version>0.3.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-ui-feed-manager</artifactId>
-            <version>0.2.0</version>
+            <version>0.3.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-commons-rest-model</artifactId>
-            <version>0.2.0</version>
+            <version>0.3.0-SNAPSHOT</version>
         </dependency>
 
 
@@ -67,14 +67,14 @@
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-simple-auth</artifactId>
-            <version>0.2.0</version>
+            <version>0.3.0-SNAPSHOT</version>
         </dependency>
 
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-commons-rest-model</artifactId>
-            <version>0.2.0</version>
+            <version>0.3.0-SNAPSHOT</version>
         </dependency>
 
 
@@ -82,7 +82,7 @@
       <dependency>
         <groupId>com.thinkbiganalytics.datalake</groupId>
         <artifactId>thinkbig-swagger-ui</artifactId>
-        <version>0.2.0</version>
+        <version>0.3.0-SNAPSHOT</version>
       </dependency>
 
         <!-- external UI Jars -->
