@@ -19,8 +19,6 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
-import com.thinkbiganalytics.metadata.event.ChangeEventDispatcher;
-import com.thinkbiganalytics.metadata.event.SimpleChangeEventDispatcher;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
@@ -96,11 +94,6 @@ public class MetadataJcrConfig {
         return new InMemoryDataOperationsProvider();
     }
 
-
-    @Bean
-    public ChangeEventDispatcher changeEventDispatcher() {
-        return new SimpleChangeEventDispatcher();
-    }
 
 //    @Bean
 //    public FeedProvider feedProvider() {

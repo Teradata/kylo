@@ -15,8 +15,6 @@ import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.event.DataChangeEvent;
-import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -51,7 +49,7 @@ public class FeedPreconditionService {
     
     @PostConstruct
     public void listenForDataChanges() {
-        this.operationsProvider.addListener(createDataChangeListener());
+//        this.operationsProvider.addListener(createDataChangeListener());
     }
 
     public void addListener(Feed.ID id, PreconditionListener listener) {
@@ -80,42 +78,42 @@ public class FeedPreconditionService {
      * Creates a listener that will check feed preconditions whenever there is a successful 
      * data change is recorded.
      */
-    private DataChangeEventListener<Datasource, ChangeSet> createDataChangeListener() {
-        return new DataChangeEventListener<Datasource, ChangeSet>() {
-            @Override
-            public void handleEvent(DataChangeEvent<Datasource, ChangeSet> event) {
-                for (Feed.ID feedId : watchedFeeds) {
-                    Feed feed = feedProvider.getFeed(feedId);
-                    
-                    if (feed != null && feed.getPrecondition() != null) {
-                        ServiceLevelAgreement sla = feed.getPrecondition().getAgreement();
-                        List<Dataset<Datasource, ChangeSet>> changes = checkPrecondition(sla);
-                        
-                        // No changes means precondition not met.
-                        if (changes != null) {
-                            PreconditionEvent preEv = new PreconditionEventImpl(feed, changes);
-                            Set<PreconditionListener> listenerSet = feedListeners.get(feedId);
-                            
-                            if (listenerSet != null) {
-                                for (PreconditionListener listener : listenerSet) {
-                                    listener.triggered(preEv);
-                                } 
-                            }
-                            
-                            synchronized (generalListeners) {
-                                for (PreconditionListener listener : generalListeners) {
-                                    listener.triggered(preEv);
-                                }
-                            }
-                        }
-                    } else {
-                        watchedFeeds.remove(feedId);
-                    }
-                    
-                }
-            }
-        };
-    }
+//    private DataChangeEventListener<Datasource, ChangeSet> createDataChangeListener() {
+//        return new DataChangeEventListener<Datasource, ChangeSet>() {
+//            @Override
+//            public void handleEvent(DataChangeEvent<Datasource, ChangeSet> event) {
+//                for (Feed.ID feedId : watchedFeeds) {
+//                    Feed feed = feedProvider.getFeed(feedId);
+//                    
+//                    if (feed != null && feed.getPrecondition() != null) {
+//                        ServiceLevelAgreement sla = feed.getPrecondition().getAgreement();
+//                        List<Dataset<Datasource, ChangeSet>> changes = checkPrecondition(sla);
+//                        
+//                        // No changes means precondition not met.
+//                        if (changes != null) {
+//                            PreconditionEvent preEv = new PreconditionEventImpl(feed, changes);
+//                            Set<PreconditionListener> listenerSet = feedListeners.get(feedId);
+//                            
+//                            if (listenerSet != null) {
+//                                for (PreconditionListener listener : listenerSet) {
+//                                    listener.triggered(preEv);
+//                                } 
+//                            }
+//                            
+//                            synchronized (generalListeners) {
+//                                for (PreconditionListener listener : generalListeners) {
+//                                    listener.triggered(preEv);
+//                                }
+//                            }
+//                        }
+//                    } else {
+//                        watchedFeeds.remove(feedId);
+//                    }
+//                    
+//                }
+//            }
+//        };
+//    }
 
     private List<Dataset<Datasource, ChangeSet>> checkPrecondition(ServiceLevelAgreement sla) {
         ServiceLevelAssessment assmt = this.assessor.assess(sla);

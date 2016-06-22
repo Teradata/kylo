@@ -11,12 +11,11 @@ import javax.jms.Topic;
 import org.springframework.jms.core.JmsMessagingTemplate;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.core.feed.PreconditionEvent;
 import com.thinkbiganalytics.metadata.core.feed.PreconditionListener;
-import com.thinkbiganalytics.metadata.event.SimpleChangeEventDispatcher;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.event.DatasourceChangeEvent;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
@@ -25,7 +24,8 @@ import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
  *
  * @author Sean Felten
  */
-public class JmsChangeEventDispatcher extends SimpleChangeEventDispatcher implements PreconditionListener {
+//public class JmsChangeEventDispatcher extends SimpleChangeEventDispatcher implements PreconditionListener {
+public class JmsChangeEventDispatcher implements PreconditionListener {
     
     // TODO listen for change events and write to datasourceChangeTopic?
     

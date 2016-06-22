@@ -150,36 +150,24 @@
 
     <!-- Testing -->
     <dependency>
-      <groupId>org.testng</groupId>
-      <artifactId>testng</artifactId>
-      <scope>test</scope>
+        <groupId>org.testng</groupId>
+        <artifactId>testng</artifactId>
+        <scope>test</scope>
     </dependency>
-    <!--
     <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-test</artifactId>
         <scope>test</scope>
     </dependency>
-     -->
     <dependency>
-      <groupId>org.springframework</groupId>
-      <artifactId>spring-test</artifactId>
-      <scope>test</scope>
+        <groupId>org.assertj</groupId>
+        <artifactId>assertj-core</artifactId>
+        <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.neo4j</groupId>
-      <artifactId>neo4j-cypher-compiler-2.2</artifactId>
-      <version>2.2.5</version>
+        <groupId>org.mockito</groupId>
+        <artifactId>mockito-all</artifactId>
+        <scope>test</scope>
     </dependency>
   </dependencies>
 

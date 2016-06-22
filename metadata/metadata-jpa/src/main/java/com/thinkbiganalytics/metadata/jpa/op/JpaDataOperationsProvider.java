@@ -19,6 +19,7 @@ import javax.persistence.EntityManager;
 
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -26,7 +27,6 @@ import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource
 import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
-import com.thinkbiganalytics.metadata.api.event.DataChangeEventListener;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
@@ -48,7 +48,6 @@ import com.thinkbiganalytics.metadata.jpa.datasource.hive.JpaHiveTableDatasource
 import com.thinkbiganalytics.metadata.jpa.datasource.hive.JpaHiveTableUpdate;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeedDestination;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  *
@@ -232,33 +231,6 @@ public class JpaDataOperationsProvider implements DataOperationsProvider {
     public List<Dataset<Datasource, ChangeSet>> getDatasets(DatasetCriteria criteria) {
         DsCriteria critImpl = (DsCriteria) criteria;
         return new ArrayList(critImpl.select(this.entityMgr, JpaDataset.class));
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
-     */
-    @Override
-    public void addListener(DataChangeEventListener<Datasource, ChangeSet> listener) {
-        // TODO Auto-generated method stub
-
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(filesys.DirectoryDatasource, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
-     */
-    @Override
-    public void addListener(DirectoryDatasource ds, DataChangeEventListener<DirectoryDatasource, FileList> listener) {
-        // TODO Auto-generated method stub
-
-    }
-
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.op.DataOperationsProvider#addListener(hive.HiveTableDatasource, com.thinkbiganalytics.metadata.api.event.DataChangeEventListener)
-     */
-    @Override
-    public void addListener(HiveTableDatasource ds, DataChangeEventListener<HiveTableDatasource, HiveTableUpdate> listener) {
-        // TODO Auto-generated method stub
-
     }
 
     private static class OpCriteria extends AbstractMetadataCriteria<DataOperationCriteria> 
