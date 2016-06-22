@@ -217,7 +217,7 @@ echo "   - Added service 'thinkbig-spark-shell'"
 echo "    - Completed thinkbig-spark-shell install"
 
 {
-echo "    - Create aa RPM Removal script at: $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh"
+echo "    - Create an RPM Removal script at: $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh"
 lastRpm=$(rpm -qa | grep thinkbig-datalake-accelerator)
 touch $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh
 echo "rpm -e $lastRpm " > $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh
