@@ -70,7 +70,7 @@ so internet access is required.
 host linux machine. You can
 right click the download:
 
-           http://54.152.98.43:8080/artifactory/webapp/search/artifact/?7&q=thinkbig-datalake-accelerator  (requires VPN)
+           http://54.152.98.43:8080/artifactory/webapp/search/artifact/?q=thinkbig-datalake-accelerator  (requires VPN)
 
 . Run RPM install
 
