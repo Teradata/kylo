@@ -28,7 +28,7 @@ echo "   - Created thinkbig-ui script '$rpmInstallDir/thinkbig-ui/bin/run-thinkb
 
 cat << EOF > /etc/init.d/thinkbig-ui
   #! /bin/sh
-  # chkconfig: 345 95 20
+  # chkconfig: 345 98 22
   # description: thinkbig-ui
   # processname: thinkbig-ui
   RUN_AS_USER=thinkbig
@@ -97,7 +97,7 @@ echo "   - Created thinkbig-services script '$rpmInstallDir/thinkbig-services/bi
 
 cat << EOF > /etc/init.d/thinkbig-services
   #! /bin/sh
-  # chkconfig: 345 95 20
+  # chkconfig: 345 98 21
   # description: thinkbig-services
   # processname: thinkbig-services
   RUN_AS_USER=thinkbig
@@ -162,7 +162,7 @@ echo "   - Created thinkbig-spark-shell script '$rpmInstallDir/thinkbig-spark-sh
 
 cat << EOF > /etc/init.d/thinkbig-spark-shell
   #! /bin/sh
-  # chkconfig: 345 95 20
+  # chkconfig: 345 98 20
   # description: thinkbig-spark-shell
   # processname: thinkbig-spark-shell
   stdout_log="/var/log/thinkbig-spark-shell/thinkbig-spark-shell.log"
@@ -223,15 +223,9 @@ chmod +x $rpmInstallDir/remove-thinkbig-datalake-accelerator.sh
 
 chown -R thinkbig:thinkbig /opt/thinkbig
 
-mkdir /var/log/thinkbig-services
-mkdir /var/log/thinkbig-ui
-mkdir /var/log/thinkbig-spark-shell
+chmod 744 $rpmLogDir/thinkbig*
 
-chmod 744 /var/log/thinkbig-services
-chmod 744 /var/log/thinkbig-ui
-chmod 744 /var/log/thinkbig-spark-shell
-
-chown thinkbig:thinkbig /var/log/thinkbig*
+chown thinkbig:thinkbig $rpmLogDir/thinkbig*
 
 echo "   INSTALL COMPLETE"
 echo "   - Please configure the application using the property files and scripts located under the '$rpmInstallDir/thinkbig-ui/conf' and '$rpmInstallDir/thinkbig-services/conf' folder.  See deployment guide for details."
