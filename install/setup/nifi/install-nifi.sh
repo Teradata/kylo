@@ -1,5 +1,5 @@
 #!/bin/bash
-NIFI_DATA=/opt/nifi/data
+${NIFI_DATA=/opt/nifi/data}
 
 echo "Installing NiFI"
 echo "Creating a new nifi user"

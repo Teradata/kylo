@@ -6,7 +6,7 @@ package com.thinkbiganalytics.nifi.core.api.precondition;
 
 public interface PreconditionEventConsumer {
 
-    void addListener(String datasourceName, PreconditionListener listener);
+    void addListener(String feedName, PreconditionListener listener);
 
     void removeListener(PreconditionListener listener);
 }

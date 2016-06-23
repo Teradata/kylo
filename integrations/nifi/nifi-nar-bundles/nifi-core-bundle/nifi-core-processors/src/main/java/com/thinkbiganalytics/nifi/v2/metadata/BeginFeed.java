@@ -3,7 +3,9 @@
  */
 package com.thinkbiganalytics.nifi.v2.metadata;
 
-import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.*;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.FEED_ID_PROP;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.SRC_DATASET_ID_PROP;
 
 import java.util.List;
 import java.util.Queue;
@@ -28,9 +30,8 @@ import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
-import com.thinkbiganalytics.metadata.rest.model.event.DatasourceChangeEvent;
+import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
@@ -47,7 +48,7 @@ import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
 @CapabilityDescription("Records the start of a feed to be tracked and listens to events which may trigger a flow. This processor should be either the first processor or immediately follow the first processor in a flow.")
 public class BeginFeed extends AbstractFeedProcessor {
 
-    private Queue<List<Dataset>> pendingChanges = new LinkedBlockingQueue<>();
+    private Queue<FeedPreconditionTriggerEvent> pendingChanges = new LinkedBlockingQueue<>();
     private PreconditionListener preconditionListener;
     // TODO re-enable caching when we do more intelligent handling when the feed and datasource info has been
     // removed from the metadata store.
@@ -173,16 +174,16 @@ public class BeginFeed extends AbstractFeedProcessor {
     }
 
     protected FlowFile produceFlowFile(ProcessSession session) {
-        List<Dataset> changes = this.pendingChanges.poll();
-        if (changes != null) {
-            return createFlowFile(session, changes);
+        FeedPreconditionTriggerEvent event = this.pendingChanges.poll();
+        if (event != null) {
+            return createFlowFile(session, event);
         } else {
             return session.get();
         }
     }
 
     private FlowFile createFlowFile(ProcessSession session,
-                                    List<Dataset> changes) {
+                                    FeedPreconditionTriggerEvent event) {
         // TODO add changes to flow file
         return session.create();
     }
@@ -214,11 +215,10 @@ public class BeginFeed extends AbstractFeedProcessor {
 
             PreconditionListener listener = new PreconditionListener() {
                 @Override
-                public void triggered(DatasourceChangeEvent event) {
-                    getLogger().debug("Precondition event triggered - feed: {}, datasets: {}",
-                            new Object[]{event.getFeed().getSystemName(), event.getDatasets()});
-                    List<Dataset> datasets = event.getDatasets();
-                    BeginFeed.this.pendingChanges.add(datasets);
+                public void triggered(FeedPreconditionTriggerEvent event) {
+                    getLogger().debug("Precondition event triggered: ", new Object[]{ event });
+                    
+                    BeginFeed.this.pendingChanges.add(event);
                 }
             };
 

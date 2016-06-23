@@ -7,18 +7,19 @@
  */
 package com.thinkbiganalytics.nifi.v2.core.precondition;
 
-import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
-import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionEventConsumer;
-import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
-import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
+import java.util.Collections;
+import java.util.List;
+
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.reporting.InitializationException;
 
-import java.util.Collections;
-import java.util.List;
+import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
+import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionEventConsumer;
+import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
+import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
 
 /**
  * @author Sean Felten

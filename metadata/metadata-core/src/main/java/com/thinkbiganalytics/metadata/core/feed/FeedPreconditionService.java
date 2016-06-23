@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
@@ -35,6 +36,9 @@ public class FeedPreconditionService {
     private FeedProvider feedProvider;
     
     @Inject
+    private MetadataAccess metadata;
+    
+    @Inject
     private MetadataEventService eventService;
     
     private FeedOperationListener listener = new FeedOperationListener();
@@ -59,7 +63,7 @@ public class FeedPreconditionService {
         List<Feed> feeds = feedProvider.getFeeds(feedProvider.feedCriteria().name(feedName).limit(1));
         
         if (! feeds.isEmpty()) {
-            Feed feed = feeds.get(0);
+            Feed<?> feed = feeds.get(0);
             
             if (feed.getPrecondition() != null) {
                 checkPrecondition(feed);
@@ -77,13 +81,16 @@ public class FeedPreconditionService {
     
     protected void checkPrecondition(Feed<?> feed) {
         FeedPrecondition precond = feed.getPrecondition();
-        ServiceLevelAgreement sla = precond.getAgreement();
-        ServiceLevelAssessment assessment = this.assessor.assess(sla);
         
-        precond.setLastAssessment(assessment);
-        
-        if (assessment.getResult() == AssessmentResult.SUCCESS) {
-            this.eventService.notify(new PreconditionTriggerEvent(feed.getId()));
+        if (precond != null) {
+            ServiceLevelAgreement sla = precond.getAgreement();
+            ServiceLevelAssessment assessment = this.assessor.assess(sla);
+            
+            precond.setLastAssessment(assessment);
+            
+            if (assessment.getResult() == AssessmentResult.SUCCESS) {
+                this.eventService.notify(new PreconditionTriggerEvent(feed.getId()));
+            }
         }
     }
 
@@ -91,13 +98,17 @@ public class FeedPreconditionService {
     private class FeedOperationListener implements MetadataEventListener<FeedOperationStatusEvent> {
         @Override
         public void notify(FeedOperationStatusEvent event) {
-//            Feed.ID feedId = event.getFeedId();
-            String feedName = event.getFeedName();
             FeedOperation.State state = event.getState();
             
+            // TODO as precondition check criteria are not implemented yet, 
+            // check all preconditions of feeds that have them.
             if (state == FeedOperation.State.SUCCESS) {
-//                checkPrecondition(feedId);
-                checkPrecondition(feedName);
+                metadata.read(() -> {
+                    for (Feed<?> feed : feedProvider.getFeeds()) {
+                        checkPrecondition(feed);
+                    }
+                    return null;
+                });
             }
         }
     }

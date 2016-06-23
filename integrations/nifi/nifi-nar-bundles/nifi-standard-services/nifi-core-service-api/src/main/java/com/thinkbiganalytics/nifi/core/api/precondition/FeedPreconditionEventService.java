@@ -16,10 +16,6 @@ import org.apache.nifi.controller.ControllerService;
  */
 @Tags({"thinkbig", "feed", "precondition", "event", "trigger"})
 @CapabilityDescription("")
-public interface FeedPreconditionEventService extends ControllerService {
-
-    void addListener(String datasourceName, PreconditionListener listener);
-
-    void removeListener(PreconditionListener listener);
+public interface FeedPreconditionEventService extends ControllerService, PreconditionEventConsumer {
 
 }
