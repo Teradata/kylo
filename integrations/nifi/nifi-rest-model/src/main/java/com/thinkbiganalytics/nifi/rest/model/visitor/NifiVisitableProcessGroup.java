@@ -7,7 +7,9 @@ import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -28,18 +30,40 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
 
     private NifiVisitableProcessor outputPortProcessor;
 
+    private Map<String,NifiVisitableProcessor> outputPortProcessors;
+    private Map<String,NifiVisitableProcessor> inputPortProcessors;
+
     private Set<ConnectionDTO> connections;
 
     public NifiVisitableProcessGroup(ProcessGroupDTO dto) {
         this.dto = dto;
         startingProcessors = new HashSet<>();
         endingProcessors = new HashSet<>();
+        outputPortProcessors = new HashMap<>();
+        inputPortProcessors = new HashMap<>();
         processors = new HashSet<>();
         if(dto.getContents() != null) {
             this.connections = dto.getContents().getConnections();
         }
 
     }
+
+    private NifiVisitableProcessor getOrCreateProcessor(NifiFlowVisitor nifiVisitor, ProcessorDTO processorDTO) {
+        NifiVisitableProcessor processor = nifiVisitor.getProcessor(processorDTO.getId());
+        if(processor == null){
+            processor = new NifiVisitableProcessor(processorDTO);
+            addProcessor(processor);
+        }
+        return processor;
+    }
+    private NifiVisitableProcessGroup getOrCreateProcessGroup(NifiFlowVisitor nifiVisitor, ProcessGroupDTO processGroupDTO) {
+        NifiVisitableProcessGroup group = nifiVisitor.getProcessGroup(processGroupDTO.getId());
+        if(group == null) {
+            group = new NifiVisitableProcessGroup(processGroupDTO);
+        }
+        return group;
+    }
+
 
     @Override
     public void accept(NifiFlowVisitor nifiVisitor) {
@@ -51,17 +75,15 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
 
             if (dto.getContents().getProcessors() != null) {
                 for (ProcessorDTO processorDTO : dto.getContents().getProcessors()) {
-                    NifiVisitableProcessor processor = new NifiVisitableProcessor(processorDTO);
-                    addProcessor(processor);
+                    NifiVisitableProcessor processor =   getOrCreateProcessor(nifiVisitor,processorDTO);
                     nifiVisitor.visitProcessor(processor);
-
                 }
             }
 
             if (dto.getContents().getProcessGroups() != null) {
                 for (ProcessGroupDTO processGroupDTO : dto.getContents().getProcessGroups()) {
                     if (processGroupDTO != null) {
-                        nifiVisitor.visitProcessGroup(new NifiVisitableProcessGroup(processGroupDTO));
+                        nifiVisitor.visitProcessGroup(getOrCreateProcessGroup(nifiVisitor,processGroupDTO));
                     }
                 }
             }
@@ -158,19 +180,20 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
     }
 
 
-    public NifiVisitableProcessor getInputPortProcessor() {
-        return inputPortProcessor;
+    public NifiVisitableProcessor getInputPortProcessor(String inputProcessorId) {
+        return inputPortProcessors.get(inputProcessorId);
     }
 
-    public void setInputPortProcessor(NifiVisitableProcessor inputPortProcessor) {
-        this.inputPortProcessor = inputPortProcessor;
+    public void addInputPortProcessor(String id,NifiVisitableProcessor inputPortProcessor) {
+        this.inputPortProcessors.put(id, inputPortProcessor);
     }
 
-    public NifiVisitableProcessor getOutputPortProcessor() {
-        return outputPortProcessor;
+    public NifiVisitableProcessor getOutputPortProcessor(String connectionSourceId) {
+        return outputPortProcessors.get(connectionSourceId);
     }
 
-    public void setOutputPortProcessor(NifiVisitableProcessor outputPortProcessor) {
-        this.outputPortProcessor = outputPortProcessor;
+    public void addOutputPortProcessor(String connectionDestId,NifiVisitableProcessor outputPortProcessor) {
+        this.outputPortProcessors.put(connectionDestId, outputPortProcessor);
     }
+
 }

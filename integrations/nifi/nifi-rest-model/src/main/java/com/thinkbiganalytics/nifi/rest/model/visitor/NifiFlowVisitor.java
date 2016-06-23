@@ -8,5 +8,8 @@ public interface NifiFlowVisitor {
     void visitConnection(NifiVisitableConnection connection);
     void visitProcessGroup(NifiVisitableProcessGroup processGroup);
 
+    NifiVisitableProcessor getProcessor(String id);
+    NifiVisitableProcessGroup getProcessGroup(String id);
+
 
 }

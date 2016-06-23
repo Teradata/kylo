@@ -18,6 +18,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,6 +40,8 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
 
     private Map<String, NifiVisitableProcessGroup> visitedProcessGroups = new HashMap<>();
 
+    private Set<NifiVisitableConnection> allConnections = new HashSet<>();
+
     private NifiRestClient restClient;
 
 
@@ -51,10 +54,22 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
 
     @Override
     public void visitProcessor(NifiVisitableProcessor processor) {
+
         visitedProcessors.put(processor.getDto().getId(), processor);
         //add the pointer to the ProcessGroup
         currentProcessGroup.addProcessor(processor);
     }
+
+    @Override
+    public NifiVisitableProcessor getProcessor(String id) {
+        return visitedProcessors.get(id);
+    }
+
+    @Override
+    public NifiVisitableProcessGroup getProcessGroup(String id) {
+        return visitedProcessGroups.get(id);
+    }
+
 
     @Override
     public void visitConnection(NifiVisitableConnection connection) {
@@ -75,9 +90,8 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
             destinationProcessor.addSource(sourceProcessor);
             //REMOVE
             sourceProcessor.addDestination(destinationProcessor);
-        } else {
-            int i = 0;
         }
+        allConnections.add(connection);
 
     }
 
@@ -96,6 +110,11 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
         //group.populateStartingAndEndingProcessors();
         this.visitedProcessGroups.put(group.getDto().getId(), group);
 
+    }
+    public void finalizeConnections(){
+        for(NifiVisitableConnection c: allConnections) {
+            visitConnection(c);
+        }
     }
 
     /**
@@ -116,20 +135,17 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                 if (conn != null) {
                     destinationProcessor = getDestinationProcessor(conn, getSource);
                     if (destinationProcessor != null) {
-                        destinationProcessor.setOutputPortId(dest.getId());
+                      //  destinationProcessor.setOutputPortId(dest.getId());
                         //add this processor to the visitor
 
                     }
                     if (getSource) {
                         NifiVisitableProcessor outputProcessor = getSourceProcessor(connection);
                         if (outputProcessor != null) {
-                            outputProcessor.setOutputPortId(dest.getId());
-                            currentProcessGroup.setOutputPortProcessor(outputProcessor);
+                            //outputProcessor.setOutputPortId(dest.getId());
+                            currentProcessGroup.addOutputPortProcessor(dest.getId(),outputProcessor);
                         }
                     }
-                    //if(!visitedProcessGroups.containsKey(group.getDto().getId())){
-                    //  visitProcessGroup(group);
-                    // }
                 }
 
 
@@ -148,20 +164,20 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                     //get the processor whos source matches this connection Id
                     destinationProcessor = getDestinationProcessor(conn, getSource);
                     if (destinationProcessor != null) {
-                        destinationProcessor.setOutputPortId(dest.getId());
+                      //  destinationProcessor.setOutputPortId(dest.getId());
                     }
                     if (getSource) {
                         NifiVisitableProcessor outputProcessor = getSourceProcessor(connection);
                         if (outputProcessor != null) {
-                            outputProcessor.setOutputPortId(dest.getId());
-                            currentProcessGroup.setOutputPortProcessor(outputProcessor);
+                             currentProcessGroup.addOutputPortProcessor(dest.getId(),outputProcessor);
                         }
                     }
-                    // if(isNew){
-                    //    visitProcessGroup(group);
-                    //    }
                 }
-            } else if ("PROCESSOR".equals(dest.getType())) {
+            }
+            else if("FUNNEL".equals(dest.getType())){
+
+            }
+            else if ("PROCESSOR".equals(dest.getType())) {
                 destinationProcessor = getConnectionProcessor(dest.getGroupId(), dest.getId());
             }
         }
@@ -272,24 +288,17 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                     //assign the inputPortProcessor == the the destination of this connection
                 }
                 NifiVisitableProcessor inputProcessor = getDestinationProcessor(connection, false);
-                inputProcessor.setInputPortId(source.getId());
-                currentProcessGroup.setInputPortProcessor(inputProcessor);
+               if(inputProcessor != null) {
+                //   inputProcessor.addInputPortId(source.getId(), );
+                   currentProcessGroup.addInputPortProcessor(source.getId(),inputProcessor);
+               }
 
             } else if ("OUTPUT_PORT".equals(source.getType())) {
                 //get the sources group id then get the ending processor for that group
                 NifiVisitableProcessGroup group = visitedProcessGroups.get(source.getGroupId());
-              /*if(group == null){
-                try {
-                  ProcessGroupEntity processGroupEntity = restClient.getProcessGroup(source.getGroupId(), false, true);
-                    group = new NifiVisitableProcessGroup(processGroupEntity.getProcessGroup());
-                }catch (NifiClientRuntimeException e){
-
-                }
-
-              } */
                 if (group != null) {
-                    sourceProcessor = group.getOutputPortProcessor();
-                    sourceProcessor.setOutputPortId(source.getId());
+                    sourceProcessor = group.getOutputPortProcessor(source.getId());
+                  //  sourceProcessor.addOutputPortId(source.getId(), sourceProcessor);
                 }
             } else if ("PROCESSOR".equals(source.getType())) {
                 sourceProcessor = getConnectionProcessor(source.getGroupId(), source.getId());
@@ -323,7 +332,8 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
             processor = visitedProcessors.get(id);
             if (processor == null) {
                 processor = new NifiVisitableProcessor(this.processorsMap.get(id));
-                visitProcessor(processor);
+                //visit the group?
+                processor.accept(this);
             }
 
 

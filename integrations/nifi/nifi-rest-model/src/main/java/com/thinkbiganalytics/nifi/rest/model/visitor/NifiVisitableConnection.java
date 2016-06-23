@@ -21,9 +21,7 @@ public class NifiVisitableConnection implements  NifiVisitable{
     public void accept(NifiFlowVisitor nifiVisitor) {
 
         nifiVisitor.visitConnection(this);
-        if(dto.getDestination() !=null) {
 
-        }
     }
 
     public ConnectionDTO getDto() {
