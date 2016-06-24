@@ -391,6 +391,17 @@
         }
 
         /**
+         * Generates a list of possible aliases for the specified column.
+         *
+         * @param tableName the name of the table
+         * @param columnName the name of the column
+         * @returns {string[]} the list of aliases
+         */
+        function getColumnAliases(tableName, columnName) {
+            return [columnName, tableName.replace(/.*\./, "") + "_" + columnName, tableName.replace(".", "_") + "_" + columnName];
+        }
+
+        /**
          * Generates the SQL for joining two tables. The destination table will be added to the SQL statement as part of the JOIN clause.
          *
          * @param {Object} src the node for the source table
@@ -427,6 +438,19 @@
                 return "";
             }
 
+            // Determine a unique alias for each column
+            var aliasCount = {};
+
+            angular.forEach(self.chartViewModel.data.nodes, function(node) {
+                angular.forEach(node.nodeAttributes.attributes, function(attr) {
+                    if (attr.selected) {
+                        angular.forEach(getColumnAliases(node.name, attr.name), function(alias) {
+                            aliasCount[alias] = (typeof(aliasCount[alias]) !== "undefined") ? aliasCount[alias] + 1 : 1;
+                        });
+                    }
+                });
+            });
+
             // Build FROM and JOIN clauses
             var fromTables = [];
             var graph = createTableJoinMap();
@@ -445,21 +469,33 @@
             });
 
             // Build SELECT statement
-            var columnSet = {};
             var select = "";
 
             angular.forEach(self.chartViewModel.data.nodes, function(node) {
                 var table = TABLE_PREFIX + node.id;
                 angular.forEach(node.nodeAttributes.attributes, function(attr) {
-                    if (attr.selected && !columnSet[attr.name]) {
+                    if (attr.selected) {
+                        // Determine column alias
+                        var alias = _.find(getColumnAliases(node.name, attr.name), function(name){ return (aliasCount[name] === 1) });
+                        if (typeof(alias) === "undefined") {
+                            var i = 0;
+                            do {
+                                ++i;
+                                alias = attr.name + "_" + i;
+                            } while (aliasCount[alias] !== 0);
+                        }
+
+                        // Add column to clause
                         select += (select.length === 0) ? "SELECT " : ", ";
                         select += table + ".`" + StringUtils.quoteSql(attr.name) + "`";
+                        if (alias !== attr.name) {
+                            select += " AS `" + StringUtils.quoteSql(alias) + "`";
+                        }
                         self.selectedColumnsAndTables.push({
                             column: attr.name,
                             alias: TABLE_PREFIX + node.id, tableName: node.name,
                             tableColumn: attr.name, dataType: attr.dataType
                         });
-                        columnSet[attr.name] = true;
                     }
                 });
             });
