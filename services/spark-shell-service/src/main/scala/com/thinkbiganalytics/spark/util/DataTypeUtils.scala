@@ -8,7 +8,7 @@ import org.apache.hadoop.hive.serde2.typeinfo.DecimalTypeInfo
 import org.apache.spark.mllib.linalg.{Vector, VectorUDT}
 import org.apache.spark.sql.types._
 
-import scala.collection.JavaConversions
+import scala.collection.{JavaConversions, mutable}
 
 /** Utility methods for `DataType`s. */
 object DataTypeUtils {
@@ -19,6 +19,9 @@ object DataTypeUtils {
       * @return the converter to a Hive object
       */
     def getHiveObjectConverter(dataType: DataType): ObjectInspectorConverters.Converter = dataType match {
+        case ArrayType(_, _) => new Converter {
+            override def convert(o: Object): Object = o.asInstanceOf[mutable.WrappedArray[Object]].toArray
+        }
         case vectorType: VectorUDT => new Converter {
             override def convert(o: Object): Object = o.asInstanceOf[Vector].toArray
         }
