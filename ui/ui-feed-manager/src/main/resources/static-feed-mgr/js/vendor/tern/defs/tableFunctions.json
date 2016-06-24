@@ -1222,7 +1222,7 @@
   "substr": {
     "!type": "fn(e: Column, startPos: Column, len: Column) -> Column",
     "!doc": "An expression that returns a substring.",
-    "!spark": "%c.substr(%c, %c, %c)",
+    "!spark": "%c.substr(%c, %c)",
     "!sparkType": "column"
   },
   "subtract": {
