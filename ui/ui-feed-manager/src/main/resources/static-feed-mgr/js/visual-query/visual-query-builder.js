@@ -415,7 +415,7 @@
                 return "JOIN " + dst.nodeAttributes.sql + " " + TABLE_PREFIX + dst.id;
             }
 
-            // Create JOIN caluse
+            // Create JOIN clause
             var sql = connection.joinType + " " + dst.nodeAttributes.sql + " " + TABLE_PREFIX + dst.id + " ON " + TABLE_PREFIX + dst.id + ".`";
             sql += StringUtils.quoteSql((connection.source.nodeID === src.id) ? connection.joinKeys.destKey : connection.joinKeys.sourceKey);
             sql += "` = " + TABLE_PREFIX + src.id + ".`";
