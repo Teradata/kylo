@@ -1259,6 +1259,57 @@
     "!sparkType": "dataframe"
   },
 
+  "!HIVE_FUNCTIONS": "Functions available from Hive.",
+
+  "xpath": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns a string array of values within xml nodes that match the xpath expression",
+    "!spark": "functions.callUDF(\"xpath\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_double": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns a double value that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_double\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_float": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns a float value that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_float\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_int": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns an integer value that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_int\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_long": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns a long value that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_long\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_number": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns a double value that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_number\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_short": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns a short value that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_short\", %c, %c)",
+    "!sparkType": "column"
+  },
+  "xpath_string": {
+    "!type": "fn(xml: string, xpath: string) -> Column",
+    "!doc": "Returns the text contents of the first xml node that matches the xpath expression",
+    "!spark": "functions.callUDF(\"xpath_string\", %c, %c)",
+    "!sparkType": "column"
+  },
+
   "!MACHINE_LEARNING_FUNCTIONS": "Functions for performing machine learning operations on DataFrame objects.",
 
   "transform": {
