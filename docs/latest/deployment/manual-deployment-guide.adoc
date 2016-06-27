@@ -47,6 +47,8 @@ you stand up an ELK stack you will likely want to leverage the same instance.
     To leverage an existing Elasticsearch instance, you must update all feed templates that you created with the correct Elasticsearch URL.You can do this by going to the
     "Additional Properties" tab for that feed. If you added any re-usable flow templates you will need to modify the Elasticsearch processors in NiFI
 
+    TIP: To test that Elasticsearch is running type "curl localhost:9200". You should see a JSON response
+
 === Install ActiveMQ
 The project includes a script to stand up a single node ActiveMQ instance to get up and running quickly. You can also leverage an existing ActiveMQ instance.
 
@@ -63,12 +65,12 @@ The project includes a script to stand up a single node ActiveMQ instance to get
         Update the below properties so that NiFI and thinkbig-services can communicate with the existing server
 
 
-        .. /opt/nifi/ext-config/config.properties
+        1. /opt/nifi/ext-config/config.properties
 
             spring.activemq.broker-url
 
 
-        .. /opt/thinkbig/thinkbig-services/conf/application.properties
+        2. /opt/thinkbig/thinkbig-services/conf/application.properties
 
             jms.activemq.broker.url
 
@@ -79,7 +81,8 @@ The project includes a script to stand up a single node ActiveMQ instance to get
     the wizard. Note that Java 8 is required to run NiFi with our customizations. Make sure Java 8 is installed on the box.
 
     . Option 1: Install NiFi from our scripts
-        This method will download and install NiFI, as well as install and configure the Think Big specific libraries. This instance of NiFi is configured to store persistent data
+
+        This method will download and install NiFi, as well as install and configure the Think Big specific libraries. This instance of NiFi is configured to store persistent data
         outside of the NiFi installation folder in /opt/nifi/data. This makes it easy to upgrade since you can change the version of NiFi without migrating data out of the old version.
 
         .. Install NiFi
