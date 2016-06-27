@@ -52,174 +52,36 @@ If installing in a new Hortonworks sandbox make sure to do the following first b
 . After ambari server starts login to the application and validate the dependent services are running (see above)
 
 == Installation
+There are 2 procedures you can follow to deploy the solution. In a test and production environment you will likely want to follow the manual installation guide as it has more
+detailed instructions on how to install each individual component. For local development and 1 node development boxes you can leverage the setup wizard procedure to quickly bootstrap
+your environment.
 
-=== Java
-Data Lake Accelerator requires Java 8 for NiFi, thinkbig-ui, and thinkbig-services. If you already have Java 8 installed as the system level Java then you will not be required to follow the Java installation
-steps below. However, if Java 7 is the system version and you do not want to change it to Java 8 you can leverage the mentioned scripts below to download and configure Java 8 in the /opt/java directory. The scripts
- will also modify the startup scripts for NiFi, thinkbig-ui and thinkbig-services to reference the /opt/java JAVA_HOME.
+=== Java Requirements
+Data Lake Accelerator requires Java 8 for NiFi, thinkbig-ui, and thinkbig-services. If you already have Java 8 installed as the system level Java you have the option to leverage that.
 
-=== Install Procedure 1:  Installing all components on one edge node with internet access
+In some cases, such as with an HDP install, Java 7 is the system version and you likely will not want to change it to Java 8. In this case you can leverage the mentioned
+scripts below to download and configure Java 8 in the /opt/java directory. The scripts will also modify the startup scripts for NiFi, thinkbig-ui and
+thinkbig-services to reference the /opt/java JAVA_HOME.
 
-Follow the steps below to install the data lake accelerator. This procedure is also recommended for installing to a Hortonworks sandbox. The WGET command is used to download binaries
-so internet access is required.
+If you already have Java 8 installed in a different location you will have the option to use that as well.
 
+NOTE: When installing the RPM the applications are defaulted to use the /opt/java/current location. This default saves a step for developers so that they can uninstall and re-install
+the RPM without having to run any other scripts.
 
-. Login to the host using root. You can optionally add the "sudo" command in front of the below commands
+=== Install Procedure 1:  Installing all components on one edge node with internet access using the wizard
 
-. R&D provides a pre-built RPM compiled against recent versions of Hadoop, Spark, and NiFi libraries.  Find and download the RPM file from artifactory and place on the
-host linux machine. You can
-right click the download:
+Follow the steps below to install the data lake accelerator using the installation wizard script. This is convenient for local sandboxes (HDP/Cloudera)
+and 1 node development boxes. The WGET command is used to download binaries so internet access is required.
 
-           http://54.152.98.43:8080/artifactory/webapp/search/artifact/?q=thinkbig-datalake-accelerator  (requires VPN)
+Click on the below link to go to the wizard driven deployment instructions
 
-. Run RPM install
+link:./deployment/wizard-deployment-guide.adoc[Wizard Driven Deployment Guide]
 
-           $ rpm -ivh thinkbig-datalake-accelerator-<version>.noarch.rpm
+=== Install Procedure 2: Installing each component manually
+Click on the below link to go to the manual deployment instructions
 
-. Run the setup wizard
+link:./deployment/manual-deployment-guide.adoc[Manual Deployment Guide]
 
-    $ /opt/thinkbig/setup/setup-wizard.sh
-
-    Follow the directions and it will install the following:
-    * MySQL or Postgres scripts into the local database
-    * Elasticsearch
-    * ActiveMQ
-    * Java 8 (If the system Java is 7 or below)
-    * NiFi and the Think Big dependencies
-
-    The Elasticsearch, NiFi, and ActiveMQ services will be started when the wizard is finished
-
-. Add "nifi" and "thinkbig" user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
-
-    Hortonworks
-    $ usermod -a -G hdfs nifi
-    $ usermod -a -G hdfs thinkbig
-
-    Cloudera
-      $ groupadd supergroup
-      # Add nifi and hdfs to that group:
-      $ usermod -a -G supergroup nifi
-      $ usermod -a -G supergroup hdfs
-      Optional: If you want to perform actions as a root user in a development environment run the below command
-      $ usermod -a -G supergroup root
-
-. Create a dropzone folder on the edge node for file ingest, for example:
-
-    $ mkdir -p /var/dropzone
-    $ chown nifi /var/dropzone
-
-    Note: Files should be copied into the dropzone such that user nifi can read and remove.
-
-. Complete this step for Cloudera installations ONLY
-
-  See the appendix section below "Cloudera Configuration File Changes"
-
-. Start the three Think Big services
-
-           $ /opt/thinkbig/start-thinkbig-apps.sh
-
-           At this point all services should be running. Note that services are started automatically on boot.
-
-TIP: See section below on how to use the cleanup script to completely remove all of the components above. This is useful in
-     a DEV or sandbox environment so you can run a clean install.
-
-=== Procedure for installing each component manually
-
-Follow the steps below to install the data lake accelerator manually. This method is useful if you are deploying products across multiple edge nodes
-
-
-. For each step login to the the host using root or sudo access
-
-. Find and download the RPM file from artifactory and place on the host linux machine you want to install the data lake
-   accelerator services on. You can right click the download link and copy the url to use wget instead
-
-           http://54.152.98.43:8080/artifactory/webapp/search/artifact/?7&q=thinkbig-datalake-accelerator  (requires VPN)
-
-. Run data lake accelerator RPM install
-
-           $ rpm -ivh thinkbig-datalake-accelerator-<version>.noarch.rpm
-
-. Run the database scripts (see database configuration section)
-
-
-. Install Elasticsearch
-
-    You can leverage an existing elasticsearch installation or follow the steps in the elasticsearch
-    script used by the wizard.
-
-    /opt/thinkbig/setup/elasticsearch/install-elasticsearch.sh
-
-. Install ActiveMQ
-
-    You can leverage an existing ActiveMQ installation or follow the steps in the ActiveMQ script used by the wizard
-
-    $ /opt/thinkbig/setup/activemq/install-activemq.sh
-
-    NOTE: If installing on a different node than NiFi and thinkbig-services you will need to update the following properties
-
-    $ /opt/nifi/ext-config/config.properties
-
-        * spring.activemq.broker-url
-
-    $ /opt/thinkbig/thinkbig-services/conf/application.properties
-
-        * jms.activemq.broker.url
-
-
-. Install NiFI
-
-    You can leverage an existing NiFi installation or follow the steps in the setup directory which is used by
-    the wizard. There are two steps:
-
-    1. Install NiFi
-    $ /opt/thinkbig/setup/nifi/install-nifi.sh
-
-    2. Install Think Big specific components
-    $ /opt/thinkbig/setup/nifi/install-thinkbig-components.sh
-
-. Install Java 8
-
-    If you already have Java 8 installed as the system version of Java then you can skip this step. However, if you are deploying NiFi or the Think Big RPM on a box with Java 7 then you will want to follow the below steps
-
-    1. Install Java 8 in the /opt/java directory
-
-    $ /opt/thinkbig/setup/java/install-java8.sh
-
-    2. Update NiFi, thinkbig-ui, and thinkbig-services to use new Java version
-
-    $ /opt/thinkbig/setup/java/change-java-home.sh
-
-. Add nifi and thinkbig user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
-
-    Hortonworks
-    $ usermod -a -G hdfs nifi
-    $ usermod -a -G hdfs thinkbig
-
-    Cloudera
-      $ groupadd supergroup
-      # Add nifi and hdfs to that group:
-      $ usermod -a -G supergroup nifi
-      $ usermod -a -G supergroup hdfs
-
-      Note: If you want to perform actions as a root user in a development environment run the below command
-      $ usermod -a -G supergroup root
-
-. Create a dropzone folder on the edge node for file ingest, for example:
-
-    $ mkdir -p /var/dropzone
-    $ chown nifi /var/dropzone
-
-    Note: Files should be copied into the dropzone such that user nifi can read and remove.
-
-. Complete this step for Cloudera installations ONLY
-
-  See the appendix section below "Cloudera Configuration File Changes"
-
-. Start the three Think Big services
-
-           $ /opt/thinkbig/start-thinkbig-apps.sh
-
-           At this point all services should be running
 
 == Configuration
 
@@ -229,22 +91,6 @@ Configuration for the data lake accelerator services are located under the follo
 
     /opt/thinkbig/thinkbig-ui/conf/application.properties
     /opt/thinkbig/thinkbig-services/conf/application.properties
-
-
-=== Database Setup
-
-Data lake services can be configured to work with Postgres or MySQL. Database and permission setup scripts are provided to assist in the initial configuration process.   The script names relevant to setup are below:
-
-==== MySQL
-|===
-|Script Name|Description
-|/opt/thinkbig/setup/sql/mysql/setup-mysql.sh|Create tables used by data lake accelerator services
-|/opt/thinkbig/setup/sql/mysql/drop-mysql.sh DROP|Used to remove the data lake accelerator schema(s)
-|===
-
-
-==== Postgres
-TBD - Not yet supported
 
 
 === Optimizing Performance
@@ -257,11 +103,22 @@ You can adjust the memory setting for each services using the below environment 
     /opt/thinkbig/thinkbig-services/bin/run-thinkbig-services.sh
     export THINKBIG_SERVICES_OPTS= -Xmx4g
     
-The setting above would set the Java maximum heap size to 4 GB.    
+The setting above would set the Java maximum heap size to 4 GB.
 
+=== Change the Java Home
+By default the thinkbig-services and thinkbig-ui application set the JAVA_HOME location to /opt/java/current. This can easily be changed by editing the JAVA_HOME environment variable
+in the following two files
 
-== Starting the Services
-Note: These below are installed as services and should start and stop automatically when the machine is rebooted
+    /opt/thinkbig/thinkbig-ui/bin/run-thinkbig-ui.sh
+    /opt/thinkbig/thinkbig-services/bin/run-thinkbig-services.sh
+
+In addition, if you run the script to modify the NiFI JAVA_HOME variable you will need to edit
+
+    /opt/nifi/current/bin/nifi.sh
+
+== Starting and Stopping the Services Manually
+If you follow the instructions for the installations steps above all of the below applications will be set to startup automatically if you restart the server. In the Hortonworks sandbox
+the services for thinkbig and NiFI are set to start after all of the services managed by Ambari start up.
 
 For starting and stopping the 3 data lake accelerator services there you can run the following scripts
 
@@ -332,37 +189,20 @@ Below are the default URL's and ports for the services
     ActiveMQ Admin
     http://127.0.0.1:8161/admin
 
-== Appendix: Cloudera Configuration File Changes
 
-The configuration is setup to work out of the box with the Hortonworks sandbox. There are a few differences that require configuration changes for Cloudera.
-    /opt/thinkbig/thinkbig-services/conf/application.properties
-
-    .. Update the 3 MySQL password values to "cloudera"
-
-    spring.datasource.password=cloudera
-    metadata.datasource.password=cloudera
-    hive.metastore.datasource.password=cloudera
-
-    .. Update the Hive username
-
-    hive.datasource.username=hive
-    
-    .. Update the Hive Metastore URL
-    
-    hive.metastore.datasource.url=jdbc:mysql://localhost:3306/metastore
-
-    .. Update the following parameters
-
-    config.hive.schema=metastore
-    nifi.executesparkjob.sparkhome=/usr/lib/spark
-
-== Appendix: Cleanup script
+== Appendix: Cleanup scripts
 For development and sandbox environments you can leverage the cleanup script to remove all of the Think Big services as well as Elasticsearch,
 ActiveMQ, and NiFi.
 
     $ /opt/thinkbig/setup/dev/cleanup-env.sh
 
  IMPORTANT Only run this in a DEV environment. This will delete all application and the MySQL schema
+
+In addition there is a script for cleaning up the hive schema and HDFS folders that are related to a specific "category" that is defined in the UI.
+
+    $ /opt/thinkbig/setup/dev/cleanupCategory.sh [categoryName]
+
+    Example: /opt/thinkbig/setup/dev/cleanupCategory.sh customers
 
 == Appendix: Postgres Integration
 
