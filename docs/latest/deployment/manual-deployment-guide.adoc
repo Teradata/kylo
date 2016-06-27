@@ -36,20 +36,21 @@ The database scripts will create one schema called "thinkbig" and install to tha
 The project includes a script to stand up a single node Elasticsearch instance to get up and running quickly. You can also leverage an existing Elasticsearch instance. For example, if
 you stand up an ELK stack you will likely want to leverage the same instance.
 
-    .. Option 1: Install Elasticsearch from script
+    .. Option 1: Install Elasticsearch from our script
+
     The included Elasticsearch script was meant to speed up installation in a sandbox or DEV environment. It is not a production ready configuration.
 
     $ /opt/thinkbig/setup/elasticsearch/install-elasticsearch.sh
 
     .. Option 2: Use an existing Elasticsearch
 
-    To leverage an existing Elasticsearch instance you have to update all feed templates that you created with the correct Elasticsearch URL.You can do this by going to the
+    To leverage an existing Elasticsearch instance, you must update all feed templates that you created with the correct Elasticsearch URL.You can do this by going to the
     "Additional Properties" tab for that feed. If you added any re-usable flow templates you will need to modify the Elasticsearch processors in NiFI
 
 === Install ActiveMQ
 The project includes a script to stand up a single node ActiveMQ instance to get up and running quickly. You can also leverage an existing ActiveMQ instance.
 
-    . Option 1: Install ActiveMQ from the script
+    Option 1: Install ActiveMQ from the script
 
     The included ActiveMQ script was meant to speed up installation in a sandbox or DEV environment. It is not a production ready configuration.
 
@@ -57,7 +58,7 @@ The project includes a script to stand up a single node ActiveMQ instance to get
 
         NOTE: If installing on a different node than NiFi and thinkbig-services you will need to update the following properties
 
-    . Option 2: Leverage an existing ActiveMQ instance
+    Option 2: Leverage an existing ActiveMQ instance
 
         Update the below properties so that NiFI and thinkbig-services can communicate with the existing server
 
