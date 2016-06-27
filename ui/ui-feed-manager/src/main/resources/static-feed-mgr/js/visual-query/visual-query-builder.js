@@ -24,10 +24,6 @@
 
     var controller = function($scope, $log, $http, $mdToast, $mdDialog, $document, Utils, RestUrlService, HiveService, SideNavService, StateService, VisualQueryService, FeedService) {
 
-        //Allow for SQL editing
-        this.advancedMode = false;
-        this.advancedModeText = 'Advanced Mode';
-
         var self = this;
         this.model = VisualQueryService.model;
         this.isValid = false;
@@ -35,6 +31,15 @@
         this.stepperController = null;
 
         SideNavService.hideSideNav();
+
+        //Allow for SQL editing
+        if (typeof(self.model.visualQueryModel) === "undefined" && typeof(self.model.visualQuerySql) !== "undefined") {
+            this.advancedMode = true;
+            this.advancedModeText = 'Visual Mode';
+        } else {
+            this.advancedMode = false;
+            this.advancedModeText = 'Advanced Mode';
+        }
 
         // holds the metadata about each column and table that is used to build the SQL str in the getSQLModel() method
         this.selectedColumnsAndTables = [];
@@ -76,8 +81,13 @@
         //setup the flowchart Model
         setupFlowChartModel();
 
-        //validate when the page loads
-        validate();
+        this.advancedModeSql = function(opt_sql) {
+            if (arguments.length === 1) {
+                self.model.visualQuerySql = opt_sql;
+                validate();
+            }
+            return self.model.visualQuerySql;
+        };
 
         this.tablesAutocomplete = {
             clear: function() {
@@ -146,16 +156,32 @@
          * TODO enhance to check if there are any tables without connections
          */
         function validate() {
-            self.isValid = (chartDataModel.nodes.length > 0);
-            self.model.visualQueryModel = chartDataModel;
-            var sql = getSQLModel();
-            self.model.visualQuerySql = sql;
-            self.model.selectedColumnsAndTables = self.selectedColumnsAndTables;
-            var feedModel = FeedService.createFeedModel;
-            feedModel.dataTransformation.visualQuery.sql = sql;
-            feedModel.dataTransformation.visualQuery.selectedColumnsAndTablesJson = angular.toJson(self.selectedColumnsAndTables);
-            feedModel.dataTransformation.visualQuery.chartViewModelJson = angular.toJson(self.selectedColumnsAndTables);
+            if (self.advancedMode) {
+                var sql = self.advancedModeSql();
+                self.isValid = (typeof(sql) !== "undefined" && sql.length > 0);
 
+                delete self.model.selectedColumnsAndTables;
+                delete self.model.visualQueryModel;
+
+                var feedModel = FeedService.createFeedModel;
+                feedModel.dataTransformation.visualQuery.sql = self.model.visualQuerySql;
+                delete feedModel.dataTransformation.visualQuery.selectedColumnsAndTablesJson;
+                delete feedModel.dataTransformation.visualQuery.chartViewModelJson;
+            } else if (typeof(chartDataModel.nodes) !== "undefined") {
+                self.isValid = (chartDataModel.nodes.length > 0);
+
+                self.model.visualQueryModel = chartDataModel;
+                var sql = getSQLModel();
+                self.model.visualQuerySql = sql;
+                self.model.selectedColumnsAndTables = self.selectedColumnsAndTables;
+
+                var feedModel = FeedService.createFeedModel;
+                feedModel.dataTransformation.visualQuery.sql = sql;
+                feedModel.dataTransformation.visualQuery.selectedColumnsAndTablesJson = angular.toJson(self.selectedColumnsAndTables);
+                feedModel.dataTransformation.visualQuery.chartViewModelJson = angular.toJson(self.selectedColumnsAndTables);
+            } else {
+                self.isValid = false;
+            }
         }
 
         function getNewXYCoord() {
@@ -577,8 +603,10 @@
             $document.unbind('keypress');
             $document.unbind('keyup');
 
-        })
+        });
 
+        //validate when the page loads
+        validate();
     };
 
     angular.module(MODULE_FEED_MGR).controller('VisualQueryBuilderController', controller);
