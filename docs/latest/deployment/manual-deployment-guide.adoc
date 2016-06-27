@@ -4,6 +4,9 @@
 
 This document explains how to install each component of the framework manually. This is useful for when you are installing across multiple edge nodes.
 
+TIP: Many of the steps require the same steps as running the wizard based install. If you want to take advantage of the wizard for each technology you want to install but
+they are being installed on different nodes you can tar up the /opt/thinkbig/setup folder and untar it to a temp directory on each node.
+
 == Installation
 
 For each step below you will need to login with root access

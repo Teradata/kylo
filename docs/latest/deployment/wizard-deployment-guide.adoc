@@ -15,7 +15,7 @@ NOTE: There is a Jira(PC-216) to create a script to generate an uber tar file wi
 * Elasticsearch - RPM installation default location
 
 == Installation
-For each step below you will need to login with root access
+The steps below require root access
 
 === Install Think Big Services
 
@@ -31,6 +31,7 @@ For each step below you will need to login with root access
    NOTE: The RPM is hard coded at this time to install to /opt/thinkbig
 
 . Run the setup wizard
+    NOTE: If installing in a HDP or Cloudera sandbox choose option #2 on the Java step to download and install Java in the /opt/java/current directory
 
     $ /opt/thinkbig/setup/setup-wizard.sh
 
@@ -73,9 +74,6 @@ For each step below you will need to login with root access
            $ /opt/thinkbig/start-thinkbig-apps.sh
 
            At this point all services should be running. Note that services are started automatically on boot.
-
-TIP: See section below on how to use the cleanup script to completely remove all of the components above. This is useful in
-     a DEV or sandbox environment so you can run a clean install.
 
 == Appendix: Cloudera Configuration File Changes
 
