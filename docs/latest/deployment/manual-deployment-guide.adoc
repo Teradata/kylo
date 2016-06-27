@@ -4,8 +4,8 @@
 
 This document explains how to install each component of the framework manually. This is useful for when you are installing across multiple edge nodes.
 
-TIP: Many of the steps require the same steps as running the wizard based install. If you want to take advantage of the wizard for each technology you want to install but
-they are being installed on different nodes you can tar up the /opt/thinkbig/setup folder and untar it to a temp directory on each node.
+TIP: Many of the steps below are similar to running the wizard based install. If you want to take advantage of the same scripts as the wizard
+you can tar up the /opt/thinkbig/setup folder and untar it to a temp directory on each node.
 
 == Installation
 
@@ -29,7 +29,8 @@ The database scripts will create one schema called "thinkbig" and install to tha
 
     $ /opt/thinkbig/setup/sql/mysql/setup-mysql.sh [db_user] [db_password]
 
-    NOTE: The HDP sandbox doesn't have a password set for the root user so you would run "/opt/thinkbig/setup/sql/mysql/setup-mysql.sh root"
+    NOTE: The HDP sandbox doesn't have a password set for the root user so
+    you would run "/opt/thinkbig/setup/sql/mysql/setup-mysql.sh root"
 
 === Install and configure Elasticsearch
 The project includes a script to stand up a single node Elasticsearch instance to get up and running quickly. You can also leverage an existing Elasticsearch instance. For example, if
