@@ -63,14 +63,14 @@ The project includes a script to stand up a single node ActiveMQ instance to get
         Update the below properties so that NiFI and thinkbig-services can communicate with the existing server
 
 
-        $ /opt/nifi/ext-config/config.properties
+        .. /opt/nifi/ext-config/config.properties
 
-            * spring.activemq.broker-url
+            spring.activemq.broker-url
 
 
-        $ /opt/thinkbig/thinkbig-services/conf/application.properties
+        .. /opt/thinkbig/thinkbig-services/conf/application.properties
 
-            * jms.activemq.broker.url
+            jms.activemq.broker.url
 
 
 === Install NiFI
