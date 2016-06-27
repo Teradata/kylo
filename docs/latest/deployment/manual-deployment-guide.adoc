@@ -50,7 +50,7 @@ you stand up an ELK stack you will likely want to leverage the same instance.
 === Install ActiveMQ
 The project includes a script to stand up a single node ActiveMQ instance to get up and running quickly. You can also leverage an existing ActiveMQ instance.
 
-    Option 1: Install ActiveMQ from the script
+    . Option 1: Install ActiveMQ from the script
 
     The included ActiveMQ script was meant to speed up installation in a sandbox or DEV environment. It is not a production ready configuration.
 
@@ -58,7 +58,7 @@ The project includes a script to stand up a single node ActiveMQ instance to get
 
         NOTE: If installing on a different node than NiFi and thinkbig-services you will need to update the following properties
 
-    Option 2: Leverage an existing ActiveMQ instance
+    . Option 2: Leverage an existing ActiveMQ instance
 
         Update the below properties so that NiFI and thinkbig-services can communicate with the existing server
 
