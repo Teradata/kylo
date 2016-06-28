@@ -75,6 +75,36 @@ The project includes a script to stand up a single node ActiveMQ instance to get
             jms.activemq.broker.url
 
 
+=== Install Java 8
+    NOTE: If you are installing NiFI and the thinkbig services on two separate nodes you may need to perform this step on each node.
+
+    There are 3 scenarios for configuring the applications with Java 8
+
+    . Scenario 1: Java 8 is installed on the system and is already in the classpath
+
+    In this case you need to remove the default JAVA_HOME used as part of the install. Run the following script:
+
+        For thinkbig-ui and thinkbig-services
+        $/opt/thinkbig/setup/java/remove-default-thinkbig-java-home.sh
+
+     To test this you can look at each file referenced in the scripts for thinkbig-ui and thinkbig-services to validate the 2 lines setting and exporting the JAVA_HOME are gone.
+
+    . Scenario 2: Install Java in the default /opt/java/current location
+
+        1. Install Java 8 - You can modify and use the following script if you want
+
+            $ /opt/thinkbig/setup/java/install-java8.sh
+
+
+    . Scenario 3: I already have Java 8 installed on the node but it's not in the default JAVA_HOME path
+
+        If you already have Java 8 installed and want to reference that one one there is a script to remove the existing path and another script to set the new path
+        for the thinkbig apps.
+
+        For thinkbig-ui and thinkbig-services
+        $ /opt/thinkbig/setup/java/remove-default-thinkbig-java-home.sh
+        $ /opt/thinkbig/setup/java/change-thinkbig-java-home.sh <path to JAVA_HOME>
+
 === Install NiFI
 
     You can leverage an existing NiFi installation or follow the steps in the setup directory which is used by
@@ -82,20 +112,25 @@ The project includes a script to stand up a single node ActiveMQ instance to get
 
     . Option 1: Install NiFi from our scripts
 
-        This method will download and install NiFi, as well as install and configure the Think Big specific libraries. This instance of NiFi is configured to store persistent data
-        outside of the NiFi installation folder in /opt/nifi/data. This makes it easy to upgrade since you can change the version of NiFi without migrating data out of the old version.
+        This method will download and install NiFi, as well as install and configure the Think Big specific
+        libraries. This instance of NiFi is configured to store persistent data outside of the NiFi installation
+        folder in /opt/nifi/data. This makes it easy to upgrade since you can change the version of NiFi without
+        migrating data out of the old version.
 
         .. Install NiFi
 
         $ /opt/thinkbig/setup/nifi/install-nifi.sh
 
+        .. Update JAVA_HOME (default is /opt/java/current)
+        $ /opt/thinkbig/setup/java/change-nifi-java-home.sh <path to JAVA_HOME>
+
         .. Install Think Big specific components
 
         $ /opt/thinkbig/setup/nifi/install-thinkbig-components.sh
 
-        NOTE: See the Java section to determine how to best run NiFi in Java 8
-
     . Option 2: Leverage an existing NiFi instance
+        NOTE: If Java 8 isn't being used for the existing instance you will be required to change it.
+
         In some cases you may have a separate instance of NiFI or Hortonworks Data Flow you want to leverage. Follow the steps below to include the Think Big resources.
 
         .. Copy the /opt/thinkbig/setup/nifi/thinkbig-*.nar and thinkbig-spark-*.jar files to the box NiFI is running on. If it's on the same box you can skip this step.
@@ -144,40 +179,6 @@ The project includes a script to stand up a single node ActiveMQ instance to get
 
        OPTIONAL: The /opt/thinkbig/setup/nifi/install-thinkbig-components.sh contains steps to install NiFi as a service so that NiFi can startup automatically if you restart the
                 box. This might be useful to add if it doesn't already exist for the NiFi instance.
-
-=== Install Java 8
-    NOTE: If you are installing NiFI and the thinkbig services on two separate nodes you may need to perform this step on each node.
-
-    There are 3 scenarios for configuring the applications with Java 8
-
-    . Scenario 1: Java 8 is installed on the system and is already in the classpath
-
-    In this case you need to remove the default JAVA_HOME used as part of the install. Run the following script:
-
-        For thinkbig-ui and thinkbig-services
-        $/opt/thinkbig/setup/java/remove-default-thinkbig-java-home.sh
-
-     To test this you can look at each file referenced in the scripts for thinkbig-ui and thinkbig-services to validate the 2 lines setting and exporting the JAVA_HOME are gone.
-
-    . Scenario 2: Install Java in the default /opt/java/current location
-
-        1. Install Java 8 - You can modify and use the following script if you want
-
-            $ /opt/thinkbig/setup/java/install-java8.sh
-
-        2. Update the JAVA_HOME for NiFi (copy the script if NiFi is installed on a different node)
-            $ ./java/change-nifi-java-home.sh /opt/java/current
-
-    . Scenario 3: I already have Java 8 installed on the node but it's not in the default JAVA_HOME path
-
-        If you already have Java 8 installed and want to reference that one one there is a script to remove the existing path and another script to set the new path.
-
-        For NiFI (copy the script if NiFi is installed on a different node)
-        $ /opt/thinkbig/setup/java/change-nifi-java-home.sh <path to JAVA_HOME>
-
-        For thinkbig-ui and thinkbig-services
-        $ /opt/thinkbig/setup/java/remove-default-thinkbig-java-home.sh
-        $ /opt/thinkbig/setup/java/change-thinkbig-java-home.sh <path to JAVA_HOME>
 
 
 === Set Permissions for HDFS
