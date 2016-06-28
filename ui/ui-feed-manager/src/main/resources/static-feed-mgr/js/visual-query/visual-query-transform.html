@@ -4,8 +4,26 @@
              <md-button class="md-raised " ng-click="vm.toggleFunctionHistory()" >History<span ng-if="vm.functionHistory.length>0" style="padding-left:10px;">({{vm.functionHistory.length}})</span></md-button>
              <md-button class="md-raised" ng-click="vm.toggleSampleMenu()">Sample</md-button>
              <span flex="10"></span>
-             <div rows="1" class="formula-editor" ui-codemirror="{ onLoad : vm.codemirrorLoaded }"  ng-model="vm.currentFormula" ui-codemirror-opts="vm.codemirrorOptions">
-             </div>
+             <md-menu>
+                 <md-button aria-label="Open formula menu" class="md-icon-button md-primary" ng-click="$mdOpenMenu($event)">
+                     <md-icon md-menu-origin>functions</md-icon>
+                 </md-button>
+                 <md-menu-content width="2">
+                     <md-menu-item>
+                         <md-button ng-click="vm.setFormula('groupBy(COLUMN).agg(count(COLUMN), sum(COLUMN))')">Aggregate</md-button>
+                     </md-menu-item>
+                     <md-menu-item>
+                         <md-button ng-click="vm.setFormula('when(CONDITION, VALUE).when(CONDITION, VALUE).otherwise(VALUE)')">Conditional</md-button>
+                     </md-menu-item>
+                     <md-menu-item>
+                         <md-button ng-click="vm.setFormula('groupBy(COLUMN).pivot(&quot;COLUMN&quot;).agg(count(COLUMN))')">Pivot</md-button>
+                     </md-menu-item>
+                     <md-menu-item>
+                         <md-button ng-click="vm.setFormula('sum(COLUMN).over(orderBy(COLUMN))')">Window</md-button>
+                     </md-menu-item>
+                 </md-menu-content>
+             </md-menu>
+             <div rows="1" class="formula-editor" ui-codemirror="{ onLoad : vm.codemirrorLoaded }"  ng-model="vm.currentFormula" ui-codemirror-opts="vm.codemirrorOptions"></div>
              <md-button class="md-raised" ng-click="vm.onAddFunction()">Add</md-button>
              <span flex></span>
              <thinkbig-step-buttons style="padding:inherit" can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>

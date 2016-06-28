@@ -162,6 +162,9 @@
                     },
                     "Ctrl-.": function(cm) {
                         self.ternServer.selectName(cm);
+                    },
+                    "Tab": function() {
+                        self.selectNextTabStop();
                     }
                 });
                 _editor.on("blur", function() {
@@ -204,6 +207,11 @@
                         cm.replaceRange("(", cursor, cursor, "complete");
                     }
                 });
+
+                // Hide when the only completion exactly matches the current text
+                if (data.list.length === 1 && (data.to.ch - data.from.ch) === data.list[0].text.length) {
+                    data.list = [];
+                }
 
                 // Display hints
                 callback(data);
@@ -414,6 +422,30 @@
 
             // Add to function history
             self.functionHistory.push(context);
+        };
+
+        /**
+         * Sets the formula in the function bar to the specified value.
+         *
+         * @param {string} formula the formula
+         */
+        this.setFormula = function(formula) {
+            self.currentFormula = formula;
+            self.codemirrorEditor.setValue(formula);
+            self.codemirrorEditor.focus();
+            self.selectNextTabStop();
+        };
+
+        /**
+         * Selects the next uppercase word in the formula bar.
+         */
+        this.selectNextTabStop = function() {
+            var match = /\b[A-Z]{2,}\b/.exec(self.currentFormula);
+            if (match !== null) {
+                self.codemirrorEditor.setSelection(new CodeMirror.Pos(0, match.index), new CodeMirror.Pos(0, match.index + match[0].length));
+            } else {
+                self.codemirrorEditor.setCursor(0, self.currentFormula.length);
+            }
         };
 
         /**
