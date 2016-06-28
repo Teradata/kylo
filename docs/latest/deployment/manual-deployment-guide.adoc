@@ -130,6 +130,7 @@ The project includes a script to stand up a single node ActiveMQ instance to get
         $ /opt/thinkbig/setup/nifi/install-thinkbig-components.sh
 
     . Option 2: Leverage an existing NiFi instance
+
         NOTE: If Java 8 isn't being used for the existing instance you will be required to change it.
 
         In some cases you may have a separate instance of NiFI or Hortonworks Data Flow you want to leverage. Follow the steps below to include the Think Big resources.
