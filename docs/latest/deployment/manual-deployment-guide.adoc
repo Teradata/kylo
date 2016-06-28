@@ -122,6 +122,7 @@ The project includes a script to stand up a single node ActiveMQ instance to get
         $ /opt/thinkbig/setup/nifi/install-nifi.sh
 
         .. Update JAVA_HOME (default is /opt/java/current)
+
         $ /opt/thinkbig/setup/java/change-nifi-java-home.sh <path to JAVA_HOME>
 
         .. Install Think Big specific components
