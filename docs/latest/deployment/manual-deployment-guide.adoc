@@ -133,7 +133,8 @@ The project includes a script to stand up a single node ActiveMQ instance to get
 
         NOTE: If Java 8 isn't being used for the existing instance you will be required to change it.
 
-        In some cases you may have a separate instance of NiFI or Hortonworks Data Flow you want to leverage. Follow the steps below to include the Think Big resources.
+        In some cases you may have a separate instance of NiFi or Hortonworks Data Flow you want to
+        leverage. Follow the steps below to include the Think Big resources.
 
         .. Copy the /opt/thinkbig/setup/nifi/thinkbig-*.nar and thinkbig-spark-*.jar files to the box NiFI is running on. If it's on the same box you can skip this step.
 
@@ -171,12 +172,15 @@ The project includes a script to stand up a single node ActiveMQ instance to get
             NOTE: Right now the plugin is hard coded to use the /opt/nifi/ext-config directory to load the properties file. There is a Jira to address this PC-261
 
            1. Create the folders
+
                $ mkdir /opt/nifi/h2
+
                $ mkdir /opt/nifi/ext-config
 
            2. SCP the /opt/thinkbig/setup/nifi/config.properties file to the /opt/nifi/ext-config folder
 
            3. Change the ownership of the above folders to the same owner that nifi runs under. For example, if nifi runs as the "nifi" user:
+
                 $ chown -R nifi:users /opt/nifi
 
        OPTIONAL: The /opt/thinkbig/setup/nifi/install-thinkbig-components.sh contains steps to install NiFi as a service so that NiFi can startup automatically if you restart the
