@@ -87,7 +87,6 @@ public class FeedPreconditionService {
             ServiceLevelAssessment assessment = this.assessor.assess(sla);
             
             precond.setLastAssessment(assessment);
-            
             if (assessment.getResult() == AssessmentResult.SUCCESS) {
                 this.eventService.notify(new PreconditionTriggerEvent(feed.getId()));
             }

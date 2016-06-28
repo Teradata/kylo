@@ -57,7 +57,13 @@ public class JcrMetadataAccess implements MetadataAccess {
     private TransactionManagerLookup txnLookup;
 
     public static Session getActiveSession() {
-        return activeSession.get();
+        Session active = activeSession.get();
+        
+        if (active != null) {
+            return active;
+        } else {
+            throw new NoActiveSessionException();
+        }
     }
 
 

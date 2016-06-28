@@ -11,9 +11,12 @@ import javax.jms.Topic;
 
 import org.springframework.jms.core.JmsMessagingTemplate;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.PreconditionTriggerEvent;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
 
 /**
@@ -33,6 +36,12 @@ public class JmsChangeEventDispatcher {
     @Inject
     private MetadataEventService eventService;
     
+    @Inject
+    private FeedProvider feedProvider;
+    
+    @Inject
+    private MetadataAccess metadata;
+    
     private PreconditionListener listener = new PreconditionListener();
     
     @PostConstruct
@@ -49,6 +58,13 @@ public class JmsChangeEventDispatcher {
         @Override
         public void notify(PreconditionTriggerEvent event) {
             FeedPreconditionTriggerEvent triggerEv = new FeedPreconditionTriggerEvent(event.getData().toString());
+            
+            metadata.read(() -> {
+                Feed<?> feed = feedProvider.getFeed(event.getData());
+                
+                triggerEv.setFeedName(feed.getName());
+                return triggerEv;
+            });
             
             jmsMessagingTemplate.convertAndSend(preconditionTriggerTopic, triggerEv);
         }
