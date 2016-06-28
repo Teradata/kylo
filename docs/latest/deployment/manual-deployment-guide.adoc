@@ -131,16 +131,16 @@ The project includes a script to stand up a single node ActiveMQ instance to get
 
     . Option 2: Leverage an existing NiFi instance
 
-        NOTE: If Java 8 isn't being used for the existing instance you will be required to change it.
-
         In some cases you may have a separate instance of NiFi or Hortonworks Data Flow you want to
         leverage. Follow the steps below to include the Think Big resources.
 
-        .. Copy the /opt/thinkbig/setup/nifi/thinkbig-*.nar and thinkbig-spark-*.jar files to the node NiFI is running on. If it's on the same node you can skip this step.
+        NOTE: If Java 8 isn't being used for the existing instance you will be required to change it.
+
+        .. Copy the /opt/thinkbig/setup/nifi/thinkbig- *.nar and thinkbig-spark- *.jar files to the node NiFI is running on. If it's on the same node you can skip this step.
 
         .. Shutdown the NiFi instance
 
-        .. copy the thinbig-*.nar files to the <NIFI_HOME>/lib directory
+        .. copy the thinkbig-*.nar files to the <NIFI_HOME>/lib directory
 
         .. Create a directory called "app" in the <NIFI_HOME>/lib directory
 
@@ -154,8 +154,9 @@ The project includes a script to stand up a single node ActiveMQ instance to get
             nifi.provenance.repository.implementation=com.thinkbiganalytics.nifi.provenance.v2.ThinkbigProvenanceEventRepository
             nifi.web.http.port=8079
 
-            NOTE: If you decide to leave the port number set to the current value you must update the thinkbig-services application.properties file
-            and update the "nifi.rest.port" property
+            NOTE: If you decide to leave the port number set to the current value you must update the "nifi.rest.port"
+            property in the thinkbig-services application.properties file.
+
 
         .. There is a controller service that requires a MySQL database connection. You will need to copy the MySQL connector jar to a location on the NiFI node. The
            pre-defined templates have the default location set to /opt/nifi/mysql.
