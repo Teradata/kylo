@@ -142,10 +142,22 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             Node slasNode = session.getNode("/metadata/sla");
             Node slaNode = slasNode.addNode("sla-" + UUID.randomUUID(), "tba:sla");
             
-            return new SLABuilderImpl(slaNode);
+            return builder(slaNode);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create an sla node", e);
         }
+    }
+
+    /**
+     * Returns a builder that constructs an SLA rooted by the given node.  This method is exposed to support
+     * other JCR-based providers that may construct object that have embedded SLA's that are not managed by
+     * this provider.
+     * @param slaNode the root node of the SLA
+     * @return a builder to construct the sla
+     * @throws RepositoryException
+     */
+    public ServiceLevelAgreementBuilder builder(Node slaNode) throws RepositoryException {
+        return new SLABuilderImpl(slaNode);
     }
 
     /* (non-Javadoc)

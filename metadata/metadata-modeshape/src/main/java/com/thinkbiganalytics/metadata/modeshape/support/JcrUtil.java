@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
@@ -136,6 +137,23 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
         return entity;
+    }
+    
+    /**
+     * Get or Create a node relative to the Parent Node; checking out the parent node as necessary.
+     */
+    public static Node getOrCreateNode(Node parentNode, String name, String nodeType) {
+        try {
+            if (parentNode.hasNode(name)) {
+                return parentNode.getNode(name);
+            } else {
+                JcrMetadataAccess.ensureCheckoutNode(parentNode);
+                
+                return parentNode.addNode(name, nodeType);
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
+        }
     }
 
     /**

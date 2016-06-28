@@ -30,6 +30,8 @@ import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
@@ -70,11 +72,21 @@ public class DebugController {
     @GET
     @Path("metrics")
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Metric> getMetrics() {
+    public List<Metric> exampleMetrics() {
         
-        return Arrays.asList(FeedExecutedSinceFeedMetric.named("Dependent", "Dependee"), 
+        return Arrays.asList(FeedExecutedSinceFeedMetric.named("DependentFeed", "ExecutedSinceFeed"), 
                              FeedExecutedSinceScheduleMetric.named("Feed", "* * * * * ? *"),
                              new WithinSchedule("* * * * * ? *", "4 hours"));
+    }
+    
+    @GET
+    @Path("procondition")
+    @Produces(MediaType.APPLICATION_JSON)
+    public FeedPrecondition examplePrecondition() {
+        FeedPrecondition procond = new FeedPrecondition("DependingPrecondition");
+        procond.addMetrics("Feed dependson on execution of another feed", 
+                           FeedExecutedSinceFeedMetric.named("DependentFeed", "ExecutedSinceFeed"));
+        return procond;
     }
     
     @GET
@@ -82,19 +94,20 @@ public class DebugController {
     @Produces(MediaType.TEXT_PLAIN)
     public String printJcrTree(@PathParam("abspath") final String abspath) {
         return metadata.read(() -> {
+            StringWriter sw = new StringWriter();
+            PrintWriter pw = new PrintWriter(sw);
+            
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
                 Node node = session.getNode("/" + abspath);
-                JcrTools tools = new JcrTools(true);
+                JcrTools tools = new JcrTool(true, pw);
                 tools.printSubgraph(node);
-                return node.toString();
             } catch (Exception e) {
-                e.printStackTrace();
-                StringWriter sw = new StringWriter();
-                PrintWriter pw = new PrintWriter(sw);
                 e.printStackTrace(pw);
-                return sw.toString();
             }
+            
+            pw.flush();
+            return sw.toString();
         });
     }
     

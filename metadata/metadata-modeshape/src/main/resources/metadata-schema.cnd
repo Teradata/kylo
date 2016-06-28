@@ -118,7 +118,8 @@
 	- tba:schedulingStrategy (STRING)
 
 [tba:feedPrecondition] > nt:hierarchyNode, mix:lastModified
-    - tba:sla (REFERENCE) mandatory
+    - tba:slaRef (REFERENCE)
+    + tba:sla (tba:sla)
     + tba:lastAssessment (tba:serviceLevelAssessment)
     // TODO: when to check conditions (schedule, event, ...)
 

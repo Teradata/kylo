@@ -3,13 +3,13 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.sla;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.google.common.collect.Lists;
 
 /**
  *
@@ -20,7 +20,7 @@ import com.google.common.collect.Lists;
 public class Obligation {
 
     private String description;
-    private List<Metric> metrics;
+    private List<Metric> metrics = new ArrayList<>();
 
     public Obligation() {
     }
@@ -32,7 +32,7 @@ public class Obligation {
     public Obligation(String description, List<Metric> metrics) {
         super();
         this.description = description;
-        this.metrics = metrics;
+        this.metrics.addAll(metrics);
     }
 
     public String getDescription() {

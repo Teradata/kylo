@@ -36,6 +36,7 @@ import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
@@ -44,7 +45,6 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 /**
  *
@@ -56,7 +56,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     CategoryProvider<Category> categoryProvider;
 
     @Inject
-    private ServiceLevelAgreementProvider slaProvider;
+    private JcrServiceLevelAgreementProvider slaProvider;
 
     @Inject
     DatasourceProvider datasourceProvider;
@@ -180,13 +180,20 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         try {
             if (feed != null) {
                 Node feedNode = feed.getNode();
-
-                if (feedNode.hasProperty("tba:precondition")) {
-                    Node slaNode = feed.getNode().getProperty("tba:sla").getNode();
-                    slaNode.remove();
+                Node precondNode = JcrUtil.getOrCreateNode(feedNode, "tba:precondition", "tba:feedPrecondition");
+                
+                if (precondNode.hasProperty("tba:slaRef")) {
+                    precondNode.getProperty("tba:slaRef").remove();
+                }
+                if (precondNode.hasNode("tba:sla")) {
+                    precondNode.getNode("tba:sla").remove();
+                }
+                if (precondNode.hasNode("tba:lastAssessment")) {
+                    precondNode.getNode("tba:lastAssessment").remove();
                 }
 
-                ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder();
+                Node slaNode = precondNode.addNode("tba:sla", "tba:sla");
+                ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder(slaNode);
 
                 return new JcrPreconditionbuilder(slaBldr, feed);
             } else {

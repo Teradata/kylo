@@ -106,12 +106,12 @@ public class MetadataJcrConfig {
 //    }
     
     @Bean
-    public ServiceLevelAgreementProvider slaProvider() {
+    public JcrServiceLevelAgreementProvider slaProvider() {
         return new JcrServiceLevelAgreementProvider();
     }
     
     @Bean
-    public MetadataAccess metadataAccess() {
+    public JcrMetadataAccess metadataAccess() {
         return new JcrMetadataAccess();
     }
     

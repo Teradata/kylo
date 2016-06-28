@@ -232,7 +232,9 @@ public class Model {
                 feed.setDestinations(new HashSet<FeedDestination>(destinations));
                 
                 for (Entry<String, Object> entry : domain.getProperties().entrySet()) {
-                    feed.getProperties().setProperty(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
+                    if (entry.getValue() != null) {
+                        feed.getProperties().setProperty(entry.getKey(), entry.getValue().toString());
+                    }
                 }
                 
                 return feed;

@@ -131,13 +131,23 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public FeedPrecondition getPrecondition() {
-        return null;
+        try {
+            if (this.node.hasNode("tba:precondition")) {
+                return new JcrFeedPrecondition(this.node.getNode("tba:precondition"), this);
+            } else {
+                return null;
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the feed precondition", e);
+        }
     }
 
     @Override
     public FeedSource getSource(final Datasource.ID id) {
-        FeedSource source = null;
+        @SuppressWarnings("unchecked")
         List<FeedSource> sources = (List<FeedSource>) getSources();
+        FeedSource source = null;
+        
         if (sources != null && !sources.isEmpty()) {
             source = Iterables.tryFind(sources, new Predicate<FeedSource>() {
                 @Override
@@ -151,8 +161,10 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public FeedSource getSource(final FeedSource.ID id) {
-        FeedSource source = null;
+        @SuppressWarnings("unchecked")
         List<FeedSource> sources = (List<FeedSource>) getSources();
+        FeedSource source = null;
+        
         if (sources != null && !sources.isEmpty()) {
             source = Iterables.tryFind(sources, new Predicate<FeedSource>() {
                 @Override
@@ -167,8 +179,10 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public FeedDestination getDestination(final Datasource.ID id) {
-        FeedDestination destination = null;
+        @SuppressWarnings("unchecked")
         List<FeedDestination> destinations = (List<FeedDestination>) getDestinations();
+        FeedDestination destination = null;
+        
         if (destinations != null && !destinations.isEmpty()) {
             destination = Iterables.tryFind(destinations, new Predicate<FeedDestination>() {
                 @Override
@@ -182,9 +196,10 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public FeedDestination getDestination(final FeedDestination.ID id) {
-
-        FeedDestination destination = null;
+        @SuppressWarnings("unchecked")
         List<FeedDestination> destinations = (List<FeedDestination>) getDestinations();
+        FeedDestination destination = null;
+
         if (destinations != null && !destinations.isEmpty()) {
             destination = Iterables.tryFind(destinations, new Predicate<FeedDestination>() {
                 @Override
