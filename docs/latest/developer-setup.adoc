@@ -75,7 +75,10 @@ Perform a maven build to download all of the artifacts and verify that everythin
    "mvn clean install -o". Add "-DskipTests" to skip unit testing for faster builds
 
 === Install and Configure the Hortonworks Sandbox
-Download the latest HDP sandbox and import it into Virtual Box
+Download the latest HDP sandbox and import it into Virtual Box. We want to change the CPU and and RAM settings:
+
+* CPU - 4
+* RAM - 10GB
 
 http://hortonworks.com/products/sandbox/
 
