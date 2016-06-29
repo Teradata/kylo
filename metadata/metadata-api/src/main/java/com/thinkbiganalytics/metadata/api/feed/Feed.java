@@ -27,6 +27,8 @@ public interface Feed<C extends Category> extends Propertied, Serializable {
     
     String getName();
     
+    String getQualifiedName();
+    
     String getDisplayName();
     
     String getDescription();

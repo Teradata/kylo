@@ -52,6 +52,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 
 /**
@@ -194,6 +195,12 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
 
     public String getName() {
         return name;
+    }
+    
+    @Override
+    @Transient
+    public String getQualifiedName() {
+        return getCategory().getName() + "." + getName();
     }
 
     public String getDisplayName() {

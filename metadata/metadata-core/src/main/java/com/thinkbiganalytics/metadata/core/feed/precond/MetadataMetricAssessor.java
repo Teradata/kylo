@@ -11,12 +11,11 @@ import javax.inject.Inject;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.op.DataOperation;
-import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
+import com.thinkbiganalytics.metadata.api.op.Dataset;
+import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 
@@ -31,21 +30,14 @@ public abstract class MetadataMetricAssessor<M extends Metric>
     private FeedProvider feedProvider;
     
     @Inject
-    private DatasourceProvider datasetProvider;
-    
-    @Inject
-    private DataOperationsProvider dataOperationsProvider;
+    private FeedOperationsProvider operationsProvider;
     
     protected FeedProvider getFeedProvider() {
         return this.feedProvider;
     }
     
-    protected DatasourceProvider getDatasetProvider() {
-        return this.datasetProvider;
-    }
-    
-    protected DataOperationsProvider getDataOperationsProvider() {
-        return this.dataOperationsProvider;
+    protected FeedOperationsProvider getFeedOperationsProvider() {
+        return this.operationsProvider;
     }
    
     protected int collectChangeSetsSince(ArrayList<Dataset<Datasource, ChangeSet>> result,

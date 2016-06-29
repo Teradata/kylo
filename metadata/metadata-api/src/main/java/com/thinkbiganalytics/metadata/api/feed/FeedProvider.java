@@ -26,6 +26,7 @@ public interface FeedProvider{
     Feed createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics);
     PreconditionBuilder buildPrecondition(Feed.ID feedId);
 
+    Feed findBySystemName(String systemName);
     Feed findBySystemName(String categorySystemName, String systemName);
 
     FeedCriteria feedCriteria();

@@ -113,6 +113,11 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public String getName() {
         return getSystemName();
     }
+    
+    @Override
+    public String getQualifiedName() {
+        return getCategory().getName() + "." + getName();
+    }
 
     @Override
     public String getDisplayName() {

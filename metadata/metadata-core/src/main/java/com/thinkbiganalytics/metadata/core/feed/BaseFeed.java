@@ -92,6 +92,11 @@ public class BaseFeed implements Feed {
         return name;
     }
     
+    @Override
+    public String getQualifiedName() {
+        return getCategory().getName() + "." + getName();
+    }
+    
     public boolean isInitialized() {
         return initialized;
     }

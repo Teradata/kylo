@@ -116,6 +116,11 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     public void setName(String name) {
         this.name = name;
     }
+    
+    @Override
+    public String getQualifiedName() {
+        return getCategory().getName() + "." + getName();
+    }
 
     @Override
     public String getDisplayName() {

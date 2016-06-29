@@ -261,11 +261,18 @@ public class InMemoryFeedProvider implements FeedProvider {
     public List<Feed> getFeeds() {
         return getFeeds(ALL);
     }
+    
+    @Override
+    public Feed findBySystemName(String systemName) {
+        return findBySystemName(null, systemName);
+    }
 
     @Override
     public Feed findBySystemName(String categorySystemName, String systemName) {
         FeedCriteria c = feedCriteria();
-        c.category(categorySystemName);
+        if (categorySystemName != null) {
+            c.category(categorySystemName);
+        }
         c.name(systemName);
         List<Feed> feeds = getFeeds(c);
         if (feeds != null && !feeds.isEmpty()) {
