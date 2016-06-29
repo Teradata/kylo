@@ -186,8 +186,8 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
             
             if (! session.nodeExists("/" + ExtensionsConstants.TYPES + "/" + typeBldr.name)) {
                 typeNode = session.getRootNode().addNode(ExtensionsConstants.TYPES + "/" + typeName, ExtensionsConstants.TYPE_DESCRIPTOR_TYPE);
-                typeNode.setProperty("jcr:title", typeBldr.displayName);
-                typeNode.setProperty("jcr:description", typeBldr.description);
+                typeNode.setProperty(JcrExtensibleType.NAME, typeBldr.displayName);
+                typeNode.setProperty(JcrExtensibleType.DESCRIPTION, typeBldr.description);
             } else {
                 throw new TypeAlreadyExistsException(typeBldr.name);
             }
@@ -213,8 +213,8 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
                 nodeTemplate.getPropertyDefinitionTemplates().add(propDef);
                 
                 Node fieldNode = typeNode.addNode(bldr.name, ExtensionsConstants.FIELD_DESCRIPTOR_TYPE);
-                fieldNode.setProperty("jcr:title", bldr.displayName);
-                fieldNode.setProperty("jcr:description", bldr.description);
+                fieldNode.setProperty(JcrExtensibleType.NAME, bldr.displayName);
+                fieldNode.setProperty(JcrExtensibleType.DESCRIPTION, bldr.description);
             }
             
             NodeType nodeType = typeMgr.registerNodeType(nodeTemplate, true);
@@ -253,8 +253,8 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
                 nodeTemplate.getPropertyDefinitionTemplates().add(propDef);
                 
                 Node fieldNode = typeNode.addNode(bldr.name, ExtensionsConstants.FIELD_DESCRIPTOR_TYPE);
-                fieldNode.setProperty("jcr:title", bldr.displayName);
-                fieldNode.setProperty("jcr:description", bldr.description);
+                fieldNode.setProperty(JcrExtensibleType.NAME, bldr.displayName);
+                fieldNode.setProperty(JcrExtensibleType.DESCRIPTION, bldr.description);
             }
             
             NodeType nodeType = typeMgr.registerNodeType(nodeTemplate, true);

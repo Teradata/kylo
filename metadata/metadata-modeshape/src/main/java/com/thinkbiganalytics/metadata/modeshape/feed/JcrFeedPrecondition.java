@@ -20,6 +20,13 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
  */
 public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
 
+    public static final String LAST_ASSESSMENT = "tba:lastAssessment";
+    public static final String SLA_REF = "tba:slaRef";
+    public static final String SLA = "tba:sla";
+
+    public static final String SLA_TYPE = "tba:sla";
+    public static final String LAST_ASSESSMENT_TYPE = "tba:serviceLevelAssessment";
+    
     private JcrFeed feed;
     
     /**
@@ -28,6 +35,22 @@ public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
     public JcrFeedPrecondition(Node node, JcrFeed feed) {
         super(node);
         this.feed = feed;
+    }
+    
+    public void clear() {
+        try {
+            if (this.node.hasProperty(SLA_REF)) {
+                this.node.getProperty(SLA_REF).remove();
+            }
+            if (this.node.hasNode(SLA)) {
+                this.node.getNode(SLA).remove();
+            }
+            if (this.node.hasNode(LAST_ASSESSMENT)) {
+                this.node.getNode(LAST_ASSESSMENT).remove();
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to cler the precondition", e);
+        }
     }
 
     /* (non-Javadoc)
@@ -44,10 +67,10 @@ public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
     @Override
     public ServiceLevelAgreement getAgreement() {
         try {
-            if (this.node.hasNode("tba:sla")) {
-                return new JcrServiceLevelAgreement(this.node.getNode("tba:sla"));
-            } else if (this.node.hasProperty("tba:slaRef")) {
-                return new JcrServiceLevelAgreement(this.node.getProperty("tba:slaRef").getNode());
+            if (this.node.hasNode(SLA)) {
+                return new JcrServiceLevelAgreement(this.node.getNode(SLA));
+            } else if (this.node.hasProperty(SLA_REF)) {
+                return new JcrServiceLevelAgreement(this.node.getProperty(SLA_REF).getNode());
             } else {
                 return null;
             }

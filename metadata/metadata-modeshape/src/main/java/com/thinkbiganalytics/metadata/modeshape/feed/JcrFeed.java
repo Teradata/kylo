@@ -31,6 +31,7 @@ import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
  */
 public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntity implements Feed<C> {
 
+    private static final String PRECONDITION = "tba:precondition";
     public static final String NODE_TYPE = "tba:feed";
     public static final String SOURCE_NAME = "tba:sources";
     public static final String DESTINATION_NAME = "tba:destinations";
@@ -137,8 +138,8 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     @Override
     public FeedPrecondition getPrecondition() {
         try {
-            if (this.node.hasNode("tba:precondition")) {
-                return new JcrFeedPrecondition(this.node.getNode("tba:precondition"), this);
+            if (this.node.hasNode(PRECONDITION)) {
+                return new JcrFeedPrecondition(this.node.getNode(PRECONDITION), this);
             } else {
                 return null;
             }

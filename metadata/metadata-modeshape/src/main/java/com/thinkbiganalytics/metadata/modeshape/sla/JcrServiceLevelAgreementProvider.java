@@ -43,6 +43,8 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
  */
 public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLevelAgreement, ServiceLevelAgreement.ID> implements ServiceLevelAgreementProvider {
     
+    public static final String SLA_PATH = "/metadata/sla";
+    
     private final JcrTools jcrTools = new JcrTools();
 
     @Override
@@ -76,7 +78,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     public List<ServiceLevelAgreement> getAgreements() {
         try {
             Session session = getSession();
-            Node slasNode = session.getNode("/metadata/sla");
+            Node slasNode = session.getNode(SLA_PATH);
             @SuppressWarnings("unchecked")
             Iterator<Node> itr = (Iterator<Node>) slasNode.getNodes();
             
@@ -139,7 +141,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     public ServiceLevelAgreementBuilder builder() {
         try {
             Session session = getSession();
-            Node slasNode = session.getNode("/metadata/sla");
+            Node slasNode = session.getNode(SLA_PATH);
             Node slaNode = slasNode.addNode("sla-" + UUID.randomUUID(), "tba:sla");
             
             return builder(slaNode);
@@ -214,14 +216,14 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             try {
                 Node groupNode = null;
                 
-                if (this.slaNode.hasProperty("tba:defaultGroup")) {
-                    groupNode = this.slaNode.getProperty("tba:defaultGroup").getNode();
+                if (this.slaNode.hasProperty(JcrServiceLevelAgreement.DEFAULT_GROUP)) {
+                    groupNode = this.slaNode.getProperty(JcrServiceLevelAgreement.DEFAULT_GROUP).getNode();
                 } else {
-                    groupNode = this.slaNode.addNode("tba:groups", "tba:obligationGroup");
-                    this.slaNode.setProperty("tba:defaultGroup", groupNode);
+                    groupNode = this.slaNode.addNode(JcrServiceLevelAgreement.GROUPS, JcrServiceLevelAgreement.GROUP_TYPE);
+                    this.slaNode.setProperty(JcrServiceLevelAgreement.DEFAULT_GROUP, groupNode);
                 }
                 
-                Node obNode = groupNode.addNode("tba:obligations", "tba:obligation");
+                Node obNode = groupNode.addNode(JcrObligationGroup.OBLIGATIONS, JcrObligationGroup.OBLIGATION_TYPE);
                 
                 return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(obNode, this);
             } catch (RepositoryException e) {
@@ -232,9 +234,9 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         @Override
         public ObligationBuilder<ServiceLevelAgreementBuilder> obligationBuilder(Condition condition) {
             try {
-                Node groupNode = this.slaNode.getProperty("tba:defaultGroup").getNode();
-                groupNode.setProperty("tba:condition", condition.name());
-                Node obNode = groupNode.addNode("tba:obligations", "tba:obligation");
+                Node groupNode = this.slaNode.getProperty(JcrServiceLevelAgreement.DEFAULT_GROUP).getNode();
+                groupNode.setProperty(JcrObligationGroup.CONDITION, condition.name());
+                Node obNode = groupNode.addNode(JcrObligationGroup.OBLIGATIONS, JcrObligationGroup.OBLIGATION_TYPE);
                 
                 return new ObligationBuilderImpl<ServiceLevelAgreementBuilder>(obNode, this);
             } catch (RepositoryException e) {
@@ -245,7 +247,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         @Override
         public ObligationGroupBuilder obligationGroupBuilder(Condition condition) {
             try {
-                Node groupNode = this.slaNode.addNode("tba:groups", "tba:obligationGroup");
+                Node groupNode = this.slaNode.addNode(JcrServiceLevelAgreement.GROUPS, JcrServiceLevelAgreement.GROUP_TYPE);
                     
                 return new ObligationGroupBuilderImpl(groupNode, condition, this);
             } catch (RepositoryException e) {
@@ -255,8 +257,8 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
 
         @Override
         public ServiceLevelAgreement build() {
-            JcrPropertyUtil.setProperty(this.slaNode, "jcr:title", this.name);
-            JcrPropertyUtil.setProperty(this.slaNode, "jcr:description", this.description);
+            JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.NAME, this.name);
+            JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.DESCRIPTION, this.description);
             
             return new JcrServiceLevelAgreement(this.slaNode);
         }
@@ -309,11 +311,11 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
                 JcrPropertyUtil.setProperty(this.obNode, "jcr:description", this.description);
 
                 for (Metric metric : this.metrics) {
-                    Node metricNode = this.obNode.addNode("tba:metrics", "tba:metric");
+                    Node metricNode = this.obNode.addNode(JcrObligation.METRICS, JcrObligation.METRIC_TYPE);
                     
-                    JcrPropertyUtil.setProperty(metricNode, "jcr:title", metric.getClass().getSimpleName());
-                    JcrPropertyUtil.setProperty(metricNode, "jcr:description", metric.getDescription());
-                    JcrUtil.addGenericJson(metricNode, "tba:json", metric);
+                    JcrPropertyUtil.setProperty(metricNode, JcrObligation.NAME, metric.getClass().getSimpleName());
+                    JcrPropertyUtil.setProperty(metricNode, JcrObligation.DESCRIPTION, metric.getDescription());
+                    JcrUtil.addGenericJson(metricNode, JcrObligation.JSON, metric);
                 }
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to build the obligation", e);
@@ -348,7 +350,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         @Override
         public ObligationBuilder<ObligationGroupBuilder> obligationBuilder() {
             try {
-                Node obNode = this.groupNode.addNode("tba:obligations", "tba:obligation");
+                Node obNode = this.groupNode.addNode(JcrObligationGroup.OBLIGATIONS, JcrObligationGroup.OBLIGATION_TYPE);
                 return new ObligationBuilderImpl<ObligationGroupBuilder>(obNode, this);
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to create the obligation group builder", e);
@@ -357,7 +359,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
 
         @Override
         public ServiceLevelAgreementBuilder build() {
-            JcrPropertyUtil.setProperty(this.groupNode, "tba:condition", this.condition);
+            JcrPropertyUtil.setProperty(this.groupNode, JcrObligationGroup.CONDITION, this.condition);
             return this.slaBuilder;
         }
     }

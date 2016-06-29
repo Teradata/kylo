@@ -10,6 +10,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.inject.Inject;
 import javax.inject.Named;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.ResolvableType;
 
 import com.thinkbiganalytics.metadata.api.event.EventMatcher;
@@ -30,6 +32,8 @@ import reactor.fn.Consumer;
  */
 public class ReactorMetadataEventService implements MetadataEventService {
     
+    private static final Logger log = LoggerFactory.getLogger(ReactorMetadataEventService.class);
+    
     @Inject
     @Named("metadataEventBus")
     private EventBus eventBus;
@@ -49,6 +53,8 @@ public class ReactorMetadataEventService implements MetadataEventService {
      */
     @Override
     public <E extends MetadataEvent<? extends Serializable>> void notify(E event) {
+        log.debug("Notify event: {}", event);
+        
         this.eventBus.notify(event, Event.wrap(event));
     }
 
@@ -57,6 +63,8 @@ public class ReactorMetadataEventService implements MetadataEventService {
      */
     @Override
     public <E extends MetadataEvent<? extends Serializable>> void addListener(MetadataEventListener<E> listener) {
+        log.debug("Adding event listener: {}", listener);
+
         Registration<?,?> reg = this.eventBus.on(asSelector(listener), asConsumer(listener));
         this.registrations.put(listener, reg);
     }
@@ -66,12 +74,16 @@ public class ReactorMetadataEventService implements MetadataEventService {
      */
     @Override
     public <E extends MetadataEvent<? extends Serializable>> void addListener(MetadataEventListener<E> listener, EventMatcher<E> matcher) {
-        Registration<?,?> reg = this.eventBus.on(asSelector(matcher), asConsumer(listener));
+       log.debug("Adding event listener: {}", listener);
+        
+       Registration<?,?> reg = this.eventBus.on(asSelector(matcher), asConsumer(listener));
         this.registrations.put(listener, reg);
     }
 
     @Override
     public void removeListener(MetadataEventListener<?> listener) {
+        log.debug("Removing event listener: {}", listener);
+        
         Registration<?, ?> reg = this.registrations.remove(listener);
         
         if (reg != null) {

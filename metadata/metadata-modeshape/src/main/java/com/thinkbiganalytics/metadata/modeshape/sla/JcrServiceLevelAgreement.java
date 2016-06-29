@@ -28,7 +28,15 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity implements ServiceLevelAgreement, Serializable {
 
+
     private static final long serialVersionUID = 2611479261936214396L;
+
+    public static final String DESCRIPTION = "jcr:description";
+    public static final String NAME = "jcr:title";
+    public static final String DEFAULT_GROUP = "tba:defaultGroup";
+    public static final String GROUPS = "tba:groups";
+    
+    public static final String GROUP_TYPE = "tba:obligationGroup";
 
     /**
      * 
@@ -54,7 +62,7 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
      */
     @Override
     public String getName() {
-        return JcrPropertyUtil.getString(this.node, "jcr:title");
+        return JcrPropertyUtil.getString(this.node, NAME);
     }
 
     /* (non-Javadoc)
@@ -62,7 +70,7 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
      */
     @Override
     public String getDescription() {
-        return JcrPropertyUtil.getString(this.node, "jcr:description");
+        return JcrPropertyUtil.getString(this.node, DESCRIPTION);
     }
 
     /* (non-Javadoc)
@@ -72,9 +80,9 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
     public List<ObligationGroup> getObligationGroups() {
         try {
             @SuppressWarnings("unchecked")
-            Iterator<Node> defItr = (Iterator<Node>) this.node.getNodes("tba:defaultGroup");
+            Iterator<Node> defItr = (Iterator<Node>) this.node.getNodes(DEFAULT_GROUP);
             @SuppressWarnings("unchecked")
-            Iterator<Node> grpItr = (Iterator<Node>) this.node.getNodes("tba:groups");
+            Iterator<Node> grpItr = (Iterator<Node>) this.node.getNodes(GROUPS);
             
             return Lists.newArrayList(Iterators.concat(
                 Iterators.transform(defItr, (groupNode) -> {
@@ -104,12 +112,12 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
     }
     
     public JcrObligationGroup getDefaultGroup() {
-        return JcrUtil.getOrCreateNode(this.node, "tba:defaultGroup", "tba:obligationGroup", JcrObligationGroup.class, JcrServiceLevelAgreement.this);
+        return JcrUtil.getOrCreateNode(this.node, DEFAULT_GROUP, GROUP_TYPE, JcrObligationGroup.class, JcrServiceLevelAgreement.this);
     }
 
     public void addGroup(JcrObligationGroup group) {
         try {
-            this.node.addNode("tba:groups", "tba:obligationGroup");
+            this.node.addNode(GROUPS, GROUP_TYPE);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create the obligation group node", e);
         }

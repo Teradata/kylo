@@ -182,17 +182,17 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 Node feedNode = feed.getNode();
                 Node precondNode = JcrUtil.getOrCreateNode(feedNode, "tba:precondition", "tba:feedPrecondition");
                 
-                if (precondNode.hasProperty("tba:slaRef")) {
-                    precondNode.getProperty("tba:slaRef").remove();
+                if (precondNode.hasProperty(JcrFeedPrecondition.SLA_REF)) {
+                    precondNode.getProperty(JcrFeedPrecondition.SLA_REF).remove();
                 }
-                if (precondNode.hasNode("tba:sla")) {
-                    precondNode.getNode("tba:sla").remove();
+                if (precondNode.hasNode(JcrFeedPrecondition.SLA)) {
+                    precondNode.getNode(JcrFeedPrecondition.SLA).remove();
                 }
-                if (precondNode.hasNode("tba:lastAssessment")) {
-                    precondNode.getNode("tba:lastAssessment").remove();
+                if (precondNode.hasNode(JcrFeedPrecondition.LAST_ASSESSMENT)) {
+                    precondNode.getNode(JcrFeedPrecondition.LAST_ASSESSMENT).remove();
                 }
 
-                Node slaNode = precondNode.addNode("tba:sla", "tba:sla");
+                Node slaNode = precondNode.addNode(JcrFeedPrecondition.SLA, JcrFeedPrecondition.SLA_TYPE);
                 ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder(slaNode);
 
                 return new JcrPreconditionbuilder(slaBldr, feed);

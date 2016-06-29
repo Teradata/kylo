@@ -9,6 +9,9 @@ import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
@@ -28,6 +31,8 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
  * @author Sean Felten
  */
 public class FeedPreconditionService {
+    
+    private static final Logger log = LoggerFactory.getLogger(FeedPreconditionService.class);
 
     @Inject
     private ServiceLevelAssessor assessor;
@@ -65,16 +70,14 @@ public class FeedPreconditionService {
         if (! feeds.isEmpty()) {
             Feed<?> feed = feeds.get(0);
             
-            if (feed.getPrecondition() != null) {
-                checkPrecondition(feed);
-            }
+            checkPrecondition(feed);
         }
     }
     
     protected void checkPrecondition(Feed.ID feedId) {
         Feed<?> feed = feedProvider.getFeed(feedId);
 
-        if (feed != null && feed.getPrecondition() != null) {
+        if (feed != null) {
             checkPrecondition(feed);
         }
     }
@@ -83,11 +86,15 @@ public class FeedPreconditionService {
         FeedPrecondition precond = feed.getPrecondition();
         
         if (precond != null) {
+            log.debug("Checking precondition of feed: {} ({})", feed.getName(), feed.getId());
+            
             ServiceLevelAgreement sla = precond.getAgreement();
             ServiceLevelAssessment assessment = this.assessor.assess(sla);
             
             precond.setLastAssessment(assessment);
             if (assessment.getResult() == AssessmentResult.SUCCESS) {
+                log.info("Firing precondition trigger event for feed:{} ({})", feed.getName(), feed.getId());
+                
                 this.eventService.notify(new PreconditionTriggerEvent(feed.getId()));   
             }
         }
