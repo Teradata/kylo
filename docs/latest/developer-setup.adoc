@@ -45,6 +45,11 @@ https://www.virtualbox.org/wiki/Downloads
 
 Download and install the DMG
 
+=== Install the RPM Tool on your Mac
+The RPM library is required for building the RPM file as part of the maven build. This can be done using Home Brew or Mac Ports
+
+    $ brew install rpm
+
 === Clone Project from Github
 Clone the data-lake-accelerator project to your host. You can do this in your IDE or from the command line
 
@@ -59,11 +64,6 @@ Clone the data-lake-accelerator project to your host. You can do this in your ID
 Import the project into your favorite IDE as a maven projecct.
 
 NOTE: Configure the project to use Java 8
-
-=== Install the RPM Tool on your Mac
-The RPM library is required for building the RPM file as part of the maven build. This can be done using Home Brew or Mac Ports
-
-    $ brew install rpm
 
 
 === Perform a Maven Build
