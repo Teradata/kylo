@@ -102,7 +102,7 @@ The following ports needs to be forwarded to the VM:
 .Ports to add
 |===
 |Application Name|Host Port|Guest Port|Comment
-|Think Big UI| 401|8400|Use 8401 on the HostIP side so that you can run it in your IDE under 8400 and still test in the VM
+|Think Big UI| 8401|8400|Use 8401 on the HostIP side so that you can run it in your IDE under 8400 and still test in the VM
 |thinkbig-spark-shell | 8450 | 8450 |
 |NiFi|8079|8079|
 |ActiveMQ Admin | 8161| 8161|
