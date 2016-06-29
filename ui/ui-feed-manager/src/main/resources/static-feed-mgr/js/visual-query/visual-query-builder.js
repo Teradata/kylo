@@ -443,9 +443,9 @@
 
             // Create JOIN clause
             var sql = connection.joinType + " " + dst.nodeAttributes.sql + " " + TABLE_PREFIX + dst.id + " ON " + TABLE_PREFIX + dst.id + ".`";
-            sql += StringUtils.quoteSql((connection.source.nodeID === src.id) ? connection.joinKeys.destKey : connection.joinKeys.sourceKey);
-            sql += "` = " + TABLE_PREFIX + src.id + ".`";
             sql += StringUtils.quoteSql((connection.source.nodeID === src.id) ? connection.joinKeys.sourceKey : connection.joinKeys.destKey);
+            sql += "` = " + TABLE_PREFIX + src.id + ".`";
+            sql += StringUtils.quoteSql((connection.source.nodeID === src.id) ? connection.joinKeys.destKey : connection.joinKeys.sourceKey);
             sql += "`";
 
             return sql;
@@ -549,7 +549,7 @@
          * @param source
          * @param dest
          */
-        this.onEditConnectionCallback = function(connectionViewModel, connectionDataModel, source, dest) {
+        this.onEditConnectionCallback = function(connectionViewModel, connectionDataModel, dest, source) {
             self.showConnectionDialog(false, connectionViewModel, connectionDataModel, source, dest)
             validate();
         };
@@ -563,7 +563,7 @@
          * @param inputConnection
          * @param outputConnection
          */
-        this.onCreateConnectionCallback = function(connectionViewModel, connectionDataModel, source, dest, inputConnection, outputConnection) {
+        this.onCreateConnectionCallback = function(connectionViewModel, connectionDataModel, dest, source, inputConnection, outputConnection) {
             self.showConnectionDialog(true, connectionViewModel, connectionDataModel, source, dest);
             validate();
         };
