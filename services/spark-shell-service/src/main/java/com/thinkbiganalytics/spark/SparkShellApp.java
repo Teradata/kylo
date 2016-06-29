@@ -11,7 +11,6 @@ import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
-import org.springframework.beans.factory.config.PropertyOverrideConfigurer;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
@@ -19,7 +18,7 @@ import org.springframework.boot.autoconfigure.websocket.WebSocketAutoConfigurati
 import org.springframework.boot.context.embedded.EmbeddedServletContainerFactory;
 import org.springframework.boot.context.embedded.tomcat.TomcatEmbeddedServletContainerFactory;
 import org.springframework.context.annotation.Bean;
-import org.springframework.core.io.ClassPathResource;
+import org.springframework.context.annotation.PropertySource;
 
 import javax.annotation.Nonnull;
 
@@ -32,6 +31,7 @@ import scala.runtime.BoxedUnit;
 /**
  * Instantiates a REST server for executing Spark scripts.
  */
+@PropertySource(value = {"classpath:applicationDefaults.properties", "classpath:application.properties", "classpath:applicationDevOverride.properties"}, ignoreResourceNotFound = true)
 @SpringBootApplication(exclude = {VelocityAutoConfiguration.class, WebSocketAutoConfiguration.class})  // ignore auto-configuration classes outside Spark Shell
 public class SparkShellApp {
 
@@ -85,21 +85,6 @@ public class SparkShellApp {
         });
 
         return config;
-    }
-
-    /**
-     * Gets additional property configurations.
-     *
-     * @return additional property configurations
-     */
-    @Bean
-    public PropertyOverrideConfigurer getPropertyOverrideConfigurer() {
-        PropertyOverrideConfigurer poc = new PropertyOverrideConfigurer();
-        poc.setIgnoreInvalidKeys(true);
-        poc.setIgnoreResourceNotFound(true);
-        poc.setLocations(new ClassPathResource("application.properties"), new ClassPathResource("applicationDevOverride.properties"));
-        poc.setOrder(-100);
-        return poc;
     }
 
     /**

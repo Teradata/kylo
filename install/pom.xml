@@ -200,6 +200,24 @@
               </sources>
             </mapping>
             <mapping>
+              <directory>${rpm.install.dir}/thinkbig-spark-shell/conf</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>
+                    ../services/spark-shell-service/src/main/config/rpm-build/application.properties
+                  </location>
+                </source>
+                <source>
+                  <location>
+                    ../services/spark-shell-service/src/main/config/rpm-build/log4j.properties
+                  </location>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
               <directory>${rpm.install.dir}/thinkbig-spark-shell/bin</directory>
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>

@@ -18,6 +18,7 @@ echo "        - Copying previous /conf folder"
 echo "        - Contents in this directory is for thinkbig-data-lake-accelerator RPM: $lastRpm " > $readme
 cp -r $rpmInstallDir/thinkbig-ui/conf $bkupDir/thinkbig-ui
 cp -r $rpmInstallDir/thinkbig-services/conf $bkupDir/thinkbig-services
+cp -r $rpmInstallDir/thinkbig-spark-shell/conf $bkupDir/thinkbig-spark-shell
 echo "        - BACKUP COMPLETE!! "
 echo "        - Backup Configuration is located at : $bkupDir "
 echo "        - A README.txt file will be included in the backup directory indicating what RPM these files came from "
