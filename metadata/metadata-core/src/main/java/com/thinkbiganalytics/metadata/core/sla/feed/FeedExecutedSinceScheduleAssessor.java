@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.core.feed.precond;
+package com.thinkbiganalytics.metadata.core.sla.feed;
 
 import java.util.ArrayList;
 import java.util.Collection;

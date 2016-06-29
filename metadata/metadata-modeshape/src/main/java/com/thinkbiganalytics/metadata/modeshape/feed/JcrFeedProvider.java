@@ -180,7 +180,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         try {
             if (feed != null) {
                 Node feedNode = feed.getNode();
-                Node precondNode = JcrUtil.getOrCreateNode(feedNode, "tba:precondition", "tba:feedPrecondition");
+                Node precondNode = JcrUtil.getOrCreateNode(feedNode, JcrFeed.PRECONDITION, JcrFeed.PRECONDITION_TYPE, true);
                 
                 if (precondNode.hasProperty(JcrFeedPrecondition.SLA_REF)) {
                     precondNode.getProperty(JcrFeedPrecondition.SLA_REF).remove();

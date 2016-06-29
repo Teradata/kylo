@@ -142,9 +142,13 @@ public class JcrUtil {
     /**
      * Get or Create a node relative to the Parent Node; checking out the parent node as necessary.
      */
-    public static Node getOrCreateNode(Node parentNode, String name, String nodeType) {
+    public static Node getOrCreateNode(Node parentNode, String name, String nodeType, boolean forUpdate) {
         try {
             if (parentNode.hasNode(name)) {
+                if (forUpdate) {
+                    JcrMetadataAccess.ensureCheckoutNode(parentNode);
+                }
+                
                 return parentNode.getNode(name);
             } else {
                 JcrMetadataAccess.ensureCheckoutNode(parentNode);
@@ -154,6 +158,13 @@ public class JcrUtil {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
         }
+    }
+    
+    /**
+     * Get or Create a node relative to the Parent Node; checking out the parent node as necessary.
+     */
+    public static Node getOrCreateNode(Node parentNode, String name, String nodeType) {
+        return getOrCreateNode(parentNode, name, nodeType, false);
     }
 
     /**
