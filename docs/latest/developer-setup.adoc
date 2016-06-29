@@ -25,16 +25,6 @@ This project requires maven to build
 
 https://maven.apache.org/install.html
 
-=== Clone Project from Github
-Clone the data-lake-accelerator project to your host. You can do this in your IDE or from the command line
-
-https://github.com/ThinkBigAnalytics/data-lake-accelerator.git
-
-=== Import the Project into your IDE
-Import the project into your favorite IDE.
-
-NOTE: Configure the project to use Java 8
-
 === Optional - Add Java 8 to Bash Profile
 To build from the command line you need to add Java 8 and Maven to your $PATH variable
 
@@ -50,6 +40,16 @@ To build from the command line you need to add Java 8 and Maven to your $PATH va
     $ mvn -v
     $ java -version
 
+=== Clone Project from Github
+Clone the data-lake-accelerator project to your host. You can do this in your IDE or from the command line
+
+https://github.com/ThinkBigAnalytics/data-lake-accelerator.git
+
+=== Import the Project into your IDE
+Import the project into your favorite IDE.
+
+NOTE: Configure the project to use Java 8
+
 === Install the RPM Tool on your Mac
 The RPM library is required for building the RPM file as part of the maven build. This can be done using Home Brew or Mac Ports
 
@@ -64,11 +64,11 @@ Perform a maven build to download all of the artifacts and verify that everythin
   TIP: For faster maven builds you can run in offline mode by typing
    "mvn clean install -o". Add "-DskipTests" to skip unit testing for faster builds
 
-=== Install and Configure the Hortonwroks Sandbox
+=== Install and Configure the Hortonworks Sandbox
 Download the latest HDP sandbox and import it into Virtual Box
 
-=== Add Virtual ox Shared Folder
-Adding a shared folder to Virtual Box will allow you to access the Data Lake Started project folder outside of the VM so you can copy project artifacts to the sandbox for testing.
+=== Add Virtual Box Shared Folder
+Adding a shared folder to Virtual Box will allow you to access the Data Lake Accelerator project folder outside of the VM so you can copy project artifacts to the sandbox for testing.
 
 NOTE: This should be done before starting the VM to that you can auto mount the folder
 
@@ -90,7 +90,7 @@ The following ports needs to be forwarded to the VM:
     (On Virtual Box > Settings > Network > Port Forwarding
 
 === Install the Think Big Applications
-To install the Think Big apps, NiFI, ActiveMQ, and Elasticsearch in the VM you can use the deployment wizard instructions found here.
+To install the Think Big apps, NiFi, ActiveMQ, and Elasticsearch in the VM you can use the deployment wizard instructions found here.
 
 link:./deployment/wizard-deployment-guide.adoc[Wizard Driven Deployment Guide]
 
