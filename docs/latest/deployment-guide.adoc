@@ -1,4 +1,10 @@
 = Data Lake Accelerator Deployment Guide
+
+WARNING: The instructions in this version in the master branch are different than the one in the 0.2.0 release. In 0.2.0 the thinkbig-ui and thinkbig-services application didn't
+include a default JAVA_HOME variable for startup and used the system Java. In the case of a Hortonworks sandbox that would be Java 7. It required you to run
+a script to set the JAVA_HOME variable. In the latest 0.3.0-SNAPSHOT the JAVA_HOME is set by default to look at /opt/java/current so that every time you uninstall and re-install the
+RPM you wouldn't have to re-run the script to set the JAVA_HOME again.
+
 Think Big Analytics
 May 2016
 
