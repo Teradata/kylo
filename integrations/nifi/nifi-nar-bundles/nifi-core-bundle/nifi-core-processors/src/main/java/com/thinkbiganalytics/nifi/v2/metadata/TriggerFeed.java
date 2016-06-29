@@ -3,8 +3,9 @@
  */
 package com.thinkbiganalytics.nifi.v2.metadata;
 
-import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.FEED_NAME_PROP;
 import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_NAME;
 
 import java.util.List;
 import java.util.Queue;
@@ -23,14 +24,11 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
 import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
 
@@ -41,7 +39,7 @@ import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
 @InputRequirement(InputRequirement.Requirement.INPUT_ALLOWED)
 @Tags({"feed", "trigger", "thinkbig"})
 @CapabilityDescription("Triggers the execution of a feed whenever the conditions defined by its precondition have been met.  This process should be the first processor in a flow depends upon preconditions.")
-public class TriggerFeed extends AbstractFeedProcessor {
+public class TriggerFeed extends BaseProcessor {
 
     private Queue<FeedPreconditionTriggerEvent> triggerEventQueue = new LinkedBlockingQueue<>();
     private PreconditionListener preconditionListener;
@@ -53,24 +51,10 @@ public class TriggerFeed extends AbstractFeedProcessor {
             .identifiesControllerService(FeedPreconditionEventService.class)
             .build();
 
-    public static final PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
-            .name(FEED_NAME_PROP)
-            .displayName("Feed name")
-            .description("The unique name of the feed that is beginning")
-            .defaultValue("${feed.name}")
-            .required(true)
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .build();
-
     public static final Relationship SUCCESS = new Relationship.Builder()
             .name("Success")
             .description("Relationship followed on successful precondition event.")
             .build();
-// TODO: do we need a failure relationship?
-//    public static final Relationship FAILURE = new Relationship.Builder()
-//            .name("Failure")
-//            .description("Relationship followed on failed metadata capture.")
-//            .build();
 
 
     @Override
@@ -82,8 +66,9 @@ public class TriggerFeed extends AbstractFeedProcessor {
 
     @OnScheduled
     public void scheduled(ProcessContext context) {
+        String category = context.getProperty(FEED_CATEGORY).getValue();
         String feedName = context.getProperty(FEED_NAME).getValue();
-        registerPreconditonListener(context, feedName);
+        registerPreconditonListener(context, category, feedName);
     }
 
     /* (non-Javadoc)
@@ -112,6 +97,7 @@ public class TriggerFeed extends AbstractFeedProcessor {
     protected void addProperties(List<PropertyDescriptor> props) {
         super.addProperties(props);
         props.add(PRECONDITION_SERVICE);
+        props.add(FEED_CATEGORY);
         props.add(FEED_NAME);
     }
 
@@ -119,7 +105,6 @@ public class TriggerFeed extends AbstractFeedProcessor {
     protected void addRelationships(Set<Relationship> rels) {
         super.addRelationships(rels);
         rels.add(SUCCESS);
-//        rels.add(FAILURE);
     }
 
     protected FeedPreconditionEventService getPreconditionService(ProcessContext context) {
@@ -141,10 +126,10 @@ public class TriggerFeed extends AbstractFeedProcessor {
         return session.create();
     }
 
-    private void registerPreconditonListener(ProcessContext context, String feedName) {
+    private void registerPreconditonListener(ProcessContext context, String category, String feedName) {
         FeedPreconditionEventService precondService = getPreconditionService(context);
 
-        precondService.addListener(feedName, preconditionListener);
+        precondService.addListener(category, feedName, preconditionListener);
     }
 
     private PreconditionListener createPreconditionListener() {

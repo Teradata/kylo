@@ -224,7 +224,7 @@ public class BeginFeed extends AbstractFeedProcessor {
 
             for (String dsName : dsNames) {
                 getLogger().debug("Adding precondition listener for datasoure name: " + dsName);
-                precondService.addListener(dsName, listener);
+                precondService.addListener("", dsName, listener);
             }
 
             this.preconditionListener = listener;

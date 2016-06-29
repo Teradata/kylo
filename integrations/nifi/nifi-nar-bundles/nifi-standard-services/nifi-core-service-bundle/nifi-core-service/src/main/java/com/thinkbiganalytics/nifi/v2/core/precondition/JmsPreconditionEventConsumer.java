@@ -30,7 +30,7 @@ public class JmsPreconditionEventConsumer implements PreconditionEventConsumer {
         LOG.debug("Received JMS message - topic: {}, message: {}", MetadataTopics.PRECONDITION_TRIGGER, event);
         LOG.info("Received feed precondition trigger event: {}", event);
         
-        PreconditionListener listener = this.listeners.get(event.getFeedName());
+        PreconditionListener listener = this.listeners.get(generateKey(event.getCategory(), event.getFeedName()));
 
         if (listener != null) {
             listener.triggered(event);
@@ -38,12 +38,15 @@ public class JmsPreconditionEventConsumer implements PreconditionEventConsumer {
 
     }
 
-    public void addListener(String feedName, PreconditionListener listener) {
-        this.listeners.put(feedName, listener);
+    public void addListener(String category, String feedName, PreconditionListener listener) {
+        this.listeners.put(generateKey(category, feedName), listener);
     }
 
     public void removeListener(PreconditionListener listener) {
         this.listeners.values().remove(listener);
     }
-
+    
+    private String generateKey(String category, String feedName) {
+        return category + "." + feedName;
+    }
 }

@@ -49,12 +49,11 @@ public class JmsFeedPreconditionEventService extends AbstractControllerService i
      * @see com.thinkbiganalytics.controller.precond.FeedPreconditionEventService#addListener(java.lang.String, com.thinkbiganalytics.controller.precond.PreconditionListener)
      */
     @Override
-    public void addListener(String datasourceName, PreconditionListener listener) {
-        getLogger().debug("Adding preconditon listener: {} - {}", new Object[]{datasourceName, listener});
+    public void addListener(String category, String feedName, PreconditionListener listener) {
+        getLogger().debug("Adding preconditon listener: {}.{} - {}", new Object[]{ category, feedName, listener});
         PreconditionEventConsumer consumer = this.springService.getBean(PreconditionEventConsumer.class);
 
-        consumer.addListener(datasourceName, listener);
-        ;
+        consumer.addListener(category, feedName, listener);
     }
 
     /* (non-Javadoc)

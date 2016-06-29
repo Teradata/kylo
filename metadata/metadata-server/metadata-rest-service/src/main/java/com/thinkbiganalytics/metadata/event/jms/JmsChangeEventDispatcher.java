@@ -12,6 +12,7 @@ import javax.jms.Topic;
 import org.springframework.jms.core.JmsMessagingTemplate;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.PreconditionTriggerEvent;
@@ -58,11 +59,12 @@ public class JmsChangeEventDispatcher {
         @Override
         public void notify(PreconditionTriggerEvent event) {
             FeedPreconditionTriggerEvent triggerEv = new FeedPreconditionTriggerEvent(event.getData().toString());
-            
+
             metadata.read(() -> {
-                Feed<?> feed = feedProvider.getFeed(event.getData());
+                Feed<Category> feed = feedProvider.getFeed(event.getData());
                 
                 triggerEv.setFeedName(feed.getName());
+                triggerEv.setCategory(feed.getCategory().getName());
                 return triggerEv;
             });
             

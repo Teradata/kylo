@@ -21,6 +21,7 @@ public class FeedPreconditionTriggerEvent implements Serializable {
     
     private String feedId;
     private String feedName;
+    private String category;
     
     public FeedPreconditionTriggerEvent() {
     }
@@ -44,9 +45,17 @@ public class FeedPreconditionTriggerEvent implements Serializable {
     public void setFeedName(String feedName) {
         this.feedName = feedName;
     }
+    
+    public String getCategory() {
+        return category;
+    }
+    
+    public void setCategory(String category) {
+        this.category = category;
+    }
 
     @Override
     public String toString() {
-        return getClass().getSimpleName() + ": " + (this.feedId != null ? this.feedId : this.feedName);
+        return getClass().getSimpleName() + ": " + (this.feedId != null ? this.feedId : this.category + "." + this.feedName);
     }
 }
