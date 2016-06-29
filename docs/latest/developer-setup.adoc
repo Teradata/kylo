@@ -16,8 +16,8 @@ below on a Windows box except perform a maven build with the RPM install. At som
 |RPM (for install)
 |Java 1.8 (or greater)
 |Hadoop 2.3+ Sandbox
+|Virtual Box or other virtual machine manager
 |===
-
 
 
 === Install Maven 3
@@ -39,6 +39,11 @@ To build from the command line you need to add Java 8 and Maven to your $PATH va
 
     $ mvn -v
     $ java -version
+
+=== Install Virtual Box
+https://www.virtualbox.org/wiki/Downloads
+
+Download and install the DMG
 
 === Clone Project from Github
 Clone the data-lake-accelerator project to your host. You can do this in your IDE or from the command line
@@ -67,7 +72,7 @@ Perform a maven build to download all of the artifacts and verify that everythin
 === Install and Configure the Hortonworks Sandbox
 Download the latest HDP sandbox and import it into Virtual Box
 
-=== Add Virtual Box Shared Folder
+==== Add Virtual Box Shared Folder
 Adding a shared folder to Virtual Box will allow you to access the Data Lake Accelerator project folder outside of the VM so you can copy project artifacts to the sandbox for testing.
 
 NOTE: This should be done before starting the VM to that you can auto mount the folder
@@ -77,7 +82,7 @@ NOTE: This should be done before starting the VM to that you can auto mount the 
 
     Choose Automount so that it remembers next time you start the VM
 
-=== Open VM Ports
+==== Open VM Ports
 The following ports needs to be forwarded to the VM:
 
     . Think Big UI - 8401 -> 8400 (Use 8401 on the HostIP side so that you can run it in your IDE under 8400 and still test in the VM)
@@ -88,6 +93,12 @@ The following ports needs to be forwarded to the VM:
     .
 
     (On Virtual Box > Settings > Network > Port Forwarding
+
+==== Startup the Sandbox
+. Start the sandbox
+. SSH into the sandbox
+
+    $ ssh root@localhost -p 2222 (password is "hadoop")
 
 === Install the Think Big Applications
 To install the Think Big apps, NiFi, ActiveMQ, and Elasticsearch in the VM you can use the deployment wizard instructions found here.
