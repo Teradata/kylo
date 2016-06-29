@@ -50,13 +50,13 @@ Clone the data-lake-accelerator project to your host. You can do this in your ID
 
  . From the command line you can run the "git clone" command.
     .. cd to the directory you want to install the project to
-    .. type "git clone https://github.com/ThinkBigAnalytics/data-lake-accelerator.git"
+    .. Type "git clone https://github.com/ThinkBigAnalytics/data-lake-accelerator.git"
 
  . Import from your IDE using the "https://github.com/ThinkBigAnalytics/data-lake-accelerator.git" URL
 
 
 === Import the Project into your IDE
-Import the project into your favorite IDE.
+Import the project into your favorite IDE as a maven projecct.
 
 NOTE: Configure the project to use Java 8
 
