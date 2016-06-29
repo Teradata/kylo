@@ -71,6 +71,7 @@ Perform a maven build to download all of the artifacts and verify that everythin
 
 === Install and Configure the Hortonworks Sandbox
 Download the latest HDP sandbox and import it into Virtual Box
+http://hortonworks.com/products/sandbox/
 
 ==== Add Virtual Box Shared Folder
 Adding a shared folder to Virtual Box will allow you to access the Data Lake Accelerator project folder outside of the VM so you can copy project artifacts to the sandbox for testing.
