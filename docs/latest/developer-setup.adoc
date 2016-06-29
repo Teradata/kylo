@@ -48,7 +48,12 @@ Download and install the DMG
 === Clone Project from Github
 Clone the data-lake-accelerator project to your host. You can do this in your IDE or from the command line
 
-https://github.com/ThinkBigAnalytics/data-lake-accelerator.git
+ . From the command line you can run the "git clone" command.
+    .. cd to the directory you want to install the project to
+    .. type "git clone https://github.com/ThinkBigAnalytics/data-lake-accelerator.git"
+
+ . Import from your IDE using the "https://github.com/ThinkBigAnalytics/data-lake-accelerator.git" URL
+
 
 === Import the Project into your IDE
 Import the project into your favorite IDE.
