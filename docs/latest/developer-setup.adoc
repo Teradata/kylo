@@ -1,5 +1,5 @@
 == Developer Getting Started Guide
-This guide should help you get your local development environment up and running quickly. Development is
+This guide should help you get your local development environment up and running quickly. Development in
 an IDE is usually done in conjunction with a Hortonworks sandbox in order to have a cluster to
 communicate with.
 
@@ -17,6 +17,8 @@ below on a Windows box except perform a maven build with the RPM install. At som
 |Java 1.8 (or greater)
 |Hadoop 2.3+ Sandbox
 |===
+
+
 
 === Install Maven 3
 This project requires maven to build
@@ -59,7 +61,8 @@ Perform a maven build to download all of the artifacts and verify that everythin
 
     $ mvn clean install
 
-  TIP: For faster maven builds you can run in offline mode by typing "mvn clean install -o". Add "-DskipTests" to skip unit testing for faster builds
+  TIP: For faster maven builds you can run in offline mode by typing
+   "mvn clean install -o". Add "-DskipTests" to skip unit testing for faster builds
 
 === Install and Configure the Hortonwroks Sandbox
 Download the latest HDP sandbox and import it into Virtual Box
