@@ -150,7 +150,7 @@ your sandbox so you aren't running two instances at the same time.
 
 The applications are configured using Spring Boot.
 
-==== IntellJ Configuration
+==== IntelliJ Configuration
 
     . Install the Spring Boot plugin
     . Create the thinkbig-services application run configuration
