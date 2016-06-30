@@ -116,6 +116,13 @@ The following ports needs to be forwarded to the VM:
 
     $ ssh root@localhost -p 2222 (password is "hadoop")
 
+    Note: You will be prompted to change your password
+. Add the ambari admin password
+
+    $ ambari-admin-password-reset
+
+    After setting the password the ambari-server will be started
+
 === Install the Think Big Applications
 To install the Think Big apps, NiFi, ActiveMQ, and Elasticsearch in the VM you can use the deployment wizard instructions found here.
 
