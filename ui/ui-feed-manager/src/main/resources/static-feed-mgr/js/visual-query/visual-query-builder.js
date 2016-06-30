@@ -266,9 +266,21 @@
                     nodeAttributes: {
                         attributes: schemaData.fields,
                         selected: [],
+                        hasAllSelected: function() {
+                            return _.every(schemaData.fields, function(attr) {return attr.selected});
+                        },
                         select: function(attr) {
                             attr.selected = true;
                             this.selected.push(attr);
+                            validate();
+                        },
+                        selectAll: function() {
+                            var selected = [];
+                            angular.forEach(schemaData.fields, function(attr) {
+                                attr.selected = true;
+                                selected.push(attr);
+                            });
+                            this.selected = selected;
                             validate();
                         },
                         deselect: function(attr) {
@@ -277,6 +289,13 @@
                             if (idx > -1) {
                                 this.selected.splice(idx, 1);
                             }
+                            validate();
+                        },
+                        deselectAll: function() {
+                            angular.forEach(schemaData.fields, function(attr) {
+                                attr.selected = false;
+                            });
+                            this.selected = [];
                             validate();
                         },
                         sql: "`" + StringUtils.quoteSql(table.schema) + "`.`" + StringUtils.quoteSql(table.tableName) + "`"

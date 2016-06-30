@@ -1,9 +1,9 @@
 <div layout-fill flex layout="column"
-     ng-class="{'visual-query-auto-complete-centered':$vq.selectedColumnsAndTables.length ==0,'visual-query-auto-complete-top':$vq.selectedColumnsAndTables.length >0}">
+     ng-class="{'visual-query-auto-complete-centered':$vq.chartViewModel.data.nodes.length ==0,'visual-query-auto-complete-top':$vq.chartViewModel.data.nodes.length >0}">
     <div layout="row" flex layout-fill layout-align="center center" ng-hide="$vq.advancedMode">
         <span flex="20"></span>
         <div layout="column" flex>
-            <span ng-if="$vq.selectedColumnsAndTables.length == 0" class="md-input-label" style="padding-bottom:5px;">Start typing a table to start building your query</span>
+            <span ng-if="$vq.chartViewModel.data.nodes.length == 0" class="md-input-label" style="padding-bottom:5px;">Start typing a table to start building your query</span>
             <md-autocomplete flex
                              md-selected-item="$vq.tablesAutocomplete.selectedTable"
                              md-search-text-change="$vq.tablesAutocomplete.searchTextChange($vq.tablesAutocomplete.searchText)"
@@ -43,7 +43,7 @@
     </div>
 </div>
 
-<div class="visual-query-canvas" style="margin-top:8px;" layout="column" layout-fill flex mouse-capture ng-hide="$vq.selectedColumnsAndTables.length == 0 || $vq.advancedMode == true">
+<div class="visual-query-canvas" style="margin-top:8px;" layout="column" layout-fill flex mouse-capture ng-hide="$vq.chartViewModel.data.nodes.length == 0 || $vq.advancedMode == true">
     <div class="svg-container" browser-height browser-height-scroll-y="true" browser-height-scroll-x="true" browser-height-offset="300">
         <flow-chart class="flowchart" id="visual-query-canvas"
                     chart="$vq.chartViewModel"
