@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testng.Assert;
@@ -50,6 +51,7 @@ import javax.jcr.version.Version;
  */
 @RunWith(SpringJUnit4ClassRunner.class)
 @ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrExtensibleProvidersTestConfig.class })
+@ComponentScan(basePackages = {"com.thinkbiganalytics.metadata.modeshape.op"})
 public class JcrPropertyTest {
 
     private static final Logger log = LoggerFactory.getLogger(JcrPropertyTest.class);
