@@ -142,18 +142,29 @@ IMPORTANT: You only need to install Elasticsearch, NiFi, and ActiveMQ once. Duri
 You now have a distribution of the stack running in your Hortonworks sandbox.
 
 === Running in the IDE
-You can run thinkbig-ui and thinbig-services in the IDE. If you plan to run the apps in the IDE shut the services down in
-the sandbox so you aren't running both at the same time
+You can run thinkbig-ui and thinbig-services in the IDE. If you plan to run the apps in the IDE, you should shut down the services in
+your sandbox so you aren't running two instances at the same time.
 
     $ service thinkbig-services stop
     $ service thinkbig-ui stop
 
-The applications are configured using spring boot. IntelliJ has a Spring Boot plugin you can install
+The applications are configured using Spring Boot.
 
-The main class to run thinbig-services is:
+==== IntellJ Configuration
 
-    com.thinkbiganalytics.server.ThinkbigServerApplication
+    . Install the Spring Boot plugin
+    . Create the thinkbig-services application run configuration
+    .. Open the Run configurations
+    .. Create a new Spring Boot run configuration
+    .. Give it a name like "ThinkbigServerApplication"
+    .. Set "use classpath of module" property to "thinkbig-service-app" module
+    .. Set the "Main Class" property to "com.thinkbiganalytics.server.ThinkbigServerApplication"
+    . Create the thinkbig-ui application run configuration
+    .. Open the Run configurations
+    .. Create a new Spring Boot run configuration
+    .. Give it a name like "ThinkbigDataLakeUiApplication"
+    .. Set "use classpath of module" property to "thinkbig-ui-app" module
+    .. Set the "Main Class" property to "com.thinkbiganalytics.server.ThinkbigServerApplication"
+    . Run both applications
 
-The main class to run thinkbig-ui is:
-
-    com.thinkbiganalytics.ThinkbigDataLakeUiApplication
+==== Eclipse Configuration
