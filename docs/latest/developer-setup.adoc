@@ -116,7 +116,8 @@ The following ports needs to be forwarded to the VM:
 
     $ ssh root@localhost -p 2222 (password is "hadoop")
 
-    Note: You will be prompted to change your password
+    NOTE: You will be prompted to change your password
+
 . Add the ambari admin password
 
     $ ambari-admin-password-reset
