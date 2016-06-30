@@ -106,6 +106,7 @@ The following ports needs to be forwarded to the VM:
 |thinkbig-spark-shell | 8450 | 8450 |
 |NiFi|8079|8079|
 |ActiveMQ Admin | 8161| 8161|
+|ActiveMQ Queue | 61616 | 61616
 |MySQL | 3306 | 3306 |
 |===
 
@@ -164,7 +165,7 @@ The applications are configured using Spring Boot.
     .. Create a new Spring Boot run configuration
     .. Give it a name like "ThinkbigDataLakeUiApplication"
     .. Set "use classpath of module" property to "thinkbig-ui-app" module
-    .. Set the "Main Class" property to "com.thinkbiganalytics.server.ThinkbigServerApplication"
+    .. Set the "Main Class" property to "com.thinkbiganalytics.ThinkbigDataLakeUiApplication"
     . Run both applications
 
 ==== Eclipse Configuration
