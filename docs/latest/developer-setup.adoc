@@ -106,7 +106,7 @@ The following ports needs to be forwarded to the VM:
 |thinkbig-spark-shell | 8450 | 8450 |
 |NiFi|8079|8079|
 |ActiveMQ Admin | 8161| 8161|
-|ActiveMQ Queue | 61616 | 61616
+|ActiveMQ Queue | 61616 | 61616 |
 |MySQL | 3306 | 3306 |
 |===
 
