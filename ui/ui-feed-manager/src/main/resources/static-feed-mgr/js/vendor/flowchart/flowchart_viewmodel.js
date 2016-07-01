@@ -571,8 +571,9 @@ var flowchart = {
 	 * @param {Object} chartDataModel the data model for the chart
 	 * @param {function} [onCreateConnectionCallback] the callback to create a function
 	 * @param {function} [onEditConnectionCallback] the callback to edit a function
+	 * @param {function} [onDeleteSelectedCallback] the callback when the current selection is deleted
 	 */
-	flowchart.ChartViewModel = function (chartDataModel, onCreateConnectionCallback, onEditConnectionCallback) {
+	flowchart.ChartViewModel = function (chartDataModel, onCreateConnectionCallback, onEditConnectionCallback, onDeleteSelectedCallback) {
 
 		//
 		// Find a specific node within the chart.
@@ -927,6 +928,10 @@ var flowchart = {
 			this.data.nodes = newNodeDataModels;
 			this.connections = newConnectionViewModels;
 			this.data.connections = newConnectionDataModels;
+
+			if (onDeleteSelectedCallback) {
+				onDeleteSelectedCallback();
+			}
 		};
 
 		//

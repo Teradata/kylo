@@ -118,7 +118,7 @@
             // Create the view-model for the chart and attach to the scope.
             //
             var chartDataModel = (self.model.visualQueryModel != undefined) ? self.model.visualQueryModel : {"nodes": [], "connections": []};
-            self.chartViewModel = new flowchart.ChartViewModel(chartDataModel, self.onCreateConnectionCallback, self.onEditConnectionCallback);
+            self.chartViewModel = new flowchart.ChartViewModel(chartDataModel, self.onCreateConnectionCallback, self.onEditConnectionCallback, self.onDeleteSelectedCallback);
         }
 
         /**
@@ -577,6 +577,13 @@
             validate();
         };
 
+        /**
+         * Called when the current selection is deleted.
+         */
+        this.onDeleteSelectedCallback = function() {
+            validate();
+        };
+
         this.showConnectionDialog = function(isNew, connectionViewModel, connectionDataModel, source, dest) {
             self.chartViewModel.deselectAll();
             $mdDialog.show({
@@ -597,8 +604,6 @@
                     connectionViewModel.select();
                     self.chartViewModel.deleteSelected();
                 }
-                validate();
-
             });
         };
 
