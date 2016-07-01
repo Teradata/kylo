@@ -53,13 +53,10 @@
 
         </md-dialog-content>
         <md-dialog-actions layout="row">
-            <md-button ng-click="cancel()">
-               Cancel
-            </md-button>
+            <md-button ng-click="cancel()">Cancel</md-button>
             <span flex></span>
-            <md-button class="md-primary md-raised" ng-disabled="isValid == false" ng-click="save()">
-               Save
-            </md-button>
+            <md-button class="md-raised md-warn" ng-if="isNew == false" ng-click="delete()">Delete</md-button>
+            <md-button class="md-primary md-raised" ng-disabled="isValid == false" ng-click="save()">Save</md-button>
         </md-dialog-actions>
     </form>
 </md-dialog>

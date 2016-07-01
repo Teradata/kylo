@@ -78,9 +78,6 @@
 
         var chartDataModel = {};
 
-        //setup the flowchart Model
-        setupFlowChartModel();
-
         this.advancedModeSql = function(opt_sql) {
             if (arguments.length === 1) {
                 self.model.visualQuerySql = opt_sql;
@@ -117,18 +114,11 @@
          * Initialze the model for the flowchart
          */
         function setupFlowChartModel() {
-            if (self.model.visualQueryModel != undefined) {
-                chartDataModel = self.model.visualQueryModel;
-            } else {
-                chartDataModel = {
-                    "nodes": [],
-                    "connections": []
-                }
-            }
             //
             // Create the view-model for the chart and attach to the scope.
             //
-            self.chartViewModel = new flowchart.ChartViewModel(chartDataModel);
+            var chartDataModel = (self.model.visualQueryModel != undefined) ? self.model.visualQueryModel : {"nodes": [], "connections": []};
+            self.chartViewModel = new flowchart.ChartViewModel(chartDataModel, self.onCreateConnectionCallback, self.onEditConnectionCallback);
         }
 
         /**
@@ -167,10 +157,10 @@
                 feedModel.dataTransformation.visualQuery.sql = self.model.visualQuerySql;
                 delete feedModel.dataTransformation.visualQuery.selectedColumnsAndTablesJson;
                 delete feedModel.dataTransformation.visualQuery.chartViewModelJson;
-            } else if (typeof(chartDataModel.nodes) !== "undefined") {
-                self.isValid = (chartDataModel.nodes.length > 0);
+            } else if (typeof(self.chartViewModel.nodes) !== "undefined") {
+                self.isValid = (self.chartViewModel.nodes.length > 0);
 
-                self.model.visualQueryModel = chartDataModel;
+                self.model.visualQueryModel = self.chartViewModel.data;
                 var sql = getSQLModel();
                 self.model.visualQuerySql = sql;
                 self.model.selectedColumnsAndTables = self.selectedColumnsAndTables;
@@ -602,18 +592,14 @@
                     dest: dest
                 }
             })
-                    .then(function(msg) {
-                        if (msg == 'cancel') {
-                            if (isNew) {
-                                connectionViewModel.select();
-                                self.chartViewModel.deleteSelected();
-                            }
-                        }
-                        validate();
+            .then(function(msg) {
+                if (msg === "delete" || (isNew && msg === "cancel")) {
+                    connectionViewModel.select();
+                    self.chartViewModel.deleteSelected();
+                }
+                validate();
 
-                    }, function() {
-
-                    });
+            });
         };
 
         $scope.$on('$destroy', function() {
@@ -623,6 +609,9 @@
             $document.unbind('keyup');
 
         });
+
+        //setup the flowchart Model
+        setupFlowChartModel();
 
         //validate when the page loads
         validate();
@@ -641,6 +630,7 @@ function ConnectionDialog($scope, $mdDialog, $mdToast, $http, isNew, connectionD
     $scope.source = angular.copy(source);
     $scope.dest = angular.copy(dest);
     $scope.joinTypes = [{name: "Inner Join", value: "INNER JOIN"}, {name: "Left Join", value: "LEFT JOIN"}, {name: "Right Join", value: "RIGHT JOIN"}];
+    $scope.isNew = isNew;
 
     if (isNew) {
         //attempt to auto find matches
@@ -681,6 +671,7 @@ function ConnectionDialog($scope, $mdDialog, $mdToast, $http, isNew, connectionD
                 $scope.connectionDataModel.joinType != '' && $scope.connectionDataModel.joinType != null && $scope.connectionDataModel.joinKeys.sourceKey != null
                 && $scope.connectionDataModel.joinKeys.destKey != null;
     };
+
     $scope.save = function() {
 
         connectionDataModel.name = $scope.connectionDataModel.name;
@@ -692,6 +683,10 @@ function ConnectionDialog($scope, $mdDialog, $mdToast, $http, isNew, connectionD
 
     $scope.cancel = function() {
         $mdDialog.hide('cancel');
+    };
+
+    $scope.delete = function() {
+        $mdDialog.hide('delete');
     };
 
     $scope.validate();

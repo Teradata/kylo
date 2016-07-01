@@ -563,10 +563,16 @@ var flowchart = {
 		};
 	};
 
-	//
-	// View model for the chart.
-	//
-	flowchart.ChartViewModel = function (chartDataModel) {
+	/**
+	 * View model for the chart.
+	 *
+	 * @public
+	 * @constructor
+	 * @param {Object} chartDataModel the data model for the chart
+	 * @param {function} [onCreateConnectionCallback] the callback to create a function
+	 * @param {function} [onEditConnectionCallback] the callback to edit a function
+	 */
+	flowchart.ChartViewModel = function (chartDataModel, onCreateConnectionCallback, onEditConnectionCallback) {
 
 		//
 		// Find a specific node within the chart.
@@ -628,9 +634,22 @@ var flowchart = {
 		//
 		this._createConnectionViewModel = function(connectionDataModel) {
 
+			// Create connection view
 			var sourceConnector = this.findConnector(connectionDataModel.source.nodeID, connectionDataModel.source.connectorIndex);
 			var destConnector = this.findConnector(connectionDataModel.dest.nodeID, connectionDataModel.dest.connectorIndex);
-			return new flowchart.ConnectionViewModel(connectionDataModel, sourceConnector, destConnector);
+			var connectionViewModel = new flowchart.ConnectionViewModel(connectionDataModel, sourceConnector, destConnector);
+
+			// Set callback function for editing the connection
+			var source = this.findNode(connectionDataModel.source.nodeID);
+			var dest = this.findNode(connectionDataModel.dest.nodeID);
+			connectionDataModel.edit = function() {
+				if (onEditConnectionCallback) {
+					onEditConnectionCallback(connectionViewModel, connectionDataModel, source, dest);
+				}
+			};
+
+			// Return connection view
+			return connectionViewModel;
 		}
 
 		// 
