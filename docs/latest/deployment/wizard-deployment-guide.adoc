@@ -4,7 +4,7 @@
 Follow the steps below to install the data lake accelerator using the installation wizard script. This is convenient for local sandboxes (HDP/Cloudera)
 and 1 node development boxes. The WGET command is used to download binaries so internet access is required.
 
-NOTE: There is a Jira(PC-216) to create a script to generate an uber tar file with the RPM and all other binaries to avoid needing internet access
+NOTE: The setup wizard is designed for easy installation of all components on one node
 
 == Installation Locations
 
@@ -30,10 +30,21 @@ The steps below require root access
 
    NOTE: The RPM is hard coded at this time to install to /opt/thinkbig
 
+. Optional - Generator TAR file for offline mode
+If you need to run the wizard on an edge node with no internet access you can generate a TAR file the contains everything in the /opt/thinkbig/setup folder including
+the downloaded application binaries.
+
+    . Install the Data Lake Accelerator RPM on a node that has internet access
+    . Run "/opt/thinkbig/setup/generate-offline-install.sh
+    . Copy the /opt/thinkbig/setup/thinkbig-install.tar file to the node you install the RPM on. This can be copied to a temp directory. It doesn't have to put put in the /opt/thinkbig/setup folder
+    . run "tar -xvf thinkbig-install.tar" on file
+
+The script will download all application binaries and puts them in their respective directory in the setup folder. Last it will TAR up the setup folder
+
 . Run the setup wizard
     NOTE: If installing in a HDP or Cloudera sandbox choose option #2 on the Java step to download and install Java in the /opt/java/current directory
 
-    $ /opt/thinkbig/setup/setup-wizard.sh
+    $ /opt/thinkbig/setup/setup-wizard.sh OR if running in offline mode wherever you untar'd the file
 
     Follow the directions and it will install the following:
     * MySQL or Postgres scripts into the local database

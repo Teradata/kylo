@@ -392,6 +392,7 @@
                   <location>setup</location>
                   <includes>
                     <include>setup-wizard.sh</include>
+                    <include>generate-offline-install.sh</include>
                   </includes>
                 </source>
               </sources>

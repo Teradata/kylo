@@ -1,11 +1,36 @@
 #!/bin/bash
 #Note: edit /etc/default/activemq to change Java memory parameters
 
+offline=false
+working_dir=$2
+
+if [ $# > 1 ]
+then
+    if [ "$1" = "-o" ] || [ "$1" = "-O" ]
+    then
+        echo "Working in offline mode"
+        offline=true
+    fi
+fi
+
 echo "Create activemq user and create /opt/activemq directory"
 useradd -m activemq -d /opt/activemq
 cd /opt/activemq
-echo "Download activemq and install"
-wget http://ftp.wayne.edu/apache//activemq/5.13.3/apache-activemq-5.13.3-bin.tar.gz
+
+if [ $offline = true ]
+then
+    cp $working_dir/activemq/apache-activemq-5.13.3-bin.tar.gz .
+else
+    echo "Download activemq and install"
+    wget http://ftp.wayne.edu/apache//activemq/5.13.3/apache-activemq-5.13.3-bin.tar.gz
+fi
+
+if ! [ -f apache-activemq-5.13.3-bin.tar.gz ]
+then
+    echo "Installation file not found.. exiting"
+    exit 1
+fi
+
 tar -xvf apache-activemq-5.13.3-bin.tar.gz
 rm -f apache-activemq-5.13.3-bin.tar.gz
 ln -s apache-activemq-5.13.3 current
