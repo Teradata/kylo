@@ -30,14 +30,15 @@ The steps below require root access
 
    NOTE: The RPM is hard coded at this time to install to /opt/thinkbig
 
-. Optional - Generator TAR file for offline mode
+. Optional - Generate TAR file for offline mode
+
 If you need to run the wizard on an edge node with no internet access you can generate a TAR file the contains everything in the /opt/thinkbig/setup folder including
 the downloaded application binaries.
 
-    . Install the Data Lake Accelerator RPM on a node that has internet access
-    . Run "/opt/thinkbig/setup/generate-offline-install.sh
-    . Copy the /opt/thinkbig/setup/thinkbig-install.tar file to the node you install the RPM on. This can be copied to a temp directory. It doesn't have to put put in the /opt/thinkbig/setup folder
-    . run "tar -xvf thinkbig-install.tar" on file
+    .. Install the Data Lake Accelerator RPM on a node that has internet access
+    .. Run "/opt/thinkbig/setup/generate-offline-install.sh
+    .. Copy the /opt/thinkbig/setup/thinkbig-install.tar file to the node you install the RPM on. This can be copied to a temp directory. It doesn't have to put put in the /opt/thinkbig/setup folder
+    .. run "tar -xvf thinkbig-install.tar" on file
 
 The script will download all application binaries and puts them in their respective directory in the setup folder. Last it will TAR up the setup folder
 
