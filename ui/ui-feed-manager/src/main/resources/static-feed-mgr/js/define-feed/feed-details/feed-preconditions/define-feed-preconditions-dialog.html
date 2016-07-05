@@ -19,7 +19,7 @@
 
                 <div ng-repeat="property in editRule.properties">
                     <md-input-container class="md-block" ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' ">
-                        <label>{{property.name}}</label>
+                        <label>{{property.displayName}}</label>
                         <input type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"/>
                         <input ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder"/>
                         <md-select ng-model="property.value" ng-if="property.type == 'select' " >
@@ -45,6 +45,32 @@
                         <div>
                             {{property.regexValid}}
                         </div>
+                    </div>
+                    <div ng-if="property.type == 'chips'">
+                        <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
+                            <label class="label-small md-container-ignore">{{property.displayName}}</label>
+                    <md-chips ng-model="property.values" md-autocomplete-snap
+                              md-transform-chip="transformChip($chip)"
+                              md-require-match="true">
+                        <md-autocomplete
+                            md-selected-item="editChips.selectedItem"
+                            md-search-text="editChips.searchText"
+                            md-items="item in queryChipSearch(property,editChips.searchText)"
+                            md-item-text="item.label"
+                            md-min-length="0"
+                            placeholder="{{property.placeholder}}">
+                            <span md-highlight-text="editChips.searchText">{{item.label}}</span>
+                        </md-autocomplete>
+                        <md-chip-template>
+                                        <span>
+                                          <strong>{{$chip.label}}</strong>
+                                        </span>
+                        </md-chip-template>
+                    </md-chips>
+                            <div ng-if="property.hint" class="hint">
+                                {{property.hint}}
+                            </div>
+                        </md-input-container>
                     </div>
                 </div>
 

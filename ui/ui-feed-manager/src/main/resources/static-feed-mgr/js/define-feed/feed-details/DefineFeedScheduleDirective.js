@@ -195,8 +195,7 @@
         $scope.options = [];
 
         FeedService.getPossibleFeedPreconditions().then(function(response){
-
-                  angular.forEach(response.data,function(opt){
+               angular.forEach(response.data,function(opt){
                       $scope.options.push(opt);
                   });
         })
@@ -226,6 +225,7 @@
         $scope.cancelText = 'CANCEL ADD';
 
         $scope.editMode = 'NEW';
+        resetChips();
 
         function _cancelEdit() {
             $scope.editMode='NEW';
@@ -233,6 +233,7 @@
             $scope.cancelText = 'CANCEL ADD';
             $scope.ruleType = null;
             $scope.editRule = null;
+            resetChips();
         }
 
 
@@ -248,9 +249,39 @@
             else {
                 $scope.editRule = null;
             }
+            console.log('EDIT RULE IS ',$scope.editRule)
 
         }
+        function resetChips(){
+            $scope.editChips = {};
+            $scope.editChips.selectedItem = null;
+            $scope.editChips.searchText = null;
+        }
 
+
+        $scope.queryChipSearch = function(property,query){
+            var options = property.selectableValues;
+            var results = query ? options.filter(createFilterFor(query)) : [];
+            return results;
+        }
+
+
+        function createFilterFor(query) {
+            var lowercaseQuery = angular.lowercase(query);
+            return function filterFn(option) {
+                return (angular.lowercase(option.value).indexOf(lowercaseQuery) >= 0);
+            };
+        }
+
+
+        $scope.transformChip = function(chip) {
+            // If it is an object, it's already a known chip
+            if (angular.isObject(chip)) {
+                return chip;
+            }
+            // Otherwise, create a new one
+            return { name: chip }
+        }
 
 
         $scope.addPolicy = function($event){

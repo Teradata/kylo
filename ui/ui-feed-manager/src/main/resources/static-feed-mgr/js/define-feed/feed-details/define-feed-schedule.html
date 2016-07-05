@@ -65,7 +65,7 @@
                 <md-list>
                     <md-list-item ng-repeat="rule in vm.model.schedule.preconditions track by $index" layout-fill >
                      <div layout="column" flex="25" class="md-list-item-text">
-                        <span>{{rule.properties[0].value}}</span>
+                        <span>{{rule.properties[0].values | join: ',':'label'}}</span>
                          <span class="hint">{{rule.name}}</span>
                      </div>
                             <span class="md-secondary">

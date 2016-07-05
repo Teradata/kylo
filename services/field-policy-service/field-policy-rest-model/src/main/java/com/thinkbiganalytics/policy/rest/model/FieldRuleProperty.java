@@ -11,11 +11,11 @@ import java.util.List;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FieldRuleProperty {
-    //{name:"Date Format",value:"",placeholder:"",type:"string",hint:'Format Example: MM/DD/YYYY'}
 
     private String name;
     private String displayName;
     private String value;
+    private List<String> values;
     private String placeholder;
     private String type;
     private String hint;
@@ -97,4 +97,14 @@ public class FieldRuleProperty {
     public void setObjectProperty(String objectProperty) {
         this.objectProperty = objectProperty;
     }
+
+    public List<String> getValues() {
+        return values;
+    }
+
+    public void setValues(List<String> values) {
+        this.values = values;
+    }
+
+
 }
