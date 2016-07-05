@@ -1,9 +1,3 @@
-Add high level architecture diagram
+## Data Lake Accelerator Architecture
 
-Discuss architecture
-
-Discuss failure cases with integration points.
-
-What happens when the JMS server goes down?
-Our NiFi provenance plugin will start an instance of an H2 database and an H2 Web console, and store the provenance records in it until JMS is back up. Once JMS is back up the events will be pulled out of H2 in
-order and sent to JMS. Once completed the H2 server and web console will be shut down
+image:images/data-lake-accelerator-architecture-diagram.png[Data Lake Accelerator Architecture]
