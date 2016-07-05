@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -256,6 +258,30 @@ public class JcrUtil {
      */
     public static <T extends JcrObject> T createJcrObject(Node node, Class<T> type) {
         return createJcrObject(node, type, new Object[0]);
+    }
+
+    public static Map<String,Object> jcrObjectAsMap(JcrObject obj){
+        String nodeName = obj.getNodeName();
+        String path = obj.getPath();
+        String identifier = null;
+        try {
+            identifier = obj.getObjectId();
+        } catch (RepositoryException e) {
+            e.printStackTrace();
+        }
+        String type = obj.getTypeName();
+        Map<String,Object> props = obj.getProperties();
+        Map<String,Object> finalProps = new HashMap<>();
+        if(props != null){
+            finalProps.putAll(finalProps);
+        }
+        finalProps.put("nodeName",nodeName);
+        if(identifier != null) {
+            finalProps.put("nodeIdentifier", identifier);
+        }
+        finalProps.put("nodePath",path);
+        finalProps.put("nodeType",type);
+        return finalProps;
     }
 
     /**
