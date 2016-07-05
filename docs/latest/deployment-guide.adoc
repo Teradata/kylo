@@ -51,12 +51,7 @@ If installing in a new Hortonworks sandbox make sure to do the following first b
 
 link:./hortonworks-sandbox.adoc[Configure Hortonworks Sandbox]
 
-== Installation
-There are 2 procedures you can follow to deploy the solution. In a test and production environment you will likely want to follow the manual installation guide as it has more
-detailed instructions on how to install each individual component. For local development and 1 node development boxes you can leverage the setup wizard procedure to quickly bootstrap
-your environment.
-
-=== Java Requirements
+==== Java Requirements
 Data Lake Accelerator requires Java 8 for NiFi, thinkbig-ui, and thinkbig-services. If you already have Java 8 installed as the system level Java you have the option to leverage that.
 
 In some cases, such as with an HDP install, Java 7 is the system version and you likely will not want to change it to Java 8. In this case you can leverage the mentioned
@@ -67,6 +62,11 @@ If you already have Java 8 installed in a different location you will have the o
 
 NOTE: When installing the RPM the applications are defaulted to use the /opt/java/current location. This default saves a step for developers so that they can uninstall and re-install
 the RPM without having to run any other scripts.
+
+== Installation
+There are 2 procedures you can follow to deploy the solution. In a test and production environment you will likely want to follow the manual installation guide as it has more
+detailed instructions on how to install each individual component. For local development and 1 node development boxes you can leverage the setup wizard procedure to quickly bootstrap
+your environment.
 
 === Install Procedure 1:  Installing all components on one edge node with internet access using the wizard
 
