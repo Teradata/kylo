@@ -237,7 +237,7 @@
             }
 
             // Show completions if available
-            if (cursor.ch === 0 || token.type === "variable" || (token.string === "." && lexer.type === "stat")) {
+            if (cursor.ch === 0 || token.type === "variable" || (token.string === "." && (lexer.type === "stat" || lexer.type === ")"))) {
                 cm.showHint({
                     completeSingle: false,
                     hint: self.getHint

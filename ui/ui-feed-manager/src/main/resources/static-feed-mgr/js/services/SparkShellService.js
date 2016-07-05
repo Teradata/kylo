@@ -209,8 +209,9 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 "!name": "columns"
             };
 
-            defs[DEFINE_DIRECTIVE] = {};
-            defs[DEFINE_DIRECTIVE][TERNJS_COLUMN_TYPE] = {};
+            if (typeof(this.defs_["!define"]) !== "undefined") {
+                defs["!define"] = this.defs_["!define"];
+            }
 
             // Add column names
             var columns = this.getState().columns;
