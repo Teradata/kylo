@@ -25,6 +25,14 @@ import java.util.Set;
  */
 public class NifiPropertyUtil {
 
+    public static enum PROPERTY_MATCH_AND_UPDATE_MODE{
+        DONT_UPDATE,UPDATE_ALL_PROPERTIES, UPDATE_NON_EXPRESSION_PROPERTIES;
+
+        public boolean performUpdate() {
+            return !DONT_UPDATE.equals(this);
+        }
+    }
+
     public static Map<String,NifiProperty> propertiesAsMap(List<NifiProperty> propertyList){
         Map<String,NifiProperty> map = new HashMap<String, NifiProperty>();
         for(NifiProperty property: propertyList){
@@ -201,12 +209,12 @@ if(properties != null) {
         return modifiedProperties;
 
     }
-    public static List<NifiProperty> matchAndSetPropertyByIdKey(Collection<NifiProperty> templateProperties, List<NifiProperty> nifiProperties){
+    public static List<NifiProperty> matchAndSetPropertyByIdKey(Collection<NifiProperty> templateProperties, List<NifiProperty> nifiProperties,PROPERTY_MATCH_AND_UPDATE_MODE updateMode){
         List<NifiProperty> matchedProperties = new ArrayList<>();
 
         if(nifiProperties != null && !nifiProperties.isEmpty()) {
             for (NifiProperty nifiProperty : nifiProperties) {
-            NifiProperty matched =    matchPropertyByIdKey(templateProperties, nifiProperty, true);
+            NifiProperty matched =    matchPropertyByIdKey(templateProperties, nifiProperty, updateMode);
                 if(matched != null) {
                     matchedProperties.add(matched);
                 }
@@ -215,10 +223,10 @@ if(properties != null) {
         return matchedProperties;
     }
 
-    public static void matchAndSetPropertyByProcessorName(Collection<NifiProperty> templateProperties, List<NifiProperty> nifiProperties){
+    public static void matchAndSetPropertyByProcessorName(Collection<NifiProperty> templateProperties, List<NifiProperty> nifiProperties, PROPERTY_MATCH_AND_UPDATE_MODE updateMode){
         if(nifiProperties != null && !nifiProperties.isEmpty()) {
             for (NifiProperty nifiProperty : nifiProperties) {
-                matchPropertyByProcessorName(templateProperties, nifiProperty, true);
+                matchPropertyByProcessorName(templateProperties, nifiProperty, updateMode);
             }
         }
     }
@@ -341,27 +349,28 @@ if(properties != null) {
         return null;
     }
 
-    public static NifiProperty matchPropertyByIdKey(Collection<NifiProperty> templateProperties, final NifiProperty nifiProperty, boolean setValue){
+    private static NifiProperty matchPropertyByIdKey(Collection<NifiProperty> templateProperties, final NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode){
         NifiProperty matchingProperty = findPropertyByIdKey(templateProperties, nifiProperty);
-        if(setValue && matchingProperty != null){
-            //dont update the property if it is an expression derived from metadata
-               updateMatchingProperty(matchingProperty, nifiProperty);
+        if(matchingProperty != null){
+               updateMatchingProperty(matchingProperty, nifiProperty,updateMode);
         }
         return matchingProperty;
     }
 
-    public static NifiProperty matchPropertyByProcessorName(Collection<NifiProperty> templateProperties, final NifiProperty nifiProperty, boolean setValue){
+    private static NifiProperty matchPropertyByProcessorName(Collection<NifiProperty> templateProperties, final NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode){
         NifiProperty matchingProperty = findPropertyByProcessorName(templateProperties, nifiProperty);
-        if(setValue && matchingProperty != null){
-            //dont update the property if it is an expression derived from metadata
-            updateMatchingProperty(matchingProperty, nifiProperty);
+        if(matchingProperty != null){
+            updateMatchingProperty(matchingProperty, nifiProperty,updateMode);
         }
         return matchingProperty;
     }
 
-    private static void updateMatchingProperty(NifiProperty matchingProperty, NifiProperty nifiProperty){
-        if(matchingProperty.getValue() == null || (matchingProperty.getValue() != null && (!matchingProperty.getValue().contains("${metadata.") || (matchingProperty.getValue().contains("${metadata.")  && nifiProperty.getValue().contains("${metadata."))))) {
-            updateProperty(matchingProperty, nifiProperty);
+    private static void updateMatchingProperty(NifiProperty matchingProperty, NifiProperty nifiProperty, PROPERTY_MATCH_AND_UPDATE_MODE updateMode){
+        if(updateMode.performUpdate()) {
+            if (matchingProperty.getValue() == null || (matchingProperty.getValue() != null && (PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES.equals(updateMode) || (PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES.equals(updateMode) && (
+                !matchingProperty.getValue().contains("${metadata.") || (matchingProperty.getValue().contains("${metadata.") && nifiProperty.getValue().contains("${metadata."))))))) {
+                updateProperty(matchingProperty, nifiProperty);
+            }
         }
     }
 }

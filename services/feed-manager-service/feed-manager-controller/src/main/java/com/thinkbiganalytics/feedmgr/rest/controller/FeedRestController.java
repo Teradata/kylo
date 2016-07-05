@@ -188,7 +188,7 @@ public class FeedRestController {
             }
         }
         if (registeredTemplate != null) {
-            NifiPropertyUtil.matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feed.getProperties());
+            NifiPropertyUtil.matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feed.getProperties(),NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
             feed.setProperties(registeredTemplate.getProperties());
         }
 
