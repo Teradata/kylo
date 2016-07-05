@@ -44,6 +44,9 @@ The Data Lake Accelerator services should be installed on an edge node.  The fol
 |===
 
 === Prerequisites
+
+==== Hortonworks Sandbox
+
 If installing in a new Hortonworks sandbox make sure to do the following first before running through the installation steps below.
 
 . Download and import the HDP sandbox
