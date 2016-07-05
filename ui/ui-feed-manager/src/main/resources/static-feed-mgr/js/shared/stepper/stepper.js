@@ -44,7 +44,7 @@
         };
     }
 
-    var controller =  function($scope, $element,StepperService, Utils, BroadcastService, $compile) {
+    var controller =  function($scope, $element,StepperService, Utils, BroadcastService, WindowUnloadService) {
         function StepperControllerTag() {
         }
 
@@ -75,6 +75,7 @@
         $scope.$watch(function(){
             return self.selectedStepIndex;
         }, function(current, old){
+            WindowUnloadService.clear();
             self.previousStepIndex = old;
             self.getStep(current).visited = true;
             self.getStep(current).updateStepType();

@@ -21,8 +21,8 @@
         };
     };
 
-    var controller = function($scope, $log, $http, $q, $mdDialog, $mdToast, RestUrlService, VisualQueryService, HiveService,
-                              TableDataFunctions, SideNavService, SparkShellService, VisualQueryColumnDelegate, uiGridConstants, FeedService, BroadcastService,StepperService) {
+    var controller = function($scope, $log, $http, $q, $mdDialog, $mdToast, RestUrlService, VisualQueryService, HiveService, TableDataFunctions, SideNavService, SparkShellService,
+                              VisualQueryColumnDelegate, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
         var self = this;
         //The model passed in from the previous step
         this.model = VisualQueryService.model;
@@ -568,6 +568,9 @@
 
         //Hide the left side nav bar
         SideNavService.hideSideNav();
+
+        // Display prompt on window unload
+        WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
 
         // Load table data
         if (FeedService.createFeedModel.dataTransformation.formulas.length > 0 && self.sparkShellService.loadGlobalState()) {
