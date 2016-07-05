@@ -49,16 +49,7 @@ The Data Lake Accelerator services should be installed on an edge node.  The fol
 
 If installing in a new Hortonworks sandbox make sure to do the following first before running through the installation steps below.
 
-. Download and import the HDP sandbox
-. SSH into the box and change the password as prompted
-
-    $ ssh root@127.0.0.1 –p 2222
-
-. Run "ambari-admin-password-reset" to set the ambari admin password
-
-    [root@sandbox ~]# ambari-admin-password-reset
-
-. After ambari server starts login to the application and validate the dependent services are running (see above)
+link:./hortonworks-sandbox.adoc[Configure Hortonworks Sandbox]
 
 == Installation
 There are 2 procedures you can follow to deploy the solution. In a test and production environment you will likely want to follow the manual installation guide as it has more

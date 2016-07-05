@@ -1,0 +1,52 @@
+== Hortonworks Sandbox Configuration
+This guide will help you install the Hortonworks sandbox for development and RPM testing
+
+=== Install and Configure the Hortonworks Sandbox
+Download the latest HDP sandbox and import it into Virtual Box. We want to change the CPU and and RAM settings:
+
+* CPU - 4
+* RAM - 10GB
+
+http://hortonworks.com/products/sandbox/
+
+==== Add Virtual Box Shared Folder
+Adding a shared folder to Virtual Box will allow you to access the Data Lake Accelerator project folder outside of the VM so you can copy project artifacts to the sandbox for testing.
+
+NOTE: This should be done before starting the VM to that you can auto mount the folder
+
+    VBox GUI > Settings > Shared Folders > Add
+
+    * Folder Path = <pathToProjectFolder>
+    * Folder Name = data-lake-accelerator
+
+    Choose Auto-mount so that it remembers next time you start the VM
+
+==== Open VM Ports
+The following ports needs to be forwarded to the VM:
+
+    (On Virtual Box > Settings > Network > Port Forwarding
+
+.Ports to add
+|===
+|Application Name|Host Port|Guest Port|Comment
+|Think Big UI| 8401|8400|Use 8401 on the HostIP side so that you can run it in your IDE under 8400 and still test in the VM
+|Think Big Spark Shell | 8450 | 8450 |
+|NiFi|8079|8079|
+|ActiveMQ Admin | 8161| 8161|
+|MySQL | 3306 | 3306 |
+|===
+
+
+==== Startup the Sandbox
+. Start the sandbox
+. SSH into the sandbox
+
+    $ ssh root@localhost -p 2222 (password is "hadoop")
+
+    NOTE: You will be prompted to change your password
+
+. Add the ambari admin password
+
+    $ ambari-admin-password-reset
+
+    After setting the password the ambari-server will be started
