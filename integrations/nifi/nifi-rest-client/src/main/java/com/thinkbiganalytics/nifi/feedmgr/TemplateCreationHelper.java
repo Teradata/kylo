@@ -40,6 +40,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.ws.rs.ClientErrorException;
+
 /**
  * Created by sr186054 on 5/6/16.
  */
@@ -63,7 +65,7 @@ public class TemplateCreationHelper {
 
     Map<String, Integer> controllerServiceEnableAttempts = new ConcurrentHashMap<>();
 
-    private Integer MAX_ENABLE_ATTEMPTS = 5;
+    private Integer MAX_ENABLE_ATTEMPTS = 10;
     private Long ENABLE_CONTROLLER_SERVICE_WAIT_TIME = 3000L;
 
     public TemplateCreationHelper(NifiRestClient restClient) {
@@ -188,8 +190,15 @@ public class TemplateCreationHelper {
         try {
             ControllerServiceEntity entity = restClient.enableControllerService(serviceId);
             return entity;
-        } catch (NifiClientRuntimeException e) {
-            if (e.is409Error()) {
+        } catch (Exception e) {
+            NifiClientRuntimeException clientRuntimeException = null;
+            if(e instanceof NifiClientRuntimeException){
+                clientRuntimeException = (NifiClientRuntimeException) e;
+            }
+            else {
+                clientRuntimeException = new NifiClientRuntimeException(e);
+            }
+            if (clientRuntimeException.is409Error()) {
                 //wait and try again
                 Integer attempt = controllerServiceEnableAttempts.get(serviceId);
                 if (attempt == null) {
