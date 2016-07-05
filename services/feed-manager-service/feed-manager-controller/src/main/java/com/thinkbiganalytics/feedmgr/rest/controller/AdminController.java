@@ -47,7 +47,7 @@ public class AdminController {
     @Path("/import-template")
     @Consumes({MediaType.MULTIPART_FORM_DATA})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response uploadPdfFile(@NotNull @FormDataParam("file") InputStream fileInputStream,
+    public Response uploadTemplate(@NotNull @FormDataParam("file") InputStream fileInputStream,
                                   @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
                                   @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
                                   @FormDataParam("createReusableFlow") @DefaultValue("false") boolean createReusableFlow)

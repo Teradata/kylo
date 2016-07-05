@@ -706,7 +706,9 @@ public class NifiRestClient extends JerseyRestClient {
             try {
                 deleteControllerService(dto.getId());
             } catch (NifiClientRuntimeException e) {
-                unableToDelete.add(dto.getId());
+                if(!(e instanceof NifiComponentNotFoundException)) {
+                    unableToDelete.add(dto.getId());
+                }
             }
         }
         if (!unableToDelete.isEmpty()) {
