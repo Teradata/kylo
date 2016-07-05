@@ -44,9 +44,18 @@ The steps below require root access
 
 . Run the setup wizard
 
-    NOTE: If installing in a HDP or Cloudera sandbox choose option #2 on the Java step to download and install Java in the /opt/java/current directory
+    NOTE: If installing in a HDP or Cloudera sandbox choose option #2 on the Java step to download
+    and install Java in the /opt/java/current directory
 
-    $ /opt/thinkbig/setup/setup-wizard.sh OR if running in offline mode wherever you untar'd the file
+    .. From the /opt/thinkbig/setup directory
+
+        $ /opt/thinkbig/setup/setup-wizard.sh
+
+    .. Offline mode from another directory (using TAR file)
+
+        $ <PathToSetupFolder>/setup/setup-wizard.sh -o
+
+        NOTE: Both -o and -O work
 
     Follow the directions and it will install the following:
     * MySQL or Postgres scripts into the local database
