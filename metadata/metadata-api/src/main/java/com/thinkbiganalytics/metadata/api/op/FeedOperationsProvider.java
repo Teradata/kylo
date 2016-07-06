@@ -4,6 +4,10 @@
 package com.thinkbiganalytics.metadata.api.op;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 
@@ -21,4 +25,6 @@ public interface FeedOperationsProvider {
     
     List<FeedOperation> find(Feed.ID feedId);
     List<FeedOperation> find(Feed.ID feedId, int limit);
+    
+    Map<DateTime, Map<String, Object>> getAllResults(FeedOperationCriteria criteria, Set<String> props);
 }

@@ -40,7 +40,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescriptor;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependency;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
@@ -146,8 +146,8 @@ public class MetadataClient {
         return get(Paths.get("feed", id), Feed.class);
     }
     
-    public FeedDependency getFeedDependency(String id) {
-        return get(Paths.get("feed", id, "depfeeds"), FeedDependency.class);
+    public FeedDependencyGraph getFeedDependency(String id) {
+        return get(Paths.get("feed", id, "depfeeds"), FeedDependencyGraph.class);
     }
 
     public Feed updateFeed(Feed feed) {

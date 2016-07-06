@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -11,7 +12,9 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -32,6 +35,7 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
@@ -205,6 +209,42 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
+    public Feed<?> addDependent(ID targetId, ID dependentId) {
+        JcrFeed<?> target = (JcrFeed<?>) getFeed(targetId);
+        
+        if (target == null) {
+            throw new FeedNotFoundExcepton("The target feed to be assigned the dependent does not exists", targetId);
+        }
+        
+        JcrFeed<?> dependent = (JcrFeed<?>) getFeed(dependentId);
+        
+        if (dependent == null) {
+            throw new FeedNotFoundExcepton("The dependent feed does not exists", dependentId);
+        }
+        
+        target.addDependentFeed(dependent);
+        return target;
+    }
+    
+    @Override
+    public Feed<?> removeDependent(ID feedId, ID dependentId) {
+        JcrFeed<?> target = (JcrFeed<?>) getFeed(feedId);
+        
+        if (target == null) {
+            throw new FeedNotFoundExcepton("The target feed to be assigned the dependent does not exists", feedId);
+        }
+        
+        JcrFeed<?> dependent = (JcrFeed<?>) getFeed(dependentId);
+        
+        if (dependent == null) {
+            throw new FeedNotFoundExcepton("The dependent feed does not exists", dependentId);
+        }
+        
+        target.removeDependentFeed(dependent);
+        return target;
+    }
+
+    @Override
     public FeedCriteria feedCriteria() {
         return new Criteria();
     }
@@ -321,8 +361,46 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         private Set<Datasource.ID> sourceIds = new HashSet<>();
         private Set<Datasource.ID> destIds = new HashSet<>();
         private String category;
+        
+        @Override
+        public <E, J extends JcrObject> List<E> select(Session session, String typeName, Class<E> type, Class<J> jcrClass) {
+            try {
+                // Datasources are not currently used so only name comparison is necessary
+                Node feedsNode = session.getRootNode().getNode("metadata/feeds");
+                NodeIterator catItr = null;
+                
+                if (this.category != null) {
+                    catItr = feedsNode.getNodes(this.category);
+                } else {
+                    catItr = feedsNode.getNodes();
+                }
+                
+                List<Feed<?>> list = new ArrayList<Feed<?>>();
+                
+                while (catItr.hasNext()) {
+                    Node catNode = (Node) catItr.next();
+                    NodeIterator feedItr = null;
+                    
+                    if (this.name != null) {
+                        feedItr = catNode.getNodes(this.name);
+                    } else {
+                        feedItr = catNode.getNodes();
+                    }
+                    
+                    while (feedItr.hasNext()) {
+                        Node feedNode = (Node) feedItr.next();
+                        list.add(JcrUtil.createJcrObject(feedNode, JcrFeed.class));
+                    }
+                }
+                
+                return (List<E>) list;
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to select feeds", e);
+            }
+        }
 
         @Override
+        @Deprecated
         protected void applyFilter(StringBuilder queryStr, HashMap<String, Object> params) {
             StringBuilder cond = new StringBuilder();
             StringBuilder join = new StringBuilder();
@@ -334,7 +412,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (this.category != null) {
                 //TODO FIX SQL
                 join.append(
-                    " join [" + JcrCategory.NODE_TYPE + "] c on e." + EntityUtil.asQueryProperty(JcrFeed.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c." + EntityUtil
+                    " join [" + JcrCategory.NODE_TYPE + "] as c on e." + EntityUtil.asQueryProperty(JcrFeed.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c." + EntityUtil
                         .asQueryProperty(JcrCategory.SYSTEM_NAME));
                 cond.append(" c." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = $category ");
                 params.put("category", this.category);
@@ -352,6 +430,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             }
         }
 
+        @Deprecated
         private void applyIdFilter(StringBuilder cond, StringBuilder join, Set<Datasource.ID> idSet, String relation, HashMap<String, Object> params) {
             if (!idSet.isEmpty()) {
                 if (cond.length() > 0) {

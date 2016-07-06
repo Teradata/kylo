@@ -39,17 +39,11 @@ public interface Feed<C extends Category> extends Propertied, Serializable {
     
     FeedPrecondition getPrecondition();
     
-    List<? extends FeedSource> getSources();
-    
-    FeedSource getSource(Datasource.ID id);
-    
-    FeedSource getSource(FeedSource.ID id);
+    List<Feed<C>> getDependentFeeds();
 
-    List<? extends FeedDestination> getDestinations();
+    boolean addDependentFeed(Feed<?> feed);
 
-    FeedDestination getDestination(Datasource.ID id);
-
-    FeedDestination getDestination(FeedDestination.ID id);
+    boolean removeDependentFeed(Feed<?> feed);
     
 
     void setInitialized(boolean flag);
@@ -64,8 +58,22 @@ public interface Feed<C extends Category> extends Propertied, Serializable {
 
     String getVersionName();
 
-
     DateTime getCreatedTime();
 
     DateTime getModifiedTime();
+
+    
+    // -==-=-=-=- Deprecated -=-=-=-=-=-
+    
+    List<? extends FeedSource> getSources();
+    
+    FeedSource getSource(Datasource.ID id);
+    
+    FeedSource getSource(FeedSource.ID id);
+
+    List<? extends FeedDestination> getDestinations();
+
+    FeedDestination getDestination(Datasource.ID id);
+
+    FeedDestination getDestination(FeedDestination.ID id);
 }

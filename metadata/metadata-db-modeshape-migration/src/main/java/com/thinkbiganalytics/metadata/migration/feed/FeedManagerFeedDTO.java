@@ -1,5 +1,12 @@
 package com.thinkbiganalytics.metadata.migration.feed;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import org.joda.time.DateTime;
+
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -9,11 +16,6 @@ import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-
-import org.joda.time.DateTime;
-
-import java.util.List;
-import java.util.Map;
 
 /**
  * Created by sr186054 on 6/15/16.
@@ -50,9 +52,25 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     private FeedManagerCategory category;
 
     private FeedManagerTemplate template;
+    
+    private Set<Feed<?>> dependentFeeds;
 
     //template
 
+    @Override
+    public List<Feed<?>> getDependentFeeds() {
+        return new ArrayList<>(this.dependentFeeds);
+    }
+    
+    @Override
+    public boolean addDependentFeed(Feed feed) {
+        return this.dependentFeeds.add(feed);
+    }
+    
+    @Override
+    public boolean removeDependentFeed(Feed feed) {
+        return this.dependentFeeds.remove(feed);
+    }
 
     @Override
     public FeedManagerCategory getCategory() {

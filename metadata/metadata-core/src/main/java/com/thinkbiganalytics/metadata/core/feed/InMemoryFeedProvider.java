@@ -145,17 +145,17 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Feed ensureFeed(Category.ID categoryId, String feedSystemName) {
+    public Feed<?> ensureFeed(Category.ID categoryId, String feedSystemName) {
        throw new UnsupportedOperationException("Unable to ensure feed by categoryId with InMemoryProvider");
     }
 
     @Override
-    public Feed ensureFeed(String categorySystemName, String feedSystemName) {
+    public Feed<?> ensureFeed(String categorySystemName, String feedSystemName) {
         return ensureFeed(categorySystemName,feedSystemName,null);
     }
 
     @Override
-    public Feed ensureFeed(String categorySystemName,String name, String descr, ID destId) {
+    public Feed<?> ensureFeed(String categorySystemName,String name, String descr, ID destId) {
         Datasource dds = this.datasetProvider.getDatasource(destId);
     
         if (dds == null) {
@@ -169,7 +169,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Feed ensureFeed(String categorySystemName,String name, String descr, ID srcId, ID destId) {
+    public Feed<?> ensureFeed(String categorySystemName,String name, String descr, ID srcId, ID destId) {
         Datasource sds = this.datasetProvider.getDatasource(srcId);
         Datasource dds = this.datasetProvider.getDatasource(destId);
 
@@ -190,7 +190,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     @Override
-    public Feed ensureFeed(String categorySystemName,String name, String descr) {
+    public Feed<?> ensureFeed(String categorySystemName,String name, String descr) {
         synchronized (this.feeds) {
             for (Feed feed : this.feeds.values()) {
                 if (feed.getName().equals(name)) {
@@ -205,7 +205,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
     
     @Override
-    public Feed createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics) {
+    public Feed<?> createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
         
         if (feed != null) {
@@ -229,11 +229,6 @@ public class InMemoryFeedProvider implements FeedProvider {
         }
     }
 
-    private Feed setupPrecondition(BaseFeed feed, ServiceLevelAgreement sla) {
-        feed.setPrecondition(sla);
-        return feed;
-    }
-    
     @Override
     public PreconditionBuilder buildPrecondition(final Feed.ID feedId) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
@@ -246,14 +241,26 @@ public class InMemoryFeedProvider implements FeedProvider {
         }
 
     }
+
+    @Override
+    public Feed<?> addDependent(com.thinkbiganalytics.metadata.api.feed.Feed.ID targetId, com.thinkbiganalytics.metadata.api.feed.Feed.ID dependentId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
     
+    @Override
+    public Feed<?> removeDependent(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, com.thinkbiganalytics.metadata.api.feed.Feed.ID depId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
     @Override
     public FeedCriteria feedCriteria() {
         return new Criteria();
     }
 
     @Override
-    public Feed getFeed(Feed.ID id) {
+    public Feed<?> getFeed(Feed.ID id) {
         return this.feeds.get(id);
     }
 
@@ -263,12 +270,12 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
     
     @Override
-    public Feed findBySystemName(String systemName) {
+    public Feed<?> findBySystemName(String systemName) {
         return findBySystemName(null, systemName);
     }
 
     @Override
-    public Feed findBySystemName(String categorySystemName, String systemName) {
+    public Feed<?> findBySystemName(String categorySystemName, String systemName) {
         FeedCriteria c = feedCriteria();
         if (categorySystemName != null) {
             c.category(categorySystemName);
@@ -292,7 +299,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     
     @Override
     public FeedSource getFeedSource(FeedSource.ID id) {
-        Feed feed = this.sources.get(id);
+        Feed<?> feed = this.sources.get(id);
         
         if (feed != null) {
             return feed.getSource(id);
@@ -303,7 +310,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     
     @Override
     public FeedDestination getFeedDestination(FeedDestination.ID id) {
-        Feed feed = this.destinations.get(id);
+        Feed<?> feed = this.destinations.get(id);
         
         if (feed != null) {
             return feed.getDestination(id);
@@ -314,6 +321,27 @@ public class InMemoryFeedProvider implements FeedProvider {
 
 
     
+    @Override
+    public boolean enableFeed(Feed.ID id) {
+        BaseFeed feed = (BaseFeed) getFeed(id);
+        if(feed != null) {
+            feed.setState(Feed.State.ENABLED);
+            return true;
+        }
+        return false;
+
+    }
+
+    @Override
+    public boolean disableFeed(Feed.ID id) {
+        BaseFeed feed = (BaseFeed) getFeed(id);
+        if(feed != null) {
+            feed.setState(Feed.State.DISABLED);
+            return true;
+        }
+        return false;
+    }
+
     private FeedSource ensureFeedSource(BaseFeed feed, Datasource ds, ServiceLevelAgreement.ID slaId) {
         Map<Datasource.ID, FeedSource> srcIds = new HashMap<>();
         for (FeedSource src : feed.getSources()) {
@@ -347,25 +375,9 @@ public class InMemoryFeedProvider implements FeedProvider {
         }
     }
 
-    @Override
-    public boolean enableFeed(Feed.ID id) {
-        BaseFeed feed = (BaseFeed) getFeed(id);
-        if(feed != null) {
-            feed.setState(Feed.State.ENABLED);
-            return true;
-        }
-        return false;
-
-    }
-
-    @Override
-    public boolean disableFeed(Feed.ID id) {
-        BaseFeed feed = (BaseFeed) getFeed(id);
-        if(feed != null) {
-            feed.setState(Feed.State.DISABLED);
-            return true;
-        }
-        return false;
+    private Feed<?> setupPrecondition(BaseFeed feed, ServiceLevelAgreement sla) {
+        feed.setPrecondition(sla);
+        return feed;
     }
 
     private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {

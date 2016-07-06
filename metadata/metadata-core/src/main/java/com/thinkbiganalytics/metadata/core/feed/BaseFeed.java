@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import org.joda.time.DateTime;
@@ -37,6 +38,7 @@ public class BaseFeed implements Feed {
     private State state;
     private boolean initialized;
     private DateTime createdTime;
+    private Set<Feed<?>> dependentFeeds;
     private Map<FeedSource.ID, FeedSource> sources = new HashMap<>();
     private Map<FeedDestination.ID, FeedDestination> destinations = new HashMap<>();
     private FeedPreconditionImpl precondition;
@@ -51,6 +53,21 @@ public class BaseFeed implements Feed {
         this.createdTime = DateTime.now();
     }
 
+    @Override
+    public List<Feed<?>> getDependentFeeds() {
+        return new ArrayList<>(this.dependentFeeds);
+    }
+    
+    @Override
+    public boolean addDependentFeed(Feed feed) {
+        return this.dependentFeeds.add(feed);
+    }
+    
+    @Override
+    public boolean removeDependentFeed(Feed feed) {
+        return this.dependentFeeds.remove(feed);
+    }
+    
     @Override
     public Map<String, Object> getProperties() {
         return this.properties;

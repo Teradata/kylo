@@ -24,6 +24,7 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
+import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
@@ -51,6 +52,26 @@ public class TriggerFeed extends BaseProcessor {
             .identifiesControllerService(FeedPreconditionEventService.class)
             .build();
 
+    PropertyDescriptor META_FEED_CATEGORY = new PropertyDescriptor.Builder()
+            .name("System feed category")
+            .description("The category name of this feed.  The default is to have this name automatically set when the feed is created.  "
+                            + "Normally you do not need to change the default value.")
+            .required(true)
+            .defaultValue("${metadata.category.systemName}")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
+
+    PropertyDescriptor META_FEED_NAME = new PropertyDescriptor.Builder()
+            .name("System feed name")
+            .description("The system name of this feed.  The default is to have this name automatically set when the feed is created.  "
+                            + "Normally you do not need to change the default value.")
+            .defaultValue("${metadata.systemFeedName}")
+            .required(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .expressionLanguageSupported(true)
+            .build();
+
     public static final Relationship SUCCESS = new Relationship.Builder()
             .name("Success")
             .description("Relationship followed on successful precondition event.")
@@ -66,8 +87,8 @@ public class TriggerFeed extends BaseProcessor {
 
     @OnScheduled
     public void scheduled(ProcessContext context) {
-        String category = context.getProperty(FEED_CATEGORY).getValue();
-        String feedName = context.getProperty(FEED_NAME).getValue();
+        String category = context.getProperty(META_FEED_CATEGORY).getValue();
+        String feedName = context.getProperty(META_FEED_NAME).getValue();
         registerPreconditonListener(context, category, feedName);
     }
 

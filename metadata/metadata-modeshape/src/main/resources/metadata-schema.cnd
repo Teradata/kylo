@@ -112,6 +112,7 @@
 	- tba:json (STRING)
 	- tba:schedulingPeriod (STRING)
 	- tba:schedulingStrategy (STRING)
+    - tba:dependentFeeds (REFERENCE) multiple
 
 [tba:feedPrecondition] > nt:hierarchyNode, mix:lastModified
     - tba:slaRef (REFERENCE)

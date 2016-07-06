@@ -16,7 +16,7 @@ public interface FeedOperation extends Serializable {
     
     interface ID extends Serializable {};
     
-    enum State { IN_PROGRESS, SUCCESS, FAILURE, CANCELED }
+    enum State { STARTED, SUCCESS, FAILURE, CANCELED }
     
     
     ID getId();

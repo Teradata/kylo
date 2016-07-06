@@ -204,7 +204,7 @@ public class ProvenanceFeedManager {
                     //add them to the job execution context
                     LOG.error("Additional Bulletin Exceptions found " + componentId + ", " + otherBulletins);
                     if (event.hasJobExecution()) {
-                        Map<String, Object> details = new HashMap<>();
+                        Map<String, String> details = new HashMap<>();
                         details.put("Additional Bulletin Messages",
                                     "Bulletin messages were found for components in the flow that were already completed.");
                         for (BulletinDTO bulletinDTO : otherBulletins) {
@@ -255,7 +255,7 @@ public class ProvenanceFeedManager {
         event.getFlowFileComponent().setJobExecution(jobExecution);
         //write some attrs to the job execution context
 
-        Map<String, Object> executionContext = new HashMap<>();
+        Map<String, String> executionContext = new HashMap<>();
         ProcessorDTO feedProcessor = getFeedProcessor(event);
         executionContext.put("Feed Process Group Id", feedGroup.getId());
         executionContext.put("Feed Name", feedName);
@@ -349,7 +349,7 @@ public class ProvenanceFeedManager {
                     LOG.info("Completing Component {} ({}) with WARNINGS", event.getFlowFileComponent().getComponetName(),
                              event.getId());
                     jobRepository.completeStep(event.getFlowFileComponent());
-
+                    jobRepository.saveJobExecutionContext(event.getFlowFileComponent().getJobExecution(), event.getAttributeMap());
                 }
                 event.getFlowFileComponent().getJobExecution().addBulletinErrors(bulletins);
             } else {
@@ -364,6 +364,7 @@ public class ProvenanceFeedManager {
                     event.getFlowFileComponent().getJobExecution().addFailedComponent(event.getFlowFileComponent());
                 } else {
                     jobRepository.completeStep(event.getFlowFileComponent());
+                    jobRepository.saveJobExecutionContext(event.getFlowFileComponent().getJobExecution(), event.getAttributeMap());
                 }
 
             }
@@ -404,7 +405,7 @@ public class ProvenanceFeedManager {
                 if (event.getFlowFileComponent().getJobExecution().isCheckDataJob()) {
                     String value = event.getAttributeMap().get(CheckDataStepConstants.VALIDATION_KEY);
                     String message = event.getAttributeMap().get(CheckDataStepConstants.VALIDATION_MESSAGE_KEY);
-                    Map<String, Object> jobExecutionAttrs = new HashMap<>();
+                    Map<String, String> jobExecutionAttrs = new HashMap<>();
                     jobExecutionAttrs.put(CheckDataStepConstants.VALIDATION_KEY, value);
                     jobExecutionAttrs.put(CheckDataStepConstants.VALIDATION_MESSAGE_KEY, message);
                     jobRepository.saveJobExecutionContext(event.getFlowFileComponent().getJobExecution(), jobExecutionAttrs);

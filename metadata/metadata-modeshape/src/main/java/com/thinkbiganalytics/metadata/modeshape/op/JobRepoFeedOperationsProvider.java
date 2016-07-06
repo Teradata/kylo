@@ -5,8 +5,11 @@ package com.thinkbiganalytics.metadata.modeshape.op;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -59,15 +62,15 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
             case FAILED:
                 return State.FAILURE;
             case STARTED:
-                return State.IN_PROGRESS;
+                return State.STARTED;
             case STARTING:
-                return State.IN_PROGRESS;
+                return State.STARTED;
             case STOPPING:
-                return State.IN_PROGRESS;
+                return State.STARTED;
             case STOPPED:
                 return State.CANCELED;
             case UNKNOWN:
-                return State.IN_PROGRESS;
+                return State.STARTED;
             default:
                 return State.FAILURE;
         }
@@ -91,7 +94,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
         ExecutedJob exec = this.jobRepo.findByExecutionId(opId.toString());
         
         if (exec != null) {
-            return new FeedOperationExecutedJobWrapper(exec);
+            return createOperation(exec);
         } else {
             return null;
         }
@@ -106,11 +109,12 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
         Criteria execCriteria = (Criteria) criteria;
         
         return this.jobRepo.findJobs(0, Integer.MAX_VALUE).stream()
-                        .limit(execCriteria.getLimit())
                         .filter(execCriteria)
-                        .map((exec) -> new FeedOperationExecutedJobWrapper(exec))
+                        .limit(execCriteria.getLimit())
+                        .map(exec -> createOperation(exec))
                         .collect(Collectors.toList());
     }
+
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider#find(Feed.ID)
@@ -126,7 +130,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     @Override
     public List<FeedOperation> find(Feed.ID feedId, int limit) {
         return metadata.<List<FeedOperation>>read(() -> {
-            Feed feed = this.feedProvider.getFeed(feedId);
+            Feed<?> feed = this.feedProvider.getFeed(feedId);
             
             if (feed != null) {
                 ExecutedFeed feedExec = this.feedRepo.findLastCompletedFeed(feed.getQualifiedName());
@@ -139,7 +143,7 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
                     } else {
                         return feedExec.getExecutedJobs().stream()
                                         .limit(limit)
-                                        .map((exec) -> new FeedOperationExecutedJobWrapper(exec))
+                                        .map(exec -> createOperation(exec))
                                         .collect(Collectors.toList());
                     }
                 } else {
@@ -150,7 +154,37 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
             }
         });
     }
+    
+    @Override
+    public Map<DateTime, Map<String, Object>> getAllResults(FeedOperationCriteria criteria, Set<String> props) {
+        Map<DateTime, Map<String, Object>> results = new HashMap<DateTime, Map<String,Object>>();
+        List<FeedOperation> ops = find(criteria);
+        
+        for (FeedOperation op : ops) {
+            DateTime time = op.getStopTime();
+            Map<String, Object> map = results.get(time);
+            
+            for (Entry<String, Object> entry : op.getResults().entrySet()) {
+                if (props.isEmpty() || props.contains(entry.getKey())) {
+                    if (map == null) {
+                        map = new HashMap<>();
+                        results.put(time, map);
+                    }
+                    
+                    map.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        
+        return results;
+    }
 
+
+    private FeedOperationExecutedJobWrapper createOperation(ExecutedJob exec) {
+        return new FeedOperationExecutedJobWrapper(exec);
+    }
+
+    
     private class Criteria extends AbstractMetadataCriteria<FeedOperationCriteria> implements FeedOperationCriteria, Predicate<ExecutedJob> {
 
         private Set<State> states = new HashSet<>();
@@ -167,17 +201,18 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
             Feed.ID id = null;
             
             if (! feedIds.isEmpty()) {
-                Feed feed = feedProvider.findBySystemName(job.getFeedName());
+                String[] jobName = job.getJobName().split("\\.");
+                Feed feed = feedProvider.findBySystemName(jobName[0], jobName[1]);
                 id = feed != null ? feed.getId() : null;
             }
             
             return 
                 (states.isEmpty() || states.contains(asOperationState(job.getStatus()))) &&
                 (feedIds.isEmpty() || (id != null && feedIds.contains(id))) &&
-                (this.startedBefore == null || this.startedBefore.isBefore(job.getStartTime())) &&
-                (this.startedSince == null || this.startedSince.isAfter(job.getStartTime())) &&
-                (this.stoppedBefore == null || this.stoppedBefore.isBefore(job.getEndTime())) &&
-                (this.stoppedSince == null || this.stoppedSince.isAfter(job.getEndTime()));
+                (this.startedBefore == null || this.startedBefore.isAfter(job.getStartTime())) &&
+                (this.startedSince == null || this.startedSince.isBefore(job.getStartTime())) &&
+                (this.stoppedBefore == null || this.stoppedBefore.isAfter(job.getEndTime())) &&
+                (this.stoppedSince == null || this.stoppedSince.isBefore(job.getEndTime()));
         }
 
         @Override

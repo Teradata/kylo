@@ -24,6 +24,7 @@ import org.hibernate.annotations.Parent;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -126,6 +127,24 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         this.Id = FeedId.create();
         this.name = name;
         this.description = description;
+    }
+    
+    @Override
+    public List<Feed<C>> getDependentFeeds() {
+        // TODO Implement if JPA support is maintained
+        return Collections.emptyList();
+    }
+    
+    @Override
+    public boolean addDependentFeed(Feed<?> feed) {
+        // TODO Implement if JPA support is maintained
+        return false;
+    }
+    
+    @Override
+    public boolean removeDependentFeed(Feed<?> feed) {
+        // TODO Implement if JPA support is maintained
+        return false;
     }
 
     @Override

@@ -1,9 +1,13 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.jcr.Node;
+import javax.jcr.Property;
+import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 
 import com.google.common.base.Predicate;
@@ -16,6 +20,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
@@ -23,6 +28,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 
@@ -34,6 +40,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String PRECONDITION_TYPE = "tba:feedPrecondition";
 
     public static final String PRECONDITION = "tba:precondition";
+    public static final String DEPENDENTS = "tba:dependentFeeds";
     public static final String NODE_TYPE = "tba:feed";
     public static final String SOURCE_NAME = "tba:sources";
     public static final String DESTINATION_NAME = "tba:destinations";
@@ -46,8 +53,8 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String SCHEDULE_STRATEGY = "tba:schedulingStrategy"; //CRON_DRIVEN, TIMER_DRIVEN
 
 
-    public JcrFeed(Node node) {
-        super(node);
+    public JcrFeed(Node node) throws RepositoryException {
+        this(node, new JcrCategory(node.getParent()));
     }
 
     public JcrFeed(Node node, JcrCategory category) {
@@ -148,6 +155,38 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the feed precondition", e);
         }
+    }
+    
+    @Override
+    public List<Feed<C>> getDependentFeeds() {
+        try {
+            List<Feed<C>> deps = new ArrayList<>();
+            Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, DEPENDENTS);
+            
+            for (Node depNode : depNodes) {
+                deps.add(new JcrFeed<C>(depNode));
+            }
+            
+            return deps;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the dependent feed", e);
+        }
+    }
+    
+    @Override
+    public boolean addDependentFeed(Feed<?> feed) {
+        JcrFeed<?> dependent = (JcrFeed<?>) feed;
+        Node depNode = dependent.getNode();
+        
+        return JcrPropertyUtil.addToSetProperty(this.node, DEPENDENTS, depNode);
+    }
+    
+    @Override
+    public boolean removeDependentFeed(Feed<?> feed) {
+        JcrFeed<?> dependent = (JcrFeed<?>) feed;
+        Node depNode = dependent.getNode();
+        
+        return JcrPropertyUtil.removeFromSetProperty(this.node, DEPENDENTS, depNode);
     }
 
     @Override

@@ -258,7 +258,19 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
         // TODO Auto-generated method stub
         return null;
     }
-
+    
+    @Override
+    public Feed<?> addDependent(ID targetId, ID dependentId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    @Override
+    public Feed<?> removeDependent(ID feedId, ID dependentId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#feedCriteria()
      */

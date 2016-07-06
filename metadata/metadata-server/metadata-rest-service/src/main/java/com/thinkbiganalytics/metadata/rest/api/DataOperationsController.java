@@ -67,7 +67,7 @@ public class DataOperationsController {
                 // TODO add criteria filtering
                 List<com.thinkbiganalytics.metadata.api.op.DataOperation> domainOps = operationsProvider.getDataOperations();
                 
-                return new ArrayList<>(Collections2.transform(domainOps, Model.DOMAIN_TO_OP));
+                return new ArrayList<>(Collections2.transform(domainOps, Model.DOMAIN_TO_DS_OP));
             }
         });
     }
@@ -85,7 +85,7 @@ public class DataOperationsController {
                 com.thinkbiganalytics.metadata.api.op.DataOperation domainOp = operationsProvider.getDataOperation(domainId);
                 
                 if (domainOp != null) {
-                    return Model.DOMAIN_TO_OP.apply(domainOp);
+                    return Model.DOMAIN_TO_DS_OP.apply(domainOp);
                 } else {
                     throw new WebApplicationException("No data operation exitst with the given ID: " + opid, Status.NOT_FOUND);
                 }
@@ -107,7 +107,7 @@ public class DataOperationsController {
                 
                 if (dest != null) {
                     com.thinkbiganalytics.metadata.api.op.DataOperation op = operationsProvider.beginOperation(dest, new DateTime());
-                    return Model.DOMAIN_TO_OP.apply(op);
+                    return Model.DOMAIN_TO_DS_OP.apply(op);
                 } else {
                     throw new WebApplicationException("A feed destination with the given ID does not exist: " + destIdStr, 
                                                       Status.BAD_REQUEST);
@@ -155,7 +155,7 @@ public class DataOperationsController {
                     resultOp = operationsProvider.updateOperation(domainId, op.getStatus(), Model.OP_STATE_TO_DOMAIN.apply(op.getState()));
                 }
                 
-                return Model.DOMAIN_TO_OP.apply(resultOp);
+                return Model.DOMAIN_TO_DS_OP.apply(resultOp);
             }
         });
     }

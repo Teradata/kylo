@@ -20,20 +20,18 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
 @JsonPropertyOrder({ "feed", "preconditonResult", "destination", "dependencies" })
-public class FeedDependency {
+public class FeedDependencyGraph {
 
     private Feed feed;
     private ServiceLevelAssessment preconditonResult;
-    private Datasource destination;
-    private List<FeedDependency> dependencies = new ArrayList<>();
+    private List<FeedDependencyGraph> dependencies = new ArrayList<>();
     
-    public FeedDependency() {
+    public FeedDependencyGraph() {
     }
 
-    public FeedDependency(Feed feed, Datasource destination, ServiceLevelAssessment preconditonResult) {
+    public FeedDependencyGraph(Feed feed, ServiceLevelAssessment preconditonResult) {
         super();
         this.feed = feed;
-        this.destination = destination;
         this.preconditonResult = preconditonResult;
     }
 
@@ -45,14 +43,6 @@ public class FeedDependency {
         this.feed = feed;
     }
 
-    public Datasource getDestination() {
-        return destination;
-    }
-
-    public void setDestination(Datasource destination) {
-        this.destination = destination;
-    }
-
     public ServiceLevelAssessment getPreconditonResult() {
         return preconditonResult;
     }
@@ -61,15 +51,15 @@ public class FeedDependency {
         this.preconditonResult = preconditonResult;
     }
 
-    public List<FeedDependency> getDependencies() {
+    public List<FeedDependencyGraph> getDependencies() {
         return dependencies;
     }
 
-    public void setDependencies(List<FeedDependency> dependencies) {
+    public void setDependencies(List<FeedDependencyGraph> dependencies) {
         this.dependencies = dependencies;
     }
     
-    public void addDependecy(FeedDependency dep) {
+    public void addDependecy(FeedDependencyGraph dep) {
         this.dependencies.add(dep);
     }
 }

@@ -7,6 +7,7 @@ import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategory;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 
 import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by sr186054 on 6/8/16.
@@ -17,7 +18,7 @@ public class JcrFeedManagerFeed<C extends JcrFeedManagerCategory> extends JcrFee
     public static String PROCESS_GROUP_ID = "tba:processGroupId";
     public static String FEED_TEMPLATE = "tba:feedTemplate";
 
-    public JcrFeedManagerFeed(Node node) {
+    public JcrFeedManagerFeed(Node node) throws RepositoryException {
         super(node);
     }
 
