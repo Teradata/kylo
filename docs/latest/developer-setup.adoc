@@ -123,4 +123,18 @@ The applications are configured using Spring Boot.
     . Run both applications
 
 ==== Eclipse Configuration
-TODO
+
+http://docs.spring.io/spring-boot/docs/current/reference/html/using-boot-running-your-application.html
+
+    . Open Eclipse
+    . Import the Data Lake Accelerator project
+    .. File - Import
+    .. Choose "maven" and  "Existing Maven Projects" then choose next
+    .. Choose the Data Lake Accelerator root folder. You should see all maven modules checked
+    .. Click finish
+    .. Import takes a bit - got error about scala plugin - just clicked finish
+    . Find and open the "com.thinkbiganalytics.server.ThinkbigServerApplication" class
+    . Right click and choose to debug as a Java application
+    . Repeat for "com.thinkbiganalytics.ThinkbigDataLakeUiApplication"
+
+    OPTIONAL: Install the spring tools suite and run as a spring boot option
