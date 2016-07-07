@@ -6,10 +6,6 @@
  *         "feeds"
  *             categorySystemName*
  *                 feedSystemName*
- *                     feedSource*
- *                     feedDestination*
- *         "datasources"
- *             datasource
  *         "templates"
  *             template
  *         "sla"
