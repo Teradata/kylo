@@ -206,7 +206,7 @@
 
 
 
-        $scope.$watchCollection(
+        $scope.$watch(
             function () {
                 return ServicesStatusData.services;
             },
@@ -217,7 +217,7 @@
                 }
                 self.indicator.addServices(servicesArr);
                 self.dataLoaded = true;
-            }
+            },true
         );
 
 
@@ -236,8 +236,6 @@
             }
         }
 
-
-   //     this.init();
 
         $scope.$on('$destroy', function () {
            self.clearRefreshInterval();
