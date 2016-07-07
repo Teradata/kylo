@@ -241,6 +241,9 @@ public class CreateFeedBuilder {
         if (input == null && inputProcessors != null && !inputProcessors.isEmpty()) {
             input = inputProcessors.get(0);
         }
+        if(input != null && StringUtils.isBlank(inputProcessorType)){
+            inputProcessorType = input.getType();
+        }
         return input;
 
     }
@@ -376,6 +379,9 @@ public class CreateFeedBuilder {
 
     private void markInputAsRunning(NifiProcessGroup newProcessGroup, ProcessorDTO input) {
         try {
+            if(input != null && StringUtils.isBlank(inputProcessorType)){
+                inputProcessorType = input.getType();
+            }
             restClient.setInputAsRunningByProcessorMatchingType(newProcessGroup.getProcessGroupEntity().getProcessGroup().getId(),
                                                                 inputProcessorType);
         } catch (Exception error) {
