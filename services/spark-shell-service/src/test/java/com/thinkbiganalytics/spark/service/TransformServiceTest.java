@@ -7,6 +7,7 @@ import com.thinkbiganalytics.spark.metadata.TransformResponse;
 import com.thinkbiganalytics.spark.repl.ScriptEngine;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.spark.SparkContext;
 import org.apache.spark.sql.DataFrame;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
@@ -18,6 +19,7 @@ import org.mockito.Mockito;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import scala.tools.nsc.interpreter.NamedParam;
 
@@ -35,6 +37,13 @@ public class TransformServiceTest {
         Mockito.when(context.sql(Mockito.anyString())).thenReturn(dataFrame);
 
         ScriptEngine engine = Mockito.mock(ScriptEngine.class);
+        Mockito.when(engine.eval(Mockito.anyString(), Mockito.any(List.class))).thenReturn(new Callable<TransformResponse>() {
+            @Override
+            public TransformResponse call() throws Exception {
+                return new TransformResponse();
+            }
+        });
+        Mockito.when(engine.getSparkContext()).thenReturn(Mockito.mock(SparkContext.class));
         Mockito.when(engine.getSQLContext()).thenReturn(context);
 
         // Test executing a request
@@ -52,7 +61,7 @@ public class TransformServiceTest {
             service.stopAsync();
         }
 
-        Assert.assertEquals(response.getStatus(), TransformResponse.Status.SUCCESS);
+        Assert.assertEquals(response.getStatus(), TransformResponse.Status.PENDING);
 
         // Test eval arguments
         ArgumentCaptor<String> evalScript = ArgumentCaptor.forClass(String.class);
@@ -77,8 +86,16 @@ public class TransformServiceTest {
     public void shutDown() throws Exception {
         // Mock SQL context and script engine
         SQLContext context = Mockito.mock(SQLContext.class);
+
         ScriptEngine engine = Mockito.mock(ScriptEngine.class);
+        Mockito.when(engine.getSparkContext()).thenReturn(Mockito.mock(SparkContext.class));
         Mockito.when(engine.getSQLContext()).thenReturn(context);
+        Mockito.when(engine.eval(Mockito.anyString(), Mockito.any(List.class))).thenReturn(new Callable<TransformResponse>() {
+            @Override
+            public TransformResponse call() throws Exception {
+                return new TransformResponse();
+            }
+        });
 
         // Mock service
         TransformService service = new TransformService(engine) {
@@ -121,6 +138,7 @@ public class TransformServiceTest {
         Mockito.when(context.sql(Mockito.anyString())).thenReturn(dataFrame);
 
         ScriptEngine engine = Mockito.mock(ScriptEngine.class);
+        Mockito.when(engine.getSparkContext()).thenReturn(Mockito.mock(SparkContext.class));
         Mockito.when(engine.getSQLContext()).thenReturn(context);
 
         // Verify start-up
@@ -137,6 +155,10 @@ public class TransformServiceTest {
      */
     @Test
     public void toScript() throws Exception {
+        // Mock the script engine
+        ScriptEngine engine = Mockito.mock(ScriptEngine.class);
+        Mockito.when(engine.getSparkContext()).thenReturn(Mockito.mock(SparkContext.class));
+
         // Build the request
         TransformRequest request = new TransformRequest();
         request.setScript("sqlContext.range(1,10)");
@@ -144,7 +166,7 @@ public class TransformServiceTest {
         // Test converting request to script
         String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
 
-        TransformService service = new TransformService(Mockito.mock(ScriptEngine.class));
+        TransformService service = new TransformService(engine);
         Assert.assertEquals(expected, service.toScript(request));
     }
 

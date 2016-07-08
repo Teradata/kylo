@@ -3,4 +3,4 @@ override def dataFrame: org.apache.spark.sql.DataFrame = {parent.withColumn(func
 override def parentDataFrame: org.apache.spark.sql.DataFrame = {sqlContext.range(1,10)}
 override def parentTable: String = {"parent_table"}
 }
-new Transform(tableName, false, sqlContext).run()
+new Transform(tableName, true, sqlContext).run()
