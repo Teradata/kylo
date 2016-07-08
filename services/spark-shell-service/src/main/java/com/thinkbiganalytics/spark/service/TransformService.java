@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nonnull;
@@ -104,12 +105,14 @@ public class TransformService extends AbstractScheduledService {
 
         // Execute script
         List<NamedParam> bindings = ImmutableList.of((NamedParam) new NamedParamClass("database", "String", DATABASE), new NamedParamClass("tableName", "String", table));
-
         Object result = this.engine.eval(toScript(request), bindings);
+
+        TransformJob job;
         if (result instanceof Callable) {
             @SuppressWarnings("unchecked")
             Callable<TransformResponse> callable = (Callable)result;
-            tracker.submitJob(new TransformJob(table, callable, engine.getSparkContext()));
+            job = new TransformJob(table, callable, engine.getSparkContext());
+            tracker.submitJob(job);
         } else {
             IllegalStateException e = new IllegalStateException("Unexpected script result type: " + (result != null ? result.getClass() : null));
             log.error("Throwing {}", e);
@@ -124,10 +127,20 @@ public class TransformService extends AbstractScheduledService {
         }
 
         // Build response
-        TransformResponse response = new TransformResponse();
-        response.setProgress(0.0);
-        response.setStatus(TransformResponse.Status.PENDING);
-        response.setTable(table);
+        TransformResponse response;
+
+        try {
+            response = job.get(500, TimeUnit.MILLISECONDS);
+        } catch (ExecutionException cause) {
+            ScriptException e = new ScriptException(cause);
+            log.error("Throwing {}", e);
+            throw e;
+        } catch (Exception cause) {
+            response = new TransformResponse();
+            response.setProgress(0.0);
+            response.setStatus(TransformResponse.Status.PENDING);
+            response.setTable(table);
+        }
 
         log.trace("exit with({})", response);
         return response;

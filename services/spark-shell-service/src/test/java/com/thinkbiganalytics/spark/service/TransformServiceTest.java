@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.spark.service;
 
-import com.clearspring.analytics.util.Lists;
 import com.google.common.collect.ImmutableList;
 import com.thinkbiganalytics.spark.metadata.TransformRequest;
 import com.thinkbiganalytics.spark.metadata.TransformResponse;
@@ -40,7 +39,9 @@ public class TransformServiceTest {
         Mockito.when(engine.eval(Mockito.anyString(), Mockito.any(List.class))).thenReturn(new Callable<TransformResponse>() {
             @Override
             public TransformResponse call() throws Exception {
-                return new TransformResponse();
+                TransformResponse response = new TransformResponse();
+                response.setStatus(TransformResponse.Status.SUCCESS);
+                return response;
             }
         });
         Mockito.when(engine.getSparkContext()).thenReturn(Mockito.mock(SparkContext.class));
@@ -61,7 +62,7 @@ public class TransformServiceTest {
             service.stopAsync();
         }
 
-        Assert.assertEquals(response.getStatus(), TransformResponse.Status.PENDING);
+        Assert.assertEquals(TransformResponse.Status.SUCCESS, response.getStatus());
 
         // Test eval arguments
         ArgumentCaptor<String> evalScript = ArgumentCaptor.forClass(String.class);
@@ -78,52 +79,7 @@ public class TransformServiceTest {
         Assert.assertEquals("spark_shell_temp", bindings.get(0).value());
         Assert.assertEquals("tableName", bindings.get(1).name());
         Assert.assertEquals("String", bindings.get(1).tpe());
-        Assert.assertEquals(response.getTable(), bindings.get(1).value());
-    }
-
-    /** Verify cleaning up during shutdown. */
-    @Test
-    public void shutDown() throws Exception {
-        // Mock SQL context and script engine
-        SQLContext context = Mockito.mock(SQLContext.class);
-
-        ScriptEngine engine = Mockito.mock(ScriptEngine.class);
-        Mockito.when(engine.getSparkContext()).thenReturn(Mockito.mock(SparkContext.class));
-        Mockito.when(engine.getSQLContext()).thenReturn(context);
-        Mockito.when(engine.eval(Mockito.anyString(), Mockito.any(List.class))).thenReturn(new Callable<TransformResponse>() {
-            @Override
-            public TransformResponse call() throws Exception {
-                return new TransformResponse();
-            }
-        });
-
-        // Mock service
-        TransformService service = new TransformService(engine) {
-            @Override
-            protected void startUp() {}
-        };
-        service.startAsync();
-        service.awaitRunning();
-
-        // Add a few tables
-        TransformRequest request = new TransformRequest();
-        request.setScript("sqlContext.range(1,10)");
-
-        List<String> tables = Lists.newArrayList();
-        try {
-            tables.add(service.execute(request).getTable());
-            tables.add(service.execute(request).getTable());
-            tables.add(service.execute(request).getTable());
-        } finally {
-            service.stopAsync();
-        }
-
-        service.awaitTerminated();
-
-        // Test clean-up
-        Mockito.verify(context).sql("DROP TABLE IF EXISTS `spark_shell_temp`.`" + tables.get(0) + "`");
-        Mockito.verify(context).sql("DROP TABLE IF EXISTS `spark_shell_temp`.`" + tables.get(1) + "`");
-        Mockito.verify(context).sql("DROP TABLE IF EXISTS `spark_shell_temp`.`" + tables.get(2) + "`");
+        Assert.assertTrue(((String)bindings.get(1).value()).matches("^[0-9a-f]{32}$"));
     }
 
     /** Verify setting up database during start-up. */
