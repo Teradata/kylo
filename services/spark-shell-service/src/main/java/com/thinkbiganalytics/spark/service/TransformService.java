@@ -131,6 +131,7 @@ public class TransformService extends AbstractScheduledService {
 
         try {
             response = job.get(500, TimeUnit.MILLISECONDS);
+            tracker.removeJob(table);
         } catch (ExecutionException cause) {
             ScriptException e = new ScriptException(cause);
             log.error("Throwing {}", e);
@@ -157,6 +158,9 @@ public class TransformService extends AbstractScheduledService {
     public TransformJob getJob(@Nonnull final String id) {
         Option<TransformJob> job = tracker.getJob(id);
         if (job.isDefined()) {
+            if (job.get().isDone()) {
+                tracker.removeJob(id);
+            }
             return job.get();
         } else {
             throw new IllegalArgumentException();
