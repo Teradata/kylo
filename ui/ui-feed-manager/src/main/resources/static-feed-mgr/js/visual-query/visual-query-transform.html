@@ -154,7 +154,8 @@
                  </md-menu>
              </div>
          </script>
-         <md-progress-linear md-mode="determinate" ng-value="vm.queryProgress" ng-show="vm.executingQuery"></md-progress-linear>
+         <md-progress-linear md-mode="query" ng-show="vm.executingQuery && vm.queryProgress == 0"></md-progress-linear>
+         <md-progress-linear md-mode="determinate" ng-value="vm.queryProgress" ng-show="vm.executingQuery && vm.queryProgress > 0"></md-progress-linear>
          <div ui-grid-auto-resize style="width:100%;height:500px;" browser-height browser-height-scroll-y="false" browser-height-offset="284" ui-grid="vm.gridOptions" ui-grid-move-columns></div>
          </div>
     </div>
