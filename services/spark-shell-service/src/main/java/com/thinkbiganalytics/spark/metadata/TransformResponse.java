@@ -16,6 +16,9 @@ public class TransformResponse {
         /** Transformation resulted in an error */
         ERROR,
 
+        /** Transformation is in-progress */
+        PENDING,
+
         /** Transformation was successful */
         SUCCESS;
 
@@ -27,6 +30,9 @@ public class TransformResponse {
 
     /** Error message */
     private String message;
+
+    /** Progress of the transformation */
+    private Double progress;
 
     /** Result of a transformation */
     private QueryResult results;
@@ -53,6 +59,24 @@ public class TransformResponse {
      */
     public void setMessage(String message) {
         this.message = message;
+    }
+
+    /**
+     * Gets the progress of the transformation.
+     *
+     * @return the transformation progress
+     */
+    public Double getProgress() {
+        return progress;
+    }
+
+    /**
+     * Sets the progress of the transformation.
+     *
+     * @param progress the transformation progress
+     */
+    public void setProgress(Double progress) {
+        this.progress = progress;
     }
 
     /**

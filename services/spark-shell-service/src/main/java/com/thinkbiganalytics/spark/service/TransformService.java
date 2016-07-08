@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.AbstractScheduledService;
-import com.thinkbiganalytics.db.model.query.QueryResult;
+import com.thinkbiganalytics.spark.metadata.TransformJob;
 import com.thinkbiganalytics.spark.metadata.TransformRequest;
 import com.thinkbiganalytics.spark.metadata.TransformResponse;
 import com.thinkbiganalytics.spark.repl.ScriptEngine;
@@ -32,6 +32,7 @@ import java.util.concurrent.TimeUnit;
 import javax.annotation.Nonnull;
 import javax.script.ScriptException;
 
+import scala.Option;
 import scala.tools.nsc.interpreter.NamedParam;
 import scala.tools.nsc.interpreter.NamedParamClass;
 
@@ -65,6 +66,10 @@ public class TransformService extends AbstractScheduledService {
     @Nonnull
     private final ScriptEngine engine;
 
+    /** Job tracker for transformations */
+    @Nonnull
+    private final TransformJobTracker tracker = new TransformJobTracker();
+
     /**
      * Constructs a {@code TransformService} using the specified engine to execute scripts.
      *
@@ -83,8 +88,7 @@ public class TransformService extends AbstractScheduledService {
      * @throws ScriptException       if the script cannot be executed
      */
     @Nonnull
-    public TransformResponse execute(@Nonnull final TransformRequest request)
-            throws ScriptException {
+    public TransformResponse execute(@Nonnull final TransformRequest request) throws ScriptException {
         log.trace("entry params({})", request);
 
         // Verify state
@@ -99,18 +103,17 @@ public class TransformService extends AbstractScheduledService {
         this.cache.put(table, MIN_BYTES);
 
         // Execute script
-        List<NamedParam> bindings = ImmutableList.of((NamedParam) new NamedParamClass("database", "String", DATABASE),
-                new NamedParamClass("tableName", "String", table));
+        List<NamedParam> bindings = ImmutableList.of((NamedParam) new NamedParamClass("database", "String", DATABASE), new NamedParamClass("tableName", "String", table));
 
-        Object results = this.engine.eval(toScript(request), bindings);
-        if (results instanceof Callable) {
-            try {
-                results = ((Callable<?>) results).call();
-            } catch (Exception e) {
-                ScriptException se = new ScriptException(e);
-                log.error("Throwing {}", se);
-                throw se;
-            }
+        Object result = this.engine.eval(toScript(request), bindings);
+        if (result instanceof Callable) {
+            @SuppressWarnings("unchecked")
+            Callable<TransformResponse> callable = (Callable)result;
+            tracker.submitJob(new TransformJob(table, callable, engine.getSparkContext()));
+        } else {
+            IllegalStateException e = new IllegalStateException("Unexpected script result type: " + (result != null ? result.getClass() : null));
+            log.error("Throwing {}", e);
+            throw e;
         }
 
         // Update table weight
@@ -122,24 +125,29 @@ public class TransformService extends AbstractScheduledService {
 
         // Build response
         TransformResponse response = new TransformResponse();
-        response.setStatus(TransformResponse.Status.SUCCESS);
+        response.setProgress(0.0);
+        response.setStatus(TransformResponse.Status.PENDING);
         response.setTable(table);
-
-        if (request.isSendResults()) {
-            response.setResults((QueryResult)results);
-        }
 
         log.trace("exit with({})", response);
         return response;
     }
 
     /**
-     * Gets the script engine used by this service.
+     * Gets the transformation job with the specified id.
      *
-     * @return the script engine
+     * @param id the table with the results
+     * @return the transformation job
+     * @throws IllegalArgumentException if a job with the id does not exist
      */
-    public ScriptEngine getEngine() {
-        return this.engine;
+    @Nonnull
+    public TransformJob getJob(@Nonnull final String id) {
+        Option<TransformJob> job = tracker.getJob(id);
+        if (job.isDefined()) {
+            return job.get();
+        } else {
+            throw new IllegalArgumentException();
+        }
     }
 
     @Override
@@ -192,12 +200,14 @@ public class TransformService extends AbstractScheduledService {
         context.sql("CREATE DATABASE IF NOT EXISTS " + HiveUtils.quoteIdentifier(DATABASE));
 
         // Drop existing tables
-        List<Row> tables = context.sql("SHOW TABLES IN " + HiveUtils.quoteIdentifier(DATABASE))
-                .collectAsList();
+        List<Row> tables = context.sql("SHOW TABLES IN " + HiveUtils.quoteIdentifier(DATABASE)).collectAsList();
 
         for (Row table : tables) {
             dropTable(table.getString(0), context);
         }
+
+        // Add tracker
+        engine.getSparkContext().addSparkListener(tracker);
 
         log.trace("exit");
     }
@@ -230,9 +240,7 @@ public class TransformService extends AbstractScheduledService {
         }
 
         script.append("}\n");
-        script.append("new Transform(tableName, ");
-        script.append(request.isSendResults());
-        script.append(", sqlContext).run()\n");
+        script.append("new Transform(tableName, true, sqlContext).run()\n");
 
         return script.toString();
     }
@@ -245,6 +253,9 @@ public class TransformService extends AbstractScheduledService {
      */
     private void dropTable(@Nonnull final String name, @Nonnull final SQLContext context) {
         log.debug("Dropping cached table {}", name);
+
+        // Remove from tracker
+        tracker.removeJob(name);
 
         // Check if table is cached
         boolean isCached = false;

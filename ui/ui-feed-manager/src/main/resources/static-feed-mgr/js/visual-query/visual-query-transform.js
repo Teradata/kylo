@@ -90,6 +90,9 @@
             scrollbarStyle: null
         };
 
+        // Progress of transformation from 0 to 100
+        this.queryProgress = 0;
+
         /**
          * Show and hide the Funciton History
          */
@@ -253,6 +256,7 @@
         this.query = function() {
             //flag to indicate query is running
             this.executingQuery = true;
+            this.queryProgress = 0;
 
             // Query Spark shell service
             var successCallback = function() {
@@ -291,8 +295,11 @@
                 self.functionHistory.pop();
                 self.refreshGrid();
             };
+            var notifyCallback = function(progress) {
+                self.queryProgress = progress * 100;
+            };
 
-            return self.sparkShellService.transform().then(successCallback, errorCallback);
+            return self.sparkShellService.transform().then(successCallback, errorCallback, notifyCallback);
         };
 
         function updateGrid(tableData) {

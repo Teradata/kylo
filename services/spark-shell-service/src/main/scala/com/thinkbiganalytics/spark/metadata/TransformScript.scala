@@ -65,7 +65,11 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
         throw new UnsupportedOperationException
     }
 
-    /** Writes the `DataFrame` results to a Hive table. */
+    /** Writes the `DataFrame` results to a Hive table.
+      *
+      * @deprecated Replaced with `QueryResultCallable`
+      */
+    @Deprecated
     private[metadata] class InsertHiveCallable extends Callable[Unit] {
         override def call(): Unit = {
             val df = dataFrame
@@ -100,8 +104,8 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
     }
 
     /** Stores the `DataFrame` results in a [[com.thinkbiganalytics.db.model.query.QueryResult]] and returns the object. */
-    private class QueryResultCallable extends Callable[QueryResult] {
-        override def call(): QueryResult = {
+    private class QueryResultCallable extends Callable[TransformResponse] {
+        override def call(): TransformResponse = {
             // Cache data frame
             val cache = dataFrame.cache
             cache.registerTempTable(destination)
@@ -113,7 +117,13 @@ abstract class TransformScript(destination: String, sendResults: Boolean, sqlCon
             result.setColumns(JavaConversions.seqAsJavaList(transform.columns))
             cache.collect().foreach(r => result.addRow(transform.apply(r)))
 
-            result
+            // Build response object
+            val response = new TransformResponse
+            response.setResults(result)
+            response.setStatus(TransformResponse.Status.SUCCESS)
+            response.setTable(destination)
+
+            response
         }
     }
 

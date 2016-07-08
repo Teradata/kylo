@@ -2,7 +2,7 @@ package com.thinkbiganalytics.spark;
 
 import com.thinkbiganalytics.spark.repl.ScriptEngine;
 import com.thinkbiganalytics.spark.repl.ScriptEngineFactory;
-import com.thinkbiganalytics.spark.rest.SparkShellController;
+import com.thinkbiganalytics.spark.rest.SparkShellTransformController;
 import com.thinkbiganalytics.spark.service.TransformService;
 
 import org.apache.spark.SparkConf;
@@ -62,7 +62,7 @@ public class SparkShellApp {
      */
     @Bean
     public ResourceConfig getJerseyConfig () {
-        ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class, SparkShellController.class);
+        ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class, SparkShellTransformController.class);
 
         SparkConf conf = new SparkConf().setAppName("SparkShellServer");
         final ScriptEngine scriptEngine = ScriptEngineFactory.getScriptEngine(conf);
