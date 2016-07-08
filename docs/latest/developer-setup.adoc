@@ -3,8 +3,6 @@ This guide should help you get your local development environment up and running
 an IDE is usually done in conjunction with a Hortonworks sandbox in order to have a cluster to
 communicate with.
 
-WARNING: As of June 28th this page is being actively worked on. Please excuse the mess. I will remove this warning when completed
-
 === Dependencies
 
 To run the Data Lake Accelerator project locally you need the following tools installed. The assumption is that you are installing on a Mac or Linux box. You can do most activities
