@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Set;
 
 import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.PropertyIterator;
 import javax.jcr.RepositoryException;
 
 import com.google.common.base.Predicate;
@@ -20,7 +18,6 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
@@ -53,8 +50,8 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String SCHEDULE_STRATEGY = "tba:schedulingStrategy"; //CRON_DRIVEN, TIMER_DRIVEN
 
 
-    public JcrFeed(Node node) throws RepositoryException {
-        this(node, new JcrCategory(node.getParent()));
+    public JcrFeed(Node node) {
+        super(node);
     }
 
     public JcrFeed(Node node, JcrCategory category) {
@@ -136,7 +133,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public State getState() {
-        return getProperty(STATE, Feed.State.class);
+        return getProperty(STATE, Feed.State.ENABLED);
     }
 
     @Override
@@ -159,18 +156,14 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     
     @Override
     public List<Feed<C>> getDependentFeeds() {
-        try {
-            List<Feed<C>> deps = new ArrayList<>();
-            Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, DEPENDENTS);
-            
-            for (Node depNode : depNodes) {
-                deps.add(new JcrFeed<C>(depNode));
-            }
-            
-            return deps;
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the dependent feed", e);
+        List<Feed<C>> deps = new ArrayList<>();
+        Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, DEPENDENTS);
+        
+        for (Node depNode : depNodes) {
+            deps.add(new JcrFeed<C>(depNode));
         }
+        
+        return deps;
     }
     
     @Override

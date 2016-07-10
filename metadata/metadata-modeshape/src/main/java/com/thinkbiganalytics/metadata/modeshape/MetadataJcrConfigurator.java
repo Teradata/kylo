@@ -94,6 +94,11 @@ public class MetadataJcrConfigurator {
         if (! session.getRootNode().hasNode("metadata")) {
             session.getRootNode().addNode("metadata", "tba:metadataFolder");
         }
+        
+        // TODO Temporary to cleanup schemas which had the category folder auto-created.
+        if (session.getRootNode().hasNode("metadata/feeds/category")) {
+            session.getRootNode().getNode("metadata/feeds/category").remove();
+        }
     }
     
     private String namePrefix(String name) {

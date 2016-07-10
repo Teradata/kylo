@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.stream.Collectors;
 
@@ -112,7 +111,6 @@ public class FeedsController {
     @Path("{id}/op")
     @Produces(MediaType.APPLICATION_JSON)
     public List<FeedOperation> getFeedOperations(@PathParam("id") final String feedId,
-//                                                 @QueryParam("since") @DefaultValue("1970-12-31T16:00:000-08:00") String sinceStr,
                                                  @QueryParam("since") @DefaultValue("1970-01-01T00:00:00Z") String sinceStr,
                                                  @QueryParam("limit") @DefaultValue("-1") int limit) {
         final DateTime since = Formatters.parseDateTime(sinceStr);
@@ -133,7 +131,6 @@ public class FeedsController {
     @Path("{id}/op/results")
     @Produces(MediaType.APPLICATION_JSON)
     public Map<DateTime, Map<String, Object>> collectFeedOperationsResults(@PathParam("id") final String feedId,
-//                                                                           @QueryParam("since") @DefaultValue("1970-12-31T16:00:00-08:00") String sinceStr) {
                                                                            @QueryParam("since") @DefaultValue("1970-01-01T00:00:00Z") String sinceStr) {
         
         final DateTime since = Formatters.TIME_FORMATTER.parseDateTime(sinceStr);
@@ -146,12 +143,11 @@ public class FeedsController {
                             .state(State.SUCCESS);
             Map<DateTime, Map<String, Object>> results = feedOpsProvider.getAllResults(criteria, null);
             
-            return results;
-//                return results.entrySet().stream()
-//                                .collect(Collectors.toMap(Map.Entry::getKey, 
-//                                                          te -> te.getValue().entrySet().stream()
-//                                                              .collect(Collectors.toMap(Map.Entry::getKey,  
-//                                                                                        ve -> ve.getValue().toString()))));
+            return results.entrySet().stream()
+                            .collect(Collectors.toMap(te -> te.getKey(),
+                                                      te -> (Map<String, Object>) te.getValue().entrySet().stream()
+                                                                      .collect(Collectors.toMap(ve -> ve.getKey(),
+                                                                                                ve -> (Object) ve.getValue().toString()))));
         });
     }
     
@@ -209,8 +205,8 @@ public class FeedsController {
     @GET
     @Path("{feedId}/depfeeds/delta")
     @Produces(MediaType.APPLICATION_JSON)
-    public Map<DateTime, Map<String, Object>> getDependentResultDeltas(@PathParam("feedId") final String feedIdStr, 
-                                               @QueryParam("dependentId") final String depIdStr) {
+    public Map<DateTime, Map<String, Object>> getDependentResultDeltas(@PathParam("feedId") final String feedIdStr) {
+        
         com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = this.feedProvider.resolveFeed(feedIdStr);
         
         return this.metadata.commit(() -> {

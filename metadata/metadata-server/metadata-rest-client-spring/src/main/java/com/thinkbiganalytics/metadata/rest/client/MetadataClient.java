@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -57,6 +58,7 @@ public class MetadataClient {
     
     public static final ParameterizedTypeReference<List<ExtensibleTypeDescriptor>> TYPE_LIST = new ParameterizedTypeReference<List<ExtensibleTypeDescriptor>>() { };
     public static final ParameterizedTypeReference<List<Feed>> FEED_LIST = new ParameterizedTypeReference<List<Feed>>() { };
+    public static final ParameterizedTypeReference<Map<DateTime, Map<String, String>>> FEED_RESULT_DELTAS = new ParameterizedTypeReference<Map<DateTime, Map<String, String>>>() { };
     public static final ParameterizedTypeReference<List<Datasource>> DATASOURCE_LIST = new ParameterizedTypeReference<List<Datasource>>() { };
     public static final ParameterizedTypeReference<List<Metric>> METRIC_LIST = new ParameterizedTypeReference<List<Metric>>() { };
     
@@ -72,7 +74,6 @@ public class MetadataClient {
         this.template = new RestTemplate();
         
         ObjectMapper mapper = createObjectMapper();
-//        this.template.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
         this.template.getMessageConverters().add(new MappingJackson2HttpMessageConverter(mapper));
     }
     
@@ -148,6 +149,10 @@ public class MetadataClient {
     
     public FeedDependencyGraph getFeedDependency(String id) {
         return get(Paths.get("feed", id, "depfeeds"), FeedDependencyGraph.class);
+    }
+    
+    public Map<DateTime, Map<String, String>> getFeedDependencyDeltas(String feedId) {
+        return get(Paths.get("feed", feedId, "depfeeds", "delta"), FEED_RESULT_DELTAS);
     }
 
     public Feed updateFeed(Feed feed) {
@@ -245,6 +250,10 @@ public class MetadataClient {
         return this.template.getForObject(
                 (filterFunct != null ? filterFunct.apply(base(path)) : base(path)).build().toUri(),
                 resultType);
+    }
+    
+    private <R> R get(Path path, ParameterizedTypeReference<R> responseEntity) {
+        return get(path, null, responseEntity);
     }
     
     private <R> R get(Path path, Function<UriComponentsBuilder, UriComponentsBuilder> filterFunct, ParameterizedTypeReference<R> responseEntity) {

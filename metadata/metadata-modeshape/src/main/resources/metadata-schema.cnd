@@ -33,10 +33,7 @@
 	+ extensions (tba:extensionsFolder) = tba:extensionsFolder autocreated mandatory
 
 [tba:feedsFolder] > nt:folder 
-	+ category (tba:categoryFolder) = tba:categoryFolder autocreated mandatory
-
-[tba:categoryFolder] > nt:folder 
-	+ feed (tba:feedFolder) = tba:feedFolder autocreated
+    + * (tba:category) sns
 
 [tba:feedFolder] > nt:folder 
 	+ feedSource (tba:feedSourceFolder) = tba:feedSourceFolder autocreated
@@ -78,7 +75,7 @@
 [tba:propertied] mixin
 	+ tba:properties (tba:properties) COPY
 
-[tba:properties] 
+[tba:properties] > nt:hierarchyNode
 	- * (UNDEFINED) COPY
 
 [tba:entity] > nt:hierarchyNode, mix:lastModified, tba:taggable
@@ -105,7 +102,7 @@
 	+ tba:destinations (tba:feedDestination) sns
     + tba:precondition (tba:feedPrecondition)
 	- tba:systemName (STRING) mandatory
-	- tba:state (STRING)
+	- tba:state (STRING) = 'ENABLED'
 	- tba:initialized (BOOLEAN) = 'false'
 	- tba:category (REFERENCE) mandatory
 	- tba:feedTemplate (REFERENCE)

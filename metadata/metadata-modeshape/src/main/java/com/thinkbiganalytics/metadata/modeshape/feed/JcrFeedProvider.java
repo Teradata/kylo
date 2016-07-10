@@ -362,6 +362,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         private Set<Datasource.ID> destIds = new HashSet<>();
         private String category;
         
+        /**
+         * Selects by navigation rather than SQL
+         */
         @Override
         public <E, J extends JcrObject> List<E> select(Session session, String typeName, Class<E> type, Class<J> jcrClass) {
             try {
@@ -389,7 +392,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                     
                     while (feedItr.hasNext()) {
                         Node feedNode = (Node) feedItr.next();
-                        list.add(JcrUtil.createJcrObject(feedNode, JcrFeed.class));
+                        
+                        if (feedNode.getPrimaryNodeType().getName().equals("tba:feed")) {
+                            list.add(JcrUtil.createJcrObject(feedNode, JcrFeed.class));
+                        }
                     }
                 }
                 

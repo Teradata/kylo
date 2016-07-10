@@ -283,46 +283,38 @@ public class JcrPropertyUtil {
                 throw new IllegalArgumentException("Cannot set a property without a provided name");
             }
             
-            setProperty(node.getProperty(name), value);
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to set property value: " + name + "=" + value, e);
-        }
-    }
-
-    public static void setProperty(Property prop, Object value) {
-        try {
             if (value == null) {
-                prop.setValue((String) null);
+                node.setProperty(name, (Value) null);
             } else if (value instanceof Enum) {
-                prop.setValue(((Enum) value).name());
+                node.setProperty(name, ((Enum) value).name());
             } else if (value instanceof JcrObject) {
-                prop.setValue(((JcrObject) value).getNode());
+                node.setProperty(name, ((JcrObject) value).getNode());
             } else if (value instanceof Value) {
-                prop.setValue((Value) value);
+                node.setProperty(name, (Value) value);
             } else if (value instanceof Node) {
-                prop.setValue((Node) value);
+                node.setProperty(name, (Node) value);
             } else if (value instanceof Binary) {
-                prop.setValue((Binary) value);
+                node.setProperty(name, (Binary) value);
             } else if (value instanceof Calendar) {
-                prop.setValue((Calendar) value);
+                node.setProperty(name, (Calendar) value);
             } else if (value instanceof DateTime) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime(((DateTime) value).toDate());
-                prop.setValue(cal);
+                node.setProperty(name, cal);
             } else if (value instanceof Date) {
                 Calendar cal = Calendar.getInstance();
                 cal.setTime((Date) value);
-                prop.setValue(cal);
+                node.setProperty(name, cal);
             } else if (value instanceof BigDecimal) {
-                prop.setValue((BigDecimal) value);
+                node.setProperty(name, (BigDecimal) value);
             } else if (value instanceof Long) {
-                prop.setValue(((Long) value).longValue());
+                node.setProperty(name, ((Long) value).longValue());
             } else if (value instanceof Double) {
-                prop.setValue((Double) value);
+                node.setProperty(name, (Double) value);
             } else if (value instanceof Boolean) {
-                prop.setValue((Boolean) value);
+                node.setProperty(name, (Boolean) value);
             } else if (value instanceof InputStream) {
-                prop.setValue((InputStream) value);
+                node.setProperty(name, (InputStream) value);
             } else if (value instanceof Collection) {
                 String[] list = new String[((Collection<Object>) value).size()];
                 int pos = 0;
@@ -330,12 +322,12 @@ public class JcrPropertyUtil {
                     list[pos] = cal.toString();
                     pos += 1;
                 }
-                prop.setValue(list);
+                node.setProperty(name, list);
             } else {
-                prop.setValue(value.toString());
+                node.setProperty(name, value.toString());
             }
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to set property value: " + value, e);
+            throw new MetadataRepositoryException("Failed to set property value: " + name + "=" + value, e);
         }
     }
     
