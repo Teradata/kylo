@@ -6,6 +6,8 @@ package com.thinkbiganalytics.metadata.modeshape.op;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.joda.time.DateTime;
 
@@ -73,7 +75,11 @@ public class FeedOperationExecutedJobWrapper implements FeedOperation {
      */
     @Override
     public Map<String, Object> getResults() {
-        return this.executed.getExecutionContext();
+        return Stream.of(this.executed.getExecutionContext(), this.executed.getJobParameters())
+            .flatMap(s -> s.entrySet().stream())
+            .collect(Collectors.toMap(e -> e.getKey(), 
+                                      e -> e.getValue(),
+                                      (v1, v2) -> v1));
     }
     
     protected static class OpId implements FeedOperation.ID {

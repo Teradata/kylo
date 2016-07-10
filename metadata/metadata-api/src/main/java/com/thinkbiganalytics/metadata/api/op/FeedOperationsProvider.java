@@ -26,5 +26,7 @@ public interface FeedOperationsProvider {
     List<FeedOperation> find(Feed.ID feedId);
     List<FeedOperation> find(Feed.ID feedId, int limit);
     
+    Map<DateTime, Map<String, Object>> getDependentDeltaResults(Feed.ID feedId, Set<String> props);
+    
     Map<DateTime, Map<String, Object>> getAllResults(FeedOperationCriteria criteria, Set<String> props);
 }

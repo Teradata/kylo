@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.op;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -13,6 +14,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 
@@ -25,6 +27,7 @@ import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
 import com.thinkbiganalytics.jobrepo.repository.JobRepository;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation.ID;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation.State;
@@ -156,6 +159,49 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
     }
     
     @Override
+    public Map<DateTime, Map<String, Object>> getDependentDeltaResults(Feed.ID feedId, Set<String> props) {
+        Feed feed = this.feedProvider.getFeed(feedId);
+        
+        if (feed != null) {
+            Map<DateTime, Map<String, Object>> results = new HashMap<DateTime, Map<String,Object>>();
+            List<FeedOperation> latest = find(feed.getId(), 1);
+            
+            if (latest.isEmpty()) {
+                return Collections.emptyMap();
+            } else {
+                Criteria criteria = (Criteria) criteria()
+                                .stoppedSince(latest.get(0).getStartTime())
+                                .state(State.SUCCESS);
+                List<Feed<?>> dependents =  feed.getDependentFeeds();
+                
+                for (Feed<?> dep : dependents) {
+                    criteria.feed(dep.getId());
+                }
+
+                for (FeedOperation op : find(criteria)) {
+                    DateTime time = op.getStopTime();
+                    Map<String, Object> map = results.get(time);
+                    
+                    if (map == null) {
+                        map = new HashMap<String, Object>();
+                        results.put(time, map);
+                    }
+                    
+                    for (Entry<String, Object> entry : op.getResults().entrySet()) {
+                        if (props == null || props.isEmpty() || props.contains(entry.getKey())) {
+                            map.put(entry.getKey(), entry.getValue());
+                        }
+                    }
+                }
+            }
+            
+            return results;
+        } else {
+            throw new FeedNotFoundExcepton(feedId);
+        }
+    }
+    
+    @Override
     public Map<DateTime, Map<String, Object>> getAllResults(FeedOperationCriteria criteria, Set<String> props) {
         Map<DateTime, Map<String, Object>> results = new HashMap<DateTime, Map<String,Object>>();
         List<FeedOperation> ops = find(criteria);
@@ -181,7 +227,10 @@ public class JobRepoFeedOperationsProvider implements FeedOperationsProvider {
 
 
     private FeedOperationExecutedJobWrapper createOperation(ExecutedJob exec) {
-        return new FeedOperationExecutedJobWrapper(exec);
+        Long id = exec.getExecutionId();
+        // TODO Inefficient
+        ExecutedJob fullExec = this.jobRepo.findByExecutionId(id.toString());
+        return new FeedOperationExecutedJobWrapper(fullExec);
     }
 
     
