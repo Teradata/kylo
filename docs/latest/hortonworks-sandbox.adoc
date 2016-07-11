@@ -33,6 +33,7 @@ The following ports needs to be forwarded to the VM:
 |Think Big Spark Shell | 8450 | 8450 |
 |NiFi|8079|8079|
 |ActiveMQ Admin | 8161| 8161|
+|ActiveMQ JMS | 61616 | 61616|
 |MySQL | 3306 | 3306 |
 |===
 
