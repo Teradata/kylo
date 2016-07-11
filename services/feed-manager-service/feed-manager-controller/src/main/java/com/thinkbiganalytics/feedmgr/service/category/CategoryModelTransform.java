@@ -35,20 +35,24 @@ public class CategoryModelTransform {
             new Function<FeedManagerCategory, FeedCategory>() {
                 @Override
                 public FeedCategory apply(FeedManagerCategory domainCategory) {
-                    FeedCategory category = new FeedCategory();
-                    category.setId(domainCategory.getId().toString());
-                    if(domainCategory.getFeeds() != null){
-                        List<FeedSummary> summaries = feedModelTransform.domainToFeedSummary(domainCategory.getFeeds());
-                        category.setFeeds(summaries);
-                        category.setRelatedFeeds(summaries.size());
+                    if (domainCategory != null) {
+                        FeedCategory category = new FeedCategory();
+                        category.setId(domainCategory.getId().toString());
+                        if (domainCategory.getFeeds() != null) {
+                            List<FeedSummary> summaries = feedModelTransform.domainToFeedSummary(domainCategory.getFeeds());
+                            category.setFeeds(summaries);
+                            category.setRelatedFeeds(summaries.size());
+                        }
+                        category.setIconColor(domainCategory.getIconColor());
+                        category.setIcon(domainCategory.getIcon());
+                        category.setName(domainCategory.getDisplayName());
+                        category.setDescription(domainCategory.getDescription());
+                        category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
+                        category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
+                        return category;
+                    } else {
+                        return null;
                     }
-                    category.setIconColor(domainCategory.getIconColor());
-                    category.setIcon(domainCategory.getIcon());
-                    category.setName(domainCategory.getDisplayName());
-                    category.setDescription(domainCategory.getDescription());
-                    category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
-                    category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
-                    return category;
                 }
             };
 
@@ -57,15 +61,19 @@ public class CategoryModelTransform {
             new Function<FeedManagerCategory, FeedCategory>() {
                 @Override
                 public FeedCategory apply(FeedManagerCategory domainCategory) {
-                    FeedCategory category = new FeedCategory();
-                    category.setId(domainCategory.getId().toString());
-                    category.setIconColor(domainCategory.getIconColor());
-                    category.setIcon(domainCategory.getIcon());
-                    category.setName(domainCategory.getDisplayName());
-                    category.setDescription(domainCategory.getDescription());
-                    category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
-                    category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
-                    return category;
+                    if (domainCategory != null) {
+                        FeedCategory category = new FeedCategory();
+                        category.setId(domainCategory.getId().toString());
+                        category.setIconColor(domainCategory.getIconColor());
+                        category.setIcon(domainCategory.getIcon());
+                        category.setName(domainCategory.getDisplayName());
+                        category.setDescription(domainCategory.getDescription());
+                        category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
+                        category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
+                        return category;
+                    } else {
+                        return null;
+                    }
                 }
             };
 
@@ -78,13 +86,13 @@ public class CategoryModelTransform {
                     FeedManagerCategory category = null;
                     if (domainId != null) {
                         category = (FeedManagerCategory) categoryProvider.findById(domainId);
-                        if (category == null) {
-                            throw new CategoryNotFoundException("Unable to find Category ", domainId);
-                        }
-                   }
+                    }
 
                     if (category == null) {
                         category = categoryProvider.ensureCategory(feedCategory.getSystemName());
+                    }
+                    if (category == null) {
+                        throw new CategoryNotFoundException("Unable to find Category ", domainId);
                     }
                     domainId = category.getId();
                     feedCategory.setId(domainId.toString());

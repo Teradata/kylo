@@ -4,13 +4,21 @@ package com.thinkbiganalytics.feedmgr.config;
 import com.thinkbiganalytics.es.ElasticSearch;
 import com.thinkbiganalytics.es.ElasticSearchClientConfig;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.category.DefaultFeedManagerCategoryService;
-import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
-import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
+import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.DefaultFeedManagerFeedService;
+import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
+import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -18,15 +26,6 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
-
-import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
-import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
-import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
-import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
-import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
-import com.thinkbiganalytics.feedmgr.service.MetadataService;
-import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
-
 import org.springframework.util.Assert;
 
 /**
@@ -99,6 +98,10 @@ public class FeedManagerConfiguration {
         return new ExportImportTemplateService();
     }
 
+    @Bean
+    public ExportImportFeedService exportImportFeedService() {
+        return new ExportImportFeedService();
+    }
     @Bean
     public PropertyExpressionResolver propertyExpressionResolver(){
         return new PropertyExpressionResolver();

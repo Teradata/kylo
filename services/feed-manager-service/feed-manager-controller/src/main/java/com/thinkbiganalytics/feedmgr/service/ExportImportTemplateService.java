@@ -1,18 +1,15 @@
 package com.thinkbiganalytics.feedmgr.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
-
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessorDTO;
-import com.thinkbiganalytics.rest.JerseyClientException;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
@@ -37,7 +34,6 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import javax.inject.Inject;
-
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
 
@@ -48,6 +44,7 @@ public class ExportImportTemplateService {
 
     private static final Logger log = LoggerFactory.getLogger(ExportImportTemplateService.class);
 
+    private static final String NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE = "nifiConnectingReusableTemplate.xml";
 
     private static final String NIFI_TEMPLATE_XML_FILE = "nifiTemplate.xml";
 
@@ -180,6 +177,22 @@ public class ExportImportTemplateService {
     public ExportTemplate exportTemplate(String templateId) {
         RegisteredTemplate template = metadataService.getRegisteredTemplate(templateId);
         if (template != null) {
+            String connectingReusableTemplate = null;
+            //if this template uses any reusable templates then export those reusable ones as well
+            if (template.usesReusableTemplate()) {
+                List<ReusableTemplateConnectionInfo> reusableTemplateConnectionInfos = template.getReusableTemplateConnections();
+                for (ReusableTemplateConnectionInfo reusableTemplateConnectionInfo : reusableTemplateConnectionInfos) {
+                    String inputName = reusableTemplateConnectionInfo.getReusableTemplateInputPortName();
+                    //find the template that has the input port name?
+                    Map<String, String> map = nifiRestClient.getTemplatesAsXmlMatchingInputPortName(inputName);
+                    if (map != null && !map.isEmpty()) {
+                        //get the first one??
+                        connectingReusableTemplate = Lists.newArrayList(map.values()).get(0);
+                    }
+
+                }
+            }
+
             String templateXml = null;
             try {
                 if (template != null) {
@@ -197,7 +210,7 @@ public class ExportImportTemplateService {
             }
 
             //create a zip file with the template and xml
-            byte[] zipFile = zip(template, templateXml);
+            byte[] zipFile = zip(template, templateXml, connectingReusableTemplate);
 
             return new ExportTemplate(SystemNamingService.generateSystemName(template.getTemplateName()) + ".zip", zipFile);
 
@@ -206,7 +219,7 @@ public class ExportImportTemplateService {
         }
     }
 
-    private byte[] zip(RegisteredTemplate template, String nifiTemplateXml) {
+    private byte[] zip(RegisteredTemplate template, String nifiTemplateXml, String reusableTemplateXml) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         try (ZipOutputStream zos = new ZipOutputStream(baos)) {
 
@@ -214,15 +227,17 @@ public class ExportImportTemplateService {
             zos.putNextEntry(entry);
             zos.write(nifiTemplateXml.getBytes());
             zos.closeEntry();
+            if (StringUtils.isNotBlank(reusableTemplateXml)) {
+                entry = new ZipEntry(NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE);
+                zos.putNextEntry(entry);
+                zos.write(reusableTemplateXml.getBytes());
+                zos.closeEntry();
+            }
             entry = new ZipEntry(TEMPLATE_JSON_FILE);
             zos.putNextEntry(entry);
             String json = ObjectMapperSerializer.serialize(template);
             zos.write(json.getBytes());
             zos.closeEntry();
-
-
-  /* use more Entries to add more files
-     and use closeEntry() to close each file entry */
 
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -234,7 +249,7 @@ public class ExportImportTemplateService {
         return fileName.endsWith(".zip") || fileName.endsWith(".xml");
     }
 
-    private ImportTemplate importZip(String fileName, InputStream inputStream, boolean overwrite, boolean createReusableFlow) throws IOException {
+    public ImportTemplate importZip(String fileName, InputStream inputStream, boolean overwrite, boolean createReusableFlow) throws IOException {
         ImportTemplate importTemplate = openZip(fileName, inputStream);
         RegisteredTemplate template = ObjectMapperSerializer.deserialize(importTemplate.getTemplateJson(), RegisteredTemplate.class);
         log.info("Importing Zip file template {}, overwrite: {}, reusableFlow: {}", fileName, overwrite, createReusableFlow);

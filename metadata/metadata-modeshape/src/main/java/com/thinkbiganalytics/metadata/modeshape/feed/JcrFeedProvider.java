@@ -3,21 +3,9 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -49,6 +37,19 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 /**
  *
@@ -124,7 +125,18 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Feed ensureFeed(String categorySystemName, String feedSystemName) {
         String categoryPath = EntityUtil.pathForCategory(categorySystemName);
-        JcrCategory category = (JcrCategory) categoryProvider.findBySystemName(categorySystemName);
+        JcrCategory category = null;
+        try {
+            Node categoryNode = getSession().getNode(categoryPath);
+            if (categoryNode != null) {
+                category = JcrUtil.createJcrObject(categoryNode, JcrCategory.class);
+            } else {
+                category = (JcrCategory) categoryProvider.findBySystemName(categorySystemName);
+            }
+        } catch (RepositoryException e) {
+            throw new CategoryNotFoundException("Unable to find Category for " + categorySystemName, null);
+        }
+
         Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName);
         boolean versionable = JcrUtil.isVersionable(feedNode);
         JcrFeed<?> feed = new JcrFeed(feedNode, category);
@@ -135,14 +147,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public Feed ensureFeed(String categorySystemName, String feedSystemName, String descr) {
-        Feed feed = ensureFeed(categorySystemName,feedSystemName);
+        Feed feed = ensureFeed(categorySystemName, feedSystemName);
         feed.setDescription(descr);
         return feed;
     }
 
     @Override
     public Feed ensureFeed(String categorySystemName, String feedSystemName, String descr, Datasource.ID destId) {
-        Feed feed = ensureFeed(categorySystemName,feedSystemName,descr);
+        Feed feed = ensureFeed(categorySystemName, feedSystemName, descr);
         //TODO add/find datasources
         return feed;
     }

@@ -133,6 +133,7 @@ public class FeedRestController {
     @GET
     @Path("/reusable-feed-input-ports")
     @Produces({MediaType.APPLICATION_JSON})
+    //NOT USED... Not implemented
     public Response getReusableFeedInputPorts() {
         List<FeedMetadata> reusableFeeds = getMetadataService().getReusableFeeds();
         Map<String, Set<PortDTO>> portMap = new HashMap<>();
