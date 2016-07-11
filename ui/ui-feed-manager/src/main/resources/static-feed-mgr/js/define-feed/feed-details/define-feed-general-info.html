@@ -13,9 +13,12 @@
                 <div layout="row" layout-align="space-between start">
                     <md-input-container flex="45" class="condensed">
                         <label>Display Name</label>
-                        <input required ng-model="vm.model.feedName" name="feedName"  ng-disabled="vm.model.id != null"/>
-                        <div ng-show="defineFeedForm.feedName.$touched && defineFeedForm.feedName.$invalid" ng-messages="defineFeedForm.feedName.$error">
-                             <div ng-show="defineFeedForm.feedName.$error.required" ng-message="required">Required.</div>
+                        <input required ng-model="vm.model.feedName" name="feedName" ng-disabled="vm.model.id != null"/>
+                        <div ng-messages="defineFeedForm.feedName.$error">
+                            <div ng-message="required">Required.</div>
+                        </div>
+                        <div ng-messages="vm.existingFeedNames" md-auto-hide="false">
+                            <div ng-message-exp="vm.model.systemFeedName">The existing feed will be overwritten.</div>
                         </div>
                     </md-input-container>
                     <div flex="10"></div>
@@ -51,7 +54,7 @@
                         <md-not-found>
                             No categories matching "{{vm.categorySearchText}}" were found.
                         </md-not-found>
-                        </md-autocomplete>
+                  </md-autocomplete>
                </div>
 
 

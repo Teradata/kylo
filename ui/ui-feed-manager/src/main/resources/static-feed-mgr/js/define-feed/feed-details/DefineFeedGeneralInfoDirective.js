@@ -31,10 +31,13 @@
         this.stepNumber = parseInt(this.stepIndex)+1
         this.stepperController = null;
 
+        // Contains existing system feed names for the current category
+        this.existingFeedNames = {};
+
         this.categorySearchText = '';
         this.category;
         self.categorySelectedItemChange = selectedItemChange;
-        self.categorySearchTextChanged   = searchTextChange;
+        self.categorySearchTextChanged = searchTextChange;
         self.categoriesService = CategoriesService;
 
         function searchTextChange(text) {
@@ -44,10 +47,19 @@
             if(item != null && item != undefined) {
                 self.model.category.name = item.name;
                 self.model.category.id = item.id;
+                $http.get(RestUrlService.GET_FEEDS_URL).then(function(response) {
+                    self.existingFeedNames = {};
+                    angular.forEach(response.data, function(feed) {
+                        if (feed.categoryId === item.id) {
+                            self.existingFeedNames[feed.systemFeedName] = true;
+                        }
+                    });
+                });
             }
             else {
                 self.model.category.name = null;
                 self.model.category.id = null;
+                self.existingFeedNames = {};
             }
         }
 
