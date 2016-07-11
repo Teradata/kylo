@@ -34,4 +34,8 @@ public interface Formatters {
         
         throw lastEx;
     }
+    
+    static String print(DateTime time) {
+        return TIME_FORMATTER_NO_MILLIS.print(time);
+    }
 }

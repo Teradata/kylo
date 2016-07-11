@@ -22,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -72,6 +73,7 @@ public class MetadataClient {
         super();
         this.base = base;
         this.template = new RestTemplate();
+//        this.template = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
         
         ObjectMapper mapper = createObjectMapper();
         this.template.getMessageConverters().add(new MappingJackson2HttpMessageConverter(mapper));
@@ -142,9 +144,13 @@ public class MetadataClient {
             throw new IllegalThreadStateException("Unknown criteria type: " + criteria.getClass());
         }
     }
-
+    
     public Feed getFeed(String id) {
         return get(Paths.get("feed", id), Feed.class);
+    }
+
+    public Feed getFeed(String categoryName, String feedName) {
+        return get(Paths.get("feed"), Feed.class);
     }
     
     public FeedDependencyGraph getFeedDependency(String id) {
@@ -624,6 +630,7 @@ public class MetadataClient {
 
     private static class TargetFeedCriteria implements FeedCriteria, Function<UriComponentsBuilder, UriComponentsBuilder> {
         
+        private String category;
         private String name;
         private String sourceId;
         private String destinationId;
@@ -631,9 +638,10 @@ public class MetadataClient {
         public UriComponentsBuilder apply(UriComponentsBuilder target) {
             UriComponentsBuilder result = target;
             
+            if (! Strings.isNullOrEmpty(this.name)) result = result.queryParam(CATEGORY, this.category);
             if (! Strings.isNullOrEmpty(this.name)) result = result.queryParam(NAME, this.name);
-            if (! Strings.isNullOrEmpty(this.sourceId)) result = result.queryParam(SRC_ID, this.name);
-            if (! Strings.isNullOrEmpty(this.destinationId)) result = result.queryParam(DEST_ID, this.name);
+            if (! Strings.isNullOrEmpty(this.sourceId)) result = result.queryParam(SRC_ID, this.sourceId);
+            if (! Strings.isNullOrEmpty(this.destinationId)) result = result.queryParam(DEST_ID, this.destinationId);
             
             return result;
         }
@@ -662,6 +670,15 @@ public class MetadataClient {
         @Override
         public FeedCriteria name(String name) {
             this.name = name;
+            return this;
+        }
+        
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria#category(java.lang.String)
+         */
+        @Override
+        public FeedCriteria category(String category) {
+            this.category = category;
             return this;
         }
     }

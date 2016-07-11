@@ -74,6 +74,10 @@ public class FeedExecutedSinceFeedAssessor extends MetadataMetricAssessor<FeedEx
                     }
                 }
             }
+        } else {
+            builder
+                .result(AssessmentResult.FAILURE)
+                .message("Either feed " + metric.getFeedName() + " and/or feed " + metric.getSinceName() + " does not exist.");
         }
     }
 }

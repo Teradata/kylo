@@ -82,7 +82,7 @@ public class MetadataClientTest {
         assertThat(feed).isNotNull();
     }
 
-    @Test
+//    @Test
     public void testGetFeeds() throws ParseException {
         List<Feed> feeds = client.getFeeds();
         

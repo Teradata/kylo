@@ -362,8 +362,8 @@ public class Model {
                 DataOperation op = new DataOperation();
                 op.setId(domain.getId().toString());
                 op.setFeedDestinationId(domain.getProducer().getId().toString());
-                op.setStartTime(Formatters.TIME_FORMATTER.print(domain.getStartTime()));
-                op.setStopTiime(Formatters.TIME_FORMATTER.print(domain.getStopTime()));
+                op.setStartTime(Formatters.print(domain.getStartTime()));
+                op.setStopTiime(Formatters.print(domain.getStopTime()));
                 op.setState(DataOperation.State.valueOf(domain.getState().name()));
                 op.setStatus(domain.getStatus());
                 if (domain.getDataset() != null) op.setDataset(DOMAIN_TO_DATASET.apply(domain.getDataset()));

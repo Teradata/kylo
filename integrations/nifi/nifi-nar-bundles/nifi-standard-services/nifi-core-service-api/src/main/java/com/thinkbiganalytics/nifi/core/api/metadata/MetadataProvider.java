@@ -21,12 +21,17 @@ import org.joda.time.DateTime;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Map;
 import java.util.Properties;
 
 /**
  * @author Sean Felten
  */
 public interface MetadataProvider {
+    
+    String getFeedId(String category, String feedName);
+    
+    Map<DateTime, Map<String, String>> getFeedDependentResultDeltas(String feedId);
 
     Feed ensureFeed(String feedName, String string);
 

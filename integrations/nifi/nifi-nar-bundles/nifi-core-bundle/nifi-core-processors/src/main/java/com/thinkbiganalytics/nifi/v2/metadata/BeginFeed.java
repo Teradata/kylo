@@ -142,7 +142,7 @@ public class BeginFeed extends AbstractFeedProcessor {
             Feed feed = ensureFeedMetadata(context);
 
             flowFile = session.putAttribute(flowFile, MetadataConstants.FEED_ID_PROP, feed.getId().toString());
-            flowFile = session.putAttribute(flowFile, OPERATON_START_PROP, Formatters.TIME_FORMATTER.print(new DateTime()));
+            flowFile = session.putAttribute(flowFile, OPERATON_START_PROP, Formatters.print(new DateTime()));
 
             session.transfer(flowFile, SUCCESS);
 

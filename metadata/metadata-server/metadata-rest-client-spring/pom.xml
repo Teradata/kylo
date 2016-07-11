@@ -23,6 +23,11 @@
             <artifactId>thinkbig-metadata-rest-model</artifactId>
             <version>${project.version}</version>
         </dependency>
+<dependency>
+    <groupId>org.apache.httpcomponents</groupId>
+    <artifactId>httpclient</artifactId>
+    <version>4.5.2</version>
+</dependency>
 
         <!-- Testing -->
         <dependency>

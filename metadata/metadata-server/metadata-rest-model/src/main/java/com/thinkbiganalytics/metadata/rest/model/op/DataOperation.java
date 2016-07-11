@@ -81,7 +81,7 @@ public class DataOperation {
     
     @JsonIgnore
     public void setStartTime(DateTime startTime) {
-        this.startTime = Formatters.TIME_FORMATTER.print(startTime);
+        this.startTime = Formatters.print(startTime);
     }
 
     public String getStopTiime() {
@@ -94,7 +94,7 @@ public class DataOperation {
     
     @JsonIgnore
     public void setStopTiime(DateTime stopTime) {
-        this.stopTiime = Formatters.TIME_FORMATTER.print(stopTime);
+        this.stopTiime = Formatters.print(stopTime);
     }
 
 }

@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import org.joda.time.DateTime;
@@ -42,6 +43,22 @@ public class MetadataClientProvider implements MetadataProvider {
 
     public MetadataClientProvider(URI baseUri) {
         this.client = new MetadataClient(baseUri);
+    }
+    
+    @Override
+    public String getFeedId(String category, String feedName) {
+        List<Feed> feeds = this.client.getFeeds(this.client.feedCriteria().category(category).name(feedName));
+        
+        if (feeds.isEmpty()) {
+            return null;
+        } else {
+            return feeds.get(0).getId();
+        }
+    }
+    
+    @Override
+    public Map<DateTime, Map<String, String>> getFeedDependentResultDeltas(String feedId) {
+        return this.client.getFeedDependencyDeltas(feedId);
     }
 
     /* (non-Javadoc)

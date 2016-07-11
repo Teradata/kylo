@@ -52,7 +52,7 @@ public class MetadataClientRecorder implements MetadataRecorder {
 
     @Override
     public FlowFile recordLastLoadTime(ProcessSession session, FlowFile ff, String destination, DateTime time) {
-        return session.putAttribute(ff, MetadataConstants.LAST_LOAD_TIME_PROP + "." + destination, Formatters.TIME_FORMATTER.print(time));
+        return session.putAttribute(ff, MetadataConstants.LAST_LOAD_TIME_PROP + "." + destination, Formatters.print(time));
     }
 
     @Override
