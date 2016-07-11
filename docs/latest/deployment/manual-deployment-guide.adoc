@@ -1,0 +1,281 @@
+= Manual Deployment Guide
+
+== About
+
+This document explains how to install each component of the framework manually. This is useful for when you are installing across multiple edge nodes.
+
+TIP: Many of the steps below are similar to running the wizard based install. If you want to take advantage of the same scripts as the wizard
+you can tar up the /opt/thinkbig/setup folder and untar it to a temp directory on each node.
+
+== Installation
+
+For each step below you will need to login with root access
+
+=== Install Think Big Services
+
+. Find and download the RPM file from artifactory and place on the host linux machine you want to install the data lake
+   accelerator services on. You can right click the download link and copy the url to use wget instead
+
+           http://54.152.98.43:8080/artifactory/webapp/search/artifact/?7&q=thinkbig-datalake-accelerator  (requires VPN)
+
+. Run data lake accelerator RPM install
+
+           $ rpm -ivh thinkbig-datalake-accelerator-<version>.noarch.rpm
+
+   NOTE: The RPM is hard coded at this time to install to /opt/thinkbig
+
+=== Run the database scripts
+The database scripts will create one schema called "thinkbig" and install to that schema. Please run the following script
+
+    $ /opt/thinkbig/setup/sql/mysql/setup-mysql.sh [db_user] [db_password]
+
+    NOTE: The HDP sandbox doesn't have a password set for the root user so
+    you would run "/opt/thinkbig/setup/sql/mysql/setup-mysql.sh root"
+
+=== Install and configure Elasticsearch
+The project includes a script to stand up a single node Elasticsearch instance to get up and running quickly. You can also leverage an existing Elasticsearch instance. For example, if
+you stand up an ELK stack you will likely want to leverage the same instance.
+
+    . Option 1: Install Elasticsearch from our script
+
+    The included Elasticsearch script was meant to speed up installation in a sandbox or DEV environment. It is not a production ready configuration.
+
+    $ /opt/thinkbig/setup/elasticsearch/install-elasticsearch.sh
+
+    . Option 2: Use an existing Elasticsearch
+
+    To leverage an existing Elasticsearch instance, you must update all feed templates that you created with the correct Elasticsearch URL.You can do this by going to the
+    "Additional Properties" tab for that feed. If you added any re-usable flow templates you will need to modify the Elasticsearch processors in NiFI
+
+    TIP: To test that Elasticsearch is running type "curl localhost:9200". You should see a JSON response
+
+=== Install ActiveMQ
+The project includes a script to stand up a single node ActiveMQ instance to get up and running quickly. You can also leverage an existing ActiveMQ instance.
+
+    . Option 1: Install ActiveMQ from the script
+
+    The included ActiveMQ script was meant to speed up installation in a sandbox or DEV environment. It is not a production ready configuration.
+
+        $ /opt/thinkbig/setup/activemq/install-activemq.sh
+
+        NOTE: If installing on a different node than NiFi and thinkbig-services you will need to update the following properties
+
+    . Option 2: Leverage an existing ActiveMQ instance
+
+        Update the below properties so that NiFI and thinkbig-services can communicate with the existing server
+
+
+        1. /opt/nifi/ext-config/config.properties
+
+            spring.activemq.broker-url
+
+
+        2. /opt/thinkbig/thinkbig-services/conf/application.properties
+
+            jms.activemq.broker.url
+
+
+=== Install Java 8
+    NOTE: If you are installing NiFI and the thinkbig services on two separate nodes you may need to perform this step on each node.
+
+    There are 3 scenarios for configuring the applications with Java 8
+
+    . Scenario 1: Java 8 is installed on the system and is already in the classpath
+
+    In this case you need to remove the default JAVA_HOME used as part of the install. Run the following script:
+
+        For thinkbig-ui and thinkbig-services
+        $/opt/thinkbig/setup/java/remove-default-thinkbig-java-home.sh
+
+     To test this you can look at each file referenced in the scripts for thinkbig-ui and thinkbig-services to validate the 2 lines setting and exporting the JAVA_HOME are gone.
+
+    . Scenario 2: Install Java in the default /opt/java/current location
+
+        1. Install Java 8 - You can modify and use the following script if you want
+
+            $ /opt/thinkbig/setup/java/install-java8.sh
+
+
+    . Scenario 3: I already have Java 8 installed on the node but it's not in the default JAVA_HOME path
+
+        If you already have Java 8 installed and want to reference that one one there is a script to remove the existing path and another script to set the new path
+        for the thinkbig apps.
+
+        For thinkbig-ui and thinkbig-services
+        $ /opt/thinkbig/setup/java/remove-default-thinkbig-java-home.sh
+        $ /opt/thinkbig/setup/java/change-thinkbig-java-home.sh <path to JAVA_HOME>
+
+=== Install NiFi
+
+    You can leverage an existing NiFi installation or follow the steps in the setup directory which is used by
+    the wizard. Note that Java 8 is required to run NiFi with our customizations. Make sure Java 8 is installed on the node.
+
+    . Option 1: Install NiFi from our scripts
+
+        This method will download and install NiFi, as well as install and configure the Think Big specific
+        libraries. This instance of NiFi is configured to store persistent data outside of the NiFi installation
+        folder in /opt/nifi/data. This makes it easy to upgrade since you can change the version of NiFi without
+        migrating data out of the old version.
+
+        .. Install NiFi
+
+        $ /opt/thinkbig/setup/nifi/install-nifi.sh
+
+        .. Update JAVA_HOME (default is /opt/java/current)
+
+        $ /opt/thinkbig/setup/java/change-nifi-java-home.sh <path to JAVA_HOME>
+
+        .. Install Think Big specific components
+
+        $ /opt/thinkbig/setup/nifi/install-thinkbig-components.sh
+
+    . Option 2: Leverage an existing NiFi instance
+
+        In some cases you may have a separate instance of NiFi or Hortonworks Data Flow you want to
+        leverage. Follow the steps below to include the Think Big resources.
+
+        NOTE: If Java 8 isn't being used for the existing instance you will be required to change it.
+
+        .. Copy the /opt/thinkbig/setup/nifi/thinkbig- *.nar and thinkbig-spark- *.jar files to the node NiFI is running on. If it's on the same node you can skip this step.
+
+        .. Shutdown the NiFi instance
+
+        .. copy the thinkbig-*.nar files to the <NIFI_HOME>/lib directory
+
+        .. Create a directory called "app" in the <NIFI_HOME>/lib directory
+
+            $ mkdir <NIFI_HOME>/lib/app
+
+        .. Copy the thinkbig-spark-*.jar files to the <NIFI_HOME>/lib/app directory
+
+        .. Modify <NIFI_HOME>/conf/nifi.properties and update the following property. The will modify NiFI to use our custom provenance repository which sends data to the
+           thinkbig-services application
+
+            nifi.provenance.repository.implementation=com.thinkbiganalytics.nifi.provenance.v2.ThinkbigProvenanceEventRepository
+            nifi.web.http.port=8079
+
+            NOTE: If you decide to leave the port number set to the current value you must update the "nifi.rest.port"
+            property in the thinkbig-services application.properties file.
+
+
+        .. There is a controller service that requires a MySQL database connection. You will need to copy the MySQL connector jar to a location on the NiFI node. The
+           pre-defined templates have the default location set to /opt/nifi/mysql.
+
+           1. Create a folder to store the MySQL jar in.
+
+           2. SCP the /opt/thinkbig/thinkbig-services/lib/mysql-connector-java-<version>.jar to the folder in step #1
+
+           3. If you created a folder name other than the /opt/nifi/mysql default folder you will need to update the "MySQL" controller service and set the new location
+
+       .. Create H2 folder for fault tolerance. If the JMS queue goes down for some reason our custom Provenance library will startup a local H2 database and store provenance events
+          until JMS comes back up. Once back up, it will send all of the events stored in the database then shut down the local H2 instance. Below are steps to configure the H2 folder.
+
+            NOTE: Right now the plugin is hard coded to use the /opt/nifi/ext-config directory
+            to load the properties file. There is a Jira to address this PC-261
+
+           1. Create the folders
+
+               $ mkdir /opt/nifi/h2
+
+               $ mkdir /opt/nifi/ext-config
+
+           2. SCP the /opt/thinkbig/setup/nifi/config.properties file to the /opt/nifi/ext-config folder
+
+           3. Change the ownership of the above folders to the same owner that nifi runs under. For example, if nifi runs as the "nifi" user:
+
+                $ chown -R nifi:users /opt/nifi
+
+       OPTIONAL: The /opt/thinkbig/setup/nifi/install-thinkbig-components.sh contains steps to install NiFi as a service so that NiFi can startup automatically if you restart the
+                node. This might be useful to add if it doesn't already exist for the NiFi instance.
+
+
+=== Set Permissions for HDFS
+This step is required on the node that NiFi is installed on to set the correct permissions for the "nifi" user to access HDFS.
+
+    . NiFi Node - Add nifi user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
+
+    Hortonworks
+    $ usermod -a -G hdfs nifi
+
+    Cloudera
+      $ groupadd supergroup
+      # Add nifi and hdfs to that group:
+      $ usermod -a -G supergroup nifi
+      $ usermod -a -G supergroup hdfs
+
+      Note: If you want to perform actions as a root user in a development environment run the below command
+      $ usermod -a -G supergroup root
+
+    . thinkbig-services node - Add thinkbig user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
+
+      Hortonworks
+      $ usermod -a -G hdfs thinkbig
+
+      Cloudera
+        $ groupadd supergroup
+        # Add nifi and hdfs to that group:
+        $ usermod -a -G supergroup hdfs
+
+        Note: If you want to perform actions as a root user in a development environment run the below command
+        $ usermod -a -G supergroup root
+
+=== Create a dropzone folder on the edge node for file ingest, for example:
+Perform the following step on the node NiFI is installed on
+
+    $ mkdir -p /var/dropzone
+    $ chown nifi /var/dropzone
+
+    Note: Files should be copied into the dropzone such that user nifi can read and remove. Do not copy files with permissions set as root.
+
+=== Complete this step for Cloudera installations ONLY
+
+  See the appendix section in the deployment guide "Cloudera Configuration File Changes"
+  link:deployment-guide.adoc[Deployment Guide]
+
+=== Final Step: Start the 3 Think Big services
+
+           $ /opt/thinkbig/start-thinkbig-apps.sh
+
+           At this point all services should be running
+
+== Configuration
+
+=== Database Changes
+
+Data lake services can be configured to work with Postgres or MySQL. Database and permission setup scripts are provided to assist in the initial configuration process.
+The script names relevant to setup are below:
+
+==== MySQL
+|===
+|Script Name|Description
+|/opt/thinkbig/setup/sql/mysql/setup-mysql.sh [db_user] [db_password] |Create tables used by data lake accelerator services
+|/opt/thinkbig/setup/sql/mysql/drop-mysql.sh DROP|Used to remove the data lake accelerator schema(s)
+|===
+
+
+==== Postgres
+TBD - Not yet supported
+
+== Appendix: Cloudera Configuration File Changes
+
+The configuration is setup to work out of the box with the Hortonworks sandbox. There are a few differences that require configuration changes for Cloudera.
+    /opt/thinkbig/thinkbig-services/conf/application.properties
+
+    .. Update the 3 MySQL password values to "cloudera"
+
+    spring.datasource.password=cloudera
+    metadata.datasource.password=cloudera
+    hive.metastore.datasource.password=cloudera
+
+    .. Update the Hive username
+
+    hive.datasource.username=hive
+
+    .. Update the Hive Metastore URL
+
+    hive.metastore.datasource.url=jdbc:mysql://localhost:3306/metastore
+
+    .. Update the following parameters
+
+    config.hive.schema=metastore
+    nifi.executesparkjob.sparkhome=/usr/lib/spark

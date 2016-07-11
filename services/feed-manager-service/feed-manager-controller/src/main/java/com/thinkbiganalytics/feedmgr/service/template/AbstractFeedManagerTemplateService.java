@@ -110,7 +110,7 @@ public abstract class AbstractFeedManagerTemplateService {
             try {
                 properties = nifiRestClient.getPropertiesForTemplate(registeredTemplate.getNifiTemplateId());
                 List<NifiProperty> matchedProperties = NifiPropertyUtil
-                    .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties());
+                    .matchAndSetPropertyByIdKey(properties, registeredTemplate.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
                 matchCount = matchedProperties.size();
             } catch (NifiClientRuntimeException e) {
 
@@ -123,7 +123,7 @@ public abstract class AbstractFeedManagerTemplateService {
                 properties = nifiRestClient.getPropertiesForTemplateByName(registeredTemplate.getTemplateName());
                 if (properties != null) {
                     //   property = NifiPropertyUtil.findPropertyByProcessorType(properties, "com.thinkbiganalytics.nifi.GetTableData", "Archive Unit");
-                    NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties());
+                    NifiPropertyUtil.matchAndSetPropertyByProcessorName(properties, registeredTemplate.getProperties(),NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
                     //    registeredTemplate.setProperties(properties);
                 }
                 syncTemplateId(registeredTemplate);

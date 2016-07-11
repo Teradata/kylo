@@ -132,9 +132,9 @@ public class DatasourceController {
             
             if (StringUtils.isNotEmpty(name)) criteria.name(name);
     //        if (StringUtils.isNotEmpty(owner)) criteria.owner(owner);  // TODO implement
-            if (StringUtils.isNotEmpty(on)) criteria.createdOn(Formatters.TIME_FORMATTER.parseDateTime(on));
-            if (StringUtils.isNotEmpty(after)) criteria.createdAfter(Formatters.TIME_FORMATTER.parseDateTime(after));
-            if (StringUtils.isNotEmpty(before)) criteria.createdBefore(Formatters.TIME_FORMATTER.parseDateTime(before));
+            if (StringUtils.isNotEmpty(on)) criteria.createdOn(Formatters.parseDateTime(on));
+            if (StringUtils.isNotEmpty(after)) criteria.createdAfter(Formatters.parseDateTime(after));
+            if (StringUtils.isNotEmpty(before)) criteria.createdBefore(Formatters.parseDateTime(before));
     //        if (StringUtils.isNotEmpty(type)) criteria.type(name);  // TODO figure out model type mapping
             
             return criteria;

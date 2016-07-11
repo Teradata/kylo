@@ -6,8 +6,8 @@ import java.net.URI;
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
-import java.util.Set;
 
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeClass;
@@ -35,7 +35,7 @@ public class MetadataClientTest {
 
     @BeforeClass
     public void connect() {
-        client = new MetadataClient(URI.create("http://localhost:8077/api/metadata/"));
+        client = new MetadataClient(URI.create("http://localhost:8420/api/metadata/"));
     }
     
     
@@ -70,7 +70,7 @@ public class MetadataClientTest {
     public void testCreateFeedSubtype() {
         ExtensibleTypeDescriptor subtype = new ExtensibleTypeDescriptor("testFeed", "feed");
     }
-
+    
 //    @Test
     public void testBuildFeed() throws ParseException {
         Feed feed = buildFeed("feed1").post();
@@ -80,6 +80,13 @@ public class MetadataClientTest {
         feed = client.getFeed(feed.getId());
         
         assertThat(feed).isNotNull();
+    }
+
+//    @Test
+    public void testGetFeeds() throws ParseException {
+        List<Feed> feeds = client.getFeeds();
+        
+        assertThat(feeds).isNotNull().isNotEmpty();
     }
     
 //    @Test
@@ -217,6 +224,13 @@ public class MetadataClientTest {
         ServiceLevelAssessment assmt = client.assessPrecondition(feedB.getId());
         
         assertThat(assmt).isNotNull();
+    }
+    
+//    @Test
+    public void testGetFeedDependencyDeltas() {
+        Map<DateTime, Map<String, String>> props = client.getFeedDependencyDeltas("f665f2ab-29ed-4e55-9f1c-173819957488");
+        
+        assertThat(props).isNotNull().isNotEmpty();
     }
     
     private FeedBuilder buildFeed(String name) throws ParseException {

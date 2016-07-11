@@ -1,10 +1,12 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import javax.inject.Inject;
@@ -32,6 +34,9 @@ public class AdminController {
     @Inject
     ExportImportTemplateService exportImportTemplateService;
 
+    @Inject
+    ExportImportFeedService exportImportFeedService;
+
     @GET
     @Path("/export-template/{templateId}")
     @Produces({MediaType.APPLICATION_JSON})
@@ -43,11 +48,41 @@ public class AdminController {
             .build();
     }
 
+    @GET
+    @Path("/export-feed/{feedId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response exportFeed(@NotNull @Size(min = 36, max = 36, message = "Invalid feedId size")
+                                   @PathParam("feedId") String feedId) {
+        try {
+            ExportImportFeedService.ExportFeed zipFile = exportImportFeedService.exportFeed(feedId);
+            return Response.ok(zipFile.getFile(), MediaType.APPLICATION_OCTET_STREAM)
+                .header("Content-Disposition", "attachments; filename=\"" + zipFile.getFileName() + "\"") //optional
+                .build();
+        }catch (IOException e){
+            throw new RuntimeException("Unable to export Feed "+e.getMessage());
+        }
+    }
+
+
+    @POST
+    @Path("/import-feed")
+    @Consumes({MediaType.MULTIPART_FORM_DATA})
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response uploadFeed(@NotNull @FormDataParam("file") InputStream fileInputStream,
+                                   @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
+                                   @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite)
+        throws Exception {
+        ExportImportFeedService.ImportFeed importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), fileInputStream, overwrite);
+
+        return Response.ok(importFeed).build();
+    }
+
+
     @POST
     @Path("/import-template")
     @Consumes({MediaType.MULTIPART_FORM_DATA})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response uploadPdfFile(@NotNull @FormDataParam("file") InputStream fileInputStream,
+    public Response uploadTemplate(@NotNull @FormDataParam("file") InputStream fileInputStream,
                                   @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
                                   @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
                                   @FormDataParam("createReusableFlow") @DefaultValue("false") boolean createReusableFlow)

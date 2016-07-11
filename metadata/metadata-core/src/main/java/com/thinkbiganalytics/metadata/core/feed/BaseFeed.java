@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import org.joda.time.DateTime;
@@ -22,6 +23,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 /**
  *
@@ -36,6 +38,7 @@ public class BaseFeed implements Feed {
     private State state;
     private boolean initialized;
     private DateTime createdTime;
+    private Set<Feed<?>> dependentFeeds;
     private Map<FeedSource.ID, FeedSource> sources = new HashMap<>();
     private Map<FeedDestination.ID, FeedDestination> destinations = new HashMap<>();
     private FeedPreconditionImpl precondition;
@@ -50,6 +53,21 @@ public class BaseFeed implements Feed {
         this.createdTime = DateTime.now();
     }
 
+    @Override
+    public List<Feed<?>> getDependentFeeds() {
+        return new ArrayList<>(this.dependentFeeds);
+    }
+    
+    @Override
+    public boolean addDependentFeed(Feed feed) {
+        return this.dependentFeeds.add(feed);
+    }
+    
+    @Override
+    public boolean removeDependentFeed(Feed feed) {
+        return this.dependentFeeds.remove(feed);
+    }
+    
     @Override
     public Map<String, Object> getProperties() {
         return this.properties;
@@ -89,6 +107,11 @@ public class BaseFeed implements Feed {
 
     public String getName() {
         return name;
+    }
+    
+    @Override
+    public String getQualifiedName() {
+        return getCategory().getName() + "." + getName();
     }
     
     public boolean isInitialized() {
@@ -341,6 +364,7 @@ public class BaseFeed implements Feed {
     protected static class FeedPreconditionImpl implements FeedPrecondition {
         private ServiceLevelAgreement sla;
         private BaseFeed feed;
+        private ServiceLevelAssessment lastAssessment;
         
         public FeedPreconditionImpl(BaseFeed feed, ServiceLevelAgreement sla) {
             this.sla = sla;
@@ -355,6 +379,16 @@ public class BaseFeed implements Feed {
         @Override
         public ServiceLevelAgreement getAgreement() {
             return sla;
+        }
+        
+        @Override
+        public ServiceLevelAssessment getLastAssessment() {
+            return lastAssessment;
+        }
+        
+        @Override
+        public void setLastAssessment(ServiceLevelAssessment assmnt) {
+            this.lastAssessment = assmnt;
         }
     }
 

@@ -2,6 +2,7 @@ package com.thinkbiganalytics.nifi.rest.model.visitor;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
@@ -30,8 +31,8 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
 
     private NifiVisitableProcessor outputPortProcessor;
 
-    private Map<String,NifiVisitableProcessor> outputPortProcessors;
-    private Map<String,NifiVisitableProcessor> inputPortProcessors;
+    private Map<String,Set<NifiVisitableProcessor>> outputPortProcessors;
+    private Map<String,Set<NifiVisitableProcessor>> inputPortProcessors;
 
     private Set<ConnectionDTO> connections;
 
@@ -180,20 +181,33 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
     }
 
 
-    public NifiVisitableProcessor getInputPortProcessor(String inputProcessorId) {
+    public Set<NifiVisitableProcessor> getInputPortProcessors(String inputProcessorId) {
         return inputPortProcessors.get(inputProcessorId);
     }
 
     public void addInputPortProcessor(String id,NifiVisitableProcessor inputPortProcessor) {
-        this.inputPortProcessors.put(id, inputPortProcessor);
+        if(!this.inputPortProcessors.containsKey(id)){
+            this.inputPortProcessors.put(id,new HashSet<>());
+        }
+        this.inputPortProcessors.get(id).add(inputPortProcessor);
     }
 
-    public NifiVisitableProcessor getOutputPortProcessor(String connectionSourceId) {
+    public Set<NifiVisitableProcessor> getOutputPortProcessors(String connectionSourceId) {
         return outputPortProcessors.get(connectionSourceId);
     }
 
-    public void addOutputPortProcessor(String connectionDestId,NifiVisitableProcessor outputPortProcessor) {
-        this.outputPortProcessors.put(connectionDestId, outputPortProcessor);
+    public NifiVisitableProcessor getOutputPortProcessor(String connectionSourceId) {
+        if(outputPortProcessors.containsKey(connectionSourceId)){
+            return Lists.newArrayList(outputPortProcessors.get(connectionSourceId)).get(0);
+        }
+        return null;
+    }
+
+    public void addOutputPortProcessor(String id,NifiVisitableProcessor outputPortProcessor) {
+        if(!this.outputPortProcessors.containsKey(id)){
+            this.outputPortProcessors.put(id,new HashSet<>());
+        }
+        this.outputPortProcessors.get(id).add(outputPortProcessor);
     }
 
 }

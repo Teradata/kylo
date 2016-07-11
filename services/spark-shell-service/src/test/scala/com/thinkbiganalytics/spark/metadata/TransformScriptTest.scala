@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.spark.metadata
 
-import com.thinkbiganalytics.db.model.query.QueryResult
-
 import org.apache.spark.mllib.linalg.{VectorUDT, Vectors}
 import org.apache.spark.sql._
 import org.apache.spark.sql.types._
@@ -38,9 +36,11 @@ class TransformScriptTest {
         val script = new TransformScript("target", true, Mockito.mock(classOf[SQLContext])) {
             override def dataFrame: DataFrame = mockDataFrame
         }
-        val queryResult = script.run().asInstanceOf[Callable[QueryResult]].call()
+        val transformResponse = script.run().asInstanceOf[Callable[TransformResponse]].call()
+        Assert.assertEquals(TransformResponse.Status.SUCCESS, transformResponse.getStatus)
+        Assert.assertEquals("target", transformResponse.getTable)
 
-        val columns = queryResult.getColumns
+        val columns = transformResponse.getResults.getColumns
         Assert.assertEquals(4, columns.size())
 
         Assert.assertEquals("bigint", columns.get(0).getDataType)
@@ -63,7 +63,7 @@ class TransformScriptTest {
         Assert.assertEquals("col2", columns.get(3).getField)
         Assert.assertEquals("col2", columns.get(3).getHiveColumnLabel)
 
-        val rows = queryResult.getRows.asInstanceOf[util.List[util.Map[String, Any]]]
+        val rows = transformResponse.getResults.getRows.asInstanceOf[util.List[util.Map[String, Any]]]
         Assert.assertEquals(2, rows.size())
 
         Assert.assertEquals(1, rows.get(0).get("id"))

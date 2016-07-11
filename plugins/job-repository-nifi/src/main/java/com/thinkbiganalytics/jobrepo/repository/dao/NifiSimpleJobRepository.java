@@ -292,7 +292,7 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
         }
     }
 
-    public void saveJobExecutionContext(NifiJobExecution nifiJobExecution, Map<String, Object> attrs) {
+    public void saveJobExecutionContext(NifiJobExecution nifiJobExecution, Map<String, String> attrs) {
 
         Map<String, Object> allAttrs = new HashMap<>();
         JobExecution jobExecution = getOrCreateJobExecution(nifiJobExecution);

@@ -1,13 +1,138 @@
-Import project into IDE
-mvn clean install
-set maven plugin to offline mode
+== Developer Getting Started Guide
+This guide should help you get your local development environment up and running quickly. Development in
+an IDE is usually done in conjunction with a Hortonworks sandbox in order to have a cluster to
+communicate with.
 
-Download and run HDP sandbox or demo sandbox (If demo sandbox then NiFI and JMS will be running)
-run install script for NiFi (TODO add script)
-run install script for ActiveMQ standalone (TODO add script)
-Note: wget will not work for activemq because of redirect - need to figure out or put it in S3
-/opt/activemq/apache-activemq-5.13.2/bin/activemq start
+=== Dependencies
 
-Optional: run JMS broker locally from services/jms-service/activemq-broker
+To run the Data Lake Accelerator project locally you need the following tools installed. The assumption is that you are installing on a Mac or Linux box. You can do most activities
+below on a Windows box except perform a maven build with the RPM install. At some point we could add a maven profile to allow you to build but skip the final RPM step.
 
-Fire up UI and service apps in IDE
+.Dependencies
+|===
+|Maven 3
+|RPM (for install)
+|Java 1.8 (or greater)
+|Hadoop 2.3+ Sandbox
+|Virtual Box or other virtual machine manager
+|===
+
+
+=== Install Maven 3
+This project requires maven to build
+
+https://maven.apache.org/install.html
+
+=== Optional - Add Java 8 to Bash Profile
+To build from the command line you need to add Java 8 and Maven to your $PATH variable
+
+    Edit ~/.bashrc and add the following
+
+    export MVN_HOME=/Users/<HomeFolderName>/tools/apache-maven-3.3.3
+    export MAVEN_OPTS="-Xms256m -Xmx512m"
+    export JAVA_HOME=/Library/Java/JavaVirtualMachines/jdk1.8.0_45.jdk/Contents/Home
+    export PATH=$JAVA_HOME/bin:$MVN_HOME/bin:$PATH
+
+    To test run
+
+    $ mvn -v
+    $ java -version
+
+=== Install Virtual Box
+https://www.virtualbox.org/wiki/Downloads
+
+Download and install the DMG
+
+=== Install the RPM Tool on your Mac
+The RPM library is required for building the RPM file as part of the maven build. This can be done using Home Brew or Mac Ports
+
+    $ brew install rpm
+
+=== Clone Project from Github
+Clone the data-lake-accelerator project to your host. You can do this in your IDE or from the command line
+
+ . From the command line you can run the "git clone" command.
+    .. cd to the directory you want to install the project to
+    .. Type "git clone https://github.com/ThinkBigAnalytics/data-lake-accelerator.git"
+
+ . Import from your IDE using the "https://github.com/ThinkBigAnalytics/data-lake-accelerator.git" URL
+
+
+=== Import the Project into your IDE
+Import the project into your favorite IDE as a maven projecct.
+
+NOTE: Configure the project to use Java 8
+
+
+=== Perform a Maven Build
+Perform a maven build to download all of the artifacts and verify that everything is setup correctly.
+
+    $ mvn clean install
+
+  TIP: For faster maven builds you can run in offline mode by typing
+   "mvn clean install -o". Add "-DskipTests" to skip unit testing for faster builds
+
+=== Install and Configure the Hortonworks Sandbox
+Follow the guide below to install and configure the Hortonworks sandbox
+
+link:./hortonworks-sandbox.adoc[Configure Hortonworks Sandbox]
+
+=== Install the Think Big Applications
+To install the Think Big apps, NiFi, ActiveMQ, and Elasticsearch in the VM you can use the deployment wizard instructions found here.
+
+link:./deployment/wizard-deployment-guide.adoc[Wizard Driven Deployment Guide]
+
+Instead of downloading the RPM file on the first step from Artifactory, copy the RPM file from your project folder after running a maven build.
+
+    $ cd /opt
+    $ cp /media/sf_data-lake-accelerator/install/target/rpm/thinkbig-datalake-accelerator/RPMS/noarch/thinkbig-datalake-accelerator-<version>.noarch.rpm .
+    $ rpm -ivh thinkbig-datalake-accelerator-<version>.noarch.rpm
+
+Follow the rest of the deployment wizard steps to install the rest of the tools in the VM.
+
+IMPORTANT: You only need to install Elasticsearch, NiFi, and ActiveMQ once. During development you will frequently uninstall the Think Big RPM and re-install it for testing.
+
+You now have a distribution of the stack running in your Hortonworks sandbox.
+
+=== Running in the IDE
+You can run thinkbig-ui and thinbig-services in the IDE. If you plan to run the apps in the IDE, you should shut down the services in
+your sandbox so you aren't running two instances at the same time.
+
+    $ service thinkbig-services stop
+    $ service thinkbig-ui stop
+
+The applications are configured using Spring Boot.
+
+==== IntelliJ Configuration
+
+    . Install the Spring Boot plugin
+    . Create the thinkbig-services application run configuration
+    .. Open the Run configurations
+    .. Create a new Spring Boot run configuration
+    .. Give it a name like "ThinkbigServerApplication"
+    .. Set "use classpath of module" property to "thinkbig-service-app" module
+    .. Set the "Main Class" property to "com.thinkbiganalytics.server.ThinkbigServerApplication"
+    . Create the thinkbig-ui application run configuration
+    .. Open the Run configurations
+    .. Create a new Spring Boot run configuration
+    .. Give it a name like "ThinkbigDataLakeUiApplication"
+    .. Set "use classpath of module" property to "thinkbig-ui-app" module
+    .. Set the "Main Class" property to "com.thinkbiganalytics.ThinkbigDataLakeUiApplication"
+    . Run both applications
+
+==== Eclipse Configuration
+
+http://docs.spring.io/spring-boot/docs/current/reference/html/using-boot-running-your-application.html
+
+    . Open Eclipse
+    . Import the Data Lake Accelerator project
+    .. File - Import
+    .. Choose "maven" and  "Existing Maven Projects" then choose next
+    .. Choose the Data Lake Accelerator root folder. You should see all maven modules checked
+    .. Click finish
+    .. Import takes a bit - got error about scala plugin - just clicked finish
+    . Find and open the "com.thinkbiganalytics.server.ThinkbigServerApplication" class
+    . Right click and choose to debug as a Java application
+    . Repeat for "com.thinkbiganalytics.ThinkbigDataLakeUiApplication"
+
+    OPTIONAL: Install the spring tools suite and run as a spring boot option

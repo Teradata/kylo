@@ -1,7 +1,9 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -23,6 +25,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 
@@ -31,6 +34,10 @@ import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
  */
 public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntity implements Feed<C> {
 
+    public static final String PRECONDITION_TYPE = "tba:feedPrecondition";
+
+    public static final String PRECONDITION = "tba:precondition";
+    public static final String DEPENDENTS = "tba:dependentFeeds";
     public static final String NODE_TYPE = "tba:feed";
     public static final String SOURCE_NAME = "tba:sources";
     public static final String DESTINATION_NAME = "tba:destinations";
@@ -113,6 +120,11 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public String getName() {
         return getSystemName();
     }
+    
+    @Override
+    public String getQualifiedName() {
+        return getCategory().getName() + "." + getName();
+    }
 
     @Override
     public String getDisplayName() {
@@ -121,7 +133,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public State getState() {
-        return getProperty(STATE, Feed.State.class);
+        return getProperty(STATE, Feed.State.ENABLED);
     }
 
     @Override
@@ -131,13 +143,51 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public FeedPrecondition getPrecondition() {
-        return null;
+        try {
+            if (this.node.hasNode(PRECONDITION)) {
+                return new JcrFeedPrecondition(this.node.getNode(PRECONDITION), this);
+            } else {
+                return null;
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the feed precondition", e);
+        }
+    }
+    
+    @Override
+    public List<Feed<C>> getDependentFeeds() {
+        List<Feed<C>> deps = new ArrayList<>();
+        Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, DEPENDENTS);
+        
+        for (Node depNode : depNodes) {
+            deps.add(new JcrFeed<C>(depNode));
+        }
+        
+        return deps;
+    }
+    
+    @Override
+    public boolean addDependentFeed(Feed<?> feed) {
+        JcrFeed<?> dependent = (JcrFeed<?>) feed;
+        Node depNode = dependent.getNode();
+        
+        return JcrPropertyUtil.addToSetProperty(this.node, DEPENDENTS, depNode);
+    }
+    
+    @Override
+    public boolean removeDependentFeed(Feed<?> feed) {
+        JcrFeed<?> dependent = (JcrFeed<?>) feed;
+        Node depNode = dependent.getNode();
+        
+        return JcrPropertyUtil.removeFromSetProperty(this.node, DEPENDENTS, depNode);
     }
 
     @Override
     public FeedSource getSource(final Datasource.ID id) {
-        FeedSource source = null;
+        @SuppressWarnings("unchecked")
         List<FeedSource> sources = (List<FeedSource>) getSources();
+        FeedSource source = null;
+        
         if (sources != null && !sources.isEmpty()) {
             source = Iterables.tryFind(sources, new Predicate<FeedSource>() {
                 @Override
@@ -151,8 +201,10 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public FeedSource getSource(final FeedSource.ID id) {
-        FeedSource source = null;
+        @SuppressWarnings("unchecked")
         List<FeedSource> sources = (List<FeedSource>) getSources();
+        FeedSource source = null;
+        
         if (sources != null && !sources.isEmpty()) {
             source = Iterables.tryFind(sources, new Predicate<FeedSource>() {
                 @Override
@@ -167,8 +219,10 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public FeedDestination getDestination(final Datasource.ID id) {
-        FeedDestination destination = null;
+        @SuppressWarnings("unchecked")
         List<FeedDestination> destinations = (List<FeedDestination>) getDestinations();
+        FeedDestination destination = null;
+        
         if (destinations != null && !destinations.isEmpty()) {
             destination = Iterables.tryFind(destinations, new Predicate<FeedDestination>() {
                 @Override
@@ -182,9 +236,10 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public FeedDestination getDestination(final FeedDestination.ID id) {
-
-        FeedDestination destination = null;
+        @SuppressWarnings("unchecked")
         List<FeedDestination> destinations = (List<FeedDestination>) getDestinations();
+        FeedDestination destination = null;
+
         if (destinations != null && !destinations.isEmpty()) {
             destination = Iterables.tryFind(destinations, new Predicate<FeedDestination>() {
                 @Override

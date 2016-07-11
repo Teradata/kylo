@@ -21,7 +21,7 @@ public class FieldRulePropertyBuilder {
     private String objectProperty;
     private List<LabelValue> selectableValues;
     public static enum PROPERTY_TYPE {
-        number,string,select,regex,date
+        number,string,select,regex,date,chips
     }
 
     public FieldRulePropertyBuilder(String name){

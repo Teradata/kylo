@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.jcr.RepositoryException;
 import javax.ws.rs.WebApplicationException;
@@ -41,6 +42,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
+import com.thinkbiganalytics.metadata.rest.model.op.FeedOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
 import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceScheduleMetric;
@@ -232,7 +234,9 @@ public class Model {
                 feed.setDestinations(new HashSet<FeedDestination>(destinations));
                 
                 for (Entry<String, Object> entry : domain.getProperties().entrySet()) {
-                    feed.getProperties().setProperty(entry.getKey(), entry.getValue() != null ? entry.getValue().toString() : null);
+                    if (entry.getValue() != null) {
+                        feed.getProperties().setProperty(entry.getKey(), entry.getValue().toString());
+                    }
                 }
                 
                 return feed;
@@ -332,16 +336,34 @@ public class Model {
                 return dir;
             }
         };
+        
+    public static final Function<com.thinkbiganalytics.metadata.api.op.FeedOperation, FeedOperation> DOMAIN_TO_FEED_OP
+        = new Function<com.thinkbiganalytics.metadata.api.op.FeedOperation, FeedOperation>() {
+            @Override
+            public FeedOperation apply(com.thinkbiganalytics.metadata.api.op.FeedOperation domain) {
+                FeedOperation op = new FeedOperation();
+                op.setOperationId(domain.getId().toString());
+                op.setStartTime(domain.getStartTime());
+                op.setStopTime(domain.getStopTime());
+                op.setState(FeedOperation.State.valueOf(domain.getState().name()));
+                op.setStatus(domain.getStatus());
+                op.setResults(domain.getResults().entrySet().stream()
+                              .collect(Collectors.toMap(Map.Entry::getKey, 
+                                                        e -> e.getValue().toString())));
+                
+                return op;
+            }
+        };
 
-    public static final Function<com.thinkbiganalytics.metadata.api.op.DataOperation, DataOperation> DOMAIN_TO_OP
+    public static final Function<com.thinkbiganalytics.metadata.api.op.DataOperation, DataOperation> DOMAIN_TO_DS_OP
         = new Function<com.thinkbiganalytics.metadata.api.op.DataOperation, DataOperation>() {
             @Override
             public DataOperation apply(com.thinkbiganalytics.metadata.api.op.DataOperation domain) {
                 DataOperation op = new DataOperation();
                 op.setId(domain.getId().toString());
                 op.setFeedDestinationId(domain.getProducer().getId().toString());
-                op.setStartTime(Formatters.TIME_FORMATTER.print(domain.getStartTime()));
-                op.setStopTiime(Formatters.TIME_FORMATTER.print(domain.getStopTime()));
+                op.setStartTime(Formatters.print(domain.getStartTime()));
+                op.setStopTiime(Formatters.print(domain.getStopTime()));
                 op.setState(DataOperation.State.valueOf(domain.getState().name()));
                 op.setStatus(domain.getStatus());
                 if (domain.getDataset() != null) op.setDataset(DOMAIN_TO_DATASET.apply(domain.getDataset()));

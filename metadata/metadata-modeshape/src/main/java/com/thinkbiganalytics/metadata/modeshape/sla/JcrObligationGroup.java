@@ -28,6 +28,11 @@ public class JcrObligationGroup extends JcrObject implements ObligationGroup, Se
     
     private static final long serialVersionUID = 3948150775928992180L;
 
+    public static final String OBLIGATIONS = "tba:obligations";
+    public static final String CONDITION = "tba:condition";
+
+    public static final String OBLIGATION_TYPE = "tba:obligation";
+
     private JcrServiceLevelAgreement agreement;
     
 //    public static JcrObligationGroup createGroup(JcrServiceLevelAgreement sla, Condition cond) {

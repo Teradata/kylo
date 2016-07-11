@@ -33,8 +33,8 @@ public class SpringContextLoaderService extends AbstractControllerService implem
             .name("Configuraton Classes")
             .description("A comma-separated list of fully qualified names of java config classes")
 //            .defaultValue("com.thinkbiganalytics.controller.precond.PreconditionJmsConfiguration")
-            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .required(true)
+//            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .required(false)
             .build();
 
     private static final List<PropertyDescriptor> properties;

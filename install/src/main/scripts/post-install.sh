@@ -14,56 +14,60 @@ rm -rf $rpmInstallDir/thinkbig-ui/thinkbig-ui-app-*.tar.gz
 echo "   - Installed thinkbig-ui to '$rpmInstallDir/thinkbig-ui'"
 
 cat << EOF > $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh
-  #!/bin/bash
-  export THINKBIG_UI_OPTS=
-  java \$THINKBIG_UI_OPTS -cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/* com.thinkbiganalytics.ThinkbigDataLakeUiApplication --pgrep-marker=$pgrepMarkerThinkbigUi > /var/log/thinkbig-ui/thinkbig-ui.log 2>&1 &
+#!/bin/bash
+export JAVA_HOME=/opt/java/current
+export PATH=\$JAVA_HOME/bin:\$PATH
+export THINKBIG_UI_OPTS=
+java \$THINKBIG_UI_OPTS -cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/* com.thinkbiganalytics.ThinkbigDataLakeUiApplication --pgrep-marker=$pgrepMarkerThinkbigUi > /var/log/thinkbig-ui/thinkbig-ui.log 2>&1 &
 EOF
 cat << EOF > $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui-with-debug.sh
   #!/bin/bash
-  export THINKBIG_UI_OPTS=
-  JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8008
-  java \$THINKBIG_UI_OPTS \$JAVA_DEBUG_OPTS --cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/* com.thinkbiganalytics.app.Application --pgrep-marker=$pgrepMarkerThinkbigUi > /var/log/thinkbig-ui/thinkbig-ui.log 2>&1 &
+export JAVA_HOME=/opt/java/current
+export PATH=\$JAVA_HOME/bin:\$PATH
+export THINKBIG_UI_OPTS=
+JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9997
+java \$THINKBIG_UI_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/thinkbig-ui/conf:$rpmInstallDir/thinkbig-ui/lib/* com.thinkbiganalytics.ThinkbigDataLakeUiApplication --pgrep-marker=$pgrepMarkerThinkbigUi > /var/log/thinkbig-ui/thinkbig-ui.log 2>&1 &
 EOF
 chmod +x $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh
 chmod +x $rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui-with-debug.sh
 echo "   - Created thinkbig-ui script '$rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh'"
 
 cat << EOF > /etc/init.d/thinkbig-ui
-  #! /bin/sh
-  # chkconfig: 345 98 22
-  # description: thinkbig-ui
-  # processname: thinkbig-ui
-  RUN_AS_USER=thinkbig
-  case "\$1" in
-    start)
-        if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
-          then
-            echo Already running.
-          else
-            echo Starting thinkbig-ui ...
-            su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh"
-        fi
-      ;;
-    stop)
-        if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
-          then
-            echo Stopping thinkbig-ui ...
-            pkill -f $pgrepMarkerThinkbigUi
-          else
-            echo Already stopped.
-        fi
-            ;;
-        status)
-        if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
-          then
-              echo Running.  Here are the related processes:
-              pgrep -lf $pgrepMarkerThinkbigUi
-          else
-            echo Stopped.
-        fi
-            ;;
-  esac
-  exit 0
+#! /bin/sh
+# chkconfig: 345 98 22
+# description: thinkbig-ui
+# processname: thinkbig-ui
+RUN_AS_USER=thinkbig
+case "\$1" in
+start)
+    if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
+      then
+        echo Already running.
+      else
+        echo Starting thinkbig-ui ...
+        su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh"
+    fi
+  ;;
+stop)
+    if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
+      then
+        echo Stopping thinkbig-ui ...
+        pkill -f $pgrepMarkerThinkbigUi
+      else
+        echo Already stopped.
+    fi
+        ;;
+    status)
+    if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
+      then
+          echo Running.  Here are the related processes:
+          pgrep -lf $pgrepMarkerThinkbigUi
+      else
+        echo Stopped.
+    fi
+        ;;
+esac
+exit 0
 EOF
 chmod +x /etc/init.d/thinkbig-ui
 echo "   - Created thinkbig-ui script '/etc/init.d/thinkbig-ui'"
@@ -85,56 +89,60 @@ rm -f $rpmInstallDir/thinkbig-services/lib/servlet-api*
 echo "   - Installed thinkbig-services to '$rpmInstallDir/thinkbig-services'"
 
 cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
-  #!/bin/bash
-  export THINKBIG_SERVICES_OPTS=
-  java \$THINKBIG_SERVICES_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
+#!/bin/bash
+export JAVA_HOME=/opt/java/current
+export PATH=\$JAVA_HOME/bin:\$PATH
+export THINKBIG_SERVICES_OPTS=
+java \$THINKBIG_SERVICES_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
 EOF
 cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
-  #!/bin/bash
-  export THINKBIG_SERVICES_OPTS=
-  JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=8008
-  java \$THINKBIG_SERVICES_OPTS \$JAVA_DEBUG_OPTS --cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/* com.thinkbiganalytics.hive.server.Application --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
+#!/bin/bash
+export JAVA_HOME=/opt/java/current
+export PATH=\$JAVA_HOME/bin:\$PATH
+export THINKBIG_SERVICES_OPTS=
+JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9998
+java \$THINKBIG_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
 EOF
 chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
 chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
 echo "   - Created thinkbig-services script '$rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh'"
 
 cat << EOF > /etc/init.d/thinkbig-services
-  #! /bin/sh
-  # chkconfig: 345 98 21
-  # description: thinkbig-services
-  # processname: thinkbig-services
-  RUN_AS_USER=thinkbig
-  case "\$1" in
-    start)
-        if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
-          then
-            echo Already running.
-          else
-            echo Starting thinkbig-services ...
-            su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh"
-        fi
-      ;;
-    stop)
-        if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
-          then
-            echo Stopping thinkbig-services ...
-            pkill -f $pgrepMarkerThinkbigServices
-          else
-            echo Already stopped.
-        fi
-            ;;
-        status)
-        if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
-          then
-              echo Running.  Here are the related processes:
-              pgrep -lf $pgrepMarkerThinkbigServices
-          else
-            echo Stopped.
-        fi
-            ;;
-  esac
-  exit 0
+#! /bin/sh
+# chkconfig: 345 98 21
+# description: thinkbig-services
+# processname: thinkbig-services
+RUN_AS_USER=thinkbig
+case "\$1" in
+start)
+    if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
+      then
+        echo Already running.
+      else
+        echo Starting thinkbig-services ...
+        su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh"
+    fi
+  ;;
+stop)
+    if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
+      then
+        echo Stopping thinkbig-services ...
+        pkill -f $pgrepMarkerThinkbigServices
+      else
+        echo Already stopped.
+    fi
+        ;;
+    status)
+    if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
+      then
+          echo Running.  Here are the related processes:
+          pgrep -lf $pgrepMarkerThinkbigServices
+      else
+        echo Stopped.
+    fi
+        ;;
+esac
+exit 0
 EOF
 chmod +x /etc/init.d/thinkbig-services
 echo "   - Created thinkbig-services script '/etc/init.d/thinkbig-services'"
@@ -158,50 +166,50 @@ rm -f $rpmInstallDir/thinkbig-spark-shell/lib/thinkbig-spark-shell*
 echo "   - Installed thinkbig-spark-shell to '$rpmInstallDir/thinkbig-spark-shell'"
 
 cat << EOF > $rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh
-  #!/bin/bash
-  spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --jars \`find $rpmInstallDir/thinkbig-spark-shell/lib/ -name "*.jar" | paste -d, -s\` $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
+#!/bin/bash
+spark-submit --conf spark.driver.userClassPathFirst=true --class com.thinkbiganalytics.spark.SparkShellApp --driver-class-path /opt/thinkbig/thinkbig-spark-shell/conf --jars \`find $rpmInstallDir/thinkbig-spark-shell/lib/ -name "*.jar" | paste -d, -s\` $rpmInstallDir/thinkbig-spark-shell/thinkbig-spark-shell-*.jar --pgrep-marker=$pgrepMarkerThinkbigSparkShell
 EOF
 chmod +x $rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh
 echo "   - Created thinkbig-spark-shell script '$rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh'"
 
 cat << EOF > /etc/init.d/thinkbig-spark-shell
-  #! /bin/sh
-  # chkconfig: 345 98 20
-  # description: thinkbig-spark-shell
-  # processname: thinkbig-spark-shell
-  stdout_log="/var/log/thinkbig-spark-shell/thinkbig-spark-shell.log"
-  stderr_log="/var/log/thinkbig-spark-shell/thinkbig-spark-shell.err"
-  RUN_AS_USER=thinkbig
-  case "\$1" in
-    start)
-        if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
-          then
-            echo Already running.
-          else
-            echo Starting thinkbig-spark-shell ...
-            su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh" >> "\$stdout_log" 2>> "\$stderr_log" &
-        fi
-      ;;
-    stop)
-        if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
-          then
-            echo Stopping thinkbig-spark-shell ...
-            pkill -f /thinkbig-spark-shell/
-          else
-            echo Already stopped.
-        fi
-            ;;
-        status)
-        if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
-          then
-              echo Running.  Here are the related processes:
-              pgrep -lf /thinkbig-spark-shell/
-          else
-            echo Stopped.
-        fi
-            ;;
-  esac
-  exit 0
+#! /bin/sh
+# chkconfig: 345 98 20
+# description: thinkbig-spark-shell
+# processname: thinkbig-spark-shell
+stdout_log="/var/log/thinkbig-spark-shell/thinkbig-spark-shell.log"
+stderr_log="/var/log/thinkbig-spark-shell/thinkbig-spark-shell.err"
+RUN_AS_USER=thinkbig
+case "\$1" in
+start)
+    if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
+      then
+        echo Already running.
+      else
+        echo Starting thinkbig-spark-shell ...
+        su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh" >> "\$stdout_log" 2>> "\$stderr_log" &
+    fi
+  ;;
+stop)
+    if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
+      then
+        echo Stopping thinkbig-spark-shell ...
+        pkill -f /thinkbig-spark-shell/
+      else
+        echo Already stopped.
+    fi
+        ;;
+    status)
+    if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
+      then
+          echo Running.  Here are the related processes:
+          pgrep -lf /thinkbig-spark-shell/
+      else
+        echo Stopped.
+    fi
+        ;;
+esac
+exit 0
 EOF
 chmod +x /etc/init.d/thinkbig-spark-shell
 echo "   - Created thinkbig-spark-shell script '/etc/init.d/thinkbig-spark-shell'"

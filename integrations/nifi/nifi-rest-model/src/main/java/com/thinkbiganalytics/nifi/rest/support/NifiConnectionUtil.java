@@ -6,13 +6,10 @@ import com.google.common.collect.Lists;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
-import org.apache.nifi.web.api.dto.ProcessGroupDTO;
-import org.apache.nifi.web.api.dto.ProcessorDTO;
-import org.apache.nifi.web.api.entity.ConnectionsEntity;
-import org.apache.nifi.web.api.entity.InputPortEntity;
-import org.apache.nifi.web.api.entity.OutputPortsEntity;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  * Created by sr186054 on 1/14/16.
@@ -111,8 +108,18 @@ public class NifiConnectionUtil {
     }));
   }
 
+    public static List<ConnectionDTO> findConnectionsMatchingSourceId(Collection<ConnectionDTO> connections, final String sourceId){
+        return Lists.newArrayList(Iterables.filter(connections, new Predicate<ConnectionDTO>() {
+            @Override
+            public boolean apply(ConnectionDTO connectionDTO) {
+                return connectionDTO.getSource().getId().equals(sourceId);
+            }
+        }));
+    }
 
-  public static ConnectionDTO findConnection(Collection<ConnectionDTO> connections, final String sourceId, final String destId){
+
+
+    public static ConnectionDTO findConnection(Collection<ConnectionDTO> connections, final String sourceId, final String destId){
     ConnectionDTO connection = null;
       connection = Iterables.tryFind(connections, new Predicate<ConnectionDTO>() {
         @Override

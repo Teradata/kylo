@@ -31,7 +31,7 @@ public class FeedPrecondition implements Serializable {
     
     public FeedPrecondition(String name) {
         super();
-        this.sla = new ServiceLevelAgreement("Feed ");
+        this.sla = new ServiceLevelAgreement("Feed " + name + " precondition");
     }
     
     public FeedPrecondition(String name, String description, List<Metric> metrics) {

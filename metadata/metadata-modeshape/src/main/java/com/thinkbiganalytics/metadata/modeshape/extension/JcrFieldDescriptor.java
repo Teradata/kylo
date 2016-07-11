@@ -17,6 +17,9 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
  */
 public class JcrFieldDescriptor implements FieldDescriptor {
     
+    public static final String DESCRIPTION = JcrExtensibleType.DESCRIPTION;
+    public static final String NAME = JcrExtensibleType.NAME;
+
     private Node descriptorNode;
     private PropertyDefinition propertyDef;
     
@@ -38,7 +41,7 @@ public class JcrFieldDescriptor implements FieldDescriptor {
     @Override
     public String getDisplayName() {
         try {
-            return this.descriptorNode.getProperty("jcr:title").getString();
+            return this.descriptorNode.getProperty(JcrExtensibleType.NAME).getString();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("'jcr:title' missing from property descriptor", e);
         }
@@ -47,7 +50,7 @@ public class JcrFieldDescriptor implements FieldDescriptor {
     @Override
     public String getDescription() {
         try {
-            return this.descriptorNode.getProperty("jcr:description").getString();
+            return this.descriptorNode.getProperty(JcrExtensibleType.DESCRIPTION).getString();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("'jcr:description' missing from property descriptor", e);
         }

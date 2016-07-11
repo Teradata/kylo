@@ -1,5 +1,21 @@
 package com.thinkbiganalytics.jobrepo.nifi.provenance;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.inject.Inject;
+
+import org.apache.nifi.web.api.dto.BulletinDTO;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
@@ -11,23 +27,11 @@ import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
 import com.thinkbiganalytics.jobrepo.repository.JobRepository;
 import com.thinkbiganalytics.jobrepo.repository.dao.NifiJobRepository;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation.State;
 import com.thinkbiganalytics.nifi.rest.client.NifiConnectionException;
-
-import org.apache.nifi.web.api.dto.BulletinDTO;
-import org.apache.nifi.web.api.dto.ProcessGroupDTO;
-import org.apache.nifi.web.api.dto.ProcessorDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
-
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 2/26/16.
@@ -47,6 +51,9 @@ public class ProvenanceFeedManager {
 
     @Inject
     private JobRepository executedJobsRepository;
+    
+    @Inject
+    private MetadataEventService eventService;
 
     @Autowired
     private NifiComponentFlowData nifiComponentFlowData;
@@ -197,7 +204,7 @@ public class ProvenanceFeedManager {
                     //add them to the job execution context
                     LOG.error("Additional Bulletin Exceptions found " + componentId + ", " + otherBulletins);
                     if (event.hasJobExecution()) {
-                        Map<String, Object> details = new HashMap<>();
+                        Map<String, String> details = new HashMap<>();
                         details.put("Additional Bulletin Messages",
                                     "Bulletin messages were found for components in the flow that were already completed.");
                         for (BulletinDTO bulletinDTO : otherBulletins) {
@@ -248,7 +255,7 @@ public class ProvenanceFeedManager {
         event.getFlowFileComponent().setJobExecution(jobExecution);
         //write some attrs to the job execution context
 
-        Map<String, Object> executionContext = new HashMap<>();
+        Map<String, String> executionContext = new HashMap<>();
         ProcessorDTO feedProcessor = getFeedProcessor(event);
         executionContext.put("Feed Process Group Id", feedGroup.getId());
         executionContext.put("Feed Name", feedName);
@@ -342,7 +349,7 @@ public class ProvenanceFeedManager {
                     LOG.info("Completing Component {} ({}) with WARNINGS", event.getFlowFileComponent().getComponetName(),
                              event.getId());
                     jobRepository.completeStep(event.getFlowFileComponent());
-
+                    jobRepository.saveJobExecutionContext(event.getFlowFileComponent().getJobExecution(), event.getAttributeMap());
                 }
                 event.getFlowFileComponent().getJobExecution().addBulletinErrors(bulletins);
             } else {
@@ -357,6 +364,7 @@ public class ProvenanceFeedManager {
                     event.getFlowFileComponent().getJobExecution().addFailedComponent(event.getFlowFileComponent());
                 } else {
                     jobRepository.completeStep(event.getFlowFileComponent());
+                    jobRepository.saveJobExecutionContext(event.getFlowFileComponent().getJobExecution(), event.getAttributeMap());
                 }
 
             }
@@ -377,19 +385,27 @@ public class ProvenanceFeedManager {
     }
 
     public void feedCompleted(ProvenanceEventRecordDTO event) {
+        String feedName = getFeedNameForComponentId(event);
+        FeedOperation.State state = FeedOperation.State.SUCCESS;
+        String status = "";
+        
         if (hasJobExecution(event)) {
             event.getFlowFileComponent().getJobExecution().markCompleted();
             NifiJobExecution jobExecution = event.getFlowFileComponent().getJobExecution();
+            
             if (jobExecution.hasFailedComponents()) {
                 jobRepository.failJobExecution(jobExecution);
                 LOG.info("Failing Job " + jobExecution.getJobExecutionId() + ", " + jobExecution.getFailedComponents().size() + " Failed Components exist");
+                
+                state = FeedOperation.State.FAILURE;
+                status = "Failed Components exist";
             } else {
 
                 //if it is a Check Data Job ensure the Validation string is true or otherwise fail the job
                 if (event.getFlowFileComponent().getJobExecution().isCheckDataJob()) {
                     String value = event.getAttributeMap().get(CheckDataStepConstants.VALIDATION_KEY);
                     String message = event.getAttributeMap().get(CheckDataStepConstants.VALIDATION_MESSAGE_KEY);
-                    Map<String, Object> jobExecutionAttrs = new HashMap<>();
+                    Map<String, String> jobExecutionAttrs = new HashMap<>();
                     jobExecutionAttrs.put(CheckDataStepConstants.VALIDATION_KEY, value);
                     jobExecutionAttrs.put(CheckDataStepConstants.VALIDATION_MESSAGE_KEY, message);
                     jobRepository.saveJobExecutionContext(event.getFlowFileComponent().getJobExecution(), jobExecutionAttrs);
@@ -397,6 +413,7 @@ public class ProvenanceFeedManager {
                         jobRepository.failJobExecution(jobExecution);
                         event.getFlowFileComponent().getJobExecution().addFailedComponent(event.getFlowFileComponent());
                         LOG.info("Failing Check DAta  Job " + jobExecution.getJobExecutionId() + ", " + jobExecution.getFailedComponents().size() + ".");
+                        state = FeedOperation.State.FAILURE;
                     } else {
                         jobRepository.completeJobExecution(jobExecution);
                         LOG.info("Completing Job " + jobExecution.getJobExecutionId() + ", " + jobExecution.getFailedComponents().size() + "." + " jobExecutionAttrs: " + jobExecutionAttrs);
@@ -405,13 +422,12 @@ public class ProvenanceFeedManager {
                     jobRepository.completeJobExecution(jobExecution);
                     LOG.info("Completing Job " + jobExecution.getJobExecutionId() + ", " + jobExecution.getFailedComponents().size() + ".");
                 }
-
             }
         } else {
-            String feedName = getFeedNameForComponentId(event);
             LOG.error(" Not Completing Feed. " + feedName + "  NifiJobExecution is null");
         }
-
+        
+        this.eventService.notify(new FeedOperationStatusEvent(feedName, null, state, status));
     }
 
     public void feedEvent(ProvenanceEventRecordDTO event) {

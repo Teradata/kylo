@@ -64,7 +64,7 @@ public class Dataset implements Serializable {
     
     public Dataset(DateTime time, Datasource src, ChangeType change, ContentType content, List<? extends ChangeSet> changeSets) {
         super();
-        this.time = Formatters.TIME_FORMATTER.print(time);
+        this.time = Formatters.print(time);
         this.datasource = src;
         this.changeType = change;
         this.contentType = content;
@@ -81,7 +81,7 @@ public class Dataset implements Serializable {
     
     @JsonIgnore
     public void setTime(DateTime dateTime) {
-        this.time = Formatters.TIME_FORMATTER.print(dateTime);
+        this.time = Formatters.print(dateTime);
     }
     
     public Datasource getDatasource() {

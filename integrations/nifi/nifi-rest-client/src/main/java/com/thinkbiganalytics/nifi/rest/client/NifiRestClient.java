@@ -191,6 +191,47 @@ public class NifiRestClient extends JerseyRestClient {
         }
     }
 
+    public List<TemplateDTO> getTemplatesMatchingInputPortName(final String inputPortName) {
+        TemplatesEntity entity = getTemplates(true);
+        if(entity != null) {
+
+          return  Lists.newArrayList(Iterables.filter(entity.getTemplates(), new Predicate<TemplateDTO>() {
+                @Override
+                public boolean apply(TemplateDTO templateDTO) {
+                    PortDTO match = Iterables.tryFind(templateDTO.getSnippet().getInputPorts(), new Predicate<PortDTO>() {
+                        @Override
+                        public boolean apply(PortDTO o) {
+                            return o.getName().equalsIgnoreCase(inputPortName);
+                        }
+                    }).orNull();
+                    return (match != null);
+                }
+            }));
+
+        }
+        return null;
+    }
+
+    /**
+     * Returns a Map of the Template Name and the Template XML that has a matching Input Port in the template.
+     * @param inputPortName
+     * @return
+     */
+    public Map<String,String> getTemplatesAsXmlMatchingInputPortName(final String inputPortName) {
+        Map<String,String> map = new HashMap<>();
+        List<TemplateDTO> matchingTemplates = getTemplatesMatchingInputPortName(inputPortName);
+        if(matchingTemplates != null){
+
+         for(TemplateDTO templateDTO : matchingTemplates){
+             if(!map.containsKey(templateDTO.getName())){
+              String templateXml =  getTemplateXml(templateDTO.getId());
+                 map.put(templateDTO.getName(),templateXml);
+             }
+         }
+        }
+        return map;
+    }
+
     /**
      * return a template by Name, populated with its Flow snippet If not found it returns null
      */
@@ -706,7 +747,9 @@ public class NifiRestClient extends JerseyRestClient {
             try {
                 deleteControllerService(dto.getId());
             } catch (NifiClientRuntimeException e) {
-                unableToDelete.add(dto.getId());
+                if(!(e instanceof NifiComponentNotFoundException)) {
+                    unableToDelete.add(dto.getId());
+                }
             }
         }
         if (!unableToDelete.isEmpty()) {

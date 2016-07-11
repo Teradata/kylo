@@ -1,0 +1,122 @@
+= Setup Wizard Deployment Guide
+
+== About
+Follow the steps below to install the data lake accelerator using the installation wizard script. This is convenient for local sandboxes (HDP/Cloudera)
+and 1 node development boxes. The WGET command is used to download binaries so internet access is required.
+
+NOTE: The setup wizard is designed for easy installation of all components on one node
+
+== Installation Locations
+
+* Thinkbig Applications - /opt/thinkbig
+* Java 8 - /opt/java/current
+* NiFi - /opt/nifi/current
+* ActiveMQ - RPM installation default location
+* Elasticsearch - RPM installation default location
+
+== Installation
+The steps below require root access
+
+=== Install Think Big Services
+
+. Find and download the RPM file from artifactory and place on the host linux machine you want to install the data lake
+   accelerator services on. You can right click the download link and copy the url to use wget instead
+
+           http://54.152.98.43:8080/artifactory/webapp/search/artifact/?7&q=thinkbig-datalake-accelerator  (requires VPN)
+
+. Run data lake accelerator RPM install
+
+           $ rpm -ivh thinkbig-datalake-accelerator-<version>.noarch.rpm
+
+   NOTE: The RPM is hard coded at this time to install to /opt/thinkbig
+
+. Optional - Generate TAR file for offline mode
+
+    If you need to run the wizard on an edge node with no internet access you can generate a TAR file the contains everything in the /opt/thinkbig/setup folder including
+    the downloaded application binaries.
+
+    .. Install the Data Lake Accelerator RPM on a node that has internet access
+    .. Run "/opt/thinkbig/setup/generate-offline-install.sh
+    .. Copy the /opt/thinkbig/setup/thinkbig-install.tar file to the node you install the RPM on. This can be copied to a temp directory. It doesn't have to put put in the /opt/thinkbig/setup folder
+    .. run "tar -xvf thinkbig-install.tar" on file
+
+    The script will download all application binaries and puts them in their respective directory in the setup folder. Last it will TAR up the setup folder
+
+. Run the setup wizard
+
+    NOTE: If installing in a HDP or Cloudera sandbox choose option #2 on the Java step to download
+    and install Java in the /opt/java/current directory
+
+    .. From the /opt/thinkbig/setup directory
+
+        $ /opt/thinkbig/setup/setup-wizard.sh
+
+    .. Offline mode from another directory (using TAR file)
+
+        $ <PathToSetupFolder>/setup/setup-wizard.sh -o
+
+        NOTE: Both -o and -O work
+
+    Follow the directions and it will install the following:
+    * MySQL or Postgres scripts into the local database
+    * Elasticsearch
+    * ActiveMQ
+    * Java 8 (If the system Java is 7 or below)
+    * NiFi and the Think Big dependencies
+
+    The Elasticsearch, NiFi, and ActiveMQ services will be started when the wizard is finished
+
+. Add "nifi" and "thinkbig" user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
+
+    Hortonworks
+    $ usermod -a -G hdfs nifi
+    $ usermod -a -G hdfs thinkbig
+
+    Cloudera
+      $ groupadd supergroup
+      # Add nifi and hdfs to that group:
+      $ usermod -a -G supergroup nifi
+      $ usermod -a -G supergroup hdfs
+      Optional: If you want to perform actions as a root user in a development environment run the below command
+      $ usermod -a -G supergroup root
+
+. Create a dropzone folder on the edge node for file ingest, for example:
+
+    $ mkdir -p /var/dropzone
+    $ chown nifi /var/dropzone
+
+    Note: Files should be copied into the dropzone such that user nifi can read and remove.
+
+. Complete this step for Cloudera installations ONLY
+
+  See the appendix section below "Cloudera Configuration File Changes"
+
+. Start the three Think Big services
+
+           $ /opt/thinkbig/start-thinkbig-apps.sh
+
+           At this point all services should be running. Note that services are started automatically on boot.
+
+== Appendix: Cloudera Configuration File Changes
+
+The configuration is setup to work out of the box with the Hortonworks sandbox. There are a few differences that require configuration changes for Cloudera.
+    /opt/thinkbig/thinkbig-services/conf/application.properties
+
+    .. Update the 3 MySQL password values to "cloudera"
+
+    spring.datasource.password=cloudera
+    metadata.datasource.password=cloudera
+    hive.metastore.datasource.password=cloudera
+
+    .. Update the Hive username
+
+    hive.datasource.username=hive
+
+    .. Update the Hive Metastore URL
+
+    hive.metastore.datasource.url=jdbc:mysql://localhost:3306/metastore
+
+    .. Update the following parameters
+
+    config.hive.schema=metastore
+    nifi.executesparkjob.sparkhome=/usr/lib/spark

@@ -16,7 +16,8 @@ public enum ComponentAttributes implements FlowFileAttributeKey {
     NUM_MERGED_PARTITIONS("num.merged.partitions"),
     MERGED_PARTITION("merged.partition"),
     MERGED_PARTITION_ROWCOUNT("merged.partition.rowcount"),
-    HDFS_FILE("hdfs.file");
+    HDFS_FILE("hdfs.file"),
+    FEED_DEPENDENT_RESULT_DELTAS("feed.dependent.results.deltas");
 
     private final String key;
 

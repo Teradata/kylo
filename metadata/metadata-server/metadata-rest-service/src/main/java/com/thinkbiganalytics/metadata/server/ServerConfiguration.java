@@ -17,12 +17,14 @@ import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.core.dataset.InMemoryDatasourceProvider;
 import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.core.feed.InMemoryFeedProvider;
-import com.thinkbiganalytics.metadata.core.feed.precond.DatasourceUpdatedSinceAssessor;
-import com.thinkbiganalytics.metadata.core.feed.precond.DatasourceUpdatedSinceFeedExecutedAssessor;
-import com.thinkbiganalytics.metadata.core.feed.precond.FeedExecutedSinceFeedAssessor;
-import com.thinkbiganalytics.metadata.core.feed.precond.FeedExecutedSinceScheduleAssessor;
-import com.thinkbiganalytics.metadata.core.feed.precond.WithinScheduleAssessor;
 import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
+import com.thinkbiganalytics.metadata.core.sla.TestMetricAssessor;
+import com.thinkbiganalytics.metadata.core.sla.WithinScheduleAssessor;
+import com.thinkbiganalytics.metadata.core.sla.feed.DatasourceUpdatedSinceAssessor;
+import com.thinkbiganalytics.metadata.core.sla.feed.DatasourceUpdatedSinceFeedExecutedAssessor;
+import com.thinkbiganalytics.metadata.core.sla.feed.FeedExecutedSinceFeedAssessor;
+import com.thinkbiganalytics.metadata.core.sla.feed.FeedExecutedSinceScheduleAssessor;
+import com.thinkbiganalytics.metadata.event.jms.JmsChangeEventDispatcher;
 import com.thinkbiganalytics.metadata.event.jms.MetadataJmsConfig;
 import com.thinkbiganalytics.metadata.event.reactor.ReactorContiguration;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
@@ -79,6 +81,11 @@ public class ServerConfiguration {
     }
     
     @Bean
+    public JmsChangeEventDispatcher changeEventDispatcher() {
+        return new JmsChangeEventDispatcher();
+    }
+    
+    @Bean
     public FeedPreconditionService feedPreconditionService() {
         return new FeedPreconditionService();
     }
@@ -125,5 +132,10 @@ public class ServerConfiguration {
     @Bean
     public MetricAssessor<?, ?> withinScheduleAssessor() {
         return new WithinScheduleAssessor();
+    }
+    
+    @Bean
+    public MetricAssessor<?, ?> testMetricAssessor() {
+        return new TestMetricAssessor();
     }
 }

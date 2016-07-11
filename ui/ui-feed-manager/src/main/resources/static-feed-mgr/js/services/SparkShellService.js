@@ -55,7 +55,7 @@
  * @property {string|null} table the table containing the results
  */
 
-angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $mdDialog, $q, RestUrlService) {
+angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $mdDialog, $q, $timeout, RestUrlService) {
     // URL to the API server
     var API_URL = RestUrlService.SPARK_SHELL_SERVICE_URL;
 
@@ -209,8 +209,9 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 "!name": "columns"
             };
 
-            defs[DEFINE_DIRECTIVE] = {};
-            defs[DEFINE_DIRECTIVE][TERNJS_COLUMN_TYPE] = {};
+            if (typeof(this.defs_["!define"]) !== "undefined") {
+                defs["!define"] = this.defs_["!define"];
+            }
 
             // Add column names
             var columns = this.getState().columns;
@@ -488,7 +489,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          */
         transform: function() {
             // Build the request body
-            var body = {sendResults: true};
+            var body = {};
             var index = this.states_.length - 1;
 
             if (index > 0) {
@@ -516,6 +517,25 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
             var deferred = $q.defer();
 
             var successCallback = function(response) {
+                // Check status
+                if (response.data.status === "PENDING") {
+                    deferred.notify(response.data.progress);
+
+                    $timeout(function() {
+                        $http({
+                            method: "GET",
+                            url: API_URL + "/transform/" + response.data.table,
+                            headers: {"Content-Type": "application/json"},
+                            responseType: "json"
+                        }).then(successCallback, errorCallback);
+                    }, 1000, false);
+                    return;
+                }
+                if (response.data.status !== "SUCCESS") {
+                    deferred.reject("Unexpected server status.");
+                    return;
+                }
+
                 // Verify column names
                 var invalid = _.find(response.data.results.columns, function(column) {
                     return (column.hiveColumnLabel.match(/[.`]/) !== null);  // Escaping backticks not supported until Spark 2.0

@@ -11,6 +11,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
@@ -21,6 +22,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.web.client.RestTemplate;
@@ -40,7 +42,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescriptor;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependency;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
@@ -57,6 +59,7 @@ public class MetadataClient {
     
     public static final ParameterizedTypeReference<List<ExtensibleTypeDescriptor>> TYPE_LIST = new ParameterizedTypeReference<List<ExtensibleTypeDescriptor>>() { };
     public static final ParameterizedTypeReference<List<Feed>> FEED_LIST = new ParameterizedTypeReference<List<Feed>>() { };
+    public static final ParameterizedTypeReference<Map<DateTime, Map<String, String>>> FEED_RESULT_DELTAS = new ParameterizedTypeReference<Map<DateTime, Map<String, String>>>() { };
     public static final ParameterizedTypeReference<List<Datasource>> DATASOURCE_LIST = new ParameterizedTypeReference<List<Datasource>>() { };
     public static final ParameterizedTypeReference<List<Metric>> METRIC_LIST = new ParameterizedTypeReference<List<Metric>>() { };
     
@@ -70,9 +73,9 @@ public class MetadataClient {
         super();
         this.base = base;
         this.template = new RestTemplate();
+//        this.template = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
         
         ObjectMapper mapper = createObjectMapper();
-//        this.template.setRequestFactory(new HttpComponentsClientHttpRequestFactory());
         this.template.getMessageConverters().add(new MappingJackson2HttpMessageConverter(mapper));
     }
     
@@ -141,13 +144,21 @@ public class MetadataClient {
             throw new IllegalThreadStateException("Unknown criteria type: " + criteria.getClass());
         }
     }
-
+    
     public Feed getFeed(String id) {
         return get(Paths.get("feed", id), Feed.class);
     }
+
+    public Feed getFeed(String categoryName, String feedName) {
+        return get(Paths.get("feed"), Feed.class);
+    }
     
-    public FeedDependency getFeedDependency(String id) {
-        return get(Paths.get("feed", id, "depfeeds"), FeedDependency.class);
+    public FeedDependencyGraph getFeedDependency(String id) {
+        return get(Paths.get("feed", id, "depfeeds"), FeedDependencyGraph.class);
+    }
+    
+    public Map<DateTime, Map<String, String>> getFeedDependencyDeltas(String feedId) {
+        return get(Paths.get("feed", feedId, "depfeeds", "delta"), FEED_RESULT_DELTAS);
     }
 
     public Feed updateFeed(Feed feed) {
@@ -245,6 +256,10 @@ public class MetadataClient {
         return this.template.getForObject(
                 (filterFunct != null ? filterFunct.apply(base(path)) : base(path)).build().toUri(),
                 resultType);
+    }
+    
+    private <R> R get(Path path, ParameterizedTypeReference<R> responseEntity) {
+        return get(path, null, responseEntity);
     }
     
     private <R> R get(Path path, Function<UriComponentsBuilder, UriComponentsBuilder> filterFunct, ParameterizedTypeReference<R> responseEntity) {
@@ -615,6 +630,7 @@ public class MetadataClient {
 
     private static class TargetFeedCriteria implements FeedCriteria, Function<UriComponentsBuilder, UriComponentsBuilder> {
         
+        private String category;
         private String name;
         private String sourceId;
         private String destinationId;
@@ -622,9 +638,10 @@ public class MetadataClient {
         public UriComponentsBuilder apply(UriComponentsBuilder target) {
             UriComponentsBuilder result = target;
             
+            if (! Strings.isNullOrEmpty(this.name)) result = result.queryParam(CATEGORY, this.category);
             if (! Strings.isNullOrEmpty(this.name)) result = result.queryParam(NAME, this.name);
-            if (! Strings.isNullOrEmpty(this.sourceId)) result = result.queryParam(SRC_ID, this.name);
-            if (! Strings.isNullOrEmpty(this.destinationId)) result = result.queryParam(DEST_ID, this.name);
+            if (! Strings.isNullOrEmpty(this.sourceId)) result = result.queryParam(SRC_ID, this.sourceId);
+            if (! Strings.isNullOrEmpty(this.destinationId)) result = result.queryParam(DEST_ID, this.destinationId);
             
             return result;
         }
@@ -653,6 +670,15 @@ public class MetadataClient {
         @Override
         public FeedCriteria name(String name) {
             this.name = name;
+            return this;
+        }
+        
+        /* (non-Javadoc)
+         * @see com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria#category(java.lang.String)
+         */
+        @Override
+        public FeedCriteria category(String category) {
+            this.category = category;
             return this;
         }
     }

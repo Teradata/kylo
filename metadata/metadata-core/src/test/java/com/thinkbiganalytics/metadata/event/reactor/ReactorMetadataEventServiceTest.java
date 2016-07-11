@@ -16,9 +16,9 @@ import org.junit.runner.RunWith;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
+import com.thinkbiganalytics.metadata.api.event.AbstractMetadataEvent;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
-import com.thinkbiganalytics.metadata.event.BaseMetadataEvent;
 
 /**
  *
@@ -35,7 +35,7 @@ public class ReactorMetadataEventServiceTest {
     public void testMatchingDataType() throws Exception {
         final CompletableFuture<Integer> future = new CompletableFuture<>();
         
-        class TestEvent extends BaseMetadataEvent<Integer> {
+        class TestEvent extends AbstractMetadataEvent<Integer> {
             public TestEvent(Integer data) {
                 super(data);
             }
@@ -60,7 +60,7 @@ public class ReactorMetadataEventServiceTest {
     public void testMatchingDataSubtype() throws Exception {
         final CompletableFuture<Number> future = new CompletableFuture<>();
         
-        class TestEvent extends BaseMetadataEvent<Number> {
+        class TestEvent extends AbstractMetadataEvent<Number> {
             public TestEvent(Number data) {
                 super(data);
             }
@@ -86,13 +86,13 @@ public class ReactorMetadataEventServiceTest {
     public void testNotMatchingEventType() throws Exception {
         final CompletableFuture<Integer> future = new CompletableFuture<>();
         
-        class TestEvent extends BaseMetadataEvent<Integer> {
+        class TestEvent extends AbstractMetadataEvent<Integer> {
             public TestEvent(Integer data) {
                 super(data);
             }
         }
         
-        class OtherEvent extends BaseMetadataEvent<Boolean> {
+        class OtherEvent extends AbstractMetadataEvent<Boolean> {
             public OtherEvent(Boolean data) {
                 super(data);
             }

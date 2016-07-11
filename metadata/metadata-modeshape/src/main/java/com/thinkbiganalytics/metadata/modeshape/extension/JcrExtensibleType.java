@@ -27,6 +27,11 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
  */
 public class JcrExtensibleType implements ExtensibleType {
     
+    public static final String LAST_MODIFIED_TIME = "jcr:lastModified";
+    public static final String CREATED_TIME = "jcr:created";
+    public static final String DESCRIPTION = "jcr:description";
+    public static final String NAME = "jcr:title";
+    
     private TypeId id;
     private Node typeNode;
     private final NodeType nodeType;
@@ -84,7 +89,7 @@ public class JcrExtensibleType implements ExtensibleType {
     @Override
     public String getDiplayName() {
         try {
-            return this.typeNode.getProperty("jcr:title").getString();
+            return this.typeNode.getProperty(NAME).getString();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get the display name (title) for type: " + this.nodeType.getName(), e);
         }
@@ -93,7 +98,7 @@ public class JcrExtensibleType implements ExtensibleType {
     @Override
     public String getDesciption() {
         try {
-            return this.typeNode.getProperty("jcr:description").getString();
+            return this.typeNode.getProperty(DESCRIPTION).getString();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get the description of type: " + this.nodeType.getName(), e);
         }
@@ -102,7 +107,7 @@ public class JcrExtensibleType implements ExtensibleType {
     @Override
     public DateTime getCreatedTime() {
         try {
-            return new DateTime(this.typeNode.getProperty("jcr:created").getDate());
+            return new DateTime(this.typeNode.getProperty(CREATED_TIME).getDate());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get created time for type: " + this.nodeType.getName(), e);
         }
@@ -111,7 +116,7 @@ public class JcrExtensibleType implements ExtensibleType {
     @Override
     public DateTime getModifiedTime() {
         try {
-            return new DateTime(this.typeNode.getProperty("jcr:lastModified").getDate());
+            return new DateTime(this.typeNode.getProperty(LAST_MODIFIED_TIME).getDate());
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get modified time for type: " + this.nodeType.getName(), e);
         }

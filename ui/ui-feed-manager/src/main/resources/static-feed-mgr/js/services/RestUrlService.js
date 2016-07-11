@@ -126,4 +126,6 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
 
     this.ADMIN_EXPORT_TEMPLATE_URL = self.ADMIN_BASE_URL+"/export-template";
 
+    this.ADMIN_EXPORT_FEED_URL = self.ADMIN_BASE_URL+"/export-feed";
+
 });

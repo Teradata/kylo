@@ -1,30 +1,28 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.event;
+package com.thinkbiganalytics.metadata.api.event;
 
 import java.io.Serializable;
 
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.api.event.MetadataEvent;
-
 /**
  *
  * @author Sean Felten
  */
-public class BaseMetadataEvent<C extends Serializable> implements MetadataEvent<C> {
+public abstract class AbstractMetadataEvent<C extends Serializable> implements MetadataEvent<C> {
     
     private static final long serialVersionUID = 1L;
     
     private final DateTime timestamp;
     private final C data;
     
-    public BaseMetadataEvent(C data) {
+    public AbstractMetadataEvent(C data) {
         this(data, DateTime.now());
     }
     
-    public BaseMetadataEvent(C data, DateTime time) {
+    public AbstractMetadataEvent(C data, DateTime time) {
         this.timestamp = time;
         this.data = data;
     }

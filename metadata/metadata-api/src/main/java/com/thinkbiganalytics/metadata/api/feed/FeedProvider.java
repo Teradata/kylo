@@ -5,6 +5,7 @@ import java.util.List;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
@@ -26,6 +27,7 @@ public interface FeedProvider{
     Feed createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics);
     PreconditionBuilder buildPrecondition(Feed.ID feedId);
 
+    Feed findBySystemName(String systemName);
     Feed findBySystemName(String categorySystemName, String systemName);
 
     FeedCriteria feedCriteria();
@@ -33,6 +35,9 @@ public interface FeedProvider{
     Feed getFeed(Feed.ID id);
     List<? extends Feed> getFeeds();
     List<Feed> getFeeds(FeedCriteria criteria);
+    
+    Feed<?> addDependent(Feed.ID targetId, Feed.ID dependentId);
+    Feed<?> removeDependent(Feed.ID feedId, Feed.ID depId);
     
     FeedSource getFeedSource(FeedSource.ID id);
     FeedDestination getFeedDestination(FeedDestination.ID id);

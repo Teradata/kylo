@@ -10,6 +10,7 @@ package com.thinkbiganalytics.nifi.core.api.metadata;
 public interface MetadataConstants {
 
     public static final String FEED_ID_PROP = "feed.id";
+    public static final String FEED_NAME_PROP = "feed.name";
     public static final String SRC_DATASET_ID_PROP = "src.dataset.id";
     public static final String DEST_DATASET_ID_PROP = "dest.dataset.id";
     public static final String OPERATON_START_PROP = "operation.start.time";

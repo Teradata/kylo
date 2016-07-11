@@ -21,8 +21,8 @@
         };
     };
 
-    var controller = function($scope, $log, $http, $q, $mdDialog, $mdToast, RestUrlService, VisualQueryService, HiveService,
-                              TableDataFunctions, SideNavService, SparkShellService, VisualQueryColumnDelegate, uiGridConstants, FeedService, BroadcastService,StepperService) {
+    var controller = function($scope, $log, $http, $q, $mdDialog, $mdToast, RestUrlService, VisualQueryService, HiveService, TableDataFunctions, SideNavService, SparkShellService,
+                              VisualQueryColumnDelegate, uiGridConstants, FeedService, BroadcastService, StepperService, WindowUnloadService) {
         var self = this;
         //The model passed in from the previous step
         this.model = VisualQueryService.model;
@@ -89,6 +89,9 @@
             mode: 'javascript',
             scrollbarStyle: null
         };
+
+        // Progress of transformation from 0 to 100
+        this.queryProgress = 0;
 
         /**
          * Show and hide the Funciton History
@@ -162,6 +165,9 @@
                     },
                     "Ctrl-.": function(cm) {
                         self.ternServer.selectName(cm);
+                    },
+                    "Tab": function() {
+                        self.selectNextTabStop();
                     }
                 });
                 _editor.on("blur", function() {
@@ -205,6 +211,11 @@
                     }
                 });
 
+                // Hide when the only completion exactly matches the current text
+                if (data.list.length === 1 && (data.to.ch - data.from.ch) === data.list[0].text.length) {
+                    data.list = [];
+                }
+
                 // Display hints
                 callback(data);
             });
@@ -229,7 +240,7 @@
             }
 
             // Show completions if available
-            if (cursor.ch === 0 || token.type === "variable" || (token.string === "." && lexer.type === "stat")) {
+            if (cursor.ch === 0 || token.type === "variable" || (token.string === "." && (lexer.type === "stat" || lexer.type === ")"))) {
                 cm.showHint({
                     completeSingle: false,
                     hint: self.getHint
@@ -245,6 +256,7 @@
         this.query = function() {
             //flag to indicate query is running
             this.executingQuery = true;
+            this.queryProgress = 0;
 
             // Query Spark shell service
             var successCallback = function() {
@@ -283,8 +295,11 @@
                 self.functionHistory.pop();
                 self.refreshGrid();
             };
+            var notifyCallback = function(progress) {
+                self.queryProgress = progress * 100;
+            };
 
-            return self.sparkShellService.transform().then(successCallback, errorCallback);
+            return self.sparkShellService.transform().then(successCallback, errorCallback, notifyCallback);
         };
 
         function updateGrid(tableData) {
@@ -417,6 +432,30 @@
         };
 
         /**
+         * Sets the formula in the function bar to the specified value.
+         *
+         * @param {string} formula the formula
+         */
+        this.setFormula = function(formula) {
+            self.currentFormula = formula;
+            self.codemirrorEditor.setValue(formula);
+            self.codemirrorEditor.focus();
+            self.selectNextTabStop();
+        };
+
+        /**
+         * Selects the next uppercase word in the formula bar.
+         */
+        this.selectNextTabStop = function() {
+            var match = /\b[A-Z]{2,}\b/.exec(self.currentFormula);
+            if (match !== null) {
+                self.codemirrorEditor.setSelection(new CodeMirror.Pos(0, match.index), new CodeMirror.Pos(0, match.index + match[0].length));
+            } else {
+                self.codemirrorEditor.setCursor(0, self.currentFormula.length);
+            }
+        };
+
+        /**
          * Called when the user clicks Add on the function bar
          */
         this.onAddFunction = function() {
@@ -536,6 +575,9 @@
 
         //Hide the left side nav bar
         SideNavService.hideSideNav();
+
+        // Display prompt on window unload
+        WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
 
         // Load table data
         if (FeedService.createFeedModel.dataTransformation.formulas.length > 0 && self.sparkShellService.loadGlobalState()) {

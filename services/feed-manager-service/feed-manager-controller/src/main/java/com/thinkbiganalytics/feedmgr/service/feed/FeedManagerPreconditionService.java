@@ -2,14 +2,20 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.GenericUIPrecondition;
+import com.thinkbiganalytics.feedmgr.rest.model.UIPrecondition;
 import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldRulePropertyBuilder;
 import com.thinkbiganalytics.rest.model.LabelValue;
+
+import org.apache.commons.lang3.StringUtils;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
@@ -25,38 +31,60 @@ public class FeedManagerPreconditionService {
     FeedManagerFeedService feedManagerFeedService;
 
 
-    private static final Function<GenericUIPrecondition, Metric> UI_PRECONDITION_TO_FEED_PRECONDITION = new Function<GenericUIPrecondition, Metric>() {
+    private static final Function<GenericUIPrecondition, List<Metric>> UI_PRECONDITION_TO_FEED_PRECONDITION = new Function<GenericUIPrecondition, List<Metric>>() {
         @Nullable
         @Override
-        public Metric apply(GenericUIPrecondition genericUIPrecondition) {
+        public List<Metric> apply(GenericUIPrecondition genericUIPrecondition) {
+            List<Metric> preconditions = new ArrayList<>();
             if(genericUIPrecondition.getType().equalsIgnoreCase(FeedExecutedSinceFeed.class.getName())) {
+               FieldRuleProperty property =  genericUIPrecondition.getProperty(GenericUIPrecondition.DEPENDENT_FEED_NAME_PROPERTY);
+                if(property.getValues() != null && !property.getValues().isEmpty()) {
+                    List<String> dependentFeedNames = property.getValues();
+                    for (String name : dependentFeedNames) {
+                        FeedExecutedSinceFeed metric = new FeedExecutedSinceFeed(name, genericUIPrecondition.
+                            getFeedName());
+                        preconditions.add(metric);
 
-                FeedExecutedSinceFeed metric = new FeedExecutedSinceFeed(genericUIPrecondition.getProperty(GenericUIPrecondition.DEPENDENT_FEED_NAME_PROPERTY).getValue(), genericUIPrecondition.
-                        getFeedName());
-                return metric;
+                    }
+                }
+                else if(StringUtils.isNotBlank(property.getValue())) {
+                    FeedExecutedSinceFeed metric = new FeedExecutedSinceFeed(property.getValue(), genericUIPrecondition.
+                    getFeedName());
+                    preconditions.add(metric);
+                }
+                return preconditions;
             }
             return null;
         }
     };
 
+    private static List<Metric> flatten(Collection<List<Metric>> metrics){
+        List<Metric> finalList = new ArrayList<>();
+        if(metrics != null)   {
+for(List<Metric> m: metrics){
+    if(m != null && !m.isEmpty()) {
+        finalList.addAll(m);
+    }
+}
+        }
+        return finalList;
+    }
+
     public static List<Metric> uiPreconditionToFeedPrecondition(FeedMetadata feed,Collection<GenericUIPrecondition> uiPreconditions) {
         if (uiPreconditions != null) {
+            ///explode the ui preconditoins into new objects if more than 1
+
             for (GenericUIPrecondition condition : uiPreconditions) {
                 condition.setFeedName(feed.getSystemFeedName());
             }
 
-            return new ArrayList<>(Collections2.transform(uiPreconditions, UI_PRECONDITION_TO_FEED_PRECONDITION));
+           Collection<List<Metric>> metrics = FluentIterable.from(uiPreconditions).transform(UI_PRECONDITION_TO_FEED_PRECONDITION).toList();
+            return flatten(metrics);
         }
         return null;
     }
 
-    public Metric uiToFeedPrecondition(FeedMetadata feed, GenericUIPrecondition uiPrecondition) {
-        if(uiPrecondition != null) {
-            uiPrecondition.setFeedName(feed.getSystemFeedName());
-            return UI_PRECONDITION_TO_FEED_PRECONDITION.apply(uiPrecondition);
-        }
-        return null;
-    }
+
 
 
     private GenericUIPrecondition feedDependsOnAnotherFeedPrecondition(List<FeedSummary> feedSummaries){
@@ -69,7 +97,8 @@ public class FeedManagerPreconditionService {
             feedSelection.add(new LabelValue(feedSummary.getCategoryAndFeedDisplayName(),feedSummary.getCategoryAndFeedSystemName()));
         }
         FieldRuleProperty
-                property = new FieldRulePropertyBuilder("feedName").displayName("Feed Name").type(FieldRulePropertyBuilder.PROPERTY_TYPE.select).addSelectableValues(feedSelection).hint("Select the feed that this feed depends on").build();
+                property = new FieldRulePropertyBuilder("feedName").displayName("Feed Name").type(FieldRulePropertyBuilder.PROPERTY_TYPE.chips).placeholder("Start typing a feed name").addSelectableValues(feedSelection).hint("Select the feed(s) that this feed depends on").build();
+        property.setValues(new ArrayList<>());
         condition.addProperty(property);
         return condition;
     }

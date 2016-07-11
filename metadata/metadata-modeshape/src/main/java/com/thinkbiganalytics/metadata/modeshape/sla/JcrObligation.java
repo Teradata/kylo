@@ -28,6 +28,13 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 public class JcrObligation extends JcrObject implements Obligation, Serializable {
 
+    public static final String DESCRIPTION = "jcr:description";
+    public static final String NAME = "jcr:title";
+    public static final String JSON = "tba:json";
+    public static final String METRICS = "tba:metrics";
+    
+    public static final String METRIC_TYPE = "tba:metric";
+
     private static final long serialVersionUID = -6415493614683081403L;
     
     private final JcrObligationGroup group;
@@ -58,10 +65,10 @@ public class JcrObligation extends JcrObject implements Obligation, Serializable
     public Set<Metric> getMetrics() {
         try {
             @SuppressWarnings("unchecked")
-            Iterator<Node> itr = (Iterator<Node>) this.node.getNodes("tba:metrics");
+            Iterator<Node> itr = (Iterator<Node>) this.node.getNodes(METRICS);
             
             return Sets.newHashSet(Iterators.transform(itr, (metricNode) -> {
-                return JcrUtil.getGenericJson(metricNode, "tba:json");
+                return JcrUtil.getGenericJson(metricNode, JSON);
             }));
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the metric nodes", e);
@@ -70,18 +77,18 @@ public class JcrObligation extends JcrObject implements Obligation, Serializable
 
     public void setMetrics(Set<Metric> metrics) {
         try {
-            NodeIterator nodes = this.node.getNodes("tba:metrics");
+            NodeIterator nodes = this.node.getNodes(METRICS);
             while (nodes.hasNext()) {
                 Node metricNode = (Node) nodes.next();
                 metricNode.remove();
             }
             
             for (Metric metric : metrics) {
-                Node metricNode = this.node.addNode("tba:metrics", "tba:metric");
+                Node metricNode = this.node.addNode(METRICS, METRIC_TYPE);
                 
-                JcrPropertyUtil.setProperty(metricNode, "jcr:title", metric.getClass().getSimpleName());
-                JcrPropertyUtil.setProperty(metricNode, "jcr:description", metric.getDescription());
-                JcrUtil.addGenericJson(metricNode, "tba:json", metric);
+                JcrPropertyUtil.setProperty(metricNode, NAME, metric.getClass().getSimpleName());
+                JcrPropertyUtil.setProperty(metricNode, DESCRIPTION, metric.getDescription());
+                JcrUtil.addGenericJson(metricNode, JSON, metric);
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the metric nodes", e);

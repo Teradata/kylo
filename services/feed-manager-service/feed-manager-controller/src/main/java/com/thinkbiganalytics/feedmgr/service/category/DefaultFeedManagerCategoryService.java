@@ -67,7 +67,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     @Override
   //  @Transactional(transactionManager = "metadataTransactionManager")
     public void saveCategory(final FeedCategory category) {
-        metadataAccess.commit(new Command<FeedCategory>() {
+        FeedCategory c = metadataAccess.commit(new Command<FeedCategory>() {
             @Override
             public FeedCategory execute() {
                 if (category.getId() == null) {
@@ -84,14 +84,14 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
                     }
                 }
                 FeedManagerCategory domainCategory = categoryModelTransform.FEED_CATEGORY_TO_DOMAIN.apply(category);
-                categoryProvider.update(domainCategory);
+                domainCategory = categoryProvider.update(domainCategory);
+                //repopulate identifier
+                category.setId(domainCategory.getId().toString());
+
                 return category;
             }
 
         });
-
-
-
     }
 
     @Override

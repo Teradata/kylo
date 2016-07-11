@@ -31,7 +31,6 @@ import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
-import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 import com.thinkbiganalytics.metadata.jpa.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
@@ -41,7 +40,6 @@ import com.thinkbiganalytics.metadata.sla.api.AgreementNotFoundException;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 /**
@@ -60,9 +58,6 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
     
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
-    
-    @Inject 
-    private FeedPreconditionService preconditionService;
 
     @Inject
     private CategoryProvider<Category> categoryProvider;
@@ -250,8 +245,6 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
                         .build()
                     .build();
             
-            this.preconditionService.watchFeed(feed);
-            
             feed.setPrecondition((JpaFeedPrecondition) sla);
             this.entityMgr.merge(feed);
             return feed;
@@ -265,7 +258,19 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
         // TODO Auto-generated method stub
         return null;
     }
-
+    
+    @Override
+    public Feed<?> addDependent(ID targetId, ID dependentId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
+    @Override
+    public Feed<?> removeDependent(ID feedId, ID dependentId) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+    
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#feedCriteria()
      */
@@ -330,11 +335,18 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
             return new JpaFeed.FeedId(fid);
         }
     }
+    
+    @Override
+    public Feed findBySystemName(String systemName) {
+        return findBySystemName(null, systemName);
+    }
 
     @Override
     public Feed findBySystemName(String categorySystemName, String systemName) {
         FeedCriteria c = feedCriteria();
-        c.category(categorySystemName);
+        if (categorySystemName != null) {
+            c.category(categorySystemName);
+        }
         c.name(systemName);
         List<Feed> feeds = getFeeds(c);
         if (feeds != null && !feeds.isEmpty()) {

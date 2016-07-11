@@ -27,7 +27,7 @@ public interface NifiJobRepository {
 
     void saveStepExecutionContext(FlowFileComponent flowFileComponent, Map<String, Object> attrs);
 
-    void saveJobExecutionContext(NifiJobExecution jobExecution, Map<String, Object> attrs);
+    void saveJobExecutionContext(NifiJobExecution jobExecution, Map<String, String> attrs);
 
     Long getLastEventIdProcessedByPipelineController();
 

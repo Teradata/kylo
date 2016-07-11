@@ -133,6 +133,7 @@ public class FeedRestController {
     @GET
     @Path("/reusable-feed-input-ports")
     @Produces({MediaType.APPLICATION_JSON})
+    //NOT USED... Not implemented
     public Response getReusableFeedInputPorts() {
         List<FeedMetadata> reusableFeeds = getMetadataService().getReusableFeeds();
         Map<String, Set<PortDTO>> portMap = new HashMap<>();
@@ -188,7 +189,7 @@ public class FeedRestController {
             }
         }
         if (registeredTemplate != null) {
-            NifiPropertyUtil.matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feed.getProperties());
+            NifiPropertyUtil.matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feed.getProperties(),NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
             feed.setProperties(registeredTemplate.getProperties());
         }
 

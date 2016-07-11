@@ -96,14 +96,14 @@ public abstract class AbstractTerminateFeed extends AbstractFeedProcessor {
 //                }
 
                 String timeStr = flowFile.getAttribute(OPERATON_START_PROP);
-                DateTime opStart = timeStr != null ? Formatters.TIME_FORMATTER.parseDateTime(timeStr) : new DateTime();
+                DateTime opStart = timeStr != null ? Formatters.parseDateTime(timeStr) : new DateTime();
 
                 DataOperation op = provider.beginOperation(destination, opStart);
                 op = completeOperation(context, flowFile, ds, op, getState(context, op));
                 
                 updateFeedState(context, flowFile);
 
-                flowFile = session.putAttribute(flowFile, OPERATON_STOP_PROP, Formatters.TIME_FORMATTER.print(new DateTime()));
+                flowFile = session.putAttribute(flowFile, OPERATON_STOP_PROP, Formatters.print(new DateTime()));
 
                 session.remove(flowFile);
 //            session.transfer(flowFile, SUCCESS);

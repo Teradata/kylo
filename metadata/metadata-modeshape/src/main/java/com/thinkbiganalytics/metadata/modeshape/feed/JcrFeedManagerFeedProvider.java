@@ -59,12 +59,16 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
     }
 
     public FeedManagerFeed ensureFeed(Feed feed) {
-        FeedManagerFeed fmFeed = findById(feed.getId());
-        if (fmFeed == null) {
-            JcrFeed jcrFeed = (JcrFeed) feed;
-            fmFeed = new JcrFeedManagerFeed(jcrFeed.getNode());
+        try {
+            FeedManagerFeed fmFeed = findById(feed.getId());
+            if (fmFeed == null) {
+                JcrFeed jcrFeed = (JcrFeed) feed;
+                fmFeed = new JcrFeedManagerFeed(jcrFeed.getNode());
+            }
+            return fmFeed;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to ensure feed ",e);
         }
-        return fmFeed;
     }
 
     public FeedManagerFeed ensureFeed(Category.ID categoryId, String feedSystemName) {
@@ -97,7 +101,7 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
             QueryResult result = JcrQueryUtil.query(getSession(),query,bindParams);
             return JcrQueryUtil.queryResultToList(result, JcrFeedManagerFeed.class);
         } catch (RepositoryException e) {
-          throw new MetadataRepositoryException("Unable to getFeeds for Category ",e);
+            throw new MetadataRepositoryException("Unable to getFeeds for Category ",e);
         }
 
     }

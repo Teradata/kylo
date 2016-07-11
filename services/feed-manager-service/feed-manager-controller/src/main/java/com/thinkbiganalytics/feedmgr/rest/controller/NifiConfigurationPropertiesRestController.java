@@ -2,8 +2,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
-import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
-import com.thinkbiganalytics.feedmgr.support.Constants;
+import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 
 import org.apache.nifi.web.api.dto.PortDTO;
@@ -58,7 +57,7 @@ public class NifiConfigurationPropertiesRestController {
     @Produces({MediaType.APPLICATION_JSON})
     public Response getReusableFeedInputPorts() {
         Set<PortDTO> ports = new HashSet<>();
-        ProcessGroupDTO processGroup = nifiRestClient.getProcessGroupByName("root", SystemNamingService.generateSystemName(Constants.REUSABLE_TEMPLATES_CATEGORY_NAME));
+        ProcessGroupDTO processGroup = nifiRestClient.getProcessGroupByName("root",  TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
         if (processGroup != null) {
             //fetch the ports
             InputPortsEntity inputPortsEntity = nifiRestClient.getInputPorts(processGroup.getId());
@@ -68,5 +67,8 @@ public class NifiConfigurationPropertiesRestController {
         }
         return Response.ok(ports).build();
     }
+
+
+
 
 }

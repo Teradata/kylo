@@ -17,12 +17,14 @@ import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
 import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Parent;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +53,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 import javax.persistence.Version;
 
 /**
@@ -125,6 +128,24 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         this.name = name;
         this.description = description;
     }
+    
+    @Override
+    public List<Feed<C>> getDependentFeeds() {
+        // TODO Implement if JPA support is maintained
+        return Collections.emptyList();
+    }
+    
+    @Override
+    public boolean addDependentFeed(Feed<?> feed) {
+        // TODO Implement if JPA support is maintained
+        return false;
+    }
+    
+    @Override
+    public boolean removeDependentFeed(Feed<?> feed) {
+        // TODO Implement if JPA support is maintained
+        return false;
+    }
 
     @Override
     public Map<String, Object> getProperties() {
@@ -193,6 +214,12 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
 
     public String getName() {
         return name;
+    }
+    
+    @Override
+    @Transient
+    public String getQualifiedName() {
+        return getCategory().getName() + "." + getName();
     }
 
     public String getDisplayName() {
@@ -400,6 +427,18 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         @Override
         public ServiceLevelAgreement getAgreement() {
             return sla;
+        }
+
+        @Override
+        public ServiceLevelAssessment getLastAssessment() {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
+        @Override
+        public void setLastAssessment(ServiceLevelAssessment assmnt) {
+            // TODO Auto-generated method stub
+            
         }
     }
 

@@ -99,7 +99,7 @@
                         else {
                             feed.stateIcon = 'block'
                         }
-                        simpleFeedData.push({id:feed.id,active:feed.active,state:feed.state,stateIcon: feed.stateIcon,feedName:feed.feedName,category:{name:feed.categoryName,icon:feed.categoryIcon,iconColor:feed.categoryIconColor},updateDate:feed.updateDate})
+                        simpleFeedData.push({exportUrl:RestUrlService.ADMIN_EXPORT_FEED_URL+"/"+feed.id,id:feed.id,active:feed.active,state:feed.state,stateIcon: feed.stateIcon,feedName:feed.feedName,category:{name:feed.categoryName,icon:feed.categoryIcon,iconColor:feed.categoryIconColor},updateDate:feed.updateDate})
                     });
                 }
                 self.feedData = simpleFeedData;

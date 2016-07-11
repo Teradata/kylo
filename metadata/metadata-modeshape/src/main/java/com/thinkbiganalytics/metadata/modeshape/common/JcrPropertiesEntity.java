@@ -77,6 +77,26 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
 
     }
 
+    public <T> T getProperty(String name, T defValue) {
+        if (hasProperty(name)) {
+            return getProperty(name, (Class<T>) defValue.getClass(), false);
+        } else {
+            return defValue;
+        }
+    }
+    
+    public boolean hasProperty(String name) {
+        try {
+            if (this.node.hasProperty(name)) {
+                return true;
+            } else {
+                return getPropertiesObject().getNode().hasProperty(name);
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to check Property " + name );
+        }
+    }
+
     public <T> T getProperty(String name, Class<T> type) {
         return getProperty(name, type, true);
     }
@@ -85,7 +105,6 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
 
     @Override
     public <T> T getProperty(String name, Class<T> type, boolean allowNotFound) {
-
         try {
             if ("nt:frozenNode".equalsIgnoreCase(this.node.getPrimaryNodeType().getName())) {
                 T item = super.getProperty(name, type, true);
@@ -103,8 +122,9 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to get Property " + name );
         }
-
+    
     }
+    
     /**
      * Override
      * if the incoming name matches that of a primary property on this Node then set it, otherwise add it the mixin bag of properties

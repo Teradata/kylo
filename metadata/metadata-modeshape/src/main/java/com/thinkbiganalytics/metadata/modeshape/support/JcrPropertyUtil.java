@@ -4,14 +4,20 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.jcr.Binary;
+import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
@@ -112,7 +118,7 @@ public class JcrPropertyUtil {
     public static Object getProperty(Node node, String name, boolean allowNotFound) {
         try {
             Property prop = node.getProperty(name);
-            return asValue(prop, node.getSession());
+            return asValue(prop);
         } catch (PathNotFoundException e) {
             if (allowNotFound) {
                 return null;
@@ -131,7 +137,7 @@ public class JcrPropertyUtil {
 
             while (itr.hasNext()) {
                 Property prop = (Property) itr.next();
-                propMap.put(prop.getName(), asValue(prop, node.getSession()));
+                propMap.put(prop.getName(), asValue(prop));
             }
 
             return propMap;
@@ -170,77 +176,81 @@ public class JcrPropertyUtil {
     }
 
 
-    public static Object asValue(Value value) {
+    @SuppressWarnings("unchecked")
+    public static <T> T asValue(Value value, Session session) {
         try {
             switch (value.getType()) {
-                case (PropertyType.DECIMAL):
-                    return value.getDecimal();
-                case (PropertyType.STRING):
-                    return value.getString();
-                case (PropertyType.DOUBLE):
-                    return Double.valueOf(value.getDouble());
-                case (PropertyType.LONG):
-                    return Long.valueOf(value.getLong());
-                case (PropertyType.BOOLEAN):
-                    return Boolean.valueOf(value.getBoolean());
-                case (PropertyType.DATE):
-                    return new DateTime(value.getDate().getTime());
-                case (PropertyType.BINARY):
-                    return IOUtils.toByteArray(value.getBinary().getStream());
+                case PropertyType.DECIMAL:
+                    return (T) value.getDecimal();
+                case PropertyType.STRING:
+                    return (T) value.getString();
+                case PropertyType.DOUBLE:
+                    return (T) Double.valueOf(value.getDouble());
+                case PropertyType.LONG:
+                    return (T) Long.valueOf(value.getLong());
+                case PropertyType.BOOLEAN:
+                    return (T) Boolean.valueOf(value.getBoolean());
+                case PropertyType.DATE:
+                    return (T) new DateTime(value.getDate().getTime());
+                case PropertyType.BINARY:
+                    return (T) IOUtils.toByteArray(value.getBinary().getStream());
+                case PropertyType.REFERENCE:
+                    String ref = value.getString();
+                    return (T) session.getNodeByIdentifier(ref);
+                case PropertyType.WEAKREFERENCE:
+                    String wref = value.getString();
+                    try {
+                        return (T) session.getNodeByIdentifier(wref);
+                    } catch (ItemNotFoundException e) {
+                        return null;
+                    }
                 default:
-                    return null;
+                    return (T) value.getString();
             }
         } catch (RepositoryException | IOException e) {
             throw new MetadataRepositoryException("Failed to access property type", e);
         }
     }
 
+//
+//    public static <T> T asValue(Property prop) {
+//        return asValue(prop, null);
+//    }
 
-    public static Object asValue(Property prop) {
-        return asValue(prop, null);
-    }
-
-    public static Object asValue(Property prop, Session session) {
+    @SuppressWarnings("unchecked")
+    public static <T> T asValue(Property prop) {
         // STRING, BOOLEAN, LONG, DOUBLE, PATH, ENTITY
         try {
             int code = prop.getType();
             if (prop.isMultiple()) {
-                List<Object> objects = new ArrayList<>();
+                List<T> list = new ArrayList<>();
                 Value[] values = prop.getValues();
                 if (values != null) {
                     for (Value value : values) {
-                        Object o = asValue(value);
-                        objects.add(o);
+                        T o = asValue(value, prop.getSession()); 
+                        list.add(o);
                     }
                 }
-                if (objects.size() == 1) {
-                    return objects.get(0);
-                } else if (objects.size() > 1) {
-                    return objects;
+                if (list.size() > 0) {
+                    return (T) list;
                 } else {
-                    return null;
+                    return (T) Collections.emptyList();
                 }
             } else {
-
                 if (code == PropertyType.BOOLEAN) {
-                    return prop.getBoolean();
+                    return (T) Boolean.valueOf(prop.getBoolean());
                 } else if (code == PropertyType.STRING) {
-                    return prop.getString();
+                    return (T) prop.getString();
                 } else if (code == PropertyType.LONG) {
-                    return prop.getLong();
+                    return (T) Long.valueOf(prop.getLong());
                 } else if (code == PropertyType.DOUBLE) {
-                    return prop.getDouble();
+                    return (T) Double.valueOf(prop.getDouble());
                 } else if (code == PropertyType.PATH) {
-                    return prop.getPath();
-                } else if (code == PropertyType.REFERENCE) {
-                    String nodeIdentifier = prop.getValue().getString();
-                    return lookupNodeReference(nodeIdentifier, session);
-                } else if (code == PropertyType.WEAKREFERENCE) {
-                    String nodeIdentifier = prop.getValue().getString();
-                    return lookupNodeReference(nodeIdentifier, session);
+                    return (T) prop.getPath();
+                } else if (code == PropertyType.REFERENCE || code == PropertyType.WEAKREFERENCE) {
+                    return (T) prop.getNode();
                 } else {
-                    return asValue(prop.getValue());
-                    //return prop.getString();
+                    return (T) asValue(prop.getValue(), prop.getSession());
                 }
             }
         } catch (RepositoryException e) {
@@ -260,20 +270,19 @@ public class JcrPropertyUtil {
         return n;
     }
 
-
+    
     public static void setProperty(Node node, String name, Object value) {
-        //ensure checked out
-
         try {
+            //ensure checked out
             JcrMetadataAccess.ensureCheckoutNode(node);
-
+            
             if (node == null) {
                 throw new IllegalArgumentException("Cannot set a property on a null-node!");
             }
             if (name == null) {
                 throw new IllegalArgumentException("Cannot set a property without a provided name");
             }
-
+            
             if (value == null) {
                 node.setProperty(name, (Value) null);
             } else if (value instanceof Enum) {
@@ -320,8 +329,136 @@ public class JcrPropertyUtil {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to set property value: " + name + "=" + value, e);
         }
-        //save it
+    }
+    
+    public static boolean addToSetProperty(Node node, String name, Object value) {
+        try {
+            JcrMetadataAccess.ensureCheckoutNode(node);
+            
+            if (node == null) {
+                throw new IllegalArgumentException("Cannot set a property on a null-node!");
+            }
+            if (name == null) {
+                throw new IllegalArgumentException("Cannot set a property without a provided name");
+            }
+            
+            Set<Value> values = new HashSet<>();
+            
+            if (node.hasProperty(name)) {
+                values = Arrays.stream(node.getProperty(name).getValues()).collect(Collectors.toSet());
+            } else {
+                values = new HashSet<>();
+            }
+            
+            Value newVal = createValue(node.getSession(), value);
+            boolean result = values.add(newVal);
+            node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
+            return result;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
+        }
+    }
+    
+    public static boolean removeFromSetProperty(Node node, String name, Object value) {
+        try {
+            JcrMetadataAccess.ensureCheckoutNode(node);
+            
+            if (node == null) {
+                throw new IllegalArgumentException("Cannot remove a property from a null-node!");
+            }
+            if (name == null) {
+                throw new IllegalArgumentException("Cannot remove a property without a provided name");
+            }
+            
+            Set<Value> values = new HashSet<>();
+            
+            if (node.hasProperty(name)) {
+                values = Arrays.stream(node.getProperty(name).getValues()).collect(Collectors.toSet());
+            } else {
+                values = new HashSet<>();
+            }
+            
+            Value existingVal = createValue(node.getSession(), value);
+            boolean result = values.remove(existingVal);
+            node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
+            return result;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to remove from set property: " + name + "->" + value, e);
+        }
+    }
+    
+    public static <T> Set<T> getSetProperty(Node node, String name) {
+        try {
+            if (node == null) {
+                throw new IllegalArgumentException("Cannot set a property on a null-node!");
+            }
+            if (name == null) {
+                throw new IllegalArgumentException("Cannot set a property without a provided name");
+            }
+            
+            if (node.hasProperty(name)) {
+                Set<Node> result = new HashSet<Node>((List<Node>) getProperty(node, name));
+                return (Set<T>) result;
+            } else {
+                return Collections.emptySet();
+            }
+        } catch (ClassCastException e) {
+            throw new MetadataRepositoryException("Wrong property data type for set", e);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get set property: " + name, e);
+        }
+    }
 
+    public static Value createValue(Session session, Object value) {
+        try {
+            ValueFactory factory = session.getValueFactory();
+            
+            if (value == null) {
+                throw new IllegalArgumentException("Cannot create a value from null");
+            } else if (value instanceof Enum) {
+                return factory.createValue(((Enum) value).name());
+            } else if (value instanceof JcrObject) {
+                return factory.createValue(((JcrObject) value).getNode());
+            } else if (value instanceof Value) {
+                return (Value) value;
+            } else if (value instanceof Node) {
+                return factory.createValue((Node) value);
+            } else if (value instanceof Binary) {
+                return factory.createValue((Binary) value);
+            } else if (value instanceof Calendar) {
+                return factory.createValue((Calendar) value);
+            } else if (value instanceof DateTime) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime(((DateTime) value).toDate());
+                return factory.createValue(cal);
+            } else if (value instanceof Date) {
+                Calendar cal = Calendar.getInstance();
+                cal.setTime((Date) value);
+                return factory.createValue(cal);
+            } else if (value instanceof BigDecimal) {
+                return factory.createValue((BigDecimal) value);
+            } else if (value instanceof Long) {
+                return factory.createValue(((Long) value).longValue());
+            } else if (value instanceof Double) {
+                return factory.createValue((Double) value);
+            } else if (value instanceof Boolean) {
+                return factory.createValue((Boolean) value);
+            } else if (value instanceof InputStream) {
+                return factory.createValue((InputStream) value);
+//        } else if (value instanceof Collection) {
+//            String[] list = new String[((Collection<Object>) value).size()];
+//            int pos = 0;
+//            for (Object cal : (Collection<Object>) value) {
+//                list[pos] = cal.toString();
+//                pos += 1;
+//            }
+//            return factory.createValue(list);
+            } else {
+                return factory.createValue(value.toString());
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to create value frpm: " + value, e);
+        }
     }
 
     public static int getJCRPropertyType(Object obj) {
