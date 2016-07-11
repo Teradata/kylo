@@ -39,7 +39,7 @@ public class DBSchemaParser {
             }
             return schemas;
         } catch (SQLException e) {
-            throw new RuntimeException("Unable to obtain list schemas", e);
+            throw new RuntimeException("Unable to list schemas", e);
         }
     }
 
@@ -53,7 +53,7 @@ public class DBSchemaParser {
             }
             return catalogs;
         } catch (SQLException e) {
-            throw new RuntimeException("Unable to obtain list catalogs", e);
+            throw new RuntimeException("Unable to list catalogs", e);
         }
     }
 
@@ -62,21 +62,19 @@ public class DBSchemaParser {
     }
 
 
-
     public List<String> listTables(String schema) {
         List<String> schemas = new ArrayList<>();
-        if(StringUtils.isBlank(schema)){
+        if (StringUtils.isBlank(schema)) {
             schemas = listSchemas();
-            if(schemas == null || schemas.isEmpty()){
+            if (schemas == null || schemas.isEmpty()) {
                 schemas = listCatalogs();
             }
-        }
-        else {
+        } else {
             schemas.add(schema);
         }
 
         Vector<String> tables = new Vector<>();
-        for(String tableSchema: schemas) {
+        for (String tableSchema : schemas) {
             try (Connection conn = ds.getConnection()) {
                 ResultSet result = getTables(conn, tableSchema, "%");
                 while (result.next()) {
@@ -84,12 +82,12 @@ public class DBSchemaParser {
                     String tableSchem = result.getString("TABLE_SCHEM");
                     String tableCat = result.getString("TABLE_CAT");
                     String schem = tableSchem != null ? tableSchem : tableCat;
-                    tableName = schem+"."+tableName;
+                    tableName = schem + "." + tableName;
                     tables.add(tableName);
                 }
 
             } catch (SQLException e) {
-                throw new RuntimeException("Unable to obtain list schemas", e);
+                throw new RuntimeException("Unable to obtTain list schemas", e);
             }
         }
         return tables;
@@ -107,7 +105,7 @@ public class DBSchemaParser {
             }
             return tables;
         } catch (SQLException e) {
-            throw new RuntimeException("Unable to obtain list schemas", e);
+            throw new RuntimeException("Unable to list schema [" + schema + "]", e);
         }
     }
 
@@ -125,7 +123,7 @@ public class DBSchemaParser {
                     tableSchema = new TableSchema();
                     String catalog = result.getString(1);
                     String schem = result.getString(2);
-                    tableSchema.setSchemaName(StringUtils.isBlank(schem)? catalog : schem);
+                    tableSchema.setSchemaName(StringUtils.isBlank(schem) ? catalog : schem);
                     tableSchema.setName(tableName);
                     tableSchema.setFields(listColumns(conn, schema, tableName));
                     return tableSchema;
@@ -133,7 +131,7 @@ public class DBSchemaParser {
             }
             return null;
         } catch (SQLException e) {
-            throw new RuntimeException("Unable to obtain list schemas", e);
+            throw new RuntimeException("Unable to describe table [" + table + "]", e);
         }
     }
 
@@ -146,18 +144,17 @@ public class DBSchemaParser {
                 primaryKeys.add(columnName);
             }
         } catch (SQLException e) {
-         //   e.printStackTrace();
+            //   e.printStackTrace();
             //attempt to use the catalog instead of the schema
-             try {
-                 ResultSet rs = conn.getMetaData().getPrimaryKeys(schema, null, tableName);
-                 while (rs.next()) {
-                     String columnName = rs.getString("COLUMN_NAME");
-                     primaryKeys.add(columnName);
-                 }
-             }
-             catch (SQLException e2) {
+            try {
+                ResultSet rs = conn.getMetaData().getPrimaryKeys(schema, null, tableName);
+                while (rs.next()) {
+                    String columnName = rs.getString("COLUMN_NAME");
+                    primaryKeys.add(columnName);
+                }
+            } catch (SQLException e2) {
 
-             }
+            }
         }
         return primaryKeys;
     }
@@ -166,17 +163,17 @@ public class DBSchemaParser {
         List<Field> fields = new Vector<>();
         Set<String> pkSet = listPrimaryKeys(conn, schema, tableName);
         ResultSet columns = conn.getMetaData().getColumns(null, schema, tableName, null);
-        fields = columnsResultSetToField(columns,pkSet);
-        if(fields.isEmpty()){
+        fields = columnsResultSetToField(columns, pkSet);
+        if (fields.isEmpty()) {
             //if empty try the schema as the catalog (for MySQL db)
             columns = conn.getMetaData().getColumns(schema, null, tableName, null);
-            fields = columnsResultSetToField(columns,pkSet);
+            fields = columnsResultSetToField(columns, pkSet);
         }
 
         return fields;
     }
 
-    private List<Field> columnsResultSetToField(ResultSet columns,  Set<String> pkSet ) throws SQLException {
+    private List<Field> columnsResultSetToField(ResultSet columns, Set<String> pkSet) throws SQLException {
         List<Field> fields = new Vector<>();
         if (columns != null) {
             while (columns.next()) {
