@@ -4,14 +4,23 @@ package com.thinkbiganalytics.jobrepo.nifi.model;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
 import com.thinkbiganalytics.jobrepo.nifi.support.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
+
 import org.apache.nifi.web.api.dto.BulletinDTO;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.ExitStatus;
 
 import java.io.Serializable;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
@@ -181,6 +190,13 @@ public class NifiJobExecution extends RunStatusContext implements Serializable {
         this.exitStatus = ExitStatus.EXECUTING;
         this.markRunning();
     }
+
+    public void markStarted(DateTime startTime) {
+        this.setStatus(BatchStatus.STARTED);
+        this.exitStatus = ExitStatus.EXECUTING;
+        this.markRunning(startTime);
+    }
+
 
     public Date getLastUpdated() {
         return lastUpdated;

@@ -24,6 +24,7 @@ import org.springframework.batch.core.repository.dao.JobExecutionDao;
 import org.springframework.batch.core.repository.dao.JobInstanceDao;
 import org.springframework.batch.core.repository.dao.StepExecutionDao;
 import org.springframework.batch.item.ExecutionContext;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.util.Assert;
 
@@ -140,7 +141,7 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
         jobExecution.setStatus(BatchStatus.COMPLETED);
         jobExecution.setExitStatus(ExitStatus.COMPLETED);
         jobExecution.setLastUpdated(DateTimeUtil.getUTCTime());
-        jobExecution.setEndTime(DateTimeUtil.getUTCTime());//nifiJobExecution.getEndTime());
+        jobExecution.setEndTime(nifiJobExecution.getEndTime() != null ? nifiJobExecution.getUTCEndTime() : DateTimeUtil.getUTCTime());
         executionContextValuesService.saveJobExecutionContextValues(jobExecution);
         try {
             jobExecutionDao.updateJobExecution(jobExecution);
@@ -161,7 +162,7 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
         jobExecution.setStatus(BatchStatus.FAILED);
         jobExecution.setExitStatus(ExitStatus.FAILED);
         jobExecution.setLastUpdated(DateTimeUtil.getUTCTime());
-        jobExecution.setEndTime(DateTimeUtil.getUTCTime());
+        jobExecution.setEndTime(nifiJobExecution.getEndTime() != null ? nifiJobExecution.getUTCEndTime() : DateTimeUtil.getUTCTime());
         StringBuffer sb = new StringBuffer();
         Set<FlowFileComponent> failedComponents = nifiJobExecution.getFailedComponents();
         List<FlowFileComponent> allComponents = nifiJobExecution.getComponentOrder();
@@ -280,7 +281,11 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
             if (flowFileComponent.isExecutionContextSet()) {
                 ecDao.updateExecutionContext(stepExecution);
             } else {
-                ecDao.saveExecutionContext(stepExecution);
+                try {
+                    ecDao.saveExecutionContext(stepExecution);
+                } catch (DuplicateKeyException e) {
+                    ecDao.updateExecutionContext(stepExecution);
+                }
                 flowFileComponent.setExecutionContextSet(true);
             }
             flowFileComponent.setExecutionContextMap(allAttrs);
@@ -303,7 +308,11 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
         if (nifiJobExecution.isJobExecutionContextSet()) {
             ecDao.updateExecutionContext(jobExecution);
         } else {
-            ecDao.saveExecutionContext(jobExecution);
+            try {
+                ecDao.saveExecutionContext(jobExecution);
+            } catch (DuplicateKeyException e) {
+                ecDao.updateExecutionContext(jobExecution);
+            }
             nifiJobExecution.setJobExecutionContextSet(true);
         }
         nifiJobExecution.setJobExecutionContextMap(allAttrs);
