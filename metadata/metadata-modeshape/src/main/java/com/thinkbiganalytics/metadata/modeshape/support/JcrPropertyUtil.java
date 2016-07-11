@@ -352,7 +352,7 @@ public class JcrPropertyUtil {
             
             Value newVal = createValue(node.getSession(), value);
             boolean result = values.add(newVal);
-            node.setProperty(name, values.stream().toArray(size -> new Value[size]));
+            node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
             return result;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
@@ -380,7 +380,7 @@ public class JcrPropertyUtil {
             
             Value existingVal = createValue(node.getSession(), value);
             boolean result = values.remove(existingVal);
-            node.setProperty(name, values.stream().toArray(size -> new Value[size]));
+            node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
             return result;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to remove from set property: " + name + "->" + value, e);
