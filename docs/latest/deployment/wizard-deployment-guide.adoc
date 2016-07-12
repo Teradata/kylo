@@ -100,7 +100,8 @@ The steps below require root access
 == Appendix: Cloudera Configuration File Changes
 
 The configuration is setup to work out of the box with the Hortonworks sandbox. There are a few differences that require configuration changes for Cloudera.
-    /opt/thinkbig/thinkbig-services/conf/application.properties
+
+    . /opt/thinkbig/thinkbig-services/conf/application.properties
 
     .. Update the 3 MySQL password values to "cloudera"
 
@@ -120,3 +121,7 @@ The configuration is setup to work out of the box with the Hortonworks sandbox. 
 
     config.hive.schema=metastore
     nifi.executesparkjob.sparkhome=/usr/lib/spark
+
+    . /opt/thinkbig/thinkbig-services/conf/metadata-repository.json
+
+    .. Set the Storage --> persistence --> password field to "cloudera"
