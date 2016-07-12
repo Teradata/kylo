@@ -77,11 +77,18 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
     newReusableConnectionInfo: function() {
       return [{reusableTemplateFeedName:'', feedOutputPortName: '', reusableTemplateInputPortName: ''}];
     },
+    isSelectedProperty: function (property) {
+      var selected = (property.selected || ( property.value != null && property.value != undefined && (property.value.includes("${metadata") || property.value.includes("${config."))) );
+      if (selected) {
+        property.selected = true;
+      }
+      return selected;
+    },
     getSelectedProperties: function () {
       var self = this;
       var selectedProperties = [];
       angular.forEach(self.model.inputProperties, function (property) {
-        if (property.selected) {
+        if (data.isSelectedProperty(property)) {
           selectedProperties.push(property)
           if (property.processor && property.processor.topIndex != undefined) {
             delete property.processor.topIndex;
@@ -90,7 +97,7 @@ angular.module(MODULE_FEED_MGR).factory('RegisterTemplateService', function ($ht
       });
 
       angular.forEach(self.model.additionalProperties, function (property) {
-        if (property.selected) {
+        if (data.isSelectedProperty(property)) {
           selectedProperties.push(property);
           if (property.processor && property.processor.topIndex != undefined) {
             delete property.processor.topIndex;
