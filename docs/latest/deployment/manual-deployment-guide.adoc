@@ -13,13 +13,14 @@ For each step below you will need to login with root access
 
 === Setup Directory
 
-    .. Online Mode
+If you are deploying everything to one node the setup directory would typically be:
 
     SETUP_DIR=/opt/thinkbig/setup
 
-    .. Offline Mode
+However, in manual mode it's more likely you will be deploying components to different nodes and will copy the setup folder to nodes that do not
+have the Think Big applications installed. In that case it would look more like this:
 
-    SETUP_DIR=<Your custom folder>
+    SETUP_DIR=</tmp/thinkbig-install>
 
 === Optional - Offline Mode
 If an edge node has no internet access you can generate a TAR file that contains everything in the /opt/thinkbig/setup folder including
@@ -65,7 +66,7 @@ you stand up an ELK stack you will likely want to leverage the same instance.
 
     .. Online Mode
 
-        $ /opt/thinkbig/setup/elasticsearch/install-elasticsearch.sh
+        $ <SETUP_DIR>/elasticsearch/install-elasticsearch.sh
 
 
     .. Offline Mode
@@ -88,8 +89,6 @@ The project includes a script to stand up a single node ActiveMQ instance to get
 
     The included ActiveMQ script was meant to speed up installation in a sandbox or DEV environment. It is not a production ready configuration.
 
-        $ /opt/thinkbig/setup/activemq/install-activemq.sh
-
         .. Online Mode
 
             $ /opt/thinkbig/setup/activemq/install-activemq.sh
@@ -103,12 +102,12 @@ The project includes a script to stand up a single node ActiveMQ instance to get
 
         NOTE: If installing on a different node than NiFi and thinkbig-services you will need to update the following properties
 
-                 /opt/nifi/ext-config/config.properties
+                ... /opt/nifi/ext-config/config.properties
 
                     spring.activemq.broker-url
 
 
-                 /opt/thinkbig/thinkbig-services/conf/application.properties
+                ... /opt/thinkbig/thinkbig-services/conf/application.properties
 
                     jms.activemq.broker.url
 
