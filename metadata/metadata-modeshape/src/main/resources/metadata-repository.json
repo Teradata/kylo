@@ -19,6 +19,7 @@
             "connectionUrl": "jdbc:mysql://localhost:3306/thinkbig",
             "driver": "com.mysql.jdbc.Driver",
             "username": "root",
+            "password": "",
             "createOnStart" : true,
             "dropOnExit" : false
         },
