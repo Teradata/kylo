@@ -11,6 +11,8 @@ import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -19,6 +21,8 @@ import java.util.List;
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class TableSetup {
+
+    private static final Logger log = LoggerFactory.getLogger(TableSetup.class);
 
     private TableSchema tableSchema;
 
@@ -268,11 +272,17 @@ public class TableSetup {
     }
 
     private void updateTargetTblProperties() {
+        this.targetTblProperties = "";
+
         //build based upon compression options
         if (options != null && StringUtils.isNotBlank(options.getCompressionFormat()) && !"NONE".equalsIgnoreCase(options.getCompressionFormat())) {
-            this.targetTblProperties = "tblproperties(\"orc.compress\"=\"" + options.getCompressionFormat() + "\")";
-        } else {
-            this.targetTblProperties = "";
+            if ("STORED AS PARQUET".equalsIgnoreCase(getTargetFormat())) {
+                this.targetTblProperties = "tblproperties(\"parquet.compression\"=\"" + options.getCompressionFormat() + "\")";
+            } else if ("STORED AS ORC".equalsIgnoreCase(getTargetFormat())) {
+                this.targetTblProperties = "tblproperties(\"orc.compress\"=\"" + options.getCompressionFormat() + "\")";
+            } else {
+                log.warn("Compression enabled with unsupported target format: {}", getTargetFormat());
+            }
         }
     }
 
