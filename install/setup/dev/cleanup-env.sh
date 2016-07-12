@@ -6,6 +6,7 @@ echo "Uninstalling thinkbig applications with RPM uninstall"
 rm -rf /opt/thinkbig
 mysql -e "drop database thinkbig;"
 mysql -e "show databases;"
+userdel thinkbig
 
 echo "Uninstalling NiFi"
 service nifi stop
