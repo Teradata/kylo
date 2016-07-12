@@ -57,7 +57,9 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         List<NifiProperty> matchedProperties = NifiPropertyUtil
             .matchAndSetPropertyByIdKey(registeredTemplate.getProperties(), feedMetadata.getProperties(),NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
         if (matchedProperties.size() == 0) {
-            NifiPropertyUtil.matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
+            matchedProperties =
+                NifiPropertyUtil
+                    .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feedMetadata.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_ALL_PROPERTIES);
         }
         feedMetadata.setProperties(registeredTemplate.getProperties());
         //resolve any ${metadata.} properties

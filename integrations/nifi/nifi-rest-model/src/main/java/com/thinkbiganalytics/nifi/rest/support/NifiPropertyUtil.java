@@ -9,6 +9,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
@@ -223,12 +224,17 @@ if(properties != null) {
         return matchedProperties;
     }
 
-    public static void matchAndSetPropertyByProcessorName(Collection<NifiProperty> templateProperties, List<NifiProperty> nifiProperties, PROPERTY_MATCH_AND_UPDATE_MODE updateMode){
+    public static List<NifiProperty> matchAndSetPropertyByProcessorName(Collection<NifiProperty> templateProperties, List<NifiProperty> nifiProperties, PROPERTY_MATCH_AND_UPDATE_MODE updateMode) {
+        List<NifiProperty> matchedProperties = new ArrayList<>();
         if(nifiProperties != null && !nifiProperties.isEmpty()) {
             for (NifiProperty nifiProperty : nifiProperties) {
-                matchPropertyByProcessorName(templateProperties, nifiProperty, updateMode);
+                NifiProperty matched = matchPropertyByProcessorName(templateProperties, nifiProperty, updateMode);
+                if (matched != null) {
+                    matchedProperties.add(matched);
+                }
             }
         }
+        return matchedProperties;
     }
 
     public static void matchAndSetTemplatePropertiesWithSavedProperties(Collection<NifiProperty> templateProperties, List<NifiProperty> savedProperties){
@@ -372,5 +378,17 @@ if(properties != null) {
                 updateProperty(matchingProperty, nifiProperty);
             }
         }
+    }
+
+    public static boolean containsPropertiesForProcessorMatchingType(Collection<NifiProperty> properties, final String processorType) {
+        if (StringUtils.isBlank(processorType)) {
+            return false;
+        }
+        return Iterables.tryFind(properties, new Predicate<NifiProperty>() {
+            @Override
+            public boolean apply(NifiProperty property) {
+                return processorType.equalsIgnoreCase(property.getProcessorType());
+            }
+        }).orNull() != null;
     }
 }
