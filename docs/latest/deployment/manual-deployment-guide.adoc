@@ -20,7 +20,7 @@ If you are deploying everything to one node the setup directory would typically 
 However, in manual mode it's more likely you will be deploying components to different nodes and will copy the setup folder to nodes that do not
 have the Think Big applications installed. In that case it would look more like this:
 
-    SETUP_DIR=</tmp/thinkbig-install>
+    SETUP_DIR=/tmp/thinkbig-install
 
 === Optional - Offline Mode
 If an edge node has no internet access you can generate a TAR file that contains everything in the /opt/thinkbig/setup folder including
