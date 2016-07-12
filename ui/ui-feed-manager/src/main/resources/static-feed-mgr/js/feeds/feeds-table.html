@@ -35,9 +35,9 @@
                                    </span>
                         </div>
                         <div flex="30" layout="column" class="item-column md-list-item-text ">
-                                   <span class="item-title">{{feed.updateDate | date: 'MM/dd/yyyy @ h:mm:ssa' }}
+                                   <span class="item-title">{{feed.templateName}}
                                    </span>
-                            <span class="column-title column-title-bottom">Last Modified</span>
+                            <span class="column-title column-title-bottom">Type</span>
                         </div>
                       <div flex="15" layout="column" class="item-column md-list-item-text ">
                         <md-button href="{{feed.exportUrl}}" layout-align="center">
@@ -77,6 +77,7 @@
                             <th md-column name="Feed" md-order-by="feedName">Feed</th>
                             <th md-column name="State" md-order-by="state">State</th>
                             <th md-column name="Category" md-order-by="category.name">Category</th>
+                             <th md-column name="Type" md-order-by="templateName" >Type</th>
                             <th md-column name="Last Updated" md-order-by="updateDate" >Last Updated</th>
                         </tr>
                         </thead>
@@ -95,6 +96,7 @@
                                               </ng-md-icon>
                                          {{feed.category.name}}
                             </td>
+                          <td md-cell >{{feed.templateName }}</td>
                             <td md-cell >{{feed.updateDate | date: 'MM/dd/yyyy @ h:mm:ssa' }}</td>
                         </tr>
                         </tbody>

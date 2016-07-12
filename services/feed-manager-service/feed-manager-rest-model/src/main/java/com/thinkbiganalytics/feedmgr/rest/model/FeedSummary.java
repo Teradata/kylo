@@ -23,6 +23,8 @@ public class FeedSummary implements UIFeed {
     private boolean active;
     private String state;
     private Date updateDate;
+    private String templateName;
+    private String templateId;
 
     public FeedSummary() {
 
@@ -40,6 +42,8 @@ public class FeedSummary implements UIFeed {
         this.categoryIconColor = feedMetadata.getCategoryIconColor();
         this.active = feedMetadata.isActive();
         this.state = feedMetadata.getState();
+        this.templateId = feedMetadata.getTemplateId();
+        this.templateName = feedMetadata.getTemplateName();
     }
 
     @Override
@@ -157,5 +161,21 @@ public class FeedSummary implements UIFeed {
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    public String getTemplateName() {
+        return templateName;
+    }
+
+    public void setTemplateName(String templateName) {
+        this.templateName = templateName;
+    }
+
+    public String getTemplateId() {
+        return templateId;
+    }
+
+    public void setTemplateId(String templateId) {
+        this.templateId = templateId;
     }
 }

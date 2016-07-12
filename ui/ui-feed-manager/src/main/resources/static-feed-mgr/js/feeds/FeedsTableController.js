@@ -68,7 +68,7 @@
          * @returns {*[]}
          */
         function loadSortOptions() {
-            var options = {'Feed':'feedName','State':'state','Category':'category.name','Last Modified':'updateDate'};
+            var options = {'Feed': 'feedName', 'State': 'state', 'Category': 'category.name', 'Type': 'templateName', 'Last Modified': 'updateDate'};
 
             var sortOptions = TableOptionsService.newSortOptions(self.pageName,options,'feedName','asc');
             var currentOption = TableOptionsService.getCurrentSort(self.pageName);
@@ -99,7 +99,18 @@
                         else {
                             feed.stateIcon = 'block'
                         }
-                        simpleFeedData.push({exportUrl:RestUrlService.ADMIN_EXPORT_FEED_URL+"/"+feed.id,id:feed.id,active:feed.active,state:feed.state,stateIcon: feed.stateIcon,feedName:feed.feedName,category:{name:feed.categoryName,icon:feed.categoryIcon,iconColor:feed.categoryIconColor},updateDate:feed.updateDate})
+                        simpleFeedData.push({
+                            templateId: feed.templateId,
+                            templateName: feed.templateName,
+                            exportUrl: RestUrlService.ADMIN_EXPORT_FEED_URL + "/" + feed.id,
+                            id: feed.id,
+                            active: feed.active,
+                            state: feed.state,
+                            stateIcon: feed.stateIcon,
+                            feedName: feed.feedName,
+                            category: {name: feed.categoryName, icon: feed.categoryIcon, iconColor: feed.categoryIconColor},
+                            updateDate: feed.updateDate
+                        })
                     });
                 }
                 self.feedData = simpleFeedData;
