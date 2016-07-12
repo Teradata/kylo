@@ -1,9 +1,12 @@
 <div  flex style="width:100%" ng-controller="DefineFeedController as vm">
 
-    <div layout="column" flex class="md-padding feed-templates" layout-align="start start"   ng-if="vm.stepperUrl == null">
-        <div layout="column" flex layout-fill layout-align="center center">
-                 <div class="md-title">Select the type of feed</div>
+    <div layout="column" flex class="md-padding feed-templates" layout-align="start center" ng-if="vm.stepperUrl == null">
+        <div layout="row">
+            <div layout="column" flex layout-fill layout-align="center center">
+                <div class="md-title">Select the type of feed or <a href="" ng-click="vm.gotoImportFeed()">Import</a> from an archive</div>
             </div>
+        </div>
+
         <div layout="column" flex layout-fill layout-align="center center" ng-if="vm.layout == 'first'">
 
         <md-card style="width:450px;max-width:450px;max-height:121px;height:121px" ng-repeat="template in vm.firstTemplates track by $index" flex="initial" flex-md="initial" flex-sm="50" ng-click="vm.selectTemplate(template)">
@@ -19,8 +22,10 @@
                 <div style="word-wrap:break-word;">{{template.description | characters:100}}</div>
             </md-card-content>
         </md-card>
+            <div>
           <a href="" ng-click="vm.more()" ng-if="vm.displayMoreLink">More</a>
             </div>
+        </div>
 
         <div layout="row" flex class="md-padding feed-templates" layout-align="start start"  layout-wrap ng-if="vm.layout == 'all'">
             <md-card style="width:400px;max-width:400px;max-height:121px;height:121px" ng-repeat="template in vm.allTemplates track by $index" flex="initial" flex-md="initial" flex-sm="50" ng-click="vm.selectTemplate(template)">

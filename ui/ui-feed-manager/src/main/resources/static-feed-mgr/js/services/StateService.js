@@ -31,6 +31,10 @@ angular.module(MODULE_FEED_MGR).service('StateService', function ($state) {
         $state.go('import-template');
     }
 
+
+    this.navigatetoImportFeed = function(){
+        $state.go('import-feed');
+    }
     this.navigateToRegisterNifiTemplate = function(){
         $state.go('register-nifi-template',{registeredTemplateId:null,nifiTemplateId:null});
     }

@@ -64,6 +64,7 @@ public class ExportImportFeedService {
     public class ImportFeed {
 
         private String fileName;
+        private String feedName;
         private ExportImportTemplateService.ImportTemplate template;
 
         public ImportFeed(String fileName) {
@@ -94,6 +95,14 @@ public class ExportImportFeedService {
 
         public void setTemplate(ExportImportTemplateService.ImportTemplate template) {
             this.template = template;
+        }
+
+        public String getFeedName() {
+            return feedName;
+        }
+
+        public void setFeedName(String feedName) {
+            this.feedName = feedName;
         }
     }
 
@@ -190,7 +199,7 @@ public class ExportImportFeedService {
             ImportFeed feed = readFeedJson(fileName, content);
             feed.setTemplate(template);
             //now that we have the Feed object we need to create the instance of the feed
-            metadataAccess.commit(new Command<FeedMetadata>() {
+            FeedMetadata feedMetadata = metadataAccess.commit(new Command<FeedMetadata>() {
                 @Override
                 public FeedMetadata execute() {
                     FeedMetadata metadata = ObjectMapperSerializer.deserialize(feed.getFeedJson(), FeedMetadata.class);
@@ -203,6 +212,9 @@ public class ExportImportFeedService {
                     return metadata;
                 }
             });
+            if (feedMetadata != null) {
+                feed.setFeedName(feedMetadata.getCategoryAndFeedName());
+            }
             return feed;
 
         }

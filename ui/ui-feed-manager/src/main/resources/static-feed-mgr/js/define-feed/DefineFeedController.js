@@ -63,6 +63,10 @@
             this.layout = 'all';
         }
 
+
+        this.gotoImportFeed = function(){
+            StateService.navigatetoImportFeed();
+        }
         getRegisteredTemplates();
 
 

@@ -129,6 +129,19 @@ app.config(function($stateProvider,$urlRouterProvider) {
             breadcrumbRoot:false,
             displayName:'Define Feed'
         }
+    }).state('import-feed',{
+        url:'/import-feed',
+        params: {
+        },
+        views: {
+            'content': {
+                templateUrl: 'js/define-feed/import-feed.html'
+            }
+        },
+        data:{
+            breadcrumbRoot:false,
+            displayName:'Import Feed'
+        }
     }).state('define-feed-complete',{
         url:'/define-feed-complete',
         params: {
