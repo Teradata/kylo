@@ -32,7 +32,7 @@ The steps below require root access
 
 . Optional - Generate TAR file for offline mode
 
-    If you need to run the wizard on an edge node with no internet access you can generate a TAR file the contains everything in the /opt/thinkbig/setup folder including
+    If you need to run the wizard on an edge node with no internet access you can generate a TAR file that contains everything in the /opt/thinkbig/setup folder including
     the downloaded application binaries.
 
     .. Install the Data Lake Accelerator RPM on a node that has internet access

@@ -11,6 +11,28 @@ you can tar up the /opt/thinkbig/setup folder and untar it to a temp directory o
 
 For each step below you will need to login with root access
 
+=== Setup Directory
+
+    .. Online Mode
+
+    SETUP_DIR=/opt/thinkbig/setup
+
+    .. Offline Mode
+
+    SETUP_DIR=<Your custom folder>
+
+=== Optional - Offline Mode
+If an edge node has no internet access you can generate a TAR file that contains everything in the /opt/thinkbig/setup folder including
+    the downloaded application binaries.
+
+    .. Install the Data Lake Accelerator RPM on a node that has internet access
+    .. Run "/opt/thinkbig/setup/generate-offline-install.sh
+    .. Copy the /opt/thinkbig/setup/thinkbig-install.tar file to the node you install the RPM on. This can be copied to a temp directory. It doesn't have to put put in the /opt/thinkbig/setup folder
+    .. run "tar -xvf thinkbig-install.tar" on file
+    .. Note the directory name where you untar'd the files. This will be referred to in the rest of the doc by OFFLINE_SETUP_DIR
+
+    The script will download all application binaries and puts them in their respective directory in the setup folder. Last it will TAR up the setup folder
+
 === Install Think Big Services
 
 . Find and download the RPM file from artifactory and place on the host linux machine you want to install the data lake
@@ -27,10 +49,11 @@ For each step below you will need to login with root access
 === Run the database scripts
 The database scripts will create one schema called "thinkbig" and install to that schema. Please run the following script
 
-    $ /opt/thinkbig/setup/sql/mysql/setup-mysql.sh [db_user] [db_password]
+    $ <SETUP_DIR>/sql/mysql/setup-mysql.sh [db_user] [db_password]
+
 
     NOTE: The HDP sandbox doesn't have a password set for the root user so
-    you would run "/opt/thinkbig/setup/sql/mysql/setup-mysql.sh root"
+    you would run "<SETUP_DIR>/sql/mysql/setup-mysql.sh root"
 
 === Install and configure Elasticsearch
 The project includes a script to stand up a single node Elasticsearch instance to get up and running quickly. You can also leverage an existing Elasticsearch instance. For example, if
@@ -40,7 +63,16 @@ you stand up an ELK stack you will likely want to leverage the same instance.
 
     The included Elasticsearch script was meant to speed up installation in a sandbox or DEV environment. It is not a production ready configuration.
 
-    $ /opt/thinkbig/setup/elasticsearch/install-elasticsearch.sh
+    .. Online Mode
+
+        $ /opt/thinkbig/setup/elasticsearch/install-elasticsearch.sh
+
+
+    .. Offline Mode
+
+        $ <SETUP_DIR>/elasticsearch/install-elasticsearch.sh -o <SETUP_DIR>
+
+        ex. /opt/thinkbig/setup/elasticsearch/install-elasticsearch.sh -o /opt/thinkbig/setup
 
     . Option 2: Use an existing Elasticsearch
 
@@ -58,12 +90,32 @@ The project includes a script to stand up a single node ActiveMQ instance to get
 
         $ /opt/thinkbig/setup/activemq/install-activemq.sh
 
+        .. Online Mode
+
+            $ /opt/thinkbig/setup/activemq/install-activemq.sh
+
+
+        .. Offline Mode
+
+            $ <SETUP_DIR>/activemq/install-activemq.sh -o <SETUP_DIR>
+
+            ex. /opt/thinkbig/setup/activemq/install-activemq.sh -o /opt/thinkbig/setup
+
         NOTE: If installing on a different node than NiFi and thinkbig-services you will need to update the following properties
+
+                 /opt/nifi/ext-config/config.properties
+
+                    spring.activemq.broker-url
+
+
+                 /opt/thinkbig/thinkbig-services/conf/application.properties
+
+                    jms.activemq.broker.url
+
 
     . Option 2: Leverage an existing ActiveMQ instance
 
         Update the below properties so that NiFI and thinkbig-services can communicate with the existing server
-
 
         1. /opt/nifi/ext-config/config.properties
 
@@ -85,15 +137,23 @@ The project includes a script to stand up a single node ActiveMQ instance to get
     In this case you need to remove the default JAVA_HOME used as part of the install. Run the following script:
 
         For thinkbig-ui and thinkbig-services
-        $/opt/thinkbig/setup/java/remove-default-thinkbig-java-home.sh
+        $ <SETUP_DIR>/java/remove-default-thinkbig-java-home.sh
 
      To test this you can look at each file referenced in the scripts for thinkbig-ui and thinkbig-services to validate the 2 lines setting and exporting the JAVA_HOME are gone.
 
     . Scenario 2: Install Java in the default /opt/java/current location
 
-        1. Install Java 8 - You can modify and use the following script if you want
+        .. Install Java 8 - You can modify and use the following script if you want
 
-            $ /opt/thinkbig/setup/java/install-java8.sh
+           ... Online Mode
+
+            $ <SETUP_DIR>/java/install-java8.sh
+
+           ... Offline Mode
+
+            $ <SETUP_DIR>/java/install-java8.sh -o <SETUP_DIR>
+
+            ex. /opt/thinkbig/setup/java/install-java8.sh -o /opt/thinkbig/setup
 
 
     . Scenario 3: I already have Java 8 installed on the node but it's not in the default JAVA_HOME path
@@ -103,7 +163,7 @@ The project includes a script to stand up a single node ActiveMQ instance to get
 
         For thinkbig-ui and thinkbig-services
         $ /opt/thinkbig/setup/java/remove-default-thinkbig-java-home.sh
-        $ /opt/thinkbig/setup/java/change-thinkbig-java-home.sh <path to JAVA_HOME>
+        $ /opt/thinkbig/setup/java/change-thinkbig-java-home.sh <PATH_TO_JAVA_HOME>
 
 === Install NiFi
 
@@ -119,15 +179,21 @@ The project includes a script to stand up a single node ActiveMQ instance to get
 
         .. Install NiFi
 
-        $ /opt/thinkbig/setup/nifi/install-nifi.sh
+        ... Online Mode
+
+            $ <SETUP_DIR>/nifi/install-nifi.sh
+
+        ... Offline Mode
+
+            $ <SETUP_DIR>/nifi/install-nifi.sh -o <SETUP_DIR>
 
         .. Update JAVA_HOME (default is /opt/java/current)
 
-        $ /opt/thinkbig/setup/java/change-nifi-java-home.sh <path to JAVA_HOME>
+        $ <SETUP_DIR>/java/change-nifi-java-home.sh <path to JAVA_HOME>
 
         .. Install Think Big specific components
 
-        $ /opt/thinkbig/setup/nifi/install-thinkbig-components.sh
+        $ <SETUP_DIR>/nifi/install-thinkbig-components.sh
 
     . Option 2: Leverage an existing NiFi instance
 
@@ -136,17 +202,27 @@ The project includes a script to stand up a single node ActiveMQ instance to get
 
         NOTE: If Java 8 isn't being used for the existing instance you will be required to change it.
 
-        .. Copy the /opt/thinkbig/setup/nifi/thinkbig- *.nar and thinkbig-spark- *.jar files to the node NiFI is running on. If it's on the same node you can skip this step.
+        .. Copy the <SETUP_DIR>/nifi/thinkbig- *.nar and thinkbig-spark- *.jar files to the node NiFi is running on. If it's on the same node you can skip this step.
 
         .. Shutdown the NiFi instance
 
-        .. copy the thinkbig-*.nar files to the <NIFI_HOME>/lib directory
+        .. Create folders for the jar files. You may choose to store the jars in another location if you want.
+
+            $ mkdir -p <NIFI_HOME>/thinkbig/lib/app
+
+        .. Copy the thinkbig-*.nar files to the <NIFI_HOME>/thinkbig/lib directory
 
         .. Create a directory called "app" in the <NIFI_HOME>/lib directory
 
             $ mkdir <NIFI_HOME>/lib/app
 
-        .. Copy the thinkbig-spark-*.jar files to the <NIFI_HOME>/lib/app directory
+        .. Copy the thinkbig-spark-*.jar files to the <NIFI_HOME>/thinkbig/lib/app directory
+
+        .. Create symbolic links for all of the jars. Below is an example of how to create it for one NAR file and one JAR file. At the time of this writing there are 8 NAR files and 3 spark JAR files
+
+            $ ln -s <NIFI_HOME>/thinkbig/lib/thinkbig-nifi-spark-nar-*.nar <NIFI_HOME>/lib/thinkbig-nifi-spark-nar.nar
+
+            $ ln -s <NIFI_HOME>/thinkbig/lib/app/thinkbig-spark-interpreter-*-jar-with-dependencies.jar <NIFI_HOME>/lib/app/thinkbig-spark-interpreter-jar-with-dependencies.jar
 
         .. Modify <NIFI_HOME>/conf/nifi.properties and update the following property. The will modify NiFI to use our custom provenance repository which sends data to the
            thinkbig-services application
