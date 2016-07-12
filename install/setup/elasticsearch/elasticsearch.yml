@@ -51,7 +51,7 @@
 #
 # Set the bind address to a specific IP (IPv4 or IPv6):
 #
- network.host: 10.0.2.15,localhost
+ network.host: localhost
 #
 # Set a custom port for HTTP:
 #
