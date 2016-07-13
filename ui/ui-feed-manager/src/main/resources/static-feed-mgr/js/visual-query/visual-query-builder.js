@@ -117,7 +117,15 @@
             //
             // Create the view-model for the chart and attach to the scope.
             //
-            var chartDataModel = (self.model.visualQueryModel != undefined) ? self.model.visualQueryModel : {"nodes": [], "connections": []};
+            var chartDataModel;
+            if (typeof(self.model.visualQueryModel) !== "undefined") {
+                chartDataModel = self.model.visualQueryModel;
+            } else if (FeedService.createFeedModel.dataTransformation.chartViewModel !== null) {
+                chartDataModel = FeedService.createFeedModel.dataTransformation.chartViewModel;
+            } else {
+                chartDataModel = {"nodes": [], "connections": []};
+            }
+            angular.forEach(chartDataModel.nodes, function(node) {self.prepareNode(node)});
             self.chartViewModel = new flowchart.ChartViewModel(chartDataModel, self.onCreateConnectionCallback, self.onEditConnectionCallback, self.onDeleteSelectedCallback);
         }
 
@@ -154,9 +162,8 @@
                 delete self.model.visualQueryModel;
 
                 var feedModel = FeedService.createFeedModel;
-                feedModel.dataTransformation.visualQuery.sql = self.model.visualQuerySql;
-                delete feedModel.dataTransformation.visualQuery.selectedColumnsAndTablesJson;
-                delete feedModel.dataTransformation.visualQuery.chartViewModelJson;
+                feedModel.dataTransformation.sql = self.model.visualQuerySql;
+                feedModel.dataTransformation.chartViewModel = null;
             } else if (typeof(self.chartViewModel.nodes) !== "undefined") {
                 self.isValid = (self.chartViewModel.nodes.length > 0);
 
@@ -166,9 +173,8 @@
                 self.model.selectedColumnsAndTables = self.selectedColumnsAndTables;
 
                 var feedModel = FeedService.createFeedModel;
-                feedModel.dataTransformation.visualQuery.sql = sql;
-                feedModel.dataTransformation.visualQuery.selectedColumnsAndTablesJson = angular.toJson(self.selectedColumnsAndTables);
-                feedModel.dataTransformation.visualQuery.chartViewModelJson = angular.toJson(self.selectedColumnsAndTables);
+                feedModel.dataTransformation.chartViewModel = angular.copy(self.chartViewModel.data);
+                feedModel.dataTransformation.sql = sql;
             } else {
                 self.isValid = false;
             }
@@ -232,6 +238,71 @@
 
         };
 
+        /**
+         * Adds utility functions to a node data model.
+         *
+         * @param {Object} node the node data model
+         */
+        this.prepareNode = function(node) {
+            /**
+             * Indicates if all of the attributes are selected.
+             *
+             * @returns {boolean} {@code true} if all attributes are selected, or {@code false} otherwise
+             */
+            node.nodeAttributes.hasAllSelected = function() {
+                return _.every(this.attributes, function(attr) {return attr.selected});
+            };
+
+            /**
+             * Selects the specified attribute.
+             *
+             * @param {Object} attr the attribute to be selected
+             */
+            node.nodeAttributes.select = function(attr) {
+                attr.selected = true;
+                this.selected.push(attr);
+                validate();
+            };
+
+            /**
+             * Selects all attributes.
+             */
+            node.nodeAttributes.selectAll = function() {
+                var selected = [];
+                angular.forEach(this.attributes, function(attr) {
+                    attr.selected = true;
+                    selected.push(attr);
+                });
+                this.selected = selected;
+                validate();
+            };
+
+            /**
+             * Deselects the specified attribute.
+             *
+             * @param {Object} attr the attribute to be deselected
+             */
+            node.nodeAttributes.deselect = function(attr) {
+                attr.selected = false;
+                var idx = this.selected.indexOf(attr);
+                if (idx > -1) {
+                    this.selected.splice(idx, 1);
+                }
+                validate();
+            };
+
+            /**
+             * Deselects all attributes.
+             */
+            node.nodeAttributes.deselectAll = function() {
+                angular.forEach(this.attributes, function(attr) {
+                    attr.selected = false;
+                });
+                this.selected = [];
+                validate();
+            };
+        };
+
         //
         // Add a new node to the chart.
         //
@@ -256,38 +327,6 @@
                     nodeAttributes: {
                         attributes: schemaData.fields,
                         selected: [],
-                        hasAllSelected: function() {
-                            return _.every(schemaData.fields, function(attr) {return attr.selected});
-                        },
-                        select: function(attr) {
-                            attr.selected = true;
-                            this.selected.push(attr);
-                            validate();
-                        },
-                        selectAll: function() {
-                            var selected = [];
-                            angular.forEach(schemaData.fields, function(attr) {
-                                attr.selected = true;
-                                selected.push(attr);
-                            });
-                            this.selected = selected;
-                            validate();
-                        },
-                        deselect: function(attr) {
-                            attr.selected = false;
-                            var idx = this.selected.indexOf(attr);
-                            if (idx > -1) {
-                                this.selected.splice(idx, 1);
-                            }
-                            validate();
-                        },
-                        deselectAll: function() {
-                            angular.forEach(schemaData.fields, function(attr) {
-                                attr.selected = false;
-                            });
-                            this.selected = [];
-                            validate();
-                        },
                         sql: "`" + StringUtils.quoteSql(table.schema) + "`.`" + StringUtils.quoteSql(table.tableName) + "`"
                     },
                     connectors: {
@@ -307,6 +346,7 @@
                         }
                     ]
                 };
+                self.prepareNode(newNodeDataModel);
                 self.chartViewModel.addNode(newNodeDataModel);
                 validate();
             })

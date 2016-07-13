@@ -76,7 +76,12 @@
         };
 
         // Translates expressions into Spark code
-        this.sparkShellService = new SparkShellService(this.sql);
+        if (FeedService.createFeedModel.dataTransformation.states.length > 0) {
+            this.sparkShellService = new SparkShellService(this.sql, FeedService.createFeedModel.dataTransformation.states);
+            this.functionHistory = this.sparkShellService.getHistory();
+        } else {
+            this.sparkShellService = new SparkShellService(this.sql);
+        }
 
         this.executingQuery = false;
         //Code Mirror options.  Tern Server requires it be in javascript mode
@@ -546,9 +551,7 @@
             // Populate Feed Model from the Visual Query Model
             var feedModel = FeedService.createFeedModel;
             feedModel.dataTransformation.dataTransformScript = self.sparkShellService.getScript();
-            feedModel.dataTransformation.formulas = _.map(self.functionHistory, function(history) {
-                return history.formula;
-            });
+            feedModel.dataTransformation.states = self.sparkShellService.save();
 
             feedModel.table.existingTableName = "";
             feedModel.table.method = "EXISTING_TABLE";
@@ -580,11 +583,6 @@
         WindowUnloadService.setText("You will lose any unsaved changes. Are you sure you want to continue?");
 
         // Load table data
-        if (FeedService.createFeedModel.dataTransformation.formulas.length > 0 && self.sparkShellService.loadGlobalState()) {
-            self.functionHistory = self.sparkShellService.getHistory();
-        } else {
-            SparkShellService.clearGlobalState();
-        }
         this.query();
 
         $scope.$on('$destroy', function() {

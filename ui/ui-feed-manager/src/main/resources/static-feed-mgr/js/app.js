@@ -304,6 +304,20 @@ app.config(function($stateProvider,$urlRouterProvider) {
             breadcrumbRoot: true,
             displayName: 'Modeshape Migration'
         }
+    }).state('edit-feed',{
+        url:'/edit-feed/{feedId}',
+        params: {
+            feedId: null
+        },
+        views: {
+            'content': {
+                templateUrl: 'js/edit-feed/edit-feed.html'
+            }
+        },
+        data:{
+            breadcrumbRoot: false,
+            displayName: 'Edit Feed'
+        }
     })
 
 

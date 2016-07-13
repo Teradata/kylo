@@ -79,8 +79,9 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
      *
      * @constructor
      * @param sql the source SQL for transformations
+     * @param {Object} [opt_load] the saved state to be loaded
      */
-    var SparkShellService = function(sql) {
+    var SparkShellService = function(sql, opt_load) {
         /**
          * Transformation function definitions.
          *
@@ -136,47 +137,17 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
          * @type {Array.<ScriptState>}
          */
         this.states_ = [this.newState()];
-    };
 
-    angular.extend(SparkShellService, {
-        /**
-         * Stores the list of redo states for the global state.
-         *
-         * @private
-         * @static
-         * @type {Array.<ScriptState>|null}
-         */
-        globalRedo_: null,
-
-        /**
-         * Stores the list of states for the global state.
-         *
-         * @private
-         * @static
-         * @type {Array.<ScriptState>|null}
-         */
-        globalState_: null,
-
-        /**
-         * Stores the source for the global states.
-         *
-         * @private
-         * @static
-         * @type {string|null}
-         */
-        globalSource_: null,
-
-        /**
-         * Clears the global state.
-         *
-         * @static
-         */
-        clearGlobalState: function() {
-            SparkShellService.globalRedo_ = null;
-            SparkShellService.globalState_ = null;
-            SparkShellService.globalSource_ = null;
+        if (angular.isArray(opt_load)) {
+            var sparkShellService = this;
+            angular.forEach(opt_load, function(src) {
+                var state = sparkShellService.newState();
+                state.context = src.context;
+                state.script = src.script;
+                sparkShellService.states_.push(state);
+            });
         }
-    });
+    };
 
     angular.extend(SparkShellService.prototype, {
         /**
@@ -362,20 +333,6 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         },
 
         /**
-         * Loads states from the global state if the source matches.
-         *
-         * @returns {boolean} {@code true} if the global state was loaded, or {@code false} otherwise
-         */
-        loadGlobalState: function() {
-            if (this.source_ === SparkShellService.globalSource_) {
-                this.redo_ = angular.copy(SparkShellService.globalRedo_);
-                this.states_ = angular.copy(SparkShellService.globalState_);
-                return true;
-            }
-            return false;
-        },
-
-        /**
          * Removes the last transformation from the stack. This action cannot be undone.
          *
          * @see #undo()
@@ -436,12 +393,14 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         },
 
         /**
-         * Saves the current states to the global state.
+         * Returns an object for recreating this script.
+         * 
+         * @return {Object} the saved state
          */
-        saveGlobalState: function() {
-            SparkShellService.globalState_ = this.states_;
-            SparkShellService.globalRedo_ = this.redo_;
-            SparkShellService.globalSource_ = this.source_;
+        save: function() {
+            return _.map(_.rest(this.states_), function(state) {
+                return {context: state.context, script: state.script};
+            });
         },
 
         /**

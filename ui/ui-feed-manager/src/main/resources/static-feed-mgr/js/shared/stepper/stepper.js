@@ -10,7 +10,8 @@
                 onCancelStepper:'&',
                 showCancelButton:'@',
                 coreDataModel:'=?',
-                templateUrl:'@'
+                templateUrl:'@',
+                selectedStepIndex:'@'
             },
             controllerAs: 'vm',
             require:['thinkbigStepper'],
@@ -62,8 +63,6 @@
 
         var self = this;
 
-
-        this.selectedStepIndex = 0;
         this.previousStepIndex =null;
         if(self.stepperName == undefined || self.stepperName == '') {
             self.stepperName = StepperService.newStepperName();
@@ -71,6 +70,16 @@
         StepperService.registerStepper(self.stepperName,self.totalSteps);
         this.steps = StepperService.getSteps(self.stepperName);
 
+        if (typeof(this.selectedStepIndex) !== "undefined") {
+            angular.forEach(this.steps, function(step) {
+                step.complete = true;
+                step.disabled = false;
+                step.visited = true;
+                step.updateStepType();
+            });
+        } else {
+            this.selectedStepIndex = 0;
+        }
 
         $scope.$watch(function(){
             return self.selectedStepIndex;
@@ -155,8 +164,6 @@
             StepperService.deRegisterStepper(self.stepperName);
             self.steps = [];
         })
-
-
     };
 
 

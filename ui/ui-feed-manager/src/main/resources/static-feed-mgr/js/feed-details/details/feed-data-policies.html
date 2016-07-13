@@ -1,16 +1,28 @@
 <vertical-section-layout section-title="Table Schema & Data Policies" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.model.state == 'ENABLED'"
                          editable="vm.editableSection" keep-editable-after-save="true"
-                         ng-if="vm.model.registeredTemplate.defineTable">
+                         ng-if="vm.model.registeredTemplate.defineTable || vm.model.registeredTemplate.dataTransformation">
 
   <readonly-section>
 
-    <div layout="row" class="layout-padding-top-bottom">
+    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.defineTable">
       <span flex="25" class="property-name">Source Feed Record Format</span>
 
       <div flex layout="column">
         <span>{{vm.model.table.feedFormat}}</span>
       </div>
     </div>
+
+    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.dataTransformation">
+      <span flex="25" class="property-name">Data Transformations</span>
+    </div>
+
+    <md-list class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.dataTransformation">
+      <md-list-item ng-repeat-start="state in vm.model.dataTransformation.states">
+        <md-icon>{{state.context.icon}}</md-icon>
+        <p title="{{state.context.name}}">{{state.context.name}}</p>
+      </md-list-item>
+      <md-divider ng-repeat-end></md-divider>
+    </md-list>
 
     <div layout="row" class="layout-padding-top-bottom">
       <span flex="25" class="property-name">Destination Table Name</span>
@@ -180,12 +192,19 @@
 
   </readonly-section>
   <editable-section>
-    <div layout="row" class="layout-padding-top-bottom">
+    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.defineTable">
       <span flex="25" class="property-name">Source Feed Record Format</span>
 
       <div flex layout="column">
         <span>{{vm.model.table.feedFormat}}</span>
       </div>
+    </div>
+
+    <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.dataTransformation">
+      <span flex="25" class="property-name">Data Transformations</span>
+    </div>
+    <div layout="row">
+      <md-button class="md-raised" href="#/edit-feed/{{vm.model.feedId}}" ng-if="vm.model.registeredTemplate.dataTransformation">Edit Transformations...</md-button>
     </div>
 
     <div layout="row" class="layout-padding-top-bottom">
