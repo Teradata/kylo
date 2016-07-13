@@ -48,19 +48,19 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 http.csrf()
                     .disable()
                     .authorizeRequests()
-                    .antMatchers("/login", "/login/**", "/login**").permitAll()
-                    .antMatchers("/**").hasRole("USER")
-                    .and()
+                        .antMatchers("/login", "/login/**", "/login**").permitAll()
+                        .antMatchers("/**").hasRole("USER")
+                        .and()
                     .formLogin()
-                    .usernameParameter("username")
-                    .passwordParameter("password")
-                    .loginPage("/login.html")
-                    .loginProcessingUrl("/login")
-                    .failureUrl("/login.html?error=true").permitAll()
-                    .and()
+                        .usernameParameter("username")
+                        .passwordParameter("password")
+                        .loginPage("/login.html")
+                        .loginProcessingUrl("/login")
+                        .failureUrl("/login.html?error=true").permitAll()
+                        .and()
                     .logout()
-                    .permitAll()
-                    .and();
+                        .permitAll()
+                        .and();
 
         }
 

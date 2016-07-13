@@ -70,6 +70,8 @@ public class ModeShapeEngineConfig {
             throw new RuntimeException("Problems with the ModeShape repository configuration: " + problems);
         }
         
+//        config.getSecurity();
+        
         return config;
     }
 

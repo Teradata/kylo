@@ -11,6 +11,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import org.modeshape.jcr.api.txn.TransactionManagerLookup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -106,8 +107,8 @@ public class JcrMetadataAccess implements MetadataAccess {
      */
     @Override
     public <R> R commit(Command<R> cmd) {
+SecurityContextHolder.getContext().getAuthentication();
         Session session = activeSession.get();
-
         if (session == null) {
             try {
 
@@ -163,6 +164,7 @@ public class JcrMetadataAccess implements MetadataAccess {
      */
     @Override
     public <R> R read(Command<R> cmd) {
+SecurityContextHolder.getContext().getAuthentication();
         Session session = activeSession.get();
 
         if (session == null) {
