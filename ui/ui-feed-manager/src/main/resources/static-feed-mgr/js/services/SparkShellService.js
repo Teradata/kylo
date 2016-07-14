@@ -513,10 +513,21 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
                 }
             };
             var errorCallback = function(response) {
+                // Update state
                 var state = self.states_[index];
                 state.columns = [];
                 state.rows = [];
-                deferred.reject(response.data.message);
+
+                // Respond with error message
+                var message;
+
+                if (angular.isString(response.data.message)) {
+                    message = (response.data.message.length <= 1024) ? response.data.message : response.data.message.substr(0, 1021) + "...";
+                } else {
+                    message = "An unknown error occurred.";
+                }
+
+                deferred.reject(message);
             };
 
             // Send the request
