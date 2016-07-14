@@ -146,6 +146,16 @@
                 </source>
                 <source>
                   <location>
+                    ../services/service-app/src/main/resources/icons.json
+                  </location>
+                </source>
+                <source>
+                  <location>
+                    ../services/service-app/src/main/resources/icon-colors.json
+                  </location>
+                </source>
+                <source>
+                  <location>
                     ../services/service-app/src/main/config/rpm-build/log4j.properties
                   </location>
                 </source>

@@ -25,6 +25,9 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
 
     this.GET_SYSTEM_NAME =this.ROOT+"/proxy/v1/feedmgr/util/system-name";
 
+    this.ICONS_URL =this.ROOT+"/proxy/v1/feedmgr/util/icons";
+    this.ICON_COLORS_URL =this.ROOT+"/proxy/v1/feedmgr/util/icon-colors";
+
     this.CODE_MIRROR_TYPES_URL = this.ROOT+"/proxy/v1/feedmgr/util/codemirror-types";
 
 

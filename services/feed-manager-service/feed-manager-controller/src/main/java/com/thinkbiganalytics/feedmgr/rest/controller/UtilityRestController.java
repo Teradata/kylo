@@ -1,20 +1,28 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
+import com.thinkbiganalytics.feedmgr.rest.model.IconColor;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
+import com.thinkbiganalytics.feedmgr.service.FileResourceService;
 import com.thinkbiganalytics.feedmgr.service.UIService;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.quartz.CronExpression;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -33,8 +41,12 @@ import io.swagger.annotations.Api;
 @Component
 public class UtilityRestController {
 
+    private static final Logger log = LoggerFactory.getLogger(UtilityRestController.class);
     @Autowired
     Environment env;
+
+    @Inject
+    FileResourceService fileResourceService;
 
     public UtilityRestController() {
     }
@@ -86,5 +98,60 @@ public class UtilityRestController {
         String url = env.getProperty("thinkbig.pipelinecontroller.url");
         return Response.ok(url).build();
     }
+
+    @GET
+    @Path("/icon-colors")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response iconColors() {
+
+        String colorsJson = fileResourceService.getResourceAsString("classpath:/icon-colors.json");
+        List<IconColor> colors = null;
+        if (StringUtils.isNotBlank(colorsJson)) {
+            //attempt to convert it to a list
+            try {
+                colors = Arrays.asList(ObjectMapperSerializer.deserialize(colorsJson, IconColor[].class));
+            } catch (Exception e) {
+                log.error(
+                    "Unable to parse JSON for icon-colors.json file.  Reverting to using default colors.  Please check the icon-colors.json file in the /conf directory for propery JSON format Error: {}",
+                    e.getMessage());
+            }
+        }
+        if (colors == null || colors.isEmpty() || StringUtils.isBlank(colorsJson)) {
+            colorsJson =
+                "[{\"name\":\"Purple\",\"color\":\"#AB47BC\"},{\"name\":\"Orange\",\"color\":\"#FFCA28\"},{\"name\":\"Deep Orange\",\"color\":\"#FF8A65\"},{\"name\":\"Red\",\"color\":\"#FF5252\"},{\"name\":\"Blue\",\"color\":\"#90CAF9\"},{\"name\":\"Green\",\"color\":\"#66BB6A\"},{\"name\":\"Blue Grey\",\"color\":\"#90A4AE\"},{\"name\":\"Teal\",\"color\":\"#80CBC4\"},{\"name\":\"Pink\",\"color\":\"#F06292\"},{\"name\":\"Yellow\",\"color\":\"#FFF176\"}]";
+            colors = Arrays.asList(ObjectMapperSerializer.deserialize(colorsJson, IconColor[].class));
+        }
+        return Response.ok(colors).build();
+    }
+
+
+    @GET
+    @Path("/icons")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response icons() {
+        String iconJson = fileResourceService.getResourceAsString("classpath:/icons.json");
+        List<String> icons = null;
+        if (StringUtils.isNotBlank(iconJson)) {
+            //attempt to convert it to a list
+            try {
+                String[] iconArray = ObjectMapperSerializer.deserialize(iconJson, String[].class);
+                icons = Arrays.asList(iconArray);
+            } catch (Exception e) {
+                log.error("Unable to parse JSON for icon.json file.  Reverting to using default icons.  Please check the icon.json file in the /conf directory for propery JSON format. Error: {}",
+                          e.getMessage());
+            }
+
+        }
+        if (icons == null || StringUtils.isBlank(iconJson)) {
+            iconJson =
+                "[\"local_airport\",\"phone_android\",\"web\",\"forward\",\"star\",\"attach_money\",\"location_city\",\"style\",\"insert_chart\",\"merge_type\",\"local_dining\",\"people\",\"directions_run\",\"traffic\",\"format_paint\",\"email\",\"cloud\",\"build\",\"favorite\",\"face\",\"http\",\"info\",\"input\",\"lock\",\"message\",\"highlight\",\"computer\",\"toys\",\"security\"]";
+            icons = Arrays.asList(ObjectMapperSerializer.deserialize(iconJson, String[].class));
+        }
+        return Response.ok(icons).build();
+    }
+
+
+
+
 
 }

@@ -7,6 +7,7 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.FeedManagerMetadataService;
+import com.thinkbiganalytics.feedmgr.service.FileResourceService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.category.DefaultFeedManagerCategoryService;
@@ -105,6 +106,11 @@ public class FeedManagerConfiguration {
     @Bean
     public PropertyExpressionResolver propertyExpressionResolver(){
         return new PropertyExpressionResolver();
+    }
+
+    @Bean
+    public FileResourceService fileResourceService() {
+        return new FileResourceService();
     }
 
     @Bean(name="elasticSearchClientConfig")

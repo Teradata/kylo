@@ -37,7 +37,7 @@
      * @constructor
      */
 
-    function IconPickerDialog($scope, $mdDialog,  $http, iconModel ){
+    function IconPickerDialog($scope, $mdDialog, $http, iconModel, RestUrlService) {
 
         $scope.selectedIconTile = null;
         $scope.iconTiles = [];
@@ -46,34 +46,42 @@
         $scope.selectedColorTile = null;
         $scope.colorTiles = [];
 
-
-        var icons=['local_airport','phone_android','web','forward','star','attach_money','location_city','style','insert_chart','merge_type','local_dining','people','directions_run','traffic','format_paint','email','cloud','build','favorite','face','http','info','input','lock','message','highlight','computer','toys','security'];
-        var colors = [{name:'Purple',color:'#AB47BC'},{name:'Orange',color:'#FFCA28'},{name:'Deep Orange',color:'#FF8A65'},{name:'Red',color:'#FF5252'},{name:'Blue',color:'#90CAF9'},{name:'Green',color:'#66BB6A'},{name:'Blue Grey',color:'#90A4AE'},{name:'Teal',color:'#80CBC4'},{name:'Pink',color:'#F06292'},{name:'Yellow',color:'#FFF176'}]
-
-
-        angular.forEach(icons,function(icon){
-            var tile = {title:icon};
-            $scope.iconTiles.push(tile);
-            if( iconModel.icon != null && iconModel.icon == icon){
-                $scope.selectedIconTile = tile;
-            }
-        });
-
-        angular.forEach(colors,function(color){
-            var tile = {title:color.name,background:color.color};
-            $scope.colorTiles.push(tile);
-            if( iconModel.iconColor != null && iconModel.iconColor == color.color){
-                $scope.selectedColorTile = tile;
-            }
-        });
-
-        //set defaults
-
-        if( $scope.selectedColorTile == null){
-            $scope.selectedColorTile = _.find(colors,function(c){
-                return c.name == 'Teal';
-            })
+        function fetchIcons() {
+            $http.get(RestUrlService.ICONS_URL).then(function (response) {
+                var icons = response.data;
+                angular.forEach(icons, function (icon) {
+                    var tile = {title: icon};
+                    $scope.iconTiles.push(tile);
+                    if (iconModel.icon != null && iconModel.icon == icon) {
+                        $scope.selectedIconTile = tile;
+                    }
+                });
+            });
         }
+
+        function fetchColors() {
+            $http.get(RestUrlService.ICON_COLORS_URL).then(function (response) {
+                var colors = response.data;
+                angular.forEach(colors, function (color) {
+                    var tile = {title: color.name, background: color.color};
+                    $scope.colorTiles.push(tile);
+                    if (iconModel.iconColor != null && iconModel.iconColor == color.color) {
+                        $scope.selectedColorTile = tile;
+                    }
+                });
+
+                if ($scope.selectedColorTile == null) {
+                    $scope.selectedColorTile = _.find($scope.colorTiles, function (c) {
+                        return c.title == 'Teal';
+                    })
+                }
+            });
+        }
+
+        fetchIcons();
+        fetchColors();
+
+
 
 
         $scope.selectIcon = function(tile){
