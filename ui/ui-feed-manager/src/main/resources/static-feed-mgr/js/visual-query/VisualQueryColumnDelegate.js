@@ -341,8 +341,10 @@ angular.module(MODULE_FEED_MGR).factory("VisualQueryColumnDelegate", function($m
             var formula = "";
 
             angular.forEach(grid.columns, function(item) {
-                formula += (formula.length == 0) ? "select(" : ", ";
-                formula += (item.field === column.field) ? script : item.field;
+                if (item.visible) {
+                    formula += (formula.length == 0) ? "select(" : ", ";
+                    formula += (item.field === column.field) ? script : item.field;
+                }
             });
 
             formula += ")";
