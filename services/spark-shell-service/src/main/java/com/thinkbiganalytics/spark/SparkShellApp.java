@@ -11,6 +11,7 @@ import org.glassfish.hk2.api.Factory;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.process.internal.RequestScoped;
 import org.glassfish.jersey.server.ResourceConfig;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.velocity.VelocityAutoConfiguration;
@@ -58,13 +59,14 @@ public class SparkShellApp {
     /**
      * Gets the resource configuration for setting up Jersey.
      *
+     * @param sparkPort the port number for Spark UI
      * @return the Jersey configuration
      */
     @Bean
-    public ResourceConfig getJerseyConfig () {
+    public ResourceConfig getJerseyConfig (@Value("${spark.ui.port:8451}") String sparkPort) {
         ResourceConfig config = new ResourceConfig(ApiListingResource.class, SwaggerSerializers.class, SparkShellTransformController.class);
 
-        SparkConf conf = new SparkConf().setAppName("SparkShellServer");
+        SparkConf conf = new SparkConf().setAppName("SparkShellServer").set("spark.ui.port", sparkPort);
         final ScriptEngine scriptEngine = ScriptEngineFactory.getScriptEngine(conf);
         final TransformService transformService = createTransformService(scriptEngine);
         config.register(new AbstractBinder() {
