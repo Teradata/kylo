@@ -86,9 +86,20 @@
         }, function(current, old){
             WindowUnloadService.clear();
             self.previousStepIndex = old;
-            self.getStep(current).visited = true;
-            self.getStep(current).updateStepType();
-            BroadcastService.notify(StepperService.ACTIVE_STEP_EVENT,current);
+
+            // Update step
+            var step = self.getStep(current);
+            var shouldSkip = (step.skip && !step.visited);
+            step.visited = true;
+            step.updateStepType();
+            BroadcastService.notify(StepperService.ACTIVE_STEP_EVENT, current);
+
+            // Skip if necessary
+            if (shouldSkip) {
+                self.stepEnabled(step.nextActiveStepIndex);
+                self.completeStep(step.index);
+                ++self.selectedStepIndex;
+            }
         });
 
         this.goToFirstStep = function(){

@@ -126,6 +126,11 @@
             if(self.inputProcessorId == null && self.inputProcessors != null && self.inputProcessors.length >0){
                 self.inputProcessorId  = self.inputProcessors[0].processorId;
             }
+
+            // Skip this step if it's empty
+            if (inputProcessors.length === 0 && !_.some(nonInputProcessors, function(processor) {return processor.userEditable})) {
+                StepperService.getStep("DefineFeedStepper", parseInt(self.stepIndex)).skip = true;
+            }
         }
 
         /**
