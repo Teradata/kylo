@@ -100,7 +100,8 @@
                 });
         };
 
-
+        // Initialize UI
+        this.onTableFormatChange();
     };
 
 
