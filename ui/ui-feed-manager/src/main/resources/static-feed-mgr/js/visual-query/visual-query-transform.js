@@ -66,6 +66,7 @@
         this.gridOptions = {
             columnDefs: [],
             data: null,
+            rowTemplate: "visual-query/grid-row",
             enableColumnResizing: true,
             enableFiltering: true,
             flatEntityAccess: true,
