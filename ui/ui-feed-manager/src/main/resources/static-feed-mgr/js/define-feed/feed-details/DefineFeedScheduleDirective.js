@@ -33,13 +33,13 @@
 
         this.model = FeedService.createFeedModel;
         //if the Model doesnt support Preconditions dont allow it in the list
-        var allScheduleStrategies = [{label:"Cron",value:"CRON_DRIVEN"},{label:"Timer",value:"TIMER_DRIVEN"},{label:"Event",value:"EVENT_DRIVEN"}];
+        var allScheduleStrategies = [{label: "Cron", value: "CRON_DRIVEN"}, {label: "Timer", value: "TIMER_DRIVEN"}, {label: "Trigger/Event", value: "TRIGGER_DRIVEN"}];
 
         function updateScheduleStrategies(){
             self.scheduleStrategies = allScheduleStrategies;
             if(!self.model.allowPreconditions){
                 self.scheduleStrategies = _.reject(allScheduleStrategies,function(strategy){
-                    return strategy.value == 'EVENT_DRIVEN';
+                    return strategy.value == 'TRIGGER_DRIVEN';
                 });
             }
         }
@@ -101,7 +101,11 @@
                 self.model.schedule.preconditions.splice($index, 1);
             }
         }
-        this.showPreconditionDialog = function() {
+
+        this.showPreconditionDialog = function (index) {
+            if (index == undefined) {
+                index = null;
+            }
             $mdDialog.show({
                 controller: 'FeedPreconditionsDialogController',
                 templateUrl: 'js/define-feed/feed-details/feed-preconditions/define-feed-preconditions-dialog.html',
@@ -109,11 +113,11 @@
                 clickOutsideToClose:false,
                 fullscreen: true,
                 locals : {
-                    feed:self.model
+                    feed: self.model,
+                    index: index
                 }
             })
                 .then(function(msg) {
-
 
                 }, function() {
 
@@ -190,7 +194,7 @@
 
 (function () {
 
-    var controller = function($scope, $mdDialog, $mdToast, $http, StateService,FeedService, feed){
+    var controller = function ($scope, $mdDialog, $mdToast, $http, StateService, FeedService, feed, index) {
         $scope.feed = feed;
         $scope.options = [];
 
@@ -198,6 +202,7 @@
                angular.forEach(response.data,function(opt){
                       $scope.options.push(opt);
                   });
+            ruleTypesAvailable();
         })
 
         var arr = feed.schedule.preconditions;
@@ -206,25 +211,42 @@
         {
             $scope.preconditions = angular.copy(arr);
         }
-        var modeText = "Add";
-        if($scope.preconditions != null && $scope.preconditions.length  && $scope.preconditions.length >0 ){
-            modeText = "Edit";
+
+        function findRuleType(ruleName) {
+            return _.find($scope.options, function (opt) {
+                return opt.name == ruleName;
+            });
         }
 
-        $scope.title = modeText+" Precondition";
+        function ruleTypesAvailable() {
+            if ($scope.editRule != null) {
+                $scope.ruleType = findRuleType($scope.editRule.name);
+            }
+        }
 
 
         $scope.pendingEdits = false;
-
-        $scope.ruleType = null;
-        $scope.editIndex;
-
         $scope.editRule;
+        $scope.ruleType = null;
+        $scope.editIndex = null;
+        $scope.editMode = 'NEW';
+        if (index != null) {
+            $scope.editMode = 'EDIT';
+            $scope.editIndex = index;
+            $scope.editRule = $scope.preconditions[index];
+        }
+        var modeText = "Add";
+        if ($scope.editMode == 'EDIT') {
+            modeText = "Edit";
+        }
+
+        $scope.title = modeText + " Precondition";
+
 
         $scope.addText = 'ADD PRECONDITION';
         $scope.cancelText = 'CANCEL ADD';
 
-        $scope.editMode = 'NEW';
+
         resetChips();
 
         function _cancelEdit() {
@@ -249,13 +271,49 @@
             else {
                 $scope.editRule = null;
             }
-            console.log('EDIT RULE IS ',$scope.editRule)
-
+        }
+        $scope.validateRequiredChips = function (property) {
+            var index = _.indexOf($scope.editRule.properties, property);
+            if (property.required && property.values.length == 0) {
+                //INVALID
+                $scope.preconditionForm['property_' + index].$setValidity("required", false);
+                $scope.preconditionForm['property_' + index].$setDirty(true);
+                return false;
+            }
+            else {
+                $scope.preconditionForm['property_' + index].$setValidity("required", true);
+                return true;
+            }
         }
         function resetChips(){
             $scope.editChips = {};
             $scope.editChips.selectedItem = null;
             $scope.editChips.searchText = null;
+        }
+
+        $scope.validateForm = function () {
+            //loop through properties and determine if they are valid
+            //
+            var validForm = _.some($scope.editRule.properties, function (property) {
+                var valid = true;
+                var index = _.indexOf($scope.editRule.properties, property);
+                if (property.type == 'feedChips' || property.type == 'chips') {
+                    valid = $scope.validateRequiredChips(property);
+                    property.invalid = !valid
+                }
+                else if (property.required && (property.value == '' || property.value == '')) {
+                    valid = false;
+                    $scope.preconditionForm['property_' + index].$setValidity("required", false);
+                    $scope.preconditionForm['property_' + index].$setDirty(true);
+                    property.invalid = true;
+                }
+                else {
+                    property.invalid = false;
+                }
+                //sort circuit on truth value so return the opposite to stop the traversing
+                return !valid;
+            });
+            return !validForm;
         }
 
 
@@ -283,23 +341,61 @@
             return { name: chip }
         }
 
-
-        $scope.addPolicy = function($event){
-
-            if( $scope.preconditions == null) {
-                $scope.preconditions = [];
+        function buildDisplayString() {
+            if ($scope.editRule != null) {
+                var str = '';
+                _.each($scope.editRule.properties, function (prop, idx) {
+                    if (prop.type != 'currentFeed') {
+                        //chain it to the display string
+                        if (str != '') {
+                            str += ';';
+                        }
+                        str += ' ' + prop.displayName;
+                        var val = prop.value;
+                        if ((val == null || val == undefined || val == '') && (prop.values != null && prop.values.length > 0)) {
+                            val = _.map(prop.values, function (labelValue) {
+                                return labelValue.value;
+                            }).join(",");
+                        }
+                        str += ": " + val;
+                    }
+                });
+                $scope.editRule.propertyValuesDisplayString = str;
             }
+        }
 
-            if($scope.editMode == 'NEW') {
-                $scope.preconditions.push($scope.editRule);
+        $scope.deletePrecondition = function ($event) {
+            var index = $scope.editIndex;
+            if ($scope.preconditions != null && index != null) {
+                $scope.preconditions.splice(index, 1);
             }
-            else if($scope.editMode == 'EDIT') {
-                $scope.preconditions[$scope.editIndex] = $scope.editRule;
-            }
-
-            $scope.pendingEdits = true;
             feed.schedule.preconditions = $scope.preconditions;
+            $scope.pendingEdits = true;
             $mdDialog.hide('done');
+        }
+
+        $scope.addPolicy = function ($event) {
+
+            var validForm = $scope.validateForm();
+            if (validForm) {
+                if ($scope.preconditions == null) {
+                    $scope.preconditions = [];
+                }
+                buildDisplayString();
+
+                $scope.editRule.ruleType = $scope.ruleType;
+                if ($scope.editMode == 'NEW') {
+                    $scope.preconditions.push($scope.editRule);
+                }
+                else if ($scope.editMode == 'EDIT') {
+                    $scope.preconditions[$scope.editIndex] = $scope.editRule;
+
+                }
+
+                $scope.pendingEdits = true;
+                feed.schedule.preconditions = $scope.preconditions;
+                $mdDialog.hide('done');
+            }
         }
 
 

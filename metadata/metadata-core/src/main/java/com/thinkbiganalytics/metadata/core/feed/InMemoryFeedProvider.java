@@ -3,17 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.core.feed;
 
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.inject.Inject;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
@@ -40,6 +29,17 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.inject.Inject;
 
 /**
  *
@@ -161,8 +161,8 @@ public class InMemoryFeedProvider implements FeedProvider {
         if (dds == null) {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + destId);
         }
-        
-        BaseFeed feed = (BaseFeed) ensureFeed(name, descr);
+
+        BaseFeed feed = (BaseFeed) ensureFeed(categorySystemName, name, descr);
         
         ensureFeedDestination(feed, dds);
         return feed;
@@ -180,8 +180,8 @@ public class InMemoryFeedProvider implements FeedProvider {
         if (dds == null) {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + destId);
         }
-        
-        BaseFeed feed = (BaseFeed) ensureFeed(name, descr);
+
+        BaseFeed feed = (BaseFeed) ensureFeed(categorySystemName, name, descr);
         
         ensureFeedSource(feed, sds, null);
         ensureFeedDestination(feed, dds);

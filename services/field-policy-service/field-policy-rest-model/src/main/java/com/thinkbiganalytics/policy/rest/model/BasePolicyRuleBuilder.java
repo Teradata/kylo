@@ -11,6 +11,7 @@ public abstract class BasePolicyRuleBuilder<T, B extends BasePolicyRuleBuilder> 
   protected String name;
   protected String displayName;
   protected String description;
+  protected String shortDescription;
   protected List<FieldRuleProperty> properties;
   protected String objectClassType;
 
@@ -28,6 +29,11 @@ public abstract class BasePolicyRuleBuilder<T, B extends BasePolicyRuleBuilder> 
 
   public B description(String description){
     this.description = description;
+    return (B) this;
+  }
+
+  public B shortDescription(String shortDescription) {
+    this.shortDescription = shortDescription;
     return (B) this;
   }
 

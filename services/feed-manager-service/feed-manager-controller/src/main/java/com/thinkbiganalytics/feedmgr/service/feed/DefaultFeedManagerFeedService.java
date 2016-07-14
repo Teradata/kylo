@@ -2,7 +2,6 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
-import com.thinkbiganalytics.feedmgr.rest.model.GenericUIPrecondition;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
@@ -17,6 +16,12 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+import com.thinkbiganalytics.policy.precondition.Precondition;
+import com.thinkbiganalytics.policy.precondition.PreconditionGroup;
+import com.thinkbiganalytics.policy.precondition.transform.PreconditionPolicyTransformer;
+import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -229,10 +234,18 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 }
                 domainFeed = feedManagerFeedProvider.update(domainFeed);
 
-                List<GenericUIPrecondition> preconditions = feed.getSchedule().getPreconditions();
+                List<PreconditionRule> preconditions = feed.getSchedule().getPreconditions();
                 if(preconditions != null) {
-                    List<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics = FeedManagerPreconditionService.uiPreconditionToFeedPrecondition(feed, preconditions);
-                    feedProvider.createPrecondition(domainFeed.getId(), "", domainMetrics);
+                    PreconditionPolicyTransformer transformer = new PreconditionPolicyTransformer(preconditions);
+                    transformer.applyFeedNameToCurrentFeedProperties(feed.getCategory().getSystemName(), feed.getSystemFeedName());
+                    List<Precondition> transformedPreconditions = transformer.getPreconditions();
+                    ServiceLevelAgreementBuilder preconditionBuilder = feedProvider.buildPrecondition(domainFeed.getId()).name("Precondition for feed " + domainFeed.getId());
+                    for (Precondition precondition : transformedPreconditions) {
+                        for (PreconditionGroup group : precondition.getPreconditionObligations()) {
+                            preconditionBuilder.obligationGroupBuilder(ObligationGroup.Condition.valueOf(group.getCondition())).obligationBuilder().metric(group.getMetrics()).build();
+                        }
+                    }
+                    preconditionBuilder.build();
                 }
                 return feed;
             }

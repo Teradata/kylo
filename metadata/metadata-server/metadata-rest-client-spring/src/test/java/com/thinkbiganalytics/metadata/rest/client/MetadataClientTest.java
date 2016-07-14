@@ -1,18 +1,5 @@
 package com.thinkbiganalytics.metadata.rest.client;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.net.URI;
-import java.text.ParseException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-
-import org.joda.time.DateTime;
-import org.testng.annotations.BeforeClass;
-import org.testng.annotations.Test;
-
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
@@ -27,6 +14,18 @@ import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ContentType;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
+
+import org.joda.time.DateTime;
+import org.testng.annotations.BeforeClass;
+
+import java.net.URI;
+import java.text.ParseException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 //@Ignore  // Requires a running metadata server
 public class MetadataClientTest {
@@ -73,7 +72,7 @@ public class MetadataClientTest {
     
 //    @Test
     public void testBuildFeed() throws ParseException {
-        Feed feed = buildFeed("feed1").post();
+        Feed feed = buildFeed("category", "feed1").post();
         
         assertThat(feed).isNotNull();
         
@@ -91,7 +90,7 @@ public class MetadataClientTest {
     
 //    @Test
     public void testMergeFeedProperties() throws ParseException {
-        Feed feed = buildFeed("feed1").post();
+        Feed feed = buildFeed("category", "feed1").post();
         
         assertThat(feed).isNotNull();
         assertThat(feed.getProperties()).isNotNull().hasSize(1).containsEntry("key1", "value1");
@@ -106,7 +105,7 @@ public class MetadataClientTest {
     
 //    @Test
     public void testUpdateFeed() throws ParseException {
-        Feed feed = buildFeed("feed1").post();
+        Feed feed = buildFeed("category", "feed1").post();
         
         assertThat(feed.getDescription()).isEqualTo("feed1 feed");
         assertThat(feed.getState()).isEqualTo(Feed.State.ENABLED);
@@ -126,7 +125,7 @@ public class MetadataClientTest {
     
 //    @Test
     public void testAddFeedSource() throws ParseException {
-        Feed feed = buildFeed("feed1").post();
+        Feed feed = buildFeed("category", "feed1").post();
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
         
         Feed result = client.addSource(feed.getId(), ds.getId());
@@ -136,7 +135,7 @@ public class MetadataClientTest {
     
 //    @Test 
     public void testAddFeedDestination() throws ParseException {
-        Feed feed = buildFeed("feed1").post();
+        Feed feed = buildFeed("category", "feed1").post();
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
         
         Feed result = client.addDestination(feed.getId(), ds.getId());
@@ -173,7 +172,7 @@ public class MetadataClientTest {
     
 //    @Test
     public void testBeginOperation() throws ParseException {
-        Feed feed = buildFeed("feed1").post();
+        Feed feed = buildFeed("category", "feed1").post();
         HiveTableDatasource ds = buildHiveTableDatasource("test-table").post();
         feed = client.addDestination(feed.getId(), ds.getId());
         String destId = feed.getDestinations().iterator().next().getId();
@@ -185,11 +184,11 @@ public class MetadataClientTest {
     
 //    @Test
     public void testCompleteOperation() throws ParseException {
-        Feed feedA = buildFeed("feedA").post();
+        Feed feedA = buildFeed("category", "feedA").post();
         HiveTableDatasource dsA = buildHiveTableDatasource("test-table").post();
         feedA = client.addDestination(feedA.getId(), dsA.getId());
-        
-        Feed feedB = buildFeed("feedB", "feedA").post();
+
+        Feed feedB = buildFeed("category", "feedB", "category", "feedA").post();
         feedB = client.addSource(feedB.getId(), dsA.getId());
         String destA = feedA.getDestinations().iterator().next().getId();
         
@@ -209,8 +208,8 @@ public class MetadataClientTest {
     
 //    @Test
     public void testCheckPrecondition() throws ParseException {
-        Feed feedA = buildFeed("feedA").post();
-        Feed feedB = buildFeed("feedB", "feedA").post();
+        Feed feedA = buildFeed("category", "feedA").post();
+        Feed feedB = buildFeed("category", "feedB", "category", "feedA").post();
         
         HiveTableDatasource dsA = buildHiveTableDatasource("test-table").post();
         feedA = client.addDestination(feedA.getId(), dsA.getId());
@@ -232,23 +231,23 @@ public class MetadataClientTest {
         
         assertThat(props).isNotNull().isNotEmpty();
     }
-    
-    private FeedBuilder buildFeed(String name) throws ParseException {
-        return client.buildFeed(name)
+
+    private FeedBuilder buildFeed(String category, String name) throws ParseException {
+        return client.buildFeed(category, name)
                 .description(name + " feed")
                 .owner("ownder")
                 .displayName(name)
                 .property("key1", "value1");
 //                .preconditionMetric(FeedExecutedSinceScheduleMetric.named(name, "0 0 6 * * ? *"));
     }
-    
-    private FeedBuilder buildFeed(String name, String dependent) throws ParseException {
-        return client.buildFeed(name)
+
+    private FeedBuilder buildFeed(String category, String name, String dependentCategory, String dependent) throws ParseException {
+        return client.buildFeed(category, name)
                 .description(name + " feed")
                 .owner("ownder")
                 .displayName(name)
                 .property("key1", "value1")
-                .preconditionMetric(FeedExecutedSinceFeedMetric.named(dependent, name));
+            .preconditionMetric(FeedExecutedSinceFeedMetric.named(dependentCategory, dependent, category, name));
     }
     
     private DirectoryDatasourceBuilder buildDirectoryDatasource(String name) {

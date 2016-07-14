@@ -14,8 +14,10 @@ public class BaseUiPolicyRule {
   private String name;
   private String displayName;
   private String description;
+  private String shortDescription;
   private List<FieldRuleProperty> properties;
   private String objectClassType;
+  private String propertyValuesDisplayString;
 
   public String getName() {
     return name;
@@ -69,5 +71,46 @@ public class BaseUiPolicyRule {
         return fieldRuleProperty.getName().equalsIgnoreCase(name);
       }
     }).orNull();
+  }
+
+  public String getShortDescription() {
+    return shortDescription;
+  }
+
+  public void setShortDescription(String shortDescription) {
+    this.shortDescription = shortDescription;
+  }
+
+  public String getPropertyValuesDisplayString() {
+    return propertyValuesDisplayString;
+  }
+
+  public void setPropertyValuesDisplayString(String propertyValuesDisplayString) {
+    this.propertyValuesDisplayString = propertyValuesDisplayString;
+  }
+
+
+  @JsonIgnore
+  public void buildValueDisplayString() {
+    StringBuffer sb = null;
+
+    if (getProperties() != null) {
+      for (FieldRuleProperty property : getProperties()) {
+        if (!FieldRulePropertyBuilder.PROPERTY_TYPE.currentFeed.name().equalsIgnoreCase(property.getType())) {
+          //get the values
+          String value = property.getStringValue();
+          if (sb == null) {
+            sb = new StringBuffer();
+          } else {
+            sb.append(";");
+          }
+          sb.append(property.getName() + ": " + value);
+        }
+      }
+    }
+    if (sb != null) {
+      setPropertyValuesDisplayString(sb.toString());
+    }
+
   }
 }

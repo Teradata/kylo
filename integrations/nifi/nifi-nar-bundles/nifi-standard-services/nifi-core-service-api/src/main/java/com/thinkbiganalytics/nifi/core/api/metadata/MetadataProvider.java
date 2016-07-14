@@ -17,6 +17,7 @@ import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+
 import org.joda.time.DateTime;
 
 import java.nio.file.Path;
@@ -33,7 +34,7 @@ public interface MetadataProvider {
     
     Map<DateTime, Map<String, String>> getFeedDependentResultDeltas(String feedId);
 
-    Feed ensureFeed(String feedName, String string);
+    Feed ensureFeed(String categoryName, String feedName, String string);
 
     Datasource getDatasourceByName(String dsName);
 

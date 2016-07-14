@@ -3,11 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.core.sla.feed;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -19,6 +14,11 @@ import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
+
+import org.joda.time.DateTime;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -36,8 +36,8 @@ public class FeedExecutedSinceFeedAssessor extends MetadataMetricAssessor<FeedEx
                        MetricAssessmentBuilder<ArrayList<Dataset<Datasource, ChangeSet>>> builder) {
         FeedProvider fPvdr = getFeedProvider();
         FeedOperationsProvider opPvdr = getFeedOperationsProvider();
-        List<Feed> tested = fPvdr.getFeeds(fPvdr.feedCriteria().name(metric.getFeedName()));
-        List<Feed> since = fPvdr.getFeeds(fPvdr.feedCriteria().name(metric.getSinceName()));
+        List<Feed> tested = fPvdr.getFeeds(fPvdr.feedCriteria().name(metric.getFeedName()).category(metric.getCategoryName()));
+        List<Feed> since = fPvdr.getFeeds(fPvdr.feedCriteria().name(metric.getSinceFeedName()).category(metric.getSinceCategoryName()));
         
         builder.metric(metric);
         
@@ -77,7 +77,7 @@ public class FeedExecutedSinceFeedAssessor extends MetadataMetricAssessor<FeedEx
         } else {
             builder
                 .result(AssessmentResult.FAILURE)
-                .message("Either feed " + metric.getFeedName() + " and/or feed " + metric.getSinceName() + " does not exist.");
+                .message("Either feed " + metric.getSinceCategoryAndFeedName() + " and/or feed " + metric.getSinceCategoryAndFeedName() + " does not exist.");
         }
     }
 }

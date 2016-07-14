@@ -3,15 +3,14 @@
  */
 package com.thinkbiganalytics.nifi.v2.metadata;
 
-import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_CATEGORY;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_NAME;
-
-import java.util.List;
-import java.util.Map;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.metadata.rest.model.Formatters;
+import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
+import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
+import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
+import com.thinkbiganalytics.util.ComponentAttributes;
 
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
@@ -28,14 +27,15 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.thinkbiganalytics.metadata.rest.model.Formatters;
-import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
-import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
-import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
-import com.thinkbiganalytics.util.ComponentAttributes;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_NAME;
 
 /**
  * @author Sean Felten
@@ -55,7 +55,7 @@ public class TriggerFeed extends AbstractFeedProcessor {
     public static final PropertyDescriptor PRECONDITION_SERVICE = new PropertyDescriptor.Builder()
             .name("Feed Precondition Event Service")
             .description("Service that manages preconditions which trigger feed execution")
-            .required(false)
+        .required(true)
             .identifiesControllerService(FeedPreconditionEventService.class)
             .build();
 

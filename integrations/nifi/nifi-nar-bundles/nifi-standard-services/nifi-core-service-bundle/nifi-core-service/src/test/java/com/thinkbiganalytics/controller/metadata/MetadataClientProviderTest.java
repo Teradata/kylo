@@ -12,8 +12,13 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
-import com.thinkbiganalytics.metadata.rest.model.sla.*;
+import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceScheduleMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule;
 import com.thinkbiganalytics.nifi.v2.core.metadata.MetadataClientProvider;
+
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -35,12 +40,12 @@ public class MetadataClientProviderTest {
 
     @Test
     public void testEnsureFeed() {
-        Feed feed = this.provider.ensureFeed("test1", "");
+        Feed feed = this.provider.ensureFeed("category", "test1", "");
 
         assertThat(feed).isNotNull();
 
         String feedId = feed.getId();
-        feed = this.provider.ensureFeed("test1", "");
+        feed = this.provider.ensureFeed("category", "test1", "");
 
         assertThat(feed).isNotNull();
         assertThat(feed.getId()).isEqualTo(feedId);
@@ -56,7 +61,7 @@ public class MetadataClientProviderTest {
 
     @Test
     public void testEnsureFeedSource() {
-        Feed feed = this.provider.ensureFeed("test3", "");
+        Feed feed = this.provider.ensureFeed("category", "test3", "");
         Datasource ds = this.provider.ensureDirectoryDatasource("test3", "", Paths.get("aaa", "bbb"));
         feed = this.provider.ensureFeedSource(feed.getId(), ds.getId());
 
@@ -69,7 +74,7 @@ public class MetadataClientProviderTest {
 
     @Test
     public void testEnsureFeedDestination() {
-        Feed feed = this.provider.ensureFeed("test4", "");
+        Feed feed = this.provider.ensureFeed("category", "test4", "");
         Datasource ds = this.provider.ensureDirectoryDatasource("test4", "", Paths.get("aaa", "bbb"));
         feed = this.provider.ensureFeedDestination(feed.getId(), ds.getId());
 
@@ -82,12 +87,12 @@ public class MetadataClientProviderTest {
 
     @Test
     public void testEnsurePrecondition() {
-        Feed feed = this.provider.ensureFeed("test5", "");
+        Feed feed = this.provider.ensureFeed("category", "test5", "");
         feed = this.provider.ensurePrecondition(feed.getId(),
                 DatasourceUpdatedSinceFeedExecutedMetric.named("ds5", "test5"),
                 DatasourceUpdatedSinceScheduleMetric.named("ds5", "0 0 6 * * ? *"),
-                FeedExecutedSinceFeedMetric.named("dep5", "test5"),
-                FeedExecutedSinceScheduleMetric.named("test5", "0 0 6 * * ? *"),
+                                                FeedExecutedSinceFeedMetric.named("category", "dep5", "category", "test5"),
+                                                FeedExecutedSinceScheduleMetric.named("category", "test5", "0 0 6 * * ? *"),
                 new WithinSchedule("0 0 6 * * ? *", "2 hours"));
 
         assertThat(feed).isNotNull();
@@ -133,7 +138,7 @@ public class MetadataClientProviderTest {
 
     @Test
     public void testBeginOperation() {
-        Feed feed = this.provider.ensureFeed("test9", "");
+        Feed feed = this.provider.ensureFeed("category", "test9", "");
         Datasource ds = this.provider.ensureDirectoryDatasource("test9", "", Paths.get("aaa", "bbb"));
         feed = this.provider.ensureFeedDestination(feed.getId(), ds.getId());
         FeedDestination dest = feed.getDestination(ds.getId());
@@ -146,7 +151,7 @@ public class MetadataClientProviderTest {
 
     @Test
     public void testCompleteOperation() {
-        Feed feed = this.provider.ensureFeed("test10", "");
+        Feed feed = this.provider.ensureFeed("category", "test10", "");
         DirectoryDatasource ds = this.provider.ensureDirectoryDatasource("test10", "", Paths.get("aaa", "bbb"));
         feed = this.provider.ensureFeedDestination(feed.getId(), ds.getId());
         FeedDestination dest = feed.getDestination(ds.getId());

@@ -15,6 +15,7 @@
         <module>schema-discovery</module>
         <module>sla</module>
         <module>field-policy</module>
+        <module>precondition</module>
         <module>job-repository</module>
         <module>service-monitor</module>
     </modules>

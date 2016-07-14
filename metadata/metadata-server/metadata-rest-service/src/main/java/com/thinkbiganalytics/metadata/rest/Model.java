@@ -3,43 +3,25 @@
  */
 package com.thinkbiganalytics.metadata.rest;
 
-import java.io.Serializable;
-import java.nio.file.Path;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.jcr.RepositoryException;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.rest.model.feed.*;
-import org.joda.time.Period;
-import org.modeshape.jcr.api.JcrTools;
-import org.quartz.CronExpression;
-
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.feed.Feed.State;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceSchedule;
-import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedCategory;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 import com.thinkbiganalytics.metadata.rest.model.op.FeedOperation;
@@ -56,12 +38,31 @@ import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
+
+import org.joda.time.Period;
+import org.quartz.CronExpression;
+
+import java.io.Serializable;
+import java.nio.file.Path;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Convenience functions and methods to transform between the metadata domain model and the REST model. 
@@ -104,8 +105,8 @@ public class Model {
             @Override
             public com.thinkbiganalytics.metadata.sla.api.Metric apply(Metric model) {
                 FeedExecutedSinceFeedMetric cast = (FeedExecutedSinceFeedMetric) model;
-                return new com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed(cast.getDependentFeedName(), 
-                                                                                                       cast.getSinceFeedName());
+                return new com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed(cast.getDependentCategoryName(), cast.getDependentFeedName(),
+                                                                                        cast.getSinceCategoryName(), cast.getSinceFeedName());
             }
         });
         map.put(FeedExecutedSinceScheduleMetric.class, new Function<Metric, com.thinkbiganalytics.metadata.sla.api.Metric>() {
@@ -113,7 +114,7 @@ public class Model {
             public com.thinkbiganalytics.metadata.sla.api.Metric apply(Metric model) {
                 FeedExecutedSinceScheduleMetric cast = (FeedExecutedSinceScheduleMetric) model;
                 try {
-                    return new com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceSchedule(cast.getDependentFeedName(), 
+                    return new com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceSchedule(cast.getDependentCategoryName(), cast.getDependentFeedName(),
                                                                                                                cast.getCronSchedule());
                 } catch (ParseException e) {
                     throw new WebApplicationException("Invalid cron expression provided for feed execution schedule: " + 
@@ -160,7 +161,7 @@ public class Model {
             public Metric apply(com.thinkbiganalytics.metadata.sla.api.Metric domain) {
                 com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed cast 
                     = (com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed) domain;
-                return FeedExecutedSinceFeedMetric.named(cast.getFeedName(), cast.getSinceName());
+                return FeedExecutedSinceFeedMetric.named(cast.getCategoryName(), cast.getFeedName(), cast.getSinceCategoryName(), cast.getSinceFeedName());
             }
         });
         map.put(com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceSchedule.class, new Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric>() {
@@ -168,7 +169,7 @@ public class Model {
             public Metric apply(com.thinkbiganalytics.metadata.sla.api.Metric domain) {
                 com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceSchedule cast 
                     = (com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceSchedule) domain;
-                return FeedExecutedSinceScheduleMetric.named(cast.getFeedName(), cast.getCronExpression().toString());
+                return FeedExecutedSinceScheduleMetric.named(cast.getCategoryName(), cast.getFeedName(), cast.getCronExpression().toString());
             }
         });
         map.put(com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceFeedExecuted.class, new Function<com.thinkbiganalytics.metadata.sla.api.Metric, Metric>() {

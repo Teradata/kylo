@@ -54,7 +54,7 @@
         </md-input-container>
         -->
 
-    <div ng-if="vm.model.schedule.schedulingStrategy == 'EVENT_DRIVEN'">
+  <div ng-if="vm.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
         <div layout="column">
             <div class="md-subhead">Run Preconditions</div>
             <div class="hint">Specify execution dependencies</div>
@@ -64,13 +64,13 @@
             <div ng-if="vm.model.schedule.preconditions != null && vm.model.schedule.preconditions.length >0 " layout-fill>
                 <md-list>
                     <md-list-item ng-repeat="rule in vm.model.schedule.preconditions track by $index" layout-fill >
-                     <div layout="column" flex="25" class="md-list-item-text">
-                        <span>{{rule.properties[0].values | join: ',':'label'}}</span>
+                      <div layout="column" flex class="md-list-item-text">
+                        <span>{{rule.propertyValuesDisplayString}}</span>
                          <span class="hint">{{rule.name}}</span>
                      </div>
                             <span class="md-secondary">
-                                  <md-button  class="md-icon-button" ng-click="vm.deletePrecondition($index)">
-                                      <ng-md-icon icon="delete" ></ng-md-icon>
+                                  <md-button class="md-icon-button" ng-click="vm.showPreconditionDialog($index)">
+                                    <ng-md-icon icon="edit"></ng-md-icon>
                                   </md-button>
                             </span>
                         <md-divider ng-if="!$last"></md-divider>

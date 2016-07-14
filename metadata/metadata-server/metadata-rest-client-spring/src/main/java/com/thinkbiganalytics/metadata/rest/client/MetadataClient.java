@@ -3,31 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.rest.client;
 
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import org.joda.time.DateTime;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
@@ -41,6 +16,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.HiveTableField;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescriptor;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedCategory;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
@@ -48,6 +24,30 @@ import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
+
+import org.joda.time.DateTime;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
 
 /**
  *
@@ -94,8 +94,8 @@ public class MetadataClient {
         return get(Paths.get("extension", "type", nameOrId), ExtensibleTypeDescriptor.class);
     }
 
-    public FeedBuilder buildFeed(String name) {
-        return new FeedBuilderImpl(name);
+    public FeedBuilder buildFeed(String categoryName, String name) {
+        return new FeedBuilderImpl(categoryName, name);
     }
     
     public Feed addSource(String feedId, String datasourceId) {
@@ -232,6 +232,7 @@ public class MetadataClient {
         }
     }
 
+
     private Feed postFeed(Feed feed) {
         return post(Paths.get("feed"), feed, Feed.class);
     }
@@ -317,12 +318,14 @@ public class MetadataClient {
     private class FeedBuilderImpl implements FeedBuilder {
         private String displayName;
         private String systemName;
+        private String systemCategoryName;
         private String description;
         private String owner;
         private List<Metric> preconditionMetrics = new ArrayList<>();
         private Properties properties = new Properties();
-    
-        public FeedBuilderImpl(String name) {
+
+        public FeedBuilderImpl(String category, String name) {
+            this.systemCategoryName = category;
             this.systemName = name;
         }
     
@@ -361,6 +364,9 @@ public class MetadataClient {
         @Override
         public Feed build() {
             Feed feed = new Feed();
+            FeedCategory feedCategory = new FeedCategory();
+            feedCategory.setSystemName(this.systemCategoryName);
+            feed.setCategory(feedCategory);
             feed.setSystemName(this.systemName);
             feed.setDisplayName(this.displayName != null ? this.displayName : this.systemName);
             feed.setDescription(this.description);

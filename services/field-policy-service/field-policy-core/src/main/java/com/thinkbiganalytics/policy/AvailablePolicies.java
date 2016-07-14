@@ -1,12 +1,12 @@
 package com.thinkbiganalytics.policy;
 
-import com.thinkbiganalytics.policy.standardization.Standardizer;
-import com.thinkbiganalytics.policy.validation.Validator;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRuleBuilder;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRuleBuilder;
+import com.thinkbiganalytics.policy.standardization.Standardizer;
+import com.thinkbiganalytics.policy.validation.Validator;
 import com.thinkbiganalytics.standardization.transform.StandardizationAnnotationTransformer;
 import com.thinkbiganalytics.validation.transform.ValidatorAnnotationTransformer;
 
@@ -49,5 +49,6 @@ public class AvailablePolicies {
     }
     return rules;
   }
+
 
 }

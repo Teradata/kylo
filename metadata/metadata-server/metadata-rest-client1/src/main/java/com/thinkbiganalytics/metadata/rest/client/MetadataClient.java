@@ -3,20 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.rest.client;
 
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.ws.rs.core.MediaType;
-
-import org.joda.time.DateTime;
-
 import com.fasterxml.jackson.jaxrs.json.JacksonJsonProvider;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
@@ -33,9 +19,24 @@ import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableField;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedCategory;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+
+import org.joda.time.DateTime;
+
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.ws.rs.core.MediaType;
 
 /**
  *
@@ -64,9 +65,9 @@ public class MetadataClient {
         this.client = Client.create(config);
         this.baseResource = this.client.resource(base);
     }
-    
-    public FeedBuilder buildFeed(String name) {
-        return new FeedBuilderImpl(name);
+
+    public FeedBuilder buildFeed(String category, String name) {
+        return new FeedBuilderImpl(category, name);
     }
     
     public Feed addSource(String feedId, String datasourceId) {
@@ -228,12 +229,14 @@ public class MetadataClient {
 
     private class FeedBuilderImpl implements FeedBuilder {
         private String feedName;
+        private String categoryName;
         private String systemName;
         private String description;
         private String owner;
         private List<Metric> preconditionMetrics = new ArrayList<>();
-    
-        public FeedBuilderImpl(String name) {
+
+        public FeedBuilderImpl(String category, String name) {
+            this.categoryName = category;
             this.feedName = name;
         }
     
@@ -265,7 +268,11 @@ public class MetadataClient {
     
         @Override
         public Feed build() {
+
             Feed feed = new Feed();
+            FeedCategory feedCategory = new FeedCategory();
+            feedCategory.setSystemName(this.categoryName);
+            feed.setCategory(feedCategory);
             feed.setDisplayName(this.feedName);
             feed.setSystemName(this.systemName);
             feed.setDescription(this.description);

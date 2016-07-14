@@ -278,7 +278,6 @@ public class TemplatesRestController {
             }
             metadata.setRegisteredTemplate(registeredTemplate);
             NifiFeed feed = getMetadataService().createFeed(metadata);
-            int i = 0;
         }
         return Response.ok(registeredTemplate).build();
     }

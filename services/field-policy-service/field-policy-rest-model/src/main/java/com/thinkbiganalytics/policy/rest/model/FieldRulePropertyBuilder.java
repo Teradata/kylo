@@ -20,8 +20,10 @@ public class FieldRulePropertyBuilder {
     private String hint;
     private String objectProperty;
     private List<LabelValue> selectableValues;
-    public static enum PROPERTY_TYPE {
-        number,string,select,regex,date,chips
+    private boolean required;
+
+    public enum PROPERTY_TYPE {
+        number, string, select, regex, date, chips, feedChips, currentFeed
     }
 
     public FieldRulePropertyBuilder(String name){
@@ -73,6 +75,11 @@ public class FieldRulePropertyBuilder {
         return this;
     }
 
+    public FieldRulePropertyBuilder required(boolean required) {
+        this.required = required;
+        return this;
+    }
+
     public FieldRulePropertyBuilder addSelectableValue(LabelValue labelValue){
         if(selectableValues == null){
             selectableValues = new ArrayList<>();
@@ -101,6 +108,7 @@ public class FieldRulePropertyBuilder {
         property.setSelectableValues(this.selectableValues);
         property.setObjectProperty(this.objectProperty);
         property.setValue(this.value);
+        property.setRequired(this.required);
         return property;
     }
 }

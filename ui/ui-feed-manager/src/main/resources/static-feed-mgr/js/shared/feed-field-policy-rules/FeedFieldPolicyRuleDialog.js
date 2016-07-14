@@ -34,6 +34,14 @@
     $scope.cancelText = 'CANCEL ADD';
 
     $scope.editMode = 'NEW';
+        resetChips();
+
+
+        function resetChips(){
+            $scope.editChips = {};
+            $scope.editChips.selectedItem = null;
+            $scope.editChips.searchText = null;
+        }
 
     function _cancelEdit() {
         $scope.editMode='NEW';
@@ -41,7 +49,10 @@
         $scope.cancelText = 'CANCEL ADD';
         $scope.ruleType = null;
         $scope.editRule = null;
+        resetChips();
     }
+
+
 
 
     $scope.cancelEdit = function($event) {
@@ -59,9 +70,34 @@
 
     }
 
+        $scope.queryChipSearch = function(property,query){
+            var options = property.selectableValues;
+            var results = query ? options.filter(createFilterFor(query)) : [];
+            return results;
+        }
 
 
-    $scope.addPolicy = function($event){
+        function createFilterFor(query) {
+            var lowercaseQuery = angular.lowercase(query);
+            return function filterFn(option) {
+                return (angular.lowercase(option.value).indexOf(lowercaseQuery) >= 0);
+            };
+        }
+
+
+        $scope.transformChip = function(chip) {
+            // If it is an object, it's already a known chip
+            if (angular.isObject(chip)) {
+                return chip;
+            }
+            // Otherwise, create a new one
+            return { name: chip }
+        }
+
+
+
+
+        $scope.addPolicy = function($event){
 
         if( $scope.policyRules == null) {
             $scope.policyRules = [];

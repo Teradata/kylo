@@ -24,7 +24,7 @@
         };
     }
 
-    var controller =  function($scope, FeedService) {
+    var controller = function ($scope, $mdDialog, FeedService) {
 
         var self = this;
 
@@ -42,6 +42,19 @@
             }
         })
 
+        //if the Model doesnt support Preconditions dont allow it in the list
+        var allScheduleStrategies = [{label: "Cron", value: "CRON_DRIVEN"}, {label: "Timer", value: "TIMER_DRIVEN"}, {label: "Trigger/Event", value: "TRIGGER_DRIVEN"}];
+
+        function updateScheduleStrategies() {
+            self.scheduleStrategies = allScheduleStrategies;
+            if (!self.model.registeredTemplate.allowPreconditions) {
+                self.scheduleStrategies = _.reject(allScheduleStrategies, function (strategy) {
+                    return strategy.value == 'TRIGGER_DRIVEN';
+                });
+            }
+        }
+
+        updateScheduleStrategies();
 
         this.onScheduleStrategyChange = function() {
             if(self.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN') {
@@ -81,6 +94,30 @@
                 self.editableSection = true;
             });
         }
+
+        this.deletePrecondition = function ($index) {
+            if (self.editModel.schedule.preconditions != null) {
+                self.editModel.schedule.preconditions.splice($index, 1);
+            }
+        }
+        this.showPreconditionDialog = function (index) {
+            $mdDialog.show({
+                controller: 'FeedPreconditionsDialogController',
+                templateUrl: 'js/define-feed/feed-details/feed-preconditions/define-feed-preconditions-dialog.html',
+                parent: angular.element(document.body),
+                clickOutsideToClose: false,
+                fullscreen: true,
+                locals: {
+                    feed: self.editModel,
+                    index: index
+                }
+            })
+                .then(function (msg) {
+
+                }, function () {
+
+                });
+        };
 
 
     };

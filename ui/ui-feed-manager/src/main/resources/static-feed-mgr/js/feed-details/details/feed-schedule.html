@@ -37,15 +37,11 @@
 
                 <md-input-container class="md-block" flex-gt-sm>
                     <label>Strategy</label>
-                    <md-select ng-model="vm.editModel.schedule.schedulingStrategy" ng-change="vm.onScheduleStrategyChange();">
-                        <md-option value="CRON_DRIVEN">
-                            Cron
-                        </md-option>
-                        <md-option value="TIMER_DRIVEN">
-                            Timer
-                        </md-option>
+                    <md-select ng-model="vm.editModel.schedule.schedulingStrategy" ng-change="vm.onScheduleStrategyChange()">
+                        <md-option ng-value="opt.value" ng-repeat="opt in vm.scheduleStrategies">{{ opt.label }}</md-option>
                     </md-select>
                 </md-input-container>
+
 
                 <md-input-container class="md-block" flex-gt-sm
                                     ng-if="vm.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN'">
@@ -74,11 +70,44 @@
                 </md-input-container>
 
             </div>
+            <!--
             <md-input-container class="md-block" flex-gt-sm>
                 <label>Concurrent Tasks</label>
                 <input type="number" ng-model="vm.editModel.schedule.concurrentTasks">
                 </input>
             </md-input-container>
+
+            -->
+            <div ng-if="vm.editModel.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
+                <div layout="column">
+                    <div class="md-subhead">Run Preconditions</div>
+                    <div class="hint">Specify execution dependencies</div>
+                </div>
+                <div layout="column" layout-align="start start" class="layout-padding-top-bottom">
+
+                    <div ng-if="vm.editModel.schedule.preconditions != null && vm.editModel.schedule.preconditions.length >0 " layout-fill>
+                        <md-list>
+                            <md-list-item ng-repeat="rule in vm.editModel.schedule.preconditions track by $index" layout-fill>
+                                <div layout="column" flex="75" class="md-list-item-text">
+                                    <span>{{rule.propertyValuesDisplayString}}</span>
+                                    <span class="hint">{{rule.name}}</span>
+                                </div>
+                           <span class="md-secondary">
+                                  <md-button class="md-icon-button" ng-click="vm.showPreconditionDialog($index)">
+                                      <ng-md-icon icon="edit"></ng-md-icon>
+                                  </md-button>
+                            </span>
+                                <md-divider ng-if="!$last"></md-divider>
+                            </md-list-item>
+                        </md-list>
+                    </div>
+                    <md-button class="md-raised" ng-click="vm.showPreconditionDialog()">
+                        Add Precondition
+                    </md-button>
+                </div>
+
+            </div>
+
 
     </editable-section>
 </vertical-section-layout>

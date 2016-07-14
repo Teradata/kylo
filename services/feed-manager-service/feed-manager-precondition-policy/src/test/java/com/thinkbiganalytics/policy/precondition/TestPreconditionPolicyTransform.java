@@ -1,0 +1,84 @@
+package com.thinkbiganalytics.policy.precondition;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.policy.PolicyTransformException;
+import com.thinkbiganalytics.policy.precondition.transform.PreconditionAnnotationTransformer;
+import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
+import com.thinkbiganalytics.rest.model.LabelValue;
+
+import org.joda.time.Period;
+import org.joda.time.format.PeriodFormat;
+import org.junit.Assert;
+import org.junit.Test;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+/**
+ * Created by sr186054 on 4/5/16.
+ */
+public class TestPreconditionPolicyTransform {
+
+
+    @Test
+    public void testFeedExecutedSinceFeed() throws IOException {
+        String dependentUponFeed = "category.feed";
+        String currentFeed = "currentCategory.currentFeeda";
+
+        FeedExecutedSinceFeeds feedExecutedSinceFeed = new FeedExecutedSinceFeeds(currentFeed, dependentUponFeed);
+        PreconditionRule uiModel = PreconditionAnnotationTransformer.instance().toUIModel(feedExecutedSinceFeed);
+        List<LabelValue> values = new ArrayList<>();
+        values.add(new LabelValue("Label1", "Value1"));
+        values.add(new LabelValue("Label2", "Value2"));
+        uiModel.getProperty("Dependent Feeds").setValues(values);
+        FeedExecutedSinceFeeds convertedPolicy = fromUI(uiModel, FeedExecutedSinceFeeds.class);
+        Assert.assertEquals(currentFeed, convertedPolicy.getSinceCategoryAndFeedName());
+        Assert.assertEquals(dependentUponFeed, convertedPolicy.getCategoryAndFeeds());
+
+        Set<PreconditionGroup> preconditionGroups = convertedPolicy.getPreconditionObligations();
+
+
+    }
+
+
+    @Test
+    public void testUiCreation() {
+        List<PreconditionRule> rules = AvailablePolicies.discoverPreconditions();
+        PreconditionRule rule = Iterables.tryFind(rules, new Predicate<PreconditionRule>() {
+            @Override
+            public boolean apply(PreconditionRule rule) {
+                return rule.getName().equalsIgnoreCase(PreconditionPolicyConstants.FEED_EXECUTED_SINCE_FEEDS_NAME);
+            }
+        }).orNull();
+
+        rule.getProperty("Since Feed").setValue("currentCategory.currentFeed");
+        rule.getProperty("Dependent Feeds").setValue("category.feed");
+        FeedExecutedSinceFeeds convertedPolicy = fromUI(rule, FeedExecutedSinceFeeds.class);
+        Assert.assertEquals("currentCategory.currentFeed", convertedPolicy.getSinceCategoryAndFeedName());
+        Assert.assertEquals("category.feed", convertedPolicy.getCategoryAndFeeds());
+    }
+
+    @Test
+    public void testPeriod() {
+        Period p = new Period(0, 0, 1, 0);
+        String withinPeriod = PeriodFormat.getDefault().print(p);
+
+    }
+
+
+    private <T extends Precondition> T fromUI(PreconditionRule uiModel, Class<T> policyClass) {
+        try {
+            Precondition policy = PreconditionAnnotationTransformer.instance().fromUiModel(uiModel);
+            return (T) policy;
+        } catch (PolicyTransformException e) {
+            e.printStackTrace();
+
+        }
+        return null;
+    }
+
+
+}

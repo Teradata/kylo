@@ -4,7 +4,6 @@ import com.thinkbiganalytics.db.model.query.QueryResult;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
-import com.thinkbiganalytics.feedmgr.rest.model.GenericUIPrecondition;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
@@ -14,6 +13,7 @@ import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
+import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.schema.TextFileParser;
 
 import org.apache.commons.lang3.StringUtils;
@@ -184,7 +184,6 @@ public class FeedRestController {
         } catch (Exception e) {
             registeredTemplate = getMetadataService().getRegisteredTemplateByName(feed.getTemplateName());
             if (registeredTemplate != null) {
-                //CHANGED!!!!!
                 feed.setTemplateId(registeredTemplate.getId());
             }
         }
@@ -241,7 +240,6 @@ public class FeedRestController {
                 }
             }
         } catch (DataAccessException e) {
-            e.printStackTrace();
             if (e.getCause() instanceof org.apache.hive.service.cli.HiveSQLException && e.getCause().getMessage().contains("Table not found")) {
                 //this exception is ok to swallow since it just means no profile data exists yet
             } else {
@@ -291,7 +289,7 @@ public class FeedRestController {
     @Path("/possible-preconditions")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getPossiblePreconditions() {
-        List<GenericUIPrecondition> conditions = feedManagerPreconditionService.getPossiblePreconditions();
+        List<PreconditionRule> conditions = feedManagerPreconditionService.getPossiblePreconditions();
         return Response.ok(conditions).build();
     }
 }

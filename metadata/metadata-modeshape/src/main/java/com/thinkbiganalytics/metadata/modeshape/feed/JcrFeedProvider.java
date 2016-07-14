@@ -123,6 +123,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
     @Override
+    /**
+     * Ensure the Feed, but the Category must exist!
+     */
     public Feed ensureFeed(String categorySystemName, String feedSystemName) {
         String categoryPath = EntityUtil.pathForCategory(categorySystemName);
         JcrCategory category = null;

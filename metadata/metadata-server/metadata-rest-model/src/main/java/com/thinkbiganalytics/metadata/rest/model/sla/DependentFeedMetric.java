@@ -26,6 +26,7 @@ public abstract class DependentFeedMetric extends Metric {
 
     private String dependentFeedId;
     private String dependentFeedName;
+    private String dependentCategoryName;
 
     public String getDependentFeedId() {
         return dependentFeedId;
@@ -34,15 +35,20 @@ public abstract class DependentFeedMetric extends Metric {
     public void setDependentFeedId(String dependentFeedId) {
         this.dependentFeedId = dependentFeedId;
         this.dependentFeedName = null;
+        this.dependentCategoryName = null;
     }
 
     public String getDependentFeedName() {
         return dependentFeedName;
     }
 
-    public void setDependentFeedName(String dependentFeedName) {
+    public void setDependentFeedName(String dependentCategoryName, String dependentFeedName) {
+        this.dependentCategoryName = dependentCategoryName;
         this.dependentFeedName = dependentFeedName;
         this.dependentFeedId = null;
     }
 
+    public String getDependentCategoryName() {
+        return dependentCategoryName;
+    }
 }

@@ -3,7 +3,15 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
-import java.io.IOException;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.modeshape.jcr.api.JcrTools;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -14,21 +22,6 @@ import java.util.Map;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.modeshape.jcr.api.JcrTools;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 /**
  * @author Sean Felten
@@ -271,6 +264,27 @@ public class JcrUtil {
         }
         String type = obj.getTypeName();
         Map<String,Object> props = obj.getProperties();
+        Map<String, Object> finalProps = new HashMap<>();
+        if (props != null) {
+            finalProps.putAll(finalProps);
+        }
+        finalProps.put("nodeName", nodeName);
+        if (identifier != null) {
+            finalProps.put("nodeIdentifier", identifier);
+        }
+        finalProps.put("nodePath", path);
+        finalProps.put("nodeType", type);
+        return finalProps;
+    }
+
+    public static Map<String, Object> nodeAsMap(Node obj) throws RepositoryException {
+
+        String nodeName = obj.getName();
+        String path = obj.getPath();
+        String identifier = obj.getIdentifier();
+
+        String type = obj.getPrimaryNodeType() != null ? obj.getPrimaryNodeType().getName() : "";
+        Map<String, Object> props = JcrPropertyUtil.getProperties(obj);
         Map<String,Object> finalProps = new HashMap<>();
         if(props != null){
             finalProps.putAll(finalProps);

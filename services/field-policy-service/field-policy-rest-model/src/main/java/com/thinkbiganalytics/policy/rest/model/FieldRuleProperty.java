@@ -1,7 +1,10 @@
 package com.thinkbiganalytics.policy.rest.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.thinkbiganalytics.rest.model.LabelValue;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,12 +18,13 @@ public class FieldRuleProperty {
     private String name;
     private String displayName;
     private String value;
-    private List<String> values;
+    private List<LabelValue> values;
     private String placeholder;
     private String type;
     private String hint;
     private String objectProperty;
     private List<LabelValue> selectableValues;
+    private boolean required;
 
     public String getName() {
         return name;
@@ -98,12 +102,37 @@ public class FieldRuleProperty {
         this.objectProperty = objectProperty;
     }
 
-    public List<String> getValues() {
+    public List<LabelValue> getValues() {
         return values;
     }
 
-    public void setValues(List<String> values) {
+    public void setValues(List<LabelValue> values) {
         this.values = values;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    public void setRequired(boolean required) {
+        this.required = required;
+    }
+
+    @JsonIgnore
+    public String getStringValue() {
+        if (StringUtils.isBlank(value) && values != null && !values.isEmpty()) {
+            //join the values into a string comma separated
+            StringBuffer sb = new StringBuffer();
+            for (LabelValue lv : getValues()) {
+                if (!sb.toString().equalsIgnoreCase("")) {
+                    sb.append(",");
+                }
+                sb.append(lv.getValue());
+            }
+            return sb.toString();
+        } else {
+            return value;
+        }
     }
 
 

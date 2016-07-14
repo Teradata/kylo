@@ -3,6 +3,32 @@
  */
 package com.thinkbiganalytics.metadata.rest.api;
 
+import com.google.common.collect.Collections2;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation.State;
+import com.thinkbiganalytics.metadata.api.op.FeedOperationCriteria;
+import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
+import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
+import com.thinkbiganalytics.metadata.rest.Model;
+import com.thinkbiganalytics.metadata.rest.model.Formatters;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
+import com.thinkbiganalytics.metadata.rest.model.op.FeedOperation;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
+
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -25,32 +51,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
-import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.FeedOperation.State;
-import com.thinkbiganalytics.metadata.api.op.FeedOperationCriteria;
-import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
-import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
-import com.thinkbiganalytics.metadata.rest.Model;
-import com.thinkbiganalytics.metadata.rest.model.Formatters;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedCriteria;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedDependencyGraph;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedSource;
-import com.thinkbiganalytics.metadata.rest.model.op.FeedOperation;
-import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 
 /**
  *
@@ -363,11 +363,11 @@ public class FeedsController {
         Model.validateCreate(feed);
         
         return this.metadata.commit(() -> {
-            com.thinkbiganalytics.metadata.api.feed.FeedCriteria crit = feedProvider.feedCriteria().name(feed.getSystemName());
+            com.thinkbiganalytics.metadata.api.feed.FeedCriteria crit = feedProvider.feedCriteria().name(feed.getSystemName()).category(feed.getCategory().getSystemName());
             Collection<com.thinkbiganalytics.metadata.api.feed.Feed> existing = feedProvider.getFeeds(crit);
             
             if (existing.isEmpty()) {
-                com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed = feedProvider.ensureFeed(feed.getSystemName(), feed.getDescription());
+                com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed = feedProvider.ensureFeed(feed.getCategory().getSystemName(), feed.getSystemName(), feed.getDescription());
                 
                 ensureDependentDatasources(feed, domainFeed);
                 ensurePrecondition(feed, domainFeed);

@@ -17,10 +17,10 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 public class FeedExecutedSinceScheduleMetric extends DependentFeedMetric {
 
     private String cronSchedule;
-    
-    public static FeedExecutedSinceScheduleMetric named(String feedName, String schedule) {
+
+    public static FeedExecutedSinceScheduleMetric named(String categoyrName, String feedName, String schedule) {
         FeedExecutedSinceScheduleMetric m = new FeedExecutedSinceScheduleMetric();
-        m.setDependentFeedName(feedName);
+        m.setDependentFeedName(categoyrName, feedName);
         m.setCronSchedule(schedule);
         return m;
     }

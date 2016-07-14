@@ -18,11 +18,13 @@ public class FeedExecutedSinceFeedMetric extends DependentFeedMetric {
 
     private String sinceFeedId;
     private String sinceFeedName;
-    
-    public static FeedExecutedSinceFeedMetric named(String dependentName, String sinceName) {
+    private String sinceCategoryName;
+
+    public static FeedExecutedSinceFeedMetric named(String dependentCategoryName, String dependentName, String sinceCategoryName, String sinceName) {
         FeedExecutedSinceFeedMetric m = new FeedExecutedSinceFeedMetric();
-        m.setDependentFeedName(dependentName);
+        m.setDependentFeedName(dependentCategoryName, dependentName);
         m.setSinceFeedName(sinceName);
+        m.setSinceCategoryName(sinceCategoryName);
         return m;
     }
     
@@ -55,4 +57,11 @@ public class FeedExecutedSinceFeedMetric extends DependentFeedMetric {
         this.sinceFeedId = null;
     }
 
+    public String getSinceCategoryName() {
+        return sinceCategoryName;
+    }
+
+    public void setSinceCategoryName(String sinceCategoryName) {
+        this.sinceCategoryName = sinceCategoryName;
+    }
 }

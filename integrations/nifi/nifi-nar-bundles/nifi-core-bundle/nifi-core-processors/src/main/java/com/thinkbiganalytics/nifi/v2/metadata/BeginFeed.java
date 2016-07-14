@@ -3,14 +3,16 @@
  */
 package com.thinkbiganalytics.nifi.v2.metadata;
 
-import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.FEED_ID_PROP;
-import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
-import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.SRC_DATASET_ID_PROP;
-
-import java.util.List;
-import java.util.Queue;
-import java.util.Set;
-import java.util.concurrent.LinkedBlockingQueue;
+import com.thinkbiganalytics.metadata.rest.model.Formatters;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
+import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
+import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -28,16 +30,14 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.joda.time.DateTime;
 
-import com.thinkbiganalytics.metadata.rest.model.Formatters;
-import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
-import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
-import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
-import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
-import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
-import com.thinkbiganalytics.nifi.core.api.precondition.PreconditionListener;
+import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.FEED_ID_PROP;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.OPERATON_START_PROP;
+import static com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants.SRC_DATASET_ID_PROP;
 
 /**
  * @author Sean Felten
@@ -70,6 +70,14 @@ public class BeginFeed extends AbstractFeedProcessor {
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+    public static final PropertyDescriptor CATEGORY_NAME = new PropertyDescriptor.Builder()
+        .name(FEED_ID_PROP)
+        .displayName("Category name")
+        .description("The unique name of the category that is beginning")
+        .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
     public static final PropertyDescriptor SRC_DATASOURCES_NAME = new PropertyDescriptor.Builder()
             .name(SRC_DATASET_ID_PROP)
             .displayName("Source datasource name")
@@ -97,7 +105,8 @@ public class BeginFeed extends AbstractFeedProcessor {
     public Feed ensureFeedMetadata(ProcessContext context) {
         MetadataProvider provider = getProviderService(context).getProvider();
         String feedName = context.getProperty(FEED_NAME).getValue();
-        Feed feed = provider.ensureFeed(feedName, "");
+        String categoryName = context.getProperty(CATEGORY_NAME).getValue();
+        Feed feed = provider.ensureFeed(categoryName, feedName, "");
 //        this.feedId.set(feed.getId());
 
         String datasourcesName = context.getProperty(SRC_DATASOURCES_NAME).getValue();

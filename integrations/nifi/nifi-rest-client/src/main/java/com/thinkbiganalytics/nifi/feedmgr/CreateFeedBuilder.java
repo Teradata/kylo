@@ -8,6 +8,7 @@ import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 
@@ -400,8 +401,15 @@ public class CreateFeedBuilder {
 
     private void updateFeedSchedule(NifiProcessGroup newProcessGroup, ProcessorDTO input) {
         if (feedSchedule != null && input != null) {
-            input.getConfig().setSchedulingPeriod(feedSchedule.getSchedulingPeriod());
-            input.getConfig().setSchedulingStrategy(feedSchedule.getSchedulingStrategy());
+            String strategy = feedSchedule.getSchedulingStrategy();
+            String schedule = feedSchedule.getSchedulingPeriod();
+            //if the input is of type TriggerFeed then make the schedule for that processor Timer Driven in the flow
+            if (inputProcessorType.equalsIgnoreCase(NifiConstants.TRIGGER_FEED_PROCESSOR_CLASS)) {
+                strategy = NifiConstants.SCHEDULE_STRATEGIES.TIMER_DRIVEN.name();
+                schedule = NifiConstants.DEFAULT_TIGGER_FEED_PROCESSOR_SCHEDULE;
+            }
+            input.getConfig().setSchedulingPeriod(schedule);
+            input.getConfig().setSchedulingStrategy(strategy);
             input.getConfig().setConcurrentlySchedulableTaskCount(feedSchedule.getConcurrentTasks());
             try {
                 restClient.updateProcessor(input);

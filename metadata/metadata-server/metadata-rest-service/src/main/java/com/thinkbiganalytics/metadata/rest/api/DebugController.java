@@ -3,6 +3,21 @@
  */
 package com.thinkbiganalytics.metadata.rest.api;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule;
+
+import org.modeshape.jcr.api.JcrTools;
+import org.springframework.stereotype.Component;
+
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
@@ -21,21 +36,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.UriInfo;
-
-import org.modeshape.jcr.api.JcrTools;
-import org.springframework.stereotype.Component;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
-import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
-import com.thinkbiganalytics.metadata.api.op.FeedOperation;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
-import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
-import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
-import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
-import com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule;
 
 /**
  *
@@ -73,9 +73,9 @@ public class DebugController {
     @Path("metrics")
     @Produces(MediaType.APPLICATION_JSON)
     public List<Metric> exampleMetrics() {
-        
-        return Arrays.asList(FeedExecutedSinceFeedMetric.named("DependentFeed", "ExecutedSinceFeed"), 
-                             FeedExecutedSinceScheduleMetric.named("Feed", "* * * * * ? *"),
+
+        return Arrays.asList(FeedExecutedSinceFeedMetric.named("category", "DependentFeed", "ExecutedSinceCategory", "ExecutedSinceFeed"),
+                             FeedExecutedSinceScheduleMetric.named("category", "Feed", "* * * * * ? *"),
                              new WithinSchedule("* * * * * ? *", "4 hours"));
     }
     
@@ -84,8 +84,8 @@ public class DebugController {
     @Produces(MediaType.APPLICATION_JSON)
     public FeedPrecondition examplePrecondition() {
         FeedPrecondition procond = new FeedPrecondition("DependingPrecondition");
-        procond.addMetrics("Feed dependson on execution of another feed", 
-                           FeedExecutedSinceFeedMetric.named("DependentFeed", "ExecutedSinceFeed"));
+        procond.addMetrics("Feed dependson on execution of another feed",
+                           FeedExecutedSinceFeedMetric.named("DependentCategory", "DependentFeed", "ExecutedSinceCategory", "ExecutedSinceFeed"));
         return procond;
     }
     

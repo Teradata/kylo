@@ -44,7 +44,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
             feedMetadata.getTable().updateMetadataFieldValues();
         }
         if (feedMetadata.getSchedule() != null) {
-            feedMetadata.getSchedule().updateDependentFeedNamesString();
+            //     feedMetadata.getSchedule().updateDependentFeedNamesString();
         }
 
         if (feedMetadata.getProperties() == null) {
