@@ -12,13 +12,13 @@ debug = require('gulp-debug');
 var templateCache = require('gulp-angular-templatecache');
 
 gulp.task('prepare:templates', function () {
-    return gulp.src(['src/main/resources/static/**/*.html','!src/main/resources/static/**/codemirror/**/*.html'])
+    return gulp.src(['src/main/resources/static-common/**/*.html', '!src/main/resources/static-common/**/codemirror/**/*.html'])
         .pipe(templateCache({
             filename: 'templates.js',
             module: COMMON_APP_MODULE_NAME
         }))
         .pipe(debug())
-        .pipe(gulp.dest('src/main/resources/static/js'));
+        .pipe(gulp.dest('src/main/resources/static-common/js'));
 });
 
 gulp.task('default', ['prepare:templates']);

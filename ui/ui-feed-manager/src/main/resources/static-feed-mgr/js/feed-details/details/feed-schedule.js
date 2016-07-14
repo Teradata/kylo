@@ -32,6 +32,11 @@
         this.editModel = {};
         this.editableSection = false;
 
+        this.timerAmount = 5;
+        this.timerUnits = "min";
+        this.isValid = false;
+        self.scheduleFeedForm = {};
+
 
         $scope.$watch(function(){
             return FeedService.editFeedModel;
@@ -54,16 +59,74 @@
             }
         }
 
+        function setTimerDriven() {
+            self.editModel.schedule.schedulingStrategy = 'TIMER_DRIVEN';
+            self.timerAmount = 5;
+            self.timerUnits = "min";
+            self.editModel.schedule.schedulingPeriod = "5 min";
+        }
+
+        function setCronDriven() {
+            self.editModel.schedule.schedulingStrategy = 'CRON_DRIVEN'
+            self.editModel.schedule.schedulingPeriod = FeedService.DEFAULT_CRON;
+        }
+
+        function setDefaultScheduleStrategy() {
+            if (self.editModel.inputProcessorType != '' && (self.editModel.schedule.schedulingStrategy.touched == false || self.editModel.schedule.schedulingStrategy.touched == undefined)) {
+                if (self.editModel.inputProcessorType.indexOf("GetFile") >= 0) {
+                    setTimerDriven();
+                }
+                else if (self.editModel.inputProcessorType.indexOf("GetTableData") >= 0) {
+                    setCronDriven();
+                }
+            }
+        }
+
+        this.timerChanged = function () {
+            if (self.timerAmount < 0) {
+                self.timerAmount = null;
+            }
+            if (self.timerAmount != null && (self.timerAmount == 0 || (self.timerAmount < 3 && self.timerUnits == 'sec'))) {
+                self.showTimerAlert();
+            }
+            self.editModel.schedule.schedulingPeriod = self.timerAmount + " " + self.timerUnits;
+            validate();
+
+            //!warn if < 5 seconds
+        }
+
+        function validate() {
+            //cron expression validation is handled via the cron-expression validator
+            var valid = (self.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN') ||
+                        (self.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN' && self.timerAmount != undefined && self.timerAmount != null) ||
+                        (self.editModel.schedule.schedulingStrategy == 'TRIGGER_DRIVEN' && self.editModel.schedule.preconditions != null && self.editModel.schedule.preconditions.length > 0 );
+            self.isValid = valid;
+        }
+
+        self.showTimerAlert = function (ev) {
+            $mdDialog.show(
+                $mdDialog.alert()
+                    .parent(angular.element(document.body))
+                    .clickOutsideToClose(false)
+                    .title('Warning. Rapid Timer')
+                    .textContent('Warning.  You have this feed scheduled for a very fast timer.  Please ensure you want this feed scheduled this fast before you proceed.')
+                    .ariaLabel('Warning Fast Timer')
+                    .ok('Got it!')
+                    .targetEvent(ev)
+            );
+        };
+
+
         updateScheduleStrategies();
 
         this.onScheduleStrategyChange = function() {
             if(self.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN') {
-                if(self.editModel.schedule.schedulingPeriod !="* * * * * ?" ) {
-                    self.editModel.schedule.schedulingPeriod = "* * * * * ?";
+                if (self.editModel.schedule.schedulingPeriod != FeedService.DEFAULT_CRON) {
+                    setCronDriven();
                 }
             }
             else if(self.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN'){
-                self.editModel.schedule.schedulingPeriod = "5 min";
+                setTimerDriven();
             }
         };
 
@@ -71,28 +134,33 @@
         this.onEdit = function(){
             //copy the model
             self.editModel.schedule = angular.copy(FeedService.editFeedModel.schedule);
+            self.editModel.inputProcessorType = FeedService.editFeedModel.inputProcessorType;
+            validate();
         }
 
         this.onCancel = function() {
 
         }
         this.onSave = function (ev) {
-            //save changes to the model
-            FeedService.showFeedSavingDialog(ev, "Saving Feed " + self.model.feedName, self.model.feedName);
-            var copy = angular.copy(FeedService.editFeedModel);
-            copy.schedule = self.editModel.schedule;
-            FeedService.saveFeedModel(copy).then(function (response) {
-                FeedService.hideFeedSavingDialog();
-                self.editableSection = false;
-                //save the changes back to the model
-                self.model.schedule = self.editModel.schedule;
-            }, function (response) {
-                FeedService.hideFeedSavingDialog();
-                FeedService.buildErrorData(self.model.feedName, response.data);
-                FeedService.showFeedErrorsDialog();
-                //make it editable
-                self.editableSection = true;
-            });
+            var isValid = validate();
+            if (isValid) {
+                //save changes to the model
+                FeedService.showFeedSavingDialog(ev, "Saving Feed " + self.model.feedName, self.model.feedName);
+                var copy = angular.copy(FeedService.editFeedModel);
+                copy.schedule = self.editModel.schedule;
+                FeedService.saveFeedModel(copy).then(function (response) {
+                    FeedService.hideFeedSavingDialog();
+                    self.editableSection = false;
+                    //save the changes back to the model
+                    self.model.schedule = self.editModel.schedule;
+                }, function (response) {
+                    FeedService.hideFeedSavingDialog();
+                    FeedService.buildErrorData(self.model.feedName, response.data);
+                    FeedService.showFeedErrorsDialog();
+                    //make it editable
+                    self.editableSection = true;
+                });
+            }
         }
 
         this.deletePrecondition = function ($index) {
@@ -113,7 +181,7 @@
                 }
             })
                 .then(function (msg) {
-
+                    validate();
                 }, function () {
 
                 });

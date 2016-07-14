@@ -48,7 +48,6 @@
             }
         }
 
-        var DEFAULT_CRON = "0 0 12 1/1 * ? *";
 
         function setTimerDriven() {
             self.model.schedule.schedulingStrategy = 'TIMER_DRIVEN';
@@ -59,7 +58,7 @@
 
         function setCronDriven() {
             self.model.schedule.schedulingStrategy = 'CRON_DRIVEN'
-            self.model.schedule.schedulingPeriod = DEFAULT_CRON;
+            self.model.schedule.schedulingPeriod = FeedService.DEFAULT_CRON;
         }
 
         function setDefaultScheduleStrategy() {
@@ -98,7 +97,7 @@
        this.onScheduleStrategyChange = function() {
            self.model.schedule.schedulingStrategy.touched = true;
             if(self.model.schedule.schedulingStrategy == 'CRON_DRIVEN') {
-                if (self.model.schedule.schedulingPeriod != DEFAULT_CRON) {
+                if (self.model.schedule.schedulingPeriod != FeedService.DEFAULT_CRON) {
                     setCronDriven();
                 }
             }
