@@ -32,6 +32,10 @@
         this.stepNumber = parseInt(this.stepIndex)+1
 
         this.model = FeedService.createFeedModel;
+
+        this.timerAmount = 5;
+        this.timerUnits = "min";
+
         //if the Model doesnt support Preconditions dont allow it in the list
         var allScheduleStrategies = [{label: "Cron", value: "CRON_DRIVEN"}, {label: "Timer", value: "TIMER_DRIVEN"}, {label: "Trigger/Event", value: "TRIGGER_DRIVEN"}];
 
@@ -44,25 +48,64 @@
             }
         }
 
+        var DEFAULT_CRON = "0 0 12 1/1 * ? *";
+
+        function setTimerDriven() {
+            self.model.schedule.schedulingStrategy = 'TIMER_DRIVEN';
+            self.timerAmount = 5;
+            self.timerUnits = "min";
+            self.model.schedule.schedulingPeriod = "5 min";
+        }
+
+        function setCronDriven() {
+            self.model.schedule.schedulingStrategy = 'CRON_DRIVEN'
+            self.model.schedule.schedulingPeriod = DEFAULT_CRON;
+        }
+
+        function setDefaultScheduleStrategy() {
+            if (self.model.inputProcessorType != '' && (self.model.schedule.schedulingStrategy.touched == false || self.model.schedule.schedulingStrategy.touched == undefined)) {
+                if (self.model.inputProcessorType.indexOf("GetFile") >= 0) {
+                    setTimerDriven();
+                }
+                else if (self.model.inputProcessorType.indexOf("GetTableData") >= 0) {
+                    setCronDriven();
+                }
+            }
+        }
         updateScheduleStrategies();
 
         function onActiveStep(event,index){
             if(index == parseInt(self.stepIndex)) {
                 updateScheduleStrategies();
+                setDefaultScheduleStrategy();
             }
         }
 
+        this.timerChanged = function () {
+            if (self.timerAmount < 0) {
+                self.timerAmount = null;
+            }
+            if (self.timerAmount != null && (self.timerAmount == 0 || (self.timerAmount < 3 && self.timerUnits == 'sec'))) {
+                self.showTimerAlert();
+            }
+            self.model.schedule.schedulingPeriod = self.timerAmount + " " + self.timerUnits;
+            validate();
+
+            //!warn if < 5 seconds
+        }
 
 
        this.onScheduleStrategyChange = function() {
+           self.model.schedule.schedulingStrategy.touched = true;
             if(self.model.schedule.schedulingStrategy == 'CRON_DRIVEN') {
-                if(self.model.schedule.schedulingPeriod !="* * * * * ?" ) {
-                    self.model.schedule.schedulingPeriod = "* * * * * ?";
+                if (self.model.schedule.schedulingPeriod != DEFAULT_CRON) {
+                    setCronDriven();
                 }
             }
             else if(self.model.schedule.schedulingStrategy == 'TIMER_DRIVEN'){
-                self.model.schedule.schedulingPeriod = "5 min";
+                setTimerDriven();
             }
+           validate();
         };
         this.isValid = false;
 
@@ -78,23 +121,31 @@
             }
         }
 
-
-
+        self.showTimerAlert = function (ev) {
+            $mdDialog.show(
+                $mdDialog.alert()
+                    .parent(angular.element(document.body))
+                    .clickOutsideToClose(false)
+                    .title('Warning. Rapid Timer')
+                    .textContent('Warning.  You have this feed scheduled for a very fast timer.  Please ensure you want this feed scheduled this fast before you proceed.')
+                    .ariaLabel('Warning Fast Timer')
+                    .ok('Got it!')
+                    .targetEvent(ev)
+            );
+        };
 
 
         this.createdFeed = null;
         this.feedErrorsData = [];
         this.feedErrorsCount = 0;
-        this.cronExpressionValid = true;
 
-        this.validateCronExpression = function(){
-            if(self.model.schedule.schedulingStrategy == 'CRON_DRIVEN'){
-                RestUrlService.validateCronExpression(self.model.schedule.schedulingPeriod).then(function(data){
-                    self.cronExpressionValid = data.valid;
-                });
-            }
+        function validate() {
+            //cron expression validation is handled via the cron-expression validator
+            var valid = (self.model.schedule.schedulingStrategy == 'CRON_DRIVEN') ||
+                        (self.model.schedule.schedulingStrategy == 'TIMER_DRIVEN' && self.timerAmount != undefined && self.timerAmount != null) ||
+                        (self.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN' && self.model.schedule.preconditions != null && self.model.schedule.preconditions.length > 0 );
+            self.isValid = valid;
         }
-
 
         this.deletePrecondition = function($index){
             if(self.model.schedule.preconditions != null){
@@ -118,12 +169,13 @@
                 }
             })
                 .then(function(msg) {
+                    validate();
 
                 }, function() {
 
                 });
         };
-
+        validate();
 
 
         this.createFeed = function(){
@@ -167,7 +219,6 @@
             restrict: 'A',
             require: 'ngModel',
             link: function (scope, elm, attrs, ctrl) {
-
                  ctrl.$asyncValidators.cronExpression =function(modelValue,viewValue){
                      var deferred = $q.defer();
                      $http.get(RestUrlService.VALIDATE_CRON_EXPRESSION_URL,{params:{cronExpression:viewValue}}).then(function(response) {

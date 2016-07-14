@@ -1,93 +1,105 @@
 <card-layout body-css="md-padding">
-    <header-section>
-        <div layout="row" layout-align="space-between-center" flex>
-            <h2 class="md-title" flex>Schedule</h2><h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
-        </div>
-      <div layout="row" layout-align="space-between-center" flex>
-        <div class="md-subheader" flex>Schedule and create the feed</div>
-        <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
-      </div>
-    </header-section>
-    <body-section md-content >
-<ng-form name="defineFeedForm">
-        <div layout-gt-sm="row">
+  <header-section>
+    <div layout="row" layout-align="space-between-center" flex>
+      <h2 class="md-title" flex>Schedule</h2>
 
-            <md-input-container class="md-block" flex-gt-sm>
-                <label>Strategy</label>
-                <md-select ng-model="vm.model.schedule.schedulingStrategy" ng-change="vm.onScheduleStrategyChange()">
-                    <md-option ng-value="opt.value" ng-repeat="opt in vm.scheduleStrategies">{{ opt.label }}</md-option>
-                </md-select>
-            </md-input-container>
+      <h2 class="md-subheader">{{vm.stepNumber}} of {{vm.totalSteps}}</h2>
+    </div>
+    <div layout="row" layout-align="space-between-center" flex>
+      <div class="md-subheader" flex>Schedule and create the feed</div>
+      <thinkbig-feed-errors-card-header></thinkbig-feed-errors-card-header>
+    </div>
+  </header-section>
+  <body-section md-content>
+    <ng-form name="vm.defineFeedForm">
+      <div layout-gt-sm="row">
 
-                <md-input-container class="md-block" flex-gt-sm
-                                    ng-if="vm.model.schedule.schedulingStrategy == 'CRON_DRIVEN'">
-                    <label>Expression</label>
-                    <input required ng-model="vm.model.schedule.schedulingPeriod" name="cronExpression"
-                           cron-expression-validator
-                           ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
-
-                    <div ng-show="defineFeedForm.cronExpression.$touched && defineFeedForm.cronExpression.$invalid"
-                         ng-messages="defineFeedForm.cronExpression.$error">
-                        <div ng-show="defineFeedForm.cronExpression.$error.cronExpression"
-                             ng-message="cronExpression">Invalid Cron Expression.
-                        </div>
-                        <div ng-show="defineFeedForm.cronExpression.$error.required" ng-message="required">
-                            Required.
-                        </div>
-                    </div>
-                    <cron-expression-preview cron-expression="vm.model.schedule.schedulingPeriod" ng-if="vm.model.schedule.schedulingStrategy == 'CRON_DRIVEN' && defineFeedForm.cronExpression.$valid" ></cron-expression-preview>
-                </md-input-container>
-
-            <md-input-container class="md-block" flex-gt-sm
-                                ng-if="vm.model.schedule.schedulingStrategy == 'TIMER_DRIVEN'">
-                <label>Run Schedule</label>
-                <input ng-model="vm.model.schedule.schedulingPeriod">
-                </input>
-            </md-input-container>
-
-        </div>
-    <!--
         <md-input-container class="md-block" flex-gt-sm>
-            <label>Concurrent Tasks</label>
-            <input type="number" ng-model="vm.model.schedule.concurrentTasks">
-            </input>
+          <label>Strategy</label>
+          <md-select ng-model="vm.model.schedule.schedulingStrategy" ng-change="vm.onScheduleStrategyChange()">
+            <md-option ng-value="opt.value" ng-repeat="opt in vm.scheduleStrategies">{{ opt.label }}</md-option>
+          </md-select>
         </md-input-container>
-        -->
 
-  <div ng-if="vm.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
+        <md-input-container class="md-block" flex-gt-sm ng-if="vm.model.schedule.schedulingStrategy == 'CRON_DRIVEN'">
+          <label>Expression</label>
+          <input required ng-model="vm.model.schedule.schedulingPeriod" name="cronExpression"
+                 cron-expression-validator
+                 ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }" ng-change="vm.validateCronExpression()"/>
+
+          <div ng-show="vm.defineFeedForm.cronExpression.$touched && vm.defineFeedForm.cronExpression.$invalid"
+               ng-messages="vm.defineFeedForm.cronExpression.$error">
+            <div ng-show="vm.defineFeedForm.cronExpression.$error.cronExpression"
+                 ng-message="cronExpression">Invalid Cron Expression.
+            </div>
+            <div ng-show="vm.defineFeedForm.cronExpression.$error.required" ng-message="required">
+              Required.
+            </div>
+          </div>
+          <cron-expression-preview cron-expression="vm.model.schedule.schedulingPeriod"
+                                   ng-if="vm.model.schedule.schedulingStrategy == 'CRON_DRIVEN' && vm.defineFeedForm.cronExpression.$valid"></cron-expression-preview>
+        </md-input-container>
+        <div ng-if="vm.model.schedule.schedulingStrategy == 'TIMER_DRIVEN'" layout="row">
+          <md-input-container class="md-block" flex-gt-sm>
+            <label>Run Schedule</label>
+            <input ng-model="vm.timerAmount" required string-to-number type="number" ng-change="vm.timerChanged()"/>
+          </md-input-container>
+
+          <md-input-container class="md-block" flex-gt-sm>
+            <label>Units</label>
+            <md-select ng-model="vm.timerUnits" ng-change="vm.timerChanged()">
+              <md-option value="yrs">Years</md-option>
+              <md-option value="days">Days</md-option>
+              <md-option value="hrs">Hours</md-option>
+              <md-option value="min">Minutes</md-option>
+              <md-option value="sec">Seconds</md-option>
+            </md-select>
+          </md-input-container>
+        </div>
+
+      </div>
+      <!--
+          <md-input-container class="md-block" flex-gt-sm>
+              <label>Concurrent Tasks</label>
+              <input type="number" ng-model="vm.model.schedule.concurrentTasks">
+              </input>
+          </md-input-container>
+          -->
+
+      <div ng-if="vm.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
         <div layout="column">
-            <div class="md-subhead">Run Preconditions</div>
-            <div class="hint">Specify execution dependencies</div>
+          <div class="md-subhead">Run Preconditions</div>
+          <div class="hint">Specify execution dependencies</div>
         </div>
         <div layout="column" layout-align="start start" class="layout-padding-top-bottom">
 
-            <div ng-if="vm.model.schedule.preconditions != null && vm.model.schedule.preconditions.length >0 " layout-fill>
-                <md-list>
-                    <md-list-item ng-repeat="rule in vm.model.schedule.preconditions track by $index" layout-fill >
-                      <div layout="column" flex class="md-list-item-text">
-                        <span>{{rule.propertyValuesDisplayString}}</span>
-                         <span class="hint">{{rule.name}}</span>
-                     </div>
+          <div ng-if="vm.model.schedule.preconditions != null && vm.model.schedule.preconditions.length >0 " layout-fill>
+            <md-list>
+              <md-list-item ng-repeat="rule in vm.model.schedule.preconditions track by $index" layout-fill>
+                <div layout="column" flex class="md-list-item-text">
+                  <span>{{rule.propertyValuesDisplayString}}</span>
+                  <span class="hint">{{rule.name}}</span>
+                </div>
                             <span class="md-secondary">
                                   <md-button class="md-icon-button" ng-click="vm.showPreconditionDialog($index)">
                                     <ng-md-icon icon="edit"></ng-md-icon>
                                   </md-button>
                             </span>
-                        <md-divider ng-if="!$last"></md-divider>
-                    </md-list-item>
-                </md-list>
-            </div>
-        <md-button class="md-raised" ng-click="vm.showPreconditionDialog()">
+                <md-divider ng-if="!$last"></md-divider>
+              </md-list-item>
+            </md-list>
+          </div>
+          <md-button class="md-raised" ng-click="vm.showPreconditionDialog()">
             Add Precondition
-        </md-button>
-            </div>
+          </md-button>
+        </div>
 
-    </div>
+      </div>
 
 
-            <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" final-step="Create" on-click-final-button="vm.createFeed()"></thinkbig-step-buttons>
+      <thinkbig-step-buttons can-continue="vm.isValid && vm.defineFeedForm.$valid" step-index="{{::vm.stepIndex}}" final-step="Create" on-click-final-button="vm.createFeed()"></thinkbig-step-buttons>
 
-</ng-form>
-    </body-section>
+    </ng-form>
+  </body-section>
 </card-layout>
 

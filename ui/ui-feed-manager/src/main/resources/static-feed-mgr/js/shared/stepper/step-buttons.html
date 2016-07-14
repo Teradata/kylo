@@ -8,7 +8,7 @@
     <md-button ng-click="gotoNextStep()"  class="md-raised md-primary" ng-if="showNext()" ng-disabled="canContinue == false">
         Continue to Step {{nextStepNumber}}
     </md-button>
-    <md-button  ng-click="finalButtonClick()" class="md-raised md-primary" ng-if="finalStep == true">
+    <md-button ng-click="finalButtonClick()" class="md-raised md-primary" ng-if="finalStep == true" ng-disabled="canContinue == false">
         {{finalStepText}}
     </md-button>
 
