@@ -71,7 +71,7 @@
             self.editModel.fieldPolicies = fieldPolicies;
 
             self.editModel.table = {};
-            self.editModel.table.targeFormat = FeedService.editFeedModel.table.targetFormat;
+            self.editModel.table.targetFormat = FeedService.editFeedModel.table.targetFormat;
             self.editModel.table.targetMergeStrategy = FeedService.editFeedModel.table.targetMergeStrategy;
             self.editModel.table.options = angular.copy(FeedService.editFeedModel.table.options);
             self.editModel.table.securityGroups = angular.copy(FeedService.editFeedModel.table.securityGroups);
@@ -89,7 +89,7 @@
             FeedService.showFeedSavingDialog(ev, "Saving Feed " + self.model.feedName, self.model.feedName);
             var copy = angular.copy(FeedService.editFeedModel);
 
-            copy.table.targeFormat = self.editModel.table.targeFormat;
+            copy.table.targetFormat = self.editModel.table.targetFormat;
             copy.table.fieldPolicies = self.editModel.fieldPolicies;
             copy.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
             copy.table.options = self.editModel.table.options;
@@ -99,7 +99,7 @@
                 FeedService.hideFeedSavingDialog();
                 self.editableSection = false;
                 //save the changes back to the model
-                self.model.table.targeFormat = self.editModel.table.targeFormat;
+                self.model.table.targetFormat = self.editModel.table.targetFormat;
                 self.model.table.fieldPolicies = self.editModel.fieldPolicies;
                 self.model.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
                 self.model.table.options = self.editModel.table.options;
