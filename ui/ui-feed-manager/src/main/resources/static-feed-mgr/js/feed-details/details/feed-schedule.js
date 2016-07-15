@@ -101,6 +101,7 @@
                         (self.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN' && self.timerAmount != undefined && self.timerAmount != null) ||
                         (self.editModel.schedule.schedulingStrategy == 'TRIGGER_DRIVEN' && self.editModel.schedule.preconditions != null && self.editModel.schedule.preconditions.length > 0 );
             self.isValid = valid;
+            return self.isValid;
         }
 
         self.showTimerAlert = function (ev) {
