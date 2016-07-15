@@ -95,8 +95,9 @@
             self.editModel.table = angular.copy(FeedService.editFeedModel.table);
             EditFeedNifiPropertiesService.editFeedModel = self.editModel;
             updateInputProcessor(self.model.inputProcessor.processorId);
-
-            self.editModel.inputProcessorId = self.model.inputProcessor.processorId
+            if(self.model.inputProcessor !== undefined) {
+                self.editModel.inputProcessorId = self.model.inputProcessor.processorId
+            }
 
         }
 
