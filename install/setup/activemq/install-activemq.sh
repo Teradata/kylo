@@ -22,7 +22,7 @@ then
     cp $working_dir/activemq/apache-activemq-5.13.3-bin.tar.gz .
 else
     echo "Download activemq and install"
-    wget http://ftp.wayne.edu/apache//activemq/5.13.3/apache-activemq-5.13.3-bin.tar.gz
+    curl -O http://ftp.wayne.edu/apache//activemq/5.13.3/apache-activemq-5.13.3-bin.tar.gz
 fi
 
 if ! [ -f apache-activemq-5.13.3-bin.tar.gz ]

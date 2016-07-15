@@ -23,7 +23,7 @@ then
     cp $working_dir/nifi/nifi-0.6.1-bin.tar.gz .
 else
     echo "Download nifi distro and install"
-    wget https://archive.apache.org/dist/nifi/0.6.1/nifi-0.6.1-bin.tar.gz
+    curl -O https://archive.apache.org/dist/nifi/0.6.1/nifi-0.6.1-bin.tar.gz
 fi
 
 if ! [ -f nifi-0.6.1-bin.tar.gz ]

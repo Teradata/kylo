@@ -21,7 +21,7 @@ if [ $offline = true ]
 then
     cp $working_dir/java/jdk-8u92-linux-x64.tar.gz .
 else
-    wget --no-check-certificate --no-cookies --header "Cookie: oraclelicense=accept-securebackup-cookie" http://download.oracle.com/otn-pub/java/jdk/8u92-b14/jdk-8u92-linux-x64.tar.gz
+    curl -L -O -H "Cookie: oraclelicense=accept-securebackup-cookie" -k "http://download.oracle.com/otn-pub/java/jdk/8u92-b14/jdk-8u92-linux-x64.tar.gz"
 fi
 
 if ! [ -f jdk-8u92-linux-x64.tar.gz ]
