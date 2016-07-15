@@ -2,7 +2,21 @@
 angular.module(COMMON_APP_MODULE_NAME).directive("verticalSectionLayout", function()  {
     return {
         restrict: 'E',
-        scope: {showVerticalCheck:'=?',allowEdit:'=?',sectionTitle:'@',formName:'@',onDelete:'&?',allowDelete:'=?', onEdit:'&', onSaveEdit:'&',onCancelEdit:'&',editable:'=?',keepEditableAfterSave:'=?'},
+        scope: {
+            showVerticalCheck: '=?',
+            allowEdit: '=?',
+            sectionTitle: '@',
+            formName: '@',
+            onDelete: '&?',
+            allowDelete: '=?',
+            onEdit: '&',
+            onSaveEdit: '&',
+            onCancelEdit: '&',
+            editable: '=?',
+            keepEditableAfterSave: '=?',
+            isValid: '=?',
+            theForm: '=?'
+        },
         transclude: {
             'readonly':'?readonlySection',
             'editable':'?editableSection'
@@ -22,11 +36,13 @@ angular.module(COMMON_APP_MODULE_NAME).directive("verticalSectionLayout", functi
             if($scope.allowEdit == undefined ){
                 $scope.allowEdit = true;
             }
+            if ($scope.isValid == undefined) {
+                $scope.isValid = true;
+            }
+
             if($scope.keepEditableAfterSave == undefined){
                 $scope.keepEditableAfterSave = false;
             }
-
-
 
             $scope.edit = function(ev){
                 $scope.editable = true;

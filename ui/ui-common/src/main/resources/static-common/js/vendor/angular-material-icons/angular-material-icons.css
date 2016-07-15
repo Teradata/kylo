@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2015.
- */
-
 /*!
  * Angular Material Design
  * https://github.com/angular/material
@@ -91,6 +87,10 @@ ng-md-icon[md-font-icon] {
     width: auto;
 }
 
+ng-md-icon[disabled] svg {
+    fill: rgba(0, 0, 0, 0.26);
+}
+
 md-input-container > ng-md-icon {
     position: absolute;
     top: 5px;
@@ -160,3 +160,4 @@ md-tabs-wrapper md-next-button ng-md-icon {
     -webkit-transform: translate3d(-50%, -50%, 0) rotate(180deg);
     transform: translate3d(-50%, -50%, 0) rotate(180deg);
 }
+1

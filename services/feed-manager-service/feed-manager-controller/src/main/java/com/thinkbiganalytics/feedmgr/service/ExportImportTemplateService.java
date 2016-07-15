@@ -89,6 +89,9 @@ public class ExportImportTemplateService {
         private NifiProcessGroup templateResults;
         private List<NifiProcessorDTO> controllerServiceErrors;
 
+        private String templateId;
+        private String nifiTemplateId;
+
         private boolean zipFile;
 
         public ImportTemplate(String fileName) {
@@ -171,6 +174,22 @@ public class ExportImportTemplateService {
 
         public List<NifiProcessorDTO> getControllerServiceErrors() {
             return controllerServiceErrors;
+        }
+
+        public String getTemplateId() {
+            return templateId;
+        }
+
+        public void setTemplateId(String templateId) {
+            this.templateId = templateId;
+        }
+
+        public String getNifiTemplateId() {
+            return nifiTemplateId;
+        }
+
+        public void setNifiTemplateId(String nifiTemplateId) {
+            this.nifiTemplateId = nifiTemplateId;
         }
     }
 
@@ -306,6 +325,8 @@ public class ExportImportTemplateService {
 
         if (newTemplateInstance.isSuccess()) {
             importTemplate.setSuccess(true);
+            importTemplate.setTemplateId(template.getId());
+            importTemplate.setNifiTemplateId(template.getNifiTemplateId());
         } else {
             //delete this template
             importTemplate.setSuccess(false);

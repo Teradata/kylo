@@ -1,5 +1,5 @@
 <vertical-section-layout section-title="Schedule" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="!vm.model.reusableFeed && vm.model.state == 'ENABLED'"
-                         editable="vm.editableSection" keep-editable-after-save="true">
+                         editable="vm.editableSection" keep-editable-after-save="true" is-valid="vm.isValid" the-form="vm.scheduleFeedForm">
 
     <readonly-section>
         <div ng-if="vm.model.reusableFeed == false">
@@ -32,7 +32,7 @@
     </readonly-section>
     <editable-section>
 
-        <ng-form name="scheduleFeedForm">
+        <ng-form name="vm.scheduleFeedForm">
             <div layout-gt-sm="row">
 
                 <md-input-container class="md-block" flex-gt-sm>
@@ -43,33 +43,42 @@
                 </md-input-container>
 
 
-                <md-input-container class="md-block" flex-gt-sm
-                                    ng-if="vm.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN'">
+                <md-input-container class="md-block" flex-gt-sm ng-if="vm.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN'">
                     <label>Expression</label>
                     <input required ng-model="vm.editModel.schedule.schedulingPeriod" name="cronExpression"
                            cron-expression-validator
                            ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
 
-                    <div ng-show="scheduleFeedForm.cronExpression.$touched && defineFeedForm.cronExpression.$invalid"
-                         ng-messages="scheduleFeedForm.cronExpression.$error">
-                        <div ng-show="scheduleFeedForm.cronExpression.$error.cronExpression"
+                    <div ng-show="vm.scheduleFeedForm.cronExpression.$touched && vm.scheduleFeedForm.cronExpression.$invalid"
+                         ng-messages="vm.scheduleFeedForm.cronExpression.$error">
+                        <div ng-show="vm.scheduleFeedForm.cronExpression.$error.cronExpression"
                              ng-message="cronExpression">Invalid Cron Expression.
                         </div>
-                        <div ng-show="scheduleFeedForm.cronExpression.$error.required" ng-message="required">
+                        <div ng-show="vm.scheduleFeedForm.cronExpression.$error.required" ng-message="required">
                             Required.
                         </div>
                     </div>
-                    <cron-expression-preview cron-expression="vm.editModel.schedule.schedulingPeriod" ng-if="vm.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN' && scheduleFeedForm.cronExpression.$valid" ></cron-expression-preview>
+                    <cron-expression-preview cron-expression="vm.editModel.schedule.schedulingPeriod"
+                                             ng-if="vm.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN' && vm.scheduleFeedForm.cronExpression.$valid"></cron-expression-preview>
                 </md-input-container>
 
-                <md-input-container class="md-block" flex-gt-sm
-                                    ng-if="vm.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN'">
-                    <label>Run Schedule</label>
-                    <input ng-model="vm.editModel.schedule.schedulingPeriod">
-                    </input>
-                </md-input-container>
+                <div ng-if="vm.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN'" layout="row">
+                    <md-input-container class="md-block" flex-gt-sm>
+                        <label>Run Schedule</label>
+                        <input ng-model="vm.timerAmount" required string-to-number type="number" ng-change="vm.timerChanged()"/>
+                    </md-input-container>
 
-            </div>
+                    <md-input-container class="md-block" flex-gt-sm>
+                        <label>Units</label>
+                        <md-select ng-model="vm.timerUnits" ng-change="vm.timerChanged()">
+                            <md-option value="yrs">Years</md-option>
+                            <md-option value="days">Days</md-option>
+                            <md-option value="hrs">Hours</md-option>
+                            <md-option value="min">Minutes</md-option>
+                            <md-option value="sec">Seconds</md-option>
+                        </md-select>
+                    </md-input-container>
+                </div>
             <!--
             <md-input-container class="md-block" flex-gt-sm>
                 <label>Concurrent Tasks</label>
@@ -77,7 +86,7 @@
                 </input>
             </md-input-container>
 
-            -->
+            --></div>
             <div ng-if="vm.editModel.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
                 <div layout="column">
                     <div class="md-subhead">Run Preconditions</div>
@@ -108,6 +117,6 @@
 
             </div>
 
-
+        </ng-form>
     </editable-section>
 </vertical-section-layout>

@@ -25,7 +25,7 @@
           <label>Expression</label>
           <input required ng-model="vm.model.schedule.schedulingPeriod" name="cronExpression"
                  cron-expression-validator
-                 ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }" ng-change="vm.validateCronExpression()"/>
+                 ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
 
           <div ng-show="vm.defineFeedForm.cronExpression.$touched && vm.defineFeedForm.cronExpression.$invalid"
                ng-messages="vm.defineFeedForm.cronExpression.$error">

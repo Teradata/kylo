@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.rest.exception;
 
-import com.thinkbiganalytics.rest.model.RestResponseStatus;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
@@ -18,13 +16,8 @@ public class IllegalArgumentExceptionMapper extends BaseExceptionMapper implemen
     private static final Logger log = LoggerFactory.getLogger(IllegalArgumentExceptionMapper.class);
 
     @Override
-    public Response toResponse(IllegalArgumentException exception) {
-        log.error("toResponse() caught IllegalArgumentException", exception);
-        RestResponseStatus.ResponseStatusBuilder builder = new RestResponseStatus.ResponseStatusBuilder();
-        builder.url(req.getRequestURI());
-        builder.message(exception.getMessage());
-
-        return Response.accepted(builder.buildError()).status(Response.Status.BAD_REQUEST).build();
+    public Response toResponse(IllegalArgumentException e) {
+        return defaultResponse(e);
     }
 
 }
