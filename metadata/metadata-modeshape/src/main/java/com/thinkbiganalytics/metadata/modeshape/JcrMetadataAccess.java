@@ -137,7 +137,11 @@ public class JcrMetadataAccess implements MetadataAccess {
 
                     activeSession.get().refresh(false);
                     // TODO Use a better exception
-                    throw new RuntimeException(e);
+                    if (e instanceof RuntimeException) {
+                        throw (RuntimeException) e;
+                    } else {
+                        throw new RuntimeException(e);
+                    }
                 } finally {
                     activeSession.get().logout();
                     activeSession.remove();
