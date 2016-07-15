@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.rest.exception.nifi;
 
-import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.feedmgr.FeedCreationException;
 import com.thinkbiganalytics.rest.exception.BaseExceptionMapper;
 
 import org.slf4j.Logger;
@@ -16,12 +16,12 @@ import javax.ws.rs.ext.Provider;
  */
 @Provider
 @Configuration
-public class NifiClientRuntimeExceptionMapper extends BaseExceptionMapper implements ExceptionMapper<NifiClientRuntimeException> {
+public class TemplateCreationExceptionMapper extends BaseExceptionMapper implements ExceptionMapper<FeedCreationException> {
 
-    private static final Logger log = LoggerFactory.getLogger(NifiClientRuntimeExceptionMapper.class);
+    private static final Logger log = LoggerFactory.getLogger(TemplateCreationExceptionMapper.class);
 
     @Override
-    public Response toResponse(NifiClientRuntimeException e) {
+    public Response toResponse(FeedCreationException e) {
         return defaultResponse(e);
     }
 

@@ -116,6 +116,9 @@ public class CreateFeedBuilder {
         ProcessGroupDTO reusableTemplateCategory = restClient.getProcessGroupByName("root", reusableTemplateCategoryName);
         ProcessGroupEntity feedProcessGroup = restClient.getProcessGroup(feedGroupId, false, false);
         String feedCategoryId = feedProcessGroup.getProcessGroup().getParentGroupId();
+        if(reusableTemplateCategory == null){
+            throw new NifiClientRuntimeException("Unable to find the Reusable Template Group. Please ensure NiFi has the 'reusable_templates' processgroup and appropriate reusable flow for this feed. You may need to import the base reusable template for this feed.");
+        }
         String reusableTemplateCategoryGroupId = reusableTemplateCategory.getId();
         String inputPortName = reusableTemplateInputPortName;
         restClient
