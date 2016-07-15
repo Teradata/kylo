@@ -2,6 +2,8 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
@@ -63,9 +65,11 @@ public class ExportImportFeedService {
 
     public class ImportFeed {
 
+        private boolean success;
         private String fileName;
         private String feedName;
         private ExportImportTemplateService.ImportTemplate template;
+        private NifiFeed nifiFeed;
 
         public ImportFeed(String fileName) {
             this.fileName = fileName;
@@ -103,6 +107,22 @@ public class ExportImportFeedService {
 
         public void setFeedName(String feedName) {
             this.feedName = feedName;
+        }
+
+        public NifiFeed getNifiFeed() {
+            return nifiFeed;
+        }
+
+        public void setNifiFeed(NifiFeed nifiFeed) {
+            this.nifiFeed = nifiFeed;
+        }
+
+        public boolean isSuccess() {
+            return success;
+        }
+
+        public void setSuccess(boolean success) {
+            this.success = success;
         }
     }
 
@@ -181,7 +201,7 @@ public class ExportImportFeedService {
 
     }
 
-    public ImportFeed importFeed(String fileName, InputStream inputStream, boolean overwrite) throws IOException {
+    public ImportFeed importFeed(String fileName, InputStream inputStream, ImportOptions importOptions) throws IOException {
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buf = new byte[1024];
@@ -193,15 +213,20 @@ public class ExportImportFeedService {
 
         ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(content);
 
-        ExportImportTemplateService.ImportTemplate template = exportImportTemplateService.importTemplate(fileName, byteArrayInputStream, overwrite, false);
+        ExportImportTemplateService.ImportTemplate template = exportImportTemplateService.importTemplate(fileName, byteArrayInputStream, importOptions);
+        if (template.isVerificationToReplaceConnectingResuableTemplateNeeded()) {
+            ImportFeed feed = new ImportFeed(fileName);
+            feed.setTemplate(template);
+            return feed;
+        }
         if (template.isSuccess()) {
             //import the feed
             ImportFeed feed = readFeedJson(fileName, content);
             feed.setTemplate(template);
             //now that we have the Feed object we need to create the instance of the feed
-            FeedMetadata feedMetadata = metadataAccess.commit(new Command<FeedMetadata>() {
+            NifiFeed nifiFeed = metadataAccess.commit(new Command<NifiFeed>() {
                 @Override
-                public FeedMetadata execute() {
+                public NifiFeed execute() {
                     FeedMetadata metadata = ObjectMapperSerializer.deserialize(feed.getFeedJson(), FeedMetadata.class);
                     //reassign the templateId to the newly registered template id
                     metadata.setTemplateId(template.getTemplateId());
@@ -209,14 +234,18 @@ public class ExportImportFeedService {
                     FeedCategory category = metadataService.getCategoryBySystemName(metadata.getCategory().getSystemName());
                     if (category == null) {
                         metadataService.saveCategory(metadata.getCategory());
+                    } else {
+                        metadata.setCategory(category);
                     }
-                    metadataService.createFeed(metadata);
-                    return metadata;
+                    NifiFeed feed = metadataService.createFeed(metadata);
+                    return feed;
                 }
             });
-            if (feedMetadata != null) {
-                feed.setFeedName(feedMetadata.getCategoryAndFeedName());
+            if (nifiFeed != null) {
+                feed.setFeedName(nifiFeed.getFeedMetadata().getCategoryAndFeedName());
             }
+            feed.setNifiFeed(nifiFeed);
+            feed.setSuccess(nifiFeed != null && nifiFeed.isSuccess());
             return feed;
 
         }

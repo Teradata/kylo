@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
+import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 
@@ -70,9 +71,13 @@ public class AdminController {
     @Produces({MediaType.APPLICATION_JSON})
     public Response uploadFeed(@NotNull @FormDataParam("file") InputStream fileInputStream,
                                    @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
-                                   @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite)
+                                   @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
+                               @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportOptions.IMPORT_CONNECTING_FLOW importConnectingFlow)
         throws Exception {
-        ExportImportFeedService.ImportFeed importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), fileInputStream, overwrite);
+        ImportOptions options = new ImportOptions();
+        options.setOverwrite(overwrite);
+        options.setImportConnectingFlow(importConnectingFlow);
+        ExportImportFeedService.ImportFeed importFeed = exportImportFeedService.importFeed(fileMetaData.getFileName(), fileInputStream, options);
 
         return Response.ok(importFeed).build();
     }
@@ -85,9 +90,14 @@ public class AdminController {
     public Response uploadTemplate(@NotNull @FormDataParam("file") InputStream fileInputStream,
                                   @NotNull @FormDataParam("file") FormDataContentDisposition fileMetaData,
                                   @FormDataParam("overwrite") @DefaultValue("false") boolean overwrite,
+                                   @FormDataParam("importConnectingReusableFlow") @DefaultValue("NOT_SET") ImportOptions.IMPORT_CONNECTING_FLOW importConnectingFlow,
                                   @FormDataParam("createReusableFlow") @DefaultValue("false") boolean createReusableFlow)
         throws Exception {
-        ExportImportTemplateService.ImportTemplate importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(), fileInputStream, overwrite, createReusableFlow);
+        ImportOptions options = new ImportOptions();
+        options.setCreateReusableFlow(createReusableFlow);
+        options.setOverwrite(overwrite);
+        options.setImportConnectingFlow(importConnectingFlow);
+        ExportImportTemplateService.ImportTemplate importTemplate = exportImportTemplateService.importTemplate(fileMetaData.getFileName(), fileInputStream, options);
 
         return Response.ok(importTemplate).build();
     }

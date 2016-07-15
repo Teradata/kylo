@@ -1,38 +1,48 @@
 angular.module(MODULE_FEED_MGR).factory('FeedCreationErrorService', function ($mdDialog) {
 
+    function parseNifiFeedForErrors(nifiFeed, errorMap) {
+        var count = 0;
+
+        if (nifiFeed != null) {
+
+            if (nifiFeed.errorMessages != null && nifiFeed.errorMessages.length > 0) {
+                angular.forEach(nifiFeed.errorMessages, function (msg) {
+                    errorMap['FATAL'].push({category: 'General', message: msg});
+                    count++;
+                })
+            }
+
+            if (nifiFeed.feedProcessGroup != null) {
+                angular.forEach(nifiFeed.feedProcessGroup.errors, function (processor) {
+                    if (processor.validationErrors) {
+                        angular.forEach(processor.validationErrors, function (error) {
+                            var copy = {};
+                            angular.extend(copy, error);
+                            angular.extend(copy, processor);
+                            copy.validationErrors = null;
+                            errorMap[error.severity].push(copy);
+                            count++;
+                        });
+                    }
+                });
+            }
+            if (errorMap['FATAL'].length == 0) {
+                delete errorMap['FATAL'];
+            }
+            if (errorMap['WARN'].length == 0) {
+                delete errorMap['WARN'];
+            }
+        }
+        return count;
+
+    }
 
    function buildErrorMapAndSummaryMessage() {
        var count = 0;
        var errorMap = {"FATAL": [], "WARN": []};
        if (data.feedError.nifiFeed != null) {
 
-           if (data.feedError.nifiFeed.errorMessages != null && data.feedError.nifiFeed.errorMessages.length > 0) {
-               angular.forEach(data.feedError.nifiFeed.errorMessages, function (msg) {
-                   errorMap['FATAL'].push({category: 'General', message: msg});
-                   count++;
-               })
-           }
-
-           if (data.feedError.nifiFeed.feedProcessGroup != null) {
-               angular.forEach(data.feedError.nifiFeed.feedProcessGroup.errors, function (processor) {
-                   if (processor.validationErrors) {
-                       angular.forEach(processor.validationErrors, function (error) {
-                           var copy = {};
-                           angular.extend(copy, error);
-                           angular.extend(copy, processor);
-                           copy.validationErrors = null;
-                           errorMap[error.severity].push(copy);
-                           count++;
-                       });
-                   }
-               });
-           }
-          if(errorMap['FATAL'].length ==0) {
-              delete errorMap['FATAL'];
-          }
-           if(errorMap['WARN'].length ==0) {
-               delete errorMap['WARN'];
-           }
+           count = parseNifiFeedForErrors(data.feedError.nifiFeed, errorMap);
            data.feedError.feedErrorsData = errorMap;
            data.feedError.feedErrorsCount = count;
 
@@ -74,6 +84,9 @@ angular.module(MODULE_FEED_MGR).factory('FeedCreationErrorService', function ($m
             this.feedError.nifiFeed = nifiFeed;
             buildErrorMapAndSummaryMessage();
             this.feedError.hasErrors = this.feedError.feedErrorsCount >0;
+        },
+        parseNifiFeedErrors: function (nifiFeed, errorMap) {
+            return parseNifiFeedForErrors(nifiFeed, errorMap);
         },
         reset:function(){
             angular.extend(this.feedError,newErrorData());

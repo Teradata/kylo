@@ -65,6 +65,15 @@
               If the Feed already exists it will be replaced.
             </div>
           </md-input-container>
+          <md-input-container class="condensed-no-float md-block layout-padding-bottom"
+                              ng-if="vm.verifyToCreateConnectingReusableTemplate == true">
+            <md-checkbox ng-model="vm.createConnectingReusableTemplate" aria-label="Import Connecting Reusable Flow">
+              Import Connecting Reusable Flow
+            </md-checkbox>
+            <div class="hint" style="margin-top:-10px">
+              The Feed you are importing also contains its reusable flow. Do you want to also import the reusable flow and version that as well?
+            </div>
+          </md-input-container>
                 <span style="padding-top:10px">
                 <md-button class="md-raised md-primary" ng-click="vm.importFeed()" ng-if="vm.feedFile != null"
                            ng-disabled="vm.importBtnDisabled">
@@ -82,7 +91,6 @@
             <span flex></span>
           </div>
           <md-list class="padding-left" ng-repeat="(severity,errors)  in vm.errorMap">
-            <md-subheader class="md-warn" ng-if="errors.length >0">Errors</md-subheader>
             <md-list-item class="md-2-line" ng-repeat="error in errors track by $index">
               <div class="md-list-item-text">
                 <div ng-if="error.processorName != null && error.processorName != '' "
