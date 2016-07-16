@@ -95,6 +95,14 @@
             //!warn if < 5 seconds
         }
 
+        function parseTimer() {
+            self.timerAmount = parseInt(self.editModel.schedule.schedulingPeriod);
+            var startIndex = self.editModel.schedule.schedulingPeriod.indexOf(" ");
+            if (startIndex != -1) {
+                self.timerUnits = self.editModel.schedule.schedulingPeriod.substring(startIndex + 1);
+            }
+        }
+
         function validate() {
             //cron expression validation is handled via the cron-expression validator
             var valid = (self.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN') ||
@@ -136,6 +144,9 @@
             //copy the model
             self.editModel.schedule = angular.copy(FeedService.editFeedModel.schedule);
             self.editModel.inputProcessorType = FeedService.editFeedModel.inputProcessorType;
+            if (self.editModel.schedule.schedulingStrategy == 'TIMER_DRIVEN') {
+                parseTimer();
+            }
             validate();
         }
 
