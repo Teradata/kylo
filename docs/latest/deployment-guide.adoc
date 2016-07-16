@@ -64,7 +64,7 @@ NOTE: When installing the RPM the applications are defaulted to use the /opt/jav
 the RPM without having to run any other scripts.
 
 == Installation
-There are 2 procedures you can follow to deploy the solution. In a test and production environment you will likely want to follow the manual installation guide as it has more
+There are 3 procedures you can follow to deploy the solution. In a test and production environment you will likely want to follow the manual installation guide as it has more
 detailed instructions on how to install each individual component. For local development and 1 node development boxes you can leverage the setup wizard procedure to quickly bootstrap
 your environment.
 
