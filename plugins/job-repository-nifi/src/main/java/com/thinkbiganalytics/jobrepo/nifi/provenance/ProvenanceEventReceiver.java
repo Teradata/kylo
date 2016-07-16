@@ -139,6 +139,7 @@ public class ProvenanceEventReceiver implements ProvenanceEventJobExecutionStart
         Long eventId = message.getEventId();
         log.info("Received ProvenanceEvent with Nifi Event Id of {}", eventId);
 
+
         //if Startup is complete and we are not in process of syncronizing Jobs on startup of Ops Manager then process the message
         if (canProcessJmsMessages.get() && !processingConnectionErrorStartupJobs.get() && !nifiStartupConnectionError.get()) {
             processAllUnprocessedEventsEvent(unprocessedEventsQueue);

@@ -33,6 +33,7 @@ public class ProvenanceEventListener {
     private AtomicInteger componentCounter = new AtomicInteger(0);
     private List<String> startedComponents = new ArrayList<>();
 
+
     @Inject
     private FlowFileEventProvider flowFileEventProvider;
 
@@ -77,31 +78,42 @@ public class ProvenanceEventListener {
         attachEventComponent(event);
         provenanceFeedManager.setComponentName(event);
 
-        log.info("added Event to internal Map.  About to process event for component: {} in the system", event, event.getFlowFileComponent().getComponetName());
+        log.debug("added Event to internal Map.  About to process event for component: {} in the system", event, event.getFlowFileComponent().getComponetName());
         return flowFile;
     }
 
 
     public void receiveEvent(ProvenanceEventRecordDTO event) throws NifiConnectionException {
+        long start = System.currentTimeMillis();
         FlowFileEvents flowFile = attachFlowFileAndComponentsToEvent(event);
-        setJobExecutionToComponent(event);
+
+        FlowFileComponent component = event.getFlowFileComponent();
+        if (component == null) {
+            attachEventComponent(event);
+        }
 
         //Trigger the start of the flow if it is the first one in the chain of events
         if (flowFile.isRootEvent(event)) {
             log.info("Starting Feed for event {} ", event);
             provenanceFeedManager.feedStart(event);
         }
+        setJobExecutionToComponent(event);
+
         log.debug("receiveEvent {}, event.hasJobExecution() = {} ", event, event.hasJobExecution());
 
         //only update if the event has a Job execution on it
         if (event.hasJobExecution()) {
+
             provenanceFeedManager.updateJobType(event);
             updateEventRunContext(event);
             provenanceFeedManager.feedEvent(event);
+
         } else {
             log.info("Skipping event {}, for type {}, with flowfile: {}  No Job Execution exists for it", event, event.getEventType(), event.getFlowFile());
         }
 
+        long stop = System.currentTimeMillis();
+        //log.info("************ Total time to process event {} ({}): {}",component.getComponetName(),event.getEventType(),(stop-start)+" ms");
     }
 
     private FlowFileComponent attachEventComponent(ProvenanceEventRecordDTO event) {
@@ -170,7 +182,7 @@ public class ProvenanceEventListener {
         FlowFileEvents eventFlowFile = flowFileEventProvider.getFlowFile(event.getFlowFileUuid());
         if (eventFlowFile.markComponentComplete(event.getComponentId(), getEndTime(event))) {
             boolean isFailureProcessor = provenanceFeedManager.isFailureProcessor(event);
-            log.info("COMPLETING Component {}.  Is Failure Processor: {} ", event.getFlowFileComponent(), isFailureProcessor);
+            log.debug("COMPLETING Component {}.  Is Failure Processor: {} ", event.getFlowFileComponent(), isFailureProcessor);
             //if the current Event is a failure Processor that means the previous component failed.
             //mark the previous event as failed
             if (isFailureProcessor) {
@@ -196,6 +208,7 @@ public class ProvenanceEventListener {
     }
 
     private void updateEventRunContext(ProvenanceEventRecordDTO event) throws NifiConnectionException {
+
         String flowFileId = event.getFlowFileUuid();
         FlowFileEvents flowFile = flowFileEventProvider.getFlowFile(flowFileId);
 
@@ -231,7 +244,7 @@ public class ProvenanceEventListener {
 
         //if the previous Event is the first in the flow file or if is for a different Component then mark the this one as complete
         if ((previousEvent != null && !previousEvent.getComponentId().equalsIgnoreCase(event.getComponentId()))) {
-            if (previousEvent.markCompleted()) {
+            if (previousEvent.markCompleted(getEndTime(previousEvent))) {
                 eventCounter.decrementAndGet();
                 log.debug("MARKING PREVIOUS EVENT {} as Complete.", previousEvent);
                 markEventComplete(previousEvent);

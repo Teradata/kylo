@@ -101,10 +101,6 @@ public class ProvenanceFeedManager {
     }
 
 
-    public List<BulletinDTO> getBulletins(ProvenanceEventRecordDTO event) {
-        return nifiComponentFlowData.getBulletinsNotYetProcessed(event);
-    }
-
 
     public void updateJobType(ProvenanceEventRecordDTO event) {
         NifiJobExecution jobExecution = event.getFlowFileComponent().getJobExecution();
@@ -325,10 +321,13 @@ public class ProvenanceFeedManager {
     public void componentCompleted(ProvenanceEventRecordDTO event) {
         if (hasJobExecution(event)) {
 
+            //  List<BulletinDTO> bulletins = null;
+
             List<BulletinDTO> bulletins = nifiComponentFlowData.getBulletinsNotYetProcessedForComponent(event);
             if (bulletins == null || bulletins.isEmpty()) {
                 bulletins = nifiComponentFlowData.getProcessorBulletinsForComponentInFlowFile(event.getFlowFile().getRoot(), event.getComponentId());
             }
+
 
             boolean failComponent = hasDetailsIndicatingFailure(event);
 
@@ -369,12 +368,10 @@ public class ProvenanceFeedManager {
                     if (event.getFlowFileComponent().isRunning() || event.getFlowFileComponent().getEndTime() == null) {
                         event.getFlowFileComponent().markFailed(getEndTime(event));
                     }
-                    LOG.info("FAILING EVENT {} with COMPONENT {} with STEP id of {} ", event, event.getFlowFileComponent(), event.getFlowFileComponent().getStepExecutionId());
+                    LOG.debug("FAILING EVENT {} with COMPONENT {} with STEP id of {} ", event, event.getFlowFileComponent(), event.getFlowFileComponent().getStepExecutionId());
                     jobRepository.failStep(event.getFlowFileComponent());
                     event.getFlowFileComponent().getJobExecution().addFailedComponent(event.getFlowFileComponent());
                 } else {
-                    LOG.info("Get End time as: {} for eventTime: {} for Event:{}, JobExecutionId:{}", getEndTime(event), event.getEventTime(), event.getId(),
-                             event.getFlowFileComponent().getJobExecution().getJobExecutionId());
                     event.getFlowFileComponent().markCompleted(getEndTime(event));
                     jobRepository.completeStep(event.getFlowFileComponent());
                     jobRepository.saveJobExecutionContext(event.getFlowFileComponent().getJobExecution(), event.getAttributeMap());

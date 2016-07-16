@@ -261,7 +261,7 @@ public class NifiSimpleJobRepository implements NifiJobRepository {
         if (lastEvent != null && lastEvent.getDetails() != null) {
             ExitStatus exitStatus = ExitStatus.FAILED.addExitDescription(lastEvent.getDetails());
             stepExecution.setExitStatus(exitStatus);
-            LOG.info("FAILING STEP " + flowFileComponent + " with details " + lastEvent.getDetails());
+      //      LOG.info("FAILING STEP " + flowFileComponent + " with details " + lastEvent.getDetails());
         }
 
         stepExecutionDao.updateStepExecution(stepExecution);

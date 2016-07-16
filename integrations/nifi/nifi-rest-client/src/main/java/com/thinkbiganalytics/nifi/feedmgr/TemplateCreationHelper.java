@@ -40,8 +40,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.ws.rs.ClientErrorException;
-
 /**
  * Created by sr186054 on 5/6/16.
  */
@@ -465,6 +463,21 @@ public class TemplateCreationHelper {
         }
     }
 
+    public static String getVersionedProcessGroupName(String name) {
+        return name + " - " + new Date().getTime();
+    }
+
+    public static String parseVersionedProcessGroupName(String name) {
+        if (isVersionedProcessGroup(name)) {
+            return StringUtils.substringBefore(name, " - ");
+        }
+        return name;
+    }
+
+    public static boolean isVersionedProcessGroup(String name) {
+        return StringUtils.contains(name, " - ");
+    }
+
     public void versionProcessGroup(ProcessGroupDTO processGroup) {
         log.info("Versioning Process Group {} ", processGroup.getName());
 
@@ -486,7 +499,7 @@ public class TemplateCreationHelper {
 
         //rename the feedGroup to be name+timestamp
         //TODO change to work with known version passed in (get the rename to current version -1 or something.
-        processGroup.setName(processGroup.getName() + " - " + new Date().getTime());
+        processGroup.setName(getVersionedProcessGroupName(processGroup.getName()));
         ProcessGroupEntity entity = new ProcessGroupEntity();
         entity.setProcessGroup(processGroup);
         restClient.updateProcessGroup(entity);
