@@ -82,6 +82,11 @@ Click on the below link to go to the manual deployment instructions
 
 link:./deployment/manual-deployment-guide.adoc[Manual Deployment Guide]
 
+=== Install Procedure 3: Cloudera EC2 Docker Sandbox
+This is an option for those who want to deploy PCNG to single node Cloudera sandbox in AWS. This is useful when you need to get a quick Cloudera instance running to test PCNG but don't have
+the resources to install a Cloudera cluster
+
+link:./deployment/cloudera-docker-sandbox.adoc[Cloudera EC2 Docker Sandbox Deployment Guide ]
 
 == Configuration
 
