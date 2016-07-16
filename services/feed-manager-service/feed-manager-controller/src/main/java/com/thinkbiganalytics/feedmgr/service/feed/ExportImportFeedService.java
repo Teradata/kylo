@@ -230,6 +230,10 @@ public class ExportImportFeedService {
                     FeedMetadata metadata = ObjectMapperSerializer.deserialize(feed.getFeedJson(), FeedMetadata.class);
                     //reassign the templateId to the newly registered template id
                     metadata.setTemplateId(template.getTemplateId());
+                    if (metadata.getRegisteredTemplate() != null) {
+                        metadata.getRegisteredTemplate().setNifiTemplateId(template.getNifiTemplateId());
+                        metadata.getRegisteredTemplate().setId(template.getTemplateId());
+                    }
                     //get/create category
                     FeedCategory category = metadataService.getCategoryBySystemName(metadata.getCategory().getSystemName());
                     if (category == null) {
