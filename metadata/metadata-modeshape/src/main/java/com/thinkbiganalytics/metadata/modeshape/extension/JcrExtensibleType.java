@@ -51,6 +51,14 @@ public class JcrExtensibleType implements ExtensibleType {
     }
     
     /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        return this.nodeType.toString();
+    }
+    
+    /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.extension.ExtensibleType#getId()
      */
     @Override
