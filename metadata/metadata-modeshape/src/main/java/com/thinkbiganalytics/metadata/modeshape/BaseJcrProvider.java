@@ -5,6 +5,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import org.modeshape.jcr.api.JcrTools;
@@ -25,7 +26,7 @@ import javax.jcr.query.QueryResult;
  * Created by sr186054 on 6/5/16.
  */
 public abstract class BaseJcrProvider<T, PK extends Serializable> implements BaseProvider<T, PK> {
-
+    
     protected Session getSession() {
         return JcrMetadataAccess.getActiveSession();
     }
@@ -56,7 +57,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
         try {
             Node typesNode = session.getNode(parentPath);
-            JcrTools tools = new JcrTools();
+            JcrTools tools = new JcrTool();
             Node entNode = tools.findOrCreateChild(typesNode, relPath, getNodeType());
             return entNode;
         } catch (RepositoryException e) {
@@ -66,24 +67,32 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
 
     public T findOrCreateEntity(String path, String relPath, Map<String, Object> props) {
-        return findOrCreateEntity(path, relPath, null, props);
+        return findOrCreateEntity(path, relPath, props, null);
     }
 
-    public T findOrCreateEntity(String path, String relPath, Object[] constructorArgs, Map<String, Object> props) {
+    public T findOrCreateEntity(String path, String relPath, Map<String, Object> props, Object... constructorArgs) {
+        return findOrCreateEntity(path, relPath, getJcrEntityClass(), props, constructorArgs);
+    }
+    
+    public T findOrCreateEntity(String path, String relPath, Class<? extends JcrEntity> entClass) {
+        return findOrCreateEntity(path, relPath, entClass, null);
+    }
+    
+    public T findOrCreateEntity(String path, String relPath, Class<? extends JcrEntity> entClass, Map<String, Object> props, Object... constructorArgs) {
         Session session = getSession();
         Node entNode = findOrCreateEntityNode(path, relPath);
         entNode = JcrPropertyUtil.setProperties(session, entNode, props);
-        return (T) JcrUtil.createJcrObject(entNode, getJcrEntityClass(), constructorArgs);
+        return (T) JcrUtil.createJcrObject(entNode, entClass, constructorArgs);
     }
 
-public Node getNodeByIdentifier(PK id){
-    try {
-    Node node = getSession().getNodeByIdentifier(id.toString());
-        return node;
-} catch (RepositoryException e) {
-        throw new MetadataRepositoryException("Failure while finding entity by ID: " + id, e);
+    public Node getNodeByIdentifier(PK id) {
+        try {
+            Node node = getSession().getNodeByIdentifier(id.toString());
+            return node;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failure while finding entity by ID: " + id, e);
+        }
     }
-}
 
     @Override
     public T findById(PK id) {

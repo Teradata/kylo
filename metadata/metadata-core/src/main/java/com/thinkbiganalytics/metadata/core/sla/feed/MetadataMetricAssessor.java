@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.core.sla.feed;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,7 +25,7 @@ import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
  * @author Sean Felten
  */
 public abstract class MetadataMetricAssessor<M extends Metric> 
-        implements MetricAssessor<M, ArrayList<Dataset<Datasource, ChangeSet>>> {
+        implements MetricAssessor<M, Serializable> {
 
     @Inject
     private FeedProvider feedProvider;

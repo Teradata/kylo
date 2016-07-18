@@ -102,16 +102,18 @@ public class DataOperationsController {
         return this.metadata.read(new Command<DataOperation>() {
             @Override
             public DataOperation execute() {
-                com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID destId = feedProvider.resolveDestination(destIdStr);
-                com.thinkbiganalytics.metadata.api.feed.FeedDestination dest = feedProvider.getFeedDestination(destId);
-                
-                if (dest != null) {
-                    com.thinkbiganalytics.metadata.api.op.DataOperation op = operationsProvider.beginOperation(dest, new DateTime());
-                    return Model.DOMAIN_TO_DS_OP.apply(op);
-                } else {
-                    throw new WebApplicationException("A feed destination with the given ID does not exist: " + destIdStr, 
-                                                      Status.BAD_REQUEST);
-                }
+                // Deprecated
+//                com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID destId = feedProvider.resolveDestination(destIdStr);
+//                com.thinkbiganalytics.metadata.api.feed.FeedDestination dest = feedProvider.getFeedDestination(destId);
+//                
+//                if (dest != null) {
+//                    com.thinkbiganalytics.metadata.api.op.DataOperation op = operationsProvider.beginOperation(dest, new DateTime());
+//                    return Model.DOMAIN_TO_DS_OP.apply(op);
+//                } else {
+//                    throw new WebApplicationException("A feed destination with the given ID does not exist: " + destIdStr, 
+//                                                      Status.BAD_REQUEST);
+//                }
+                return null;
             }
         });
     }

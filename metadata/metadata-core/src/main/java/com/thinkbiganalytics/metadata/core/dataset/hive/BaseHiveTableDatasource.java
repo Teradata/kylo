@@ -3,7 +3,10 @@
  */
 package com.thinkbiganalytics.metadata.core.dataset.hive;
 
+import java.util.List;
+
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
+import com.thinkbiganalytics.metadata.api.datasource.hive.TableColumn;
 import com.thinkbiganalytics.metadata.core.dataset.BaseDatasource;
 
 /**
@@ -38,6 +41,48 @@ public class BaseHiveTableDatasource extends BaseDatasource implements HiveTable
      */
     public String getTableName() {
         return tableName;
+    }
+
+    @Override
+    public String getModifiers() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public List<TableColumn> getColumns() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void setModifiers(String modifiers) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public TableColumn addColumn(String name, String type) {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public boolean removeColumn(String name) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public void setDatabase(String name) {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void setTableName(String name) {
+        // TODO Auto-generated method stub
+        
     }
 
 }

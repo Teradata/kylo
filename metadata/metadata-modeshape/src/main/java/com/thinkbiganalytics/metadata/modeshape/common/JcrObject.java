@@ -191,4 +191,19 @@ public class JcrObject {
     public void setVersionableIdentifier(String versionableIdentifier) {
         this.versionableIdentifier = versionableIdentifier;
     }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (getClass().isInstance(obj)) {
+            JcrObject that = (JcrObject) obj;
+            return this.node.equals(that.node);
+        } else {
+            return false;
+        }
+    }
+    
+    @Override
+    public int hashCode() {
+        return this.node.hashCode();
+    }
 }

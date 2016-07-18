@@ -3,11 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.core.sla.feed;
 
-import java.util.ArrayList;
+import java.io.Serializable;
 
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceSchedule;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
@@ -25,7 +22,7 @@ public class DatasourceUpdatedSinceAssessor extends MetadataMetricAssessor<Datas
     }
 
     @Override
-    public void assess(DatasourceUpdatedSinceSchedule metric, MetricAssessmentBuilder<ArrayList<Dataset<Datasource, ChangeSet>>> builder) {
+    public void assess(DatasourceUpdatedSinceSchedule metric, MetricAssessmentBuilder<Serializable> builder) {
         builder
             .metric(metric)
             .message("This metric is no longer supported")

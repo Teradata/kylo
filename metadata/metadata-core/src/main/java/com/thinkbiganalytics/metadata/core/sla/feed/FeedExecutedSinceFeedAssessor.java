@@ -3,22 +3,19 @@
  */
 package com.thinkbiganalytics.metadata.core.sla.feed;
 
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import java.io.Serializable;
+import java.util.List;
+
+import org.joda.time.DateTime;
+
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.op.ChangeSet;
-import com.thinkbiganalytics.metadata.api.op.Dataset;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
-
-import org.joda.time.DateTime;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  *
@@ -33,7 +30,7 @@ public class FeedExecutedSinceFeedAssessor extends MetadataMetricAssessor<FeedEx
 
     @Override
     public void assess(FeedExecutedSinceFeed metric,
-                       MetricAssessmentBuilder<ArrayList<Dataset<Datasource, ChangeSet>>> builder) {
+                       MetricAssessmentBuilder<Serializable> builder) {
         FeedProvider fPvdr = getFeedProvider();
         FeedOperationsProvider opPvdr = getFeedOperationsProvider();
         List<Feed> tested = fPvdr.getFeeds(fPvdr.feedCriteria().name(metric.getFeedName()).category(metric.getCategoryName()));

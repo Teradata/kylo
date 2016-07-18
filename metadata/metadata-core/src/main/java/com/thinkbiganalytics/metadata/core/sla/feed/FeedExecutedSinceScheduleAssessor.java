@@ -3,8 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.core.sla.feed;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -34,7 +34,7 @@ public class FeedExecutedSinceScheduleAssessor extends MetadataMetricAssessor<Fe
     }
 
     @Override
-    public void assess(FeedExecutedSinceSchedule metric, MetricAssessmentBuilder<ArrayList<Dataset<Datasource, ChangeSet>>> builder) {
+    public void assess(FeedExecutedSinceSchedule metric, MetricAssessmentBuilder<Serializable> builder) {
         Date prev = CronExpressionUtil.getPreviousFireTime(metric.getCronExpression(), 2);
         DateTime schedTime = new DateTime(prev);
         String feedName = metric.getFeedName();

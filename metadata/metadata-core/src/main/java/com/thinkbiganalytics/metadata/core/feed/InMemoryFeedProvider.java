@@ -17,10 +17,8 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
 import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
-import com.thinkbiganalytics.metadata.core.feed.BaseFeed.DestinationId;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.FeedId;
 import com.thinkbiganalytics.metadata.core.feed.BaseFeed.FeedPreconditionImpl;
-import com.thinkbiganalytics.metadata.core.feed.BaseFeed.SourceId;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
@@ -61,8 +59,6 @@ public class InMemoryFeedProvider implements FeedProvider {
 
     
     private Map<Feed.ID, Feed> feeds = new ConcurrentHashMap<>();
-    private Map<FeedSource.ID, BaseFeed> sources = new ConcurrentHashMap<>();
-    private Map<FeedDestination.ID, BaseFeed> destinations = new ConcurrentHashMap<>();
     
     
     public InMemoryFeedProvider() {
@@ -86,24 +82,6 @@ public class InMemoryFeedProvider implements FeedProvider {
             return (FeedId) fid;
         } else {
             return new FeedId(fid);
-        }
-    }
-
-    @Override
-    public FeedSource.ID resolveSource(Serializable sid) {
-        if (sid instanceof SourceId) {
-            return (SourceId) sid;
-        } else {
-            return new SourceId(sid);
-        }
-    }
-
-    @Override
-    public FeedDestination.ID resolveDestination(Serializable did) {
-        if (did instanceof DestinationId) {
-            return (DestinationId) did;
-        } else {
-            return new DestinationId(did);
         }
     }
 
@@ -296,28 +274,6 @@ public class InMemoryFeedProvider implements FeedProvider {
         
         return ImmutableList.copyOf(limited);
     }
-    
-    @Override
-    public FeedSource getFeedSource(FeedSource.ID id) {
-        Feed<?> feed = this.sources.get(id);
-        
-        if (feed != null) {
-            return feed.getSource(id);
-        } else {
-            return null;
-        }
-    }
-    
-    @Override
-    public FeedDestination getFeedDestination(FeedDestination.ID id) {
-        Feed<?> feed = this.destinations.get(id);
-        
-        if (feed != null) {
-            return feed.getDestination(id);
-        } else {
-            return null;
-        }
-    }
 
 
     
@@ -352,14 +308,8 @@ public class InMemoryFeedProvider implements FeedProvider {
             return srcIds.get(ds.getId());
         } else {
             ServiceLevelAgreement sla = this.slaProvider.getAgreement(slaId);
-            
-            if (sla != null) {
-                FeedSource src = feed.addSource(ds, sla);
-                this.sources.put(src.getId(), feed);
-                return src;
-            } else {
-                throw new FeedCreateException("An SLA with the given ID does not exists: " + slaId);
-            }
+            FeedSource src = feed.addSource(ds, sla);
+            return src;
         }
     }
 
@@ -370,7 +320,6 @@ public class InMemoryFeedProvider implements FeedProvider {
             return dest;
         } else {
             dest = feed.addDestination(ds);
-            this.destinations.put(dest.getId(), feed);
             return dest;
         }
     }

@@ -5,7 +5,7 @@ package com.thinkbiganalytics.metadata.core.feed;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -38,9 +38,9 @@ public class BaseFeed implements Feed {
     private State state;
     private boolean initialized;
     private DateTime createdTime;
-    private Set<Feed<?>> dependentFeeds;
-    private Map<FeedSource.ID, FeedSource> sources = new HashMap<>();
-    private Map<FeedDestination.ID, FeedDestination> destinations = new HashMap<>();
+    private Set<Feed<?>> dependentFeeds = new HashSet<>();
+    private Set<FeedSource> sources = new HashSet<>();
+    private Set<FeedDestination> destinations = new HashSet<>();
     private FeedPreconditionImpl precondition;
     private Map<String, Object> properties;
     
@@ -51,6 +51,11 @@ public class BaseFeed implements Feed {
         this.displayName = name;
         this.description = description;
         this.createdTime = DateTime.now();
+    }
+
+    @Override
+    public String getVersionName() {
+        return "";
     }
 
     @Override
@@ -161,16 +166,16 @@ public class BaseFeed implements Feed {
     }
 
     public List<FeedSource> getSources() {
-        return new ArrayList<>(this.sources.values());
+        return new ArrayList<>(this.sources);
     }
 
     public List<FeedDestination> getDestinations() {
-        return new ArrayList<>(destinations.values());
+        return new ArrayList<>(destinations);
     }
     
     @Override
     public FeedDestination getDestination(Datasource.ID id) {
-        for (FeedDestination dest : this.destinations.values()) {
+        for (FeedDestination dest : this.destinations) {
             if (dest.getDatasource().getId().equals(id)) {
                 return dest;
             }
@@ -190,13 +195,13 @@ public class BaseFeed implements Feed {
 
     public FeedSource addSource(Datasource ds, ServiceLevelAgreement agreement) {
         Source src = new Source(ds, agreement);
-        this.sources.put(src.getId(), src);
+        this.sources.add(src);
         return src;
     }
     
     @Override
     public FeedSource getSource(Datasource.ID id) {
-        for (FeedSource src : this.sources.values()) {
+        for (FeedSource src : this.sources) {
             if (src.getFeed().getId().equals(id)) {
                 return src;
             }
@@ -204,22 +209,22 @@ public class BaseFeed implements Feed {
         
         return null;
     }
-
-    @Override
-    public FeedSource getSource(FeedSource.ID id) {
-        return this.sources.get(id);
-    }
+//
+//    @Override
+//    public FeedSource getSource(FeedSource.ID id) {
+//        return this.sources.get(id);
+//    }
 
     public FeedDestination addDestination(Datasource ds) {
         FeedDestination dest = new Destination(ds);
-        this.destinations.put(dest.getId(), dest);
+        this.destinations.add(dest);
         return dest;
     }
-    
-    @Override
-    public FeedDestination getDestination(FeedDestination.ID id) {
-        return this.destinations.get(id);
-    }
+//    
+//    @Override
+//    public FeedDestination getDestination(FeedDestination.ID id) {
+//        return this.destinations.get(id);
+//    }
     
     public FeedPrecondition setPrecondition(ServiceLevelAgreement sla) {
         this.precondition = new FeedPreconditionImpl(this, sla);
@@ -274,30 +279,30 @@ public class BaseFeed implements Feed {
             super(ser);
         }
     }
-    
-    protected static class SourceId extends BaseId implements FeedSource.ID {
-        public SourceId() {
-            super();
-        }
-
-        public SourceId(Serializable ser) {
-            super(ser);
-        } 
-    }
-    
-    protected static class DestinationId extends BaseId implements FeedDestination.ID {
-        public DestinationId() {
-            super();
-        }
-
-        public DestinationId(Serializable ser) {
-            super(ser);
-        } 
-    }
-    @Override
-    public String getVersionName() {
-        return null;
-    }
+//    
+//    protected static class SourceId extends BaseId implements FeedSource.ID {
+//        public SourceId() {
+//            super();
+//        }
+//
+//        public SourceId(Serializable ser) {
+//            super(ser);
+//        } 
+//    }
+//    
+//    protected static class DestinationId extends BaseId implements FeedDestination.ID {
+//        public DestinationId() {
+//            super();
+//        }
+//
+//        public DestinationId(Serializable ser) {
+//            super(ser);
+//        } 
+//    }
+//    @Override
+//    public String getVersionName() {
+//        return null;
+//    }
 
 
 
@@ -324,19 +329,19 @@ public class BaseFeed implements Feed {
 
         private static final long serialVersionUID = -2407190619538717445L;
         
-        private SourceId id;
+//        private SourceId id;
         private ServiceLevelAgreement agreement;
         
         public Source(Datasource ds, ServiceLevelAgreement agreement) {
             super(ds);
-            this.id = new SourceId();
+//            this.id = new SourceId();
             this.agreement = agreement;
         }
- 
-        @Override
-        public ID getId() {
-            return this.id;
-        }
+// 
+//        @Override
+//        public ID getId() {
+//            return this.id;
+//        }
         
         @Override
         public ServiceLevelAgreement getAgreement() {
@@ -348,17 +353,17 @@ public class BaseFeed implements Feed {
 
         private static final long serialVersionUID = -6990911423133789381L;
         
-        private DestinationId id;
+//        private DestinationId id;
         
         public Destination(Datasource ds) {
             super(ds);
-            this.id = new DestinationId();
+//            this.id = new DestinationId();
         }
-        
-        @Override
-        public ID getId() {
-            return this.id;
-        }
+//        
+//        @Override
+//        public ID getId() {
+//            return this.id;
+//        }
     }
     
     protected static class FeedPreconditionImpl implements FeedPrecondition {

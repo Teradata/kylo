@@ -12,7 +12,7 @@ import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DatasourceCriteria;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
-import com.thinkbiganalytics.metadata.rest.model.data.HiveTableField;
+import com.thinkbiganalytics.metadata.rest.model.data.HiveTableColumn;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
 import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescriptor;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
@@ -433,7 +433,7 @@ public class MetadataClient {
         private String database;
         private String tableName;
         private String modifiers;
-        private List<HiveTableField> fields = new ArrayList<>(); 
+        private List<HiveTableColumn> fields = new ArrayList<>(); 
         private List<HiveTablePartition> partitions = new ArrayList<>();
 
         public HiveTableDatasourceBuilderImpl(String name) {
@@ -460,7 +460,7 @@ public class MetadataClient {
 
         @Override
         public HiveTableDatasourceBuilder field(String name, String type) {
-            this.fields.add(new HiveTableField(name, type));
+            this.fields.add(new HiveTableColumn(name, type));
             return this;
         }
 
@@ -481,7 +481,7 @@ public class MetadataClient {
             src.setDatabase(this.database);
             src.setTableName(this.tableName);
             src.setModifiers(this.modifiers);
-            src.getFields().addAll(this.fields);
+            src.getColumns().addAll(this.fields);
             src.getPartitions().addAll(this.partitions);
 
             return src;

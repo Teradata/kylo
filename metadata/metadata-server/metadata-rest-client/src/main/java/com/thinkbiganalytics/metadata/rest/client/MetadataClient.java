@@ -3,24 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.rest.client;
 
-import com.google.common.base.Function;
-import com.google.common.base.Strings;
-import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
-import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
-import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
-import com.thinkbiganalytics.metadata.rest.model.data.HiveTableField;
-import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
-import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedCategory;
-import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
-import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
-import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
-
-import org.glassfish.jersey.client.ClientConfig;
-import org.glassfish.jersey.client.JerseyClient;
-import org.glassfish.jersey.jackson.JacksonFeature;
-import org.joda.time.DateTime;
-
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -37,6 +19,24 @@ import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 import javax.ws.rs.core.GenericType;
 import javax.ws.rs.core.MediaType;
+
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.JerseyClient;
+import org.glassfish.jersey.jackson.JacksonFeature;
+import org.joda.time.DateTime;
+
+import com.google.common.base.Function;
+import com.google.common.base.Strings;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
+import com.thinkbiganalytics.metadata.rest.model.data.HiveTableColumn;
+import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
+import com.thinkbiganalytics.metadata.rest.model.data.HiveTablePartition;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedCategory;
+import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
+import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
+import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 
 /**
  *
@@ -338,7 +338,7 @@ public class MetadataClient extends JerseyClient {
         private String database;
         private String tableName;
         private String modifiers;
-        private List<HiveTableField> fields = new ArrayList<>(); 
+        private List<HiveTableColumn> fields = new ArrayList<>(); 
         private List<HiveTablePartition> partitions = new ArrayList<>();
 
         public HiveTableDatasourceBuilderImpl(String name) {
@@ -365,7 +365,7 @@ public class MetadataClient extends JerseyClient {
 
         @Override
         public HiveTableDatasourceBuilder field(String name, String type) {
-            this.fields.add(new HiveTableField(name, type));
+            this.fields.add(new HiveTableColumn(name, type));
             return this;
         }
 
@@ -386,7 +386,7 @@ public class MetadataClient extends JerseyClient {
             src.setDatabase(this.database);
             src.setTableName(this.tableName);
             src.setModifiers(this.modifiers);
-            src.getFields().addAll(this.fields);
+            src.getColumns().addAll(this.fields);
             src.getPartitions().addAll(this.partitions);
 
             return src;

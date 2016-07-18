@@ -239,22 +239,12 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     }
 
     @Override
-    public FeedSource getSource(FeedSource.ID id) {
-        return null;
-    }
-
-    @Override
     public List<? extends FeedDestination> getDestinations() {
         return null;
     }
 
     @Override
     public FeedDestination getDestination(Datasource.ID id) {
-        return null;
-    }
-
-    @Override
-    public FeedDestination getDestination(FeedDestination.ID id) {
         return null;
     }
 

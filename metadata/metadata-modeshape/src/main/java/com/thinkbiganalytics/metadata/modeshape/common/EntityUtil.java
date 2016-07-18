@@ -3,6 +3,8 @@ package com.thinkbiganalytics.metadata.modeshape.common;
 
 import java.nio.file.Paths;
 
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+
 /**
  * Utility to get basic Paths for schema
  */

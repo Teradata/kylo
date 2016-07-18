@@ -3,25 +3,29 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.modeshape.jcr.api.JcrTools;
 
-import java.io.Serializable;
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeType;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 /**
  * @author Sean Felten
@@ -332,6 +336,48 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Failed to createJcrObject for node " + type, e);
         }
         return entity;
+    }
+
+    public static <T extends JcrObject> T getReferencedObject(Node node, String property, Class<T> type) {
+        try {
+            Property prop = node.getProperty(property);
+            return createJcrObject(prop.getNode(), type);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to dereference object of type: " + type, e);
+        }
+        
+    }
+
+    /**
+     * Creates an object set from the nodes of a same-name sibling property
+     */
+    public static <T extends JcrObject> Set<T> getPropertyObjectSet(Node parentNode, String property, Class<T> objClass) {
+        try {
+            Set<T> set = new HashSet<>();
+            NodeIterator itr = parentNode.getNodes(property);
+            while (itr.hasNext()) {
+                Node objNode = (Node) itr.next();
+                T obj = ConstructorUtils.invokeConstructor(objClass, objNode);
+                set.add(obj);
+            }
+            return set;
+        } catch (RepositoryException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
+            throw new MetadataRepositoryException("Failed to create seto of child objects from property: " + property, e);
+        }
+    }
+
+    public static List<Node> getNodelist(Node parentNode, String property) {
+        try {
+            List<Node> list = new ArrayList<>();
+            NodeIterator itr = parentNode.getNodes(property);
+            while (itr.hasNext()) {
+                Node node = (Node) itr.next();
+                list.add(node);
+            }
+            return list;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to create list of nodes from property: " + property, e);
+        }
     }
 
 }
