@@ -82,7 +82,7 @@
                         </tr>
                         </thead>
                         <tbody md-body>
-                        <tr md-row ng-repeat="feed in vm.feedData | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (tab.currentPage - 1) * vm.paginationData.rowsPerPage"  ng-click="vm.feedDetails($event,feed)">
+                        <tr md-row ng-repeat="feed in vm.feedData | orderBy: vm.paginationData.sort | filter:vm.filter | limitTo: vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage"  ng-click="vm.feedDetails($event,feed)">
                             <td md-cell>{{feed.feedName}}</td>
                             <td md-cell>
                                     <span   ng-class="{'enabled':feed.state == 'ENABLED','disabled':feed.state == 'DISABLED'}">
