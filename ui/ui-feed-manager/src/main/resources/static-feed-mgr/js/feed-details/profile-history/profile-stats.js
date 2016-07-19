@@ -15,18 +15,15 @@
             }
 
         };
-    }
+    };
 
-    var controller =  function($scope,$http, $sce,$stateParams, FeedService, RestUrlService, HiveService, Utils, BroadcastService) {
+    var controller =  function($scope,$http, $sce,$stateParams, PaginationDataService, FeedService, RestUrlService, HiveService, Utils, BroadcastService) {
 
         var self = this;
-
-        this.model = FeedService.editFeedModel;
-        this.data = [];
-        this.loading = false;
-
-
-        this.processingDate = new Date(HiveService.getUTCTime(self.processingdttm));
+        self.data = [];
+        self.loading = true;
+        self.processingDate = new Date(HiveService.getUTCTime(self.processingdttm));
+        self.model = FeedService.editFeedModel;
 
         function getProfileStats(){
             self.loading = true;
@@ -43,23 +40,22 @@
                             angular.forEach(val.split('^B'),function(row) {
                                 var itemArr = row.split('^A');
                                 if(itemArr != undefined && itemArr.length ==3) {
-                                    var item = itemArr[0] + "." + itemArr[1] + " (" + itemArr[2] + ") \n";
-                                    newVal += item;
+                                    newVal += itemArr[0] + "." + itemArr[1] + " (" + itemArr[2] + ") \n";
                                 }
                             });
-                        row[columns[_index]] = newVal;
+                            row[columns[_index]] = newVal;
                         }
                     }
 
                 };
-                var data = HiveService.transformResults2(response,['processing_dttm'],transformFn);
-                self.data = data;
+                self.data = HiveService.transformResults2(response, ['processing_dttm'], transformFn);
+                console.log(self.data);
                 self.loading = false;
                 BroadcastService.notify('PROFILE_TAB_DATA_LOADED','profile-stats');
-            }
+            };
             var errorFn = function (err) {
                 self.loading = false;
-            }
+            };
             var promise = $http.get(RestUrlService.FEED_PROFILE_STATS_URL(self.model.id),{params:{'processingdttm':self.processingdttm}});
             promise.then(successFn, errorFn);
             return promise;
