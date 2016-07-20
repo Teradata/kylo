@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.metadata.rest.api;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -78,10 +77,15 @@ public class DatasourceController {
                 
                 if (existing.isEmpty()) {
                     com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource table 
-                        = datasetProvider.ensureHiveTableDatasource(ds.getName(), 
-                                                                    ds.getDescription(), 
-                                                                    ds.getDatabase(), 
-                                                                    ds.getTableName());
+                        = datasetProvider.ensureDatasource(ds.getName(), 
+                                                           ds.getDescription(),
+                                                           com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource.class);
+                    table.setDatabase(ds.getDatabase());
+                    table.setTableName(ds.getTableName());
+//                    = datasetProvider.ensureHiveTableDatasource(ds.getName(), 
+//                                                                ds.getDescription(), 
+//                                                                ds.getDatabase(), 
+//                                                                ds.getTableName());
                     return Model.DOMAIN_TO_TABLE_DS.apply(table);
                 } else if (ensure) {
                     return Model.DOMAIN_TO_TABLE_DS.apply((com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource) existing.iterator().next());
@@ -96,13 +100,13 @@ public class DatasourceController {
     @Path("/directory")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public DirectoryDatasource createDirectory(final DirectoryDatasource ds,
+    public Datasource createDirectory(final DirectoryDatasource ds,
                                                @QueryParam("ensure") @DefaultValue("true") final boolean ensure) {
         Model.validateCreate(ds);
         
-        return this.metadata.commit(new Command<DirectoryDatasource>() {
+        return this.metadata.commit(new Command<Datasource>() {
             @Override
-            public DirectoryDatasource execute() {
+            public Datasource execute() {
                 com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria crit 
                     = datasetProvider.datasetCriteria()
                         .name(ds.getName())
@@ -110,9 +114,12 @@ public class DatasourceController {
                 List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(crit);
                 
                 if (existing.isEmpty()) {
-                    com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource dir 
-                        = datasetProvider.ensureDirectoryDatasource(ds.getName(), ds.getDescription(), Paths.get(ds.getPath()));
-                    return Model.DOMAIN_TO_DIR_DS.apply(dir);
+                    com.thinkbiganalytics.metadata.api.datasource.Datasource dir 
+                        = datasetProvider.ensureDatasource(ds.getName(), 
+                                                           ds.getDescription(), 
+                                                           com.thinkbiganalytics.metadata.api.datasource.Datasource.class);
+                    // TODO add paths
+                    return Model.DOMAIN_TO_DS.apply(dir);
                 } else if (ensure) {
                     return Model.DOMAIN_TO_DIR_DS.apply((com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource) existing.iterator().next());
                 } else {

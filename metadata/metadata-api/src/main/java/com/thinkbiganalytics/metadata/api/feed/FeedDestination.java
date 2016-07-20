@@ -11,7 +11,7 @@ import java.io.Serializable;
  */
 public interface FeedDestination extends FeedConnection {
 
-    interface ID extends Serializable { }
-
-    ID getId();
+//    interface ID extends Serializable { }
+//
+//    ID getId();
 }

@@ -8,8 +8,6 @@ import java.util.Set;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -22,8 +20,6 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -108,11 +104,11 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     }
 
     public List<? extends FeedSource> getSources() {
-        return JcrUtil.getNodes(this.node, SOURCE_NAME, JcrSource.class);
+        return JcrUtil.getNodes(this.node, SOURCE_NAME, JcrFeedSource.class);
     }
 
     public List<? extends FeedDestination> getDestinations() {
-        return JcrUtil.getNodes(this.node, DESTINATION_NAME, JcrDestination.class);
+        return JcrUtil.getNodes(this.node, DESTINATION_NAME, JcrFeedDestination.class);
     }
 
 
@@ -184,72 +180,56 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     @Override
     public FeedSource getSource(final Datasource.ID id) {
-        @SuppressWarnings("unchecked")
-        List<FeedSource> sources = (List<FeedSource>) getSources();
-        FeedSource source = null;
-        
-        if (sources != null && !sources.isEmpty()) {
-            source = Iterables.tryFind(sources, new Predicate<FeedSource>() {
-                @Override
-                public boolean apply(FeedSource jcrSource) {
-                    return jcrSource.getDatasource().equals(id);
-                }
-            }).orNull();
-        }
-        return source;
+        return JcrUtil.getNodelist(this.node, SOURCE_NAME).stream()
+                        .filter(node -> JcrPropertyUtil.isReferencing(node, JcrFeedConnection.DATASOURCE, id.toString()))
+                        .findAny()
+                        .map(node -> new JcrFeedSource(node))
+                        .orElse(null);
     }
-
-    @Override
-    public FeedSource getSource(final FeedSource.ID id) {
-        @SuppressWarnings("unchecked")
-        List<FeedSource> sources = (List<FeedSource>) getSources();
-        FeedSource source = null;
-        
-        if (sources != null && !sources.isEmpty()) {
-            source = Iterables.tryFind(sources, new Predicate<FeedSource>() {
-                @Override
-                public boolean apply(FeedSource jcrSource) {
-                    return jcrSource.getId().equals(id);
-                }
-            }).orNull();
-        }
-        return source;
-
-    }
+//
+//    @Override
+//    public FeedSource getSource(final FeedSource.ID id) {
+//        @SuppressWarnings("unchecked")
+//        List<FeedSource> sources = (List<FeedSource>) getSources();
+//        FeedSource source = null;
+//        
+//        if (sources != null && !sources.isEmpty()) {
+//            source = Iterables.tryFind(sources, new Predicate<FeedSource>() {
+//                @Override
+//                public boolean apply(FeedSource jcrSource) {
+//                    return jcrSource.getId().equals(id);
+//                }
+//            }).orNull();
+//        }
+//        return source;
+//
+//    }
 
     @Override
     public FeedDestination getDestination(final Datasource.ID id) {
-        @SuppressWarnings("unchecked")
-        List<FeedDestination> destinations = (List<FeedDestination>) getDestinations();
-        FeedDestination destination = null;
-        
-        if (destinations != null && !destinations.isEmpty()) {
-            destination = Iterables.tryFind(destinations, new Predicate<FeedDestination>() {
-                @Override
-                public boolean apply(FeedDestination jcrDestination) {
-                    return jcrDestination.getDatasource().getId().equals(id);
-                }
-            }).orNull();
-        }
-        return destination;
+        return JcrPropertyUtil.getReferencedNodeSet(this.node, DESTINATION_NAME).stream()
+                        .filter(node -> JcrPropertyUtil.isReferencing(this.node, JcrFeedConnection.DATASOURCE, id.toString()))
+                        .findAny()
+                        .map(node -> new JcrFeedDestination(node))
+                        .orElse(null);
     }
-
-    @Override
-    public FeedDestination getDestination(final FeedDestination.ID id) {
-        @SuppressWarnings("unchecked")
-        List<FeedDestination> destinations = (List<FeedDestination>) getDestinations();
-        FeedDestination destination = null;
-
-        if (destinations != null && !destinations.isEmpty()) {
-            destination = Iterables.tryFind(destinations, new Predicate<FeedDestination>() {
-                @Override
-                public boolean apply(FeedDestination jcrDestination) {
-                    return jcrDestination.getId().equals(id);
-                }
-            }).orNull();
-        }
-        return destination;
-    }
+//
+//    @Override
+//    public FeedDestination getDestination(final FeedDestination.ID id) {
+//        @SuppressWarnings("unchecked")
+//        List<FeedDestination> destinations = (List<FeedDestination>) getDestinations();
+//        FeedDestination destination = null;
+//
+//        if (destinations != null && !destinations.isEmpty()) {
+//            destination = Iterables.tryFind(destinations, new Predicate<FeedDestination>() {
+//                @Override
+//                public boolean apply(FeedDestination jcrDestination) {
+//                    return jcrDestination.getId().equals(id);
+//                }
+//            }).orNull();
+//        }
+//        return destination;
+//    }
 
     @Override
     public void setInitialized(boolean flag) {

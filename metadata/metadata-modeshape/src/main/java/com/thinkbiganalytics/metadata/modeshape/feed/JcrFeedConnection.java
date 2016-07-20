@@ -1,22 +1,23 @@
-package com.thinkbiganalytics.metadata.modeshape.datasource;
+package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import javax.jcr.Node;
-import javax.jcr.Property;
-import javax.jcr.PropertyIterator;
-import javax.jcr.Value;
+import javax.jcr.RepositoryException;
 
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
- * Created by sr186054 on 6/7/16.
+ *
+ * @author Sean Felten
  */
 public abstract class JcrFeedConnection extends JcrObject implements FeedConnection {
 
-    private static String DATASOURCE_NAME = "tba:datasource";
+    public static String DATASOURCE = "tba:datasource";
 
     public JcrFeedConnection(Node node) {
         super(node);
@@ -24,27 +25,20 @@ public abstract class JcrFeedConnection extends JcrObject implements FeedConnect
 
     public JcrFeedConnection(Node node, JcrDatasource datasource) {
         this(node);
-        this.setProperty(DATASOURCE_NAME, datasource);
+        this.setProperty(DATASOURCE, datasource);
     }
 
     public Datasource getDatasource() {
-
-        try {
-            PropertyIterator itr = this.node.getProperties();
-            while (itr.hasNext()) {
-                Property p = itr.nextProperty();
-                Value v = p.getValue();
-            }
-        } catch (Exception e) {
-
-        }
-
-        return getProperty(DATASOURCE_NAME, JcrDatasource.class);
+        return JcrUtil.getReferencedObject(this.node, DATASOURCE, JcrDatasource.class);
     }
 
 
     @Override
     public Feed getFeed() {
-        return null;
+        try {
+            return JcrUtil.createJcrObject(this.node.getParent(), JcrFeed.class);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access feed", e);
+        }
     }
 }

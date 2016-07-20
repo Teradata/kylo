@@ -3,11 +3,25 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
@@ -25,10 +39,9 @@ import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDestination;
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrSource;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
@@ -37,19 +50,6 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 /**
  *
@@ -84,24 +84,27 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
 
     @Override
-    public FeedSource ensureFeedSource(Feed.ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID dsId) {
-        JcrFeed<?> feed = (JcrFeed) findById(feedId);
-        FeedSource source = feed.getSource(dsId);
-        if (source == null) {
-            JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
-            try {
+    public FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId) {
+        try {
+            JcrFeed<?> feed = (JcrFeed) findById(feedId);
+            FeedSource source = feed.getSource(dsId);
+            
+            if (source == null) {
+                JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
+            
                 if (datasource != null) {
                     Node feedNode = getNodeByIdentifier(feedId);
-                    //    JcrUtil.getOrCreateNode(feedNode,JcrFeed.SOURCE_NAME,JcrSource.NODE_TYPE,JcrSource.class,new Object[] {datasource});
-                    Node feedSourceNode = feedNode.addNode(JcrFeed.SOURCE_NAME, JcrSource.NODE_TYPE);
-                    JcrSource jcrSource = new JcrSource(feedSourceNode, datasource);
-                    return jcrSource;
+                    
+                    return JcrUtil.addJcrObject(feedNode, JcrFeed.SOURCE_NAME, JcrFeedSource.NODE_TYPE, JcrFeedSource.class, datasource);
+                } else {
+                    throw new DatasourceNotFoundException(dsId);
                 }
-            } catch (RepositoryException e) {
-                throw new MetadataRepositoryException("Unable to create feedSource for dataSource " + dsId + " with Feed Id of " + feedId, e);
+            } else {
+                return source;
             }
+        } catch (Exception e) {
+            throw new MetadataRepositoryException("Failed to ensure a feed sources exists to datasource: " + dsId + " for feed: " + feedId, e);
         }
-        return source;
     }
 
     @Override
@@ -112,8 +115,23 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public FeedDestination ensureFeedDestination(Feed.ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID dsId) {
-        // TODO Auto-generated method stub
-        return null;
+        JcrFeed<?> feed = (JcrFeed) findById(feedId);
+        FeedDestination source = feed.getDestination(dsId);
+        
+        if (source == null) {
+            JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
+        
+            if (datasource != null) {
+                Node feedNode = getNodeByIdentifier(feedId);
+                Node feedDestNode = JcrUtil.getOrCreateNode(feedNode, JcrFeed.DESTINATION_NAME, JcrFeedDestination.NODE_TYPE);
+                JcrFeedDestination jcrDest = new JcrFeedDestination(feedDestNode, datasource);
+                return jcrDest;
+            } else {
+                throw new DatasourceNotFoundException(dsId);
+            }
+        }
+        
+        return source;
     }
 
     @Override
@@ -302,50 +320,50 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         }
         return null;
     }
-
-    @Override
-    public FeedSource getFeedSource(com.thinkbiganalytics.metadata.api.feed.FeedSource.ID id) {
-        try {
-            Node node = getSession().getNodeByIdentifier(id.toString());
-
-            if (node != null) {
-                return JcrUtil.createJcrObject(node, JcrSource.class);
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to get Feed Destination for " + id);
-        }
-        return null;
-    }
-
-    @Override
-    public FeedDestination getFeedDestination(com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID id) {
-        try {
-            Node node = getSession().getNodeByIdentifier(id.toString());
-
-            if (node != null) {
-                return JcrUtil.createJcrObject(node, JcrDestination.class);
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to get Feed Destination for " + id);
-        }
-        return null;
-
-    }
+//
+//    @Override
+//    public FeedSource getFeedSource(com.thinkbiganalytics.metadata.api.feed.FeedSource.ID id) {
+//        try {
+//            Node node = getSession().getNodeByIdentifier(id.toString());
+//
+//            if (node != null) {
+//                return JcrUtil.createJcrObject(node, JcrFeedSource.class);
+//            }
+//        } catch (RepositoryException e) {
+//            throw new MetadataRepositoryException("Unable to get Feed Destination for " + id);
+//        }
+//        return null;
+//    }
+//
+//    @Override
+//    public FeedDestination getFeedDestination(com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID id) {
+//        try {
+//            Node node = getSession().getNodeByIdentifier(id.toString());
+//
+//            if (node != null) {
+//                return JcrUtil.createJcrObject(node, JcrFeedDestination.class);
+//            }
+//        } catch (RepositoryException e) {
+//            throw new MetadataRepositoryException("Unable to get Feed Destination for " + id);
+//        }
+//        return null;
+//
+//    }
 
     @Override
     public Feed.ID resolveFeed(Serializable fid) {
         return resolveId(fid);
     }
-
-    @Override
-    public com.thinkbiganalytics.metadata.api.feed.FeedSource.ID resolveSource(Serializable sid) {
-        return new JcrSource.FeedSourceId((sid));
-    }
-
-    @Override
-    public com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID resolveDestination(Serializable sid) {
-        return new JcrDestination.FeedDestinationId(sid);
-    }
+//
+//    @Override
+//    public com.thinkbiganalytics.metadata.api.feed.FeedSource.ID resolveSource(Serializable sid) {
+//        return new JcrFeedSource.FeedSourceId((sid));
+//    }
+//
+//    @Override
+//    public com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID resolveDestination(Serializable sid) {
+//        return new JcrFeedDestination.FeedDestinationId(sid);
+//    }
 
     @Override
     public boolean enableFeed(Feed.ID id) {

@@ -3,6 +3,25 @@
  */
 package com.thinkbiganalytics.metadata.rest;
 
+import java.io.Serializable;
+import java.nio.file.Path;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
+
+import org.joda.time.Period;
+import org.quartz.CronExpression;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -44,25 +63,6 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-
-import org.joda.time.Period;
-import org.quartz.CronExpression;
-
-import java.io.Serializable;
-import java.nio.file.Path;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
 
 /**
  * Convenience functions and methods to transform between the metadata domain model and the REST model. 
@@ -249,7 +249,6 @@ public class Model {
             @Override
             public FeedSource apply(com.thinkbiganalytics.metadata.api.feed.FeedSource domain) {
                 FeedSource src = new FeedSource();
-                src.setId(domain.getId().toString());
 //                src.setLastLoadTime();
 //                src.setDatasourceId(domain.getDataset().getId().toString());
                 src.setDatasource(DOMAIN_TO_DS.apply(domain.getDatasource()));
@@ -262,7 +261,6 @@ public class Model {
             @Override
             public FeedDestination apply(com.thinkbiganalytics.metadata.api.feed.FeedDestination domain) {
                 FeedDestination dest = new FeedDestination();
-                dest.setId(domain.getId().toString());
 //                dest.setFieldsPolicy();
 //                dest.setDatasourceId(domain.getDataset().getId().toString());
                 dest.setDatasource(DOMAIN_TO_DS.apply(domain.getDatasource()));
@@ -362,7 +360,6 @@ public class Model {
             public DataOperation apply(com.thinkbiganalytics.metadata.api.op.DataOperation domain) {
                 DataOperation op = new DataOperation();
                 op.setId(domain.getId().toString());
-                op.setFeedDestinationId(domain.getProducer().getId().toString());
                 op.setStartTime(Formatters.print(domain.getStartTime()));
                 op.setStopTiime(Formatters.print(domain.getStopTime()));
                 op.setState(DataOperation.State.valueOf(domain.getState().name()));

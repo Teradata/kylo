@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.core.sla;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 
 import org.joda.time.DateTime;
@@ -30,7 +31,7 @@ public class WithinScheduleAssessor extends MetadataMetricAssessor<WithinSchedul
 
     @Override
     public void assess(WithinSchedule metric, 
-                       MetricAssessmentBuilder<ArrayList<Dataset<Datasource, ChangeSet>>> builder) {
+                       MetricAssessmentBuilder<Serializable> builder) {
         DateTime start = new DateTime(CronExpressionUtil.getPreviousFireTime(metric.getCronExpression()));
         DateTime end = start.withPeriodAdded(metric.getPeriod(), 1);
         

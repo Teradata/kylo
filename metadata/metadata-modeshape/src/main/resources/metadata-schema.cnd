@@ -6,6 +6,9 @@
  *         "feeds"
  *             categorySystemName*
  *                 feedSystemName*
+ *         "datasources"
+ *             "hive"
+ *                 HiveTableDatasource*
  *         "templates"
  *             template
  *         "sla"
@@ -64,6 +67,10 @@
     - tba:type (STRING)
     - tba:json (STRING)
     
+[tba:polymorphicType] > nt:hierarchyNode
+    - tba:class (STRING)
+    - tba:json (STRING)
+    
 [tba:typeDescriptor] > nt:hierarchyNode, mix:title, mix:lastModified
     + * (tba:fieldDescriptor) sns
 
@@ -97,6 +104,7 @@
 	- tba:initialized (BOOLEAN) = 'false'
 	+ * (tba:feed) sns
 
+
 [tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, mix:versionable
 	+ tba:sources (tba:feedSource) sns
 	+ tba:destinations (tba:feedDestination) sns
@@ -116,11 +124,37 @@
     + tba:sla (tba:sla)
     + tba:lastAssessment (tba:serviceLevelAssessment)
     // TODO: when to check conditions (schedule, event, ...)
+    
+[tba:feedConnection] > nt:hierarchyNode, mix:referenceable
+    - tba:datasource (REFERENCE) mandatory COPY
+
+[tba:feedSource] > tba:feedConnection
+
+[tba:feedDestination] > tba:feedConnection 
+//  + fieldPolicies (tba:fieldPolicy) sns
+
+[tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied 
+    - tba:systemName (STRING) mandatory
+    - tba:feedSources (WEAKREFERENCE) multiple
+    - tba:feedDestinations (WEAKREFERENCE) multiple
+//  - tba:state (STRING)
+//  - tba:initialized (BOOLEAN) = 'false'
+
+[tba:hiveTableDatasource] > tba:datasource
+    - tba:database (STRING) mandatory
+    - tba:tableName (STRING) mandatory
+    - tba:modifiers (STRING)
+    + tba:columns (nt:hierarchyNode) = nt:hierarchyNode autocreated
+    + tba:partitions (nt:hierarchyNode) 
+
+[tba:hiveTableColumn] > nt:hierarchyNode
+    - tba:name (STRING) mandatory
+    - tba:type (STRING) mandatory
+
 
 [tba:sla] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
     - tba:defaultGroup (REFERENCE)
     + tba:groups (tba:obligationGroup) sns
-//    + tba:defaultGroup (tba:obligationGroup) mandatory
 
 [tba:obligationGroup] > nt:hierarchyNode
     - tba:condition (STRING) = 'REQUIRED' mandatory
@@ -150,24 +184,3 @@
     - tba:message (STRING) 
     - tba:result (STRING) mandatory
     + tba:resource (nt:resource) 
-    
-    
-
-
-
-/* -=-=-=-==-=-=- Deprecated -=-=-=-=-=-=-=-= */
-
-[tba:feedConnection] > tba:extensibleEntity, mix:referenceable
-	- tba:datasource (WEAKREFERENCE) mandatory COPY
-
-[tba:feedSource] > tba:feedConnection
-
-[tba:feedDestination] > tba:feedConnection 
-//  + fieldPolicies (tba:fieldPolicy) sns
-
-[tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied 
-    - tba:systemName (STRING) mandatory
-	- tba:state (STRING)
-	- tba:initialized (BOOLEAN) = 'false'
-	+ tba:feedSources (tba:feedSource) COPY sns
-	+ tba:feedDestinations (tba:feedDestination) COPY sns

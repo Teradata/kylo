@@ -331,6 +331,34 @@ public class JcrPropertyUtil {
         }
     }
     
+    /**
+     * Used to retrieve the referenced nodes from a multi-valued property of type (WEAK)REFERENCE
+     */
+    public static Set<Node> getReferencedNodeSet(Node node, String propName) {
+        try {
+            if (node == null) {
+                throw new IllegalArgumentException("Cannot set a property on a null-node!");
+            }
+            if (propName == null) {
+                throw new IllegalArgumentException("Cannot set a property without a provided name");
+            }
+            
+            final Session session = node.getSession();
+            JcrMetadataAccess.ensureCheckoutNode(node);
+            
+            if (node.hasProperty(propName)) {
+                return Arrays.stream(node.getProperty(propName).getValues())
+                                .map(v -> (Node) JcrPropertyUtil.asValue(v, session))
+                                .filter(n -> n != null)  // weak refs can produce null nodes
+                                .collect(Collectors.toSet());
+            } else {
+                return new HashSet<>();
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get the node property set: " + propName, e);
+        }
+    }
+    
     public static boolean addToSetProperty(Node node, String name, Object value) {
         try {
             JcrMetadataAccess.ensureCheckoutNode(node);
@@ -518,6 +546,28 @@ public class JcrPropertyUtil {
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Invalid value format", e);
+        }
+    }
+    
+    /**
+     * Assuming the specified property is a (WEAK)REFERENCE type, returns whether it is pointing at the specified node.
+     */
+    public static boolean isReferencing(Node node, String refProp, Node targetNode) {
+        try {
+            return isReferencing(node, refProp, targetNode.getIdentifier());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to check reference property against node: " + node, e);
+        }
+    }
+
+    /**
+     * Assuming the specified property is a (WEAK)REFERENCE type, returns whether it is pointing at the specified node ID.
+     */
+    public static boolean isReferencing(Node node, String refProp, String nodeId) {
+        try {
+            return node.getProperty(refProp).getNode().getIdentifier().equals(nodeId);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to check reference property against node ID: " + nodeId, e);
         }
     }
 

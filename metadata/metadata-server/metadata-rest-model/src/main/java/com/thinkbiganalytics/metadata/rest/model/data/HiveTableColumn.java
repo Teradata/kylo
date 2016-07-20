@@ -7,15 +7,15 @@ package com.thinkbiganalytics.metadata.rest.model.data;
  *
  * @author Sean Felten
  */
-public class HiveTableField {
+public class HiveTableColumn {
 
     private String name;
     private String type;
     
-    public HiveTableField() {
+    public HiveTableColumn() {
     }
 
-    public HiveTableField(String name, String type) {
+    public HiveTableColumn(String name, String type) {
         this.name = name;
         this.type = type;
     }

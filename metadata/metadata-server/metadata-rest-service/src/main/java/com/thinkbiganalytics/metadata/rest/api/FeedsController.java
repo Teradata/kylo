@@ -236,31 +236,31 @@ public class FeedsController {
             }
         });
     }
-    
-    @GET
-    @Path("{fid}/source/{sid}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public FeedSource getFeedSource(@PathParam("fid") final String feedId, @PathParam("sid") final String srcId) {
-        LOG.debug("Get feed {} source {}", feedId, srcId);
-        
-        return this.metadata.read(() -> {
-            com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            com.thinkbiganalytics.metadata.api.feed.FeedSource.ID domainSrcId = feedProvider.resolveSource(srcId);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
-            
-            if (domain != null) {
-                com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc = domain.getSource(domainSrcId);
-                
-                if (domainSrc != null) {
-                    return Model.DOMAIN_TO_FEED_SOURCE.apply(domainSrc);
-                } else {
-                    throw new WebApplicationException("A feed source with the given ID does not exist: " + srcId, Status.NOT_FOUND);
-                }
-            } else {
-                throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
-            }
-        });
-    }
+//    
+//    @GET
+//    @Path("{fid}/source/{sid}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public FeedSource getFeedSource(@PathParam("fid") final String feedId, @PathParam("sid") final String srcId) {
+//        LOG.debug("Get feed {} source {}", feedId, srcId);
+//        
+//        return this.metadata.read(() -> {
+//            com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
+//            com.thinkbiganalytics.metadata.api.feed.FeedSource.ID domainSrcId = feedProvider.resolveSource(srcId);
+//            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
+//            
+//            if (domain != null) {
+//                com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc = domain.getSource(domainSrcId);
+//                
+//                if (domainSrc != null) {
+//                    return Model.DOMAIN_TO_FEED_SOURCE.apply(domainSrc);
+//                } else {
+//                    throw new WebApplicationException("A feed source with the given ID does not exist: " + srcId, Status.NOT_FOUND);
+//                }
+//            } else {
+//                throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+//            }
+//        });
+//    }
     
     @GET
     @Path("{id}/destination")
@@ -279,31 +279,31 @@ public class FeedsController {
             }
         });
     }
-    
-    @GET
-    @Path("{fid}/destination/{sid}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public FeedDestination getFeedDestination(@PathParam("fid") final String feedId, @PathParam("sid") final String destId) {
-        LOG.debug("Get feed {} destination {}", feedId, destId);
-
-        return this.metadata.read(() -> {
-            com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID domainDestId = feedProvider.resolveDestination(destId);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
-            
-            if (domain != null) {
-                com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest = domain.getDestination(domainDestId);
-                
-                if (domainDest != null) {
-                    return Model.DOMAIN_TO_FEED_DESTINATION.apply(domainDest);
-                } else {
-                    throw new WebApplicationException("A feed destination with the given ID does not exist: " + destId, Status.NOT_FOUND);
-                }
-            } else {
-                throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
-            }
-        });
-    }
+//    
+//    @GET
+//    @Path("{fid}/destination/{sid}")
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public FeedDestination getFeedDestination(@PathParam("fid") final String feedId, @PathParam("sid") final String destId) {
+//        LOG.debug("Get feed {} destination {}", feedId, destId);
+//
+//        return this.metadata.read(() -> {
+//            com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
+//            com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID domainDestId = feedProvider.resolveDestination(destId);
+//            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
+//            
+//            if (domain != null) {
+//                com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest = domain.getDestination(domainDestId);
+//                
+//                if (domainDest != null) {
+//                    return Model.DOMAIN_TO_FEED_DESTINATION.apply(domainDest);
+//                } else {
+//                    throw new WebApplicationException("A feed destination with the given ID does not exist: " + destId, Status.NOT_FOUND);
+//                }
+//            } else {
+//                throw new WebApplicationException("A feed with the given ID does not exist: " + feedId, Status.NOT_FOUND);
+//            }
+//        });
+//    }
     
     @GET
     @Path("{id}/precondition")

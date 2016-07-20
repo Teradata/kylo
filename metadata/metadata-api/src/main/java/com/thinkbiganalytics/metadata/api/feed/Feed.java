@@ -68,12 +68,12 @@ public interface Feed<C extends Category> extends Propertied, Serializable {
     List<? extends FeedSource> getSources();
     
     FeedSource getSource(Datasource.ID id);
-    
-    FeedSource getSource(FeedSource.ID id);
+//    
+//    FeedSource getSource(FeedSource.ID id);
 
     List<? extends FeedDestination> getDestinations();
 
     FeedDestination getDestination(Datasource.ID id);
-
-    FeedDestination getDestination(FeedDestination.ID id);
+//
+//    FeedDestination getDestination(FeedDestination.ID id);
 }

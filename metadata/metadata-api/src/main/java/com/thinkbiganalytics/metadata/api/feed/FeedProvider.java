@@ -39,12 +39,12 @@ public interface FeedProvider{
     Feed<?> addDependent(Feed.ID targetId, Feed.ID dependentId);
     Feed<?> removeDependent(Feed.ID feedId, Feed.ID depId);
     
-    FeedSource getFeedSource(FeedSource.ID id);
-    FeedDestination getFeedDestination(FeedDestination.ID id);
+//    FeedSource getFeedSource(FeedSource.ID id);
+//    FeedDestination getFeedDestination(FeedDestination.ID id);
 
     Feed.ID resolveFeed(Serializable fid);
-    FeedSource.ID resolveSource(Serializable sid);
-    FeedDestination.ID resolveDestination(Serializable sid);
+//    FeedSource.ID resolveSource(Serializable sid);
+//    FeedDestination.ID resolveDestination(Serializable sid);
 
     boolean enableFeed(Feed.ID id);
     boolean disableFeed(Feed.ID id);

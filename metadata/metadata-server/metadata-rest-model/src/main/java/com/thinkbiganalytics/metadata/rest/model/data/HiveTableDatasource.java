@@ -15,7 +15,7 @@ public class HiveTableDatasource extends Datasource {
     private String database;
     private String tableName;
     private String modifiers;
-    private List<HiveTableField> fields = new ArrayList<>();
+    private List<HiveTableColumn> columns = new ArrayList<>();
     private List<HiveTablePartition> partitions = new ArrayList<>();
 
     public String getDatabase() {
@@ -42,12 +42,12 @@ public class HiveTableDatasource extends Datasource {
         this.modifiers = modifiers;
     }
 
-    public List<HiveTableField> getFields() {
-        return fields;
+    public List<HiveTableColumn> getColumns() {
+        return columns;
     }
 
-    public void setFields(List<HiveTableField> fields) {
-        this.fields = fields;
+    public void setFields(List<HiveTableColumn> fields) {
+        this.columns = fields;
     }
 
     public List<HiveTablePartition> getPartitions() {

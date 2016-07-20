@@ -13,9 +13,9 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
  */
 public interface FeedSource extends FeedConnection {
 
-    interface ID extends Serializable { }
-
-    ID getId();
+//    interface ID extends Serializable { }
+//
+//    ID getId();
     
     ServiceLevelAgreement getAgreement();
 }
