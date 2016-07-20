@@ -1121,3 +1121,8 @@ md-toast .md-toast-content {
   max-height:100%;
   height: 100%;
 }
+
+
+.profile.summary {
+  min-width: 380px;
+}

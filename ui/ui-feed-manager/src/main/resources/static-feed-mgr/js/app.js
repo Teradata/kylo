@@ -2,6 +2,7 @@ var MODULE_FEED_MGR = "datalakeui.feedmgr";
 
 
 var app = angular.module(MODULE_FEED_MGR, [
+    'nvd3',
     'ngMaterial',
     'md.data.table',
     'ngMdIcons',
