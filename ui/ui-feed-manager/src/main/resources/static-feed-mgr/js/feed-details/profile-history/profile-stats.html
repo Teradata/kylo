@@ -32,14 +32,14 @@
                 </md-list-item>
             </md-list>
         </div>
-        <div ng-if="!vm.loading" flex="80" class="layout-padding-left">
+        <div ng-if="!vm.loading" flex="80" class="layout-padding-left profile">
             <div layout="column">
                 <header-section flex="100">
                     <h2 class="md-tile">{{vm.selectedRow.columnname}}</h2>
                 </header-section>
 
                 <div layout="row" flex="100">
-                    <div layout="column" flex="33" class="profile summary">
+                    <div layout="column" flex="33" class="summary">
                         <div flex="100" class="bars" >
                             <h3 class="md-subhead">Summary</h3>
                             <nvd3 flex options="vm.summaryOptions" data="vm.summaryData" api="vm.summaryApi"></nvd3>
@@ -54,8 +54,9 @@
                         </div>
                     </div>
                     <div layout="column" flex="33" class="length-stats">
-                        <div flex="100" min-height="200px" class="string-length-stats">
+                        <div flex="100" class="string-length-stats">
                             <h3 class="md-subhead">String Length Statistics</h3>
+                            <nvd3 flex options="vm.lengthOptions" data="vm.lengthData" api="vm.lengthApi"></nvd3>
                         </div>
                         <div flex="100" class="mismatched-values">
                             <h3 class="md-subhead">String Length</h3>
@@ -64,7 +65,28 @@
                     </div>
                     <div layout="column" flex="33" class="top-value">
                         <h3 class="md-subhead">Top Values</h3>
-
+                        <md-list class="list-item-table">
+                            <md-list-item class="md-secondary"
+                                          dir-paginate="row in vm.topvalues | itemsPerPage: 10"
+                                          pagination-id="profile_stats_1">
+                                <div layout="row" layout-fill>
+                                    <div flex="90" class="item-column md-list-item-text">
+                                        <span class="item-title">
+                                        {{::row['value']}}
+                                        </span>
+                                    </div>
+                                    <div flex="10" class="item-column md-list-item-text">
+                                        <span class="item-title">
+                                        {{::row['count']}}
+                                        </span>
+                                    </div>
+                                </div>
+                                <md-divider ng-if="!$last"></md-divider>
+                            </md-list-item>
+                            <md-list-item ng-show="vm.loading == false && vm.topvalues.length == 0">
+                                No results found
+                            </md-list-item>
+                        </md-list>
                     </div>
                 </div>
             </div>

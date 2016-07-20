@@ -1122,7 +1122,22 @@ md-toast .md-toast-content {
   height: 100%;
 }
 
-
-.profile.summary {
+.profile .md-subhead {
+  padding-left: 13px;
+}
+.profile .summary {
   min-width: 380px;
 }
+.profile .length-stats {
+  min-width: 380px;
+}
+.profile .nvd3 .nv-discretebar .tick.zero text {
+  /*padding-top: 10px;*/
+}
+.profile .nvd3 .nv-discretebar .nv-groups text {
+  fill: dimgray;
+}
+.profile .nvd3 .nv-multibarHorizontal .nv-groups text {
+  fill: dimgray;
+}
+
