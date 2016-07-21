@@ -147,7 +147,7 @@
                     top: 0,
                     right: 0,
                     bottom: 0,
-                    left: 70 //otherwise y axis labels are not visible
+                    left: 80 //otherwise y axis labels are not visible
                 },
                 duration: chartDuration,
                 x: function(d){return d.label;},
@@ -162,23 +162,24 @@
 
         self.statData = function() {
             //console.log("calculating stat data");
+            var values = [];
 
-            var min = findNumericStat(self.filtered, 'MIN_LENGTH');
-            var max = findNumericStat(self.filtered, 'MAX_LENGTH');
+            if (self.selectedRow.profile == "String") {
+                values.push({"label": "Minimum", "value": findNumericStat(self.filtered, 'MIN_LENGTH')});
+                values.push({"label": "Maximum", "value": findNumericStat(self.filtered, 'MAX_LENGTH')});
+            } else if (self.selectedRow.profile == "Numeric") {
+                values.push({"label": "Minimum", "value": findNumericStat(self.filtered, 'MIN')});
+                values.push({"label": "Maximum", "value": findNumericStat(self.filtered, 'MAX')});
+                values.push({"label": "Sum", "value": findNumericStat(self.filtered, 'SUM')});
+                values.push({"label": "Mean", "value": findNumericStat(self.filtered, 'MEAN')});
+                values.push({"label": "Std Dev", "value": findNumericStat(self.filtered, 'STDDEV')});
+                values.push({"label": "Variance", "value": findNumericStat(self.filtered, 'VARIANCE')});
+            } else if (self.selectedRow.profile == "Time") {
+                //values.push({"label": "Minimum", "value": findStat(self.filtered, 'MIN_TIMESTAMP')});
+                //values.push({"label": "Maximum", "value": findStat(self.filtered, 'MAX_TIMESTAMP')});
+            }
 
-            return [{
-                key: "Stat",
-                values: [
-                    {
-                        "label": "Minimum",
-                        "value": min
-                    },
-                    {
-                        "label": "Maximum",
-                        "value": max
-                    }
-                ]
-            }];
+            return [{key: "Stats", values: values}];
         };
 
         function findStat(rows, metrictype) {

@@ -41,7 +41,7 @@
                 <div ng-if="vm.selectedRow.columnname == '(ALL)'" layout="row" flex="100">
                     <div layout="column" flex="33" class="summary">
                         <div flex="100" class="bars" >
-                            <h3 class="md-subhead">Summary</h3>
+                            <div class="md-subhead">Summary</div>
                             <nvd3 flex options="vm.summaryOptions" data="vm.summaryData" api="vm.summaryApi"></nvd3>
                         </div>
                     </div>
@@ -50,7 +50,7 @@
                 <div ng-if="vm.selectedRow.columnname != '(ALL)'" layout="row" flex="100">
                     <div layout="column" flex="33" class="summary">
                         <div flex="100" class="bars" >
-                            <h3 class="md-subhead">Summary</h3>
+                            <div class="md-subhead">Summary</div>
                             <nvd3 flex options="vm.summaryOptions" data="vm.summaryData" api="vm.summaryApi"></nvd3>
                         </div>
                         <!--<div flex="100" class="mismatched-values">-->
@@ -77,7 +77,7 @@
                         </div>
                     </div>
                     <div layout="column" flex="33" class="top-value">
-                        <h3 class="md-subhead">Top Values</h3>
+                        <div class="md-subhead">Top Values</div>
                         <md-list class="list-item-table">
                             <md-list-item class="md-secondary"
                                           dir-paginate="row in vm.topvalues | itemsPerPage: 10"
