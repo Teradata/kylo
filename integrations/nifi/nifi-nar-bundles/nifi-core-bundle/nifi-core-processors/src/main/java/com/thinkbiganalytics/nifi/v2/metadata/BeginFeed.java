@@ -213,7 +213,7 @@ public class BeginFeed extends AbstractFeedProcessor {
                 metrics[idx] = metric;
             }
 
-            provider.ensurePrecondition(feed.getId(), metrics);
+            //  provider.ensurePrecondition(feed.getId(), metrics);
         }
     }
 
