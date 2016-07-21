@@ -21,11 +21,7 @@
 
         var self = this;
 
-        var chartColor = function (d, i) {
-            return '#1f77b4'; //couldn't do it via css
-        };
-        var chartDuration = 500;
-
+        self.mode = 'prod';
         self.data = [];
         self.loading = true;
         self.processingDate = new Date(HiveService.getUTCTime(self.processingdttm));
@@ -34,13 +30,18 @@
         self.filtered = [];
         self.summaryApi = {};
         self.statApi = {};
-
         self.topvalues = [];
 
         self.selectRowAndUpdateCharts = function(event, row) {
+            //called when user selects the column
             selectRow(row);
             updateCharts();
         };
+
+        var chartColor = function (d, i) {
+            return '#1f77b4'; //couldn't do it via css
+        };
+        var chartDuration = 500;
 
         function selectRow(row) {
             selectColumn(row);
@@ -160,7 +161,7 @@
         };
 
         self.statData = function() {
-            console.log("calculating stat data");
+            //console.log("calculating stat data");
 
             var min = findNumericStat(self.filtered, 'MIN_LENGTH');
             var max = findNumericStat(self.filtered, 'MAX_LENGTH');
@@ -233,7 +234,7 @@
                 if (self.data && self.data.rows && self.data.rows.length > 0) {
                     selectRow(self.data.rows[0]);
                 }
-                console.log(self.data);
+                //console.log(self.data);
                 self.loading = false;
                 BroadcastService.notify('PROFILE_TAB_DATA_LOADED','profile-stats');
             };
