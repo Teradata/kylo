@@ -17,6 +17,7 @@
 
     <dependencies>
 
+
         <dependency>
             <groupId>com.thinkbiganalytics.nifi.services</groupId>
             <artifactId>thinkbig-nifi-core-service-api</artifactId>
@@ -37,6 +38,13 @@
             <artifactId>thinkbig-metadata-rest-client-spring</artifactId>
             <version>${project.version}</version>
         </dependency>
+
+        <dependency>
+            <groupId>com.thinkbiganalytics.metadata</groupId>
+            <artifactId>thinkbig-metadata-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
 
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>

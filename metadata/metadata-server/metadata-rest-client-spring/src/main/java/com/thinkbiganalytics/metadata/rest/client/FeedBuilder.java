@@ -4,7 +4,7 @@
 package com.thinkbiganalytics.metadata.rest.client;
 
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 /**
  *

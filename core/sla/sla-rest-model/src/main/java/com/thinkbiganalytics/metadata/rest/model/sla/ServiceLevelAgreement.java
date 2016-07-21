@@ -3,15 +3,17 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.sla;
 
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
-
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -26,6 +28,8 @@ public class ServiceLevelAgreement {
     private String description;
     private ObligationGroup defaultGroup;
     private List<ObligationGroup> groups;
+
+    private List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations;
     
     public ServiceLevelAgreement() {
         this.defaultGroup = new ObligationGroup("REQUIRED");
@@ -109,4 +113,19 @@ public class ServiceLevelAgreement {
         this.groups.add(group);
     }
 
+    public ObligationGroup getDefaultGroup() {
+        return defaultGroup;
+    }
+
+    public void setDefaultGroup(ObligationGroup defaultGroup) {
+        this.defaultGroup = defaultGroup;
+    }
+
+    public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations() {
+        return actionConfigurations;
+    }
+
+    public void setActionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
+        this.actionConfigurations = actionConfigurations;
+    }
 }

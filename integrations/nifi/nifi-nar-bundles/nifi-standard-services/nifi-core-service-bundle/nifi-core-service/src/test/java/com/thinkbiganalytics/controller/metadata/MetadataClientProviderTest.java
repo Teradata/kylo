@@ -4,6 +4,10 @@
 
 package com.thinkbiganalytics.controller.metadata;
 
+import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceFeedExecuted;
+import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceSchedule;
+import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
+import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceSchedule;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
@@ -12,11 +16,6 @@ import com.thinkbiganalytics.metadata.rest.model.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
-import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
-import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceScheduleMetric;
-import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
-import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
-import com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule;
 import com.thinkbiganalytics.nifi.v2.core.metadata.MetadataClientProvider;
 
 import org.joda.time.DateTime;
@@ -25,6 +24,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import java.nio.file.Paths;
+import java.text.ParseException;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -88,12 +88,17 @@ public class MetadataClientProviderTest {
     @Test
     public void testEnsurePrecondition() {
         Feed feed = this.provider.ensureFeed("category", "test5", "");
-        feed = this.provider.ensurePrecondition(feed.getId(),
-                DatasourceUpdatedSinceFeedExecutedMetric.named("ds5", "test5"),
-                DatasourceUpdatedSinceScheduleMetric.named("ds5", "0 0 6 * * ? *"),
-                                                FeedExecutedSinceFeedMetric.named("category", "dep5", "category", "test5"),
-                                                FeedExecutedSinceScheduleMetric.named("category", "test5", "0 0 6 * * ? *"),
-                new WithinSchedule("0 0 6 * * ? *", "2 hours"));
+        try {
+            feed = this.provider.ensurePrecondition(feed.getId(),
+                                                    new DatasourceUpdatedSinceFeedExecuted("ds5", "test5"),
+                                                    new DatasourceUpdatedSinceSchedule("ds5", "0 0 6 * * ? *"),
+                                                    new FeedExecutedSinceFeed("category", "dep5", "category", "test5"),
+                                                    new FeedExecutedSinceSchedule("category", "test5", "0 0 6 * * ? *"),
+                                                    new com.thinkbiganalytics.metadata.api.sla.WithinSchedule("0 0 6 * * ? *", "2 hours"));
+        } catch (ParseException e) {
+            e.printStackTrace();
+            ;
+        }
 
         assertThat(feed).isNotNull();
     }

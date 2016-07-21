@@ -3,6 +3,16 @@
  */
 package com.thinkbiganalytics.metadata.rest.api;
 
+import com.google.common.collect.Collections2;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.rest.ExtensiblesModel;
+import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescriptor;
+
+import org.apache.catalina.connector.Response;
+import org.springframework.stereotype.Component;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,15 +28,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 
-import org.apache.catalina.connector.Response;
-import org.springframework.stereotype.Component;
-
-import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.rest.ExtensiblesModel;
-import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescriptor;
+import io.swagger.annotations.Api;
 
 /**
  *
@@ -34,6 +36,7 @@ import com.thinkbiganalytics.metadata.rest.model.extension.ExtensibleTypeDescrip
  */
 @Component
 @Path("/extension")
+@Api(value = "metadata-extensions", produces = "application/json", description = "Allow creation and storing of new Entities with dynamic types ")
 public class ExtensionsController {
     
     @Inject

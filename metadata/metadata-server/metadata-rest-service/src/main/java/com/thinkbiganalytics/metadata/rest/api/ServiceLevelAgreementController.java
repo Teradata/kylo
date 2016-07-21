@@ -3,6 +3,18 @@
  */
 package com.thinkbiganalytics.metadata.rest.api;
 
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.rest.Model;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
 import java.util.List;
 
 import javax.inject.Inject;
@@ -16,17 +28,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Component;
-
-import com.google.common.collect.Lists;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.rest.Model;
-import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
+import io.swagger.annotations.Api;
 
 /**
  *
@@ -34,6 +36,8 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
  */
 @Component
 @Path("/sla")
+@Api(value = "metadata-sla", produces = "application/json", description = "Manage Service Level Agreements")
+
 public class ServiceLevelAgreementController {
 
     private static final Logger log = LoggerFactory.getLogger(ServiceLevelAgreementController.class);

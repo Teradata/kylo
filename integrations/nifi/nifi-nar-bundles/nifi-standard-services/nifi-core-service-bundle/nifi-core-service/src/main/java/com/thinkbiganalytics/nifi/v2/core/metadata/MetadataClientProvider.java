@@ -17,7 +17,7 @@ import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ChangeType;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ContentType;
 import com.thinkbiganalytics.metadata.rest.model.op.FileList;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
-import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 
 import org.joda.time.DateTime;

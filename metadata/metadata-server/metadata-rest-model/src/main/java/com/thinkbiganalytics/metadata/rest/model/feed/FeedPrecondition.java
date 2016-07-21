@@ -3,16 +3,16 @@
  */
 package com.thinkbiganalytics.metadata.rest.model.feed;
 
-import java.io.Serializable;
-import java.util.Arrays;
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+
+import java.io.Serializable;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  *

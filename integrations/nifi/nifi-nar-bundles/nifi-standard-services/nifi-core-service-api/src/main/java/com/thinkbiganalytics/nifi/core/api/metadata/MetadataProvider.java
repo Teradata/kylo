@@ -16,7 +16,7 @@ import com.thinkbiganalytics.metadata.rest.model.op.DataOperation;
 import com.thinkbiganalytics.metadata.rest.model.op.DataOperation.State;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
-import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 
 import org.joda.time.DateTime;
 

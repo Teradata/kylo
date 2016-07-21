@@ -3,27 +3,9 @@
  */
 package com.thinkbiganalytics.metadata.rest;
 
-import java.io.Serializable;
-import java.nio.file.Path;
-import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-
-import org.joda.time.Period;
-import org.quartz.CronExpression;
-
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.filesys.FileList;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HivePartitionUpdate;
@@ -63,6 +45,25 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+
+import org.joda.time.Period;
+import org.quartz.CronExpression;
+
+import java.io.Serializable;
+import java.nio.file.Path;
+import java.text.ParseException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.stream.Collectors;
+
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
 
 /**
  * Convenience functions and methods to transform between the metadata domain model and the REST model. 
@@ -476,7 +477,7 @@ public class Model {
                                                                                                  domainObAssmt.getMessage());
                     for (MetricAssessment<?> domainMetAssmt : domainObAssmt.getMetricAssessments()) {
                         com.thinkbiganalytics.metadata.rest.model.sla.MetricAssessment metricAssmnt
-                            = new com.thinkbiganalytics.metadata.rest.model.sla.MetricAssessment(DOMAIN_TO_METRIC.apply(domainMetAssmt.getMetric()), 
+                            = new com.thinkbiganalytics.metadata.rest.model.sla.MetricAssessment(domainMetAssmt.getMetric(),
                                                                                                  Result.valueOf(domain.getResult().name()), 
                                                                                                  domainMetAssmt.getMessage());
                         obAssmt.addMetricAssessment(metricAssmnt);
@@ -518,9 +519,9 @@ public class Model {
             
             for (com.thinkbiganalytics.metadata.rest.model.sla.Obligation ob : grp.getObligations()) {
                 ObligationBuilder<?> obBldr = grpBldr.obligationBuilder().description(ob.getDescription());
-                
-                for (Metric metric : ob.getMetrics()) {
-                    obBldr.metric(METRIC_TO_DOMAIN.apply(metric));
+
+                for (com.thinkbiganalytics.metadata.sla.api.Metric metric : ob.getMetrics()) {
+                    obBldr.metric(metric);
                 }
                 
                 obBldr.build();
@@ -539,17 +540,13 @@ public class Model {
     }
     
     public static com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement toModel(ServiceLevelAgreement domain, boolean deep) {
-//try {
-//    new JcrTools(true).printSubgraph(((JcrServiceLevelAgreement) domain).getNode());
-//} catch (RepositoryException e) {
-//    // TODO Auto-generated catch block
-//    e.printStackTrace();
-//}
+
 
         com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement sla 
             = new com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement(domain.getId().toString(), 
                                                                                       domain.getName(), 
                                                                                       domain.getDescription());
+        sla.setActionConfigurations(domain.getActionConfigurations());
         if (deep) {
             if (domain.getObligationGroups().size() == 1 && domain.getObligationGroups().get(0).getCondition() == Condition.REQUIRED) {
                 for (Obligation domainOb : domain.getObligations()) {
@@ -577,7 +574,9 @@ public class Model {
         com.thinkbiganalytics.metadata.rest.model.sla.Obligation ob 
             = new com.thinkbiganalytics.metadata.rest.model.sla.Obligation();
         ob.setDescription(domainOb.getDescription());
-        if (deep) ob.setMetrics(toModelMetrics(domainOb.getMetrics()));
+        if (deep) {
+            ob.setMetrics(Lists.newArrayList(domainOb.getMetrics()));
+        }
         return ob;
     }
 

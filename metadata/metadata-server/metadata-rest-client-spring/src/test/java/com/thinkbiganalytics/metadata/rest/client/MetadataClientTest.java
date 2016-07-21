@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.rest.client;
 
+import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
 import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
@@ -12,7 +13,6 @@ import com.thinkbiganalytics.metadata.rest.model.op.Dataset;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ChangeType;
 import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ContentType;
 import com.thinkbiganalytics.metadata.rest.model.op.HiveTablePartitions;
-import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 
 import org.joda.time.DateTime;
@@ -247,7 +247,7 @@ public class MetadataClientTest {
                 .owner("ownder")
                 .displayName(name)
                 .property("key1", "value1")
-            .preconditionMetric(FeedExecutedSinceFeedMetric.named(dependentCategory, dependent, category, name));
+            .preconditionMetric(new FeedExecutedSinceFeed(dependentCategory, dependent, category, name));
     }
     
     private DirectoryDatasourceBuilder buildDirectoryDatasource(String name) {

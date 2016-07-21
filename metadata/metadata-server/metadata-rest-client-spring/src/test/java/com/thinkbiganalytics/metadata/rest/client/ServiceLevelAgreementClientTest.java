@@ -3,7 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.rest.client;
 
-import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
+import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 
 import org.junit.BeforeClass;
@@ -28,8 +28,8 @@ public class ServiceLevelAgreementClientTest {
 //    @Test
     public void testCreateSLA() {
         ServiceLevelAgreement sla = new ServiceLevelAgreement("TestSLA1",
-                                                              FeedExecutedSinceFeedMetric.named("category", "FeedA", "category", "FeedX"),
-                                                              FeedExecutedSinceFeedMetric.named("category", "FeedB", "category", "FeedX"));
+                                                              new FeedExecutedSinceFeed("category", "FeedA", "category", "FeedX"),
+                                                              new FeedExecutedSinceFeed("category", "FeedB", "category", "FeedX"));
 
         ServiceLevelAgreement result = client.createSla(sla);
         

@@ -52,11 +52,14 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
+import io.swagger.annotations.Api;
+
 /**
  *
  * @author Sean Felten
  */
 @Component
+@Api(value = "metadata-feeds", produces = "application/json", description = "Manage Feed Metadata and allow feeds to be updated with various Metadata Properties")
 @Path("/feed")
 public class FeedsController {
     
@@ -522,7 +525,7 @@ public class FeedsController {
             List<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics
                 = precond.getSla().getObligations().stream()
                     .flatMap((grp) -> grp.getMetrics().stream())
-                    .map((metric) -> Model.METRIC_TO_DOMAIN.apply(metric))
+                .map((metric) -> metric)
                     .collect(Collectors.toList());
         
             com.thinkbiganalytics.metadata.api.feed.Feed<?> domainFeed 
@@ -561,7 +564,7 @@ public class FeedsController {
             List<com.thinkbiganalytics.metadata.sla.api.Metric> domainMetrics
                 = precond.getSla().getObligations().stream()
                     .flatMap((grp) -> grp.getMetrics().stream())
-                    .map((metric) -> Model.METRIC_TO_DOMAIN.apply(metric))
+                .map((metric) -> metric)
                     .collect(Collectors.toList());
     
             feedProvider.createPrecondition(domainFeed.getId(), "", domainMetrics);
