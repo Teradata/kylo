@@ -40,8 +40,8 @@ public class CronExpressionUtil {
         if(previousNumber <= 0){
             previousNumber = 1;
         }
-       List<Date> dates = getPreviousFireTimes(cron,previousNumber);
-        return dates.get(previousNumber-1);
+        List<Date> dates = getPreviousFireTimes(cron, previousNumber);
+        return dates.get(previousNumber - 1);
 
     }
 
@@ -103,5 +103,18 @@ public class CronExpressionUtil {
         return dates;
     }
 
+    public static CronExpression timerToCronExpression(String timer) throws ParseException {
+        return TimerToCronExpression.timerToCronExpression(timer);
+    }
+
+    public static String timerToCronString(String timer) {
+        try {
+            CronExpression cronExpression = timerToCronExpression(timer);
+            return cronExpression.getCronExpression();
+        } catch (ParseException e) {
+            LOG.error("Unable to create CronExpression from timer {}.  Error: {}", timer, e.getMessage(), e);
+        }
+        return null;
+    }
 
 }

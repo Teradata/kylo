@@ -3,6 +3,7 @@ package com.thinkbiganalytics.scheduler.quartz;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
 import org.junit.Test;
+import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,6 +35,19 @@ public void testNextFireTimes(){
                 System.out.println(count + ". " + date);
                 count++;
             }
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+
+    @Test
+    public void testTimerToCron() {
+        String timer = "30 hours";
+        try {
+            CronExpression expression = CronExpressionUtil.timerToCronExpression(timer);
+            String cron = expression.getCronExpression();
+            int i = 0;
         } catch (ParseException e) {
             e.printStackTrace();
         }
