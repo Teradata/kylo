@@ -36,12 +36,14 @@
                <span> This template is to be used as a reusable component.  It cannot be used to create a new feed, but rather other feed templates can be registered to reference this template </span>
             </div>
 
-            <div layout="column" ng-if="!vm.model.reusableTemplate">
+             <div layout="column" ng-if="!vm.model.reusableTemplate && vm.model.allowPreconditions">
                 <md-subheader class="md-subhead left-aligned">Feed Scheduling Options</md-subheader>
-            <md-checkbox ng-model="vm.model.allowPreconditions" aria-label=" ">
-                Allow for Feed Preconditions
-                <div class="hint">Allow user ability to schedule/trigger this feed on a pre condition (i.e. the completion of another feed)</div>
-            </md-checkbox>
+               <div layout="row" layout-align="start start">
+                 <div>
+                   <ng-md-icon icon="check" style="fill:green" size="20"></ng-md-icon>
+                 </div>
+                 <span>This template allows for the feed to be triggered on a pre condition (i.e. the completion of another feed)</span>
+               </div>
 
             </div>
 
