@@ -21,9 +21,12 @@ public class FieldRulePropertyBuilder {
     private String objectProperty;
     private List<LabelValue> selectableValues;
     private boolean required;
+    private String group;
+    private Integer groupOrder;
+    private String layout;
 
     public enum PROPERTY_TYPE {
-        number, string, select, regex, date, chips, feedChips, currentFeed
+        number, string, select, regex, date, chips, feedChips, feedSelect, currentFeed
     }
 
     public FieldRulePropertyBuilder(String name){
@@ -80,6 +83,21 @@ public class FieldRulePropertyBuilder {
         return this;
     }
 
+    public FieldRulePropertyBuilder group(String group) {
+        this.group = group;
+        return this;
+    }
+
+    public FieldRulePropertyBuilder groupOrder(Integer order) {
+        this.groupOrder = groupOrder;
+        return this;
+    }
+
+    public FieldRulePropertyBuilder layout(String layout) {
+        this.layout = layout;
+        return this;
+    }
+
     public FieldRulePropertyBuilder addSelectableValue(LabelValue labelValue){
         if(selectableValues == null){
             selectableValues = new ArrayList<>();
@@ -109,6 +127,8 @@ public class FieldRulePropertyBuilder {
         property.setObjectProperty(this.objectProperty);
         property.setValue(this.value);
         property.setRequired(this.required);
+        property.setGroup(this.group);
+        property.setGroupOrder(this.groupOrder);
         return property;
     }
 }

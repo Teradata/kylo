@@ -26,7 +26,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
 
 /**
@@ -41,6 +45,8 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
         AnnotationFieldNameResolver annotationFieldNameResolver = new AnnotationFieldNameResolver(PolicyProperty.class);
         List<AnnotatedFieldProperty> list = annotationFieldNameResolver.getProperties(policy.getClass());
         List<FieldRuleProperty> properties = new ArrayList<>();
+        Map<String, Integer> groupOrder = new HashMap<>();
+        Map<String, List<FieldRuleProperty>> groupedProperties = new HashMap<>();
         if (hasConstructor(policy.getClass())) {
 
             for (AnnotatedFieldProperty<PolicyProperty> annotatedFieldProperty : list) {
@@ -54,6 +60,14 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                 } catch (IllegalAccessException e) {
 
                 }
+                String group = prop.group();
+                Integer order = 0;
+                if (!groupOrder.containsKey(group)) {
+                    groupOrder.put(group, order);
+                }
+                order = groupOrder.get(group);
+                order++;
+                groupOrder.put(group, order);
                 FieldRuleProperty rule = new FieldRulePropertyBuilder(prop.name()).displayName(
                     StringUtils.isNotBlank(prop.displayName()) ? prop.displayName() : prop.name()).hint(prop.hint())
                     .type(FieldRulePropertyBuilder.PROPERTY_TYPE.valueOf(prop.type().name()))
@@ -61,10 +75,25 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                     .placeholder(prop.placeholder())
                     .value(value)
                     .required(prop.required())
+                    .group(group)
+                    .groupOrder(order)
                     .addSelectableValues(convertToLabelValue(prop.selectableValues()))
                     .addSelectableValues(convertToLabelValue(prop.labelValues())).build();
                 properties.add(rule);
+                if (!group.equals("")) {
+                    if (!groupedProperties.containsKey(group)) {
+                        groupedProperties.put(group, new ArrayList<FieldRuleProperty>());
+                    }
+                    groupedProperties.get(group).add(rule);
+                }
             }
+            //update layout property
+            for (Collection<FieldRuleProperty> groupProps : groupedProperties.values()) {
+                for (FieldRuleProperty property : groupProps) {
+                    property.setLayout("row");
+                }
+            }
+
         }
         return properties;
     }
@@ -74,11 +103,21 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
         AnnotationFieldNameResolver annotationFieldNameResolver = new AnnotationFieldNameResolver(PolicyProperty.class);
         List<AnnotatedFieldProperty> list = annotationFieldNameResolver.getProperties(policyClass);
         List<FieldRuleProperty> properties = new ArrayList<>();
+        Map<String, List<FieldRuleProperty>> groupedProperties = new HashMap<>();
         if (hasConstructor(policyClass)) {
-
+            Map<String, Integer> groupOrder = new HashMap<>();
             for (AnnotatedFieldProperty<PolicyProperty> annotatedFieldProperty : list) {
                 PolicyProperty prop = annotatedFieldProperty.getAnnotation();
                 String value = StringUtils.isBlank(prop.value()) ? null : prop.value();
+                String group = prop.group();
+                Integer order = 0;
+                if (!groupOrder.containsKey(group)) {
+                    groupOrder.put(group, order);
+                }
+                order = groupOrder.get(group);
+                order++;
+                groupOrder.put(group, order);
+
                 FieldRuleProperty rule = new FieldRulePropertyBuilder(prop.name()).displayName(
                     StringUtils.isNotBlank(prop.displayName()) ? prop.displayName() : prop.name()).hint(prop.hint())
                     .type(FieldRulePropertyBuilder.PROPERTY_TYPE.valueOf(prop.type().name()))
@@ -86,19 +125,41 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                     .placeholder(prop.placeholder())
                     .value(value)
                     .required(prop.required())
+                    .group(group)
+                    .groupOrder(order)
                     .addSelectableValues(convertToLabelValue(prop.selectableValues()))
                     .addSelectableValues(convertToLabelValue(prop.labelValues())).build();
                 properties.add(rule);
+                if (!group.equals("")) {
+                    if (!groupedProperties.containsKey(group)) {
+                        groupedProperties.put(group, new ArrayList<FieldRuleProperty>());
+                    }
+                    groupedProperties.get(group).add(rule);
+                }
+            }
+            //update layout property
+            for (Collection<FieldRuleProperty> groupProps : groupedProperties.values()) {
+                for (FieldRuleProperty property : groupProps) {
+                    property.setLayout("row");
+                }
             }
         }
         return properties;
     }
 
     public List<FieldRuleProperty> findPropertiesMatchingRenderType(List<FieldRuleProperty> properties, final String type) {
+        if (StringUtils.isNotBlank(type)) {
+            return findPropertiesMatchingRenderTypes(properties, new String[]{type});
+        }
+        return null;
+    }
+
+    public List<FieldRuleProperty> findPropertiesMatchingRenderTypes(List<FieldRuleProperty> properties, final String[] types) {
+        final List list = Arrays.asList(types);
         return Lists.newArrayList(Iterables.filter(properties, new Predicate<FieldRuleProperty>() {
             @Override
             public boolean apply(FieldRuleProperty fieldRuleProperty) {
-                return fieldRuleProperty.getType().equalsIgnoreCase(type);
+                return list.contains(fieldRuleProperty.getType());
             }
         }));
     }
@@ -112,6 +173,15 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
         return findPropertiesMatchingRenderType(properties, type);
     }
 
+    public List<FieldRuleProperty> findPropertiesForRulesetMatchingRenderTypes(List<? extends BaseUiPolicyRule> rules, final String[] types) {
+
+        List<FieldRuleProperty> properties = new ArrayList<>();
+        for (BaseUiPolicyRule rule : rules) {
+            properties.addAll(rule.getProperties());
+        }
+        return findPropertiesMatchingRenderTypes(properties, types);
+    }
+
 
     public abstract U buildUiModel(A annotation, P policy, List<FieldRuleProperty> properties);
 
@@ -123,6 +193,13 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
         List<FieldRuleProperty> properties = getUiProperties(standardizationPolicy);
         U rule = buildUiModel((A) annotation, standardizationPolicy, properties);
         return rule;
+    }
+
+    /**
+     * override to do anything special to the resulting obj from the UI
+     */
+    public void afterFromUiModel(P policy, U uiModel) {
+
     }
 
     @Override
@@ -141,6 +218,7 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                     BeanUtils.setProperty(standardizationPolicy, field, objectValue);
                 }
             }
+            afterFromUiModel(standardizationPolicy, rule);
             return standardizationPolicy;
         } catch (Exception e) {
             throw new PolicyTransformException(e);

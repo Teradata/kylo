@@ -25,6 +25,9 @@ public class FieldRuleProperty {
     private String objectProperty;
     private List<LabelValue> selectableValues;
     private boolean required;
+    private String group;
+    private Integer groupOrder;
+    private String layout = "column";
 
     public String getName() {
         return name;
@@ -136,4 +139,27 @@ public class FieldRuleProperty {
     }
 
 
+    public String getGroup() {
+        return group;
+    }
+
+    public void setGroup(String group) {
+        this.group = group;
+    }
+
+    public Integer getGroupOrder() {
+        return groupOrder;
+    }
+
+    public void setGroupOrder(Integer groupOrder) {
+        this.groupOrder = groupOrder;
+    }
+
+    public String getLayout() {
+        return layout;
+    }
+
+    public void setLayout(String layout) {
+        this.layout = layout;
+    }
 }

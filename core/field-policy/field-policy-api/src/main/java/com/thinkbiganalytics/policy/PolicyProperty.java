@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
 public @interface PolicyProperty {
 
   enum PROPERTY_TYPE {
-    number, string, select, regex, date, chips,feedChips,currentFeed
+    number, string, select, regex, date, chips, feedChips, currentFeed, currentFeedCronSchedule, feedSelect
   }
 
   String name();
@@ -35,5 +35,9 @@ public @interface PolicyProperty {
   PropertyLabelValue[] values() default {};
 
   boolean required() default false;
+
+  boolean hidden() default false;
+
+  String group() default "";
 }
 
