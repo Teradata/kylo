@@ -1,10 +1,14 @@
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
-import static org.mockito.Matchers.*;
-import static org.mockito.Mockito.*;
-import static org.mockito.MockitoAnnotations.initMocks;
-
-import java.text.ParseException;
+import com.thinkbiganalytics.calendar.HolidayCalendarService;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
+import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
+import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetric;
+import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetricAssessor;
+import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
+import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
 
 import org.joda.time.DateTime;
 import org.joda.time.Period;
@@ -21,15 +25,14 @@ import org.quartz.CronExpression;
 import org.quartz.impl.calendar.HolidayCalendar;
 import org.testng.Assert;
 
-import com.thinkbiganalytics.calendar.HolidayCalendarService;
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
-import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
-import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetric;
-import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetricAssessor;
-import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
-import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
+import java.text.ParseException;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 @RunWith(PowerMockRunner.class)
 @PrepareForTest({DateTime.class, CronExpressionUtil.class})

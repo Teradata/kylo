@@ -15,6 +15,7 @@ public class JcrPropertyConstants {
     public static final String CREATED_BY = "jcr:createdBy";
     public static final String MODIFIED_TIME = "jcr:lastModified";
     public static final String MODIFIED_BY = "jcr:lastModifiedBy";
+    public static final String JSON = "tba:json";
 
 
 }

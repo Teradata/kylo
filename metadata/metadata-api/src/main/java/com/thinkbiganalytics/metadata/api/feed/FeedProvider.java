@@ -1,13 +1,12 @@
 package com.thinkbiganalytics.metadata.api.feed;
 
-import java.io.Serializable;
-import java.util.List;
-
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
+import java.io.Serializable;
+import java.util.List;
 
 public interface FeedProvider{
 
@@ -48,6 +47,8 @@ public interface FeedProvider{
 
     boolean enableFeed(Feed.ID id);
     boolean disableFeed(Feed.ID id);
+
+    Feed updateFeedServiceLevelAgreements(Feed.ID feedId, List<ServiceLevelAgreement> serviceLevelAgreements);
 
 
     

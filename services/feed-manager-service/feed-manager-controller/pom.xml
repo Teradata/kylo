@@ -41,6 +41,25 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-sla-default</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>thinkbig-metadata-rest-service</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-sla-rest-model</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-feed-manager-core</artifactId>
       <version>0.3.0-SNAPSHOT</version>
     </dependency>
@@ -60,6 +79,12 @@
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-feed-manager-precondition-policy</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-sla-default</artifactId>
       <version>0.3.0-SNAPSHOT</version>
     </dependency>
 

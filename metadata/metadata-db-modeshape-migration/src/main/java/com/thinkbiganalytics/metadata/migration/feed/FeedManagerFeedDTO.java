@@ -1,12 +1,5 @@
 package com.thinkbiganalytics.metadata.migration.feed;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -16,6 +9,14 @@ import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
+import org.joda.time.DateTime;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by sr186054 on 6/15/16.
@@ -276,5 +277,10 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     @Override
     public void removeProperty(String key) {
 
+    }
+
+    @Override
+    public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
+        return null;
     }
 }

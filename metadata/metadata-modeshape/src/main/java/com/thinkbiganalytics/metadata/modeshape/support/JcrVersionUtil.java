@@ -63,7 +63,11 @@ public class JcrVersionUtil {
      * @return the created version
      */
     public static Version checkin(Node node) throws RepositoryException {
-        return getVersionManager(node.getSession()).checkin(node.getPath());
+        if (node.getSession().isLive()) {
+            return getVersionManager(node.getSession()).checkin(node.getPath());
+        } else {
+            return null;
+        }
     }
 
     public static void checkinRecursively(Node node) {

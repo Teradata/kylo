@@ -3,10 +3,10 @@
  */
 package com.thinkbiganalytics.metadata.sla.api;
 
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.util.Set;
-
-import org.joda.time.DateTime;
 
 /**
  * The overall assessment of this SLA.
@@ -39,4 +39,6 @@ public interface ServiceLevelAssessment extends Comparable<ServiceLevelAssessmen
      * @return the assessments of each of the obligations of the SLA
      */
     Set<ObligationAssessment> getObligationAssessments();
+
+
 }

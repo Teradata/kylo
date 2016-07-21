@@ -244,14 +244,12 @@
 
 (function () {
 
-    var controller = function ($scope, $mdDialog, $mdToast, $http, StateService, FeedService, feed, index) {
+    var controller = function ($scope, $mdDialog, $mdToast, $http, StateService, FeedService, PolicyInputFormService, feed, index) {
         $scope.feed = feed;
         $scope.options = [];
 
         FeedService.getPossibleFeedPreconditions().then(function(response){
-               angular.forEach(response.data,function(opt){
-                      $scope.options.push(opt);
-                  });
+            $scope.options = PolicyInputFormService.groupPolicyOptions(response.data);
             ruleTypesAvailable();
         })
 
@@ -259,6 +257,7 @@
 
         if(arr != null && arr != undefined)
         {
+
             $scope.preconditions = angular.copy(arr);
         }
 
@@ -283,7 +282,12 @@
         if (index != null) {
             $scope.editMode = 'EDIT';
             $scope.editIndex = index;
-            $scope.editRule = $scope.preconditions[index];
+            var editRule = $scope.preconditions[index];
+            editRule.groups = PolicyInputFormService.groupProperties(editRule);
+            PolicyInputFormService.updatePropertyIndex(editRule);
+            //make all rules editable
+            editRule.editable = true;
+            $scope.editRule = editRule;
         }
         var modeText = "Add";
         if ($scope.editMode == 'EDIT') {
@@ -297,15 +301,12 @@
         $scope.cancelText = 'CANCEL ADD';
 
 
-        resetChips();
-
         function _cancelEdit() {
             $scope.editMode='NEW';
             $scope.addText = 'ADD PRECONDITION';
             $scope.cancelText = 'CANCEL ADD';
             $scope.ruleType = null;
             $scope.editRule = null;
-            resetChips();
         }
 
 
@@ -316,80 +317,25 @@
 
         $scope.onRuleTypeChange = function() {
             if ($scope.ruleType != null) {
-                $scope.editRule = angular.copy($scope.ruleType );
+                var rule = angular.copy($scope.ruleType);
+                rule.groups = PolicyInputFormService.groupProperties(rule);
+                PolicyInputFormService.updatePropertyIndex(rule);
+                //make all rules editable
+                rule.editable = true;
+                $scope.editRule = rule;
             }
             else {
                 $scope.editRule = null;
             }
         }
-        $scope.validateRequiredChips = function (property) {
-            var index = _.indexOf($scope.editRule.properties, property);
-            if (property.required && property.values.length == 0) {
-                //INVALID
-                $scope.preconditionForm['property_' + index].$setValidity("required", false);
-                $scope.preconditionForm['property_' + index].$setDirty(true);
-                return false;
-            }
-            else {
-                $scope.preconditionForm['property_' + index].$setValidity("required", true);
-                return true;
-            }
-        }
-        function resetChips(){
-            $scope.editChips = {};
-            $scope.editChips.selectedItem = null;
-            $scope.editChips.searchText = null;
-        }
 
-        $scope.validateForm = function () {
-            //loop through properties and determine if they are valid
-            //
-            var validForm = _.some($scope.editRule.properties, function (property) {
-                var valid = true;
-                var index = _.indexOf($scope.editRule.properties, property);
-                if (property.type == 'feedChips' || property.type == 'chips') {
-                    valid = $scope.validateRequiredChips(property);
-                    property.invalid = !valid
-                }
-                else if (property.required && (property.value == '' || property.value == '')) {
-                    valid = false;
-                    $scope.preconditionForm['property_' + index].$setValidity("required", false);
-                    $scope.preconditionForm['property_' + index].$setDirty(true);
-                    property.invalid = true;
-                }
-                else {
-                    property.invalid = false;
-                }
-                //sort circuit on truth value so return the opposite to stop the traversing
-                return !valid;
-            });
-            return !validForm;
+        function validateForm() {
+            var validForm = PolicyInputFormService.validateForm($scope.preconditionForm, $scope.editRule.properties, false);
+            return validForm;
         }
 
 
-        $scope.queryChipSearch = function(property,query){
-            var options = property.selectableValues;
-            var results = query ? options.filter(createFilterFor(query)) : [];
-            return results;
-        }
 
-
-        function createFilterFor(query) {
-            var lowercaseQuery = angular.lowercase(query);
-            return function filterFn(option) {
-                return (angular.lowercase(option.value).indexOf(lowercaseQuery) >= 0);
-            };
-        }
-
-
-        $scope.transformChip = function(chip) {
-            // If it is an object, it's already a known chip
-            if (angular.isObject(chip)) {
-                return chip;
-            }
-            // Otherwise, create a new one
-            return { name: chip }
-        }
 
         function buildDisplayString() {
             if ($scope.editRule != null) {
@@ -426,8 +372,8 @@
 
         $scope.addPolicy = function ($event) {
 
-            var validForm = $scope.validateForm();
-            if (validForm) {
+            var validForm = validateForm();
+            if (validForm == true) {
                 if ($scope.preconditions == null) {
                     $scope.preconditions = [];
                 }

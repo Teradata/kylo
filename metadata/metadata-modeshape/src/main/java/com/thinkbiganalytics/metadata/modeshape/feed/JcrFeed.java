@@ -1,13 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
@@ -16,6 +8,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
@@ -24,6 +17,17 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
+import javax.jcr.Node;
+import javax.jcr.PathNotFoundException;
+import javax.jcr.Property;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by sr186054 on 6/4/16.
@@ -44,6 +48,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String TEMPLATE = "tba:template";
     public static final String SCHEDULE_PERIOD = "tba:schedulingPeriod"; // Cron expression, or Timer Expression
     public static final String SCHEDULE_STRATEGY = "tba:schedulingStrategy"; //CRON_DRIVEN, TIMER_DRIVEN
+    public static final String SLA = "tba:slas";
 
 
     public JcrFeed(Node node) {
@@ -265,5 +270,49 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public void setPrecondition(JcrServiceLevelAgreement sla) {
 //        Node precondNode
     }
+
+    public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
+        Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(this.node, SLA);
+        List<JcrServiceLevelAgreement> serviceLevelAgreements = new ArrayList<>();
+        if (list != null) {
+            for (Node n : list) {
+                serviceLevelAgreements.add(JcrUtil.createJcrObject(n, JcrServiceLevelAgreement.class));
+            }
+        }
+        return serviceLevelAgreements;
+    }
+
+    public void clearServiceLevelAgreements() {
+        try {
+            JcrMetadataAccess.ensureCheckoutNode(node);
+            if (this.node.hasNode(SLA)) {
+                this.node.getNode(SLA).remove();
+            }
+            Property p = null;
+            try {
+                p = getNode().getProperty(JcrFeed.SLA);
+            } catch (PathNotFoundException e) {
+                //this is ok, it just means no SLAs were assigned yet so we cannot remove the references.
+            }
+            if (p != null) {
+                p.remove();
+            }
+
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to clear the feed tba:sla", e);
+        }
+    }
+
+    public void setServiceLevelAgreements(List<? extends ServiceLevelAgreement> serviceLevelAgreements) {
+        setProperty(SLA, serviceLevelAgreements);
+    }
+
+    public boolean addServiceLevelAgreement(ServiceLevelAgreement sla) {
+        JcrServiceLevelAgreement jcrServiceLevelAgreement = (JcrServiceLevelAgreement) sla;
+        Node node = jcrServiceLevelAgreement.getNode();
+        //add a ref to this node
+        return JcrPropertyUtil.addToSetProperty(this.node, SLA, node, true);
+    }
+
 
 }

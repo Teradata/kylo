@@ -20,6 +20,7 @@ import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -112,6 +113,13 @@ public class FeedManagerConfiguration {
     public FileResourceService fileResourceService() {
         return new FileResourceService();
     }
+
+
+    @Bean
+    public ServiceLevelAgreementService serviceLevelAgreementService() {
+        return new ServiceLevelAgreementService();
+    }
+
 
     @Bean(name="elasticSearchClientConfig")
     public ElasticSearchClientConfig elasticSearchClientConfig(){

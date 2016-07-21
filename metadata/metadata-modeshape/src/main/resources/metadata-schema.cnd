@@ -118,6 +118,8 @@
 	- tba:schedulingPeriod (STRING)
 	- tba:schedulingStrategy (STRING)
     - tba:dependentFeeds (REFERENCE) multiple
+    - tba:slas (WEAKREFERENCE) multiple
+
 
 [tba:feedPrecondition] > nt:hierarchyNode, mix:lastModified
     - tba:slaRef (REFERENCE)
@@ -155,6 +157,7 @@
 [tba:sla] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
     - tba:defaultGroup (REFERENCE)
     + tba:groups (tba:obligationGroup) sns
+    + tba:slaActionConfigurations (tba:slaActionConfiguration) sns
 
 [tba:obligationGroup] > nt:hierarchyNode
     - tba:condition (STRING) = 'REQUIRED' mandatory
@@ -166,6 +169,9 @@
 
 [tba:metric] > tba:extensibleEntity, mix:title
     + tba:json (tba:genericJson) mandatory
+
+[tba:slaActionConfiguration] > tba:extensibleEntity, mix:title
+        + tba:json (tba:genericJson) mandatory
 
 [tba:serviceLevelAssessment] > nt:hierarchyNode
     - tba:sla (WEAKREFERENCE) mandatory

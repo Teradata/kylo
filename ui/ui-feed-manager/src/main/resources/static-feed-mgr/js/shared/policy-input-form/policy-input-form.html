@@ -1,0 +1,80 @@
+<div ng-repeat="group in vm.rule.groups" class="layout-padding-left-right" layout="{{group.layout}}">
+
+  <div ng-repeat="property in group.properties">
+    <md-input-container class="md-block" ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect'  ">
+      <label>{{property.displayName}}</label>
+      <input name="{{property.formKey}}" string-to-number type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"
+             ng-required="property.required" ng-disabled="!vm.rule.editable"/>
+      <input name="{{property.formKey}}" ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder"
+             ng-required="property.required" ng-disabled="!vm.rule.editable"/>
+      <md-select ng-model="property.value" ng-if="property.type == 'select' || property.type == 'feedSelect' " ng-required="property.required" name="{{property.formKey}}"
+                 ng-disabled="!vm.rule.editable">
+        <md-option ng-repeat="value in property.selectableValues" value="{{value.value}}">
+          {{value.label}}
+        </md-option>
+      </md-select>
+      <div ng-if="property.hint" class="hint">
+        {{property.hint}}
+      </div>
+      <div ng-messages="vm.theForm[property.formKey].$error ">
+        <div ng-message="required">This field is required.</div>
+      </div>
+    </md-input-container>
+
+    <md-datepicker name="{{property.formKey}}" ng-required="property.required" ng-if="property.type == 'date' " ng-model="property.value" md-placeholder="property.placeholder"
+                   ng-disabled="!vm.rule.editable">
+    </md-datepicker>
+    <div ng-if="property.hint && property.type == 'date' " class="hint">
+      {{property.hint}}
+    </div>
+    <div ng-messages="vm.theForm[property.formKey].$error " ng-if="property.type == 'date' ">
+      <div ng-message="required">This field is required.</div>
+    </div>
+    <div ng-if="property.type == 'regex'">
+      <span>Test your Regex Pattern</span>
+      <md-input-container class="md-block condensed">
+        <label>Sample String</label>
+        <input name="{{property.formKey}}" ng-model="property.regexSampleString" md-placeholder="Sample String" ng-required="property.required" ng-disabled="!vm.rule.editable"/>
+
+        <div ng-messages="vm.theForm[property.formKey].$error ">
+          <div ng-message="required">This field is required.</div>
+        </div>
+      </md-input-container>
+      <div>
+        {{property.regexValid}}
+      </div>
+    </div>
+    <div ng-if="property.type == 'chips' || property.type == 'feedChips'">
+      <md-input-container class="md-block flex-gt-sm" flex-gt-sm="" style="" md-is-error="property.invalid == true">
+        <label class="label-small md-container-ignore">{{property.displayName}}</label>
+        <md-chips name="{{property.formKey}}" ng-model="property.values" md-autocomplete-snap md-on-add="vm.validateRequiredChips(property)"
+                  md-on-remove="vm.validateRequiredChips(property) "
+                  md-transform-chip="vm.transformChip($chip)"
+                  md-require-match="true">
+          <md-autocomplete
+              md-selected-item="vm.editChips.selectedItem"
+              md-search-text="vm.editChips.searchText"
+              md-items="item in vm.queryChipSearch(property,vm.editChips.searchText)"
+              md-item-text="item.label"
+              md-min-length="0"
+              placeholder="{{property.placeholder}}"
+              ng-disabled="!vm.rule.editable">
+            <span md-highlight-text="editChips.searchText">{{item.label}}</span>
+          </md-autocomplete>
+          <md-chip-template>
+                                        <span>
+                                          <strong>{{$chip.label}}</strong>
+                                        </span>
+          </md-chip-template>
+        </md-chips>
+        <div ng-if="property.hint" class="hint">
+          {{property.hint}}
+        </div>
+        <div ng-messages="vm.theForm[property.formKey].$error " ng-if="property.invalid == true">
+          <div ng-message="required">This field is required.</div>
+        </div>
+      </md-input-container>
+    </div>
+
+  </div>
+</div>

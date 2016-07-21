@@ -3,18 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.core.feed;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
-
-import org.joda.time.DateTime;
-
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -24,6 +12,18 @@ import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
+
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -43,6 +43,7 @@ public class BaseFeed implements Feed {
     private Set<FeedDestination> destinations = new HashSet<>();
     private FeedPreconditionImpl precondition;
     private Map<String, Object> properties;
+    private List<ServiceLevelAgreement> feedServiceLevelAgreements;
     
 
     public BaseFeed(String name, String description) {
@@ -396,5 +397,12 @@ public class BaseFeed implements Feed {
             this.lastAssessment = assmnt;
         }
     }
+
+
+    @Override
+    public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
+        return feedServiceLevelAgreements;
+    }
+
 
 }

@@ -13,6 +13,7 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     this.ADMIN_BASE_URL =this.ROOT+"/proxy/v1/feedmgr/admin";
     this.TEMPLATES_BASE_URL =this.ROOT+"/proxy/v1/feedmgr/templates";
     this.FEEDS_BASE_URL = this.ROOT+"/proxy/v1/feedmgr/feeds";
+    this.SLA_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/sla";
     this.CONTROLLER_SERVICES_BASE_URL = this.ROOT+"/proxy/v1/feedmgr/nifi/controller-services";
     this.GET_TEMPLATES_URL = self.TEMPLATES_BASE_URL;
     this.GET_UNREGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL+"/unregistered";
@@ -90,6 +91,18 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     this.GET_FEED_NAMES_URL = self.FEEDS_BASE_URL+"/names";
 
     this.GET_POSSIBLE_FEED_PRECONDITIONS_URL = self.FEEDS_BASE_URL+"/possible-preconditions";
+
+    this.GET_POSSIBLE_SLA_METRIC_OPTIONS_URL = self.SLA_BASE_URL + "/available-metrics";
+
+    this.GET_POSSIBLE_SLA_ACTION_OPTIONS_URL = self.SLA_BASE_URL + "/available-responders";
+
+    this.SAVE_FEED_SLA_URL = function (feedId) {
+        return self.FEEDS_BASE_URL + "/" + feedId + "/sla";
+    }
+
+    this.GET_FEED_SLA_URL = function (feedId) {
+        return self.FEEDS_BASE_URL + "/" + feedId + "/sla";
+    }
 
     this.GET_CONTROLLER_SERVICES_TYPES_URL = self.CONTROLLER_SERVICES_BASE_URL+"/types";
 

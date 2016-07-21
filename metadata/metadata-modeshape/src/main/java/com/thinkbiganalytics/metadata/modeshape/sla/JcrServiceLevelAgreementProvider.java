@@ -3,21 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import java.io.Serializable;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
-import org.modeshape.jcr.api.JcrTools;
-
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
@@ -32,10 +17,27 @@ import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+
+import org.modeshape.jcr.api.JcrTools;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 /**
  *
@@ -188,6 +190,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         
         private String name;
         private String description;
+        private List<? extends ServiceLevelAgreementActionConfiguration> serviceLevelAgreementActionConfigurations;
 
         public SLABuilderImpl(Node node) throws RepositoryException {
             this.slaNode = node;
@@ -255,11 +258,35 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             }
         }
 
+        public ServiceLevelAgreementBuilder actionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
+            this.serviceLevelAgreementActionConfigurations = actionConfigurations;
+            return this;
+        }
+
         @Override
         public ServiceLevelAgreement build() {
             JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.NAME, this.name);
             JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.DESCRIPTION, this.description);
-            
+            if (this.serviceLevelAgreementActionConfigurations != null && !this.serviceLevelAgreementActionConfigurations.isEmpty()) {
+                for (ServiceLevelAgreementActionConfiguration actionConfiguration : this.serviceLevelAgreementActionConfigurations) {
+                    try {
+                        Node node = this.slaNode.addNode(JcrServiceLevelAgreement.ACTION_CONFIGURATIONS, JcrServiceLevelAgreement.ACTION_CONFIGURATION_TYPE);
+
+                        JcrPropertyUtil.setProperty(node, JcrPropertyConstants.TITLE, actionConfiguration.getClass().getSimpleName());
+                        ServiceLevelAgreementActionConfig annotation = actionConfiguration.getClass().getAnnotation(ServiceLevelAgreementActionConfig.class);
+                        String desc = actionConfiguration.getClass().getSimpleName();
+                        if (annotation != null) {
+                            desc = annotation.description();
+                        }
+                        JcrPropertyUtil.setProperty(node, JcrPropertyConstants.DESCRIPTION, desc);
+                        JcrUtil.addGenericJson(node, JcrPropertyConstants.JSON, actionConfiguration);
+
+                    } catch (RepositoryException e) {
+                        throw new MetadataRepositoryException("Failed to build the SLA", e);
+                    }
+                }
+            }
+
             return new JcrServiceLevelAgreement(this.slaNode);
         }
     }
@@ -308,7 +335,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         @SuppressWarnings("unchecked")
         public B build() {
             try {
-                JcrPropertyUtil.setProperty(this.obNode, "jcr:description", this.description);
+                JcrPropertyUtil.setProperty(this.obNode, "tba:description", this.description);
 
                 for (Metric metric : this.metrics) {
                     Node metricNode = this.obNode.addNode(JcrObligation.METRICS, JcrObligation.METRIC_TYPE);

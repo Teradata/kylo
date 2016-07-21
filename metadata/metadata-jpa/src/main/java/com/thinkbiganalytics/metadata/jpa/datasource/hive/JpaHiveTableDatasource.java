@@ -3,12 +3,15 @@
  */
 package com.thinkbiganalytics.metadata.jpa.datasource.hive;
 
+import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
+import com.thinkbiganalytics.metadata.api.datasource.hive.TableColumn;
+import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
+
+import java.util.List;
+
 import javax.persistence.Column;
 import javax.persistence.DiscriminatorValue;
 import javax.persistence.Entity;
-
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
-import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
 
 /**
  *
@@ -66,4 +69,28 @@ public class JpaHiveTableDatasource extends JpaDatasource implements HiveTableDa
         return tableName;
     }
 
+    @Override
+    public String getModifiers() {
+        return null;
+    }
+
+    @Override
+    public List<TableColumn> getColumns() {
+        return null;
+    }
+
+    @Override
+    public void setModifiers(String modifiers) {
+
+    }
+
+    @Override
+    public TableColumn addColumn(String name, String type) {
+        return null;
+    }
+
+    @Override
+    public boolean removeColumn(String name) {
+        return false;
+    }
 }

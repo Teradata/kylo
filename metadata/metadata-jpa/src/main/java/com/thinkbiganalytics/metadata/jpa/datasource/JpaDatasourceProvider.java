@@ -3,8 +3,18 @@
  */
 package com.thinkbiganalytics.metadata.jpa.datasource;
 
+import com.google.common.base.Predicate;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
+import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.jpa.AbstractMetadataCriteria;
+
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import java.io.Serializable;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -12,22 +22,6 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.persistence.EntityManager;
-
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-
-import com.google.common.base.Predicate;
-import com.thinkbiganalytics.metadata.api.DatasourceAlreadyExistsException;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria;
-import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
-import com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource;
-import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
-import com.thinkbiganalytics.metadata.jpa.AbstractMetadataCriteria;
-import com.thinkbiganalytics.metadata.jpa.datasource.files.JpaDirectoryDatasource;
-import com.thinkbiganalytics.metadata.jpa.datasource.hive.JpaHiveTableDatasource;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  *
@@ -51,18 +45,14 @@ public class JpaDatasourceProvider implements DatasourceProvider {
         return new Criteria(this.dateTimeFormatter);
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider#ensureDatasource(java.lang.String, java.lang.String)
-     */
+   /*
     @Override
     public Datasource ensureDatasource(String name, String descr) {
         // TODO is this needed?
         throw new UnsupportedOperationException("Ensuring existence of plain datasources is not supported at this time");
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider#ensureDirectoryDatasource(java.lang.String, java.lang.String, java.nio.file.Path)
-     */
+
     @Override
     public DirectoryDatasource ensureDirectoryDatasource(String name, String descr, Path dir) {
         JpaDirectoryDatasource ds = null;
@@ -85,9 +75,7 @@ public class JpaDatasourceProvider implements DatasourceProvider {
         return ds;
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider#ensureHiveTableDatasource(java.lang.String, java.lang.String, java.lang.String, java.lang.String)
-     */
+
     @Override
     public HiveTableDatasource ensureHiveTableDatasource(String name, String descr, String database, String table) {
         JpaHiveTableDatasource ds = null;
@@ -110,27 +98,30 @@ public class JpaDatasourceProvider implements DatasourceProvider {
         return ds;
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider#asDirectoryDatasource(com.thinkbiganalytics.metadata.api.datasource.Datasource.ID, java.nio.file.Path)
-     */
+
     @Override
     public DirectoryDatasource asDirectoryDatasource(ID dsId, Path dir) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Datasource type conversoun is not supported at this time");
    }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider#asHiveTableDatasource(com.thinkbiganalytics.metadata.api.datasource.Datasource.ID, java.lang.String, java.lang.String)
-     */
+
     @Override
     public HiveTableDatasource asHiveTableDatasource(ID dsId, String database, String table) {
         // TODO Auto-generated method stub
         throw new UnsupportedOperationException("Datasource type conversoun is not supported at this time");
    }
 
+    */
+
+    @Override
+    public <D extends Datasource> D ensureDatasource(String name, String descr, Class<D> type) {
+        return null;
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider#getDatasource(com.thinkbiganalytics.metadata.api.datasource.Datasource.ID)
-     */
+         * @see com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider#getDatasource(com.thinkbiganalytics.metadata.api.datasource.Datasource.ID)
+         */
     @Override
     public Datasource getDatasource(ID id) {
         return this.entityMgr.find(JpaDatasource.class, id); 

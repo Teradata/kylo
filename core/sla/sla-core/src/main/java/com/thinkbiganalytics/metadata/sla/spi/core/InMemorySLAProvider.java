@@ -3,6 +3,21 @@
  */
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
+import com.thinkbiganalytics.metadata.sla.api.DuplicateAgreementNameException;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.Obligation;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
+import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+
+import org.joda.time.DateTime;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,20 +29,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
-
-import org.joda.time.DateTime;
-
-import com.thinkbiganalytics.metadata.sla.api.DuplicateAgreementNameException;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.Obligation;
-import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
-import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID;
-import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 /**
  *
@@ -201,6 +202,11 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
             } else {
                 return replaceSLA(this.id, sla);
             }
+        }
+
+        @Override
+        public ServiceLevelAgreementBuilder actionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
+            return null;
         }
     }
 
@@ -397,6 +403,11 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
             }
             
             return list;
+        }
+
+        @Override
+        public List<ServiceLevelAgreementActionConfiguration> getActionConfigurations() {
+            return null;
         }
     }
 

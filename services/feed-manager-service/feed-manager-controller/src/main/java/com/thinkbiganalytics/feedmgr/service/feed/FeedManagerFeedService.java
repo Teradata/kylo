@@ -4,6 +4,9 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.sla.FeedServiceLevelAgreements;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
+import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 
 import java.util.Collection;
 import java.util.List;
@@ -40,6 +43,12 @@ public interface FeedManagerFeedService {
     FeedSummary disableFeed(String feedId);
 
     public void updateFeedsWithTemplate(String oldTemplateId, String newTemplateId);
+
+    public void applyFeedSelectOptions(List<FieldRuleProperty> properties);
+
+    public List<ServiceLevelAgreement> saveFeedSla(FeedServiceLevelAgreements serviceLevelAgreements);
+
+    public FeedServiceLevelAgreements getFeedServiceLevelAgreements(String feedId);
 
 
 }

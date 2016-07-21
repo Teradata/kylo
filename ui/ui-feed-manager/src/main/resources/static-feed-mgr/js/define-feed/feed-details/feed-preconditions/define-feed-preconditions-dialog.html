@@ -1,5 +1,5 @@
 <md-dialog aria-label="Validation Results"  ng-cloak>
-    <form name="preconditionForm">
+    <ng-form name="preconditionForm">
         <div  class="md-toolbar-tools">
             <h4 class="md-title">
                 <span>{{title}} for {{feed.feedName}}</span></h4>
@@ -17,81 +17,7 @@
                     <span class="hint">{{editRule.shortDescription}}</span>
                 </md-input-container>
 
-                <div ng-repeat="property in editRule.properties">
-                    <md-input-container class="md-block" ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select'  ">
-                        <label>{{property.displayName}}</label>
-                        <input name="property_{{$index}}" type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"
-                               ng-required="property.required"/>
-                        <input name="property_{{$index}}" ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder"
-                               ng-required="property.required"/>
-                        <md-select ng-model="property.value" ng-if="property.type == 'select' " ng-required="property.required" name="property_{{$index}}">
-                            <md-option ng-repeat="value in property.selectableValues" value="{{value.value}}">
-                                {{value.label}}
-                            </md-option>
-                        </md-select>
-                        <div ng-if="property.hint" class="hint">
-                            {{property.hint}}
-                        </div>
-                        <div ng-messages="preconditionForm['property_'+$index].$error ">
-                            <div ng-message="required">This field is required.</div>
-                        </div>
-                    </md-input-container>
-
-                    <md-datepicker name="property_{{$index}}" ng-required="property.required" ng-if="property.type == 'date' " ng-model="property.value" md-placeholder="property.placeholder">
-                    </md-datepicker>
-                    <div ng-if="property.hint && property.type == 'date' " class="hint">
-                        {{property.hint}}
-                    </div>
-                    <div ng-messages="preconditionForm['property_'+$index].$error " ng-if="property.type == 'date' ">
-                        <div ng-message="required">This field is required.</div>
-                    </div>
-                    <div ng-if="property.type == 'regex'">
-                        <span>Test your Regex Pattern</span>
-                        <md-input-container class="md-block">
-                            <label>Sample String</label>
-                            <input name="property_{{$index}}" ng-model="property.regexSampleString" md-placeholder="Sample String" ng-required="property.required"/>
-
-                            <div ng-messages="preconditionForm['property_'+$index].$error ">
-                                <div ng-message="required">This field is required.</div>
-                            </div>
-                        </md-input-container>
-                        <div>
-                            {{property.regexValid}}
-                        </div>
-                    </div>
-                    <div ng-if="property.type == 'chips' || property.type == 'feedChips'">
-                        <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="" md-is-error="property.invalid == true">
-                            <label class="label-small md-container-ignore">{{property.displayName}}</label>
-                            <md-chips name="property_{{$index}}" ng-model="property.values" md-autocomplete-snap md-on-add="validateRequiredChips(property)"
-                                      md-on-remove="validateRequiredChips(property) "
-                              md-transform-chip="transformChip($chip)"
-                              md-require-match="true">
-                        <md-autocomplete
-                            md-selected-item="editChips.selectedItem"
-                            md-search-text="editChips.searchText"
-                            md-items="item in queryChipSearch(property,editChips.searchText)"
-                            md-item-text="item.label"
-                            md-min-length="0"
-                            placeholder="{{property.placeholder}}">
-                            <span md-highlight-text="editChips.searchText">{{item.label}}</span>
-                        </md-autocomplete>
-                        <md-chip-template>
-                                        <span>
-                                          <strong>{{$chip.label}}</strong>
-                                        </span>
-                        </md-chip-template>
-                    </md-chips>
-                            <div ng-if="property.hint" class="hint">
-                                {{property.hint}}
-                            </div>
-                            <div ng-messages="preconditionForm['property_'+$index].$error " ng-if="property.invalid == true">
-                                <div ng-message="required">This field is required.</div>
-                            </div>
-                        </md-input-container>
-                    </div>
-
-                </div>
-
+                 <thinkbig-policy-input-form the-form="preconditionForm" rule="editRule"></thinkbig-policy-input-form>
 
             </div>
 
@@ -108,5 +34,5 @@
                 Done
             </md-button>
         </md-dialog-actions>
-    </form>
+    </ng-form>
 </md-dialog>

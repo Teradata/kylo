@@ -3,6 +3,12 @@
  */
 package com.thinkbiganalytics.metadata.jpa.feed;
 
+import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.core.BaseId;
+import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
+import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -12,12 +18,6 @@ import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
-
-import com.thinkbiganalytics.metadata.api.feed.FeedSource;
-import com.thinkbiganalytics.metadata.core.BaseId;
-import com.thinkbiganalytics.metadata.jpa.datasource.JpaDatasource;
-import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
  *
@@ -44,11 +44,11 @@ public class JpaFeedSource extends JpaFeedConnection implements FeedSource {
         this.agreement = agreement;
     }
 
-    @Override
-    public ID getId() {
-        return this.id;
-    }
-    
+    /* @Override
+     public ID getId() {
+         return this.id;
+     }
+     */
     @Override
     public ServiceLevelAgreement getAgreement() {
         return this.agreement;
@@ -65,7 +65,7 @@ public class JpaFeedSource extends JpaFeedConnection implements FeedSource {
 
 
     @Embeddable
-    public static class SourceId extends BaseId implements FeedSource.ID {
+    public static class SourceId extends BaseId {
         
         private static final long serialVersionUID = 241001606640713117L;
         

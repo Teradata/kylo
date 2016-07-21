@@ -3,13 +3,13 @@
  */
 package com.thinkbiganalytics.metadata.sla.alerts;
 
-import javax.inject.Inject;
-
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
+
+import javax.inject.Inject;
 
 /**
  *
@@ -43,8 +43,7 @@ public class AssessmentAlertResponder implements AlertResponder {
     }
 
     private void handleViolation(Alert alert) {
-        // TODO Auto-generated method stub
-        
+
     }
 
 }

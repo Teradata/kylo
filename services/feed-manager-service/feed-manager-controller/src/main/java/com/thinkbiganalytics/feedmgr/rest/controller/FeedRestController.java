@@ -9,7 +9,11 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
+import com.thinkbiganalytics.feedmgr.sla.FeedServiceLevelAgreements;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementMetricTransformerHelper;
+import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
@@ -35,6 +39,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
@@ -71,6 +76,9 @@ public class FeedRestController {
 
     @Autowired
     FeedManagerPreconditionService feedManagerPreconditionService;
+
+    @Inject
+    ServiceLevelAgreementService serviceLevelAgreementService;
 
     public FeedRestController() {
         int i = 0;
@@ -291,5 +299,26 @@ public class FeedRestController {
     public Response getPossiblePreconditions() {
         List<PreconditionRule> conditions = feedManagerPreconditionService.getPossiblePreconditions();
         return Response.ok(conditions).build();
+    }
+
+
+    @POST
+    @Path("/{feedId}/sla")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response saveSla(FeedServiceLevelAgreements feedSla) {
+        List<ServiceLevelAgreement> slaList = serviceLevelAgreementService.saveFeedSla(feedSla);
+
+        ServiceLevelAgreementMetricTransformerHelper helper = new ServiceLevelAgreementMetricTransformerHelper();
+        FeedServiceLevelAgreements serviceLevelAgreements = helper.toFeedServiceLevelAgreements(feedSla.getFeedId(), slaList);
+
+        return Response.ok(serviceLevelAgreements).build();
+    }
+
+    @GET
+    @Path("/{feedId}/sla")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getSla(@PathParam("feedId") String feedId) {
+        FeedServiceLevelAgreements sla = serviceLevelAgreementService.getServiceLevelAgreements(feedId);
+        return Response.ok(sla).build();
     }
 }

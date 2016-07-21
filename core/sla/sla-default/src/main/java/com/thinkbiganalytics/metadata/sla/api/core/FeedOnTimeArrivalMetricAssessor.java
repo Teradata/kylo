@@ -3,16 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.sla.api.core;
 
-import java.io.Serializable;
-import java.util.Date;
-
-import javax.inject.Inject;
-
-import org.joda.time.DateTime;
-import org.quartz.Calendar;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.thinkbiganalytics.calendar.HolidayCalendarService;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
 import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
@@ -21,6 +11,16 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.scheduler.util.CronExpressionUtil;
+
+import org.joda.time.DateTime;
+import org.quartz.Calendar;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.Serializable;
+import java.util.Date;
+
+import javax.inject.Inject;
 
 /**
  * @author Sean Felten

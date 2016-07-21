@@ -11,7 +11,7 @@
     </div>
   </header-section>
   <body-section md-content>
-    <ng-form name="vm.defineFeedForm">
+    <ng-form name="vm.defineFeedScheduleForm">
       <div layout-gt-sm="row">
 
         <md-input-container class="md-block" flex-gt-sm>
@@ -27,17 +27,17 @@
                  cron-expression-validator
                  ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
 
-          <div ng-show="vm.defineFeedForm.cronExpression.$touched && vm.defineFeedForm.cronExpression.$invalid"
-               ng-messages="vm.defineFeedForm.cronExpression.$error">
-            <div ng-show="vm.defineFeedForm.cronExpression.$error.cronExpression"
+          <div ng-show="vm.defineFeedScheduleForm.cronExpression.$touched && vm.defineFeedScheduleForm.cronExpression.$invalid"
+               ng-messages="vm.defineFeedScheduleForm.cronExpression.$error">
+            <div ng-show="vm.defineFeedScheduleForm.cronExpression.$error.cronExpression"
                  ng-message="cronExpression">Invalid Cron Expression.
             </div>
-            <div ng-show="vm.defineFeedForm.cronExpression.$error.required" ng-message="required">
+            <div ng-show="vm.defineFeedScheduleForm.cronExpression.$error.required" ng-message="required">
               Required.
             </div>
           </div>
           <cron-expression-preview cron-expression="vm.model.schedule.schedulingPeriod"
-                                   ng-if="vm.model.schedule.schedulingStrategy == 'CRON_DRIVEN' && vm.defineFeedForm.cronExpression.$valid"></cron-expression-preview>
+                                   ng-if="vm.model.schedule.schedulingStrategy == 'CRON_DRIVEN' && vm.defineFeedScheduleForm.cronExpression.$valid"></cron-expression-preview>
         </md-input-container>
         <div ng-if="vm.model.schedule.schedulingStrategy == 'TIMER_DRIVEN'" layout="row">
           <md-input-container class="md-block" flex-gt-sm>
@@ -96,7 +96,7 @@
       </div>
 
 
-      <thinkbig-step-buttons can-continue="vm.isValid && vm.defineFeedForm.$valid" step-index="{{::vm.stepIndex}}" final-step="Create" on-click-final-button="vm.createFeed()"></thinkbig-step-buttons>
+      <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" final-step="Create" on-click-final-button="vm.createFeed()"></thinkbig-step-buttons>
 
     </ng-form>
   </body-section>

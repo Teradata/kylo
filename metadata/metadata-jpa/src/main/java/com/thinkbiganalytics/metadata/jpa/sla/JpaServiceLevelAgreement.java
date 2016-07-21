@@ -3,6 +3,13 @@
  */
 package com.thinkbiganalytics.metadata.jpa.sla;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
+import com.thinkbiganalytics.metadata.core.BaseId;
+import com.thinkbiganalytics.metadata.sla.api.Obligation;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +23,6 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Transient;
-
-import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
-import com.thinkbiganalytics.metadata.core.BaseId;
-import com.thinkbiganalytics.metadata.sla.api.Obligation;
-import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
  *
@@ -164,5 +165,10 @@ public class JpaServiceLevelAgreement extends AbstractAuditedEntity implements S
         public void setUuid(UUID uuid) {
             this.uuid = uuid;
         }
+    }
+
+    @Override
+    public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations() {
+        return null;
     }
 }

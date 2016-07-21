@@ -11,7 +11,11 @@ import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
+import com.thinkbiganalytics.feedmgr.sla.FeedServiceLevelAgreements;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
+import com.thinkbiganalytics.rest.model.LabelValue;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -248,6 +252,32 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
             feedMetadata.setState("DISABLED");
             return new FeedSummary(feedMetadata);
         }
+        return null;
+    }
+
+
+    @Override
+    public void applyFeedSelectOptions(List<FieldRuleProperty> properties) {
+        if (properties != null && !properties.isEmpty()) {
+            List<FeedSummary> feedSummaries = getFeedSummaryData();
+            List<LabelValue> feedSelection = new ArrayList<>();
+            for (FeedSummary feedSummary : feedSummaries) {
+                feedSelection.add(new LabelValue(feedSummary.getCategoryAndFeedDisplayName(), feedSummary.getCategoryAndFeedSystemName()));
+            }
+            for (FieldRuleProperty property : properties) {
+                property.setSelectableValues(feedSelection);
+                if (property.getValues() == null) {
+                    property.setValues(new ArrayList<>()); // reset the intial values to be an empty arraylist
+                }
+            }
+        }
+    }
+
+    public List<ServiceLevelAgreement> saveFeedSla(FeedServiceLevelAgreements serviceLevelAgreements) {
+        return null;
+    }
+
+    public FeedServiceLevelAgreements getFeedServiceLevelAgreements(String feedId) {
         return null;
     }
 }

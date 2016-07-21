@@ -3,6 +3,24 @@
  */
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
+import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
+import com.thinkbiganalytics.metadata.sla.api.Obligation;
+import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
+import com.thinkbiganalytics.metadata.sla.spi.AssessorNotFoundException;
+import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
+import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessmentBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessor;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -12,32 +30,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
-import com.thinkbiganalytics.metadata.sla.api.Obligation;
-import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
-import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
-import com.thinkbiganalytics.metadata.sla.api.core.FeedOnTimeArrivalMetricAssessor;
-import com.thinkbiganalytics.metadata.sla.spi.AssessorNotFoundException;
-import com.thinkbiganalytics.metadata.sla.spi.MetricAssessmentBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
-import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessmentBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessor;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
-
 /**
  *
  * @author Sean Felten
  */
 public class SimpleServiceLevelAssessor implements ServiceLevelAssessor {
-    
-    private static final Logger Log = LoggerFactory.getLogger(FeedOnTimeArrivalMetricAssessor.class);
+
+    private static final Logger Log = LoggerFactory.getLogger(SimpleServiceLevelAssessor.class);
 
     private Set<ObligationAssessor<? extends Obligation>> obligationAssessors;
     private Set<MetricAssessor<? extends Metric, ? extends Serializable>> metricAssessors;

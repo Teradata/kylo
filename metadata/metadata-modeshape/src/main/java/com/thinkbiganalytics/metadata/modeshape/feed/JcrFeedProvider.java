@@ -3,19 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
@@ -41,15 +28,28 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
 /**
  *
@@ -554,6 +554,38 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 //        this.preconditionService.watchFeed(feed);
         feed.setPrecondition((JcrServiceLevelAgreement) sla);
         return feed;
+
+
+    }
+
+
+    @SuppressWarnings("unchecked")
+    public Feed updateFeedServiceLevelAgreements(Feed.ID feedId, List<ServiceLevelAgreement> serviceLevelAgreements) {
+        JcrFeed feed = (JcrFeed) getFeed(feedId);
+        //remove previous SLA references
+
+        //TODO change this around to do a merge of the SLAs/ObligationGroups/Obligation/Metric objects to keep/track history changes instead of a a full clear and replace
+
+        List<JcrServiceLevelAgreement> feedSlas = (List<JcrServiceLevelAgreement>) feed.getServiceLevelAgreements();
+        feed.clearServiceLevelAgreements();
+        if (feedSlas != null) {
+            for (JcrServiceLevelAgreement sla : feedSlas) {
+                try {
+                    sla.getNode().remove();
+                } catch (RepositoryException e) {
+                    throw new MetadataRepositoryException("Failed to clear the tba:sla prior to updating Feed SLA for SLA " + sla.getId(), e);
+                }
+            }
+
+        }
+
+        for (ServiceLevelAgreement sla : serviceLevelAgreements) {
+            //build and attach the SLA to the Feed
+            feed.addServiceLevelAgreement(sla);
+        }
+        return feed;
+
+
     }
 
 
@@ -597,6 +629,11 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
             setupPrecondition(feed, sla);
             return sla;
+        }
+
+        @Override
+        public ServiceLevelAgreementBuilder actionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
+            return null;
         }
     }
 

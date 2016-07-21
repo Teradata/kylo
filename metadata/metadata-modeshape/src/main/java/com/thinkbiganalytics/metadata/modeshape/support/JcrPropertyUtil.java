@@ -1,5 +1,20 @@
 package com.thinkbiganalytics.metadata.modeshape.support;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigDecimal;
@@ -29,21 +44,6 @@ import javax.jcr.Value;
 import javax.jcr.ValueFactory;
 import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
-
-import com.fasterxml.jackson.annotation.JsonAutoDetect;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.datatype.joda.JodaModule;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 /**
  * Created by sr186054 on 6/13/16.
@@ -360,27 +360,61 @@ public class JcrPropertyUtil {
     }
     
     public static boolean addToSetProperty(Node node, String name, Object value) {
+        return addToSetProperty(node, name, value, false);
+    }
+
+    public static boolean addToSetProperty(Node node, String name, Object value, boolean weakReference) {
         try {
             JcrMetadataAccess.ensureCheckoutNode(node);
-            
+
             if (node == null) {
                 throw new IllegalArgumentException("Cannot set a property on a null-node!");
             }
             if (name == null) {
                 throw new IllegalArgumentException("Cannot set a property without a provided name");
             }
-            
+
             Set<Value> values = new HashSet<>();
-            
+
             if (node.hasProperty(name)) {
-                values = Arrays.stream(node.getProperty(name).getValues()).collect(Collectors.toSet());
+                values = Arrays.stream(node.getProperty(name).getValues()).map(v -> {
+                    if (PropertyType.REFERENCE == v.getType() && weakReference) {
+                        try {
+                            Node n = JcrPropertyUtil.asValue(v, node.getSession());
+                            return n.getSession().getValueFactory().createValue(n, true);
+                        } catch (RepositoryException e) {
+                            throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
+                        }
+                    }
+                    return v;
+                }).collect(Collectors.toSet());
             } else {
                 values = new HashSet<>();
             }
-            
-            Value newVal = createValue(node.getSession(), value);
+
+            Value newVal = createValue(node.getSession(), value, weakReference);
+
             boolean result = values.add(newVal);
-            node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
+            if (weakReference) {
+                Property property = node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]), PropertyType.WEAKREFERENCE);
+            } else {
+                Property property = node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
+            }
+
+            /**
+             * .map(v -> {
+             if (v instanceof Node && PropertyType.REFERENCE == v.getType() && weakReference) {
+             JcrValue vv = (JcrValue) v;
+             Node n = (Node) v;
+             try {
+             return n.getSession().getValueFactory().createValue(n, true);
+             } catch (RepositoryException e) {
+             throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
+             }
+             }
+             return v;
+             })
+             */
             return result;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
@@ -438,19 +472,22 @@ public class JcrPropertyUtil {
     }
 
     public static Value createValue(Session session, Object value) {
+        return createValue(session, value, false);
+    }
+
+    public static Value createValue(Session session, Object value, boolean weakRef) {
         try {
             ValueFactory factory = session.getValueFactory();
-            
             if (value == null) {
                 throw new IllegalArgumentException("Cannot create a value from null");
             } else if (value instanceof Enum) {
                 return factory.createValue(((Enum) value).name());
             } else if (value instanceof JcrObject) {
-                return factory.createValue(((JcrObject) value).getNode());
+                return factory.createValue(((JcrObject) value).getNode(), weakRef);
             } else if (value instanceof Value) {
                 return (Value) value;
             } else if (value instanceof Node) {
-                return factory.createValue((Node) value);
+                return factory.createValue((Node) value, weakRef);
             } else if (value instanceof Binary) {
                 return factory.createValue((Binary) value);
             } else if (value instanceof Calendar) {

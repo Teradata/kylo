@@ -3,19 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.jpa.feed;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-
 import com.google.common.base.Predicate;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
@@ -41,6 +28,19 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 
 /**
  *
@@ -308,22 +308,18 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
         return new ArrayList<Feed>(critImpl.select(this.entityMgr, JpaFeed.class));
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#getFeedSource(com.thinkbiganalytics.metadata.api.feed.FeedSource.ID)
-     */
+    /*
     @Override
     public FeedSource getFeedSource(FeedSource.ID id) {
         return this.entityMgr.find(JpaFeedSource.class, id);
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#getFeedDestination(com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID)
-     */
+
     @Override
     public FeedDestination getFeedDestination(FeedDestination.ID id) {
         return this.entityMgr.find(JpaFeedDestination.class, id);
     }
-
+*/
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#resolveFeed(java.io.Serializable)
      */
@@ -355,30 +351,26 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
         return null;
     }
 
-    /* (non-Javadoc)
-         * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#resolveSource(java.io.Serializable)
-         */
-    @Override
-    public FeedSource.ID resolveSource(Serializable sid) {
-        if (sid instanceof JpaFeedSource.SourceId) {
-            return (JpaFeedSource.SourceId) sid;
-        } else {
-            return new JpaFeedSource.SourceId(sid);
-        }
-    }
+    /*
+      @Override
+      public FeedSource.ID resolveSource(Serializable sid) {
+          if (sid instanceof JpaFeedSource.SourceId) {
+              return (JpaFeedSource.SourceId) sid;
+          } else {
+              return new JpaFeedSource.SourceId(sid);
+          }
+      }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.feed.FeedProvider#resolveDestination(java.io.Serializable)
-     */
-    @Override
-    public FeedDestination.ID resolveDestination(Serializable did) {
-        if (did instanceof JpaFeedDestination.DestinationId) {
-            return (JpaFeedDestination.DestinationId) did;
-        } else {
-            return new JpaFeedDestination.DestinationId(did);
-        }
-    }
 
+      @Override
+      public FeedDestination.ID resolveDestination(Serializable did) {
+          if (did instanceof JpaFeedDestination.DestinationId) {
+              return (JpaFeedDestination.DestinationId) did;
+          } else {
+              return new JpaFeedDestination.DestinationId(did);
+          }
+      }
+  */
     @Override
     public boolean enableFeed(ID id) {
        Feed feed = getFeed(id);
@@ -509,4 +501,9 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
         }
     }
 
+
+    @Override
+    public Feed updateFeedServiceLevelAgreements(ID feedId, List<ServiceLevelAgreement> serviceLevelAgreements) {
+        return null;
+    }
 }

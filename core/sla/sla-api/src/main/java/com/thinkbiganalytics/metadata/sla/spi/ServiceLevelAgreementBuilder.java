@@ -6,6 +6,9 @@ package com.thinkbiganalytics.metadata.sla.spi;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
+
+import java.util.List;
 
 /**
  * A builder for creating new SLAs.
@@ -52,6 +55,11 @@ public interface ServiceLevelAgreementBuilder {
      * @return the obligation builder
      */
     ObligationGroupBuilder obligationGroupBuilder(ObligationGroup.Condition condition);
+
+    /**
+     * Assign any Action Config options to be passed to the AlertResponder to execute specific responses when the SLA is violated
+     */
+    ServiceLevelAgreementBuilder actionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations);
     
     /**
      * Generates the SLA and adds it to the provider that produce this builder

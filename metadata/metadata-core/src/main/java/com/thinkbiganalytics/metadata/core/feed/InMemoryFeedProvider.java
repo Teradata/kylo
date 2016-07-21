@@ -23,6 +23,7 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
@@ -441,6 +442,16 @@ public class InMemoryFeedProvider implements FeedProvider {
             setupPrecondition(feed, sla);
             return sla;
         }
+
+        @Override
+        public ServiceLevelAgreementBuilder actionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
+            return null;
+        }
     }
 
+
+    @Override
+    public Feed updateFeedServiceLevelAgreements(Feed.ID feedId, List<ServiceLevelAgreement> serviceLevelAgreements) {
+        return null;
+    }
 }

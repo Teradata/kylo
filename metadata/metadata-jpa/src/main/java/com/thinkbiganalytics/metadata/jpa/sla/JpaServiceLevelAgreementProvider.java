@@ -3,6 +3,22 @@
  */
 package com.thinkbiganalytics.metadata.jpa.sla;
 
+import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement.SlaId;
+import com.thinkbiganalytics.metadata.sla.api.AgreementNotFoundException;
+import com.thinkbiganalytics.metadata.sla.api.DuplicateAgreementNameException;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.Obligation;
+import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
+import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -13,20 +29,6 @@ import java.util.Set;
 import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.Query;
-
-import com.thinkbiganalytics.metadata.jpa.sla.JpaServiceLevelAgreement.SlaId;
-import com.thinkbiganalytics.metadata.sla.api.AgreementNotFoundException;
-import com.thinkbiganalytics.metadata.sla.api.DuplicateAgreementNameException;
-import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.Obligation;
-import com.thinkbiganalytics.metadata.sla.api.ObligationGroup.Condition;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID;
-import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 /**
  *
@@ -182,6 +184,11 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
             } else {
                 return replaceAgreement(this.id, sla);
             }
+        }
+
+        @Override
+        public ServiceLevelAgreementBuilder actionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
+            return null;
         }
     }
 

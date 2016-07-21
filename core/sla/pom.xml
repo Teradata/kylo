@@ -13,5 +13,7 @@
     <modules>
         <module>sla-api</module>
         <module>sla-core</module>
+        <module>sla-rest-model</module>
+        <module>sla-default</module>
     </modules>
 </project>

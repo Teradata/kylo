@@ -36,12 +36,12 @@
                         Related
                     </md-tab-body>
                 </md-tab>
-                <md-tab ng-disabled="true">
+                <md-tab ng-disabled="false">
                     <md-tab-label >
                         <div>SLA</div>
                     </md-tab-label>
                     <md-tab-body>
-                    Service Level Agreements
+                        <thinkbig-feed-service-level-agreement ng-if="vm.selectedTabIndex == 3"></thinkbig-feed-service-level-agreement>
                     </md-tab-body>
                 </md-tab>
                 <md-tab ng-disabled="true">

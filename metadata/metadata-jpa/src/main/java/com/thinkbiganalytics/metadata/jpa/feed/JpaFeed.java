@@ -278,7 +278,8 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         
         return null;
     }
-    
+
+    /*
     @Override
     public FeedDestination getDestination(FeedDestination.ID id) {
         // TODO is there a sexy JPA/Hibernate way to do this since there is an implicit session used to get the destinations?
@@ -290,6 +291,7 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         
         return null;
     }
+    */
 
     public JpaFeedDestination addDestination(Datasource ds) {
         JpaFeedDestination dest = new JpaFeedDestination(this, (JpaDatasource) ds);
@@ -325,7 +327,7 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         
         return null;
     }
-    
+    /*
     @Override
     public FeedSource getSource(FeedSource.ID id) {        
         // TODO is there a sexy JPA/Hibernate way to do this since there is an implicit session used to get the sources?
@@ -337,6 +339,7 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         
         return null;
     }
+    */
     
     public FeedPrecondition setPrecondition(JpaServiceLevelAgreement sla) {
         this.precondition = new JpaFeedPrecondition(sla);
@@ -442,4 +445,8 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         }
     }
 
+    @Override
+    public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
+        return null;
+    }
 }

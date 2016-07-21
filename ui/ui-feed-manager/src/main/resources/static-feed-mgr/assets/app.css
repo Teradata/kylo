@@ -90,6 +90,10 @@ md-list md-datepicker .md-button.md-icon-button {
   padding-right:8px;
 }
 
+.layout-padding-right {
+  padding-left: 10px;
+}
+
 .layout-padding-left {
   padding-left: 10px;
 }
