@@ -100,10 +100,6 @@ public class MetadataJcrConfig {
     }
 
 
-    @Bean
-    public JcrSearchProvider searchProvider() {
-        return new JcrSearchProvider();
-    }
 
 //    @Bean
 //    public FeedProvider feedProvider() {
