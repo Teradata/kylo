@@ -29,7 +29,9 @@
         self.selectedRow = {};
         self.filtered = [];
         self.summaryApi = {};
-        self.statApi = {};
+        self.stringApi = {};
+        self.numericApi = {};
+        self.timeApi = {};
         self.topvalues = [];
 
         self.selectRowAndUpdateCharts = function(event, row) {
@@ -42,6 +44,8 @@
             return '#1f77b4'; //couldn't do it via css
         };
         var chartDuration = 500;
+        var multiBarHorizontalChartMarginLeft = 80;
+        var multiBarHorizontalChartMarginRight = 50;
 
         function selectRow(row) {
             selectColumn(row);
@@ -49,6 +53,7 @@
             selectColumnData();
             selectType();
             selectTopValues();
+            selectTimeValues();
         }
 
         function selectColumn(row) {
@@ -80,13 +85,14 @@
             }
         }
 
+
         function updateCharts() {
             self.summaryApi.update();
             if (self.selectedRow.prevColumn != "(ALL)") {
                 //otherwise will update the table twice,
                 //once when its shown after being hidden for '(ALL)' column and
                 //once with explicit call to update here
-                self.statApi.update();
+                self.stringApi.update();
             }
         }
 
@@ -94,6 +100,7 @@
             chart: {
                 type: 'discreteBarChart',
                 color: chartColor,
+                height: 270,
                 margin : {
                     top: 5, //otherwise top of numeric value is cut off
                     right: 0,
@@ -139,15 +146,51 @@
             return [{key: "Summary", values: values}];
         };
 
-        self.statOptions = {
+        self.stringOptions = {
             chart: {
                 type: 'multiBarHorizontalChart',
                 color: chartColor,
+                height: 125,
                 margin : {
                     top: 0,
                     right: 0,
                     bottom: 0,
-                    left: 80 //otherwise y axis labels are not visible
+                    left: multiBarHorizontalChartMarginLeft //otherwise y axis labels are not visible
+                },
+                duration: chartDuration,
+                x: function(d){return d.label;},
+                y: function(d){return d.value;},
+                showXAxis: true,
+                showYAxis: false,
+                showControls: false,
+                showValues: true,
+                showLegend: false,
+                valueFormat: function(d){
+                    return d3.format(',.0f')(d);
+                }
+            }
+        };
+
+        self.stringData = function() {
+            console.log("calculating string data");
+            var values = [];
+
+            values.push({"label": "Minimum", "value": findNumericStat(self.filtered, 'MIN_LENGTH')});
+            values.push({"label": "Maximum", "value": findNumericStat(self.filtered, 'MAX_LENGTH')});
+
+            return [{key: "Stats", values: values}];
+        };
+
+        self.numericOptions = {
+            chart: {
+                type: 'multiBarHorizontalChart',
+                color: chartColor,
+                height: 250,
+                margin : {
+                    top: 0,
+                    right: multiBarHorizontalChartMarginRight, //otherwise large numbers are cut off
+                    bottom: 0,
+                    left: multiBarHorizontalChartMarginLeft //otherwise y axis labels are not visible
                 },
                 duration: chartDuration,
                 x: function(d){return d.label;},
@@ -160,24 +203,18 @@
             }
         };
 
-        self.statData = function() {
-            //console.log("calculating stat data");
+        self.numericData = function() {
+            console.log("calculating numeric data");
             var values = [];
 
-            if (self.selectedRow.profile == "String") {
-                values.push({"label": "Minimum", "value": findNumericStat(self.filtered, 'MIN_LENGTH')});
-                values.push({"label": "Maximum", "value": findNumericStat(self.filtered, 'MAX_LENGTH')});
-            } else if (self.selectedRow.profile == "Numeric") {
-                values.push({"label": "Minimum", "value": findNumericStat(self.filtered, 'MIN')});
-                values.push({"label": "Maximum", "value": findNumericStat(self.filtered, 'MAX')});
-                values.push({"label": "Sum", "value": findNumericStat(self.filtered, 'SUM')});
-                values.push({"label": "Mean", "value": findNumericStat(self.filtered, 'MEAN')});
-                values.push({"label": "Std Dev", "value": findNumericStat(self.filtered, 'STDDEV')});
-                values.push({"label": "Variance", "value": findNumericStat(self.filtered, 'VARIANCE')});
-            } else if (self.selectedRow.profile == "Time") {
-                //values.push({"label": "Minimum", "value": findStat(self.filtered, 'MIN_TIMESTAMP')});
-                //values.push({"label": "Maximum", "value": findStat(self.filtered, 'MAX_TIMESTAMP')});
-            }
+            values.push({"label": "Minimum", "value": findNumericStat(self.filtered, 'MIN')});
+            values.push({"label": "Maximum", "value": findNumericStat(self.filtered, 'MAX')});
+            values.push({"label": "Mean", "value": findNumericStat(self.filtered, 'MEAN')});
+            values.push({"label": "Std Dev", "value": findNumericStat(self.filtered, 'STDDEV')});
+
+            //variance dominates the graph - and we have std dev anyway
+            //values.push({"label": "Variance", "value": findNumericStat(self.filtered, 'VARIANCE')});
+            //values.push({"label": "Sum", "value": findNumericStat(self.filtered, 'SUM')});
 
             return [{key: "Stats", values: values}];
         };
@@ -207,6 +244,17 @@
                 topVals = _.map(lines, transformTopValues);
             }
             self.topvalues = topVals;
+        }
+
+        function selectTimeValues() {
+            var timeVals = [];
+            self.timevalues = timeVals;
+            if (self.selectedRow.profile == "Time") {
+                console.log("calculating time data");
+
+                timeVals.push({name: "Maximum", value: findStat(self.filtered, 'MAX_TIMESTAMP')});
+                timeVals.push({name: "Minimum", value: findStat(self.filtered, 'MIN_TIMESTAMP')});
+            }
         }
 
         function getProfileStats(){

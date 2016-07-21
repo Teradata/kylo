@@ -53,27 +53,50 @@
                             <div class="md-subhead">Summary</div>
                             <nvd3 flex options="vm.summaryOptions" data="vm.summaryData" api="vm.summaryApi"></nvd3>
                         </div>
-                        <!--<div flex="100" class="mismatched-values">-->
-                            <!--<h3 class="md-subhead">Mismatched Values</h3>-->
-
-                        <!--</div>-->
-                        <!--<div flex="100" class="length-outliers">-->
-                            <!--<h3 class="md-subhead">String Length Outliers</h3>-->
-
-                        <!--</div>-->
                     </div>
-                    <div layout="column" flex="33" class="length-stats">
+                    <div ng-if="vm.selectedRow.profile == 'String'" layout="column" flex="33" class="stats string-stats">
                         <div flex="100" class="string-length-stats">
-                            <div ng-if="vm.selectedRow.profile == 'String'" class="md-subhead">
+                            <div class="md-subhead">
                                 String Length Statistics
                             </div>
-                            <div ng-if="vm.selectedRow.profile == 'Numeric'" class="md-subhead">
+                            <nvd3 flex options="vm.stringOptions" data="vm.stringData" api="vm.stringApi"></nvd3>
+                        </div>
+                    </div>
+                    <div ng-if="vm.selectedRow.profile == 'Numeric'" layout="column" flex="33" class="stats num-stats">
+                        <div flex="100" class="string-length-stats">
+                            <div class="md-subhead">
                                 Number Statistics
                             </div>
-                            <div ng-if="vm.selectedRow.profile == 'Time'" class="md-subhead">
+                            <nvd3 flex options="vm.numericOptions" data="vm.numericData" api="vm.numericApi"></nvd3>
+                        </div>
+                    </div>
+                    <div ng-if="vm.selectedRow.profile == 'Time'" layout="column" flex="33" class="stats time-stats">
+                        <div flex="100" class="string-length-stats">
+                            <div class="md-subhead">
                                 Time Statistics
                             </div>
-                            <nvd3 flex options="vm.statOptions" data="vm.statData" api="vm.statApi"></nvd3>
+                            <md-list class="list-item-table">
+                                <md-list-item class="md-secondary"
+                                              dir-paginate="row in vm.timevalues | itemsPerPage: 2"
+                                              pagination-id="profile_stats_2">
+                                    <div layout="row" layout-fill>
+                                        <div flex="40" class="item-column md-list-item-text">
+                                        <span class="item-title">
+                                        {{::row['name']}}
+                                        </span>
+                                        </div>
+                                        <div flex="60" class="item-column md-list-item-text">
+                                        <span class="item-title">
+                                        {{::row['value']}}
+                                        </span>
+                                        </div>
+                                    </div>
+                                    <md-divider ng-if="!$last"></md-divider>
+                                </md-list-item>
+                                <md-list-item ng-show="vm.loading == false && vm.timevalues.length == 0">
+                                    No results found
+                                </md-list-item>
+                            </md-list>
                         </div>
                     </div>
                     <div layout="column" flex="33" class="top-value">

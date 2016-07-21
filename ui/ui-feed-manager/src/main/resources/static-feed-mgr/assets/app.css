@@ -1125,12 +1125,13 @@ md-toast .md-toast-content {
 .profile .md-subhead {
   /* align heading with the charts, where charts are slightly to the right of the heading  */
   padding-left: 13px;
+  font-weight: 500;
 }
 .profile .summary {
   /* min-width so that charts do not overlap on small screens */
   min-width: 380px;
 }
-.profile .length-stats {
+.profile .stats {
   /* min-width so that charts do not overlap on small screens */
   min-width: 380px;
 }
