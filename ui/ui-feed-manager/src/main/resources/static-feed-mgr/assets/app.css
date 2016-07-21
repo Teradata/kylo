@@ -1123,21 +1123,28 @@ md-toast .md-toast-content {
 }
 
 .profile .md-subhead {
+  /* align heading with the charts, where charts are slightly to the right of the heading  */
   padding-left: 13px;
 }
 .profile .summary {
+  /* min-width so that charts do not overlap on small screens */
   min-width: 380px;
 }
 .profile .length-stats {
+  /* min-width so that charts do not overlap on small screens */
   min-width: 380px;
-}
-.profile .nvd3 .nv-discretebar .tick.zero text {
-  /*padding-top: 10px;*/
 }
 .profile .nvd3 .nv-discretebar .nv-groups text {
   fill: dimgray;
 }
 .profile .nvd3 .nv-multibarHorizontal .nv-groups text {
   fill: dimgray;
+}
+.profile .item-title {
+  /* white-space: normal; so that long comments wrap into multi-line rather than scroll out of the screen */
+  white-space: normal;
+}
+.profile .md-caption {
+  color: dimgray;
 }
 

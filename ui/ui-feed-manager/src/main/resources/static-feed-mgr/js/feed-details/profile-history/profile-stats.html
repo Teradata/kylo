@@ -19,7 +19,7 @@
                               pagination-id="profile_stats_0">
                     <div layout="row" layout-fill>
                         <div flex="100" layout="column" class="item-column md-list-item-text " title="{{row}}"
-                             ng-click="vm.selectRow($event, row)">
+                             ng-click="vm.selectRowAndUpdateCharts($event, row)">
                                      <span class="item-title" title="{{row}}">
                                      {{::row['columnname']}}
                                      </span>
@@ -35,32 +35,45 @@
         <div ng-if="!vm.loading" flex="80" class="layout-padding-left profile">
             <div layout="column">
                 <header-section flex="100">
-                    <h2 class="md-tile">{{vm.selectedRow.columnname}}</h2>
+                    <h2 class="md-title">{{vm.selectedRow.columnname}} <span ng-show="vm.selectedRow.columnname != '(ALL)'" class="md-caption">({{vm.selectedRow.type}})</span></h2>
                 </header-section>
 
-                <div layout="row" flex="100">
+                <div ng-if="vm.selectedRow.columnname == '(ALL)'" layout="row" flex="100">
                     <div layout="column" flex="33" class="summary">
                         <div flex="100" class="bars" >
                             <h3 class="md-subhead">Summary</h3>
                             <nvd3 flex options="vm.summaryOptions" data="vm.summaryData" api="vm.summaryApi"></nvd3>
                         </div>
-                        <div flex="100" class="mismatched-values">
-                            <h3 class="md-subhead">Mismatched Values</h3>
+                    </div>
+                </div>
 
+                <div ng-if="vm.selectedRow.columnname != '(ALL)'" layout="row" flex="100">
+                    <div layout="column" flex="33" class="summary">
+                        <div flex="100" class="bars" >
+                            <h3 class="md-subhead">Summary</h3>
+                            <nvd3 flex options="vm.summaryOptions" data="vm.summaryData" api="vm.summaryApi"></nvd3>
                         </div>
-                        <div flex="100" class="length-outliers">
-                            <h3 class="md-subhead">String Length Outliers</h3>
+                        <!--<div flex="100" class="mismatched-values">-->
+                            <!--<h3 class="md-subhead">Mismatched Values</h3>-->
 
-                        </div>
+                        <!--</div>-->
+                        <!--<div flex="100" class="length-outliers">-->
+                            <!--<h3 class="md-subhead">String Length Outliers</h3>-->
+
+                        <!--</div>-->
                     </div>
                     <div layout="column" flex="33" class="length-stats">
                         <div flex="100" class="string-length-stats">
-                            <h3 class="md-subhead">String Length Statistics</h3>
-                            <nvd3 flex options="vm.lengthOptions" data="vm.lengthData" api="vm.lengthApi"></nvd3>
-                        </div>
-                        <div flex="100" class="mismatched-values">
-                            <h3 class="md-subhead">String Length</h3>
-
+                            <div ng-if="vm.selectedRow.profile == 'String'" class="md-subhead">
+                                String Length Statistics
+                            </div>
+                            <div ng-if="vm.selectedRow.profile == 'Numeric'" class="md-subhead">
+                                Number Statistics
+                            </div>
+                            <div ng-if="vm.selectedRow.profile == 'Time'" class="md-subhead">
+                                Time Statistics
+                            </div>
+                            <nvd3 flex options="vm.statOptions" data="vm.statData" api="vm.statApi"></nvd3>
                         </div>
                     </div>
                     <div layout="column" flex="33" class="top-value">

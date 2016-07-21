@@ -30,23 +30,64 @@
         self.loading = true;
         self.processingDate = new Date(HiveService.getUTCTime(self.processingdttm));
         self.model = FeedService.editFeedModel;
-        self.selectedRow = [];
+        self.selectedRow = {};
         self.filtered = [];
         self.summaryApi = {};
-        self.lengthApi = {};
+        self.statApi = {};
 
         self.topvalues = [];
 
-        self.selectRow = function(event, row) {
-            //console.log('selected row');
-            //console.log(row);
-
-            self.selectedRow = row;
-            self.filtered = _.filter(self.data.rows, function(row){ return row.columnname == self.selectedRow.columnname; });
-            self.topvalues = selectTopValues(self.filtered);
-            self.summaryApi.update();
-            self.lengthApi.update();
+        self.selectRowAndUpdateCharts = function(event, row) {
+            selectRow(row);
+            updateCharts();
         };
+
+        function selectRow(row) {
+            selectColumn(row);
+
+            selectColumnData();
+            selectType();
+            selectTopValues();
+        }
+
+        function selectColumn(row) {
+            self.selectedRow.prevColumn = self.selectedRow.columnname;
+            self.selectedRow.columnname = row.columnname;
+        }
+
+        function selectColumnData() {
+            self.filtered = _.filter(self.data.rows, function (row) {
+                return row.columnname == self.selectedRow.columnname;
+            });
+        }
+
+        function selectType() {
+            var type = findStat(self.filtered, 'COLUMN_DATATYPE');
+            if (_.isUndefined(type)) {
+                type = "UnknownType";
+            }
+            type = type.substring(0, type.indexOf("Type"));
+            self.selectedRow.type = type;
+            if (type == "String") {
+                self.selectedRow.profile = "String";
+            } else if (type == "Long" || type == "Double") {
+                self.selectedRow.profile = "Numeric";
+            } else if (type == "Timestamp") {
+                self.selectedRow.profile = "Time";
+            } else {
+                self.selectedRow.profile = "Unknown";
+            }
+        }
+
+        function updateCharts() {
+            self.summaryApi.update();
+            if (self.selectedRow.prevColumn != "(ALL)") {
+                //otherwise will update the table twice,
+                //once when its shown after being hidden for '(ALL)' column and
+                //once with explicit call to update here
+                self.statApi.update();
+            }
+        }
 
         self.summaryOptions = {
             chart: {
@@ -76,35 +117,28 @@
             var empty = findNumericStat(self.filtered, 'EMPTY_COUNT');
             var unique = findNumericStat(self.filtered, 'UNIQUE_COUNT');
             var invalid = findNumericStat(self.filtered, 'INVALID_COUNT');
+            var valid = total - invalid;
 
-            return [{
-                key: "Summary",
-                values: [
-                    {
-                        "label": "Total",
-                        "value": total
-                    },
-                    {
-                        "label": "Valid",
-                        "value": total - invalid
-                    },
-                    {
-                        "label": "Invalid",
-                        "value": invalid
-                    },
-                    {
-                        "label": "Unique",
-                        "value": unique
-                    },
-                    {
-                        "label": "Missing",
-                        "value": nulls + empty
-                    }
-                ]
-            }];
+            //display negative values in red
+            var color = chartColor();
+            if (valid < 0) {
+                color = "red";
+            }
+
+            var values = [];
+            values.push({"label": "Total", "value": total});
+            values.push({"label": "Valid", "value": valid, "color": color});
+            values.push({"label": "Invalid", "value": invalid});
+
+            if (self.selectedRow.columnname != '(ALL)') {
+                values.push({"label": "Unique", "value": unique});
+                values.push({"label": "Missing", "value": nulls + empty});
+            }
+
+            return [{key: "Summary", values: values}];
         };
 
-        self.lengthOptions = {
+        self.statOptions = {
             chart: {
                 type: 'multiBarHorizontalChart',
                 color: chartColor,
@@ -125,12 +159,14 @@
             }
         };
 
-        self.lengthData = function() {
+        self.statData = function() {
+            console.log("calculating stat data");
+
             var min = findNumericStat(self.filtered, 'MIN_LENGTH');
             var max = findNumericStat(self.filtered, 'MAX_LENGTH');
 
             return [{
-                key: "Length",
+                key: "Stat",
                 values: [
                     {
                         "label": "Minimum",
@@ -154,10 +190,11 @@
             return stat == ""  ? 0 : Number(stat);
         }
 
-        function selectTopValues(rows) {
-            var topN = findStat(rows, 'TOP_N_VALUES');
+        function selectTopValues() {
+            var topN = findStat(self.filtered, 'TOP_N_VALUES');
+            var topVals = [];
             if (_.isUndefined(topN)) {
-                return [];
+                topVals = [];
             } else {
                 var lines = topN.split("\n");
                 function transformTopValues(line) {
@@ -165,8 +202,9 @@
                     var count = line.substring(line.indexOf("(") + 1, line.indexOf(")"));
                     return {value: value, count: count};
                 }
-                return _.map(lines, transformTopValues);
+                topVals = _.map(lines, transformTopValues);
             }
+            self.topvalues = topVals;
         }
 
         function getProfileStats(){
@@ -193,7 +231,7 @@
                 };
                 self.data = HiveService.transformResults2(response, ['processing_dttm'], transformFn);
                 if (self.data && self.data.rows && self.data.rows.length > 0) {
-                    self.selectedRow = self.data.rows[0];
+                    selectRow(self.data.rows[0]);
                 }
                 console.log(self.data);
                 self.loading = false;
