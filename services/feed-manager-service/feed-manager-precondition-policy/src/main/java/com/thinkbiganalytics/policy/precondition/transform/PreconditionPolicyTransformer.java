@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.policy.precondition.transform;
 
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 import com.thinkbiganalytics.policy.precondition.Precondition;
@@ -33,14 +35,13 @@ public class PreconditionPolicyTransformer {
         }
     }
 
-    public List<Precondition> getPreconditions() {
-        List<Precondition> policies = new ArrayList<>();
-
+    public List<ObligationGroup> getPreconditions() {
+        List<ObligationGroup> policies = new ArrayList<>();
         if (preconditionRules != null) {
             for (PreconditionRule rule : preconditionRules) {
                 try {
                     Precondition policy = PreconditionAnnotationTransformer.instance().fromUiModel(rule);
-                    policies.add(policy);
+                    policies.addAll(Lists.newArrayList(policy.getPreconditionObligations()));
                 } catch (PolicyTransformException e) {
                     e.printStackTrace();
                 }

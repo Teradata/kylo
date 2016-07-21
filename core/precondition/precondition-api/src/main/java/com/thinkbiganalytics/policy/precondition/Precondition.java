@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.policy.precondition;
 
+import com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup;
+
 import java.util.Set;
 
 /**
@@ -7,5 +9,5 @@ import java.util.Set;
  */
 public interface Precondition {
 
-    public Set<PreconditionGroup> getPreconditionObligations();
+    Set<ObligationGroup> getPreconditionObligations();
 }

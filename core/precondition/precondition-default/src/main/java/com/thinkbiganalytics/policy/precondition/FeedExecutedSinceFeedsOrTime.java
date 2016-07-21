@@ -1,6 +1,8 @@
 package com.thinkbiganalytics.policy.precondition;
 
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.api.sla.WithinSchedule;
+import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
@@ -31,19 +33,23 @@ public class FeedExecutedSinceFeedsOrTime extends FeedExecutedSinceFeeds {
 
 
     @Override
-    public Set<PreconditionGroup> getPreconditionObligations() {
-        Set<PreconditionGroup> preconditionGroups = new HashSet<>();
+    public Set<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> getPreconditionObligations() {
+        Set<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> preconditionGroups = new HashSet<>();
         preconditionGroups.addAll(super.getPreconditionObligations());
 
         try {
             Period p = new Period(0, 0, 1, 0);
             String withinPeriod = p.toString();
             WithinSchedule metric = new WithinSchedule(cronExpression, withinPeriod);
-            preconditionGroups.add(new DefaultPreconditionGroup(metric, ObligationGroup.Condition.SUFFICIENT.name()));
+            Obligation obligation = new Obligation();
+            obligation.setMetrics(Lists.newArrayList(metric));
+            com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup group = new com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup();
+            group.addObligation(obligation);
+            group.setCondition(ObligationGroup.Condition.SUFFICIENT.name());
+            preconditionGroups.add(group);
         } catch (ParseException e) {
 
         }
-
         return preconditionGroups;
     }
 

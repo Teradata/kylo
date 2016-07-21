@@ -1,6 +1,9 @@
 package com.thinkbiganalytics.policy.precondition;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceFeed;
+import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.policy.PolicyProperty;
@@ -59,15 +62,23 @@ public class FeedExecutedSinceFeeds implements Precondition {
     }
 
     @Override
-    public Set<PreconditionGroup> getPreconditionObligations() {
+    public Set<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> getPreconditionObligations() {
+
+        return Sets.newHashSet(getPreconditionObligation());
+    }
+
+    public com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup getPreconditionObligation(){
         Set<Metric> metrics = new HashSet<>();
         for (String categoryAndFeed : categoryAndFeedList) {
             FeedExecutedSinceFeed metric = new FeedExecutedSinceFeed(sinceCategoryAndFeedName, categoryAndFeed);
             metrics.add(metric);
         }
-        Set<PreconditionGroup> preconditionGroups = new HashSet<>();
-        preconditionGroups.add(new DefaultPreconditionGroup(metrics, ObligationGroup.Condition.REQUIRED.name()));
-        return preconditionGroups;
+        Obligation obligation = new Obligation();
+        obligation.setMetrics(Lists.newArrayList(metrics));
+        com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup group = new com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup();
+        group.addObligation(obligation);
+        group.setCondition(ObligationGroup.Condition.REQUIRED.name());
+        return group;
     }
 
 }

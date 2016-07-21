@@ -2,6 +2,7 @@ package com.thinkbiganalytics.policy.precondition;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 import com.thinkbiganalytics.policy.precondition.transform.PreconditionAnnotationTransformer;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
@@ -38,7 +39,7 @@ public class TestPreconditionPolicyTransform {
         Assert.assertEquals(currentFeed, convertedPolicy.getSinceCategoryAndFeedName());
         Assert.assertEquals(dependentUponFeed, convertedPolicy.getCategoryAndFeeds());
 
-        Set<PreconditionGroup> preconditionGroups = convertedPolicy.getPreconditionObligations();
+        Set<ObligationGroup> preconditionGroups = convertedPolicy.getPreconditionObligations();
 
 
     }
