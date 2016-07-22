@@ -1,25 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.generic;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.version.Version;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.testng.Assert;
-
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -47,11 +27,31 @@ import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.testng.Assert;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.version.Version;
+
 /**
  * Created by sr186054 on 6/4/16.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrExtensibleProvidersTestConfig.class })
+@ContextConfiguration(classes = {ModeShapeEngineConfig.class, JcrExtensibleProvidersTestConfig.class})
 @ComponentScan(basePackages = {"com.thinkbiganalytics.metadata.modeshape.op"})
 public class JcrPropertyTest {
 
@@ -94,11 +94,11 @@ public class JcrPropertyTest {
                 ExtensibleType feedType = provider.getType("tba:feed");
                 Set<FieldDescriptor> fields = feedType.getFieldDescriptors();
                 Map<String, FieldDescriptor.Type> map = new HashMap<>();
-                
+
                 for (FieldDescriptor field : fields) {
                     map.put(field.getName(), field.getType());
                 }
-                
+
                 return map;
             }
         });
@@ -137,7 +137,7 @@ public class JcrPropertyTest {
 
                 JcrDatasource datasource1 = (JcrDatasource) datasourceProvider.ensureDatasource("mysql.table1", "mysql table source 1", HiveTableDatasource.class);
                 datasource1.setProperty(JcrDatasource.TYPE_NAME, "Database");
-                
+
                 JcrDatasource datasource2 = (JcrDatasource) datasourceProvider.ensureDatasource("mysql.table2", "mysql table source 2", HiveTableDatasource.class);
                 datasource2.setProperty(JcrDatasource.TYPE_NAME, "Database");
 
@@ -173,9 +173,9 @@ public class JcrPropertyTest {
 
                 @SuppressWarnings("unchecked")
                 List<? extends FeedSource> sources = f.getSources();
-                
+
                 Assert.assertEquals(sources.size(), 2);
-                
+
                 if (sources != null) {
                     for (FeedSource source : sources) {
                         Map<String, Object> dataSourceProperties = ((JcrDatasource) source.getDatasource()).getAllProperties();
@@ -275,8 +275,7 @@ public class JcrPropertyTest {
             @Override
             public Object execute() {
                 List<FeedManagerCategory> c = feedManagerCategoryProvider.findAll();
-                if (c != null)
-                {
+                if (c != null) {
                     for (FeedManagerCategory cat : c) {
                         JcrFeedManagerCategory jcrFeedManagerCategory = (JcrFeedManagerCategory) cat;
                         List<? extends Feed> categoryFeeds = jcrFeedManagerCategory.getFeeds();
@@ -306,6 +305,65 @@ public class JcrPropertyTest {
                 return null;
             }
         });
+
+    }
+
+    @Test
+    public void testMergeProps() {
+        testFeed();
+        Map<String, Object> props = new HashMap<>();
+        props.put("name", "An Old User");
+        props.put("age", 140);
+
+        Map<String, Object> props2 = metadata.commit(new Command<Map<String, Object>>() {
+            @Override
+            public Map<String, Object> execute() {
+                List<? extends Feed> feeds = feedProvider.getFeeds();
+                Feed feed = null;
+                //grab the first feed
+                if (feeds != null) {
+                    feed = feeds.get(0);
+                }
+                feedProvider.mergeFeedProperties(feed.getId(), props);
+                return feed.getProperties();
+
+            }
+        });
+        props.put("address", "Some road");
+        props2 = metadata.commit(new Command<Map<String, Object>>() {
+            @Override
+            public Map<String, Object> execute() {
+                List<? extends Feed> feeds = feedProvider.getFeeds();
+                Feed feed = null;
+                //grab the first feed
+                if (feeds != null) {
+                    feed = feeds.get(0);
+                }
+
+                feedProvider.mergeFeedProperties(feed.getId(), props);
+                return feed.getProperties();
+            }
+        });
+        org.junit.Assert.assertEquals("Some road", props2.get("address"));
+
+        //Now Replace
+        props.remove("address");
+        props2 = metadata.commit(new Command<Map<String, Object>>() {
+            @Override
+            public Map<String, Object> execute() {
+                List<? extends Feed> feeds = feedProvider.getFeeds();
+                Feed feed = null;
+                //grab the first feed
+                if (feeds != null) {
+                    feed = feeds.get(0);
+                }
+                feedProvider.replaceProperties(feed.getId(), props);
+                return feed.getProperties();
+
+            }
+        });
+        Assert.assertNull(props2.get("address"));
+
 
     }
 

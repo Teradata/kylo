@@ -36,6 +36,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -85,7 +86,7 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
 
     @Override
     public Feed ensureFeed(String categorySystemName, String feedSystemName) {
-        return ensureFeed(categorySystemName,feedSystemName,null);
+        return ensureFeed(categorySystemName, feedSystemName, null);
     }
 
     /* (non-Javadoc)
@@ -501,15 +502,18 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
         }
     }
 
-
     @Override
-    public Feed updateFeedServiceLevelAgreements(ID feedId, List<ServiceLevelAgreement> serviceLevelAgreements) {
+    public Feed updateFeedServiceLevelAgreement(ID feedId, ServiceLevelAgreement sla) {
         return null;
     }
 
+    @Override
+    public Map<String, Object> mergeFeedProperties(ID feedId, Map<String, Object> properties) {
+        return null;
+    }
 
     @Override
-    public Feed updateFeedServiceLevelAgreement(ID feedId, ServiceLevelAgreement sla) {
+    public Map<String, Object> replaceProperties(ID feedId, Map<String, Object> properties) {
         return null;
     }
 }

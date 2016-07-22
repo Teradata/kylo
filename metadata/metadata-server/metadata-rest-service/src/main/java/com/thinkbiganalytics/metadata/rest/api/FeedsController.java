@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.rest.api;
 
 import com.google.common.collect.Collections2;
+import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -449,6 +451,7 @@ public class FeedsController {
                 Properties newProps = new Properties();
                 
                 newProps.putAll(domainProps);
+
                 return newProps;
             } else {
                 throw new WebApplicationException("No feed exist with the ID: " + feedId, Status.NOT_FOUND);
@@ -539,17 +542,35 @@ public class FeedsController {
     private Map<String, Object> updateProperties(final Properties props,
                                                  com.thinkbiganalytics.metadata.api.feed.Feed<?> domain,
                                                  boolean replace) {
+        return metadata.commit(new Command<Map<String, Object>>() {
+            @Override
+            public Map<String, Object> execute() {
+                Map<String, Object> newProperties = new HashMap<String, Object>();
+                for (String name : props.stringPropertyNames()) {
+                    newProperties.put(name, props.getProperty(name));
+                }
+                if (replace) {
+                    feedProvider.replaceProperties(domain.getId(), newProperties);
+                } else {
+                    feedProvider.mergeFeedProperties(domain.getId(), newProperties);
+                }
+                return domain.getProperties();
+
+            }
+        });
+         /*
         Map<String, Object> domainProps = domain.getProperties();
-        
+
         if (replace) {
             domainProps.clear();
         }
-        
+
         for (String name : props.stringPropertyNames()) {
             domainProps.put(name, props.getProperty(name));
         }
-        
+
         return domainProps;
+        */
     }
 
     private ServiceLevelAssessment generateModelAssessment(com.thinkbiganalytics.metadata.api.feed.FeedPrecondition precond) {
