@@ -588,6 +588,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     }
 
+    public Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla) {
+        JcrFeed feed = (JcrFeed) getFeed(feedId);
+        feed.addServiceLevelAgreement(sla);
+        return feed;
+
+
+    }
+
 
 
     private class JcrPreconditionbuilder implements PreconditionBuilder {

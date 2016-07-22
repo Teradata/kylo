@@ -49,6 +49,7 @@ public interface FeedProvider{
     boolean disableFeed(Feed.ID id);
 
     Feed updateFeedServiceLevelAgreements(Feed.ID feedId, List<ServiceLevelAgreement> serviceLevelAgreements);
+    Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla);
 
 
     

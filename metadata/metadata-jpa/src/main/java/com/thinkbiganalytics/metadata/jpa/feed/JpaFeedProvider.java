@@ -506,4 +506,10 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
     public Feed updateFeedServiceLevelAgreements(ID feedId, List<ServiceLevelAgreement> serviceLevelAgreements) {
         return null;
     }
+
+
+    @Override
+    public Feed updateFeedServiceLevelAgreement(ID feedId, ServiceLevelAgreement sla) {
+        return null;
+    }
 }

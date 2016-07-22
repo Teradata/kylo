@@ -23,7 +23,6 @@ import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
-import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.policy.PolicyProperty;
@@ -387,49 +386,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     }
 
-    /**
-     * Convert UI SLA to metadata backed SLA object and persist
-     */
-    public List<ServiceLevelAgreement> saveFeedSla(FeedServiceLevelAgreements serviceLevelAgreements) {
-
-        return metadataAccess.commit(new Command<List<ServiceLevelAgreement>>() {
-            @Override
-            public List<ServiceLevelAgreement> execute() {
-                List<ServiceLevelAgreement> restModels = new ArrayList<ServiceLevelAgreement>();
-                List<com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement> savedSlaList = new ArrayList<>();
-                FeedMetadata feed = getFeedById(serviceLevelAgreements.getFeedId());
-                if (serviceLevelAgreements != null) {
-                    ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
-                    transformer.applyFeedNameToCurrentFeedProperties(serviceLevelAgreements, feed.getCategory().getSystemName(), feed.getSystemFeedName());
-                    List<ServiceLevelAgreement> slaList = transformer.getServiceLevelAgreements(serviceLevelAgreements);
-
-                    for (ServiceLevelAgreement sla : slaList) {
-                        ServiceLevelAgreementBuilder slaBuilder = slaProvider.builder();
-                        slaBuilder.name(sla.getName()).description(sla.getDescription());
-                        for (com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup group : sla.getGroups()) {
-                            ObligationGroupBuilder groupBuilder = slaBuilder.obligationGroupBuilder(ObligationGroup.Condition.valueOf(group.getCondition()));
-                            for (Obligation o : group.getObligations()) {
-                                groupBuilder.obligationBuilder().metric(o.getMetrics()).description(o.getDescription()).build();
-                            }
-                            groupBuilder.build();
-                        }
-                        slaBuilder.actionConfigurations(sla.getActionConfigurations());
-                        com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement savedSla = slaBuilder.build();
-                        savedSlaList.add(savedSla);
-
-                    }
-                    feedProvider.updateFeedServiceLevelAgreements(feedProvider.resolveFeed(feed.getFeedId()), savedSlaList);
-                }
-                for (com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla : savedSlaList) {
-                    ServiceLevelAgreement restModel = Model.toModel(sla, true);
-                    restModels.add(restModel);
-                }
-                return restModels;
-            }
-        });
 
 
-    }
 
 
 }

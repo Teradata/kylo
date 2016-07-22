@@ -152,6 +152,22 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         }
     }
 
+    public ServiceLevelAgreementBuilder builder(ServiceLevelAgreement.ID id) {
+        try {
+            Session session = getSession();
+            Node slaNode = session.getNodeByIdentifier(id.toString());
+            if (slaNode == null || !slaNode.isNodeType("tba:sla")) {
+                throw new MetadataRepositoryException("Failed to get sla node for " + id);
+            }
+            //clear out any obligations/metrics associated to this node as the builder will bring in new ones
+            JcrServiceLevelAgreement sla = new JcrServiceLevelAgreement(slaNode);
+            sla.clear();
+            return builder(slaNode);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to create an sla node", e);
+        }
+    }
+
     /**
      * Returns a builder that constructs an SLA rooted by the given node.  This method is exposed to support
      * other JCR-based providers that may construct object that have embedded SLA's that are not managed by
@@ -164,14 +180,6 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         return new SLABuilderImpl(slaNode);
     }
 
-    /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider#builder(com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID)
-     */
-    @Override
-    public ServiceLevelAgreementBuilder builder(ID id) {
-        // TODO Auto-generated method stub
-        return null;
-    }
 
     @Override
     public ID resolveId(Serializable ser) {
@@ -187,7 +195,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     private class SLABuilderImpl implements ServiceLevelAgreementBuilder {
 
         private Node slaNode;
-        
+
         private String name;
         private String description;
         private List<? extends ServiceLevelAgreementActionConfiguration> serviceLevelAgreementActionConfigurations;
@@ -195,6 +203,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         public SLABuilderImpl(Node node) throws RepositoryException {
             this.slaNode = node;
         }
+
 
         @Override
         public ServiceLevelAgreementBuilder name(String name) {
@@ -267,9 +276,16 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         public ServiceLevelAgreement build() {
             JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.NAME, this.name);
             JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.DESCRIPTION, this.description);
-            if (this.serviceLevelAgreementActionConfigurations != null && !this.serviceLevelAgreementActionConfigurations.isEmpty()) {
+            //clear out the agreement actions
+            try {
+                Iterator<Node> nodesItr = (Iterator<Node>) this.slaNode.getNodes(JcrServiceLevelAgreement.ACTION_CONFIGURATIONS);
+                while (nodesItr != null && nodesItr.hasNext()) {
+                    Node action = nodesItr.next();
+                    action.remove();
+                }
+
+                if (this.serviceLevelAgreementActionConfigurations != null && !this.serviceLevelAgreementActionConfigurations.isEmpty()) {
                 for (ServiceLevelAgreementActionConfiguration actionConfiguration : this.serviceLevelAgreementActionConfigurations) {
-                    try {
                         Node node = this.slaNode.addNode(JcrServiceLevelAgreement.ACTION_CONFIGURATIONS, JcrServiceLevelAgreement.ACTION_CONFIGURATION_TYPE);
 
                         JcrPropertyUtil.setProperty(node, JcrPropertyConstants.TITLE, actionConfiguration.getClass().getSimpleName());
@@ -281,10 +297,11 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
                         JcrPropertyUtil.setProperty(node, JcrPropertyConstants.DESCRIPTION, desc);
                         JcrUtil.addGenericJson(node, JcrPropertyConstants.JSON, actionConfiguration);
 
-                    } catch (RepositoryException e) {
-                        throw new MetadataRepositoryException("Failed to build the SLA", e);
-                    }
+
                 }
+            }
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to build the SLA", e);
             }
 
             return new JcrServiceLevelAgreement(this.slaNode);

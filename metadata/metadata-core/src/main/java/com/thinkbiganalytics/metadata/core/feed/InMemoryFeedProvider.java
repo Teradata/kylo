@@ -454,4 +454,10 @@ public class InMemoryFeedProvider implements FeedProvider {
     public Feed updateFeedServiceLevelAgreements(Feed.ID feedId, List<ServiceLevelAgreement> serviceLevelAgreements) {
         return null;
     }
+
+
+    @Override
+    public Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla) {
+        return null;
+    }
 }

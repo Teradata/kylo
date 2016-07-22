@@ -16,13 +16,13 @@
       <md-divider ng-if="!$last"></md-divider>
     </md-list-item>
   </md-list>
-  <div ng-if="vm.serviceLevelAgreements.length ==0" class="layout-padding">
+  <div ng-if="vm.serviceLevelAgreements.length ==0 && !vm.creatingNewSla" class="layout-padding">
     No Service Level Agreements exist for this feed.
   </div>
 
 
   <ng-form name="vm.slaForm" ng-if="vm.editSla != null">
-    <md-button class="md-raised" ng-click="vm.editSla = null">Back to List</md-button>
+    <md-button class="md-raised" ng-click="vm.onBackToList($event)">Back to List</md-button>
 
     <div layout="column">
       <md-input-container class="md-block">
