@@ -35,6 +35,19 @@ public class ServiceLevelAgreementMetricTransformerHelper {
         }
     }
 
+    public void applyFeedNameToCurrentFeedProperties(ServiceLevelAgreementGroup serviceLevelAgreement, String category, String feed) {
+        if (serviceLevelAgreement != null) {
+            List<FieldRuleProperty>
+                properties =
+                ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderType(serviceLevelAgreement.getRules(), PolicyProperty.PROPERTY_TYPE.currentFeed.name());
+            if (properties != null && !properties.isEmpty()) {
+                for (FieldRuleProperty property : properties) {
+                    property.setValue(category + "." + feed);
+                }
+            }
+        }
+    }
+
     /**
      * Transform UI model to Java Objects
      */
@@ -43,11 +56,20 @@ public class ServiceLevelAgreementMetricTransformerHelper {
 
         if (serviceLevelAgreements != null) {
             for (ServiceLevelAgreementGroup sla : serviceLevelAgreements.getServiceLevelAgreements()) {
-                ServiceLevelAgreement transformedSla = new ServiceLevelAgreement();
-                transformedSla.setName(sla.getName());
-                transformedSla.setDescription(sla.getDescription());
+                ServiceLevelAgreement transformedSla = getServiceLevelAgreement(sla);
                 slaList.add(transformedSla);
-                for (ServiceLevelAgreementRule rule : sla.getRules()) {
+            }
+        }
+        return slaList;
+    }
+
+
+    public ServiceLevelAgreement getServiceLevelAgreement(ServiceLevelAgreementGroup serviceLevelAgreement) {
+        ServiceLevelAgreement transformedSla = new ServiceLevelAgreement();
+        transformedSla.setId(serviceLevelAgreement.getId());
+        transformedSla.setName(serviceLevelAgreement.getName());
+        transformedSla.setDescription(serviceLevelAgreement.getDescription());
+        for (ServiceLevelAgreementRule rule : serviceLevelAgreement.getRules()) {
                     try {
                         ObligationGroup group = new ObligationGroup();
                         Metric policy = ServiceLevelAgreementMetricTransformer.instance().fromUiModel(rule);
@@ -62,9 +84,10 @@ public class ServiceLevelAgreementMetricTransformerHelper {
                 }
 
                 //transform the responders
-                if (sla.getActionConfigurations() != null) {
+        //TODO move out
+        if (serviceLevelAgreement.getActionConfigurations() != null) {
                     List<ServiceLevelAgreementActionConfiguration> actionConfigurations = new ArrayList<>();
-                    for (ServiceLevelAgreementActionUiConfigurationItem agreementActionUiConfigurationItem : sla.getActionConfigurations()) {
+            for (ServiceLevelAgreementActionUiConfigurationItem agreementActionUiConfigurationItem : serviceLevelAgreement.getActionConfigurations()) {
                         try {
                             ServiceLevelAgreementActionConfiguration actionConfiguration = ServiceLevelAgreementActionConfigTransformer.instance().fromUiModel(agreementActionUiConfigurationItem);
                             actionConfigurations.add(actionConfiguration);
@@ -75,10 +98,9 @@ public class ServiceLevelAgreementMetricTransformerHelper {
                     transformedSla.setActionConfigurations(actionConfigurations);
                 }
 
-            }
-        }
-        return slaList;
+        return transformedSla;
     }
+
 
     public FeedServiceLevelAgreements toFeedServiceLevelAgreements(String feedId, List<ServiceLevelAgreement> slas) {
         FeedServiceLevelAgreements feedServiceLevelAgreements = new FeedServiceLevelAgreements();
@@ -96,6 +118,7 @@ public class ServiceLevelAgreementMetricTransformerHelper {
      */
     public ServiceLevelAgreementGroup toServiceLevelAgreementGroup(ServiceLevelAgreement sla) {
         ServiceLevelAgreementGroup slaGroup = new ServiceLevelAgreementGroup();
+        slaGroup.setId(sla.getId());
         slaGroup.setName(sla.getName());
         slaGroup.setDescription(sla.getDescription());
         for (ObligationGroup group : sla.getGroups()) {

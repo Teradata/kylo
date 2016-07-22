@@ -9,6 +9,7 @@ import java.util.List;
 public class ServiceLevelAgreementGroup {
 
 
+    private String id;
     private String name;
     private String description;
     private List<ServiceLevelAgreementRule> rules;
@@ -54,5 +55,13 @@ public class ServiceLevelAgreementGroup {
 
     public void setActionConfigurations(List<ServiceLevelAgreementActionUiConfigurationItem> actionConfigurations) {
         this.actionConfigurations = actionConfigurations;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

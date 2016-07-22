@@ -7,6 +7,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 
 public interface FeedProvider{
 
@@ -48,9 +49,15 @@ public interface FeedProvider{
     boolean enableFeed(Feed.ID id);
     boolean disableFeed(Feed.ID id);
 
-    Feed updateFeedServiceLevelAgreements(Feed.ID feedId, List<ServiceLevelAgreement> serviceLevelAgreements);
+    Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla);
+
+    /**
+     * Merge properties and return the newly merged properties
+     */
+    Map<String, Object> mergeFeedProperties(Feed.ID feedId, Map<String, Object> properties);
+
+    Map<String, Object> replaceProperties(Feed.ID feedId, Map<String, Object> properties);
 
 
-    
     // TODO Methods to add policy info to source
 }

@@ -99,6 +99,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         return new SLABuilderImpl(resolveImpl(id));
     }
 
+
     private SLAImpl addSLA(SLAImpl sla) {
         synchronized (this.slas) {
             SLAID id = new SLAID();
@@ -464,4 +465,6 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
             return this.obligations;
         }
     }
+
+
 }

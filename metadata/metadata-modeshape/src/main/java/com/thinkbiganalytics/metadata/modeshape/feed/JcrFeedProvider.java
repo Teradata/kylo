@@ -20,6 +20,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
 import com.thinkbiganalytics.metadata.modeshape.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
@@ -43,6 +44,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.inject.Inject;
@@ -588,6 +590,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     }
 
+    public Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla) {
+        JcrFeed feed = (JcrFeed) getFeed(feedId);
+        feed.addServiceLevelAgreement(sla);
+        return feed;
+
+
+    }
+
 
 
     private class JcrPreconditionbuilder implements PreconditionBuilder {
@@ -637,4 +647,26 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         }
     }
 
+
+    @Override
+    public Map<String, Object> mergeFeedProperties(ID feedId, Map<String, Object> properties) {
+        try {
+            JcrFeed feed = (JcrFeed) getFeed(feedId);
+            JcrMetadataAccess.ensureCheckoutNode(feed.getNode());
+            return feed.mergeProperties(properties);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to merge Feed Properties for Feed " + feedId, e);
+        }
+    }
+
+    public Map<String, Object> replaceProperties(ID feedId, Map<String, Object> properties) {
+        try {
+            JcrFeed feed = (JcrFeed) getFeed(feedId);
+            JcrMetadataAccess.ensureCheckoutNode(feed.getNode());
+            return feed.replaceProperties(properties);
+
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to replace Feed Properties for Feed " + feedId, e);
+        }
+    }
 }

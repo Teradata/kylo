@@ -99,6 +99,12 @@
         self.slaAction = EMPTY_RULE_TYPE;
 
         /**
+         * flag to indicate we are creating a new sla to clear the message "no slas exist"
+         * @type {boolean}
+         */
+        self.creatingNewSla = false;
+
+        /**
          * Load and copy the serviceLevelAgreements from the feed if available
          * @type {Array|*}
          */
@@ -164,16 +170,18 @@
         self.saveSla = function () {
             var valid = self.validateForm();
             if (valid) {
-                if (self.editSlaIndex != null) {
-                    self.serviceLevelAgreements[self.editSlaIndex] = self.editSla;
-                }
-                else {
-                    self.serviceLevelAgreements.push(self.editSla);
-                }
-                self.addingSlaCondition = false;
-                self.editSla = null;
-                self.editSlaIndex = null;
+
                 function success() {
+                    if (self.editSlaIndex != null) {
+                        self.serviceLevelAgreements[self.editSlaIndex] = self.editSla;
+                    }
+                    else {
+                        self.serviceLevelAgreements.push(self.editSla);
+                    }
+                    self.addingSlaCondition = false;
+                    self.editSla = null;
+                    self.editSlaIndex = null;
+
                     $mdDialog.show(
                         $mdDialog.alert()
                             .parent(angular.element(document.body))
@@ -185,15 +193,15 @@
                     );
                 }
 
-                saveAllSlas(success)
+                saveSla(success)
 
             }
 
         }
-        function saveAllSlas(successFn, failureFn) {
+        function saveSla(successFn, failureFn) {
             var slaHolder = {feedId: self.feed.feedId}
             slaHolder.serviceLevelAgreements = self.serviceLevelAgreements;
-            SlaService.saveFeedSla(slaHolder).then(function () {
+            SlaService.saveFeedSla(self.feed.feedId, self.editSla).then(function () {
                 if (successFn) {
                     successFn();
                 }
@@ -204,13 +212,20 @@
             });
         }
 
+        self.onBackToList = function (ev) {
+            self.editSla = null;
+            self.creatingNewSla = null;
+        }
+
         self.onNewSla = function () {
+            self.creatingNewSla = true;
             self.editSlaIndex = null;
             self.editSla = {name: '', description: '', rules: [], actionConfigurations: []};
             self.addingSlaCondition = true;
         }
 
         self.onEditSla = function (index) {
+            self.creatingNewSla = false;
             self.editSlaIndex = index;
             self.ruleType = EMPTY_RULE_TYPE;
             self.addingSlaCondition = false;
@@ -238,9 +253,9 @@
                     .ok('Please do it!')
                     .cancel('Nope');
                 $mdDialog.show(confirm).then(function () {
-                    self.serviceLevelAgreements.splice(self.editSlaIndex, 1);
-                    saveAllSlas(function () {
+                    SlaService.deleteSla(self.editSla.id).then(function () {
                         self.editSla = null;
+                        self.serviceLevelAgreements.splice(self.editSlaIndex, 1);
                         $mdToast.show(
                             $mdToast.simple()
                                 .textContent('SLA Deleted.')
@@ -248,11 +263,17 @@
                                 .hideDelay(3000)
                         );
                     }, function () {
-                        self.serviceLevelAgreements.splice(self.editSlaIndex, 0, self.editSla);
+                        //alert delete error
+                        $mdToast.show(
+                            $mdToast.simple()
+                                .textContent('Error deleting SLA.')
+                                .position('bottom left')
+                                .hideDelay(3000)
+                        );
                     });
 
                 }, function () {
-                    //cancelled
+                    //cancelled confirm box
                 });
 
             }

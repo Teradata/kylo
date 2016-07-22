@@ -8,11 +8,15 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.jcr.Node;
+import javax.jcr.Property;
 import javax.jcr.RepositoryException;
+import javax.jcr.nodetype.ConstraintViolationException;
 
 /**
  *
@@ -30,6 +34,21 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
 
     public JcrProperties getPropertiesObject() {
         return JcrUtil.getOrCreateNode(this.node, PROPERTIES_NAME, JcrProperties.NODE_TYPE, JcrProperties.class);
+    }
+
+    public void clearAdditionalProperties() {
+        try {
+            Node propsNode = getPropertiesObject().getNode();
+            Map<String, Object> props = getPropertiesObject().getProperties();
+            for (Map.Entry<String, Object> prop : props.entrySet()) {
+                if (!JcrPropertyUtil.hasProperty(propsNode.getPrimaryNodeType(), prop.getKey())) {
+                    Property property = propsNode.getProperty(prop.getKey());
+                    property.remove();
+                }
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to clear the Properties for this entity. ", e);
+        }
     }
 
     @Override
@@ -144,9 +163,38 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
         }
     }
 
+    /**
+     * Merges any new properties in with the other Extra Properties
+     */
     @Override
     public Map<String, Object> mergeProperties(Map<String, Object> props) {
-        return null;
+      Map<String,Object> newProps = new HashMap<>();
+        Map<String, Object> origProps = getProperties();
+        if (origProps != null) {
+            newProps.putAll(origProps);
+        }
+        if (props != null) {
+            newProps.putAll(props);
+        }
+        JcrProperties properties = getPropertiesObject();
+        for (Map.Entry<String, Object> entry : newProps.entrySet()) {
+            try {
+                properties.setProperty(entry.getKey(), entry.getValue());
+            } catch (MetadataRepositoryException e) {
+                if (ExceptionUtils.getRootCause(e) instanceof ConstraintViolationException) {
+                    //this is ok
+                } else {
+                    throw e;
+                }
+            }
+        }
+        return newProps;
+    }
+
+    public Map<String, Object> replaceProperties(Map<String, Object> props) {
+        clearAdditionalProperties();
+        setProperties(props);
+        return props;
     }
 
     @Override

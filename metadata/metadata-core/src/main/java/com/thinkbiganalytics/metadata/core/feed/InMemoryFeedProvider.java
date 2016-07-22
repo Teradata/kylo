@@ -450,8 +450,20 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
 
+
+
     @Override
-    public Feed updateFeedServiceLevelAgreements(Feed.ID feedId, List<ServiceLevelAgreement> serviceLevelAgreements) {
+    public Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> mergeFeedProperties(Feed.ID feedId, Map<String, Object> properties) {
+        return null;
+    }
+
+    @Override
+    public Map<String, Object> replaceProperties(Feed.ID feedId, Map<String, Object> properties) {
         return null;
     }
 }

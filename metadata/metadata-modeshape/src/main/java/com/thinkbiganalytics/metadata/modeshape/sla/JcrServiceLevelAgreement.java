@@ -131,6 +131,23 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
         }
     }
 
+    public void clear(){
+        try {
+        Iterator<Node> grpItr = (Iterator<Node>) this.node.getNodes(GROUPS);
+            while(grpItr.hasNext()){
+                Node group = grpItr.next();
+                group.remove();
+            }
+            grpItr = (Iterator<Node>) this.node.getNodes(DEFAULT_GROUP);
+            while(grpItr.hasNext()){
+                Node group = grpItr.next();
+                group.remove();
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to clear the SLA obligation group nodes", e);
+        }
+    }
+
 
     public static class SlaId extends JcrEntity.EntityId implements ServiceLevelAgreement.ID {
 

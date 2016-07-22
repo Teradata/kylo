@@ -10,10 +10,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.sla.FeedServiceLevelAgreements;
-import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementMetricTransformerHelper;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
-import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
@@ -302,17 +300,6 @@ public class FeedRestController {
     }
 
 
-    @POST
-    @Path("/{feedId}/sla")
-    @Produces({MediaType.APPLICATION_JSON})
-    public Response saveSla(FeedServiceLevelAgreements feedSla) {
-        List<ServiceLevelAgreement> slaList = serviceLevelAgreementService.saveFeedSla(feedSla);
-
-        ServiceLevelAgreementMetricTransformerHelper helper = new ServiceLevelAgreementMetricTransformerHelper();
-        FeedServiceLevelAgreements serviceLevelAgreements = helper.toFeedServiceLevelAgreements(feedSla.getFeedId(), slaList);
-
-        return Response.ok(serviceLevelAgreements).build();
-    }
 
     @GET
     @Path("/{feedId}/sla")
