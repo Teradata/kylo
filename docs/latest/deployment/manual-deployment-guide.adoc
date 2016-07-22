@@ -73,7 +73,7 @@ you stand up an ELK stack you will likely want to leverage the same instance.
 
         $ <SETUP_DIR>/elasticsearch/install-elasticsearch.sh -o <SETUP_DIR>
 
-        ex. /opt/thinkbig/setup/elasticsearch/install-elasticsearch.sh -o /opt/thinkbig/setup
+        ex. /tmp/thinkbig-install/setup/elasticsearch/install-elasticsearch.sh -o /tmp/thinkbig-install/setup
 
     . Option 2: Use an existing Elasticsearch
 
