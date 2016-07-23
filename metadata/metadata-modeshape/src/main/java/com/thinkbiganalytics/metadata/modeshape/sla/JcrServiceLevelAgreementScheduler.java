@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
@@ -46,7 +45,8 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
     Timer modeshapeAvailableTimer;
 
 
-    @PostConstruct
+    //TODO uncomment once SLA Assessors is implemented
+    // @PostConstruct
     public void scheduleServiceLevelAgreements() {
 
         modeshapeAvailableTimer = new Timer();
