@@ -97,7 +97,7 @@
     - tba:allowPreconditions (BOOLEAN) = 'false'
     - tba:icon (STRING)
     - tba:iconColor (STRING)
-    - tba:nifiTemplateId (STRING)
+    - tba:nifiTemplateId (STRING)   
     - tba:json (STRING)
 
 [tba:category] > tba:entity, mix:referenceable, mix:title, tba:propertied

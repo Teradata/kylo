@@ -11,6 +11,11 @@
     </parent>
 
     <dependencies>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-security-auth</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>org.springframework</groupId>

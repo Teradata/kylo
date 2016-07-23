@@ -32,7 +32,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
 
         @Autowired
-        @Qualifier("authenticationProvider")
+        @Qualifier("uiAuthenticationProvider")
         private AuthenticationProvider authenticationProvider;
 
         protected static final Logger LOG = LoggerFactory.getLogger(WebSecurityConfiguration.class);
@@ -80,7 +80,7 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
         public static class RestApiAuthConfigurationAdapter extends WebSecurityConfigurerAdapter {
 
                 @Autowired
-                @Qualifier("authenticationProvider")
+                @Qualifier("restAuthenticationProvider")
                 private AuthenticationProvider authenticationProvider;
 
                 @Override
