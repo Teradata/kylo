@@ -8,6 +8,7 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,10 +23,10 @@ import java.util.Set;
 @PreconditionPolicy(name = PreconditionPolicyConstants.FEED_EXECUTED_SINCE_FEEDS_NAME, description = "Policy will trigger the feed when all of the supplied feeds have successfully finished")
 public class FeedExecutedSinceFeeds implements Precondition {
 
-    @PolicyProperty(name = "Since Feed", type = PolicyProperty.PROPERTY_TYPE.currentFeed)
+    @PolicyProperty(name = "Since Feed", type = PolicyPropertyTypes.PROPERTY_TYPE.currentFeed)
     private String sinceCategoryAndFeedName;
 
-    @PolicyProperty(name = "Dependent Feeds", required = true, type = PolicyProperty.PROPERTY_TYPE.feedChips, placeholder = "Start typing a feed",
+    @PolicyProperty(name = "Dependent Feeds", required = true, type = PolicyPropertyTypes.PROPERTY_TYPE.feedChips, placeholder = "Start typing a feed",
                     hint = "Select feed(s) that this feed is dependent upon")
     private String categoryAndFeeds;
 

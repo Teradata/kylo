@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.policy;
 
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -12,9 +14,7 @@ import java.lang.annotation.Target;
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 public @interface PolicyProperty {
 
-  enum PROPERTY_TYPE {
-    number, string, select, regex, date, chips, feedChips, currentFeed, currentFeedCronSchedule, feedSelect
-  }
+
 
   String name();
 
@@ -24,7 +24,7 @@ public @interface PolicyProperty {
 
   String placeholder() default "";
 
-  PROPERTY_TYPE type() default PROPERTY_TYPE.string;
+  PolicyPropertyTypes.PROPERTY_TYPE type() default PolicyPropertyTypes.PROPERTY_TYPE.string;
 
   String hint() default "";
 

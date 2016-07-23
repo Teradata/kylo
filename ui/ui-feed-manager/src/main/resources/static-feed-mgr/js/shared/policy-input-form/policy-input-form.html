@@ -1,10 +1,13 @@
 <div ng-repeat="group in vm.rule.groups" class="layout-padding-left-right" layout="{{group.layout}}">
 
   <div ng-repeat="property in group.properties">
-    <md-input-container class="md-block" ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect'  ">
+    <md-input-container class="md-block"
+                        ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect' || property.type == 'email'  ">
       <label>{{property.displayName}}</label>
       <input name="{{property.formKey}}" string-to-number type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"
              ng-required="property.required" ng-disabled="!vm.rule.editable"/>
+      <input name="{{property.formKey}}" ng-if="property.type == 'email'" ng-model="property.value" md-placeholder="property.placeholder"
+             ng-required="property.required" ng-disabled="!vm.rule.editable" type="email"/>
       <input name="{{property.formKey}}" ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder"
              ng-required="property.required" ng-disabled="!vm.rule.editable"/>
       <md-select ng-model="property.value" ng-if="property.type == 'select' || property.type == 'feedSelect' " ng-required="property.required" name="{{property.formKey}}"
@@ -20,6 +23,33 @@
         <div ng-message="required">This field is required.</div>
       </div>
     </md-input-container>
+
+    <md-input-container class="md-block" ng-if="property.type == 'cron'">
+      <label>{{property.displayName}}</label>
+      <input required ng-model="property.value" name="{{property.formKey}}"
+             cron-expression-validator
+             ng-model-options="{ updateOn: 'default blur', debounce: {'default': 300, 'blur': 0} }"/>
+
+      <div ng-if="property.hint" class="hint">
+        {{property.hint}}
+      </div>
+      <div ng-messages="vm.theForm[property.formKey].$error ">
+        <div ng-message="required">This field is required.</div>
+      </div>
+
+      <div ng-show="vm.theForm[property.formKey].$touched && vm.theForm[property.formKey].$invalid"
+           ng-messages="vm.theForm[property.formKey].$error">
+        <div ng-show="vm.theForm[property.formKey].$error.cronExpression"
+             ng-message="cronExpression">Invalid Cron Expression.
+        </div>
+        <div ng-show="vm.theForm[property.formKey].$error.required" ng-message="required">
+          Required.
+        </div>
+      </div>
+      <cron-expression-preview cron-expression="vm.editModel.schedule.schedulingPeriod"
+                               ng-if="vm.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN' && vm.scheduleFeedForm.cronExpression.$valid"></cron-expression-preview>
+    </md-input-container>
+
 
     <md-datepicker name="{{property.formKey}}" ng-required="property.required" ng-if="property.type == 'date' " ng-model="property.value" md-placeholder="property.placeholder"
                    ng-disabled="!vm.rule.editable">

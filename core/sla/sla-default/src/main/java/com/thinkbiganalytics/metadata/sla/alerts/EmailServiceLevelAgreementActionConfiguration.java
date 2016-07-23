@@ -3,6 +3,7 @@ package com.thinkbiganalytics.metadata.sla.alerts;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 
 /**
  * Created by sr186054 on 7/20/16.
@@ -12,7 +13,7 @@ import com.thinkbiganalytics.policy.PolicyPropertyRef;
 )
 public class EmailServiceLevelAgreementActionConfiguration extends BaseServiceLevelAgreementActionConfiguration {
 
-    @PolicyProperty(name = "EmailAddresses", displayName = "Email addresses", hint = "comma separated email addresses", required = true)
+    @PolicyProperty(name = "EmailAddresses", displayName = "Email addresses", hint = "comma separated email addresses", required = true, type = PolicyPropertyTypes.PROPERTY_TYPE.email)
     private String emailAddresses;
 
 

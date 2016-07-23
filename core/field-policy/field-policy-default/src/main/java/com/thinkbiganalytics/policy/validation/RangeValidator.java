@@ -13,9 +13,9 @@ import org.apache.commons.lang3.Validate;
 @Validator(name = "Range", description = "Numeric must fall within range")
 public class RangeValidator implements ValidationPolicy<Number> {
 
-    @PolicyProperty(name = "Min", type = PolicyProperty.PROPERTY_TYPE.number, hint = "Minimum Value")
+    @PolicyProperty(name = "Min", type = PolicyPropertyTypes.PROPERTY_TYPE.number, hint = "Minimum Value")
     private Double min;
-    @PolicyProperty(name = "Max", type = PolicyProperty.PROPERTY_TYPE.number, hint = "Maximum Value")
+    @PolicyProperty(name = "Max", type = PolicyPropertyTypes.PROPERTY_TYPE.number, hint = "Maximum Value")
     private Double max;
 
     public RangeValidator(@PolicyPropertyRef(name = "Min") Number min, @PolicyPropertyRef(name = "Max") Number max) {

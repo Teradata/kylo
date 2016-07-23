@@ -25,10 +25,10 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.precondition.transform.PreconditionPolicyTransformer;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 import com.thinkbiganalytics.rest.model.LabelValue;
 
 import org.apache.commons.lang3.StringUtils;
@@ -375,8 +375,9 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                     FeedServiceLevelAgreements feedServiceLevelAgreements = helper.toFeedServiceLevelAgreements(feedId, restModels);
 
                     applyFeedSelectOptions(ServiceLevelAgreementMetricTransformer.instance()
-                                               .findPropertiesForRulesetMatchingRenderTypes(feedServiceLevelAgreements.getAllRules(), new String[]{PolicyProperty.PROPERTY_TYPE.feedChips.name(),
-                                                                                                                                                   PolicyProperty.PROPERTY_TYPE.feedSelect.name()}));
+                                               .findPropertiesForRulesetMatchingRenderTypes(feedServiceLevelAgreements.getAllRules(), new String[]{PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
+                                                                                                                                                   PolicyPropertyTypes.PROPERTY_TYPE.feedSelect
+                                                                                                                                                       .name()}));
                     return feedServiceLevelAgreements;
 
                 }

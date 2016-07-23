@@ -11,14 +11,14 @@ public class NotNullValidator implements ValidationPolicy {
 
 
     @PolicyProperty(name = "EMPTY_STRING", value = "false", displayName = "Allow Empty String Values",
-                    hint = "If the value is a String, are empty strings not null?", type = PolicyProperty.PROPERTY_TYPE.select,
+                    hint = "If the value is a String, are empty strings not null?", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     labelValues = {@PropertyLabelValue(label = "Yes", value = "true"),
                                    @PropertyLabelValue(label = "No", value = "false")})
     private boolean allowEmptyString = false;
 
     @PolicyProperty(name = "TRIM_STRING", value = "true", displayName = "Trim String Values",
                     hint = " If the value is a String, should it be trimmed before checking for null?",
-                    type = PolicyProperty.PROPERTY_TYPE.select, labelValues = {@PropertyLabelValue(label = "Yes", value = "true"),
+                    type = PolicyPropertyTypes.PROPERTY_TYPE.select, labelValues = {@PropertyLabelValue(label = "Yes", value = "true"),
                                                                                @PropertyLabelValue(label = "No",
                                                                                                    value = "false")})
     private boolean trimString = true;

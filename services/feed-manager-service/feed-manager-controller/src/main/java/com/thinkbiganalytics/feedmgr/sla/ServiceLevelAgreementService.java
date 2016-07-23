@@ -19,9 +19,9 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
-import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.GenericBaseUiPolicyRuleBuilder;
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
@@ -75,8 +75,9 @@ public class ServiceLevelAgreementService {
         }
 
         feedManagerFeedService
-            .applyFeedSelectOptions(ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderTypes(rules, new String[]{PolicyProperty.PROPERTY_TYPE.feedChips.name(),
-                                                                                                                                                      PolicyProperty.PROPERTY_TYPE.feedSelect.name()}));
+            .applyFeedSelectOptions(
+                ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderTypes(rules, new String[]{PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
+                                                                                                                                  PolicyPropertyTypes.PROPERTY_TYPE.feedSelect.name()}));
 
         return rules;
     }

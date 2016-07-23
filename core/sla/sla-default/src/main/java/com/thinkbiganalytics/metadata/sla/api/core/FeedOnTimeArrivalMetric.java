@@ -16,6 +16,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementMetric;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
 import com.thinkbiganalytics.policy.PropertyLabelValue;
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 import com.thinkbiganalytics.scheduler.util.TimerToCronExpression;
 
 import org.joda.time.Period;
@@ -34,27 +35,27 @@ import java.util.Locale;
 public class FeedOnTimeArrivalMetric implements Metric {
 
     @PolicyProperty(name = "FeedName",
-                    type = PolicyProperty.PROPERTY_TYPE.currentFeed,
+                    type = PolicyPropertyTypes.PROPERTY_TYPE.currentFeed,
                     hidden = true)
     private String feedName;
 
     @PolicyProperty(name = "ExpectedDeliveryTime",
                     displayName = "Expected Delivery Time",
-                    type = PolicyProperty.PROPERTY_TYPE.string,
+                    type = PolicyPropertyTypes.PROPERTY_TYPE.cron,
                     hint = "Cron Expression for when you expect to receive this data",
                     required = true)
     private String cronString;
 
     @PolicyProperty(name = "NoLaterThanTime",
                     displayName = "No later than time",
-                    type = PolicyProperty.PROPERTY_TYPE.number,
+                    type = PolicyPropertyTypes.PROPERTY_TYPE.number,
                     hint = "Number specifying the amount of time allowed after the Expected Delivery Time",
                     group = "lateTime",
                     required = true)
     private Integer lateTime;
 
     @PolicyProperty(name = "NoLaterThanUnits",
-                    displayName = "Units", type = PolicyProperty.PROPERTY_TYPE.select,
+                    displayName = "Units", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     group = "lateTime",
                     labelValues = {@PropertyLabelValue(label = "Days", value = "days"),
                                    @PropertyLabelValue(label = "Hours", value = "hrs"),
@@ -65,14 +66,14 @@ public class FeedOnTimeArrivalMetric implements Metric {
 
     @PolicyProperty(name = "AsOfTime",
                     displayName = "As of time",
-                    type = PolicyProperty.PROPERTY_TYPE.number,
+                    type = PolicyPropertyTypes.PROPERTY_TYPE.number,
                     hint = "as of time",
                     group = "asOfTime",
                     required = true)
     private Integer asOfTime;
 
     @PolicyProperty(name = "AsOfUnits", displayName = "Units",
-                    type = PolicyProperty.PROPERTY_TYPE.select,
+                    type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     group = "asOfTime",
                     labelValues = {@PropertyLabelValue(label = "Days", value = "days"),
                                    @PropertyLabelValue(label = "Hours", value = "hrs"),

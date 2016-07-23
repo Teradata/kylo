@@ -7,9 +7,9 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
-import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,7 @@ public class ServiceLevelAgreementMetricTransformerHelper {
         if (serviceLevelAgreements != null) {
             List<FieldRuleProperty>
                 properties =
-                ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderType(serviceLevelAgreements.getAllRules(), PolicyProperty.PROPERTY_TYPE.currentFeed.name());
+                ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderType(serviceLevelAgreements.getAllRules(), PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name());
             if (properties != null && !properties.isEmpty()) {
                 for (FieldRuleProperty property : properties) {
                     property.setValue(category + "." + feed);
@@ -40,7 +40,7 @@ public class ServiceLevelAgreementMetricTransformerHelper {
         if (serviceLevelAgreement != null) {
             List<FieldRuleProperty>
                 properties =
-                ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderType(serviceLevelAgreement.getRules(), PolicyProperty.PROPERTY_TYPE.currentFeed.name());
+                ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderType(serviceLevelAgreement.getRules(), PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name());
             if (properties != null && !properties.isEmpty()) {
                 for (FieldRuleProperty property : properties) {
                     property.setValue(category + "." + feed);

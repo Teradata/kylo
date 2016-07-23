@@ -3,6 +3,7 @@ package com.thinkbiganalytics.policy.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +97,7 @@ public class BaseUiPolicyRule {
 
     if (getProperties() != null) {
       for (FieldRuleProperty property : getProperties()) {
-        if (!FieldRulePropertyBuilder.PROPERTY_TYPE.currentFeed.name().equalsIgnoreCase(property.getType())) {
+        if (!PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name().equalsIgnoreCase(property.getType())) {
           //get the values
           String value = property.getStringValue();
           if (sb == null) {

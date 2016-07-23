@@ -4,6 +4,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
 import com.thinkbiganalytics.policy.PropertyLabelValue;
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 
 /**
  * Created by sr186054 on 7/20/16.
@@ -23,7 +24,7 @@ public class JiraServiceLevelAgreementActionConfiguration extends BaseServiceLev
     @PolicyProperty(name = "JiraIssueType",
                     displayName = "Issue Type",
                     hint = "The Jira Type ",
-                    value = "Bug", type = PolicyProperty.PROPERTY_TYPE.select,
+                    value = "Bug", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     labelValues = {@PropertyLabelValue(label = "Bug", value = "Bug"),
                                    @PropertyLabelValue(label = "Task", value = "Task")},
                     required = true)

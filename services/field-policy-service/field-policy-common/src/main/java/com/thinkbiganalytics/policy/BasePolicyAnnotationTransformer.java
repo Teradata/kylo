@@ -8,6 +8,7 @@ import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.policy.rest.model.BaseUiPolicyRule;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldRulePropertyBuilder;
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 import com.thinkbiganalytics.rest.model.LabelValue;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -70,7 +71,7 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                 groupOrder.put(group, order);
                 FieldRuleProperty rule = new FieldRulePropertyBuilder(prop.name()).displayName(
                     StringUtils.isNotBlank(prop.displayName()) ? prop.displayName() : prop.name()).hint(prop.hint())
-                    .type(FieldRulePropertyBuilder.PROPERTY_TYPE.valueOf(prop.type().name()))
+                    .type(PolicyPropertyTypes.PROPERTY_TYPE.valueOf(prop.type().name()))
                     .objectProperty(annotatedFieldProperty.getName())
                     .placeholder(prop.placeholder())
                     .value(value)
@@ -120,7 +121,7 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
 
                 FieldRuleProperty rule = new FieldRulePropertyBuilder(prop.name()).displayName(
                     StringUtils.isNotBlank(prop.displayName()) ? prop.displayName() : prop.name()).hint(prop.hint())
-                    .type(FieldRulePropertyBuilder.PROPERTY_TYPE.valueOf(prop.type().name()))
+                    .type(PolicyPropertyTypes.PROPERTY_TYPE.valueOf(prop.type().name()))
                     .objectProperty(annotatedFieldProperty.getName())
                     .placeholder(prop.placeholder())
                     .value(value)

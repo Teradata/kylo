@@ -6,6 +6,7 @@ import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 
 import org.joda.time.Period;
 
@@ -21,7 +22,7 @@ import java.util.Set;
                     description = "Policy will trigger the feed when all of the supplied feeds have successfully finished or always at the given cron expression supplied.  Both the Cron Expression and the Feeds input are required attributes")
 public class FeedExecutedSinceFeedsOrTime extends FeedExecutedSinceFeeds {
 
-    @PolicyProperty(name = "Cron Expression", type = PolicyProperty.PROPERTY_TYPE.string, required = true, hint = "Supply a cron expression to indicate when this feed should run")
+    @PolicyProperty(name = "Cron Expression", type = PolicyPropertyTypes.PROPERTY_TYPE.cron, required = true, hint = "Supply a cron expression to indicate when this feed should run")
     private String cronExpression;
 
 

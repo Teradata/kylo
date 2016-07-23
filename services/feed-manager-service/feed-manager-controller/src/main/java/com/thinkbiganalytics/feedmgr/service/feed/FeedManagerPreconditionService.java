@@ -1,9 +1,9 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
-import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.precondition.AvailablePolicies;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 
 import java.util.List;
 
@@ -20,7 +20,7 @@ public class FeedManagerPreconditionService {
     public List<PreconditionRule> getPossiblePreconditions() {
         List<PreconditionRule> rules = AvailablePolicies.discoverPreconditions();
         //find and attach Feed Lookup list to those that are of that type
-        List<FieldRuleProperty> feedLookupLists = AvailablePolicies.findPropertiesMatchingRenderType(rules, PolicyProperty.PROPERTY_TYPE.feedChips.name());
+        List<FieldRuleProperty> feedLookupLists = AvailablePolicies.findPropertiesMatchingRenderType(rules, PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name());
         feedManagerFeedService.applyFeedSelectOptions(feedLookupLists);
         return rules;
     }

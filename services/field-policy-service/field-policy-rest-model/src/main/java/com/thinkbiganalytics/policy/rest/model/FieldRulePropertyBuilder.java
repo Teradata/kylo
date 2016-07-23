@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.policy.rest.model;
 
 
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 import com.thinkbiganalytics.rest.model.LabelValue;
 
 import java.util.ArrayList;
@@ -25,14 +26,10 @@ public class FieldRulePropertyBuilder {
     private Integer groupOrder;
     private String layout;
 
-    public enum PROPERTY_TYPE {
-        number, string, select, regex, date, chips, feedChips, feedSelect, currentFeed
-    }
-
     public FieldRulePropertyBuilder(String name){
         this.name = name;
         this.displayName = name;
-        this.type = PROPERTY_TYPE.string.name();
+        this.type = PolicyPropertyTypes.PROPERTY_TYPE.string.name();
         this.placeholder = "";
         this.hint = "";
 
@@ -53,7 +50,7 @@ public class FieldRulePropertyBuilder {
         return this;
     }
 
-    public FieldRulePropertyBuilder type(PROPERTY_TYPE type){
+    public FieldRulePropertyBuilder type(PolicyPropertyTypes.PROPERTY_TYPE type) {
         this.type = type.name();
         return this;
     }

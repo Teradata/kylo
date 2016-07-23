@@ -6,6 +6,7 @@ package com.thinkbiganalytics.policy.standardization;
 
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
+import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -33,7 +34,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
     @PolicyProperty(name = "Date Format", hint = "Format Example: MM/DD/YYYY")
     private String inputDateFormat;
 
-    @PolicyProperty(name = "Output Format", hint = "Choose an output format", type = PolicyProperty.PROPERTY_TYPE.select,
+    @PolicyProperty(name = "Output Format", hint = "Choose an output format", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     selectableValues = {"DATE_ONLY", "DATETIME", "DATETIME_NOMILLIS"})
     private OutputFormats outputFormat;
 
@@ -49,7 +50,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
     /**
      * Whether the reference timezone is encoded in the ISO8601 date or specified as configuration
      */
-    @PolicyProperty(name = "Input timezone", hint = "Input timezone (optional)", type = PolicyProperty.PROPERTY_TYPE.select,
+    @PolicyProperty(name = "Input timezone", hint = "Input timezone (optional)", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     selectableValues = {"ACT",
                                         "AET",
                                         "AGT",
@@ -84,7 +85,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
     /**
      * Whether the reference timezone is encoded in the ISO8601 date or specified as configuration
      */
-    @PolicyProperty(name = "Output timezone", hint = "Targeted timezone (optional)", type = PolicyProperty.PROPERTY_TYPE.select,
+    @PolicyProperty(name = "Output timezone", hint = "Targeted timezone (optional)", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
                     selectableValues = {"ACT",
                                         "AET",
                                         "AGT",
