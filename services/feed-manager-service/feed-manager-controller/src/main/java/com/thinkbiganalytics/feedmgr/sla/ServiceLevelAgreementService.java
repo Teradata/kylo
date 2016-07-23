@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.feedmgr.sla;
 
+import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
@@ -12,10 +13,12 @@ import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementMetric;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.GenericBaseUiPolicyRuleBuilder;
@@ -42,6 +45,9 @@ public class ServiceLevelAgreementService {
 
     @Inject
     MetadataAccess metadataAccess;
+
+    @Inject
+    ServiceLevelAgreementScheduler serviceLevelAgreementScheduler;
 
 
     @Inject
@@ -73,6 +79,41 @@ public class ServiceLevelAgreementService {
                                                                                                                                                       PolicyProperty.PROPERTY_TYPE.feedSelect.name()}));
 
         return rules;
+    }
+
+    public List<ServiceLevelAgreement> getServiceLevelAgreements() {
+        return metadataAccess.read(new Command<List<ServiceLevelAgreement>>() {
+            @Override
+            public List<ServiceLevelAgreement> execute() {
+
+                List<com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement> agreements = slaProvider.getAgreements();
+                if (agreements != null) {
+                    return new ArrayList<>(Collections2.transform(agreements, Model.DOMAIN_TO_SLA));
+                }
+                return null;
+
+            }
+        });
+    }
+
+    /**
+     * get a SLA and convert it to the editable SLA form object
+     */
+    public ServiceLevelAgreementGroup getServiceLevelAgreementAsFormObject(String slaId) {
+        return metadataAccess.read(new Command<ServiceLevelAgreementGroup>() {
+            @Override
+            public ServiceLevelAgreementGroup execute() {
+
+                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement agreement = slaProvider.getAgreement(slaProvider.resolve(slaId));
+                if (agreement != null) {
+                    ServiceLevelAgreement modelSla = Model.toModel(agreement, true);
+                    ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
+                    return transformer.toServiceLevelAgreementGroup(modelSla);
+                }
+                return null;
+
+            }
+        });
     }
 
     public boolean removeAgreement(String id) {
@@ -151,12 +192,19 @@ public class ServiceLevelAgreementService {
                         }
                         groupBuilder.build();
                     }
-                    slaBuilder.actionConfigurations(sla.getActionConfigurations());
                     com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement savedSla = slaBuilder.build();
+
+                    List<ServiceLevelAgreementActionConfiguration> actions = transformer.getActionConfigurations(serviceLevelAgreement);
+
+                    // now assign the sla checks
+                    slaProvider.slaCheckBuilder(savedSla.getId()).removeSlaChecks().actionConfigurations(actions).build();
+
                     if (feed != null) {
                         feedProvider.updateFeedServiceLevelAgreement(feedProvider.resolveFeed(feed.getFeedId()), savedSla);
                     }
                     ServiceLevelAgreement restModel = Model.toModel(savedSla, true);
+
+
 
                     return restModel;
 

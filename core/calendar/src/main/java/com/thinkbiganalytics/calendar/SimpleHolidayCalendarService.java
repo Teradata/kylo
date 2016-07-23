@@ -2,18 +2,27 @@ package com.thinkbiganalytics.calendar;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.spring.FileResourceService;
+
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.LocalDate;
 import org.quartz.impl.calendar.HolidayCalendar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 
-import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
 import java.util.Map.Entry;
-public class SimpleHolidayCalendarService implements HolidayCalendarService {
+import java.util.Set;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+public class SimpleHolidayCalendarService implements HolidayCalendarService{
 
     private static final Logger LOG = LoggerFactory.getLogger(SimpleHolidayCalendarService.class);
 
@@ -21,7 +30,10 @@ public class SimpleHolidayCalendarService implements HolidayCalendarService {
 
     private Map<String, HolidayCalendar> calendars;
 
-    @Value("${podium.calendars}")
+    @Inject
+   private FileResourceService fileResourceService;
+
+    @Value("${holiday.calendars:#{null}}")
     private String filename;
 
     public SimpleHolidayCalendarService() {
@@ -55,12 +67,16 @@ public class SimpleHolidayCalendarService implements HolidayCalendarService {
 
     @PostConstruct
     protected void load() {
-        LOG.info("Loading calendar from " + filename);
-        File file = new File(filename);
-        ObjectMapper mapper = new ObjectMapper();
+        File file = null;
         try {
-            Map<String, CalendarDates> map = mapper.readValue(file, new TypeReference<Map<String, CalendarDates>>() { });
+        if(StringUtils.isNotBlank(filename)) {
+            file = new File(filename);
+            ObjectMapper mapper = new ObjectMapper();
+
+            Map<String, CalendarDates> map = mapper.readValue(file, new TypeReference<Map<String, CalendarDates>>() {
+            });
             addCalendarDates(map);
+        }
         } catch (IOException e) {
             LOG.error("Could not load calendars", e);
         }
@@ -96,5 +112,13 @@ public class SimpleHolidayCalendarService implements HolidayCalendarService {
      */
     public void setFilename(String filename) {
         this.filename = filename;
+    }
+
+    public FileResourceService getFileResourceService() {
+        return fileResourceService;
+    }
+
+    public void setFileResourceService(FileResourceService fileResourceService) {
+        this.fileResourceService = fileResourceService;
     }
 }

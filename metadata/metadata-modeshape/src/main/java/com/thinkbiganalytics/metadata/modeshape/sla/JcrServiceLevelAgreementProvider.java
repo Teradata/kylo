@@ -21,12 +21,16 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.SLACheckBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 
 import org.modeshape.jcr.api.JcrTools;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -34,6 +38,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.inject.Inject;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -48,6 +53,9 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     public static final String SLA_PATH = "/metadata/sla";
     
     private final JcrTools jcrTools = new JcrTools();
+
+    @Inject
+    ServiceLevelAgreementScheduler serviceLevelAgreementScheduler;
 
     @Override
     public Class<? extends ServiceLevelAgreement> getEntityClass() {
@@ -276,37 +284,16 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         public ServiceLevelAgreement build() {
             JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.NAME, this.name);
             JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.DESCRIPTION, this.description);
-            //clear out the agreement actions
-            try {
-                Iterator<Node> nodesItr = (Iterator<Node>) this.slaNode.getNodes(JcrServiceLevelAgreement.ACTION_CONFIGURATIONS);
-                while (nodesItr != null && nodesItr.hasNext()) {
-                    Node action = nodesItr.next();
-                    action.remove();
-                }
-
-                if (this.serviceLevelAgreementActionConfigurations != null && !this.serviceLevelAgreementActionConfigurations.isEmpty()) {
-                for (ServiceLevelAgreementActionConfiguration actionConfiguration : this.serviceLevelAgreementActionConfigurations) {
-                        Node node = this.slaNode.addNode(JcrServiceLevelAgreement.ACTION_CONFIGURATIONS, JcrServiceLevelAgreement.ACTION_CONFIGURATION_TYPE);
-
-                        JcrPropertyUtil.setProperty(node, JcrPropertyConstants.TITLE, actionConfiguration.getClass().getSimpleName());
-                        ServiceLevelAgreementActionConfig annotation = actionConfiguration.getClass().getAnnotation(ServiceLevelAgreementActionConfig.class);
-                        String desc = actionConfiguration.getClass().getSimpleName();
-                        if (annotation != null) {
-                            desc = annotation.description();
-                        }
-                        JcrPropertyUtil.setProperty(node, JcrPropertyConstants.DESCRIPTION, desc);
-                        JcrUtil.addGenericJson(node, JcrPropertyConstants.JSON, actionConfiguration);
-
-
-                }
-            }
-            } catch (RepositoryException e) {
-                throw new MetadataRepositoryException("Failed to build the SLA", e);
-            }
-
-            return new JcrServiceLevelAgreement(this.slaNode);
+            ServiceLevelAgreement agreement = new JcrServiceLevelAgreement(this.slaNode);
+            //schedule it
+            //serviceLevelAgreementScheduler.scheduleServiceLevelAgreement(agreement);
+            return agreement;
         }
     }
+
+
+
+
 
     private static class ObligationBuilderImpl<B> implements ObligationBuilder<B> {
 
@@ -405,6 +392,114 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         public ServiceLevelAgreementBuilder build() {
             JcrPropertyUtil.setProperty(this.groupNode, JcrObligationGroup.CONDITION, this.condition);
             return this.slaBuilder;
+
         }
     }
+
+    public SLACheckBuilder slaCheckBuilder(ServiceLevelAgreement.ID slaId) {
+        try {
+            Session session = getSession();
+            Node n = session.getNodeByIdentifier(slaId.toString());
+            return new SLACheckBuilderImpl(n);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to create slaCheckBuilder. Error attempting to find related SLA by id of " + slaId);
+        }
+    }
+
+
+    private static class SLACheckBuilderImpl implements SLACheckBuilder {
+
+
+        private JcrServiceLevelAgreement sla;
+        private Node slaCheckNode;
+
+        private String cronExpression;
+
+        private List<ServiceLevelAgreementActionConfiguration> serviceLevelAgreementActionConfigurations;
+
+        public SLACheckBuilderImpl(Node slaNode) {
+            this.sla = new JcrServiceLevelAgreement(slaNode);
+        }
+
+        public SLACheckBuilderImpl removeSlaChecks() {
+            try {
+                Iterator<Node> nodesItr = (Iterator<Node>) this.sla.getNode().getNodes(JcrServiceLevelAgreement.SLA_CHECKS);
+                while (nodesItr != null && nodesItr.hasNext()) {
+                    Node action = nodesItr.next();
+                    action.remove();
+                }
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to remove the SLA Checks", e);
+            }
+            return this;
+        }
+
+        @Override
+        public SLACheckBuilder actionConfiguration(ServiceLevelAgreementActionConfiguration configuration) {
+            if (this.serviceLevelAgreementActionConfigurations == null) {
+                this.serviceLevelAgreementActionConfigurations = new ArrayList<>();
+            }
+            if (configuration != null) {
+                this.serviceLevelAgreementActionConfigurations.add(configuration);
+            }
+            return this;
+        }
+
+        @Override
+        public SLACheckBuilder actionConfigurations(List<ServiceLevelAgreementActionConfiguration> configurations) {
+            if (this.serviceLevelAgreementActionConfigurations == null) {
+                this.serviceLevelAgreementActionConfigurations = new ArrayList<>();
+            }
+            if (configurations != null) {
+                this.serviceLevelAgreementActionConfigurations.addAll(configurations);
+            }
+            return this;
+        }
+
+        @Override
+        public SLACheckBuilder cronExpression(String cronExpression) {
+            this.cronExpression = cronExpression;
+            return this;
+        }
+
+
+        @Override
+        public ServiceLevelAgreementCheck build() {
+            try {
+                //create the Check Node
+
+                this.slaCheckNode = JcrUtil.getOrCreateNode(this.sla.getNode(), JcrServiceLevelAgreement.SLA_CHECKS, JcrServiceLevelAgreementCheck.NODE_TYPE);
+
+                String slaName = sla.getName();
+                JcrPropertyUtil.setProperty(slaCheckNode, JcrPropertyConstants.DESCRIPTION, "SLA Check for " + slaName + " using schedule " + cronExpression);
+                JcrPropertyUtil.setProperty(slaCheckNode, JcrPropertyConstants.TITLE, "SLA Check");
+                JcrPropertyUtil.setProperty(slaCheckNode, JcrServiceLevelAgreementCheck.CRON_SCHEDULE, cronExpression);
+
+                if (this.serviceLevelAgreementActionConfigurations != null && !this.serviceLevelAgreementActionConfigurations.isEmpty()) {
+                    for (ServiceLevelAgreementActionConfiguration actionConfiguration : this.serviceLevelAgreementActionConfigurations) {
+                        Node node = this.slaCheckNode.addNode(JcrServiceLevelAgreementCheck.ACTION_CONFIGURATIONS, JcrServiceLevelAgreementCheck.ACTION_CONFIGURATION_TYPE);
+
+                        JcrPropertyUtil.setProperty(node, JcrPropertyConstants.TITLE, actionConfiguration.getClass().getSimpleName());
+                        ServiceLevelAgreementActionConfig annotation = actionConfiguration.getClass().getAnnotation(ServiceLevelAgreementActionConfig.class);
+                        String desc = actionConfiguration.getClass().getSimpleName();
+                        if (annotation != null) {
+                            desc = annotation.description();
+                        }
+                        JcrPropertyUtil.setProperty(node, JcrPropertyConstants.DESCRIPTION, desc);
+                        JcrUtil.addGenericJson(node, JcrPropertyConstants.JSON, actionConfiguration);
+
+
+                    }
+                }
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to build the SLA Check", e);
+            }
+
+            return new JcrServiceLevelAgreementCheck(this.slaCheckNode);
+        }
+    }
+
+
+
+
 }

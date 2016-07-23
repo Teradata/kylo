@@ -9,7 +9,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 
 import java.util.Arrays;
 import java.util.List;
@@ -29,7 +28,7 @@ public class ServiceLevelAgreement {
     private ObligationGroup defaultGroup;
     private List<ObligationGroup> groups;
 
-    private List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations;
+    private List<ServiceLevelAgreementCheck> slaChecks;
     
     public ServiceLevelAgreement() {
         this.defaultGroup = new ObligationGroup("REQUIRED");
@@ -121,11 +120,11 @@ public class ServiceLevelAgreement {
         this.defaultGroup = defaultGroup;
     }
 
-    public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations() {
-        return actionConfigurations;
+    public List<ServiceLevelAgreementCheck> getSlaChecks() {
+        return slaChecks;
     }
 
-    public void setActionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
-        this.actionConfigurations = actionConfigurations;
+    public void setSlaChecks(List<ServiceLevelAgreementCheck> slaChecks) {
+        this.slaChecks = slaChecks;
     }
 }

@@ -9,6 +9,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementAction;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.spring.SpringApplicationContext;
 
 import org.apache.commons.lang3.reflect.ConstructorUtils;
@@ -33,11 +34,12 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
      */
     @Override
     public void alertChange(Alert alert, AlertResponse response) {
-        if (alert.getType().equals(AssessmentAlerts.VIOLATION_ALERT)) {
+        if (alert.getType().equals(AssessmentAlerts.VIOLATION_ALERT.getAlertType())) {
             try {
                 response.inProgress("Handling volation");
                 handleViolation(alert);
                 response.handle("Handled violation");
+                response.handle();
             } catch (Exception e) {
                 response.unHandle("Failed to handle violation");
             }
@@ -47,8 +49,9 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
     private void handleViolation(Alert alert) {
         ServiceLevelAssessment assessment = alert.getContent();
         ServiceLevelAgreement agreement = assessment.getAgreement();
-        if (agreement.getActionConfigurations() != null) {
-            for (ServiceLevelAgreementActionConfiguration configuration : agreement.getActionConfigurations()) {
+        if (agreement.getSlaChecks() != null) {
+            for (ServiceLevelAgreementCheck check : agreement.getSlaChecks()) {
+                for (ServiceLevelAgreementActionConfiguration configuration : check.getActionConfigurations()) {
                 List<Class<? extends ServiceLevelAgreementAction>> responders = configuration.getActionClasses();
                 if (responders != null) {
                     //first check to see if there is a Spring Bean configured for this class type... if so call that
@@ -69,6 +72,7 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
                             responder.respond(configuration, alert);
                         }
                     }
+                }
                 }
             }
         }

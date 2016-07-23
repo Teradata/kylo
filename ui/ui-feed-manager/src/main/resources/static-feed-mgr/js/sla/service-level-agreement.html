@@ -126,13 +126,13 @@
         </div>
         <div ng-if="vm.addingSlaAction" class="layout-padding-left-right" layout="row">
           <md-input-container class="md-block layout-padding-top-bottom">
-            <label class="md-container-ignore label-small layout-padding-top">Select New Condition Rule</label>
+            <label class="md-container-ignore label-small layout-padding-top">Select New Action</label>
             <md-select ng-model="vm.slaAction" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onAddSlaActionChange()" aria-label="Rule Type">
               <md-option ng-value="opt" ng-repeat="opt in vm.slaActionOptions">{{ opt.name }}</md-option>
             </md-select>
           </md-input-container>
           <md-button ng-click="vm.addingSlaAction = false">
-            <ng-md-icon icon="delete"></ng-md-icon>
+            <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
           </md-button>
         </div>
         <div ng-if="vm.addingSlaAction == false" flex layout="row">

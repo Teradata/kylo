@@ -1,11 +1,14 @@
 package com.thinkbiganalytics.feedmgr.sla;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Created by sr186054 on 7/19/16.
  */
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceLevelAgreementGroup {
 
 

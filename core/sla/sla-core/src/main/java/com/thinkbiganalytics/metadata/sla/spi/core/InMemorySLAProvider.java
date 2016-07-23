@@ -13,7 +13,9 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.SLACheckBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 import org.joda.time.DateTime;
@@ -407,7 +409,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         }
 
         @Override
-        public List<ServiceLevelAgreementActionConfiguration> getActionConfigurations() {
+        public List<ServiceLevelAgreementCheck> getSlaChecks() {
             return null;
         }
     }
@@ -467,4 +469,8 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
     }
 
 
+    @Override
+    public SLACheckBuilder slaCheckBuilder(ID slaId) {
+        return null;
+    }
 }

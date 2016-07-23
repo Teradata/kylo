@@ -29,7 +29,7 @@ import java.util.Locale;
  *
  *         TODO Wire CalendarName into the @PolicyProperty so its available on the UI
  */
-@ServiceLevelAgreementMetric(name = "Feed Processed Data by a certain time",
+@ServiceLevelAgreementMetric(name = "Processing deadline",
                              description = "Ensure a Feed processes data by a specified time")
 public class FeedOnTimeArrivalMetric implements Metric {
 
@@ -137,8 +137,9 @@ public class FeedOnTimeArrivalMetric implements Metric {
     @Override
     public String getDescription() {
         StringBuilder bldr = new StringBuilder("Data expected from feed ");
+
         bldr.append("\"").append(this.feedName).append("\" ")
-            .append(generateCronDescription(this.expectedExpression.toString()))
+            .append(generateCronDescription(this.getExpectedExpression().toString()))
             .append(", and no more than ").append(this.latePeriod.getHours()).append(" hours late");
         return bldr.toString();
     }
@@ -164,6 +165,13 @@ public class FeedOnTimeArrivalMetric implements Metric {
     }
 
     public CronExpression getExpectedExpression() {
+        if (this.expectedExpression == null && this.cronString != null) {
+            try {
+                this.expectedExpression = new CronExpression(this.cronString);
+            } catch (ParseException e) {
+                e.printStackTrace();
+            }
+        }
         return expectedExpression;
     }
 

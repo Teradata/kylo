@@ -16,6 +16,7 @@ public class JiraServiceLevelAgreementAction implements ServiceLevelAgreementAct
         String projectKey = actionConfiguration.getProjectKey();
         String issueType = actionConfiguration.getIssueType();
 
+        ///do call to JIRA
         return true;
     }
 }

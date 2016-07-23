@@ -3,20 +3,20 @@
  */
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
+import com.google.common.collect.ComparisonChain;
+import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
+import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
+
+import org.joda.time.DateTime;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-
-import org.joda.time.DateTime;
-
-import com.google.common.collect.ComparisonChain;
-import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
-import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 /**
  *
@@ -96,8 +96,8 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     public int compareTo(ServiceLevelAssessment sla) {
         ComparisonChain chain = ComparisonChain
                 .start()
-                .compare(this.getResult(), sla.getResult())
-                .compare(this.getAgreement().getName(), sla.getAgreement().getName());
+                .compare(this.getResult(), sla.getResult());
+                //.compare(this.getAgreement().getName(), sla.getAgreement().getName());
         
         if (chain.result() != 0) {
             return chain.result();

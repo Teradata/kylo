@@ -22,9 +22,13 @@ import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvi
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.op.JobRepoFeedOperationsProvider;
+import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -115,7 +119,17 @@ public class MetadataJcrConfig {
     public JcrServiceLevelAgreementProvider slaProvider() {
         return new JcrServiceLevelAgreementProvider();
     }
-    
+
+    @Bean
+    ServiceLevelAgreementScheduler serviceLevelAgreementScheduler() {
+        return new JcrServiceLevelAgreementScheduler();
+    }
+
+    @Bean
+    ServiceLevelAgreementChecker serviceLevelAgreementChecker() {
+        return new JcrServiceLevelAgreementChecker();
+    }
+
     @Bean
     public JcrMetadataAccess metadataAccess() {
         return new JcrMetadataAccess();

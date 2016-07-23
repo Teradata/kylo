@@ -3,10 +3,10 @@
  */
 package com.thinkbiganalytics.metadata.sla.spi;
 
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
 import java.io.Serializable;
 import java.util.List;
-
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
  * A provider for creating and managing SLAs.
@@ -62,5 +62,7 @@ public interface ServiceLevelAgreementProvider {
      * @return the builder
      */
     ServiceLevelAgreementBuilder builder(ServiceLevelAgreement.ID id);
+
+    SLACheckBuilder slaCheckBuilder(ServiceLevelAgreement.ID slaId);
     
 }

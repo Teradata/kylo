@@ -38,6 +38,7 @@
              menu.push({sref:"feeds",icon:"link",text:"Feeds",defaultActive:false,fullscreen:false});
             menu.push({sref:"categories",icon:"star",text:"Categories",defaultActive:false,fullscreen:false});
             menu.push({sref:"tables",icon:"layers",text:"Tables",defaultActive:false,fullscreen:false});
+            menu.push({sref:"service-level-agreements",icon:"label",text:"SLA",defaultActive:false, fullscreen:false});
             menu.push({sref:"visual-query",icon:"border_color",text:"Visual Query",defaultActive:false, fullscreen:true});
             self.selectedMenuItem = menu[0];
             self.menu = menu;

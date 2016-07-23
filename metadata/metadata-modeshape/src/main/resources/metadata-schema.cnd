@@ -13,6 +13,7 @@
  *             template
  *         "sla"
  *             sla*
+ *                slaChecks*
  *         "extensions"
  *             "types"
  *                 typeDescriptor
@@ -59,6 +60,7 @@
 [tba:templatesFolder] > nt:folder
 
 [tba:slaFolder] > nt:folder
+
 
 /*
  * // Predefined types ////
@@ -157,7 +159,7 @@
 [tba:sla] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
     - tba:defaultGroup (REFERENCE)
     + tba:groups (tba:obligationGroup) sns
-    + tba:slaActionConfigurations (tba:slaActionConfiguration) sns
+    + tba:slaChecks (tba:slaCheck) sns
 
 [tba:obligationGroup] > nt:hierarchyNode
     - tba:condition (STRING) = 'REQUIRED' mandatory
@@ -170,8 +172,12 @@
 [tba:metric] > tba:extensibleEntity, mix:title
     + tba:json (tba:genericJson) mandatory
 
+[tba:slaCheck] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
+    - tba:cronSchedule (STRING)
+    + tba:slaActionConfigurations (tba:slaActionConfiguration) sns
+
 [tba:slaActionConfiguration] > tba:extensibleEntity, mix:title
-        + tba:json (tba:genericJson) mandatory
+    + tba:json (tba:genericJson) mandatory
 
 [tba:serviceLevelAssessment] > nt:hierarchyNode
     - tba:sla (WEAKREFERENCE) mandatory

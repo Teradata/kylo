@@ -30,30 +30,7 @@ angular.module(MODULE_FEED_MGR).factory('SlaService', function ($http, $q, $mdTo
 
         },
 
-        /**
-         * @deprecated
-         * @param serviceLevelAgreements
-         * @returns {*}
-         */
-        saveFeedSlas: function (serviceLevelAgreements) {
-            var successFn = function (response) {
-                return response.data;
-            }
-            var errorFn = function (err) {
-                console.log('ERROR ', err)
-            }
-            var promise = $http({
-                url: RestUrlService.SAVE_FEED_SLA_URL(serviceLevelAgreements.feedId),
-                method: "POST",
-                data: angular.toJson(serviceLevelAgreements),
-                headers: {
-                    'Content-Type': 'application/json; charset=UTF-8'
-                }
-            }).then(successFn, errorFn);
-            return promise;
-
-        },
-        saveFeedSla: function (feedId,serviceLevelAgreement) {
+        saveFeedSla: function (feedId, serviceLevelAgreement) {
             var successFn = function (response) {
                 return response.data;
             }
@@ -62,6 +39,24 @@ angular.module(MODULE_FEED_MGR).factory('SlaService', function ($http, $q, $mdTo
             }
             var promise = $http({
                 url: RestUrlService.SAVE_FEED_SLA_URL(feedId),
+                method: "POST",
+                data: angular.toJson(serviceLevelAgreement),
+                headers: {
+                    'Content-Type': 'application/json; charset=UTF-8'
+                }
+            }).then(successFn, errorFn);
+            return promise;
+
+        },
+        saveSla: function (serviceLevelAgreement) {
+            var successFn = function (response) {
+                return response.data;
+            }
+            var errorFn = function (err) {
+                console.log('ERROR ', err)
+            }
+            var promise = $http({
+                url: RestUrlService.SAVE_SLA_URL,
                 method: "POST",
                 data: angular.toJson(serviceLevelAgreement),
                 headers: {
@@ -88,6 +83,18 @@ angular.module(MODULE_FEED_MGR).factory('SlaService', function ($http, $q, $mdTo
             return promise;
 
         },
+        getSlaForEditForm: function (slaId) {
+            var successFn = function (response) {
+                return response.data;
+            }
+            var errorFn = function (err) {
+                console.log('ERROR ', err)
+            }
+            var promise = $http.get(RestUrlService.GET_SLA_AS_EDIT_FORM(slaId));
+            promise.then(successFn, errorFn);
+            return promise;
+
+        },
         getFeedSlas: function (feedId) {
             var successFn = function (response) {
                 return response.data;
@@ -96,6 +103,18 @@ angular.module(MODULE_FEED_MGR).factory('SlaService', function ($http, $q, $mdTo
                 console.log('ERROR ', err)
             }
             var promise = $http.get(RestUrlService.GET_FEED_SLA_URL(feedId));
+            promise.then(successFn, errorFn);
+            return promise;
+
+        },
+        getAllSlas: function () {
+            var successFn = function (response) {
+                return response.data;
+            }
+            var errorFn = function (err) {
+                console.log('ERROR ', err)
+            }
+            var promise = $http.get(RestUrlService.GET_SLAS_URL);
             promise.then(successFn, errorFn);
             return promise;
 

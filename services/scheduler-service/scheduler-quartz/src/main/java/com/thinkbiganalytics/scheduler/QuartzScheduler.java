@@ -94,7 +94,7 @@ public class QuartzScheduler implements JobScheduler {
           .withSchedule(CronScheduleBuilder.cronSchedule(cronExpression)
                             .inTimeZone(timeZone)
                             .withMisfireHandlingInstructionFireAndProceed()).build();
-      // scheduleJob(jobDetail,trigger);
+      scheduleJob(jobDetail,trigger);
     } catch (Exception e) {
       throw new JobSchedulerException();
     }

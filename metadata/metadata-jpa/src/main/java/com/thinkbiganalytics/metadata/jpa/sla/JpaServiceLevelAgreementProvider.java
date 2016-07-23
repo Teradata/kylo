@@ -14,6 +14,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.SLACheckBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
@@ -276,4 +277,8 @@ public class JpaServiceLevelAgreementProvider implements ServiceLevelAgreementPr
         }
     }
 
+    @Override
+    public SLACheckBuilder slaCheckBuilder(ID slaId) {
+        return null;
+    }
 }

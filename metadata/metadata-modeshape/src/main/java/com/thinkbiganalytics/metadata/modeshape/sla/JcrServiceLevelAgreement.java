@@ -8,14 +8,12 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -23,7 +21,6 @@ import java.util.Iterator;
 import java.util.List;
 
 import javax.jcr.Node;
-import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 
 /**
@@ -43,8 +40,9 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
     public static final String GROUP_TYPE = "tba:obligationGroup";
 
     public static final String JSON = "tba:json";
-    public static final String ACTION_CONFIGURATIONS = "tba:slaActionConfigurations";
-    public static final String ACTION_CONFIGURATION_TYPE = "tba:slaActionConfiguration";
+
+
+    public static final String SLA_CHECKS = "tba:slaChecks";
 
     /**
      * 
@@ -156,42 +154,25 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
         }
     }
 
-    public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations() {
+
+    public List<ServiceLevelAgreementCheck> getSlaChecks() {
+
+        List<ServiceLevelAgreementCheck> list = new ArrayList<>();
+
         try {
             @SuppressWarnings("unchecked")
-            Iterator<Node> itr = (Iterator<Node>) this.node.getNodes(ACTION_CONFIGURATIONS);
+            Iterator<Node> itr = (Iterator<Node>) this.node.getNodes(SLA_CHECKS);
 
-            return Lists.newArrayList(Iterators.transform(itr, (actionConfigNode) -> {
-                return JcrUtil.getGenericJson(actionConfigNode, JSON);
-            }));
+            return Lists.newArrayList(
+                Iterators.transform(itr, (checkNode) -> {
+                    return JcrUtil.createJcrObject(checkNode, JcrServiceLevelAgreementCheck.class);
+                }));
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the metric nodes", e);
+            throw new MetadataRepositoryException("Failed to retrieve the obligation nodes", e);
         }
+
+
     }
 
-    public void setActionConfigurations(List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations) {
-        try {
-            NodeIterator nodes = this.node.getNodes(ACTION_CONFIGURATIONS);
-            while (nodes.hasNext()) {
-                Node metricNode = (Node) nodes.next();
-                metricNode.remove();
-            }
-
-            for (ServiceLevelAgreementActionConfiguration actionConfiguration : actionConfigurations) {
-                Node node = this.node.addNode(ACTION_CONFIGURATIONS, ACTION_CONFIGURATION_TYPE);
-
-                JcrPropertyUtil.setProperty(node, JcrPropertyConstants.TITLE, actionConfiguration.getClass().getSimpleName());
-                ServiceLevelAgreementActionConfig annotation = actionConfiguration.getClass().getAnnotation(ServiceLevelAgreementActionConfig.class);
-                String desc = actionConfiguration.getClass().getSimpleName();
-                if (annotation != null) {
-                    desc = annotation.description();
-                }
-                JcrPropertyUtil.setProperty(node, DESCRIPTION, desc);
-                JcrUtil.addGenericJson(node, JSON, actionConfiguration);
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the metric nodes", e);
-        }
-    }
 
 }

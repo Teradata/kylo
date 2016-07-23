@@ -4,6 +4,7 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.policy.PolicyProperty;
@@ -83,22 +84,25 @@ public class ServiceLevelAgreementMetricTransformerHelper {
                     }
                 }
 
-                //transform the responders
-        //TODO move out
-        if (serviceLevelAgreement.getActionConfigurations() != null) {
-                    List<ServiceLevelAgreementActionConfiguration> actionConfigurations = new ArrayList<>();
-            for (ServiceLevelAgreementActionUiConfigurationItem agreementActionUiConfigurationItem : serviceLevelAgreement.getActionConfigurations()) {
-                        try {
-                            ServiceLevelAgreementActionConfiguration actionConfiguration = ServiceLevelAgreementActionConfigTransformer.instance().fromUiModel(agreementActionUiConfigurationItem);
-                            actionConfigurations.add(actionConfiguration);
-                        } catch (PolicyTransformException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    transformedSla.setActionConfigurations(actionConfigurations);
-                }
-
         return transformedSla;
+    }
+
+    /**
+     * TODO return the Check object that has the related cron Schedule as well
+     */
+    public List<ServiceLevelAgreementActionConfiguration> getActionConfigurations(ServiceLevelAgreementGroup serviceLevelAgreement) {
+        List<ServiceLevelAgreementActionConfiguration> actionConfigurations = new ArrayList<>();
+        if (serviceLevelAgreement.getActionConfigurations() != null) {
+            for (ServiceLevelAgreementActionUiConfigurationItem agreementActionUiConfigurationItem : serviceLevelAgreement.getActionConfigurations()) {
+                try {
+                    ServiceLevelAgreementActionConfiguration actionConfiguration = ServiceLevelAgreementActionConfigTransformer.instance().fromUiModel(agreementActionUiConfigurationItem);
+                    actionConfigurations.add(actionConfiguration);
+                } catch (PolicyTransformException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+        return actionConfigurations;
     }
 
 
@@ -132,12 +136,15 @@ public class ServiceLevelAgreementMetricTransformerHelper {
             }
         }
 
-        //transform the responders if they exist
-        if (sla.getActionConfigurations() != null) {
+        //transform the Actions if they exist.
+        //TODO add in the Schedule prop
+        if (sla.getSlaChecks() != null) {
             List<ServiceLevelAgreementActionUiConfigurationItem> agreementActionUiConfigurationItems = new ArrayList<>();
-            for (ServiceLevelAgreementActionConfiguration responderConfig : sla.getActionConfigurations()) {
-                ServiceLevelAgreementActionUiConfigurationItem uiModel = ServiceLevelAgreementActionConfigTransformer.instance().toUIModel(responderConfig);
-                agreementActionUiConfigurationItems.add(uiModel);
+            for(ServiceLevelAgreementCheck check: sla.getSlaChecks()) {
+                for (ServiceLevelAgreementActionConfiguration responderConfig : check.getActionConfigurations()) {
+                    ServiceLevelAgreementActionUiConfigurationItem uiModel = ServiceLevelAgreementActionConfigTransformer.instance().toUIModel(responderConfig);
+                    agreementActionUiConfigurationItems.add(uiModel);
+                }
             }
             slaGroup.setActionConfigurations(agreementActionUiConfigurationItems);
         }

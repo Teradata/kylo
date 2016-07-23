@@ -8,7 +8,7 @@ import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -168,7 +168,7 @@ public class JpaServiceLevelAgreement extends AbstractAuditedEntity implements S
     }
 
     @Override
-    public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations() {
+    public List<ServiceLevelAgreementCheck> getSlaChecks() {
         return null;
     }
 }

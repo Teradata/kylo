@@ -99,6 +99,7 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     this.SAVE_FEED_SLA_URL = function (feedId) {
         return self.SLA_BASE_URL + "/feed/" + feedId;
     }
+    this.SAVE_SLA_URL = self.SLA_BASE_URL;
 
     this.DELETE_SLA_URL = function (slaId) {
         return self.SLA_BASE_URL + "/" + slaId;
@@ -107,6 +108,12 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     this.GET_FEED_SLA_URL = function (feedId) {
         return self.FEEDS_BASE_URL + "/" + feedId + "/sla";
     }
+
+    this.GET_SLA_AS_EDIT_FORM = function (slaId) {
+        return self.SLA_BASE_URL + "/" + slaId + "/form-object";
+    }
+
+    this.GET_SLAS_URL = self.SLA_BASE_URL;
 
     this.GET_CONTROLLER_SERVICES_TYPES_URL = self.CONTROLLER_SERVICES_BASE_URL+"/types";
 

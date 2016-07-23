@@ -3,11 +3,13 @@
     var directive = function () {
         return {
             restrict: "EA",
-            bindToController: {},
+            bindToController: {
+                feed: '=?'
+            },
             controllerAs: 'vm',
             scope: {},
-            templateUrl: 'js/feed-details/sla/feed-service-level-agreement.html',
-            controller: "FeedServiceLevelAgreementController",
+            templateUrl: 'js/sla/service-level-agreement.html',
+            controller: "ServiceLevelAgreementController",
             link: function ($scope, element, attrs, controller) {
 
             }
@@ -19,7 +21,7 @@
 
         var self = this;
 
-        this.feed = FeedService.editFeedModel;
+        //   this.feed = FeedService.editFeedModel;
 
         /**
          * SLA Options (aka. Metric Classes annotated with @ServiceLevelPolicy exposing the properties
@@ -108,28 +110,39 @@
          * Load and copy the serviceLevelAgreements from the feed if available
          * @type {Array|*}
          */
-        var arr = self.feed.serviceLevelAgreements;
+        if (self.feed) {
 
-        if (arr != null && arr != undefined) {
-            self.serviceLevelAgreements = angular.copy(arr);
+            var arr = self.feed.serviceLevelAgreements;
+
+            if (arr != null && arr != undefined) {
+                self.serviceLevelAgreements = angular.copy(arr);
+            }
         }
 
-        SlaService.getFeedSlas(self.feed.feedId).then(function (response) {
-            if (response.data && response.data.serviceLevelAgreements != undefined && response.data.serviceLevelAgreements.length > 0) {
-                _.each(response.data.serviceLevelAgreements, function (sla) {
-                    _.each(sla.rules, function (rule) {
-                        rule.groups = PolicyInputFormService.groupProperties(rule);
-                        PolicyInputFormService.updatePropertyIndex(rule);
-                    });
+        if (this.feed != null) {
+            SlaService.getFeedSlas(self.feed.feedId).then(function (response) {
+                if (response.data && response.data.serviceLevelAgreements != undefined && response.data.serviceLevelAgreements.length > 0) {
+                    _.each(response.data.serviceLevelAgreements, function (sla) {
+                        _.each(sla.rules, function (rule) {
+                            rule.groups = PolicyInputFormService.groupProperties(rule);
+                            PolicyInputFormService.updatePropertyIndex(rule);
+                        });
 
-                    _.each(sla.actionConfigurations, function (rule) {
-                        rule.groups = PolicyInputFormService.groupProperties(rule);
-                        PolicyInputFormService.updatePropertyIndex(rule);
+                        _.each(sla.actionConfigurations, function (rule) {
+                            rule.groups = PolicyInputFormService.groupProperties(rule);
+                            PolicyInputFormService.updatePropertyIndex(rule);
+                        });
                     });
-                });
-                self.serviceLevelAgreements = response.data.serviceLevelAgreements;
-            }
-        });
+                    self.serviceLevelAgreements = response.data.serviceLevelAgreements;
+                }
+            });
+        }
+        else {
+            //get All Slas
+            SlaService.getAllSlas().then(function (response) {
+                self.serviceLevelAgreements = response.data;
+            });
+        }
 
         /**
          * Load up the Metric Options for defining SLAs
@@ -171,7 +184,10 @@
             var valid = self.validateForm();
             if (valid) {
 
-                function success() {
+                function success(response) {
+                    if (response) {
+                        self.editSla.id = response.id;
+                    }
                     if (self.editSlaIndex != null) {
                         self.serviceLevelAgreements[self.editSlaIndex] = self.editSla;
                     }
@@ -187,7 +203,7 @@
                             .parent(angular.element(document.body))
                             .clickOutsideToClose(true)
                             .title('Saved SLA')
-                            .textContent('Saved Slas for this feed')
+                            .textContent('Saved the Sla')
                             .ariaLabel('Alert Saved Sla')
                             .ok('Got it!')
                     );
@@ -199,17 +215,28 @@
 
         }
         function saveSla(successFn, failureFn) {
-            var slaHolder = {feedId: self.feed.feedId}
-            slaHolder.serviceLevelAgreements = self.serviceLevelAgreements;
-            SlaService.saveFeedSla(self.feed.feedId, self.editSla).then(function () {
-                if (successFn) {
-                    successFn();
-                }
-            }, function () {
-                if (failureFn) {
-                    failureFn();
-                }
-            });
+            if (self.feed != null) {
+                SlaService.saveFeedSla(self.feed.feedId, self.editSla).then(function (response) {
+                    if (successFn) {
+                        successFn(response);
+                    }
+                }, function () {
+                    if (failureFn) {
+                        failureFn();
+                    }
+                });
+            }
+            else {
+                SlaService.saveSla(self.editSla).then(function () {
+                    if (successFn) {
+                        successFn();
+                    }
+                }, function () {
+                    if (failureFn) {
+                        failureFn();
+                    }
+                });
+            }
         }
 
         self.onBackToList = function (ev) {
@@ -229,16 +256,26 @@
             self.editSlaIndex = index;
             self.ruleType = EMPTY_RULE_TYPE;
             self.addingSlaCondition = false;
-            self.editSla = angular.copy(self.serviceLevelAgreements[index]);
-            if (self.editSla.actionConfigurations == undefined) {
-                self.editSla.actionConfigurations = [];
-            }
-            //make all rules editable
-            _.each(self.editSla.rules, function (rule) {
-                rule.editable = true;
-            });
-            _.each(self.editSla.actionConfigurations, function (rule) {
-                rule.editable = true;
+
+            var slaObj = self.serviceLevelAgreements[index]
+            //fetch the SLA
+            SlaService.getSlaForEditForm(slaObj.id).then(function (response) {
+                var sla = response.data;
+
+                _.each(sla.rules, function (rule) {
+                    rule.editable = true;
+                    rule.groups = PolicyInputFormService.groupProperties(rule);
+                    PolicyInputFormService.updatePropertyIndex(rule);
+                });
+
+                _.each(sla.actionConfigurations, function (rule) {
+                    rule.editable = true;
+                    rule.groups = PolicyInputFormService.groupProperties(rule);
+                    PolicyInputFormService.updatePropertyIndex(rule);
+                });
+                sla.editable = true;
+                self.editSla = sla;
+
             });
         }
 
@@ -382,20 +419,10 @@
             }
         }
 
-        self.deleteRule = function ($event, index) {
-            /* if (self.editSla != null  && self.editSla.rules != null && index != null) {
-             self.editSla.rules.splice(index, 1);
-             }
-             self.feed.serviceLevelAgreements = self.serviceLevelAgreements;
-             self.pendingEdits = true;
-             $mdDialog.hide('done');
-             */
-        }
-
     };
 
-    angular.module(MODULE_FEED_MGR).controller('FeedServiceLevelAgreementController', controller);
+    angular.module(MODULE_FEED_MGR).controller('ServiceLevelAgreementController', controller);
     angular.module(MODULE_FEED_MGR)
-        .directive('thinkbigFeedServiceLevelAgreement', directive);
+        .directive('thinkbigServiceLevelAgreement', directive);
 
 }());

@@ -9,6 +9,9 @@ import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import javax.inject.Inject;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -46,7 +49,6 @@ public class ServiceLevelAgreementRestController {
     /**
      * Save the General SLA not attached to a feed
      */
-
     @POST
     @Produces({MediaType.APPLICATION_JSON})
     public Response saveSla(ServiceLevelAgreementGroup sla) {
@@ -80,5 +82,26 @@ public class ServiceLevelAgreementRestController {
         serviceLevelAgreementService.removeAgreement(slaId);
         return Response.ok().build();
     }
+
+    @GET
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getAllSlas() {
+        List<ServiceLevelAgreement> agreementList = serviceLevelAgreementService.getServiceLevelAgreements();
+        if (agreementList == null) {
+            agreementList = new ArrayList<>();
+        }
+        return Response.ok(agreementList).build();
+    }
+
+    @GET
+    @Path("/{slaId}/form-object")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getSlaAsForm(@UUID @PathParam("slaId") String slaId) {
+        ServiceLevelAgreementGroup agreement = serviceLevelAgreementService.getServiceLevelAgreementAsFormObject(slaId);
+
+        return Response.ok(agreement).build();
+    }
+
+
 
 }

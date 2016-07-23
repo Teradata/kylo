@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.feedmgr.service;
+package com.thinkbiganalytics.spring;
 
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.BeansException;

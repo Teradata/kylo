@@ -30,6 +30,7 @@
         <commons.dbcp2>2.1.1</commons.dbcp2>
         <commons.lang3.version>3.4</commons.lang3.version>
         <commons.pool2>2.4.2</commons.pool2>
+        <commons.io.version>2.5</commons.io.version>
         <elasticsearch.version>2.2.0</elasticsearch.version>
         <guava.version>19.0</guava.version>
         <hadoop.version>2.6.2</hadoop.version>
@@ -409,6 +410,13 @@
                 <groupId>org.apache.commons</groupId>
                 <artifactId>commons-lang3</artifactId>
                 <version>${commons.lang3.version}</version>
+            </dependency>
+
+
+            <dependency>
+                <groupId>commons-io</groupId>
+                <artifactId>commons-io</artifactId>
+                <version>${commons.io.version}</version>
             </dependency>
 
             <dependency>

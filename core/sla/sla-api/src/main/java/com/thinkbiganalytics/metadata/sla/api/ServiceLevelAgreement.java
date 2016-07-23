@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.sla.api;
 
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
+
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
@@ -51,6 +53,6 @@ public interface ServiceLevelAgreement {
      */
     List<Obligation> getObligations();
 
-    List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations();
+    List<ServiceLevelAgreementCheck> getSlaChecks();
 
 }

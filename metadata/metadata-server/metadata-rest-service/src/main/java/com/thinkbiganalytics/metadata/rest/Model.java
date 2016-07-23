@@ -32,6 +32,7 @@ import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceSched
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment.Result;
 import com.thinkbiganalytics.metadata.rest.model.sla.WithinSchedule;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
@@ -546,7 +547,17 @@ public class Model {
             = new com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement(domain.getId().toString(), 
                                                                                       domain.getName(), 
                                                                                       domain.getDescription());
-        sla.setActionConfigurations(domain.getActionConfigurations());
+        if (domain.getSlaChecks() != null) {
+            List<ServiceLevelAgreementCheck> checks = new ArrayList<>();
+            sla.setSlaChecks(checks);
+            for (com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck check : domain.getSlaChecks()) {
+                ServiceLevelAgreementCheck restModel = new ServiceLevelAgreementCheck();
+                restModel.setCronSchedule(check.getCronSchedule());
+                restModel.setActionConfigurations(check.getActionConfigurations());
+                checks.add(restModel);
+            }
+        }
+
         if (deep) {
             if (domain.getObligationGroups().size() == 1 && domain.getObligationGroups().get(0).getCondition() == Condition.REQUIRED) {
                 for (Obligation domainOb : domain.getObligations()) {
