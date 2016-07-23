@@ -46,8 +46,8 @@
           Required.
         </div>
       </div>
-      <cron-expression-preview cron-expression="vm.editModel.schedule.schedulingPeriod"
-                               ng-if="vm.editModel.schedule.schedulingStrategy == 'CRON_DRIVEN' && vm.scheduleFeedForm.cronExpression.$valid"></cron-expression-preview>
+      <cron-expression-preview cron-expression="property.value"
+                               ng-if="vm.theForm[property.formKey].$valid"></cron-expression-preview>
     </md-input-container>
 
 
