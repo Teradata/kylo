@@ -79,7 +79,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         } else if (lastFeedTime == null ) {
             LOG.debug("Feed with the specified name {} not found", feedName);
             builder.message("Feed with the specified name "+feedName+" not found ")
-                    .result(AssessmentResult.WARNING);
+                .result(AssessmentResult.FAILURE);
         }  else if (lastFeedTime.isAfter(expectedTime) && lastFeedTime.isBefore(lateTime)) {
             LOG.debug("Data for feed {} arrived on {}, which was before late time: ", feedName, lastFeedTime, lateTime);
 

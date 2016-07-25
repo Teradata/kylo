@@ -14,9 +14,12 @@ import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
 import org.modeshape.jcr.ModeShapeEngine;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 /**
@@ -42,15 +45,13 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
 
     Timer modeshapeAvailableTimer;
 
+    private Map<ServiceLevelAgreement.ID, String> scheduledJobNames = new ConcurrentHashMap<>();
 
-    //TODO uncomment once SLA Assessors is implemented
-    // @PostConstruct
+
+    @PostConstruct
     public void scheduleServiceLevelAgreements() {
-
         modeshapeAvailableTimer = new Timer();
         modeshapeAvailableTimer.schedule(new QueryAndScheduleServiceLevelAgreementsTask(), 0, 10 * 1000);
-
-
     }
 
     class QueryAndScheduleServiceLevelAgreementsTask extends TimerTask {
@@ -76,16 +77,26 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
 
     }
 
+    private JobIdentifier slaJobName(ServiceLevelAgreement sla) {
+        String name = sla.getName();
+        if (scheduledJobNames.containsKey(sla.getId())) {
+            name = scheduledJobNames.get(sla.getId());
+        }
+        JobIdentifier jobIdentifier = new DefaultJobIdentifier(name, "SLA");
+        return jobIdentifier;
+    }
+
 
     public void scheduleServiceLevelAgreement(ServiceLevelAgreement sla) {
+        try {
+            //Delete any jobs with this SLA if they already exist
+            if (scheduledJobNames.containsKey(sla.getId())) {
+                jobScheduler.deleteJob(slaJobName(sla));
+                scheduledJobNames.remove(sla.getId());
+            }
+            JobIdentifier jobIdentifier = slaJobName(sla);
+            ServiceLevelAgreement.ID slaId = sla.getId();
 
-        //TODO Remove any existing schedules for this sla
-
-        String slaId = sla.getId().toString();
-
-
-            JobIdentifier jobIdentifier = new DefaultJobIdentifier(sla.getName(), "SLA");
-            try {
                 jobScheduler.scheduleWithCronExpression(jobIdentifier, new Runnable() {
                     @Override
                     public void run() {
@@ -94,7 +105,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
                         metadataAccess.commit(new Command<Object>() {
                             @Override
                             public Object execute() {
-                                ServiceLevelAgreement sla = slaProvider.getAgreement(slaProvider.resolve(slaId));
+                                ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
                                 slaChecker.checkAgreement(sla);
                                 return null;
                             }
@@ -103,6 +114,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
 
                     }
                 }, DEFAULT_CRON);
+            scheduledJobNames.put(sla.getId(), jobIdentifier.getName());
             } catch (JobSchedulerException e) {
                 e.printStackTrace();
             }

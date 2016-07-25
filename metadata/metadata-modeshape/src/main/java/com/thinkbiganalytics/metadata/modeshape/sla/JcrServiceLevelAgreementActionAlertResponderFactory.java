@@ -43,13 +43,15 @@ public class JcrServiceLevelAgreementActionAlertResponderFactory implements Aler
      */
     @Override
     public void alertChange(Alert alert, AlertResponse response) {
-        if (alert.getType().equals(AssessmentAlerts.VIOLATION_ALERT.getAlertType())) {
-            try {
-                response.inProgress("Handling volation");
-                handleViolation(alert);
-                response.handle("Handling violation");
-            } catch (Exception e) {
-                response.unHandle("Failed to handle violation");
+        if (alert.getEvents().get(0).getState() == Alert.State.UNHANDLED) {
+            if (alert.getType().equals(AssessmentAlerts.VIOLATION_ALERT.getAlertType())) {
+                try {
+                    response.inProgress("Handling SLA Alert");
+                    handleViolation(alert);
+                    response.handle("Handled SLA Alert");
+                } catch (Exception e) {
+                    response.unHandle("Failed to handle violation");
+                }
             }
         }
     }

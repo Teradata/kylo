@@ -36,8 +36,6 @@ public class JcrServiceLevelAssessment extends AbstractJcrAuditableSystemEntity 
     public static String OBLIGATION_ASSESSMENTS = "tba:obligationAssessments";
 
 
-    private JcrServiceLevelAgreement sla;
-
     public JcrServiceLevelAssessment(Node node) {
         super(node);
     }
@@ -45,8 +43,7 @@ public class JcrServiceLevelAssessment extends AbstractJcrAuditableSystemEntity 
 
     public JcrServiceLevelAssessment(Node node, JcrServiceLevelAgreement sla) {
         super(node);
-        this.sla = sla;
-        JcrPropertyUtil.setProperty(node, SLA, sla);
+        JcrPropertyUtil.setWeakReferenceProperty(this.node, SLA, sla.getNode());
     }
 
     public AssessmentId getId() {

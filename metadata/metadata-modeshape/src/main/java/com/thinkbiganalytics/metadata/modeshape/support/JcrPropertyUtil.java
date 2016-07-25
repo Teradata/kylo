@@ -270,7 +270,28 @@ public class JcrPropertyUtil {
         return n;
     }
 
-    
+    public static void setWeakReferenceProperty(Node node, String name, Node ref) {
+        try {
+            //ensure checked out
+            JcrMetadataAccess.ensureCheckoutNode(node);
+
+            if (node == null) {
+                throw new IllegalArgumentException("Cannot set a property on a null-node!");
+            }
+            if (name == null) {
+                throw new IllegalArgumentException("Cannot set a property without a provided name");
+            }
+
+            Value weakRef = node.getSession().getValueFactory().createValue(ref, true);
+            node.setProperty(name, weakRef);
+
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to set weak ref property value: " + name + "=" + ref, e);
+        }
+
+    }
+
+
     public static void setProperty(Node node, String name, Object value) {
         try {
             //ensure checked out
@@ -282,7 +303,7 @@ public class JcrPropertyUtil {
             if (name == null) {
                 throw new IllegalArgumentException("Cannot set a property without a provided name");
             }
-            
+
             if (value == null) {
                 node.setProperty(name, (Value) null);
             } else if (value instanceof Enum) {

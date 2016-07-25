@@ -168,11 +168,11 @@
     - tba:condition (STRING) = 'REQUIRED' mandatory
     + tba:obligations (tba:obligation) sns
     
-[tba:obligation] > nt:hierarchyNode
+[tba:obligation] > nt:hierarchyNode, mix:referenceable
     - tba:description (STRING)
     + tba:metrics (tba:metric) sns
 
-[tba:metric] > tba:extensibleEntity, mix:title
+[tba:metric] > tba:extensibleEntity, mix:title, mix:referenceable
     + tba:json (tba:genericJson) mandatory
 
 [tba:slaCheck] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied

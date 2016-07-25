@@ -24,6 +24,10 @@ import com.thinkbiganalytics.metadata.event.reactor.ReactorContiguration;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.rest.RestConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
+import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
+import com.thinkbiganalytics.metadata.sla.spi.core.SimpleServiceLevelAssessor;
 
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
@@ -39,6 +43,7 @@ import org.springframework.context.annotation.Profile;
 //@Import({ RestConfiguration.class, ReactorContiguration.class, MetadataJmsConfig.class, JpaConfiguration.class })
 @Import({RestConfiguration.class, ReactorContiguration.class, MetadataJmsConfig.class, ModeShapeEngineConfig.class})
 public class ServerConfiguration {
+
 
     @Bean
     @Profile("metadata.memory-only")
@@ -85,14 +90,14 @@ public class ServerConfiguration {
         return new FeedPreconditionService();
     }
     
-   /* // SLA config
-    @Bean
+
     @Profile("metadata.memory-only")
     public ServiceLevelAgreementProvider slaProvider() {
         return new InMemorySLAProvider();
     }
 
     @Bean
+    @Profile("metadata.memory-only")
     public ServiceLevelAssessor slaAssessor() {
         SimpleServiceLevelAssessor assr = new SimpleServiceLevelAssessor();
         assr.registerMetricAssessor(datasetUpdatedSinceMetricAssessor());
@@ -100,10 +105,15 @@ public class ServerConfiguration {
         assr.registerMetricAssessor(feedExecutedSinceScheduleMetricAssessor());
         assr.registerMetricAssessor(datasourceUpdatedSinceFeedExecutedAssessor());
         assr.registerMetricAssessor(withinScheduleAssessor());
-        
         return assr;
     }
-    */
+
+
+        @Bean
+        public ServerConfigurationInitialization serverConfigurationInitialization()
+        {
+            return new ServerConfigurationInitialization();
+        }
 
     @Bean
     public MetricAssessor<?, ?> feedExecutedSinceFeedMetricAssessor() {

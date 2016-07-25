@@ -34,16 +34,12 @@ public class JcrObligationAssessment extends AbstractJcrAuditableSystemEntity im
     private Comparator<ObligationAssessment> comparator = DEF_COMPARATOR;
     private List<Comparable<? extends Serializable>> comparables = Collections.emptyList();
 
-    Obligation obligation;
-
-
     public JcrObligationAssessment(Node node) {
         super(node);
     }
 
     public JcrObligationAssessment(Node node, Obligation o) {
         this(node);
-        this.obligation = o;
         setObligation(o);
     }
 
@@ -54,7 +50,7 @@ public class JcrObligationAssessment extends AbstractJcrAuditableSystemEntity im
     }
 
     public void setObligation(Obligation obligation) {
-        JcrPropertyUtil.setProperty(this.node, OBLIGATION, obligation);
+        JcrPropertyUtil.setWeakReferenceProperty(this.node, OBLIGATION, ((JcrObligation) obligation).getNode());
     }
 
     @Override

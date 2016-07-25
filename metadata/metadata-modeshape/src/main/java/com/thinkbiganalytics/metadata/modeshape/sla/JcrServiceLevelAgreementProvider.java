@@ -290,7 +290,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.DESCRIPTION, this.description);
             ServiceLevelAgreement agreement = new JcrServiceLevelAgreement(this.slaNode);
             //schedule it
-            //serviceLevelAgreementScheduler.scheduleServiceLevelAgreement(agreement);
+            serviceLevelAgreementScheduler.scheduleServiceLevelAgreement(agreement);
             return agreement;
         }
     }

@@ -40,8 +40,7 @@ public class JcrMetricAssessment<D extends Serializable> extends AbstractJcrAudi
     public JcrMetricAssessment(Node node, Node metricNode) {
         super(node);
         //ENSURE ITS SET AS WEAK REF
-        JcrPropertyUtil.setProperty(this.node, METRIC, metricNode);
-
+        JcrPropertyUtil.setWeakReferenceProperty(this.node, METRIC, metricNode);
     }
 
     @Override
