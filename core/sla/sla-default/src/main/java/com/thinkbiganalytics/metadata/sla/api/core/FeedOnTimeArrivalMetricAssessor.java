@@ -53,7 +53,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
 
         builder.metric(metric);
 
-        Calendar calendar = getCalendar(metric);
+
         String feedName = metric.getFeedName();
         ExecutedFeed feed = this.feedRepository.findLastCompletedFeed(feedName);
 
@@ -65,9 +65,10 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         Date expectedDate = CronExpressionUtil.getPreviousFireTime(metric.getExpectedExpression());
         DateTime expectedTime = new DateTime(expectedDate);
         DateTime lateTime = expectedTime.plus(metric.getLatePeriod());
-        DateTime asOfTime = expectedTime.minus(metric.getAsOfPeriod());
-        boolean isHoliday = !calendar.isTimeIncluded(asOfTime.getMillis());
-
+        //Calendar calendar = getCalendar(metric);
+        //  DateTime asOfTime = expectedTime.minus(metric.getAsOfPeriod());
+        // boolean isHoliday = !calendar.isTimeIncluded(asOfTime.getMillis());
+        boolean isHoliday = false;
         builder.compareWith(expectedDate, feedName);
 
 
@@ -79,7 +80,7 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         } else if (lastFeedTime == null ) {
             LOG.debug("Feed with the specified name {} not found", feedName);
             builder.message("Feed with the specified name "+feedName+" not found ")
-                .result(AssessmentResult.FAILURE);
+                .result(AssessmentResult.WARNING);
         }  else if (lastFeedTime.isAfter(expectedTime) && lastFeedTime.isBefore(lateTime)) {
             LOG.debug("Data for feed {} arrived on {}, which was before late time: ", feedName, lastFeedTime, lateTime);
 

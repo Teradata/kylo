@@ -19,6 +19,7 @@ import com.thinkbiganalytics.policy.PropertyLabelValue;
 import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 import com.thinkbiganalytics.scheduler.util.TimerToCronExpression;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.Period;
 import org.quartz.CronExpression;
 
@@ -30,7 +31,7 @@ import java.util.Locale;
  *
  *         TODO Wire CalendarName into the @PolicyProperty so its available on the UI
  */
-@ServiceLevelAgreementMetric(name = "Processing deadline",
+@ServiceLevelAgreementMetric(name = "Feed Processing deadline",
                              description = "Ensure a Feed processes data by a specified time")
 public class FeedOnTimeArrivalMetric implements Metric {
 
@@ -43,6 +44,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
                     displayName = "Expected Delivery Time",
                     type = PolicyPropertyTypes.PROPERTY_TYPE.cron,
                     hint = "Cron Expression for when you expect to receive this data",
+                    value = "0 0 12 1/1 * ? *",
                     required = true)
     private String cronString;
 
@@ -64,22 +66,22 @@ public class FeedOnTimeArrivalMetric implements Metric {
                     required = true)
     private String lateUnits;
 
-    @PolicyProperty(name = "AsOfTime",
-                    displayName = "As of time",
-                    type = PolicyPropertyTypes.PROPERTY_TYPE.number,
-                    hint = "as of time",
-                    group = "asOfTime",
-                    required = true)
+    /*  @PolicyProperty(name = "AsOfTime",
+                        displayName = "As of time",
+                        type = PolicyPropertyTypes.PROPERTY_TYPE.number,
+                        hint = "as of time",
+                        group = "asOfTime",
+                        required = true) */
     private Integer asOfTime;
 
-    @PolicyProperty(name = "AsOfUnits", displayName = "Units",
-                    type = PolicyPropertyTypes.PROPERTY_TYPE.select,
-                    group = "asOfTime",
-                    labelValues = {@PropertyLabelValue(label = "Days", value = "days"),
-                                   @PropertyLabelValue(label = "Hours", value = "hrs"),
-                                   @PropertyLabelValue(label = "Minutes", value = "min"),
-                                   @PropertyLabelValue(label = "Seconds", value = "sec")},
-                    required = true)
+    /* @PolicyProperty(name = "AsOfUnits", displayName = "Units",
+                     type = PolicyPropertyTypes.PROPERTY_TYPE.select,
+                     group = "asOfTime",
+                     labelValues = {@PropertyLabelValue(label = "Days", value = "days"),
+                                    @PropertyLabelValue(label = "Hours", value = "hrs"),
+                                    @PropertyLabelValue(label = "Minutes", value = "min"),
+                                    @PropertyLabelValue(label = "Seconds", value = "sec")},
+                     required = true)*/
     private String asOfUnits;
 
 
@@ -102,8 +104,8 @@ public class FeedOnTimeArrivalMetric implements Metric {
                                    @PolicyPropertyRef(name = "ExpectedDeliveryTime") String cronString,
                                    @PolicyPropertyRef(name = "NoLaterThanTime") Integer lateTime,
                                    @PolicyPropertyRef(name = "NoLaterThanUnits") String lateUnits,
-                                   @PolicyPropertyRef(name = "AsOfTime") Integer asOfTime,
-                                   @PolicyPropertyRef(name = "AsOfUnits") String asOfUnits) throws ParseException {
+                                   Integer asOfTime,
+                                   String asOfUnits) throws ParseException {
         this.feedName = feedName;
         this.cronString = cronString;
         this.lateTime = lateTime;
@@ -113,9 +115,28 @@ public class FeedOnTimeArrivalMetric implements Metric {
 
         this.expectedExpression = new CronExpression(this.cronString);
         this.latePeriod = TimerToCronExpression.timerStringToPeriod(this.lateTime + " " + this.lateUnits);
-        this.asOfPeriod = TimerToCronExpression.timerStringToPeriod(this.asOfTime + " " + this.asOfUnits);
+
+        if (asOfTime != null && StringUtils.isNotBlank(asOfUnits)) {
+            this.asOfPeriod = TimerToCronExpression.timerStringToPeriod(this.asOfTime + " " + this.asOfUnits);
+        }
 
 
+
+
+    }
+
+
+    public FeedOnTimeArrivalMetric(@PolicyPropertyRef(name = "FeedName") String feedName,
+                                   @PolicyPropertyRef(name = "ExpectedDeliveryTime") String cronString,
+                                   @PolicyPropertyRef(name = "NoLaterThanTime") Integer lateTime,
+                                   @PolicyPropertyRef(name = "NoLaterThanUnits") String lateUnits) throws ParseException {
+        this.feedName = feedName;
+        this.cronString = cronString;
+        this.lateTime = lateTime;
+        this.lateUnits = lateUnits;
+
+        this.expectedExpression = new CronExpression(this.cronString);
+        this.latePeriod = TimerToCronExpression.timerStringToPeriod(this.lateTime + " " + this.lateUnits);
     }
 
     public FeedOnTimeArrivalMetric(String feedName,
