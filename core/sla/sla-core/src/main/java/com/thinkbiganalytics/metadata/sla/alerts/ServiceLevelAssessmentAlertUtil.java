@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.metadata.sla.alerts;
 
-import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
@@ -10,14 +9,6 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
  */
 public class ServiceLevelAssessmentAlertUtil {
 
-
-    public static ServiceLevelAssessment getServiceLevelAssessment(Alert alert) {
-        return alert.getContent();
-    }
-
-    public static String getDescription(Alert alert) {
-        return getDescription(getServiceLevelAssessment(alert));
-    }
 
     public static String getDescription(ServiceLevelAssessment slaAssmt) {
 

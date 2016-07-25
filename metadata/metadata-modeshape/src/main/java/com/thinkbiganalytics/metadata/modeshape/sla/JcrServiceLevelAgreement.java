@@ -32,6 +32,7 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
 
     private static final long serialVersionUID = 2611479261936214396L;
 
+
     public static final String DESCRIPTION = "jcr:description";
     public static final String NAME = "jcr:title";
     public static final String DEFAULT_GROUP = "tba:defaultGroup";

@@ -7,6 +7,6 @@ import com.thinkbiganalytics.alerts.api.Alert;
  */
 public interface ServiceLevelAgreementAction<T extends ServiceLevelAgreementActionConfiguration> {
 
-    boolean respond(T actionConfiguration, Alert a);
+    boolean respond(T actionConfiguration, ServiceLevelAssessment assessment,Alert a);
 
 }

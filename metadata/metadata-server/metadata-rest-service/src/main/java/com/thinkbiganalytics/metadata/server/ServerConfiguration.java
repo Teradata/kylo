@@ -1,13 +1,7 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.server;
-
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Profile;
 
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -30,21 +24,22 @@ import com.thinkbiganalytics.metadata.event.reactor.ReactorContiguration;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.rest.RestConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
-import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
-import com.thinkbiganalytics.metadata.sla.spi.core.SimpleServiceLevelAssessor;
+
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
 
 /**
- *
  * @author Sean Felten
  */
 @Configuration
 @EnableAutoConfiguration
 //@Import({ RestConfiguration.class, ReactorContiguration.class, MetadataJmsConfig.class, JpaConfiguration.class })
-@Import({ RestConfiguration.class, ReactorContiguration.class, MetadataJmsConfig.class, ModeShapeEngineConfig.class })
+@Import({RestConfiguration.class, ReactorContiguration.class, MetadataJmsConfig.class, ModeShapeEngineConfig.class})
 public class ServerConfiguration {
-    
+
     @Bean
     @Profile("metadata.memory-only")
     public FeedProvider feedProvider() {
@@ -56,13 +51,13 @@ public class ServerConfiguration {
     public DatasourceProvider datasetProvider() {
         return new InMemoryDatasourceProvider();
     }
-    
+
     @Bean
     @Profile("metadata.memory-only")
     public DataOperationsProvider dataOperationsProvider() {
         return new InMemoryDataOperationsProvider();
     }
-    
+
     @Bean
     @Profile("metadata.memory-only")
     public MetadataAccess metadataAccess() {
@@ -79,18 +74,18 @@ public class ServerConfiguration {
             }
         };
     }
-    
+
     @Bean
     public JmsChangeEventDispatcher changeEventDispatcher() {
         return new JmsChangeEventDispatcher();
     }
-    
+
     @Bean
     public FeedPreconditionService feedPreconditionService() {
         return new FeedPreconditionService();
     }
     
-    // SLA config
+   /* // SLA config
     @Bean
     @Profile("metadata.memory-only")
     public ServiceLevelAgreementProvider slaProvider() {
@@ -108,32 +103,33 @@ public class ServerConfiguration {
         
         return assr;
     }
-    
+    */
+
     @Bean
     public MetricAssessor<?, ?> feedExecutedSinceFeedMetricAssessor() {
         return new FeedExecutedSinceFeedAssessor();
     }
-    
+
     @Bean
     public MetricAssessor<?, ?> datasetUpdatedSinceMetricAssessor() {
         return new DatasourceUpdatedSinceAssessor();
     }
-    
+
     @Bean
     public MetricAssessor<?, ?> datasourceUpdatedSinceFeedExecutedAssessor() {
         return new DatasourceUpdatedSinceFeedExecutedAssessor();
     }
-    
+
     @Bean
     public MetricAssessor<?, ?> feedExecutedSinceScheduleMetricAssessor() {
         return new FeedExecutedSinceScheduleAssessor();
     }
-    
+
     @Bean
     public MetricAssessor<?, ?> withinScheduleAssessor() {
         return new WithinScheduleAssessor();
     }
-    
+
     @Bean
     public MetricAssessor<?, ?> testMetricAssessor() {
         return new TestMetricAssessor();

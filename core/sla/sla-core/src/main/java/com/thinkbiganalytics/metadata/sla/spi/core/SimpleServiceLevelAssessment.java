@@ -9,14 +9,17 @@ import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  *
@@ -31,11 +34,13 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     private String message = "";
     private AssessmentResult result = AssessmentResult.SUCCESS;
     private Set<ObligationAssessment> obligationAssessments;
+    private ServiceLevelAssessment.ID id;
     
     /**
      * 
      */
     protected SimpleServiceLevelAssessment() {
+        this.id = new AssessmentId(UUID.randomUUID());
         this.time = DateTime.now();
         this.obligationAssessments = new HashSet<ObligationAssessment>();
     }
@@ -47,6 +52,7 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     
     public SimpleServiceLevelAssessment(ServiceLevelAgreement sla, String message, AssessmentResult result) {
         super();
+        this.id = new AssessmentId(UUID.randomUUID());
         this.sla = sla;
         this.message = message;
         this.result = result;
@@ -96,8 +102,8 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
     public int compareTo(ServiceLevelAssessment sla) {
         ComparisonChain chain = ComparisonChain
                 .start()
-                .compare(this.getResult(), sla.getResult());
-                //.compare(this.getAgreement().getName(), sla.getAgreement().getName());
+            .compare(this.getResult(), sla.getResult())
+            .compare(this.getAgreement().getName(), sla.getAgreement().getName());
         
         if (chain.result() != 0) {
             return chain.result();
@@ -140,5 +146,55 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
 
     protected void setResult(AssessmentResult result) {
         this.result = result;
+    }
+
+
+    @Override
+    public ID getId() {
+        return this.id;
+    }
+
+    public static class AssessmentId implements ID {
+
+        private static final long serialVersionUID = -9084653006891727475L;
+
+        private String idValue;
+
+
+        public AssessmentId() {
+        }
+
+        public AssessmentId(Serializable ser) {
+            if (ser instanceof String) {
+                String uuid = (String) ser;
+                if (!StringUtils.contains(uuid, "-")) {
+                    uuid = ((String) ser).replaceFirst("([0-9a-fA-F]{8})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]{4})([0-9a-fA-F]+)", "$1-$2-$3-$4-$5");
+                }
+                setUuid(UUID.fromString(uuid));
+
+            } else if (ser instanceof UUID) {
+                setUuid((UUID) ser);
+            } else {
+                throw new IllegalArgumentException("Unknown ID value: " + ser);
+            }
+        }
+
+        public String getIdValue() {
+            return idValue;
+        }
+
+        @Override
+        public String toString() {
+            return idValue;
+        }
+
+        public UUID getUuid() {
+            return UUID.fromString(idValue);
+        }
+
+        public void setUuid(UUID uuid) {
+            this.idValue = uuid.toString();
+
+        }
     }
 }

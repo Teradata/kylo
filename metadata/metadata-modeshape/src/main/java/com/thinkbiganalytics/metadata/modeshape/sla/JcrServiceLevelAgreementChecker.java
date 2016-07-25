@@ -15,6 +15,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.AssessorNotFoundException;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 
 import org.slf4j.Logger;
@@ -40,6 +41,9 @@ public class JcrServiceLevelAgreementChecker implements ServiceLevelAgreementChe
     private ServiceLevelAgreementProvider slaProvider;
 
     @Inject
+    private ServiceLevelAssessmentProvider assessmentProvider;
+
+    @Inject
     private ServiceLevelAssessor assessor;
 
     @Inject
@@ -48,12 +52,13 @@ public class JcrServiceLevelAgreementChecker implements ServiceLevelAgreementChe
     @Inject
     private MetadataAccess metadataAccess;
 
-    private Map<ServiceLevelAgreement.ID, ServiceLevelAssessment> alertedAssessments;
+    //store a ref to the last Assessment ID that was alerted
+    private Map<ServiceLevelAgreement.ID, ServiceLevelAssessment.ID> alertedAssessments;
 
 
     public JcrServiceLevelAgreementChecker() {
         this.alertedAssessments = Collections
-            .synchronizedMap(new LinkedHashMap<ServiceLevelAgreement.ID, ServiceLevelAssessment>());
+            .synchronizedMap(new LinkedHashMap<ServiceLevelAgreement.ID, ServiceLevelAssessment.ID>());
     }
 
     public void checkAgreements() {
@@ -76,9 +81,10 @@ public class JcrServiceLevelAgreementChecker implements ServiceLevelAgreementChe
     }
 
     public void checkAgreement(ServiceLevelAgreement agreement) {
-        metadataAccess.read(new Command<Object>() {
+        Alert alert = metadataAccess.commit(new Command<Alert>() {
             @Override
-            public Object execute() {
+            public Alert execute() {
+                Alert alert = null;
                 if (isAssessable(agreement)) {
                     LOG.info("Assessing SLA: " + agreement.getName());
 
@@ -86,22 +92,24 @@ public class JcrServiceLevelAgreementChecker implements ServiceLevelAgreementChe
                         ServiceLevelAssessment assessment = assessor.assess(agreement);
 
                         if (assessment.getResult() != AssessmentResult.SUCCESS && shouldAlert(agreement, assessment)) {
-                            Alert alert = alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE,
+                            alert = alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE,
                                                               Level.FATAL,
-                                                              "Violation of SLA: " + agreement.getName(), assessment);
+                                                        "Violation of SLA: " + agreement.getName(), assessment.getId());
 
-                            // Record this assessment as the latest for this SLA.
-                            alertedAssessments.put(agreement.getId(), assessment);
 
-                            LOG.info("SLA assessment failed: {} - generated alert: {}", agreement.getName(), alert.getId());
                         }
                     } catch (AssessorNotFoundException e) {
                         LOG.info("SLA assessment failed.  Assessor Not found: {} - Exception: {}", agreement.getName(), e);
                     }
                 }
-                return null;
+                return alert;
             }
         });
+        if (alert != null) {
+            // Record this assessment as the latest for this SLA.
+            alertedAssessments.put(agreement.getId(), (ServiceLevelAssessment.ID) alert.getContent());
+            LOG.info("SLA assessment failed: {} - generated alert: {}", agreement.getName(), alert.getId());
+        }
 
 
     }
@@ -114,7 +122,12 @@ public class JcrServiceLevelAgreementChecker implements ServiceLevelAgreementChe
      */
     private boolean shouldAlert(ServiceLevelAgreement agreement, ServiceLevelAssessment assessment) {
         // Get the last assessment that was created for this SLA (if any).
-        ServiceLevelAssessment previous = this.alertedAssessments.get(agreement.getId());
+        ServiceLevelAssessment previous = null;
+        //ServiceLevelAssessment previous = this.assessmentProvider.findLatestAssessment(agreement.getId())
+        ServiceLevelAssessment.ID previousId = this.alertedAssessments.get(agreement.getId());
+        if (previousId != null) {
+            previous = this.assessmentProvider.findServiceLevelAssessment(previousId);
+        }
 
         if (previous != null) {
             return assessment.compareTo(previous) != 0;

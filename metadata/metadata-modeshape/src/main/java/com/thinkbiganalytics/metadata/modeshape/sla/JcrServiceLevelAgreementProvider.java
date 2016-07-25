@@ -85,12 +85,16 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
      * @see com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider#getAgreements()
      */
     @Override
+    /**
+     * Match Nodes on Pattern because slaAssessments are stored under the sla
+     * Revisit and change if Assessments are moved out
+     */
     public List<ServiceLevelAgreement> getAgreements() {
         try {
             Session session = getSession();
             Node slasNode = session.getNode(SLA_PATH);
             @SuppressWarnings("unchecked")
-            Iterator<Node> itr = (Iterator<Node>) slasNode.getNodes();
+            Iterator<Node> itr = (Iterator<Node>) slasNode.getNodes("sla-*");
             
             return Lists.newArrayList(Iterators.transform(itr, (slaNode) -> {
                 return JcrUtil.createJcrObject(slaNode, JcrServiceLevelAgreement.class);

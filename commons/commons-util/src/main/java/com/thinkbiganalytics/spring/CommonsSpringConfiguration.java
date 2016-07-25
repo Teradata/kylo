@@ -14,4 +14,9 @@ public class CommonsSpringConfiguration {
         return new FileResourceService();
     }
 
+    @Bean
+    public SpringApplicationContext springApplicationContext() {
+        return new SpringApplicationContext();
+    }
+
 }

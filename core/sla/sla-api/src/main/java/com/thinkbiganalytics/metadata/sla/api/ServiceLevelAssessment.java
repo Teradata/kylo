@@ -15,6 +15,13 @@ import java.util.Set;
  */
 public interface ServiceLevelAssessment extends Comparable<ServiceLevelAssessment>, Serializable {
 
+    interface ID extends Serializable {};
+
+    /**
+     * @return the unique ID of this assessment
+     */
+    ID getId();
+
     /**
      * @return the time when this assessment was generated
      */

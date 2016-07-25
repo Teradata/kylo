@@ -3,7 +3,6 @@ package com.thinkbiganalytics.metadata.modeshape.sla;
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
@@ -12,7 +11,6 @@ import com.thinkbiganalytics.scheduler.JobScheduler;
 import com.thinkbiganalytics.scheduler.JobSchedulerException;
 import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
 
-import org.apache.commons.lang3.StringUtils;
 import org.modeshape.jcr.ModeShapeEngine;
 
 import java.util.List;
@@ -26,7 +24,7 @@ import javax.inject.Inject;
  */
 public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler {
 
-    private String DEFAULT_CRON = "0 0/5 * 1/1 * ? *";// every 5 min
+    private String DEFAULT_CRON = "0 0/1 * 1/1 * ? *";// every 5 min
     @Inject
     private JobScheduler jobScheduler;
 
@@ -50,12 +48,12 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
     public void scheduleServiceLevelAgreements() {
 
         modeshapeAvailableTimer = new Timer();
-        modeshapeAvailableTimer.schedule(new QuerySla(), 0, 10 * 1000);
+        modeshapeAvailableTimer.schedule(new QueryAndScheduleServiceLevelAgreementsTask(), 0, 10 * 1000);
 
 
     }
 
-    class QuerySla extends TimerTask {
+    class QueryAndScheduleServiceLevelAgreementsTask extends TimerTask {
 
         public void run() {
             if (ModeShapeEngine.State.RUNNING.equals(modeShapeEngine.getState())) {
@@ -84,11 +82,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
         //TODO Remove any existing schedules for this sla
 
         String slaId = sla.getId().toString();
-        for (ServiceLevelAgreementCheck check : sla.getSlaChecks()) {
-            String cron = check.getCronSchedule();
-            if (StringUtils.isBlank(cron)) {
-                cron = DEFAULT_CRON;
-            }
+
 
             JobIdentifier jobIdentifier = new DefaultJobIdentifier(sla.getName(), "SLA");
             try {
@@ -97,7 +91,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
                     public void run() {
 
                         //query for this SLA
-                        metadataAccess.read(new Command<Object>() {
+                        metadataAccess.commit(new Command<Object>() {
                             @Override
                             public Object execute() {
                                 ServiceLevelAgreement sla = slaProvider.getAgreement(slaProvider.resolve(slaId));
@@ -108,11 +102,11 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
 
 
                     }
-                }, cron);
+                }, DEFAULT_CRON);
             } catch (JobSchedulerException e) {
                 e.printStackTrace();
             }
-        }
+
 
     }
 

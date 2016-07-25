@@ -13,7 +13,7 @@
  *             template
  *         "sla"
  *             sla*
- *                slaChecks*
+               slaAssessment*
  *         "extensions"
  *             "types"
  *                 typeDescriptor
@@ -60,6 +60,9 @@
 [tba:templatesFolder] > nt:folder
 
 [tba:slaFolder] > nt:folder
+    + slaAssessments (tba:slaAssessmentsFolder) = tba:slaAssessmentsFolder autocreated mandatory
+
+[tba:slaAssessmentsFolder] > nt:folder
 
 
 /*
@@ -185,13 +188,13 @@
     - tba:result (STRING) mandatory
     + tba:obligationAssessments (tba:obligationAssessment) sns
     
-[tba:obligationAssessment] > nt:hierarchyNode
+[tba:obligationAssessment] > nt:hierarchyNode, mix:referenceable
     - tba:obligation (WEAKREFERENCE) mandatory
     - tba:message (STRING) 
     - tba:result (STRING) mandatory
     + tba:metricAssessments (tba:metricAssessment) sns
     
-[tba:metricAssessment] > nt:hierarchyNode
+[tba:metricAssessment] > nt:hierarchyNode, mix:referenceable
     - tba:metric (WEAKREFERENCE) mandatory
     - tba:message (STRING) 
     - tba:result (STRING) mandatory

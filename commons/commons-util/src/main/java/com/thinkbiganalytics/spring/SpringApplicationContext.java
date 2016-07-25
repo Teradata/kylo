@@ -19,7 +19,6 @@ public class SpringApplicationContext implements ApplicationContextAware {
      * @param context a reference to the ApplicationContext.
      */
     public void setApplicationContext(ApplicationContext context) throws BeansException {
-        System.out.println("!!!!!!!!!!!!!!!SET APP CONTEXT!!~!!!!!!!!!!");
         CONTEXT = context;
     }
 
