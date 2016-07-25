@@ -41,7 +41,8 @@
                 Cancel
             </md-button>
             <span flex></span>
-            <div   layout-align="end start"  layout-row class="pagination-list-item" ng-if="renderPagination">
+
+          <div layout-align="end start" layout-row class="pagination-list-item" ng-if="renderPagination &&  selectedTabIndex != 0">
                 <dir-pagination-controls pagination-id="paginationId"
                                          auto-hide="false"
                                          max-size="5"
