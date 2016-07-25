@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -11,6 +13,7 @@ import com.thinkbiganalytics.scheduler.JobScheduler;
 import com.thinkbiganalytics.scheduler.JobSchedulerException;
 import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
 
+import org.apache.commons.lang.StringUtils;
 import org.modeshape.jcr.ModeShapeEngine;
 
 import java.util.List;
@@ -77,10 +80,44 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
 
     }
 
+
+    private String getUniqueName(String name) {
+        String uniqueName = name;
+        final String checkName = name;
+        String matchingName = Iterables.tryFind(scheduledJobNames.values(), new Predicate<String>() {
+            @Override
+            public boolean apply(String s) {
+                return s.equalsIgnoreCase(checkName);
+            }
+        }).orNull();
+        if (matchingName != null) {
+            //get numeric string after '-';
+            if (StringUtils.contains(matchingName, "-")) {
+                String number = StringUtils.substringAfterLast(matchingName, "-");
+                if (StringUtils.isNotBlank(number)) {
+                    number = StringUtils.trim(number);
+                    if (StringUtils.isNumeric(number)) {
+                        Integer num = Integer.parseInt(number);
+                        num++;
+                        uniqueName += "-" + num;
+                    } else {
+                        uniqueName += "-1";
+                    }
+                }
+            } else {
+                uniqueName += "-1";
+            }
+        }
+        return uniqueName;
+    }
+
     private JobIdentifier slaJobName(ServiceLevelAgreement sla) {
         String name = sla.getName();
         if (scheduledJobNames.containsKey(sla.getId())) {
             name = scheduledJobNames.get(sla.getId());
+        } else {
+            //ensure the name is unique in the saved ist
+            name = getUniqueName(name);
         }
         JobIdentifier jobIdentifier = new DefaultJobIdentifier(name, "SLA");
         return jobIdentifier;
