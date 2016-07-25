@@ -58,6 +58,7 @@
         <spring.security.version>4.1.1.RELEASE</spring.security.version>
         <assertj.version>3.4.1</assertj.version>
         <surefire.version>2.19.1</surefire.version>
+        <org.reflections.version>0.9.9</org.reflections.version>
     </properties>
     <modules>
         <module>commons</module>
@@ -586,6 +587,15 @@
                 <artifactId>slf4j-log4j12</artifactId>
                 <version>1.7.10</version>
             </dependency>
+
+            <!-- reflections io -->
+
+            <dependency>
+                <groupId>org.reflections</groupId>
+                <artifactId>reflections</artifactId>
+                <version>${org.reflections.version}</version>
+            </dependency>
+
 
         </dependencies>
     </dependencyManagement>
