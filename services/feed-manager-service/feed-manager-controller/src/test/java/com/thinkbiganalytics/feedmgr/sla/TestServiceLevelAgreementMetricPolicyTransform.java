@@ -39,7 +39,7 @@ public class TestServiceLevelAgreementMetricPolicyTransform {
         Integer asOfTime = 3;
         String asOfUnits = "hours";
 
-        FeedOnTimeArrivalMetric metric = new FeedOnTimeArrivalMetric(feedName, cronString, lateTime, lateUnits, asOfTime, asOfUnits);
+        FeedOnTimeArrivalMetric metric = new FeedOnTimeArrivalMetric(feedName, cronString, lateTime, lateUnits);
         ServiceLevelAgreementRule uiModel = ServiceLevelAgreementMetricTransformer.instance().toUIModel(metric);
 
         FeedOnTimeArrivalMetric convertedPolicy = fromUI(uiModel, FeedOnTimeArrivalMetric.class);
@@ -56,7 +56,7 @@ public class TestServiceLevelAgreementMetricPolicyTransform {
         ServiceLevelAgreementRule rule = Iterables.tryFind(rules, new Predicate<ServiceLevelAgreementRule>() {
             @Override
             public boolean apply(ServiceLevelAgreementRule rule) {
-                return rule.getName().equalsIgnoreCase("Feed Processed Data by a certain time");
+                return rule.getName().equalsIgnoreCase("Feed Processing deadline");
             }
         }).orNull();
 
@@ -64,8 +64,6 @@ public class TestServiceLevelAgreementMetricPolicyTransform {
         rule.getProperty("ExpectedDeliveryTime").setValue("0 0 12 1/1 * ? *");
         rule.getProperty("NoLaterThanTime").setValue("5");
         rule.getProperty("NoLaterThanUnits").setValue("days");
-        rule.getProperty("AsOfTime").setValue("3");
-        rule.getProperty("AsOfUnits").setValue("hours");
         FeedOnTimeArrivalMetric convertedPolicy = fromUI(rule, FeedOnTimeArrivalMetric.class);
         Assert.assertEquals("currentCategory.currentFeed", convertedPolicy.getFeedName());
         Assert.assertEquals("0 0 12 1/1 * ? *", convertedPolicy.getExpectedExpression().getCronExpression());
