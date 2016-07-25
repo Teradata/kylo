@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS BATCH_EXECUTION_CONTEXT_VALUES (
                                     , EXECUTION_CONTEXT_TYPE varchar(6) DEFAULT NULL
                                     , TYPE_CD VARCHAR(10) NOT NULL
                                     , KEY_NAME VARCHAR(100) NOT NULL
-                                    , STRING_VAL VARCHAR(250) NULL
+                                    , STRING_VAL LONGTEXT NULL
                                     , DATE_VAL TIMESTAMP NULL
                                     , LONG_VAL BIGINT NULL
                                     , DOUBLE_VAL DOUBLE PRECISION NULL
