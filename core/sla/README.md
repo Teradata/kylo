@@ -94,6 +94,19 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
 
 ```
 
+It then needs register with the Assessor using Spring.  Use the example below:
+
+```java
+@Bean(name = "onTimeAssessor")
+    public MetricAssessor<? extends Metric, Serializable> onTimeMetricAssessor(@Qualifier("slaAssessor") ServiceLevelAssessor slaAssessor) {
+        FeedOnTimeArrivalMetricAssessor metricAssr = new FeedOnTimeArrivalMetricAssessor();
+        slaAssessor.registerMetricAssessor(metricAssr);
+        return metricAssr;
+    }
+```
+    
+
+
 SLA Action Configuration
 ---
 Action Configuration objects describe what fields need to be captured to alert when an SLA is violated
