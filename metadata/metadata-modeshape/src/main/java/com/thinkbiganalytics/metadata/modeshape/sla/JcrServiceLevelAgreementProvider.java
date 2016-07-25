@@ -139,7 +139,11 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             Session session = getSession();
             SlaId slaId = (SlaId) id;
             Node slaNode = session.getNodeByIdentifier(slaId.getIdValue());
-            slaNode.remove();
+            if(slaNode != null) {
+                JcrServiceLevelAgreement sla = new JcrServiceLevelAgreement(slaNode);
+                serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(sla);
+                slaNode.remove();
+            }
             return true;
         } catch (ItemNotFoundException e) { 
             return false;

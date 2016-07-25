@@ -15,6 +15,8 @@ import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
 
 import org.apache.commons.lang.StringUtils;
 import org.modeshape.jcr.ModeShapeEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 import java.util.Map;
@@ -29,6 +31,8 @@ import javax.inject.Inject;
  * Created by sr186054 on 7/22/16.
  */
 public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler {
+
+    private static final Logger log = LoggerFactory.getLogger(JcrServiceLevelAgreementScheduler.class);
 
     private String DEFAULT_CRON = "0 0/1 * 1/1 * ? *";// every 5 min
     @Inject
@@ -111,6 +115,24 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
         return uniqueName;
     }
 
+    public boolean unscheduleServiceLevelAgreement(ServiceLevelAgreement sla){
+        boolean unscheduled = false;
+        JobIdentifier scheduledJobId = null;
+        try {
+        if (scheduledJobNames.containsKey(sla)) {
+
+            scheduledJobId = slaJobName(sla);
+            log.info("Unscheduling sla job " + scheduledJobId.getName());
+            jobScheduler.deleteJob(scheduledJobId);
+            scheduledJobNames.remove(sla.getId());
+            unscheduled = true;
+        }
+        } catch (JobSchedulerException e) {
+            log.error("Unable to delete the SLA Job "+scheduledJobId);
+        }
+        return unscheduled;
+    }
+
     private JobIdentifier slaJobName(ServiceLevelAgreement sla) {
         String name = sla.getName();
         if (scheduledJobNames.containsKey(sla.getId())) {
@@ -128,8 +150,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
         try {
             //Delete any jobs with this SLA if they already exist
             if (scheduledJobNames.containsKey(sla.getId())) {
-                jobScheduler.deleteJob(slaJobName(sla));
-                scheduledJobNames.remove(sla.getId());
+                unscheduleServiceLevelAgreement(sla);
             }
             JobIdentifier jobIdentifier = slaJobName(sla);
             ServiceLevelAgreement.ID slaId = sla.getId();

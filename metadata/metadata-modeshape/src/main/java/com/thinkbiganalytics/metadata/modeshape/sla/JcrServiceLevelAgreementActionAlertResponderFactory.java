@@ -70,26 +70,26 @@ public class JcrServiceLevelAgreementActionAlertResponderFactory implements Aler
                             if (responders != null) {
                                 //first check to see if there is a Spring Bean configured for this class type... if so call that
                                 for (Class<? extends ServiceLevelAgreementAction> responderClass : responders) {
-                                    ServiceLevelAgreementAction responder = null;
+                                    ServiceLevelAgreementAction action = null;
                                     try {
-                                        responder = SpringApplicationContext.getBean(responderClass);
+                                        action = SpringApplicationContext.getBean(responderClass);
                                     } catch (NoSuchBeanDefinitionException e) {
                                         //this is ok
                                     }
 
                                     //if not spring bound then construct the Responder
-                                    if (responder == null) {
+                                    if (action == null) {
                                         //construct and invoke
                                         try {
-                                            responder = ConstructorUtils.invokeConstructor(responderClass, null);
+                                            action = ConstructorUtils.invokeConstructor(responderClass, null);
                                         } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
                                             //TODO LOG error
                                             e.printStackTrace();
                                         }
                                     }
-                                    if (responder != null) {
+                                    if (action != null) {
                                         //reassign the content of the alert to the ServiceLevelAssessment
-                                        responder.respond(configuration, assessment, alert);
+                                        action.respond(configuration, assessment, alert);
                                     }
                                 }
                             }

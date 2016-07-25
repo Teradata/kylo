@@ -9,4 +9,6 @@ public interface ServiceLevelAgreementScheduler {
 
     void scheduleServiceLevelAgreement(ServiceLevelAgreement sla);
 
+    boolean unscheduleServiceLevelAgreement(ServiceLevelAgreement sla);
+
 }

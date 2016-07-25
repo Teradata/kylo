@@ -48,6 +48,11 @@ public class TestSpringConfiguration {
             public void scheduleServiceLevelAgreement(ServiceLevelAgreement sla) {
 
             }
+
+            @Override
+            public boolean unscheduleServiceLevelAgreement(ServiceLevelAgreement sla) {
+                return false;
+            }
         };
     }
 
