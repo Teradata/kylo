@@ -1,6 +1,6 @@
 <span ng-if="nextDates.length >0" class="hint">Cron Preview</span>
 <ul class="cron-expresison-preview">
     <li ng-repeat="nextDate in nextDates" >
-    {{nextDate | date:'MM/dd/yyyy @ h:mm:ssa'}}
+        {{nextDate | date:'MM/dd/yyyy @ h:mm:ssa' : 'UTC'}}
     </li>
 </ul>

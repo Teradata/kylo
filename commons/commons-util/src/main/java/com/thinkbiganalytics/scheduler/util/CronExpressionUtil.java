@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.scheduler.util;
 
+import org.joda.time.DateTimeZone;
 import org.quartz.CronExpression;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,7 +52,7 @@ public class CronExpressionUtil {
 
     public static Date getPreviousFireTime(Date lastFireTime, CronExpression cron) {
         Long interval = getCronInterval(cron);
-        Date nextValidTime = getNextFireTime(lastFireTime,cron);
+        Date nextValidTime = getNextFireTime(lastFireTime, cron);
         return new Date(nextValidTime.getTime() - interval);
     }
 
@@ -79,10 +80,17 @@ public class CronExpressionUtil {
     public static List<Date> getNextFireTimes(CronExpression cron, Integer count) throws ParseException{
         List<Date> dates = new ArrayList<Date>();
         Date lastDate = new Date();
+
+        DateTimeZone.setDefault(DateTimeZone.UTC);
+        DateTimeZone tz = DateTimeZone.getDefault();
+        Date utc = new Date(tz.convertLocalToUTC(lastDate.getTime(), false));
+        lastDate = utc;
+
         for(int i=0; i<count; i++) {
             Date nextDate = cron.getNextValidTimeAfter(lastDate);
-            dates.add(nextDate);
-            lastDate = nextDate;
+            Date nextUtcDate = new Date(tz.convertLocalToUTC(nextDate.getTime(), false));
+            dates.add(nextUtcDate);
+            lastDate = nextUtcDate;
         }
         return dates;
     }
