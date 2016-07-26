@@ -3,16 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
-import com.thinkbiganalytics.metadata.api.Command;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
-
-import org.modeshape.jcr.api.txn.TransactionManagerLookup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.context.SecurityContextHolder;
-
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -26,6 +16,18 @@ import javax.jcr.Session;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
+
+import org.modeshape.jcr.api.txn.TransactionManagerLookup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import com.thinkbiganalytics.metadata.api.Command;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.auth.SpringAuthenticationCredentials;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 
 
 /**
@@ -107,12 +109,13 @@ public class JcrMetadataAccess implements MetadataAccess {
      */
     @Override
     public <R> R commit(Command<R> cmd) {
-SecurityContextHolder.getContext().getAuthentication();
         Session session = activeSession.get();
         if (session == null) {
             try {
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                SpringAuthenticationCredentials creds = new SpringAuthenticationCredentials(auth);
 
-                activeSession.set(this.repository.login());
+                activeSession.set(this.repository.login(creds));
 
                 TransactionManager txnMgr = this.txnLookup.getTransactionManager();
 

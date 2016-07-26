@@ -8,9 +8,16 @@
     },
     "security" : {
         "anonymous" : {
+            "username" : "<anonymous>",
             "roles" : ["readonly","readwrite","admin"],
             "useOnFailedLogin" : false
-        }
+        },
+        "providers" : [
+            {
+                "name" : "Spring Security-Based Provider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.auth.SpringAuthenticationProvider",
+            }
+        ]
     },
     "node-types" : ["metadata-schema.cnd"],
     "storage" : {

@@ -15,7 +15,7 @@ public class RolePrincipal extends BasePrincipal {
     }
 
     public RolePrincipal(String name) {
-        super(name);
+        super(name.toUpperCase().startsWith("ROLE_") ? name.toUpperCase() : "ROLE_" + name.toUpperCase());
     }
 
 }
