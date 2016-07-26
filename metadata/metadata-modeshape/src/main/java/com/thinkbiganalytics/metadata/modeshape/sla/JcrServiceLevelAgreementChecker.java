@@ -81,34 +81,36 @@ public class JcrServiceLevelAgreementChecker implements ServiceLevelAgreementChe
     }
 
     public void checkAgreement(ServiceLevelAgreement agreement) {
-        Alert alert = metadataAccess.commit(new Command<Alert>() {
-            @Override
-            public Alert execute() {
-                Alert alert = null;
-                if (isAssessable(agreement)) {
-                    LOG.info("Assessing SLA: " + agreement.getName());
+        if(agreement != null) {
+            Alert alert = metadataAccess.commit(new Command<Alert>() {
+                @Override
+                public Alert execute() {
+                    Alert alert = null;
+                    if (isAssessable(agreement)) {
+                        LOG.info("Assessing SLA: " + agreement.getName());
 
-                    try {
-                        ServiceLevelAssessment assessment = assessor.assess(agreement);
+                        try {
+                            ServiceLevelAssessment assessment = assessor.assess(agreement);
 
-                        if (assessment.getResult() != AssessmentResult.SUCCESS && shouldAlert(agreement, assessment)) {
-                            alert = alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE,
-                                                              Level.FATAL,
-                                                        "Violation of SLA: " + agreement.getName(), assessment.getId());
+                            if (assessment.getResult() != AssessmentResult.SUCCESS && shouldAlert(agreement, assessment)) {
+                                alert = alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE,
+                                                            Level.FATAL,
+                                                            "Violation of SLA: " + agreement.getName(), assessment.getId());
 
 
+                            }
+                        } catch (AssessorNotFoundException e) {
+                            LOG.info("SLA assessment failed.  Assessor Not found: {} - Exception: {}", agreement.getName(), e);
                         }
-                    } catch (AssessorNotFoundException e) {
-                        LOG.info("SLA assessment failed.  Assessor Not found: {} - Exception: {}", agreement.getName(), e);
                     }
+                    return alert;
                 }
-                return alert;
+            });
+            if (alert != null) {
+                // Record this assessment as the latest for this SLA.
+                alertedAssessments.put(agreement.getId(), (ServiceLevelAssessment.ID) alert.getContent());
+                LOG.info("SLA assessment failed: {} - generated alert: {}", agreement.getName(), alert.getId());
             }
-        });
-        if (alert != null) {
-            // Record this assessment as the latest for this SLA.
-            alertedAssessments.put(agreement.getId(), (ServiceLevelAssessment.ID) alert.getContent());
-            LOG.info("SLA assessment failed: {} - generated alert: {}", agreement.getName(), alert.getId());
         }
 
 

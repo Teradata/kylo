@@ -119,7 +119,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
         boolean unscheduled = false;
         JobIdentifier scheduledJobId = null;
         try {
-        if (scheduledJobNames.containsKey(sla)) {
+            if (scheduledJobNames.containsKey(sla.getId())) {
 
             scheduledJobId = slaJobName(sla);
             log.info("Unscheduling sla job " + scheduledJobId.getName());
