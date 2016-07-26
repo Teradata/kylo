@@ -34,9 +34,9 @@ public class FeedExecutedSinceFeedsOrTime extends FeedExecutedSinceFeeds {
 
 
     @Override
-    public Set<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> getPreconditionObligations() {
+    public Set<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> buildPreconditionObligations() {
         Set<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> preconditionGroups = new HashSet<>();
-        preconditionGroups.addAll(super.getPreconditionObligations());
+        preconditionGroups.addAll(super.buildPreconditionObligations());
 
         try {
             Period p = new Period(0, 0, 1, 0);
