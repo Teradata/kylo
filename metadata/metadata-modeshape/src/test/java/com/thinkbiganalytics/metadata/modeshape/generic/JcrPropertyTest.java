@@ -169,12 +169,12 @@ public class JcrPropertyTest {
                 Session s = null;
                 JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(createdFeedId);
                 int versions = printVersions(f);
-                Assert.assertEquals(versions, 2, "Expecting 2 versions: jcr:rootVersion, 1.0");
+                Assert.assertTrue(versions > 1, "Expecting more than 1 version: jcr:rootVersion, 1.0");
 
                 @SuppressWarnings("unchecked")
                 List<? extends FeedSource> sources = f.getSources();
 
-                Assert.assertEquals(sources.size(), 2);
+                Assert.assertTrue(sources.size() > 1);
 
                 if (sources != null) {
                     for (FeedSource source : sources) {
@@ -214,7 +214,7 @@ public class JcrPropertyTest {
             public JcrFeed.FeedId execute() {
                 JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(updatedFeed);
                 int versions = printVersions(f);
-                Assert.assertEquals(versions, 3, "Expecting 2 versions: jcr:rootVersion, 1.0, 1.1");
+                Assert.assertTrue(versions > 2, "Expecting more than 2 versions: jcr:rootVersion, 1.0, 1.1");
                 JcrFeed v1 = JcrVersionUtil.getVersionedNode(f, "1.0", JcrFeed.class);
                 JcrFeed v11 = JcrVersionUtil.getVersionedNode(f, "1.1", JcrFeed.class);
                 String v1Prop1 = v1.getProperty("prop1", String.class);
