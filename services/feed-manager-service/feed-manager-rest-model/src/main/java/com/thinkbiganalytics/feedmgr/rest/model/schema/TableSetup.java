@@ -265,7 +265,7 @@ public class TableSetup {
         try {
             json = mapper.writeValueAsString(getFieldPolicies());
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         fieldPoliciesJson = json;
 

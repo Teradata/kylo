@@ -8,12 +8,16 @@ package com.thinkbiganalytics.policy.validation;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 @Validator(name = "Regex", description = "Validate Regex Pattern")
 public class RegexValidator implements ValidationPolicy<String> {
+    private static final Logger log = LoggerFactory.getLogger(RegexValidator.class);
 
     @PolicyProperty(name = "Regex expression")
     private String regexExpression;
@@ -27,7 +31,7 @@ public class RegexValidator implements ValidationPolicy<String> {
             this.pattern = Pattern.compile(regex);
             valid = true;
         } catch (PatternSyntaxException e) {
-            System.out.println("Invalid regex [" + e + "]. All values will be valid.");
+            log.error("Invalid regex [" + e + "]. All values will be valid.", e);
         }
     }
 

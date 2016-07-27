@@ -38,7 +38,7 @@ public class FieldPolicyTransformer {
             listener.onAddStandardizationPolicy(policy);
           }
         } catch (PolicyTransformException e) {
-          e.printStackTrace();
+          throw new RuntimeException(e);
         }
       }
     }
@@ -57,7 +57,7 @@ public class FieldPolicyTransformer {
             listener.onAddValidationPolicy(policy);
           }
         } catch (PolicyTransformException e) {
-          e.printStackTrace();
+          throw new RuntimeException(e);
         }
       }
     }

@@ -264,7 +264,7 @@ public class JcrUtil {
         try {
             identifier = obj.getObjectId();
         } catch (RepositoryException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         String type = obj.getTypeName();
         Map<String,Object> props = obj.getProperties();

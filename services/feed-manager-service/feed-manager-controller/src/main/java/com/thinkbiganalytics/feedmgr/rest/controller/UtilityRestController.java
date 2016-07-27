@@ -76,7 +76,7 @@ public class UtilityRestController {
             }
 
         } catch (ParseException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return Response.ok(dateStrings).build();
     }

@@ -43,7 +43,7 @@ public class PreconditionPolicyTransformer {
                     Precondition policy = PreconditionAnnotationTransformer.instance().fromUiModel(rule);
                     policies.addAll(Lists.newArrayList(policy.buildPreconditionObligations()));
                 } catch (PolicyTransformException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }
         }

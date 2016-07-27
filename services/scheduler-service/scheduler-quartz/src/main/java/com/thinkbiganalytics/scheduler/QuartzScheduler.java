@@ -461,7 +461,7 @@ public class QuartzScheduler implements JobScheduler {
         }
       }
     } catch (SchedulerException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
     return false;
   }
@@ -474,7 +474,7 @@ public class QuartzScheduler implements JobScheduler {
         return true;
       }
     } catch (SchedulerException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
     return false;
   }

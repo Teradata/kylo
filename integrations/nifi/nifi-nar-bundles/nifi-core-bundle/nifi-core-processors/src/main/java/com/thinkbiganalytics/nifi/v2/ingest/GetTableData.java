@@ -289,7 +289,7 @@ public class GetTableData extends AbstractProcessor {
                                 }
                                 rs.close();
                             } catch (SQLException e) {
-                                e.printStackTrace();
+                                getLogger().error("Error closing sql statement and resultset");
                             }
                         }
                     }

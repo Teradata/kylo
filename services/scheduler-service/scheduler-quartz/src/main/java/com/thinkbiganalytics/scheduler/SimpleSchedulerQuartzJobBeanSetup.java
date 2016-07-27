@@ -40,7 +40,7 @@ public class SimpleSchedulerQuartzJobBeanSetup {
     try {
       scheduleMetadataJob();
     } catch (SchedulerException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
   }
 
@@ -49,7 +49,7 @@ public class SimpleSchedulerQuartzJobBeanSetup {
       Class clazz = Class.forName(quartzJobBean);
       quartzScheduler.scheduleJob("Podium", jobName, clazz, cronExpresson, dataMap, fireImmediately);
     } catch (ClassNotFoundException e) {
-      e.printStackTrace();
+      //throw new RuntimeException(e);
     }
   }
 

@@ -95,7 +95,7 @@ public class PropertyExpressionResolver {
         try {
             obj = BeanUtils.getProperty(metadata, fieldPathName);
         } catch (Exception e) {
-            //    e.printStackTrace();
+            //    throw new RuntimeException(e);
         }
         //check to see if the path has a Metadata annotation with a matching field
         String matchingProperty = MetadataFields.getInstance().getMatchingPropertyDescriptor(metadata, variableName);

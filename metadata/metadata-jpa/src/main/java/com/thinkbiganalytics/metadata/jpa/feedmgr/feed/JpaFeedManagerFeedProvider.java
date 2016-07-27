@@ -68,8 +68,8 @@ public class JpaFeedManagerFeedProvider extends BaseJpaProvider<FeedManagerFeed,
                     .setParameter("systemName", systemName)
                 .setParameter("categorySystemName", categorySystemName)
                 .getSingleResult();
-        }catch(NoResultException e){
-            e.printStackTrace();
+        } catch(NoResultException e){
+            feed = null;
         }
         return feed;
     }
@@ -80,8 +80,8 @@ public class JpaFeedManagerFeedProvider extends BaseJpaProvider<FeedManagerFeed,
         try {
             feeds = ( List<FeedManagerFeed>) entityManager.createNamedQuery(FeedManagerNamedQueries.FEED_FIND_BY_TEMPLATE_ID)
                     .setParameter("templateId", templateId).getResultList();
-        }catch(NoResultException e){
-            e.printStackTrace();
+        } catch(NoResultException e){
+            feeds = null;
         }
         return feeds;
     }
@@ -92,8 +92,8 @@ public class JpaFeedManagerFeedProvider extends BaseJpaProvider<FeedManagerFeed,
         try {
             feeds = ( List<FeedManagerFeed>) entityManager.createNamedQuery(FeedManagerNamedQueries.FEED_FIND_BY_CATEGORY_ID)
                     .setParameter("categoryId", categoryId).getResultList();
-        }catch(NoResultException e){
-            e.printStackTrace();
+        } catch(NoResultException e){
+            feeds = null;
         }
         return feeds;
     }

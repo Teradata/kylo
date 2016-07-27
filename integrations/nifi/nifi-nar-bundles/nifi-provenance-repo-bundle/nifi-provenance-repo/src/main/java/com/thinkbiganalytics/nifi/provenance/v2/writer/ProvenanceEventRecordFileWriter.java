@@ -44,7 +44,7 @@ public class ProvenanceEventRecordFileWriter extends AbstractProvenanceEventWrit
                     }
                 }
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
         return null;
@@ -63,7 +63,7 @@ public class ProvenanceEventRecordFileWriter extends AbstractProvenanceEventWrit
             writeToFile(filePath, json);
             overwriteFile(idPath, "" + event.getEventId());
         } catch (JsonProcessingException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return null;
 
@@ -86,7 +86,7 @@ public class ProvenanceEventRecordFileWriter extends AbstractProvenanceEventWrit
             writer.close();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -100,7 +100,7 @@ public class ProvenanceEventRecordFileWriter extends AbstractProvenanceEventWrit
             writer.close();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

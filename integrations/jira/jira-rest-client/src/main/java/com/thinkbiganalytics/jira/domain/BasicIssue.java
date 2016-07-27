@@ -20,7 +20,7 @@ public class BasicIssue {
             this.key = getIssue.getKey();
             this.id = new Long(getIssue.getId());
         }catch( URISyntaxException e){
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 

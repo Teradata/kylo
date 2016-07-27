@@ -5,6 +5,8 @@
 package com.thinkbiganalytics.util;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,6 +21,7 @@ import java.util.Vector;
  * Represents a partition specification for a target table
  */
 public class PartitionSpec {
+    private static final Logger log = LoggerFactory.getLogger(PartitionSpec.class);
 
     private List<PartitionKey> keys;
 
@@ -171,7 +174,7 @@ public class PartitionSpec {
                 .append(" where ")
                 .append(targetSqlWhereClause);
 
-        System.out.println(sb.toString());
+        log.info(sb.toString());
     }
 
 }

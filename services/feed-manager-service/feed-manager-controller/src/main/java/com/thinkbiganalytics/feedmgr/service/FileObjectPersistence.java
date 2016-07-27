@@ -36,7 +36,7 @@ public class FileObjectPersistence {
         try {
             mapper.writeValue(file,categories);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -47,7 +47,7 @@ public class FileObjectPersistence {
         try {
             mapper.writeValue(file,feeds);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -58,7 +58,7 @@ public class FileObjectPersistence {
         try {
             mapper.writeValue(file,templates);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -70,7 +70,7 @@ public class FileObjectPersistence {
             try {
                 categories = mapper.readValue(file,new TypeReference<List<FeedCategory>>() {});
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
         return categories;
@@ -84,7 +84,7 @@ public class FileObjectPersistence {
             try {
                 feeds = mapper.readValue(file,  new TypeReference<List<FeedMetadata>>() {});
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
         return feeds;
@@ -98,7 +98,7 @@ public class FileObjectPersistence {
             try {
                 templates = mapper.readValue(file, new TypeReference<List<RegisteredTemplate>>() {});
             } catch (IOException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
         return templates;

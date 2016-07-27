@@ -83,7 +83,7 @@ public class DebugController {
             WithinSchedule withinSchedule = new com.thinkbiganalytics.metadata.api.sla.WithinSchedule("* * * * * ? *", "4 hours");
             metrics.add(withinSchedule);
         } catch (ParseException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
         return metrics;
     }
@@ -112,7 +112,7 @@ public class DebugController {
                 JcrTools tools = new JcrTool(true, pw);
                 tools.printSubgraph(node);
             } catch (Exception e) {
-                e.printStackTrace(pw);
+                throw new RuntimeException(e);
             }
             
             pw.flush();

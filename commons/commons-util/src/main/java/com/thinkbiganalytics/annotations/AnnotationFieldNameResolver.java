@@ -73,7 +73,7 @@ public class AnnotationFieldNameResolver {
                     try {
                         fieldType =  Class.forName(t.getActualTypeArguments()[0].getTypeName());
                     } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
+                        throw new RuntimeException(e);
                     }
                 }
             }

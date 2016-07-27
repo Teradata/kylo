@@ -7,6 +7,8 @@ import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.components.ValidationContext;
 import org.apache.nifi.components.ValidationResult;
 import org.apache.nifi.processor.exception.ProcessException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 
@@ -14,6 +16,7 @@ import java.util.*;
  * Created by sr186054 on 3/4/16.
  */
 public class LoggingNotificationService extends AbstractNotificationService {
+    private static final Logger log = LoggerFactory.getLogger(LoggingNotificationService.class);
 
 
     public static final PropertyDescriptor A_PROPERTY = new PropertyDescriptor.Builder()
@@ -58,9 +61,9 @@ public class LoggingNotificationService extends AbstractNotificationService {
     public void notify(final NotificationContext context, final String subject, final String messageText) throws NotificationFailedException {
 
         try {
-            System.out.println("******************************************** ERROR!!!!!!!!!!!!!!!!!! ");
-            System.out.println("******************************************** ERROR subject " + subject);
-            System.out.println("******************************************** ERROR messageText " + messageText);
+            log.info("******************************************** ERROR!!!!!!!!!!!!!!!!!! ");
+            log.info("******************************************** ERROR subject " + subject);
+            log.info("******************************************** ERROR messageText " + messageText);
         } catch (final ProcessException e) {
             throw new NotificationFailedException("Failed to send E-mail Notification", e);
         }

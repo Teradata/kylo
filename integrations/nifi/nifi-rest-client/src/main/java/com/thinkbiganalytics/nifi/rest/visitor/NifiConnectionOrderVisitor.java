@@ -375,7 +375,7 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                         visitProcessGroup(new NifiVisitableProcessGroup(processGroupEntity.getProcessGroup()));
                     }
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }
             //

@@ -154,7 +154,7 @@ public class DataTableColumnFactory {
       try {
         dataTablesQueryParams = mapper.readValue(params, DataTablesQueryParams.class);
       } catch (IOException e) {
-        e.printStackTrace();
+        throw new RuntimeException(e);
       }
     }
     return dataTablesQueryParams;

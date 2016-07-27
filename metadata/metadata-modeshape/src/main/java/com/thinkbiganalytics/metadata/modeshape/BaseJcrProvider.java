@@ -9,6 +9,8 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import org.modeshape.jcr.api.JcrTools;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -26,7 +28,8 @@ import javax.jcr.query.QueryResult;
  * Created by sr186054 on 6/5/16.
  */
 public abstract class BaseJcrProvider<T, PK extends Serializable> implements BaseProvider<T, PK> {
-    
+    private static final Logger log = LoggerFactory.getLogger(BaseJcrProvider.class);
+
     protected Session getSession() {
         return JcrMetadataAccess.getActiveSession();
     }
@@ -126,7 +129,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             org.modeshape.jcr.api.query.Query query = (org.modeshape.jcr.api.query.Query)getSession().getWorkspace().getQueryManager().createQuery(queryExpression, "JCR-SQL2");
             org.modeshape.jcr.api.query.QueryResult result =query.explain();
             String plan = result.getPlan();
-            System.out.println(plan);
+            log.info(plan);
           return  find(queryExpression);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failure while finding entity ", e);

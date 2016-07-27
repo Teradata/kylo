@@ -338,7 +338,6 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
 
             } catch (Exception unknownException) {
                 loggerInstance.error("Kerberos : Unable to validate user - " + unknownException.getMessage());
-                unknownException.printStackTrace();
                 return false;
             }
 

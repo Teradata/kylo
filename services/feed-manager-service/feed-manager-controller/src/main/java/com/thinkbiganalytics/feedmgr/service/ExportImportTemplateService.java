@@ -290,7 +290,7 @@ public class ExportImportTemplateService {
             zos.closeEntry();
 
         } catch (IOException ioe) {
-            ioe.printStackTrace();
+            throw new RuntimeException(ioe);
         }
         return baos.toByteArray();
     }
@@ -522,7 +522,7 @@ public class ExportImportTemplateService {
         // while there are entries I process them
         ImportTemplate importTemplate = new ImportTemplate(fileName);
         while ((entry = zis.getNextEntry()) != null) {
-            System.out.println("entry: " + entry.getName() + ", " + entry.getSize());
+            log.info("entry: " + entry.getName() + ", " + entry.getSize());
             // consume all the data from this entry
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             int len = 0;

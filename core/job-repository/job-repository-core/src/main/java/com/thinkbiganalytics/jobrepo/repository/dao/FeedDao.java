@@ -75,7 +75,7 @@ public class FeedDao extends BaseQueryDao {
       List<JobExecution> jobExecutions = findList(feedQuery, start, limit);
       feeds = convertToExecutedFeed(jobExecutions);
     } catch (DataAccessException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
     return feeds;
   }

@@ -191,7 +191,7 @@ public class FeedOnTimeArrivalMetric implements Metric {
             try {
                 this.expectedExpression = new CronExpression(this.cronString);
             } catch (ParseException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
         return expectedExpression;

@@ -130,10 +130,9 @@ public class NifiJobService extends AbstractJobService {
                                         break;
 
                                     } catch (Exception e) {
-                                        //TODO CHANGE
-                                        e.printStackTrace();
-                                        log.info("Error Restarting Provenance Event:  {}, Component: {}, Flow File: {}, for  Step Execution {} ", event.getId(), event.getComponentName(),
+                                        log.error("Error Restarting Provenance Event:  {}, Component: {}, Flow File: {}, for  Step Execution {} ", event.getId(), event.getComponentName(),
                                                  event.getFlowFileUuid(), stepExecution.getId());
+                                        throw new RuntimeException(e);
                                     }
                                 } else {
                                     log.info("Unable to replay event {}, {}, reason: {}", event.getEventId(), event.getComponentName(), event.getReplayExplanation());

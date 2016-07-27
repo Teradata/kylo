@@ -13,6 +13,8 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -35,7 +37,7 @@ import java.util.Vector;
  */
 
 public class TextFileParser {
-
+    private static final Logger log = LoggerFactory.getLogger(TextFileParser.class);
     private Character delim;
     private boolean quotes;
     private boolean escapes;
@@ -195,7 +197,7 @@ public class TextFileParser {
             firstDelimFreq = sortByValue(frequency);
             // Check if all rows agree
             if (firstDelimFreq.size() != 1) {
-                System.out.println("Warning: initial delimiter changes");
+                log.warn("Warning: initial delimiter changes");
             }
             // All agree so character delim should be the sole element
             retVal =  (firstDelimFreq.keySet().iterator().next());
