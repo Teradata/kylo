@@ -21,7 +21,7 @@
 
         var self = this;
 
-        self.mode = 'prod';
+        self.mode = 'dev';
         self.data = [];
         self.loading = true;
         self.processingDate = new Date(HiveService.getUTCTime(self.processingdttm));
@@ -31,7 +31,7 @@
         self.summaryApi = {};
         self.stringApi = {};
         self.numericApi = {};
-        self.timeApi = {};
+        self.percApi = {};
         self.topvalues = [];
 
         self.selectRowAndUpdateCharts = function(event, row) {
@@ -54,10 +54,11 @@
             selectType();
             selectTopValues();
             selectTimeValues();
+            selectStringValues();
         }
 
         function selectColumn(row) {
-            self.selectedRow.prevColumn = self.selectedRow.columnname;
+            self.selectedRow.prevProfile = self.selectedRow.profile;
             self.selectedRow.columnname = row.columnname;
         }
 
@@ -76,9 +77,9 @@
             self.selectedRow.type = type;
             if (type == "String") {
                 self.selectedRow.profile = "String";
-            } else if (type == "Long" || type == "Double") {
+            } else if (type == "Long" || type == "Double"|| type == "Float" || type == "Byte" || type == "Integer") {
                 self.selectedRow.profile = "Numeric";
-            } else if (type == "Timestamp") {
+            } else if (type == "Timestamp" || type == "Date") {
                 self.selectedRow.profile = "Time";
             } else {
                 self.selectedRow.profile = "Unknown";
@@ -88,11 +89,15 @@
 
         function updateCharts() {
             self.summaryApi.update();
-            if (self.selectedRow.prevColumn != "(ALL)") {
-                //otherwise will update the table twice,
-                //once when its shown after being hidden for '(ALL)' column and
-                //once with explicit call to update here
-                self.stringApi.update();
+            if (self.selectedRow.prevProfile == self.selectedRow.profile) {
+                self.percApi.update();
+                //we only need to explicitly update when not changing profile types,
+                //charts are updated automatically when profile type changes
+                if (self.selectedRow.profile == "String") {
+                    self.stringApi.update();
+                } else if (self.selectedRow.profile == "Numeric") {
+                    self.numericApi.update();
+                }
             }
         }
 
@@ -172,7 +177,7 @@
         };
 
         self.stringData = function() {
-            console.log("calculating string data");
+            //console.log("calculating string data");
             var values = [];
 
             values.push({"label": "Minimum", "value": findNumericStat(self.filtered, 'MIN_LENGTH')});
@@ -203,8 +208,30 @@
             }
         };
 
+        self.percOptions = {
+            chart: {
+                type: 'multiBarHorizontalChart',
+                color: chartColor,
+                height: 200,
+                margin : {
+                    top: 0,
+                    right: multiBarHorizontalChartMarginRight, //otherwise large numbers are cut off
+                    bottom: 0,
+                    left: multiBarHorizontalChartMarginLeft //otherwise y axis labels are not visible
+                },
+                duration: chartDuration,
+                x: function(d){return d.label;},
+                y: function(d){return d.value;},
+                showXAxis: true,
+                showYAxis: false,
+                showControls: false,
+                showValues: true,
+                showLegend: false
+            }
+        };
+
         self.numericData = function() {
-            console.log("calculating numeric data");
+            //console.log("calculating numeric data");
             var values = [];
 
             values.push({"label": "Minimum", "value": findNumericStat(self.filtered, 'MIN')});
@@ -215,6 +242,17 @@
             //variance dominates the graph - and we have std dev anyway
             //values.push({"label": "Variance", "value": findNumericStat(self.filtered, 'VARIANCE')});
             //values.push({"label": "Sum", "value": findNumericStat(self.filtered, 'SUM')});
+
+            return [{key: "Stats", values: values}];
+        };
+
+        self.percData = function() {
+            //console.log("calculating percentage data");
+            var values = [];
+
+            values.push({label: "Nulls", value: findNumericStat(self.filtered, 'PERC_NULL_VALUES')});
+            values.push({label: "Unique", value: findNumericStat(self.filtered, 'PERC_UNIQUE_VALUES')});
+            values.push({label: "Duplicates", value: findNumericStat(self.filtered, 'PERC_DUPLICATE_VALUES')});
 
             return [{key: "Stats", values: values}];
         };
@@ -250,10 +288,25 @@
             var timeVals = [];
             self.timevalues = timeVals;
             if (self.selectedRow.profile == "Time") {
-                console.log("calculating time data");
+                //console.log("calculating time data");
 
                 timeVals.push({name: "Maximum", value: findStat(self.filtered, 'MAX_TIMESTAMP')});
                 timeVals.push({name: "Minimum", value: findStat(self.filtered, 'MIN_TIMESTAMP')});
+            }
+        }
+
+        function selectStringValues() {
+            var vals = [];
+            self.stringvalues = vals;
+            if (self.selectedRow.profile == "String") {
+                //console.log("calculating time data");
+
+                vals.push({name: "Longest", value: findStat(self.filtered, 'LONGEST_STRING')});
+                vals.push({name: "Shortest", value: findStat(self.filtered, 'SHORTEST_STRING')});
+                vals.push({name: "Min (Case Sensitive)", value: findStat(self.filtered, 'MIN_STRING_CASE')});
+                vals.push({name: "Max (Case Sensitive)", value: findStat(self.filtered, 'MAX_STRING_CASE')});
+                vals.push({name: "Min (Case Insensitive)", value: findStat(self.filtered, 'MIN_STRING_ICASE')});
+                vals.push({name: "Max (Case Insensitive)", value: findStat(self.filtered, 'MAX_STRING_ICASE')});
             }
         }
 
@@ -280,8 +333,8 @@
 
                 };
                 self.data = HiveService.transformResults2(response, ['processing_dttm'], transformFn);
-                if (self.data && self.data.rows && self.data.rows.length > 0) {
-                    selectRow(self.data.rows[0]);
+                if (self.data && self.data.rows && self.data.rows.length > 1) {
+                    selectRow(self.data.rows[1]);
                 }
                 //console.log(self.data);
                 self.loading = false;
