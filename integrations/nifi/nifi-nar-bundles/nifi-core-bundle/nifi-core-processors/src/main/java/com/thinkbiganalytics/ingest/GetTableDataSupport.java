@@ -33,19 +33,19 @@ public class GetTableDataSupport {
         YEAR;
     }
 
-    protected static Date maxAllowableDateFromUnit(Date fromDate, UnitSizes unit) {
+    protected static DateTime maxAllowableDateFromUnit(DateTime fromDate, UnitSizes unit) {
         DateTime jodaDate = new DateTime(fromDate);
         switch (unit) {
             case HOUR:
-                return jodaDate.hourOfDay().roundFloorCopy().toDate();
+                return jodaDate.hourOfDay().roundFloorCopy();
             case DAY:
-                return jodaDate.withHourOfDay(0).hourOfDay().roundFloorCopy().toDate();
+                return jodaDate.withHourOfDay(0).hourOfDay().roundFloorCopy();
             case WEEK:
-                return jodaDate.weekOfWeekyear().roundFloorCopy().toDate();
+                return jodaDate.weekOfWeekyear().roundFloorCopy();
             case MONTH:
-                return jodaDate.monthOfYear().roundFloorCopy().toDate();
+                return jodaDate.monthOfYear().roundFloorCopy();
             case YEAR:
-                return jodaDate.withMonthOfYear(1).withDayOfMonth(1).withHourOfDay(0).hourOfDay().roundFloorCopy().toDate();
+                return jodaDate.withMonthOfYear(1).withDayOfMonth(1).withHourOfDay(0).hourOfDay().roundFloorCopy();
         }
         return fromDate;
     }
@@ -87,12 +87,12 @@ public class GetTableDataSupport {
      * @param overlapTime  the number of seconds to overlap with the last load status
      * @param lastLoadDate the last batch load date
      */
-    public ResultSet selectIncremental(String tableName, String[] selectFields, String dateField, int overlapTime, Date lastLoadDate, int backoffTime, UnitSizes unit) throws SQLException {
+    public ResultSet selectIncremental(String tableName, String[] selectFields, String dateField, int overlapTime, DateTime lastLoadDate, int backoffTime, UnitSizes unit) throws SQLException {
         ResultSet rs = null;
 
         logger.info("selectIncremental tableName {} dateField {} overlapTime {} lastLoadDate {} backoffTime {} unit {}", tableName, dateField, overlapTime, lastLoadDate, backoffTime, unit.toString());
 
-        DateRange range = new DateRange(lastLoadDate, new Date(), overlapTime, backoffTime, unit);
+        DateRange range = new DateRange(lastLoadDate, new DateTime(), overlapTime, backoffTime, unit);
 
         logger.info("Load range with min {} max {}", range.getMinDate(), range.getMaxDate());
 
@@ -113,26 +113,26 @@ public class GetTableDataSupport {
     }
 
     protected static class DateRange {
-        private Date minDate;
-        private Date maxDate;
+        private DateTime minDate;
+        private DateTime maxDate;
 
-        public DateRange(Date lastLoadDate, Date currentDate, int overlapTime, int backoffTime, UnitSizes unit) {
+        public DateRange(DateTime lastLoadDate, DateTime currentDate, int overlapTime, int backoffTime, UnitSizes unit) {
 
-            lastLoadDate = (lastLoadDate == null ? new Date(0L) : lastLoadDate);
-            this.minDate = new Date(lastLoadDate.getTime() - (Math.abs(overlapTime) * 1000L));
+            lastLoadDate = (lastLoadDate == null ? new DateTime(0L) : lastLoadDate);
+            this.minDate = new DateTime(lastLoadDate.toDate().getTime() - (Math.abs(overlapTime) * 1000L));
 
             // Calculate the max date
-            Date maxLoadDate = (currentDate == null ? new Date() : currentDate);
-            maxLoadDate = new Date(maxLoadDate.getTime() - Math.abs(backoffTime) * 1000L);
+            DateTime maxLoadDate = (currentDate == null ? new DateTime() : new DateTime(currentDate));
+            maxLoadDate = new DateTime(maxLoadDate.toDate().getTime() - Math.abs(backoffTime) * 1000L);
             this.maxDate = maxAllowableDateFromUnit(maxLoadDate, unit);
         }
 
         public Date getMaxDate() {
-            return maxDate;
+            return maxDate.toDate();
         }
 
         public Date getMinDate() {
-            return minDate;
+            return minDate.toDate();
         }
 
         public String toString() {
