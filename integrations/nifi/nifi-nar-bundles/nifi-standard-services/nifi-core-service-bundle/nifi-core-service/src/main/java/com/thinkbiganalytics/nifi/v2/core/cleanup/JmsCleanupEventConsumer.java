@@ -27,7 +27,7 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
     private final ConcurrentMap<String, CleanupListener> listeners = new ConcurrentHashMap<>();
 
     @Override
-    public void addListener(String category, String feedName, CleanupListener listener) {
+    public void addListener(@Nonnull String category, @Nonnull String feedName, @Nonnull CleanupListener listener) {
         listeners.put(generateKey(category, feedName), listener);
     }
 
@@ -48,7 +48,7 @@ public class JmsCleanupEventConsumer implements CleanupEventConsumer {
     }
 
     @Override
-    public void removeListener(CleanupListener listener) {
+    public void removeListener(@Nonnull CleanupListener listener) {
         listeners.values().remove(listener);
     }
 

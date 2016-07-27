@@ -56,7 +56,7 @@ public class JmsCleanupEventService extends AbstractControllerService implements
     }
 
     @Override
-    public void removeListener(CleanupListener listener) {
+    public void removeListener(@Nonnull CleanupListener listener) {
         springService.getBean(CleanupEventConsumer.class).removeListener(listener);
     }
 }

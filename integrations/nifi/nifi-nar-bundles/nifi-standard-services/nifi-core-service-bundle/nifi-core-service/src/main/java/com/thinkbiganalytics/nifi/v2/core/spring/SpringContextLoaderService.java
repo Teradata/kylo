@@ -1,10 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
-/**
- *
- */
 package com.thinkbiganalytics.nifi.v2.core.spring;
 
 import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
@@ -14,8 +7,11 @@ import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.components.Validator;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
+import org.apache.nifi.controller.ControllerService;
+import org.apache.nifi.processor.Processor;
 import org.apache.nifi.reporting.InitializationException;
 import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
@@ -23,7 +19,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * @author Sean Felten
+ * Creates a Spring {@link ApplicationContext} that can be reused by other {@link ControllerService} and {@link Processor} objects.
+ *
+ * <p><b>NOTE:</b> The context is only valid within the NAR file containing this service.</p>
  */
 public class SpringContextLoaderService extends AbstractControllerService implements SpringContextService {
 

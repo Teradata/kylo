@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.nifi.core.api.cleanup;
 
+import javax.annotation.Nonnull;
+
 /**
  * Event bus for cleanup events.
  */
@@ -12,12 +14,12 @@ public interface CleanupEventConsumer {
      * @param feedName the feed system name
      * @param listener the listener to be added
      */
-    void addListener(String category, String feedName, CleanupListener listener);
+    void addListener(@Nonnull String category, @Nonnull String feedName, @Nonnull CleanupListener listener);
 
     /**
      * Removes the specified listener.
      *
      * @param listener the listener to be removed
      */
-    void removeListener(CleanupListener listener);
+    void removeListener(@Nonnull CleanupListener listener);
 }
