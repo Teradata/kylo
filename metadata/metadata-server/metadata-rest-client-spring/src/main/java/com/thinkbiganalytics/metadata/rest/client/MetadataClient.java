@@ -49,6 +49,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 /**
  *
  * @author Sean Felten
@@ -164,6 +166,16 @@ public class MetadataClient {
     public Feed updateFeed(Feed feed) {
         // Using POST here in since it behaves more like a PATCH than a PUT, and PATCH is not supported in jersey.
         return post(Paths.get("feed", feed.getId()), feed, Feed.class);
+    }
+
+    /**
+     * Gets the properties of the specified feed.
+     *
+     * @param id the feed id
+     * @return the metadata properties
+     */
+    public Properties getFeedProperties(@Nonnull final String id) {
+        return get(Paths.get("feed", id, "props"), Properties.class);
     }
     
     public Properties mergeFeedProperties(String id, Properties props) {

@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
+
 public interface FeedProvider{
 
     FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId);
@@ -49,6 +51,14 @@ public interface FeedProvider{
     boolean enableFeed(Feed.ID id);
     boolean disableFeed(Feed.ID id);
 
+    /**
+     * Deletes the feed with the specified id.
+     *
+     * @param feedId the feed id to be deleted
+     * @throws RuntimeException if the feed cannot be deleted
+     */
+    void deleteFeed(Feed.ID feedId);
+
     Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla);
 
     /**
@@ -57,7 +67,6 @@ public interface FeedProvider{
     Map<String, Object> mergeFeedProperties(Feed.ID feedId, Map<String, Object> properties);
 
     Map<String, Object> replaceProperties(Feed.ID feedId, Map<String, Object> properties);
-
 
     // TODO Methods to add policy info to source
 }

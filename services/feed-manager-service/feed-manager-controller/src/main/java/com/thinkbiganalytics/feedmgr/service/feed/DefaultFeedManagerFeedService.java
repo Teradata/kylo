@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
+import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
@@ -9,9 +10,12 @@ import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService
 import com.thinkbiganalytics.feedmgr.sla.FeedServiceLevelAgreements;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementMetricTransformer;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementMetricTransformerHelper;
+import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
@@ -33,10 +37,12 @@ import com.thinkbiganalytics.rest.model.LabelValue;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
@@ -59,19 +65,25 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Inject
     FeedManagerTemplateService templateRestProvider;
 
-
     @Inject
     FeedManagerPreconditionService feedPreconditionModelTransform;
 
     @Inject
     FeedModelTransform feedModelTransform;
 
-
     @Inject
     MetadataAccess metadataAccess;
 
     @Inject
     ServiceLevelAgreementProvider slaProvider;
+
+    /** Operations manager feed repository */
+    @Inject
+    FeedRepository feedRepository;
+
+    /** Metadata event service */
+    @Inject
+    private MetadataEventService eventService;
 
     @Override
     public List<FeedMetadata> getReusableFeeds() {
@@ -222,6 +234,11 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     }
 
+    @Override
+    public Feed.ID resolveFeed(@Nonnull Serializable fid) {
+        return metadataAccess.read(() -> feedProvider.resolveFeed(fid));
+    }
+
     // @Transactional(transactionManager = "metadataTransactionManager")
     public NifiFeed createFeed(final FeedMetadata feedMetadata)  {
         if (feedMetadata.getState() == null) {
@@ -263,6 +280,24 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         });
 
 
+    }
+
+    @Override
+    public void deleteFeed(@Nonnull final String feedId) {
+        metadataAccess.commit(() -> {
+            Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(feedId));
+            feedRepository.deleteFeed(feed.getCategory().getName(), feed.getName());
+            feedProvider.deleteFeed(feed.getId());
+            return true;
+        });
+    }
+
+    @Override
+    public void enableFeedCleanup(@Nonnull String feedId) {
+        metadataAccess.commit(() -> {
+            final Feed.ID id = feedProvider.resolveFeed(feedId);
+            return feedProvider.mergeFeedProperties(id, ImmutableMap.of(FeedProperties.CLEANUP_ENABLED, "true"));
+        });
     }
 
     // @Transactional(transactionManager = "metadataTransactionManager")

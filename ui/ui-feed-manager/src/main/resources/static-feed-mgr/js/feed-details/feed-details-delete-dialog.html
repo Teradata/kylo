@@ -1,0 +1,15 @@
+<md-dialog aria-label="Delete Feed" ng-cloak>
+    <md-dialog-content class="md-dialog-content">
+        <h2 class="md-title">Delete the {{vm.model.feedName}} feed?</h2>
+        <div>All data related to the feed will be lost.</div>
+        <md-input-container>
+            <label>Enter YES to confirm</label>
+            <input type="text" maxlength="3" ng-model="confirm" ng-disabled="vm.model.state == 'DELETED'">
+        </md-input-container>
+    </md-dialog-content>
+    <md-dialog-actions>
+        <md-progress-circular md-diameter="36px" ng-if="vm.model.state == 'DELETED'"></md-progress-circular>
+        <md-button class="md-warn" ng-click="vm.deleteFeed()" aria-label="Delete" ng-disabled="confirm != 'YES'" ng-if="vm.model.state == 'DISABLED'">Delete</md-button>
+        <md-button class="md-primary" aria-label="Cancel" ng-click="dialog.hide()" ng-disabled="vm.model.state == 'DELETED'">Cancel</md-button>
+    </md-dialog-actions>
+</md-dialog>

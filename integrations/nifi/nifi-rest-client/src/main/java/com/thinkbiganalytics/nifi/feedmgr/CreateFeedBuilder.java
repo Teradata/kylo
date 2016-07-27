@@ -24,8 +24,10 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 /**
- * Created by sr186054 on 2/3/16.
+ * Builds a NiFi feed based on a NiFi template and a Feed Manager Feed. Internally this uses the NiFi REST API.
  */
 public class CreateFeedBuilder {
 
@@ -38,9 +40,11 @@ public class CreateFeedBuilder {
     private String feedName;
     private String inputProcessorType;
     private String reusableTemplateCategoryName = "reusable_templates";
-    private String feedOutputPortName;
-    private String reusableTemplateInputPortName;
     private boolean isReusableTemplate;
+
+    /** List of Input / Output Port connections */
+    @Nonnull
+    private List<InputOutputPort> inputOutputPorts = Lists.newArrayList();
 
     private NifiProcessGroup newProcessGroup = null;
     private ProcessGroupEntity previousFeedProcessGroup = null;
@@ -81,13 +85,14 @@ public class CreateFeedBuilder {
         return this;
     }
 
-    public CreateFeedBuilder feedOutputPortName(String feedOutputPortName) {
-        this.feedOutputPortName = feedOutputPortName;
-        return this;
-    }
-
-    public CreateFeedBuilder reusableTemplateInputPortName(String reusableTemplateInputPortName) {
-        this.reusableTemplateInputPortName = reusableTemplateInputPortName;
+    /**
+     * Adds the specified Input Port and Output Port connection to this feed.
+     *
+     * @param inputOutputPort the port connection
+     * @return this feed builder
+     */
+    public CreateFeedBuilder addInputOutputPort(@Nonnull final InputOutputPort inputOutputPort) {
+        inputOutputPorts.add(inputOutputPort);
         return this;
     }
 
@@ -117,13 +122,13 @@ public class CreateFeedBuilder {
         ProcessGroupEntity feedProcessGroup = restClient.getProcessGroup(feedGroupId, false, false);
         String feedCategoryId = feedProcessGroup.getProcessGroup().getParentGroupId();
         if(reusableTemplateCategory == null){
-            throw new NifiClientRuntimeException("Unable to find the Reusable Template Group. Please ensure NiFi has the 'reusable_templates' processgroup and appropriate reusable flow for this feed. You may need to import the base reusable template for this feed.");
+            throw new NifiClientRuntimeException("Unable to find the Reusable Template Group. Please ensure NiFi has the 'reusable_templates' processgroup and appropriate reusable flow for this feed."
+                                                 + " You may need to import the base reusable template for this feed.");
         }
         String reusableTemplateCategoryGroupId = reusableTemplateCategory.getId();
-        String inputPortName = reusableTemplateInputPortName;
-        restClient
-            .connectFeedToGlobalTemplate(feedGroupId, feedOutputPortName, feedCategoryId, reusableTemplateCategoryGroupId,
-                                         inputPortName);
+        for (InputOutputPort port : inputOutputPorts) {
+            restClient.connectFeedToGlobalTemplate(feedGroupId, port.getOutputPortName(), feedCategoryId, reusableTemplateCategoryGroupId, port.getInputPortName());
+        }
     }
 
     private void ensureInputPortsForReuseableTemplate(String feedGroupId) throws NifiComponentNotFoundException {
@@ -135,7 +140,7 @@ public class CreateFeedBuilder {
 
 
     private boolean hasConnectionPorts() {
-        return reusableTemplateInputPortName != null || isReusableTemplate;
+        return !inputOutputPorts.isEmpty() || isReusableTemplate;
     }
 
 
@@ -254,9 +259,8 @@ public class CreateFeedBuilder {
 
     private void updatePortConnectionsForProcessGroup(String processGroupId) throws NifiComponentNotFoundException {
         //if the feed has an outputPort that should go to a reusable Flow then make those connections
-        if (reusableTemplateInputPortName != null) {
+        if (!inputOutputPorts.isEmpty()) {
             connectFeedToReusableTemplate(processGroupId);
-
         }
         if (isReusableTemplate) {
             ensureInputPortsForReuseableTemplate(processGroupId);

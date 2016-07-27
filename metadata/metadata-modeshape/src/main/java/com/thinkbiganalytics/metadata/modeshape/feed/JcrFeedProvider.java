@@ -389,6 +389,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         return false;
     }
 
+    @Override
+    public void deleteFeed(ID feedId) {
+        deleteById(feedId);
+    }
 
     private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {
 

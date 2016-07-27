@@ -37,8 +37,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -176,6 +178,21 @@ public class FeedRestController {
         FeedMetadata feed = getMetadataService().getFeedById(feedId, true);
 
         return Response.ok(feed).build();
+    }
+
+    /**
+     * Deletes the specified feed.
+     *
+     * @param feedId the feed id
+     * @return the response
+     */
+    @DELETE
+    @Path("/{feedId}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Nonnull
+    public Response deleteFeed(@Nonnull @PathParam("feedId") final String feedId) {
+        getMetadataService().deleteFeed(feedId);
+        return Response.noContent().build();
     }
 
     @POST

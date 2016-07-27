@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Sean Felten
  */
@@ -62,4 +64,20 @@ public interface MetadataProvider {
 
     DataOperation completeOperation(String id, String string, State state);
 
+    /**
+     * Gets the properties of the specified feed.
+     *
+     * @param id the feed id
+     * @return the properties
+     */
+    Properties getFeedProperties(@Nonnull final String id);
+
+    /**
+     * Merges the specified properties into the feed's properties.
+     *
+     * @param id the feed id
+     * @param props the new properties
+     * @return the merged properties
+     */
+    Properties mergeFeedProperties(@Nonnull final String id, @Nonnull final Properties props);
 }

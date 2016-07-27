@@ -496,6 +496,20 @@ border: 1px solid #d7d7d7;
   line-height: inherit;
 }
 
+.md-button.border-btn-warn {
+  background-color: rgb(255, 87, 34);
+  text-align: center !important;
+  height: 36px;
+  font-size: 12px;
+  padding: 0;
+  color: #FFFFFF;
+  border: 1px solid #d7d7d7;
+  line-height: inherit;
+}
+.md-button.border-btn-warn:hover {
+  background-color: rgb(244, 81, 30);
+}
+
 .md-button.border-btn-white {
   text-align:center !important;
   height: 36px;

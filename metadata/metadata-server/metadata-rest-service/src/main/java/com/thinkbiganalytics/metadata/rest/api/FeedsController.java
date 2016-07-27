@@ -81,7 +81,6 @@ public class FeedsController {
     
     @Inject
     private MetadataAccess metadata;
-    
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -111,7 +110,7 @@ public class FeedsController {
                 return Model.DOMAIN_TO_FEED.apply(domain);
         });
     }
-    
+
     @GET
     @Path("{id}/op")
     @Produces(MediaType.APPLICATION_JSON)
@@ -412,53 +411,56 @@ public class FeedsController {
             }
         });
     }
-    
+
+    /**
+     * Gets the properties for the specified feed.
+     *
+     * @param feedId the feed id or the feed category and name
+     * @return the metadata properties
+     */
     @GET
     @Path("{id}/props")
     @Produces(MediaType.APPLICATION_JSON)
-    public Properties getFeedProperties(@PathParam("id") final String feedId) {
+    public Map<String, Object> getFeedProperties(@PathParam("id") final String feedId) {
         LOG.debug("Get feed properties ID: {}", feedId);
         
         return this.metadata.commit(() -> {
-            com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
+            String[] parts = feedId.split("\\.", 2);
+            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = (parts.length == 2) ? feedProvider.findBySystemName(parts[0], parts[1]) : feedProvider.getFeed(feedProvider.resolveFeed(feedId));
             
             if (domain != null) {
-                Map<String, Object> domainProps = domain.getProperties();
-                Properties newProps = new Properties();
-                
-                newProps.putAll(domainProps);
-                return newProps;
+                return domain.getProperties();
             } else {
                 throw new WebApplicationException("No feed exist with the ID: " + feedId, Status.NOT_FOUND);
             }
         });
     }
-    
+
+    /**
+     * Merges the properties for the specified feeds. New properties will be added and existing properties will be overwritten.
+     *
+     * @param feedId the feed id or the feed category and name
+     * @param props the properties to be merged
+     * @return the merged metadata properties
+     */
     @POST
     @Path("{id}/props")
     @Produces(MediaType.APPLICATION_JSON)
-    public Properties mergeFeedProperties(@PathParam("id") final String feedId, 
-                                          final Properties props) {
+    public Map<String, Object> mergeFeedProperties(@PathParam("id") final String feedId, final Properties props) {
         LOG.debug("Merge feed properties ID: {}, properties: {}", feedId, props);
-        
-        return this.metadata.commit(() -> {
-            com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
-            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
-            
-            if (domain != null) {
-                Map<String, Object> domainProps = updateProperties(props, domain, false);
-                Properties newProps = new Properties();
-                
-                newProps.putAll(domainProps);
 
-                return newProps;
+        return this.metadata.commit(() -> {
+            String[] parts = feedId.split("\\.", 2);
+            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = (parts.length == 2) ? feedProvider.findBySystemName(parts[0], parts[1]) : feedProvider.getFeed(feedProvider.resolveFeed(feedId));
+
+            if (domain != null) {
+                return updateProperties(props, domain, false);
             } else {
                 throw new WebApplicationException("No feed exist with the ID: " + feedId, Status.NOT_FOUND);
             }
         });
     }
-    
+
     @PUT
     @Path("{id}/props")
     @Produces(MediaType.APPLICATION_JSON)

@@ -20,3 +20,4 @@
 com.thinkbiganalytics.nifi.v2.hdfs.CreateHDFSFolder
 com.thinkbiganalytics.nifi.v2.thrift.ExecuteHQL
 com.thinkbiganalytics.nifi.v2.thrift.ExecuteHQLStatement
+com.thinkbiganalytics.nifi.v2.hdfs.RemoveHDFSFolder

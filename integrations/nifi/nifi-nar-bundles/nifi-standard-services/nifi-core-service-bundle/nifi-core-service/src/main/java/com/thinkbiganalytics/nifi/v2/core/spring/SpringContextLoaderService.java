@@ -8,17 +8,17 @@
 package com.thinkbiganalytics.nifi.v2.core.spring;
 
 import com.thinkbiganalytics.nifi.core.api.spring.SpringContextService;
+
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.Validator;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
-import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
 import org.springframework.beans.BeansException;
 import org.springframework.context.support.AbstractRefreshableConfigApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -34,13 +34,14 @@ public class SpringContextLoaderService extends AbstractControllerService implem
             .description("A comma-separated list of fully qualified names of java config classes")
 //            .defaultValue("com.thinkbiganalytics.controller.precond.PreconditionJmsConfiguration")
 //            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .addValidator(Validator.VALID)
             .required(false)
             .build();
 
     private static final List<PropertyDescriptor> properties;
 
     static {
-        properties = Collections.unmodifiableList(Arrays.asList(CONFIG_CLASSES));
+        properties = Collections.singletonList(CONFIG_CLASSES);
     }
 
     @Override
@@ -54,7 +55,7 @@ public class SpringContextLoaderService extends AbstractControllerService implem
 
         try {
             this.context = new ClassPathXmlApplicationContext();
-            this.context.setClassLoader(this.context.getClass().getClassLoader());
+            this.context.setClassLoader(getClass().getClassLoader());
             this.context.setConfigLocation("application-context.xml");
 
 //            this.context = new AnnotationConfigApplicationContext();
@@ -94,7 +95,7 @@ public class SpringContextLoaderService extends AbstractControllerService implem
      */
     @Override
     public <T> T getBean(String name, Class<T> requiredType) throws BeansException {
-        return this.getBean(name, requiredType);
+        return this.context.getBean(name, requiredType);
     }
 
 }

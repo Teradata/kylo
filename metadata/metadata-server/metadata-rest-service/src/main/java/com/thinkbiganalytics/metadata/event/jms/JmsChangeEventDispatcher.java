@@ -1,73 +1,116 @@
-/**
- * 
- */
 package com.thinkbiganalytics.metadata.event.jms;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.CleanupTriggerEvent;
+import com.thinkbiganalytics.metadata.api.event.feed.PreconditionTriggerEvent;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.rest.model.event.FeedCleanupTriggerEvent;
+import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
+
+import org.springframework.jms.core.JmsMessagingTemplate;
+
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.jms.Topic;
 
-import org.springframework.jms.core.JmsMessagingTemplate;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
-import com.thinkbiganalytics.metadata.api.event.feed.PreconditionTriggerEvent;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
-
 /**
- *
- * @author Sean Felten
+ * Listens for metadata events that should be transferred to a JMS topic.
  */
 public class JmsChangeEventDispatcher {
-    
+
+    /** JMS topic for triggering feeds for cleanup */
     @Inject
-    @Named("preconditionTriggerTopic")
-    private Topic preconditionTriggerTopic;
-    
+    @Named("cleanupTriggerTopic")
+    private Topic cleanupTriggerTopic;
+
+    /** Metadata event bus */
+    @Inject
+    private MetadataEventService eventService;
+
+    /** Feed object provider */
+    @Inject
+    private FeedProvider feedProvider;
+
+    /** Spring JMS messaging template */
     @Inject
     @Named("metadataMessagingTemplate")
     private JmsMessagingTemplate jmsMessagingTemplate;
-    
-    @Inject
-    private MetadataEventService eventService;
-    
-    @Inject
-    private FeedProvider feedProvider;
-    
+
+    /** Metadata transaction wrapper */
     @Inject
     private MetadataAccess metadata;
-    
-    private PreconditionListener listener = new PreconditionListener();
-    
+
+    /** JMS topic for triggering feeds based on preconditions */
+    @Inject
+    @Named("preconditionTriggerTopic")
+    private Topic preconditionTriggerTopic;
+
+    /** Event listener for cleanup events */
+    private final MetadataEventListener<CleanupTriggerEvent> cleanupListener = new CleanupTriggerDispatcher();
+
+    /** Event listener for precondition events */
+    private final MetadataEventListener<PreconditionTriggerEvent> preconditionListener = new PreconditionTriggerDispatcher();
+
+    /**
+     * Adds listeners for transferring events.
+     */
     @PostConstruct
     public void addEventListener() {
-        this.eventService.addListener(this.listener);
+        eventService.addListener(cleanupListener);
+        eventService.addListener(preconditionListener);
     }
-    
+
+    /**
+     * Removes listeners and stops transferring events.
+     */
     @PreDestroy
     public void removeEventListener() {
-        this.eventService.removeListener(this.listener);
+        eventService.removeListener(cleanupListener);
+        eventService.removeListener(preconditionListener);
     }
-    
-    private class PreconditionListener implements MetadataEventListener<PreconditionTriggerEvent> {
+
+    /**
+     * Transfers cleanup events to JMS.
+     */
+    private class CleanupTriggerDispatcher implements MetadataEventListener<CleanupTriggerEvent> {
+
         @Override
-        public void notify(PreconditionTriggerEvent event) {
+        public void notify(@Nonnull final CleanupTriggerEvent metadataEvent) {
+            FeedCleanupTriggerEvent jmsEvent = new FeedCleanupTriggerEvent(metadataEvent.getData().toString());
+
+            metadata.read(() -> {
+                Feed<?> feed = feedProvider.getFeed(metadataEvent.getData());
+                jmsEvent.setFeedName(feed.getName());
+                jmsEvent.setCategoryName(feed.getCategory().getName());
+                return jmsEvent;
+            });
+
+            jmsMessagingTemplate.convertAndSend(cleanupTriggerTopic, jmsEvent);
+        }
+    }
+
+    /**
+     * Transfers precondition events to JMS.
+     */
+    private class PreconditionTriggerDispatcher implements MetadataEventListener<PreconditionTriggerEvent> {
+
+        @Override
+        public void notify(@Nonnull final PreconditionTriggerEvent event) {
             FeedPreconditionTriggerEvent triggerEv = new FeedPreconditionTriggerEvent(event.getData().toString());
 
             metadata.read(() -> {
-                Feed<Category> feed = feedProvider.getFeed(event.getData());
-                
+                Feed<?> feed = feedProvider.getFeed(event.getData());
                 triggerEv.setFeedName(feed.getName());
                 triggerEv.setCategory(feed.getCategory().getName());
                 return triggerEv;
             });
-            
+
             jmsMessagingTemplate.convertAndSend(preconditionTriggerTopic, triggerEv);
         }
     }

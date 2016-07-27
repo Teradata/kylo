@@ -306,7 +306,7 @@ public class FeedMetadata implements UIFeed{
 
     @Override
     public String getSystemCategoryName() {
-        return getCategoryAndFeedName();
+        return category.getSystemName();
     }
 
     @Override

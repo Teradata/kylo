@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.jobrepo.repository.dao;
 
+import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.jobrepo.query.AbstractConstructedQuery;
 import com.thinkbiganalytics.jobrepo.query.feed.FeedAverageRunTimesQuery;
 import com.thinkbiganalytics.jobrepo.query.feed.FeedQuery;
@@ -20,12 +21,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.dao.DataAccessException;
+import org.springframework.jdbc.core.SqlParameter;
+import org.springframework.jdbc.object.StoredProcedure;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.inject.Named;
 
 /**
@@ -150,5 +155,46 @@ public class FeedDao extends BaseQueryDao {
     return convertToExecutedFeed(jobs);
   }
 
+  /**
+   * Deletes the specified feed.
+   *
+   * @param category the system category name
+   * @param feed the system feed name
+   * @throws DataAccessException if the feed cannot be deleted
+   */
+  public void deleteFeed(@Nonnull final String category, @Nonnull final String feed) {
+    new DeleteFeedJobsProcedure().execute(category, feed);
+  }
 
+  /**
+   * A stored procedure for deleting a feed and related jobs.
+   */
+  private class DeleteFeedJobsProcedure extends StoredProcedure {
+    /** Name of the category parameter */
+    private static final String CATEGORY_PARAM = "category";
+
+    /** Name of the feed parameter */
+    private static final String FEED_PARAM = "feed";
+
+    /**
+     * Constructs a {@code DeleteFeedJobsProcedure}.
+     */
+    DeleteFeedJobsProcedure() {
+      super(jdbcTemplate, "delete_feed_jobs");
+      declareParameter(new SqlParameter("category", Types.VARCHAR));
+      declareParameter(new SqlParameter("feed", Types.VARCHAR));
+      compile();
+    }
+
+    /**
+     * Deletes the specified feed and related jobs.
+     *
+     * @param category the system category name
+     * @param feed the system feed name
+     * @throws DataAccessException if the procedure cannot be executed
+     */
+    void execute(@Nonnull final String category, @Nonnull final String feed) {
+      super.execute(ImmutableMap.of(CATEGORY_PARAM, category, FEED_PARAM, feed));
+    }
+  }
 }

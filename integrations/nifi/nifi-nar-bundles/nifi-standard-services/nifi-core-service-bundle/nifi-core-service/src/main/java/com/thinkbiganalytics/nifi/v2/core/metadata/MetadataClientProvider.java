@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import javax.annotation.Nonnull;
+
 /**
  * @author Sean Felten
  */
@@ -185,5 +187,15 @@ public class MetadataClientProvider implements MetadataProvider {
         op.setState(state);
 
         return this.client.updateDataOperation(op);
+    }
+
+    @Override
+    public Properties getFeedProperties(@Nonnull String id) {
+        return client.getFeedProperties(id);
+    }
+
+    @Override
+    public Properties mergeFeedProperties(@Nonnull String id, @Nonnull Properties props) {
+        return client.mergeFeedProperties(id, props);
     }
 }

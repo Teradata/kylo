@@ -66,6 +66,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
@@ -553,6 +555,21 @@ public class NifiRestClient extends JerseyRestClient {
         return deleteProcessGroup(groupDTO, null);
     }
 
+    /**
+     * Deletes the specified process groups.
+     *
+     * @param processGroups the process groups to delete
+     * @return the deleted process groups
+     * @throws NifiClientRuntimeException if a process group cannot be deleted
+     */
+    @Nonnull
+    private List<ProcessGroupEntity> deleteProcessGroups(@Nonnull final List<ProcessGroupDTO> processGroups) {
+        final List<ProcessGroupEntity> deletedEntities = new ArrayList<>();
+        for (final ProcessGroupDTO processGroup : processGroups) {
+            deletedEntities.add(deleteProcessGroup(processGroup, null));
+        }
+        return deletedEntities;
+    }
 
     private ProcessGroupEntity deleteProcessGroup(ProcessGroupDTO groupDTO, Integer retryAttempt) throws NifiClientRuntimeException {
 
@@ -626,7 +643,6 @@ public class NifiRestClient extends JerseyRestClient {
 
         return deletedEntity;
     }
-
 
     public ConnectionEntity getConnection(String processGroupId, String connectionId) throws NifiComponentNotFoundException {
         try {
@@ -898,44 +914,60 @@ public class NifiRestClient extends JerseyRestClient {
     }
 
     /**
-     * Marks the source processor as Running based upon the type DISABLEs the other source processors
+     * Finds an input processor of the specified type within the specified process group and sets it to {@code RUNNING}. Other input processors are set to {@code DISABLED}.
+     *
+     * @param processGroupId the id of the NiFi process group to be searched
+     * @param type the type (or Java class) of processor to set to {@code RUNNING}, or {@code null} to use the first processor
+     * @return {@code true} if the processor was found, or {@code null} otherwise
+     * @throws NifiComponentNotFoundException if the process group id is not valid
      */
-    public void setInputAsRunningByProcessorMatchingType(String processGroupId, String type) throws NifiComponentNotFoundException {
-        //get the Source Processors
-        List<ProcessorDTO> processorDTOs = getInputProcessors(processGroupId);
-        if (StringUtils.isBlank(type)) {
-            //start the first one it finds
-            type = processorDTOs.get(0).getType();
+    public boolean setInputAsRunningByProcessorMatchingType(@Nonnull final String processGroupId, @Nullable final String type) {
+        // Get the processor list and the processor to be run
+        final List<ProcessorDTO> processors = getInputProcessors(processGroupId);
+        if (processors.isEmpty()) {
+            return false;
         }
-        ProcessorDTO processorDTO = NifiProcessUtil.findFirstProcessorsByType(processorDTOs, type);
-        //Mark all that dont match type as DISABLED.  Start the other one
-        boolean update = false;
-        for (ProcessorDTO dto : processorDTOs) {
+
+        final ProcessorDTO selected = StringUtils.isBlank(type) ? processors.get(0) : NifiProcessUtil.findFirstProcessorsByType(processors, type);
+        if (selected == null) {
+            return false;
+        }
+
+        // Set selected processor to RUNNING and others to DISABLED
+        boolean update;
+
+        for (final ProcessorDTO processor : processors) {
             update = false;
-            //fetch the processor and update it
-            if (!dto.equals(processorDTO) && !NifiProcessUtil.PROCESS_STATE.DISABLED.name().equals(dto.getState())) {
-                dto.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
-                update = true;
-            } else if (dto.equals(processorDTO) && !NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(dto.getState())) {
-                update = true;
-                if (NifiProcessUtil.PROCESS_STATE.DISABLED.name().equals(dto.getState())) {
+
+            // Verify state of the processor
+            if (!processor.equals(selected)) {
+                if (!NifiProcessUtil.PROCESS_STATE.DISABLED.name().equals(processor.getState())) {
+                    processor.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
+                    update = true;
+                }
+            }
+            else if (!NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(processor.getState())) {
+                if (NifiProcessUtil.PROCESS_STATE.DISABLED.name().equals(processor.getState())) {
                     //if its disabled you need to stop it first before making it running
                     //this is needed on rollback
-                    stopProcessor(dto.getParentGroupId(), dto.getId());
+                    stopProcessor(processor.getParentGroupId(), processor.getId());
                 }
-                dto.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+                processor.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+                update = true;
             }
+
             if (update) {
                 ProcessorEntity entity = new ProcessorEntity();
                 ProcessorDTO updateDto = new ProcessorDTO();
-                updateDto.setId(dto.getId());
-                updateDto.setParentGroupId(dto.getParentGroupId());
-                updateDto.setState(dto.getState());
+                updateDto.setId(processor.getId());
+                updateDto.setParentGroupId(processor.getParentGroupId());
+                updateDto.setState(processor.getState());
                 entity.setProcessor(updateDto);
                 updateProcessor(entity);
             }
         }
 
+        return true;
     }
 
     /**

@@ -14,6 +14,8 @@ import org.springframework.stereotype.Service;
 import java.util.Collection;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 /**
  * Created by sr186054 on 2/23/16.
  */
@@ -41,6 +43,14 @@ public interface MetadataService {
     NifiFeed createFeed(FeedMetadata feedMetadata);
 
     void saveFeed(FeedMetadata feed);
+
+    /**
+     * Deletes the specified feed.
+     *
+     * @param feedId the feed id
+     * @throws RuntimeException if the feed cannot be deleted
+     */
+    void deleteFeed(@Nonnull String feedId);
 
     FeedSummary enableFeed(String feedId);
 

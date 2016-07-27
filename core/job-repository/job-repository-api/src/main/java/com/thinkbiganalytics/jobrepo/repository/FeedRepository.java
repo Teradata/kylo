@@ -12,6 +12,8 @@ import com.thinkbiganalytics.jobrepo.query.support.OrderBy;
 
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 /**
  * Created by Will Peterson on 6/6/15. <p> A simple repository interface for feed
  */
@@ -83,4 +85,12 @@ public interface FeedRepository {
 
   public List<String> getFeedNames();
 
+  /**
+   * Deletes the specified feed.
+   *
+   * @param category the system category name
+   * @param feed the system feed name
+   * @throws IllegalStateException if the feed cannot be deleted
+   */
+  void deleteFeed(@Nonnull final String category, @Nonnull final String feed);
 }

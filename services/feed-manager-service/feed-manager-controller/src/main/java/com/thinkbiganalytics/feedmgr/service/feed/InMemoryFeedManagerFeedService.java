@@ -12,11 +12,13 @@ import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.FeedServiceLevelAgreements;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.rest.model.LabelValue;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -24,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
@@ -176,6 +179,16 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
         }));
     }
 
+    @Override
+    public Feed.ID resolveFeed(@Nonnull Serializable fid) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void enableFeedCleanup(@Nonnull String feedId) {
+        throw new UnsupportedOperationException();
+    }
+
     /**
      * Needed to rewire feeds to ids in the server upon server start since the Feed Metadata store is in memory now
      */
@@ -223,6 +236,10 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
         FileObjectPersistence.getInstance().writeFeedsToFile(feeds.values());
     }
 
+    @Override
+    public void deleteFeed(@Nonnull String feedId) {
+        feeds.remove(feedId);
+    }
 
     public void updateFeedsWithTemplate(String oldTemplateId, String newTemplateId) {
         List<FeedMetadata> feedsToUpdate = getFeedsWithTemplate(oldTemplateId);

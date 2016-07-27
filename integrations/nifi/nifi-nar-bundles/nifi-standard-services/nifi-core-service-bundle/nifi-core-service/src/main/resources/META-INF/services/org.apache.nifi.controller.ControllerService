@@ -23,4 +23,4 @@
 com.thinkbiganalytics.nifi.v2.core.metadata.MetadataProviderSelectorService
 com.thinkbiganalytics.nifi.v2.core.spring.SpringContextLoaderService
 com.thinkbiganalytics.nifi.v2.core.precondition.JmsFeedPreconditionEventService
-
+com.thinkbiganalytics.nifi.v2.core.cleanup.JmsCleanupEventService

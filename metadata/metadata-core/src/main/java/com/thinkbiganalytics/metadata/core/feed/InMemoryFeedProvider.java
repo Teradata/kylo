@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
@@ -58,7 +59,6 @@ public class InMemoryFeedProvider implements FeedProvider {
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
 
-    
     private Map<Feed.ID, Feed> feeds = new ConcurrentHashMap<>();
     
     
@@ -297,6 +297,11 @@ public class InMemoryFeedProvider implements FeedProvider {
             return true;
         }
         return false;
+    }
+
+    @Override
+    public void deleteFeed(@Nonnull final Feed.ID feedId) {
+        feeds.remove(feedId);
     }
 
     private FeedSource ensureFeedSource(BaseFeed feed, Datasource ds, ServiceLevelAgreement.ID slaId) {

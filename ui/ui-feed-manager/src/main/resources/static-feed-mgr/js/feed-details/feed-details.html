@@ -71,6 +71,9 @@
              <md-button ng-if="vm.model.state != 'ENABLED'" ng-click="vm.enableFeed()" class="border-btn">
                  ENABLE FEED
              </md-button>
+             <md-button ng-if="vm.model.state != 'ENABLED'" ng-click="vm.confirmDeleteFeed()" class="border-btn-warn">
+                 DELETE FEED
+             </md-button>
              <div layout="column" class="layout-padding-top-bottom">
                  <span ng-class="{'enabled':vm.model.state == 'ENABLED','disabled':vm.model.state == 'DISABLED'}"> <ng-md-icon icon="{{vm.model.stateIcon}}" size="20"></ng-md-icon> {{vm.model.state}}</span>
                  <span class="hint">State</span>

@@ -38,6 +38,7 @@ import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobInstance;
 import org.springframework.batch.core.explore.JobExplorer;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataAccessException;
 
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -46,6 +47,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.inject.Named;
 
@@ -456,4 +458,12 @@ public class FeedRepositoryImpl implements FeedRepository {
     return jobNames;
   }
 
+  @Override
+  public void deleteFeed(@Nonnull final String category, @Nonnull final String feed) {
+    try {
+      feedDao.deleteFeed(category, feed);
+    } catch (DataAccessException e) {
+      throw new IllegalStateException("Feed cannot be deleted: " + category + "." + feed, e);
+    }
+  }
 }

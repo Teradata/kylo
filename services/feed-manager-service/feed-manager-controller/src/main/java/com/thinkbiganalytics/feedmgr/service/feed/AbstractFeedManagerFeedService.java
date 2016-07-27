@@ -7,6 +7,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.nifi.feedmgr.CreateFeedBuilder;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
+import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -86,9 +87,9 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
             feedBuilder.inputProcessorType(feedMetadata.getInputProcessorType())
                 .feedSchedule(feedMetadata.getSchedule()).properties(feedMetadata.getProperties());
             if (registeredTemplate.usesReusableTemplate()) {
-                ReusableTemplateConnectionInfo reusableInfo = registeredTemplate.getReusableTemplateConnections().get(0);
-                //TODO change FeedBuilder to accept a List of ReusableTemplateConnectionInfo objects
-                feedBuilder.reusableTemplateInputPortName(reusableInfo.getReusableTemplateInputPortName()).feedOutputPortName(reusableInfo.getFeedOutputPortName());
+                for (ReusableTemplateConnectionInfo connection : registeredTemplate.getReusableTemplateConnections()) {
+                    feedBuilder.addInputOutputPort(new InputOutputPort(connection.getReusableTemplateInputPortName(), connection.getFeedOutputPortName()));
+                }
             }
         }
         NifiProcessGroup

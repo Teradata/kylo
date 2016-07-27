@@ -18,6 +18,8 @@ import java.sql.Statement;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 public class TableRegisterSupport {
 
     public static Logger logger = LoggerFactory.getLogger(TableRegisterSupport.class);
@@ -148,5 +150,54 @@ public class TableRegisterSupport {
             sb.append(" ").append(targetTablePropertiesSQL);
         }
         return sb.toString();
+    }
+
+    /**
+     * Drops the specified Hive table.
+     *
+     * @param identifier the identifier for the table
+     * @return {@code true} on success or {@code false} on failure
+     */
+    public boolean dropTable(@Nonnull final String identifier) {
+        Validate.notNull(conn);
+
+        String sql = "DROP TABLE IF EXISTS " + identifier;
+
+        try (final Statement st = conn.createStatement()) {
+            st.execute(sql);
+            return true;
+        } catch (final SQLException e) {
+            logger.error("Failed to drop tables SQL {}", sql, e);
+            return false;
+        }
+    }
+
+    /**
+     * Drops the specified Hive tables.
+     *
+     * @param source the category system name or the database name
+     * @param entity the feed system name or the table prefix
+     * @param tableTypes the standard table types to drop
+     * @param additionalTables the identifiers of additional tables to drop
+     * @return {@code true} on success or {@code false} on failure
+     */
+    public boolean dropTables(@Nonnull final String source, @Nonnull final String entity, @Nonnull final Set<TableType> tableTypes, @Nonnull final Set<String> additionalTables) {
+        // Drop standard tables
+        for (TableType tableType : tableTypes) {
+            String identifier = tableType.deriveQualifiedName(source, entity);
+            if (!dropTable(identifier)) {
+                return false;
+            }
+        }
+
+        // Drop additional tables
+        for (String identifier : additionalTables) {
+            if (!dropTable(identifier)) {
+                return false;
+            }
+        }
+
+        // Return success
+        return true;
     }
 }

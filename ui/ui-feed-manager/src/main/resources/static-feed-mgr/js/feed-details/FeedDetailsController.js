@@ -1,6 +1,6 @@
 (function () {
 
-    var controller = function ($scope, $q, $stateParams, $mdDialog, $mdToast, $http, RestUrlService, FeedService, RegisterTemplateService, StateService) {
+    var controller = function ($scope, $q, $stateParams, $mdDialog, $mdToast, $http, $state, RestUrlService, FeedService, RegisterTemplateService, StateService) {
 
         var self = this;
         this.feedId = null;
@@ -19,6 +19,51 @@
         }, function (newVal) {
 
         })
+
+        /**
+         * Displays a confirmation dialog for deleting the feed.
+         */
+        this.confirmDeleteFeed = function() {
+            var $dialogScope = $scope.$new();
+            $dialogScope.dialog = $mdDialog;
+            $dialogScope.vm = self;
+
+            $mdDialog.show({
+                escapeToClose: false,
+                fullscreen: true,
+                parent: angular.element(document.body),
+                scope: $dialogScope,
+                templateUrl: "js/feed-details/feed-details-delete-dialog.html"
+            });
+        };
+
+        /**
+         * Permanently deletes this feed.
+         */
+        this.deleteFeed = function() {
+            // Update model state
+            self.model.state = "DELETED";
+
+            // Delete the feed
+            var successFn = function() {
+                $state.go("feeds");
+            };
+            var errorFn = function() {
+                self.model.state = "DISABLED";
+                $mdDialog.hide();
+                $mdDialog.show(
+                    $mdDialog.alert()
+                        .ariaLabel("Error deleting feed")
+                        .clickOutsideToClose(true)
+                        .ok("Got it!")
+                        .parent(document.body)
+                        .textContent("The feed cannot be deleted at this time. Please try again later.")
+                        .title("Error deleting feed")
+                );
+            };
+
+            $http.delete(RestUrlService.GET_FEEDS_URL + "/" + self.feedId).then(successFn, errorFn);
+        };
 
         this.enableFeed = function () {
             $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function (response) {
