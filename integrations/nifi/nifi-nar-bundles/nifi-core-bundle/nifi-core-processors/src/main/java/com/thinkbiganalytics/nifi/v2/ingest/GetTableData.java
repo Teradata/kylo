@@ -258,7 +258,7 @@ public class GetTableData extends AbstractProcessor {
                 public void process(final OutputStream out) throws IOException {
                     ResultSet rs = null;
                     try {
-                        DateTime lastLoadDate = null;
+                        Date lastLoadDate = null;
                         LastFieldVisitor visitor = null;
                         GetTableDataSupport support = new GetTableDataSupport(conn, queryTimeout);
                         if (strategy == LoadStrategy.FULL_LOAD) {
@@ -267,7 +267,7 @@ public class GetTableData extends AbstractProcessor {
 
                             // TODO: restore when working
                             //lastLoadDate = recorder.getLastLoadTime(session, incoming, categoryName).toDate();
-                            lastLoadDate = recorder.getLastLoadTime(categoryName, feedName);
+                            lastLoadDate = recorder.getLastLoadTime(categoryName, feedName).toDate();
                             visitor = new LastFieldVisitor(dateField, lastLoadDate);
                             rs = support.selectIncremental(tableName, selectFields, dateField, overlapTime, lastLoadDate, backoffTime, GetTableDataSupport.UnitSizes.valueOf(unitSize));
                         } else {
@@ -345,26 +345,26 @@ public class GetTableData extends AbstractProcessor {
     static class LastFieldVisitor extends AbstractRowVisitor {
 
         private String colName;
-        private DateTime lastModifyDate = new DateTime(0L);
+        private Date lastModifyDate = new Date(0L);
 
-        public LastFieldVisitor(String lastModifyColumnName, DateTime lastModifyDate) {
+        public LastFieldVisitor(String lastModifyColumnName, Date lastModifyDate) {
             this.colName = lastModifyColumnName;
             Validate.notEmpty(colName);
-            this.lastModifyDate = (lastModifyDate == null ? new DateTime(0L) : lastModifyDate);
+            this.lastModifyDate = (lastModifyDate == null ? new Date(0L) : lastModifyDate);
         }
 
         @Override
         public void visitColumn(String columnName, int colType, Date value) {
             if (colName.equals(columnName)) {
                 if (value != null) {
-                    if (value.after(lastModifyDate.toDate())) {
-                        lastModifyDate = new DateTime(value);
+                    if (value.after(lastModifyDate)) {
+                        lastModifyDate = new Date(value.getTime());
                     }
                 }
             }
         }
 
-        public DateTime getLastModifyDate() {
+        public Date getLastModifyDate() {
             return lastModifyDate;
         }
     }
