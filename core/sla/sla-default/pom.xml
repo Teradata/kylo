@@ -9,6 +9,25 @@
   <artifactId>thinkbig-sla-default</artifactId>
 
   <dependencies>
+    <!-- Testing dependencies -->
+    <dependency>
+      <groupId>org.assertj</groupId>
+      <artifactId>assertj-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.powermock</groupId>
+      <artifactId>powermock-mockito-release-full</artifactId>
+      <scope>test</scope>
+      <type>pom</type>
+    </dependency>
+
+    <!-- Data Lake dependencies -->
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-commons-util</artifactId>
@@ -103,28 +122,6 @@
       <groupId>javax.mail</groupId>
       <artifactId>javax.mail-api</artifactId>
       <version>1.5.5</version>
-    </dependency>
-
-
-
-
-
-    <!-- Testing -->
-    <dependency>
-      <groupId>org.assertj</groupId>
-      <artifactId>assertj-core</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-all</artifactId>
-      <scope>test</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-mockito-release-full</artifactId>
-      <scope>test</scope>
-      <type>pom</type>
     </dependency>
   </dependencies>
 </project>
