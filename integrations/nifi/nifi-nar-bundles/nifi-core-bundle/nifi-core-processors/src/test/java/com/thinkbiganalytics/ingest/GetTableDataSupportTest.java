@@ -55,16 +55,16 @@ public class GetTableDataSupportTest {
     @Test
     public void testRangeNoLastLoad() throws Exception {
         GetTableDataSupport.DateRange range = new GetTableDataSupport.DateRange(null, testDate, 0, 0, GetTableDataSupport.UnitSizes.NONE);
-        assertEquals(range.getMinDate(), new Date(0L));
-        assertEquals(range.getMaxDate(), testDate.toDate());
+        assertEquals(range.getMinDate(), new DateTime(0L));
+        assertEquals(range.getMaxDate(), testDate);
     }
 
     @Test
     public void testRangeLastLoad() throws Exception {
         DateTime lastLoad = new DateTime(1458872000000L);
         GetTableDataSupport.DateRange range = new GetTableDataSupport.DateRange(lastLoad, testDate, 0, 0, GetTableDataSupport.UnitSizes.NONE);
-        assertEquals(range.getMinDate(), lastLoad.toDate());
-        assertEquals(range.getMaxDate(), testDate.toDate());
+        assertEquals(range.getMinDate(), lastLoad);
+        assertEquals(range.getMaxDate(), testDate);
     }
 
     @Test
@@ -72,8 +72,8 @@ public class GetTableDataSupportTest {
         DateTime lastLoad = new DateTime(1458872000000L);
         int backoffTimeSecs = 10;
         GetTableDataSupport.DateRange range = new GetTableDataSupport.DateRange(lastLoad, testDate, 0, backoffTimeSecs, GetTableDataSupport.UnitSizes.NONE);
-        assertEquals(range.getMinDate(), lastLoad.toDate());
-        assertEquals(range.getMaxDate(), new Date(testDate.toDate().getTime() - (backoffTimeSecs * 1000L)));
+        assertEquals(range.getMinDate(), lastLoad);
+        assertEquals(range.getMaxDate(), new DateTime(testDate.toDate().getTime() - (backoffTimeSecs * 1000L)));
     }
 
     @Test
@@ -81,16 +81,16 @@ public class GetTableDataSupportTest {
         DateTime lastLoad = new DateTime(1458872000000L);
         int overlapSecs = 10;
         GetTableDataSupport.DateRange range = new GetTableDataSupport.DateRange(lastLoad, testDate, overlapSecs, 0, GetTableDataSupport.UnitSizes.NONE);
-        assertEquals(range.getMinDate(), new Date(lastLoad.toDate().getTime() - (overlapSecs * 1000L)));
-        assertEquals(range.getMaxDate(), testDate.toDate());
+        assertEquals(range.getMinDate(), new DateTime(lastLoad.toDate().getTime() - (overlapSecs * 1000L)));
+        assertEquals(range.getMaxDate(), testDate);
     }
 
     @Test
     public void testRangeUnitSizeHour() throws Exception {
         DateTime lastLoad = new DateTime(1458872000000L);
         GetTableDataSupport.DateRange range = new GetTableDataSupport.DateRange(lastLoad, testDate, 0, 0, GetTableDataSupport.UnitSizes.HOUR);
-        assertEquals(range.getMinDate(), lastLoad.toDate());
-        assertEquals(range.getMaxDate(), new Date(1458871200000L));
+        assertEquals(range.getMinDate(), lastLoad);
+        assertEquals(range.getMaxDate(), new DateTime(1458871200000L));
     }
 
     @Test
@@ -98,8 +98,8 @@ public class GetTableDataSupportTest {
         DateTime lastLoad = new DateTime(1458872000000L);
 
         GetTableDataSupport.DateRange range = new GetTableDataSupport.DateRange(lastLoad, testDate, 0, 0, GetTableDataSupport.UnitSizes.DAY);
-        assertEquals(range.getMinDate(), lastLoad.toDate());
-        assertEquals(range.getMaxDate(), new DateTime(1458802800000L).toDate());
+        assertEquals(range.getMinDate(), lastLoad);
+        assertEquals(range.getMaxDate(), new DateTime(1458802800000L));
     }
 
     @Test

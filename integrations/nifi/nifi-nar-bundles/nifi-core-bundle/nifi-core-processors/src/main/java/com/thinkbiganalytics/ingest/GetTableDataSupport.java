@@ -11,7 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.sql.*;
-import java.util.Date;
 
 /**
  * Provides support for incremental
@@ -100,11 +99,11 @@ public class GetTableDataSupport {
         String select = selectStatement(selectFields);
         sb.append("select ").append(select).append(" from ").append(tableName).append(" WHERE " + dateField + " > ? and " + dateField + " < ?");
 
-        if (range.getMinDate().before(range.getMaxDate())) {
+        if (range.getMinDate().isBefore(range.getMaxDate())) {
             PreparedStatement ps = conn.prepareStatement(sb.toString());
             ps.setQueryTimeout(timeout);
-            ps.setTimestamp(1, new java.sql.Timestamp(range.getMinDate().getTime()));
-            ps.setTimestamp(2, new java.sql.Timestamp(range.getMaxDate().getTime()));
+            ps.setTimestamp(1, new java.sql.Timestamp(range.getMinDate().getMillis()));
+            ps.setTimestamp(2, new java.sql.Timestamp(range.getMaxDate().getMillis()));
 
             logger.info("Executing incremental GetTableData query {}", ps);
             rs = ps.executeQuery();
@@ -127,12 +126,12 @@ public class GetTableDataSupport {
             this.maxDate = maxAllowableDateFromUnit(maxLoadDate, unit);
         }
 
-        public Date getMaxDate() {
-            return maxDate.toDate();
+        public DateTime getMaxDate() {
+            return maxDate;
         }
 
-        public Date getMinDate() {
-            return minDate.toDate();
+        public DateTime getMinDate() {
+            return minDate;
         }
 
         public String toString() {
