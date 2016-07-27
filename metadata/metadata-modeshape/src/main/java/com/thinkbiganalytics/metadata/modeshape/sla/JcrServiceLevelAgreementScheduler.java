@@ -1,23 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterables;
-import com.thinkbiganalytics.metadata.api.Command;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
-import com.thinkbiganalytics.scheduler.JobIdentifier;
-import com.thinkbiganalytics.scheduler.JobScheduler;
-import com.thinkbiganalytics.scheduler.JobSchedulerException;
-import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
-
-import org.apache.commons.lang.StringUtils;
-import org.modeshape.jcr.ModeShapeEngine;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -26,6 +8,25 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+
+import org.apache.commons.lang.StringUtils;
+import org.modeshape.jcr.ModeShapeEngine;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.auth.concurrent.ServiceSecurityContextRunnable;
+import com.thinkbiganalytics.metadata.api.Command;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
+import com.thinkbiganalytics.scheduler.JobIdentifier;
+import com.thinkbiganalytics.scheduler.JobScheduler;
+import com.thinkbiganalytics.scheduler.JobSchedulerException;
+import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
 
 /**
  * Created by sr186054 on 7/22/16.
@@ -42,7 +43,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
     private ServiceLevelAgreementChecker slaChecker;
 
     @Inject
-    private MetadataAccess metadataAccess;
+    private JcrMetadataAccess metadataAccess;
 
     @Inject
     ServiceLevelAgreementProvider slaProvider;
@@ -63,25 +64,27 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
 
     class QueryAndScheduleServiceLevelAgreementsTask extends TimerTask {
 
-        public void run() {
+        private final ServiceSecurityContextRunnable secRunnable = new ServiceSecurityContextRunnable(() -> {
             if (ModeShapeEngine.State.RUNNING.equals(modeShapeEngine.getState())) {
                 modeshapeAvailableTimer.cancel();
-                metadataAccess.read(new Command<Object>() {
-                    @Override
-                    public Object execute() {
-                        List<ServiceLevelAgreement> agreements = slaProvider.getAgreements();
-                        if (agreements != null) {
-                            for (ServiceLevelAgreement agreement : agreements) {
-                                scheduleServiceLevelAgreement(agreement);
-                            }
+                metadataAccess.read(() -> {
+                    List<ServiceLevelAgreement> agreements = slaProvider.getAgreements();
+                    
+                    if (agreements != null) {
+                        for (ServiceLevelAgreement agreement : agreements) {
+                            scheduleServiceLevelAgreement(agreement);
                         }
-                        return null;
                     }
+                    
+                    return null;
                 });
             }
-
+        });
+        
+        @Override
+        public void run() {
+            this.secRunnable.run();
         }
-
     }
 
 

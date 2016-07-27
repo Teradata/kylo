@@ -9,13 +9,17 @@
     "security" : {
         "anonymous" : {
             "username" : "<anonymous>",
-            "roles" : ["readonly","readwrite","admin"],
+            "roles" : ["readonly"],
             "useOnFailedLogin" : false
         },
         "providers" : [
             {
                 "name" : "Spring Security-Based Provider",
                 "classname" : "com.thinkbiganalytics.metadata.modeshape.auth.SpringAuthenticationProvider",
+            },
+            {
+                "name" : "DB Admin Provider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.auth.AdminAuthenticationProvider",
             }
         ]
     },

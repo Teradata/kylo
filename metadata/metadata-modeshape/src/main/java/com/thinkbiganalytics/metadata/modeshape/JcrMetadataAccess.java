@@ -9,6 +9,7 @@ import java.util.Set;
 
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.jcr.Credentials;
 import javax.jcr.Node;
 import javax.jcr.Repository;
 import javax.jcr.RepositoryException;
@@ -103,18 +104,22 @@ public class JcrMetadataAccess implements MetadataAccess {
             itr.remove();
         }
     }
-
+    
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.MetadataAccess#commit(com.thinkbiganalytics.metadata.api.Command)
      */
     @Override
     public <R> R commit(Command<R> cmd) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        SpringAuthenticationCredentials creds = new SpringAuthenticationCredentials(auth);
+        
+        return commit(creds, cmd);
+    }
+
+    public <R> R commit(Credentials creds, Command<R> cmd) {
         Session session = activeSession.get();
         if (session == null) {
             try {
-                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-                SpringAuthenticationCredentials creds = new SpringAuthenticationCredentials(auth);
-
                 activeSession.set(this.repository.login(creds));
 
                 TransactionManager txnMgr = this.txnLookup.getTransactionManager();
@@ -167,18 +172,24 @@ public class JcrMetadataAccess implements MetadataAccess {
      */
     @Override
     public <R> R read(Command<R> cmd) {
-SecurityContextHolder.getContext().getAuthentication();
-        Session session = activeSession.get();
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        SpringAuthenticationCredentials creds = new SpringAuthenticationCredentials(auth);
+        
+        return read(creds, cmd);
+    }
 
+    public <R> R read(Credentials creds, Command<R> cmd) {
+        Session session = activeSession.get();
+        
         if (session == null) {
             try {
-                activeSession.set(this.repository.login());
-
+                activeSession.set(this.repository.login(creds));
+                
                 TransactionManager txnMgr = this.txnLookup.getTransactionManager();
-
+                
                 try {
                     txnMgr.begin();
-
+                    
                     return cmd.execute();
                 } catch (SystemException | NotSupportedException e) {
                     // TODO Use a better exception
@@ -189,7 +200,7 @@ SecurityContextHolder.getContext().getAuthentication();
                     } catch (SystemException e) {
                         log.error("Failed to rollback transaction", e);
                     }
-
+                    
                     activeSession.get().refresh(false);
                     activeSession.get().logout();
                     activeSession.remove();

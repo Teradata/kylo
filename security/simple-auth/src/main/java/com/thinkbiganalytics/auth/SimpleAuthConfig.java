@@ -8,6 +8,7 @@ import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -25,6 +26,7 @@ import com.google.common.collect.ImmutableMap;
  * }
  */
 @Configuration
+@Profile("simpleAuth")
 public class SimpleAuthConfig {
     
     @Bean(name = "authenticationService")

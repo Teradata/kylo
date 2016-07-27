@@ -4,7 +4,6 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import javax.inject.Inject;
 import javax.jcr.Node;
@@ -16,8 +15,7 @@ import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.PropertyDefinition;
 
-import com.thinkbiganalytics.metadata.api.Command;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.auth.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 
 /**
@@ -27,21 +25,18 @@ import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 public class MetadataJcrConfigurator {
     
     @Inject
-    private MetadataAccess metadataAccess;
+    private JcrMetadataAccess metadataAccess;
     
     public void configure() {
-        this.metadataAccess.commit(new Command<String>() {
-            @Override
-            public String execute() {
-                try {
-                    Session session = JcrMetadataAccess.getActiveSession();
-                    
-                    ensureLayout(session);
-                    ensureTypes(session);
-                    return null;
-                } catch (RepositoryException e) {
-                    throw new MetadataRepositoryException("Could not create initial JCR metadata", e);
-                }
+        this.metadataAccess.commit(new AdminCredentials(), () -> {
+            try {
+                Session session = JcrMetadataAccess.getActiveSession();
+                
+                ensureLayout(session);
+                ensureTypes(session);
+                return null;
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Could not create initial JCR metadata", e);
             }
         });
     }
