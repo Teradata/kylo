@@ -155,13 +155,15 @@ public class TableRegisterSupport {
     /**
      * Drops the specified Hive table.
      *
+     * <p>The identifier is expected to already be quoted, if necessary.</p>
+     *
      * @param identifier the identifier for the table
      * @return {@code true} on success or {@code false} on failure
      */
     public boolean dropTable(@Nonnull final String identifier) {
         Validate.notNull(conn);
 
-        String sql = "DROP TABLE IF EXISTS " + identifier;
+        final String sql = "DROP TABLE IF EXISTS " + identifier;
 
         try (final Statement st = conn.createStatement()) {
             st.execute(sql);
@@ -183,15 +185,15 @@ public class TableRegisterSupport {
      */
     public boolean dropTables(@Nonnull final String source, @Nonnull final String entity, @Nonnull final Set<TableType> tableTypes, @Nonnull final Set<String> additionalTables) {
         // Drop standard tables
-        for (TableType tableType : tableTypes) {
-            String identifier = tableType.deriveQualifiedName(source, entity);
+        for (final TableType tableType : tableTypes) {
+            final String identifier = tableType.deriveQualifiedName(source, entity);
             if (!dropTable(identifier)) {
                 return false;
             }
         }
 
         // Drop additional tables
-        for (String identifier : additionalTables) {
+        for (final String identifier : additionalTables) {
             if (!dropTable(identifier)) {
                 return false;
             }

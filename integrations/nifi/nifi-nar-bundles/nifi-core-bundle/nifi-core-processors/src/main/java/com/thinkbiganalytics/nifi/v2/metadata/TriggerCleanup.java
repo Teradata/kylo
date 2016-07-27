@@ -186,6 +186,16 @@ public class TriggerCleanup extends AbstractProcessor implements CleanupListener
     }
 
     /**
+     * Gets the id for this feed.
+     *
+     * @return the feed id, or {@code null} if unknown
+     */
+    @Nullable
+    String getFeedId() {
+        return feedId;
+    }
+
+    /**
      * Gets the cleanup service for the specified context.
      *
      * @param context the process context

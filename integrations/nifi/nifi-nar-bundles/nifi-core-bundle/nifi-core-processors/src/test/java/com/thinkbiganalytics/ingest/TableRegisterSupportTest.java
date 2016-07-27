@@ -4,6 +4,7 @@
 
 package com.thinkbiganalytics.ingest;
 
+import com.google.common.collect.ImmutableSet;
 import com.klarna.hiverunner.HiveShell;
 import com.klarna.hiverunner.StandaloneHiveRunner;
 import com.klarna.hiverunner.annotations.HiveProperties;
@@ -14,9 +15,17 @@ import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.TableType;
 
 import org.apache.commons.collections.MapUtils;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -95,5 +104,71 @@ public class TableRegisterSupportTest {
             ddl = ddl.replace("LOCATION '", "LOCATION '${hiveconf:MY.HDFS.DIR}");
             hiveShell.execute(ddl);
         }
+    }
+
+    /** Verify dropping a table. */
+    @Test
+    public void testDropTable() throws Exception {
+        // Mock SQL objects
+        final Statement statement = Mockito.mock(Statement.class);
+        Mockito.when(statement.execute(Mockito.anyString())).then(new Answer<Boolean>() {
+            @Override
+            public Boolean answer(final InvocationOnMock invocation) throws Throwable {
+                final String sql = (String)invocation.getArguments()[0];
+                if (sql.equals("DROP TABLE IF EXISTS invalid")) {
+                    throw new SQLException();
+                }
+                return true;
+            }
+        });
+
+        final Connection connection = Mockito.mock(Connection.class);
+        Mockito.when(connection.createStatement()).thenReturn(statement);
+
+        // Test dropping table with success
+        final TableRegisterSupport support = new TableRegisterSupport(connection);
+        Assert.assertTrue(support.dropTable("feed"));
+        Mockito.verify(statement).execute("DROP TABLE IF EXISTS feed");
+
+        // Test dropping table with exception
+        Assert.assertFalse(support.dropTable("invalid"));
+    }
+
+    /** Verify exception if the connection is null. */
+    @Test(expected = NullPointerException.class)
+    public void testDropTableWithNullConnection() {
+        new TableRegisterSupport().dropTable("invalid");
+    }
+
+    /** Verify dropping multiple tables. */
+    @Test
+    public void testDropTables() throws Exception {
+        // Mock SQL objects
+        final Statement statement = Mockito.mock(Statement.class);
+        Mockito.when(statement.execute(Mockito.anyString())).then(new Answer<Boolean>() {
+            @Override
+            public Boolean answer(InvocationOnMock invocation) throws Throwable {
+                final String sql = (String)invocation.getArguments()[0];
+                if (sql.startsWith("DROP TABLE IF EXISTS invalid")) {
+                    throw new SQLException();
+                }
+                return true;
+            }
+        });
+
+        final Connection connection = Mockito.mock(Connection.class);
+        Mockito.when(connection.createStatement()).thenReturn(statement);
+
+        // Test dropping tables with success
+        TableRegisterSupport support = new TableRegisterSupport(connection);
+        Assert.assertTrue(support.dropTables("cat", "feed", EnumSet.of(TableType.MASTER, TableType.VALID, TableType.INVALID), ImmutableSet.of("backup.feed")));
+        Mockito.verify(statement).execute("DROP TABLE IF EXISTS cat.feed");
+        Mockito.verify(statement).execute("DROP TABLE IF EXISTS cat.feed_valid");
+        Mockito.verify(statement).execute("DROP TABLE IF EXISTS cat.feed_invalid");
+        Mockito.verify(statement).execute("DROP TABLE IF EXISTS backup.feed");
+
+        // Test dropping tables with exception
+        Assert.assertFalse(support.dropTables("invalid", "feed", EnumSet.allOf(TableType.class), ImmutableSet.of()));
+        Assert.assertFalse(support.dropTables("cat", "feed", ImmutableSet.of(), ImmutableSet.of("invalid")));
     }
 }
