@@ -31,7 +31,7 @@ public class JpaFeedManagerCategoryProvider extends BaseJpaProvider<FeedManagerC
                     .setParameter("systemName", systemName)
                     .getSingleResult();
         }catch(NoResultException e){
-            e.printStackTrace();
+            category =  null;
         }
         return category;
     }

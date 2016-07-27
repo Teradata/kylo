@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.util;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -12,6 +14,7 @@ import org.springframework.context.ApplicationContextAware;
  * for this bean to be initialized during application startup.
  */
 public class SpringApplicationContext implements ApplicationContextAware {
+    private static final Logger log = LoggerFactory.getLogger(SpringApplicationContext.class);
 
     private static ApplicationContext CONTEXT;
 
@@ -22,7 +25,7 @@ public class SpringApplicationContext implements ApplicationContextAware {
      * @param context a reference to the ApplicationContext.
      */
     public void setApplicationContext(ApplicationContext context) throws BeansException {
-        System.out.println("!!!!!!!!!!!!!!!SET APP CONTEXT!!~!!!!!!!!!!");
+        log.info("!!!!!!!!!!!!!!!SET APP CONTEXT!!~!!!!!!!!!!");
         CONTEXT = context;
     }
 

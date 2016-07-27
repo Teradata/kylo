@@ -16,6 +16,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -65,12 +66,19 @@ public class UtilityRestController {
     @Produces({MediaType.APPLICATION_JSON})
     public Response previewCronExpression(@QueryParam("cronExpression") String cronExpression, @QueryParam("number") @DefaultValue("3") Integer number) {
         List<Date> dates = new ArrayList<>();
+        List<String> dateStrings = new ArrayList<>();
+        SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy hh:mm:ss a");
+
         try {
             dates = CronExpressionUtil.getNextFireTimes(cronExpression, number);
+            for (Date date : dates) {
+                dateStrings.add(format.format(date));
+            }
+
         } catch (ParseException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
-        return Response.ok(dates).build();
+        return Response.ok(dateStrings).build();
     }
 
 

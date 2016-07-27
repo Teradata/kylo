@@ -63,12 +63,12 @@ public class FeedExecutedSinceFeeds implements Precondition {
     }
 
     @Override
-    public Set<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> getPreconditionObligations() {
+    public Set<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> buildPreconditionObligations() {
 
-        return Sets.newHashSet(getPreconditionObligation());
+        return Sets.newHashSet(buildPreconditionObligation());
     }
 
-    public com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup getPreconditionObligation(){
+    public com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup buildPreconditionObligation(){
         Set<Metric> metrics = new HashSet<>();
         for (String categoryAndFeed : categoryAndFeedList) {
             FeedExecutedSinceFeed metric = new FeedExecutedSinceFeed(sinceCategoryAndFeedName, categoryAndFeed);

@@ -80,7 +80,7 @@ public class ServiceLevelAgreementMetricTransformerHelper {
                         group.setCondition(rule.getCondition().name());
                         transformedSla.addGroup(group);
                     } catch (PolicyTransformException e) {
-                        e.printStackTrace();
+                        throw new RuntimeException(e);
                     }
                 }
 
@@ -98,7 +98,7 @@ public class ServiceLevelAgreementMetricTransformerHelper {
                     ServiceLevelAgreementActionConfiguration actionConfiguration = ServiceLevelAgreementActionConfigTransformer.instance().fromUiModel(agreementActionUiConfigurationItem);
                     actionConfigurations.add(actionConfiguration);
                 } catch (PolicyTransformException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }
         }

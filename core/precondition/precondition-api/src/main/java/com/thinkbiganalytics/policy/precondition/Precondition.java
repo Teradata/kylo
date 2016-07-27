@@ -9,5 +9,5 @@ import java.util.Set;
  */
 public interface Precondition {
 
-    Set<ObligationGroup> getPreconditionObligations();
+    Set<ObligationGroup> buildPreconditionObligations();
 }

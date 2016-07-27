@@ -154,7 +154,6 @@ public class IndexElasticSearch extends AbstractProcessor {
                 session.transfer(flowFile, REL_SUCCESS);
             }
         } catch (final Exception e) {
-            e.printStackTrace();
             logger.error("Unable to execute Elasticsearch job", new Object[]{flowFile, e});
             session.transfer(flowFile, REL_FAILURE);
         }

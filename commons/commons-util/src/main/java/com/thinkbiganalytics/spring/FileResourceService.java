@@ -39,7 +39,7 @@ public class FileResourceService implements ApplicationContextAware {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
 
         return null;

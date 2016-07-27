@@ -98,7 +98,7 @@ public class JobDao extends BaseQueryDao {
         jobs.add(executedJob);
       }
     } catch (DataAccessException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
     return jobs;
   }
@@ -113,7 +113,7 @@ public class JobDao extends BaseQueryDao {
         jobs.add(executedJob);
       }
     } catch (DataAccessException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
     return jobs;
   }
@@ -145,7 +145,7 @@ public class JobDao extends BaseQueryDao {
 
 
     } catch (DataAccessException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
     return jobs;
   }
@@ -207,7 +207,7 @@ public class JobDao extends BaseQueryDao {
         }
       }
     } catch (Exception e) {
-
+      throw new RuntimeException(e);
     }
     return list;
   }
@@ -229,7 +229,7 @@ public class JobDao extends BaseQueryDao {
         }
       }
     } catch (Exception e) {
-
+      throw new RuntimeException(e);
     }
     return list;
   }
@@ -253,7 +253,7 @@ public class JobDao extends BaseQueryDao {
         jobInstanceId = ids.get(0);
       }
     } catch (Exception e) {
-
+      throw new RuntimeException(e);
     }
     return jobInstanceId;
   }

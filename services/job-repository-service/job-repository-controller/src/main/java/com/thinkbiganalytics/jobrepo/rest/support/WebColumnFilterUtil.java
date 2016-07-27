@@ -76,7 +76,7 @@ public class WebColumnFilterUtil extends ColumnFilterUtil {
       try {
         filters = Arrays.asList(mapper.readValue(jsonFilter, ColumnFilter[].class));
       } catch (IOException e) {
-        e.printStackTrace();
+        throw new RuntimeException(e);
       }
     } else {
       filters = WebColumnFilterUtil.buildFiltersFromRequest(request);

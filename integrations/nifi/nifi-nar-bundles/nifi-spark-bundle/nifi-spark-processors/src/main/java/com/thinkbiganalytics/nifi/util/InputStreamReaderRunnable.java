@@ -48,7 +48,7 @@ public class InputStreamReaderRunnable implements Runnable {
             }
             IOUtils.closeQuietly(reader);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }

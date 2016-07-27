@@ -428,7 +428,7 @@ public class FlowFileEvents extends RunStatusContext implements Serializable {
     public void printAllEvents() {
         List<ProvenanceEventRecordDTO> events = getEventsAndChildren();
         for (ProvenanceEventRecordDTO event : events) {
-            System.out.println(" EVENT " + event.getFlowFileUuid() + ", " + event.getComponentId() + ", " + event.getComponentType() + "  " + event.getEventId() + ". " + event.getFlowFileComponent());
+            LOG.info(" EVENT " + event.getFlowFileUuid() + ", " + event.getComponentId() + ", " + event.getComponentType() + "  " + event.getEventId() + ". " + event.getFlowFileComponent());
         }
     }
 

@@ -25,9 +25,8 @@ public class JobExecutionFeedRowMapper extends JobExecutionRowMapper {
       JobParameter jobParameter = new JobParameter(feedName, true);
       params.put(FeedConstants.PARAM__FEED_NAME, jobParameter);
       jobParameters = new JobParameters(params);
-      return jobParameters;
     } catch (SQLException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
     return jobParameters;
 

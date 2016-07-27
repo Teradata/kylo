@@ -333,7 +333,7 @@ public class JobRepositoryImpl implements JobRepository {
     try {
       jobExecution = this.jobExplorer.getJobExecution(Long.valueOf(executionId));
     } catch (Exception e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
     if (fetchLatest) {
       JobInstance jobInstance = jobExecution.getJobInstance();

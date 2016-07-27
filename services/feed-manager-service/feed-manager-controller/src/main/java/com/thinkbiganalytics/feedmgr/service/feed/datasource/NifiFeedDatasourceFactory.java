@@ -41,7 +41,7 @@ return (Class<? extends NifiProcessorToFeedSource>)transformer;
                 NifiProcessorToFeedSource transformer = ConstructorUtils.invokeConstructor(transformerClass, metadata);
                 return transformer.transform();
             } catch (NoSuchMethodException |IllegalAccessException | InvocationTargetException | InstantiationException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
         return null;

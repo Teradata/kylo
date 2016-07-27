@@ -4,6 +4,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -14,6 +16,7 @@ import java.util.Set;
  * Created by sr186054 on 2/14/16.
  */
 public class NifiVisitableProcessor implements  NifiVisitable {
+    private static final Logger log = LoggerFactory.getLogger(NifiVisitableProcessor.class);
 
 
     private Set<NifiVisitableProcessor> sources; //parents
@@ -115,7 +118,7 @@ public class NifiVisitableProcessor implements  NifiVisitable {
 
     public void print(Integer level){
 
-        System.out.println(level + ". " + getDto().getName());
+        log.info(level + ". " + getDto().getName());
         Set<String> printed= new HashSet<>();
         printed.add(this.getId());
         Integer nextLevel = level +1;

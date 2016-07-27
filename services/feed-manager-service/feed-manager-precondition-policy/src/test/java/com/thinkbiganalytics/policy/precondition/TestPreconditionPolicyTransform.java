@@ -39,7 +39,7 @@ public class TestPreconditionPolicyTransform {
         Assert.assertEquals(currentFeed, convertedPolicy.getSinceCategoryAndFeedName());
         Assert.assertEquals(dependentUponFeed, convertedPolicy.getCategoryAndFeeds());
 
-        Set<ObligationGroup> preconditionGroups = convertedPolicy.getPreconditionObligations();
+        Set<ObligationGroup> preconditionGroups = convertedPolicy.buildPreconditionObligations();
 
 
     }

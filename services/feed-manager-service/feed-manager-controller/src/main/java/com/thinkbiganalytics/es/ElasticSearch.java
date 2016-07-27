@@ -49,7 +49,7 @@ public class ElasticSearch {
                         .addTransportAddress(new InetSocketTransportAddress(InetAddress.getByName(hostName), clientConfig.getPort()));
                 this.client = client;
             } catch (UnknownHostException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
 
         }
@@ -142,7 +142,7 @@ public class ElasticSearch {
                     Map m =    c.value.getSourceAsMap();
                     typeMappingDTO.setFields(getFieldList("", m));
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    throw new RuntimeException(e);
                 }
             }
         }

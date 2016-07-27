@@ -76,8 +76,8 @@ public class SpringContextLoaderService extends AbstractControllerService implem
             this.context.refresh();
             getLogger().info("Sprint context refreshed");
         } catch (BeansException | IllegalStateException e) {
-            getLogger().error("Failed to load spring configuraitons", e);
-            e.printStackTrace();
+            getLogger().error("Failed to load spring configurations", e);
+            throw new InitializationException(e);
         }
     }
 

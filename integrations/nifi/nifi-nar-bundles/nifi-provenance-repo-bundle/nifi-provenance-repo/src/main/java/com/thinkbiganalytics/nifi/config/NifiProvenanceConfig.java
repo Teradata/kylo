@@ -2,6 +2,8 @@ package com.thinkbiganalytics.nifi.config;
 
 import com.thinkbiganalytics.util.SpringApplicationContext;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -22,6 +24,7 @@ import javax.sql.DataSource;
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
 @PropertySource("file:/opt/nifi/ext-config/config.properties")
 public class NifiProvenanceConfig {
+    private static final Logger log = LoggerFactory.getLogger(NifiProvenanceConfig.class);
     @Autowired
     private Environment env;
 
@@ -42,7 +45,7 @@ public class NifiProvenanceConfig {
 
     @Bean
     public SpringApplicationContext springApplicationContext() {
-        System.out.println("CREATE springApplicationContext in Spring ");
+        log.info("CREATE springApplicationContext in Spring ");
         return new SpringApplicationContext();
     }
 }

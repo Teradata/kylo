@@ -25,8 +25,8 @@ public class JpaCategoryProvider extends BaseJpaProvider<Category,Category.ID> i
             category = (Category) entityManager.createNamedQuery(NamedJpaQueries.CATEGORY_FIND_BY_SYSTEM_NAME)
                     .setParameter("systemName", systemName)
                     .getSingleResult();
-        }catch(NoResultException e){
-            e.printStackTrace();
+        } catch(NoResultException e){
+            category = null;
         }
         return  category;
     }

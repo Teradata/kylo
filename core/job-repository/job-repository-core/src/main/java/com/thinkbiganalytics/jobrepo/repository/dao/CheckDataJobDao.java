@@ -65,7 +65,7 @@ public class CheckDataJobDao extends BaseQueryDao {
       feeds = findList(query, start, limit);
 
     } catch (DataAccessException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
     return feeds;
   }
@@ -81,7 +81,7 @@ public class CheckDataJobDao extends BaseQueryDao {
       jobs = findList(query, 0, null);
 
     } catch (DataAccessException e) {
-      e.printStackTrace();
+      throw new RuntimeException(e);
     }
     return jobs;
   }

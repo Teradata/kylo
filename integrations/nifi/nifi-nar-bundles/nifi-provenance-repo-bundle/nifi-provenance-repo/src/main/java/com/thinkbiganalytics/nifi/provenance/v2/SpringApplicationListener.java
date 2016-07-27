@@ -1,6 +1,9 @@
 package com.thinkbiganalytics.nifi.provenance.v2;
 
 import com.thinkbiganalytics.util.SpringApplicationContext;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationListener;
@@ -13,13 +16,13 @@ import java.util.Map;
  * Created by sr186054 on 3/3/16.
  */
 public class SpringApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
-
+    private static final Logger log = LoggerFactory.getLogger(SpringApplicationListener.class);
 
     public Map<String, Object> objectsToAutowire = new HashMap<>();
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent contextRefreshedEvent) {
-        System.out.println("SpringApplicationListenerSpringApplicationListenerSpringApplicationListenerSpringApplicationListenerSpringApplicationListenerSpringApplicationListener ");
+        log.info("SpringApplicationListenerSpringApplicationListenerSpringApplicationListenerSpringApplicationListenerSpringApplicationListenerSpringApplicationListener ");
         //spring is now initialized
         for (Map.Entry<String, Object> entry : objectsToAutowire.entrySet()) {
             autowire(entry.getKey(), entry.getValue());
@@ -34,7 +37,7 @@ public class SpringApplicationListener implements ApplicationListener<ContextRef
 
         }
         if (bean == null && SpringApplicationContext.getApplicationContext() != null) {
-            System.out.println("AUTOWIRING " + key);
+            log.info("AUTOWIRING " + key);
             AutowireCapableBeanFactory autowire = SpringApplicationContext.getApplicationContext().getAutowireCapableBeanFactory();
             autowire.autowireBean(obj);
             //fire PostConstruct methods

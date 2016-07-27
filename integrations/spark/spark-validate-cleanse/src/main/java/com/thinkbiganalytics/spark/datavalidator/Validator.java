@@ -238,8 +238,7 @@ public class Validator implements Serializable {
             hiveContext.sql(insertSQL);
         } catch (Exception e) {
             System.out.println("FAILED TO ADD VALIDATION STATS");
-            e.printStackTrace();
-            ;
+            throw new RuntimeException(e);
         }
     }
 

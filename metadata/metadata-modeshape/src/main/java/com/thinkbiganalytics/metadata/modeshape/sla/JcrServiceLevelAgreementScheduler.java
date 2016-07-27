@@ -174,7 +174,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
                 }, DEFAULT_CRON);
             scheduledJobNames.put(sla.getId(), jobIdentifier.getName());
             } catch (JobSchedulerException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
 
 

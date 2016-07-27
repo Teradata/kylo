@@ -65,10 +65,13 @@ public class FeedOnTimeArrivalMetricAssessor implements MetricAssessor<FeedOnTim
         Date expectedDate = CronExpressionUtil.getPreviousFireTime(metric.getExpectedExpression());
         DateTime expectedTime = new DateTime(expectedDate);
         DateTime lateTime = expectedTime.plus(metric.getLatePeriod());
-        //Calendar calendar = getCalendar(metric);
-        //  DateTime asOfTime = expectedTime.minus(metric.getAsOfPeriod());
-        // boolean isHoliday = !calendar.isTimeIncluded(asOfTime.getMillis());
+        Calendar calendar = getCalendar(metric);
         boolean isHoliday = false;
+        if (metric.getAsOfPeriod() != null) {
+            DateTime asOfTime = expectedTime.minus(metric.getAsOfPeriod());
+            isHoliday = !calendar.isTimeIncluded(asOfTime.getMillis());
+        }
+
         builder.compareWith(expectedDate, feedName);
 
 

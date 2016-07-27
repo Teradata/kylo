@@ -1,11 +1,15 @@
 package com.thinkbiganalytics.nifi.provenance.v2.writer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by sr186054 on 3/4/16.
  */
 public class ProvenanceEventIdIncrementer {
+    private static final Logger log = LoggerFactory.getLogger(ProvenanceEventIdIncrementer.class);
 
     private AtomicLong eventIdCounter = null;
 
@@ -14,7 +18,7 @@ public class ProvenanceEventIdIncrementer {
     }
 
     public void setId(Long l) {
-        System.out.println("EVENT ID SET TO " + l);
+        log.info("EVENT ID SET TO " + l);
         if(l == null){
             l = 0L;
         }

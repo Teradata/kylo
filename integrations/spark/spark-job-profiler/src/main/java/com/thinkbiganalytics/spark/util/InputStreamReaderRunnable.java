@@ -32,7 +32,7 @@ public class InputStreamReaderRunnable implements Runnable {
             }
             reader.close();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }

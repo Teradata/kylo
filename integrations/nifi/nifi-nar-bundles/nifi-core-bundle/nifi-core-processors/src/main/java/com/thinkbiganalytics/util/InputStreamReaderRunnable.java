@@ -34,7 +34,6 @@ public class InputStreamReaderRunnable implements Runnable {
         try {
             String line = reader.readLine();
             while (line != null) {
-                //System.out.println(line);
                 if (level == LogLevel.DEBUG) {
                     logger.debug(line);
                 } else if (level == LogLevel.INFO) {
@@ -48,7 +47,7 @@ public class InputStreamReaderRunnable implements Runnable {
             }
             IOUtils.closeQuietly(reader);
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 }

@@ -12,6 +12,8 @@ import org.apache.nifi.provenance.lineage.ComputeLineageSubmission;
 import org.apache.nifi.provenance.search.Query;
 import org.apache.nifi.provenance.search.QuerySubmission;
 import org.apache.nifi.provenance.search.SearchableField;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.util.Collections;
@@ -25,6 +27,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Custom Event Repository that will take the PovenanceEvents and write them to some output.
  */
 public class ThinkbigProvenanceEventRepository implements ProvenanceEventRepository {
+    private static final Logger log = LoggerFactory.getLogger(ThinkbigProvenanceEventRepository.class);
 
     private PersistentProvenanceRepository repository;
 
@@ -40,7 +43,7 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
 
             repository = new PersistentProvenanceRepository();
             provenanceEventRecordWriter = new ProvenanceEventActiveMqWriter();
-            System.out.println(" new event recorder " + provenanceEventRecordWriter);
+            log.info(" new event recorder " + provenanceEventRecordWriter);
             //  provenanceEventRecordWriter.setEventId(repository.getMaxEventId());
             SpringInitializer.getInstance().initializeSpring();
             SpringApplicationListener listener = new SpringApplicationListener();
@@ -48,7 +51,7 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
             listener.autowire("provenanceEventRecordWriter", provenanceEventRecordWriter);
 
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e);
         }
     }
 
@@ -66,7 +69,7 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
 
     @Override
     public void registerEvent(ProvenanceEventRecord provenanceEventRecord) {
-        System.out.println("ThinkbigProvenanceEventRepository recording 1 single provenance event: " + provenanceEventRecord.getComponentId() + ", " + provenanceEventRecord.getComponentType());
+        log.info("ThinkbigProvenanceEventRepository recording 1 single provenance event: " + provenanceEventRecord.getComponentId() + ", " + provenanceEventRecord.getComponentType());
         registerEvents(Collections.singleton(provenanceEventRecord));
     }
 
@@ -79,7 +82,7 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
         Long maxId = getMaxEventId();
         Long eventId = provenanceEventRecordWriter.checkAndSetMaxEventId(maxId == null ? -1L : maxId) ;
         if(maxId == null){
-            System.out.println("Register Events ... getMaxEventId is null  using "+eventId+" from internal incrementer");
+            log.info("Register Events ... getMaxEventId is null  using "+eventId+" from internal incrementer");
         }
     }
 
@@ -91,7 +94,7 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
         checkAndSetEventId();
         repository.registerEvents(events);
         if (events != null && events.size() > 0) {
-            System.out.println("ThinkbigProvenanceEventRepository recording " + events.size() + " provenance events ");
+            log.info("ThinkbigProvenanceEventRepository recording " + events.size() + " provenance events ");
             for (ProvenanceEventRecord event : events) {
                 provenanceEventRecordWriter.writeEvent(event);
             }

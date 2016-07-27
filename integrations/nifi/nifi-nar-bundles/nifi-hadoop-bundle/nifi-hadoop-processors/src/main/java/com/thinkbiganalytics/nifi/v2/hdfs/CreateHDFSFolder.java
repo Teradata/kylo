@@ -180,7 +180,6 @@ public class CreateHDFSFolder extends AbstractHadoopProcessor {
 
                 } catch (Exception unknownException) {
                     getLogger().error("Unknown exception occured while validating user :" + unknownException.getMessage());
-                    unknownException.printStackTrace();
                     session.transfer(flowFile, REL_FAILURE);
                     return;
                 }

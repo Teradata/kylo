@@ -8,6 +8,8 @@ import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.schema.DBSchemaParser;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -33,6 +35,7 @@ import javax.sql.DataSource;
  */
 @Service("hiveService")
 public class HiveService {
+    private static final Logger log = LoggerFactory.getLogger(HiveService.class);
 
     @Inject
     @Qualifier("hiveJdbcTemplate")
@@ -177,7 +180,7 @@ public class HiveService {
         });
 
 
-        System.out.println("Return "+queryResult.getRows().size());
+        log.info("Return " + queryResult.getRows().size());
         return queryResult;
 
     }
