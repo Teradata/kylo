@@ -555,22 +555,6 @@ public class NifiRestClient extends JerseyRestClient {
         return deleteProcessGroup(groupDTO, null);
     }
 
-    /**
-     * Deletes the specified process groups.
-     *
-     * @param processGroups the process groups to delete
-     * @return the deleted process groups
-     * @throws NifiClientRuntimeException if a process group cannot be deleted
-     */
-    @Nonnull
-    private List<ProcessGroupEntity> deleteProcessGroups(@Nonnull final List<ProcessGroupDTO> processGroups) {
-        final List<ProcessGroupEntity> deletedEntities = new ArrayList<>();
-        for (final ProcessGroupDTO processGroup : processGroups) {
-            deletedEntities.add(deleteProcessGroup(processGroup, null));
-        }
-        return deletedEntities;
-    }
-
     private ProcessGroupEntity deleteProcessGroup(ProcessGroupDTO groupDTO, Integer retryAttempt) throws NifiClientRuntimeException {
 
         if (retryAttempt == null) {
@@ -642,6 +626,35 @@ public class NifiRestClient extends JerseyRestClient {
         }
 
         return deletedEntity;
+    }
+
+    /**
+     * Deletes the specified process group and any matching connections.
+     *
+     * @param processGroup the process group to be deleted
+     * @param connections the list of all connections from the parent process group
+     * @return the deleted process group
+     * @throws NifiClientRuntimeException if the process group could not be deleted
+     * @throws NifiComponentNotFoundException if the process group does not exist
+     */
+    public ProcessGroupEntity deleteProcessGroupAndConnections(@Nonnull final ProcessGroupDTO processGroup, @Nonnull final Set<ConnectionDTO> connections) {
+        if (!connections.isEmpty()) {
+            disableAllInputProcessors(processGroup.getId());
+            stopInputs(processGroup.getId());
+
+            for (ConnectionDTO connection : NifiConnectionUtil.findConnectionsMatchingDestinationGroupId(connections, processGroup.getId())) {
+                String type = connection.getSource().getType();
+                if (NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)) {
+                    stopInputPort(connection.getSource().getGroupId(), connection.getSource().getId());
+                    deleteConnection(connection, false);
+                }
+            }
+            for (ConnectionDTO connection : NifiConnectionUtil.findConnectionsMatchingSourceGroupId(connections, processGroup.getId())) {
+                deleteConnection(connection, false);
+            }
+        }
+
+        return deleteProcessGroup(processGroup);
     }
 
     public ConnectionEntity getConnection(String processGroupId, String connectionId) throws NifiComponentNotFoundException {
@@ -816,34 +829,38 @@ public class NifiRestClient extends JerseyRestClient {
     /**
      * if the parentGroup is found but it cannot find the group by Name then it will return null
      */
-    public ProcessGroupDTO getProcessGroupByName(String parentGroupId, final String groupName) throws NifiComponentNotFoundException {
+    @Nullable
+    public ProcessGroupDTO getProcessGroupByName(@Nonnull final String parentGroupId, @Nonnull final String groupName) throws NifiComponentNotFoundException {
+        return getProcessGroupByName(parentGroupId, groupName, false, false);
+    }
 
-        ProcessGroupsEntity
-            groups = null;
+    /**
+     * Gets the child process group with the specified name, optionally including all sub-components.
+     *
+     * @param parentGroupId the id of the parent process group
+     * @param groupName the name of the process group to find
+     * @param recursive {@code true} to include all encapsulated components, or {@code false} for just the immediate children
+     * @param verbose {@code true} to include any encapsulated components, or {@code false} for just details about the process group
+     * @return the child process group, or {@code null} if not found
+     * @throws NifiComponentNotFoundException if the parent process group does not exist
+     */
+    @Nullable
+    public ProcessGroupDTO getProcessGroupByName(@Nonnull final String parentGroupId, @Nonnull final String groupName, final boolean recursive, final boolean verbose) {
+        final ProcessGroupsEntity children;
         try {
-            groups =
-
-                get("/controller/process-groups/" + parentGroupId + "/process-group-references", null, ProcessGroupsEntity.class);
+            children = get("/controller/process-groups/" + parentGroupId + "/process-group-references", null, ProcessGroupsEntity.class);
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(groupName, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
-        if (groups != null) {
-            List<ProcessGroupDTO>
-                list =
-                Lists.newArrayList(Iterables.filter(groups.getProcessGroups(), new Predicate<ProcessGroupDTO>() {
-                    @Override
-                    public boolean apply(ProcessGroupDTO groupDTO) {
-                        return groupDTO.getName().equalsIgnoreCase(groupName);
-                    }
-                }));
-            if (list != null && !list.isEmpty()) {
-                return list.get(0);
-            }
+
+        final ProcessGroupDTO group = (children != null) ? NifiProcessUtil.findFirstProcessGroupByName(children.getProcessGroups(), groupName) : null;
+        if (group != null && verbose) {
+            final ProcessGroupEntity verboseEntity = getProcessGroup(group.getId(), recursive, true);
+            return (verboseEntity != null) ? verboseEntity.getProcessGroup() : null;
+        } else {
+            return group;
         }
-        return null;
-
     }
-
 
     public ProcessGroupEntity getRootProcessGroup() throws NifiComponentNotFoundException {
         try {

@@ -6,6 +6,7 @@ var app = angular.module(MODULE_FEED_MGR, [
     'ngMaterial',
     'md.data.table',
     'ngMdIcons',
+    'ngSanitize',
     'ui.router',
     'mentio',
     'ui.codemirror',

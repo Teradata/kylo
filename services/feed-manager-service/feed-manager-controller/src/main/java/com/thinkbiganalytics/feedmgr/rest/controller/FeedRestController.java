@@ -7,11 +7,14 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
+import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
 import com.thinkbiganalytics.feedmgr.sla.FeedServiceLevelAgreements;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
@@ -35,6 +38,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -43,6 +47,8 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
+import javax.ws.rs.InternalServerErrorException;
+import javax.ws.rs.NotFoundException;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -60,6 +66,9 @@ import io.swagger.annotations.Api;
 @Path("/v1/feedmgr/feeds")
 @Component
 public class FeedRestController {
+
+    /** Messages for the default locale */
+    private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.feedmgr.rest.controller.FeedMessages");
 
     @Autowired
     @Qualifier("nifiRestClient")
@@ -191,8 +200,20 @@ public class FeedRestController {
     @Produces(MediaType.APPLICATION_JSON)
     @Nonnull
     public Response deleteFeed(@Nonnull @PathParam("feedId") final String feedId) {
-        getMetadataService().deleteFeed(feedId);
-        return Response.noContent().build();
+        try {
+            getMetadataService().deleteFeed(feedId);
+            return Response.noContent().build();
+        } catch (FeedCleanupFailedException e) {
+            throw new InternalServerErrorException(STRINGS.getString("deleteFeed.cleanupError"), e);
+        } catch (FeedCleanupTimeoutException e) {
+            throw new InternalServerErrorException(STRINGS.getString("deleteFeed.cleanupTimeout"), e);
+        } catch (IllegalArgumentException e) {
+            throw new NotFoundException(STRINGS.getString("deleteFeed.notFound"), e);
+        } catch (NifiClientRuntimeException e) {
+            throw new InternalServerErrorException(STRINGS.getString("deleteFeed.nifiError"), e);
+        } catch (Exception e) {
+            throw new InternalServerErrorException(STRINGS.getString("deleteFeed.unknownError"), e);
+        }
     }
 
     @POST

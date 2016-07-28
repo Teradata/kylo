@@ -17,6 +17,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Created by sr186054 on 1/13/16.
@@ -305,5 +310,28 @@ public class NifiProcessUtil {
         return processors;
     }
 
+    /**
+     * Finds the first process group with the specified name.
+     *
+     * @param processGroups the list of process groups to filter
+     * @param name the feed system name to match, case-insensitive
+     * @return the matching process group, or {@code null} if not found
+     */
+    @Nullable
+    public static ProcessGroupDTO findFirstProcessGroupByName(@Nonnull final Collection<ProcessGroupDTO> processGroups, @Nonnull final String name) {
+        return processGroups.stream().filter(processGroup -> processGroup.getName().equalsIgnoreCase(name)).findAny().orElse(null);
+    }
 
+    /**
+     * Filters the specified list of process groups for ones matching the specified feed name, including versioned process groups.
+     *
+     * @param processGroups the list of process groups to filter
+     * @param feedName the feed system name to match, case-insensitive
+     * @return the matching process groups
+     */
+    @Nonnull
+    public static Set<ProcessGroupDTO> findProcessGroupsByFeedName(@Nonnull final Collection<ProcessGroupDTO> processGroups, @Nonnull final String feedName) {
+        Pattern pattern = Pattern.compile("^" + Pattern.quote(feedName) + "( - \\d+)?$", Pattern.CASE_INSENSITIVE);
+        return processGroups.stream().filter(processGroup -> pattern.matcher(processGroup.getName()).matches()).collect(Collectors.toSet());
+    }
 }

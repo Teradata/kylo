@@ -7,6 +7,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
 import org.springframework.stereotype.Service;
@@ -48,7 +49,11 @@ public interface MetadataService {
      * Deletes the specified feed.
      *
      * @param feedId the feed id
-     * @throws RuntimeException if the feed cannot be deleted
+     * @throws FeedCleanupFailedException if the cleanup flow was started but failed to complete successfully
+     * @throws FeedCleanupTimeoutException if the cleanup flow was started but failed to complete in the allotted time
+     * @throws IllegalArgumentException if the feed does not exist
+     * @throws NifiClientRuntimeException if the feed cannot be deleted from NiFi
+     * @throws RuntimeException if the feed could not be deleted for any other reason
      */
     void deleteFeed(@Nonnull String feedId);
 

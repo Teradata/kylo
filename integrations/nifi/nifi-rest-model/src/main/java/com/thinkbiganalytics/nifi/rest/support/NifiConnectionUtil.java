@@ -6,15 +6,10 @@ import com.google.common.collect.Lists;
 
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
-import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nonnull;
 
 public class NifiConnectionUtil {
 
@@ -138,18 +133,5 @@ public class NifiConnectionUtil {
                 return portDTO.getName().equalsIgnoreCase(name);
             }
         }).orNull();
-    }
-
-    /**
-     * Filters the specified list of process groups for ones matching the specified feed name, including versioned process groups.
-     *
-     * @param processGroups the list of process groups to filter
-     * @param feedName the feed system name to match
-     * @return the matching process groups
-     */
-    @Nonnull
-    public static List<ProcessGroupDTO> findProcessGroupsMatchingFeedName(@Nonnull final Collection<ProcessGroupDTO> processGroups, @Nonnull final String feedName) {
-        Pattern pattern = Pattern.compile("^" + Pattern.quote(feedName) + "( - \\d+)?$");
-        return processGroups.stream().filter(processGroup -> pattern.matcher(processGroup.getName()).matches()).collect(Collectors.toList());
     }
 }

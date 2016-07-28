@@ -48,16 +48,23 @@
             var successFn = function() {
                 $state.go("feeds");
             };
-            var errorFn = function() {
+            var errorFn = function(response) {
+                // Update model state
                 self.model.state = "DISABLED";
+
+                // Display error message
+                var msg = "<p>The feed cannot be deleted at this time.</p><p>";
+                msg += angular.isString(response.data.message) ? _.escape(response.data.message) : "Please try again later.";
+                msg += "</p>";
+
                 $mdDialog.hide();
                 $mdDialog.show(
                     $mdDialog.alert()
                         .ariaLabel("Error deleting feed")
                         .clickOutsideToClose(true)
+                        .htmlContent(msg)
                         .ok("Got it!")
                         .parent(document.body)
-                        .textContent("The feed cannot be deleted at this time. Please try again later.")
                         .title("Error deleting feed")
                 );
             };
