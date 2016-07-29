@@ -152,6 +152,13 @@ public class FeedManagerMetadataService implements MetadataService {
 
         // Step 3: Run NiFi cleanup flow
         if (needsCleanup) {
+            // Wait for input processor to start
+            try {
+                Thread.sleep(300);
+            } catch (InterruptedException e) {
+                // ignored
+            }
+
             cleanupFeed(feed);
         }
 
