@@ -951,12 +951,10 @@ public class NifiRestClient extends JerseyRestClient {
         }
 
         // Set selected processor to RUNNING and others to DISABLED
-        boolean update;
-
         for (final ProcessorDTO processor : processors) {
-            update = false;
+            boolean update = false;
 
-            // Verify state of the processor
+            // Verify state of processor
             if (!processor.equals(selected)) {
                 if (!NifiProcessUtil.PROCESS_STATE.DISABLED.name().equals(processor.getState())) {
                     processor.setState(NifiProcessUtil.PROCESS_STATE.DISABLED.name());
@@ -964,16 +962,18 @@ public class NifiRestClient extends JerseyRestClient {
                 }
             }
             else if (!NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(processor.getState())) {
-                if (NifiProcessUtil.PROCESS_STATE.DISABLED.name().equals(processor.getState())) {
-                    //if its disabled you need to stop it first before making it running
-                    //this is needed on rollback
-                    stopProcessor(processor.getParentGroupId(), processor.getId());
-                }
                 processor.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
                 update = true;
             }
 
+            // Update state of processor
             if (update) {
+                // Stop processor before setting final state
+                if (!NifiProcessUtil.PROCESS_STATE.STOPPED.name().equals(processor.getState())) {
+                    stopProcessor(processor.getParentGroupId(), processor.getId());
+                }
+
+                // Set final state
                 ProcessorEntity entity = new ProcessorEntity();
                 ProcessorDTO updateDto = new ProcessorDTO();
                 updateDto.setId(processor.getId());
