@@ -19,7 +19,8 @@ public class ServiceAuthenticatoinToken extends AbstractAuthenticationToken {
     private static final UsernamePrincipal USER = new UsernamePrincipal("service");
     
     public ServiceAuthenticatoinToken() {
-        super(Arrays.asList(new JaasGrantedAuthority("ROLE_SERVICE", new ServiceRolePrincipal())));
+        super(Arrays.asList(new JaasGrantedAuthority("ROLE_SERVICE", new ServiceRolePrincipal()),
+                            new JaasGrantedAuthority("admin", new ServiceRolePrincipal()))); // ModeShape role
     }
 
     /* (non-Javadoc)

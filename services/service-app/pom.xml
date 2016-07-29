@@ -61,6 +61,17 @@
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-security-auth</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-simple-auth</artifactId>
+            <version>0.3.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-job-repository-nifi</artifactId>
             <version>0.3.0-SNAPSHOT</version>
         </dependency>

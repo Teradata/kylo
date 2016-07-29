@@ -4,10 +4,11 @@
 package com.thinkbiganalytics.auth;
 
 import java.security.Principal;
-import java.util.Collections;
 import java.util.Set;
 
 import org.springframework.security.authentication.jaas.AuthorityGranter;
+
+import com.google.common.collect.Sets;
 
 /**
  * A granter that, when presented with a RolePrincipal, returns a set containing the name of that principal (the role's name.)
@@ -20,7 +21,14 @@ public class RolePrincipalAuthorityGranter implements AuthorityGranter {
      */
     @Override
     public Set<String> grant(Principal principal) {
-        return principal instanceof RolePrincipal ? Collections.singleton(principal.getName()) : null;
+        if (principal instanceof RolePrincipal) {
+            String name = principal.getName();
+            String springRole = name.toUpperCase().startsWith("ROLE_") ? name.toUpperCase() : "ROLE_" + name.toUpperCase();
+            
+            return Sets.newHashSet(name, springRole);
+        } else {
+            return null;
+        }
     }
 
 }

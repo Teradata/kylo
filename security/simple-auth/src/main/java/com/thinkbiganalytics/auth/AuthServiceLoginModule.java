@@ -3,35 +3,27 @@
  */
 package com.thinkbiganalytics.auth;
 
-import java.io.IOException;
 import java.util.Map;
 
 import javax.security.auth.Subject;
-import javax.security.auth.callback.Callback;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
-import javax.security.auth.callback.UnsupportedCallbackException;
-import javax.security.auth.login.LoginException;
-import javax.security.auth.spi.LoginModule;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
 
 /**
  *
  * @author Sean Felten
  */
-public class AuthServiceLoginModule implements LoginModule {
+public class AuthServiceLoginModule extends AbstractLoginModule {
 
     private static final Logger log = LoggerFactory.getLogger(AuthServiceLoginModule.class);
     
     private AuthenticationService authService;
-    
-    private Subject subject;
-    private CallbackHandler callbackHandler;
-    private boolean loginSucceeded = false;
-    private boolean commitSucceeded = false;
     private UsernamePrincipal user;
 
     /* (non-Javadoc)
@@ -39,10 +31,7 @@ public class AuthServiceLoginModule implements LoginModule {
      */
     @Override
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
-        log.debug("Initialize - subject: {}, callback handler: {}, options: {}", subject, callbackHandler, options);
-        
-        this.subject = subject;
-        this.callbackHandler = callbackHandler;
+        super.initialize(subject, callbackHandler, sharedState, options);
         
         if (options.containsKey("authService")) {
             this.authService = (AuthenticationService) options.get("authService");
@@ -52,78 +41,38 @@ public class AuthServiceLoginModule implements LoginModule {
         }
     }
 
-    /* (non-Javadoc)
-     * @see javax.security.auth.spi.LoginModule#login()
-     */
     @Override
-    public boolean login() throws LoginException {
-        try {
-            Callback[] callbacks = new Callback[2];
-            callbacks[0] = new NameCallback("username");
-            callbacks[1] = new PasswordCallback("password", false);
+    public boolean doLogin() throws Exception {
+        NameCallback nameCb = new NameCallback("username");
+        PasswordCallback passwordCb = new PasswordCallback("password", false);
+        
+        handle(nameCb, passwordCb);
+        
+        if (this.authService.authenticate(nameCb.getName(), new String(passwordCb.getPassword()))) {
+            log.debug("Login success for: {}", nameCb.getName());
             
-            this.callbackHandler.handle(callbacks);
-            
-            String name = ((NameCallback) callbacks[0]).getName();
-            char[] password = ((PasswordCallback) callbacks[1]).getPassword();
-            
-            this.loginSucceeded = this.authService.authenticate(name, new String(password));
-            
-            if (loginSucceeded) {
-                log.debug("Login success for: {}", name);
-                
-                this.user = new UsernamePrincipal(name);
-            } else {
-                log.debug("Login failure for: {}", name);
-            }
-            
-            return this.loginSucceeded;
-        } catch (IOException | UnsupportedCallbackException e) {
-            log.error("Login failure attempting to retrieve username/password", e);
-            throw new LoginException("Login failure attempting to retrieve username/password: " + e.getMessage());
-        } catch (Exception e) {
-            log.error("Login failure", e);
-            throw new LoginException("Login failure: " + e.getMessage());
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see javax.security.auth.spi.LoginModule#commit()
-     */
-    @Override
-    public boolean commit() throws LoginException {
-        if (this.loginSucceeded) {
-            this.subject.getPrincipals().add(this.user);
-            this.commitSucceeded = true;
-            return true;
+            this.user = new UsernamePrincipal(nameCb.getName());
         } else {
-            return false;
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see javax.security.auth.spi.LoginModule#abort()
-     */
-    @Override
-    public boolean abort() throws LoginException {
-        if (this.commitSucceeded) {
-            this.subject.getPrincipals().remove(this.user);
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    /* (non-Javadoc)
-     * @see javax.security.auth.spi.LoginModule#logout()
-     */
-    @Override
-    public boolean logout() throws LoginException {
-        if (this.commitSucceeded) {
-            this.subject.getPrincipals().remove(this.user);
+            log.debug("Login failure for: {}", nameCb.getName());
         }
         
         return true;
     }
 
+    @Override
+    public boolean doCommit() throws Exception {
+        getSubject().getPrincipals().add(this.user);
+        return true;
+    }
+
+    @Override
+    public boolean doAbort() throws Exception {
+        return logout();
+    }
+
+    @Override
+    public boolean doLogout() throws Exception {
+        getSubject().getPrincipals().remove(this.user);
+        return true;
+    }
 }

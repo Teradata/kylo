@@ -1,19 +1,17 @@
 package com.thinkbiganalytics.auth;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import javax.security.auth.login.AppConfigurationEntry;
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import com.google.common.collect.ImmutableMap;
+import com.thinkbiganalytics.auth.jaas.JaasAuthConfig;
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 
 /**
- * Generic Auth Service Configuration
+ * Generic Auth Service Configuration for installing a login module to authenticate using an AuthenticationService.
  * To Override create a new Configuration Class importing this class
  * Example:
  * @Configuration
@@ -26,30 +24,33 @@ import com.google.common.collect.ImmutableMap;
  * }
  */
 @Configuration
-@Profile("simpleAuth")
+@Profile("simple-auth")
 public class SimpleAuthConfig {
     
     @Bean(name = "authenticationService")
     public AuthenticationService authenticationService() {
         return new SimpleAuthenticationService();
     }
-
     
-    @Bean(name = "authServiceConfigurationEntries")
-    public Map<String, AppConfigurationEntry[]> restConfigurationEntries() {
-        Map<String, AppConfigurationEntry[]> map = new HashMap<>();
-        map.put("REST", new AppConfigurationEntry[] { new AppConfigurationEntry(AuthServiceLoginModule.class.getName(), 
-                                                                                LoginModuleControlFlag.REQUIRED, 
-                                                                                ImmutableMap.of("authService", authenticationService())) });
-        return map;
+    @Bean(name = "restServiceLoginConfiguration")
+    public LoginConfiguration restServiceLoginConfiguration(LoginConfigurationBuilder builder) {
+        return builder
+                        .loginModule(JaasAuthConfig.JAAS_REST)
+                            .moduleClass(AuthServiceLoginModule.class)
+                            .controlFlag(LoginModuleControlFlag.REQUIRED)
+                            .option("authService", authenticationService())
+                            .add()
+                        .build();
     }
     
-    @Bean(name = "testConfigurationEntries")
-    public Map<String, AppConfigurationEntry[]> uiConfigurationEntries() {
-        Map<String, AppConfigurationEntry[]> map = new HashMap<>();
-        map.put("UI", new AppConfigurationEntry[] { new AppConfigurationEntry(AuthServiceLoginModule.class.getName(), 
-                                                                              LoginModuleControlFlag.OPTIONAL, 
-                                                                              ImmutableMap.of("authService", authenticationService())) });
-        return map;
+    @Bean(name = "uiServiceLoginConfiguration")
+    public LoginConfiguration uiServiceLoginConfiguration(LoginConfigurationBuilder builder) {
+        return builder
+                        .loginModule(JaasAuthConfig.JAAS_UI)
+                            .moduleClass(AuthServiceLoginModule.class)
+                            .controlFlag(LoginModuleControlFlag.REQUIRED)
+                            .option("authService", authenticationService())
+                            .add()
+                        .build();
     }
 }

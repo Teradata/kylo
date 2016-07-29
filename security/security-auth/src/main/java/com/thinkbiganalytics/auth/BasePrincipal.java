@@ -47,4 +47,8 @@ public abstract class BasePrincipal implements Principal, Serializable {
         return getClass().hashCode() ^ this.name.hashCode();
     }
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName() + ": " + this.name;
+    }
 }

@@ -24,13 +24,14 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 
+import com.thinkbiganalytics.metadata.modeshape.auth.ModeShapeAuthConfig;
+
 /**
  *
  * @author Sean Felten
  */
 @Configuration
-@Import({MetadataJcrConfig.class})
-
+@Import({ MetadataJcrConfig.class, ModeShapeAuthConfig.class })
 public class ModeShapeEngineConfig {
     
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);
