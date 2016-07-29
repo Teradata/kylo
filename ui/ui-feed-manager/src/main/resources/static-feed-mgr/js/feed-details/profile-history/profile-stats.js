@@ -21,7 +21,6 @@
 
         var self = this;
 
-        self.mode = 'dev';
         self.data = [];
         self.loading = true;
         self.processingDate = new Date(HiveService.getUTCTime(self.processingdttm));
@@ -89,8 +88,12 @@
 
         function updateCharts() {
             self.summaryApi.update();
-            if (self.selectedRow.prevProfile == self.selectedRow.profile) {
+            if (self.selectedRow.prevProfile != "Unknown") {
+                //chart with percents is not shown only for Unknown, i.e.
+                // in all other cases it needs to be updated
                 self.percApi.update();
+            }
+            if (self.selectedRow.prevProfile == self.selectedRow.profile) {
                 //we only need to explicitly update when not changing profile types,
                 //charts are updated automatically when profile type changes
                 if (self.selectedRow.profile == "String") {
