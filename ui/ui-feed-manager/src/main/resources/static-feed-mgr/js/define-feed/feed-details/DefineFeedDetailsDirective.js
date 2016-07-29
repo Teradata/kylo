@@ -87,7 +87,7 @@
 
 
                     processors[property.processorId].properties.push(property);
-                    if (property.inputProperty) {
+                    if (property.inputProperty && property.processorType !== "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup") {
                         processors[property.processorId].inputProcessor = true;
                     }
                 property.value = RegisterTemplateService.deriveExpression(property.value, false);
