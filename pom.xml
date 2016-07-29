@@ -58,7 +58,7 @@
         <spring.security.version>4.1.1.RELEASE</spring.security.version>
         <assertj.version>3.4.1</assertj.version>
         <surefire.version>2.19.1</surefire.version>
-        <org.reflections.version>0.9.8</org.reflections.version>
+        <org.reflections.version>0.9.9</org.reflections.version>
     </properties>
     <modules>
         <module>commons</module>
