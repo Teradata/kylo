@@ -112,7 +112,7 @@
                 margin : {
                     top: 5, //otherwise top of numeric value is cut off
                     right: 0,
-                    bottom: 20, //otherwise bottom labels are not visible
+                    bottom: 25, //otherwise bottom labels are not visible
                     left: 0
                 },
                 duration: chartDuration,
@@ -121,7 +121,10 @@
                 showXAxis: true,
                 showYAxis: false,
                 showValues: true,
-                valueFormat: function(d){
+                xAxis: {
+                    tickPadding: 10
+                },
+                valueFormat: function (d) {
                     return d3.format(',.0f')(d);
                 }
             }
@@ -229,7 +232,10 @@
                 showYAxis: false,
                 showControls: false,
                 showValues: true,
-                showLegend: false
+                showLegend: false,
+                valueFormat: function (n) {
+                    return d3.format(',.1f')(n) + " %";
+                }
             }
         };
 
