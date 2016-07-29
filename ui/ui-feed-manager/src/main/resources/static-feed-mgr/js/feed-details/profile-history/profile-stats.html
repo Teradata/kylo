@@ -3,9 +3,9 @@
         <md-progress-linear md-mode="indeterminate"></md-progress-linear>
         <span flex>Loading...</span>
     </div>
-    <div layout="row" flex="100">
+    <div layout="row" layout-xs="column" flex="100">
 
-        <div ng-if="!vm.loading" flex="20">
+        <div ng-if="!vm.loading" flex="20" flex-xs="100">
             <div class="layout-padding-left">
                 <md-input-container>
                     <label>Filter</label>
@@ -31,9 +31,10 @@
                     <md-list-item ng-show="vm.loading == false && vm.data.length ==0">
                         No results found
                     </md-list-item>
+                </md-virtual-repeat-container>
             </md-list>
         </div>
-        <div ng-if="!vm.loading" flex="80" class="layout-padding-left profile">
+        <div ng-if="!vm.loading" flex="80" flex-xs="100" class="layout-padding-left profile">
             <div layout="column">
                 <header-section flex="100">
                     <h2 class="md-title">{{vm.selectedRow.columnname}} <span ng-show="vm.selectedRow.columnname != '(ALL)'" class="md-caption">({{vm.selectedRow.type}})</span></h2>
@@ -48,14 +49,14 @@
                     </div>
                 </div>
 
-                <div ng-if="vm.selectedRow.columnname != '(ALL)'" layout="row" flex="100">
-                    <div layout="column" flex="33" class="summary">
+                <div ng-if="vm.selectedRow.columnname != '(ALL)'" layout="row" layout-xs="column" flex="100">
+                    <div layout="column" flex="33" flex-xs="100" class="summary">
                         <div flex="100" class="bars" >
                             <div class="md-subhead">Summary</div>
                             <nvd3 flex options="vm.summaryOptions" data="vm.summaryData" api="vm.summaryApi"></nvd3>
                         </div>
                     </div>
-                    <div flex="33" layout="column" class="stats">
+                    <div layout="column" flex="33" flex-xs="100" class="stats">
                         <div class="md-subhead">
                             Statistics
                         </div>
@@ -116,7 +117,7 @@
                             </md-list>
                         </div>
                     </div>
-                    <div layout="column" flex="33" class="top-value">
+                    <div layout="column" flex="33" flex-xs="100" class="top-value">
                         <div class="md-subhead">Top Values</div>
                         <md-list class="list-item-table">
                             <md-list-item class="md-secondary"
