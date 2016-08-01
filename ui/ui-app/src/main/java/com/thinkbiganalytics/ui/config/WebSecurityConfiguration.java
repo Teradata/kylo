@@ -1,8 +1,5 @@
 package com.thinkbiganalytics.ui.config;
 
-import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
-import com.thinkbiganalytics.auth.AuthenticationService;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +13,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.config.annotation.web.servlet.configuration.EnableWebMvcSecurity;
+
+import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
+import com.thinkbiganalytics.auth.AuthenticationService;
 
 /**
  *Form Based Auth with Spring Security.
@@ -25,31 +24,34 @@ import org.springframework.security.config.annotation.web.servlet.configuration.
  * @see AuthenticationService
  * @see AuthServiceAuthenticationProvider
  */
-@Configuration
 @EnableWebSecurity
-@Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
-public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
+public class WebSecurityConfiguration {
+
+    protected static final Logger LOG = LoggerFactory.getLogger(WebSecurityConfiguration.class);
 
 
+    @Configuration
+    @Order(SecurityProperties.ACCESS_OVERRIDE_ORDER)
+    public static class UiSecurityConfiguration extends WebSecurityConfigurerAdapter {
+        
         @Autowired
         @Qualifier("uiAuthenticationProvider")
-        private AuthenticationProvider authenticationProvider;
-
-        protected static final Logger LOG = LoggerFactory.getLogger(WebSecurityConfiguration.class);
+        private AuthenticationProvider uiAuthenticationProvider;
 
         @Override
         public void configure(WebSecurity web) throws Exception {
-                web.ignoring().antMatchers("/ui-common/**","/js/vendor/**", "/images/**", "/styles/**", "/js/login/**", "/js/utils/**");
-
+            web.ignoring().antMatchers("/ui-common/**","/js/vendor/**", "/images/**", "/styles/**", "/js/login/**", "/js/utils/**");
         }
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-                http.csrf()
-                    .disable()
+            
+                http
+                    .csrf().disable()
                     .authorizeRequests()
                         .antMatchers("/login", "/login/**", "/login**").permitAll()
-                        .antMatchers("/**").hasRole("USER")
+                        .antMatchers("/**").authenticated()
+//                        .antMatchers("/**").hasRole("USER")
                         .and()
                     .formLogin()
                         .usernameParameter("username")
@@ -67,42 +69,50 @@ public class WebSecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         @Override
         protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-                auth.authenticationProvider(authenticationProvider);
+                auth.authenticationProvider(uiAuthenticationProvider);
         }
 
         public void setAuthenticationProvider(AuthenticationProvider authenticationProvider) {
-                this.authenticationProvider = authenticationProvider;
+                this.uiAuthenticationProvider = authenticationProvider;
+        }
+    }
+
+
+    @Configuration
+    @Order(5)
+    public static class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+        @Autowired
+        @Qualifier("restAuthenticationProvider")
+        private AuthenticationProvider restAuthenticationProvider;
+
+        /* (non-Javadoc)
+         * @see org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter#configure(org.springframework.security.config.annotation.web.builders.HttpSecurity)
+         */
+        @Override
+        protected void configure(HttpSecurity http) throws Exception {
+
+                http
+                    .authenticationProvider(restAuthenticationProvider)
+                    .csrf().disable()
+                    .authorizeRequests()
+                        // the ant matcher is what limits the scope of this configuration.
+                        .antMatchers("/proxy/**").authenticated()
+                        .and()
+                    .httpBasic()
+                        //.realmName("Sourcing API");
+
+                    ;
         }
 
 
-        @Configuration
-        @Order(5)
-        public static class RestApiAuthConfigurationAdapter extends WebSecurityConfigurerAdapter {
-
-                @Autowired
-                @Qualifier("restAuthenticationProvider")
-                private AuthenticationProvider authenticationProvider;
-
-                @Override
-                protected void configure(HttpSecurity http) throws Exception {
-
-                        http.csrf()
-                            .disable().antMatcher("/proxy/**").authorizeRequests()
-                            // the ant matcher is what limits the scope of this configuration.
-                            .antMatchers("/proxy/**").authenticated()
-                            .and().httpBasic();//.realmName("Sourcing API");
-
-                }
-
-
-                @Override
-                protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-                        auth.authenticationProvider(authenticationProvider);
-                }
-
-                public void setAuthenticationProvider(AuthenticationProvider authenticationProvider) {
-                        this.authenticationProvider = authenticationProvider;
-                }
-
+        @Override
+        protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+                auth.authenticationProvider(restAuthenticationProvider);
         }
+
+        public void setAuthenticationProvider(AuthenticationProvider authenticationProvider) {
+                this.restAuthenticationProvider = authenticationProvider;
+        }
+    }
 }
