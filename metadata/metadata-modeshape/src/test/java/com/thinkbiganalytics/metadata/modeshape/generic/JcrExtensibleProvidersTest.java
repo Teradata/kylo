@@ -1,16 +1,6 @@
 package com.thinkbiganalytics.metadata.modeshape.generic;
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
-import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
-
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.annotations.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.HashMap;
 import java.util.List;
@@ -18,7 +8,18 @@ import java.util.Map;
 
 import javax.inject.Inject;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.Test;
+
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
+import com.thinkbiganalytics.metadata.modeshape.auth.AdminCredentials;
 
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrExtensibleProvidersTestConfig.class })
 public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests {
@@ -30,12 +31,12 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
     private ExtensibleEntityProvider entityProvider;
     
     @Inject
-    private MetadataAccess metadata;
+    private JcrMetadataAccess metadata;
     
 
     @Test
     public void testGetAllDefaultTypes() {
-        int size = metadata.commit(() -> {
+        int size = metadata.commit(new AdminCredentials(), () -> {
             List<ExtensibleType> types = typeProvider.getTypes();
             
             return types.size();
@@ -46,7 +47,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
 
     @Test(dependsOnMethods="testGetAllDefaultTypes")
     public void testCreatePersonType() {
-        String typeName = metadata.commit(() ->  {
+        String typeName = metadata.commit(new AdminCredentials(), () ->  {
             ExtensibleType type = typeProvider.buildType("Person")
                             .field("name")
                                 .type(FieldDescriptor.Type.STRING)
@@ -66,7 +67,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
     
     @Test(dependsOnMethods="testCreatePersonType")
     public void testCreateEmployeeType() {
-        String typeName = metadata.commit(() -> {
+        String typeName = metadata.commit(new AdminCredentials(), () -> {
             ExtensibleType person = typeProvider.getType("Person");
             ExtensibleType emp = typeProvider.buildType("Employee")
                             .supertype(person)
@@ -88,7 +89,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
     
     @Test(dependsOnMethods="testCreatePersonType")
     public void testGetPersonType() {
-        final ExtensibleType.ID id = metadata.commit(() -> {
+        final ExtensibleType.ID id = metadata.commit(new AdminCredentials(), () -> {
             ExtensibleType type = typeProvider.getType("Person");
             
             return type.getId();
@@ -96,7 +97,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
         
         assertThat(id).isNotNull();
         
-        Map<String, FieldDescriptor.Type> fields = metadata.commit(() -> {
+        Map<String, FieldDescriptor.Type> fields = metadata.commit(new AdminCredentials(), () -> {
             ExtensibleType type = typeProvider.getType("Person");
             Map<String, FieldDescriptor.Type> map = new HashMap<>();
             
@@ -115,7 +116,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
     
     @Test(dependsOnMethods="testCreatePersonType")
     public void testGetAllTypes() {
-        int size = metadata.commit(() -> {
+        int size = metadata.commit(new AdminCredentials(), () -> {
             List<ExtensibleType> types = typeProvider.getTypes();
             
             return types.size();
@@ -127,7 +128,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
     
     @Test(dependsOnMethods="testCreatePersonType")
     public void testCreateEntity() {
-        ExtensibleEntity.ID id = metadata.commit(() -> {
+        ExtensibleEntity.ID id = metadata.commit(new AdminCredentials(), () -> {
             ExtensibleType type = typeProvider.getType("Person");
             
             Map<String, Object> props = new HashMap<>();
@@ -145,7 +146,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
     
     @Test(dependsOnMethods="testCreatePersonType")
     public void testGetEntity() {
-        String typeName = metadata.commit(() ->  {
+        String typeName = metadata.commit(new AdminCredentials(), () ->  {
             List<ExtensibleEntity> list = entityProvider.getEntities();
             
             assertThat(list).isNotNull().hasSize(1);

@@ -1,7 +1,26 @@
 package com.thinkbiganalytics.metadata.modeshape.generic;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.version.Version;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.testng.Assert;
+
 import com.thinkbiganalytics.metadata.api.Command;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -17,7 +36,9 @@ import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryPr
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
+import com.thinkbiganalytics.metadata.modeshape.auth.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
@@ -26,26 +47,6 @@ import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.testng.Assert;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.version.Version;
 
 /**
  * Created by sr186054 on 6/4/16.
@@ -83,12 +84,12 @@ public class JcrPropertyTest {
     TagProvider tagProvider;
 
     @Inject
-    private MetadataAccess metadata;
+    private JcrMetadataAccess metadata;
 
 
     @Test
     public void testGetPropertyTypes() throws RepositoryException {
-        Map<String, FieldDescriptor.Type> propertyTypeMap = metadata.commit(new Command<Map<String, FieldDescriptor.Type>>() {
+        Map<String, FieldDescriptor.Type> propertyTypeMap = metadata.commit(new AdminCredentials(), new Command<Map<String, FieldDescriptor.Type>>() {
             @Override
             public Map<String, FieldDescriptor.Type> execute() {
                 ExtensibleType feedType = provider.getType("tba:feed");
@@ -113,7 +114,7 @@ public class JcrPropertyTest {
     @Test
     public void testFeed() {
         String categorySystemName = "my_category";
-        Category category = metadata.commit(new Command<Category>() {
+        Category category = metadata.commit(new AdminCredentials(), new Command<Category>() {
             @Override
             public Category execute() {
                 JcrCategory category = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
@@ -124,7 +125,7 @@ public class JcrPropertyTest {
             }
         });
 
-        final JcrFeed.FeedId createdFeedId = metadata.commit(new Command<JcrFeed.FeedId>() {
+        final JcrFeed.FeedId createdFeedId = metadata.commit(new AdminCredentials(), new Command<JcrFeed.FeedId>() {
             @Override
             public JcrFeed.FeedId execute() {
 
@@ -163,7 +164,7 @@ public class JcrPropertyTest {
 
         //read and find feed verisons and ensure props
 
-        JcrFeed.FeedId readFeedId = metadata.read(new Command<JcrFeed.FeedId>() {
+        JcrFeed.FeedId readFeedId = metadata.read(new AdminCredentials(), new Command<JcrFeed.FeedId>() {
             @Override
             public JcrFeed.FeedId execute() {
                 Session s = null;
@@ -193,7 +194,7 @@ public class JcrPropertyTest {
 
         //update the feed again
 
-        JcrFeed.FeedId updatedFeed = metadata.commit(new Command<JcrFeed.FeedId>() {
+        JcrFeed.FeedId updatedFeed = metadata.commit(new AdminCredentials(), new Command<JcrFeed.FeedId>() {
             @Override
             public JcrFeed.FeedId execute() {
                 JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(createdFeedId);
@@ -209,7 +210,7 @@ public class JcrPropertyTest {
         });
 
         //read it again and find the versions
-        readFeedId = metadata.read(new Command<JcrFeed.FeedId>() {
+        readFeedId = metadata.read(new AdminCredentials(), new Command<JcrFeed.FeedId>() {
             @Override
             public JcrFeed.FeedId execute() {
                 JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(updatedFeed);
@@ -262,7 +263,7 @@ public class JcrPropertyTest {
         //final String query = "select e.* from [tba:feed] as e  join [tba:category] c on e.[tba:category].[tba:systemName] = c.[tba:systemName] where  c.[tba:systemName] = $category ";
         final String query = "select e.* from [tba:feed] as e join [tba:category] as c on e.[tba:category] = c.[jcr:uuid]";
 
-        metadata.read(new Command<Object>() {
+        metadata.read(new AdminCredentials(), new Command<Object>() {
             @Override
             public Object execute() {
 
@@ -271,7 +272,7 @@ public class JcrPropertyTest {
             }
         });
 
-        metadata.read(new Command<Object>() {
+        metadata.read(new AdminCredentials(), new Command<Object>() {
             @Override
             public Object execute() {
                 List<FeedManagerCategory> c = feedManagerCategoryProvider.findAll();
@@ -295,7 +296,7 @@ public class JcrPropertyTest {
 
     @Test
     public void testFeedManager() {
-        FeedManagerFeed feed = metadata.read(new Command<FeedManagerFeed>() {
+        FeedManagerFeed feed = metadata.read(new AdminCredentials(), new Command<FeedManagerFeed>() {
             @Override
             public FeedManagerFeed execute() {
                 List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
@@ -315,7 +316,7 @@ public class JcrPropertyTest {
         props.put("name", "An Old User");
         props.put("age", 140);
 
-        Map<String, Object> props2 = metadata.commit(new Command<Map<String, Object>>() {
+        Map<String, Object> props2 = metadata.commit(new AdminCredentials(), new Command<Map<String, Object>>() {
             @Override
             public Map<String, Object> execute() {
                 List<? extends Feed> feeds = feedProvider.getFeeds();
@@ -330,7 +331,7 @@ public class JcrPropertyTest {
             }
         });
         props.put("address", "Some road");
-        props2 = metadata.commit(new Command<Map<String, Object>>() {
+        props2 = metadata.commit(new AdminCredentials(), new Command<Map<String, Object>>() {
             @Override
             public Map<String, Object> execute() {
                 List<? extends Feed> feeds = feedProvider.getFeeds();
@@ -348,7 +349,7 @@ public class JcrPropertyTest {
 
         //Now Replace
         props.remove("address");
-        props2 = metadata.commit(new Command<Map<String, Object>>() {
+        props2 = metadata.commit(new AdminCredentials(), new Command<Map<String, Object>>() {
             @Override
             public Map<String, Object> execute() {
                 List<? extends Feed> feeds = feedProvider.getFeeds();

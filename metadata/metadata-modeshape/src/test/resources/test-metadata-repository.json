@@ -10,7 +10,13 @@
         "anonymous" : {
             "roles" : ["readonly","readwrite","admin"],
             "useOnFailedLogin" : false
-        }
+        },
+        "providers" : [
+            {
+                "name" : "DB Admin Provider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.auth.AdminAuthenticationProvider",
+            }
+        ]
     },
     "node-types" : ["metadata-schema.cnd"],
     "storage" : {
