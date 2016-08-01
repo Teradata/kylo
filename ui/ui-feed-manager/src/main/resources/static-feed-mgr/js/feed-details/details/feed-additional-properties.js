@@ -120,7 +120,7 @@
         };
 
         this.onCancel = function() {
-            // do nothing
+            self.userPropertyList = FeedService.getUserPropertyList(this.model);
         };
 
         this.onSave = function(ev) {
