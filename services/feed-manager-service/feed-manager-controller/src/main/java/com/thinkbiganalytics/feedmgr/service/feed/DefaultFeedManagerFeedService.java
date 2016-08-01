@@ -41,6 +41,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -252,31 +253,36 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     //@Transactional(transactionManager = "metadataTransactionManager")
     public void saveFeed(final FeedMetadata feed) {
-        metadataAccess.commit(new Command<FeedMetadata>() {
-            @Override
-            public FeedMetadata execute() {
-                //if this is the first time saving this feed create a new one
-                FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
-                if (domainFeed.getState() == null) {
-                    domainFeed.setState(Feed.State.ENABLED);
-                }
-                domainFeed = feedManagerFeedProvider.update(domainFeed);
-
-                List<PreconditionRule> preconditions = feed.getSchedule().getPreconditions();
-                if(preconditions != null) {
-                    PreconditionPolicyTransformer transformer = new PreconditionPolicyTransformer(preconditions);
-                    transformer.applyFeedNameToCurrentFeedProperties(feed.getCategory().getSystemName(), feed.getSystemFeedName());
-                    List<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> transformedPreconditions = transformer.getPreconditions();
-                    ServiceLevelAgreementBuilder preconditionBuilder = feedProvider.buildPrecondition(domainFeed.getId()).name("Precondition for feed " + domainFeed.getId());
-                    for (com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup precondition : transformedPreconditions) {
-                        for (Obligation group : precondition.getObligations()) {
-                            preconditionBuilder.obligationGroupBuilder(ObligationGroup.Condition.valueOf(precondition.getCondition())).obligationBuilder().metric(group.getMetrics()).build();
-                        }
-                    }
-                    preconditionBuilder.build();
-                }
-                return feed;
+        metadataAccess.commit(() -> {
+            //if this is the first time saving this feed create a new one
+            FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
+            if (domainFeed.getState() == null) {
+                domainFeed.setState(Feed.State.ENABLED);
             }
+            domainFeed = feedManagerFeedProvider.update(domainFeed);
+
+            // Replace properties
+            if (feed.getUserProperties() != null) {
+                feedProvider.replaceProperties(domainFeed.getId(), feed.getUserProperties());
+            }
+
+            // Build preconditions
+            List<PreconditionRule> preconditions = feed.getSchedule().getPreconditions();
+            if(preconditions != null) {
+                PreconditionPolicyTransformer transformer = new PreconditionPolicyTransformer(preconditions);
+                transformer.applyFeedNameToCurrentFeedProperties(feed.getCategory().getSystemName(), feed.getSystemFeedName());
+                List<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> transformedPreconditions = transformer.getPreconditions();
+                ServiceLevelAgreementBuilder preconditionBuilder = feedProvider.buildPrecondition(domainFeed.getId()).name("Precondition for feed " + domainFeed.getId());
+                for (com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup precondition : transformedPreconditions) {
+                    for (Obligation group : precondition.getObligations()) {
+                        preconditionBuilder.obligationGroupBuilder(ObligationGroup.Condition.valueOf(precondition.getCondition())).obligationBuilder().metric(group.getMetrics()).build();
+                    }
+                }
+                preconditionBuilder.build();
+            }
+
+            // Return result
+            return feed;
         });
 
 

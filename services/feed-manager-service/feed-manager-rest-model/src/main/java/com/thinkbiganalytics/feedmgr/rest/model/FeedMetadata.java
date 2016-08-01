@@ -11,9 +11,10 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
- * Created by sr186054 on 1/13/16.
+ * Contains the frontend and backend metadata for a feed.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedMetadata implements UIFeed{
@@ -83,6 +84,9 @@ public class FeedMetadata implements UIFeed{
    // private NifiProcessGroup nifiProcessGroup;
 
     private RegisteredTemplate registeredTemplate;
+
+    /** Properties for business metadata */
+    private Map<String, Object> userProperties;
 
     public String getTemplateId() {
         return templateId;
@@ -350,5 +354,23 @@ public class FeedMetadata implements UIFeed{
 
     public void setState(String state) {
         this.state = state;
+    }
+
+    /**
+     * Gets the business metadata for this feed.
+     *
+     * @return the business metadata
+     */
+    public Map<String, Object> getUserProperties() {
+        return userProperties;
+    }
+
+    /**
+     * Sets the business metadata for this feed.
+     *
+     * @param userProperties the business metadata
+     */
+    public void setUserProperties(final Map<String, Object> userProperties) {
+        this.userProperties = userProperties;
     }
 }

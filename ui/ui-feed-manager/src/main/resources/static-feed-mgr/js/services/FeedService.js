@@ -39,7 +39,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
         editFeedModel : {},
         DEFAULT_CRON: "0 0 12 1/1 * ? *",
         getNewCreateFeedModel : function(){
-            return  {id:null,versionName:null,templateId:'',feedName:'',description:null,systemFeedName:'',inputProcessorType:'',inputProcessor:null,nonInputProcessors:[],properties:[], schedule:{schedulingPeriod:data.DEFAULT_CRON,schedulingStrategy:'CRON_DRIVEN', concurrentTasks:1},defineTable:false,allowPreconditions:false,dataTransformationFeed:false,table:{tableSchema:{name:null,fields:[]},sourceTableSchema:{name:null,fields:[]},method:'MANUAL',existingTableName:null,targetMergeStrategy:'DEDUPE_AND_MERGE',feedFormat:"ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n' STORED AS TEXTFILE",targetFormat:null,fieldPolicies:[],partitions:[],options:{compress:false,compressionFormat:null,auditLogging:true,encrypt:false,trackHistory:false}, securityGroups:[], sourceTableIncrementalDateField:null}, category:{id:null,name:null},  dataOwner:'',tags:[], reusableFeed:false, dataTransformation:{chartViewModel:null,dataTransformScript:null,sql:null,states:[]}};
+            return  {id:null,versionName:null,templateId:'',feedName:'',description:null,systemFeedName:'',inputProcessorType:'',inputProcessor:null,nonInputProcessors:[],properties:[], schedule:{schedulingPeriod:data.DEFAULT_CRON,schedulingStrategy:'CRON_DRIVEN', concurrentTasks:1},defineTable:false,allowPreconditions:false,dataTransformationFeed:false,table:{tableSchema:{name:null,fields:[]},sourceTableSchema:{name:null,fields:[]},method:'MANUAL',existingTableName:null,targetMergeStrategy:'DEDUPE_AND_MERGE',feedFormat:"ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n' STORED AS TEXTFILE",targetFormat:null,fieldPolicies:[],partitions:[],options:{compress:false,compressionFormat:null,auditLogging:true,encrypt:false,trackHistory:false}, securityGroups:[], sourceTableIncrementalDateField:null}, category:{id:null,name:null},  dataOwner:'',tags:[], reusableFeed:false, dataTransformation:{chartViewModel:null,dataTransformScript:null,sql:null,states:[]},userProperties:{}};
         },
         newCreateFeed:function(){
             this.createFeedModel = this.getNewCreateFeedModel();
@@ -300,8 +300,23 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             promise.then(successFn, errorFn);
             return promise;
 
-        }
+        },
 
+    /**
+     * Gets the list of user properties for the specified feed.
+     *
+     * @param {Object} model the feed model
+     * @return {Array.<{key: string, value: string}>} the list of user properties
+     */
+    getUserPropertyList: function(model) {
+        var userPropertyList = [];
+        angular.forEach(model.userProperties, function(value, key) {
+            if (!key.startsWith("jcr:")) {
+                userPropertyList.push({key: key, value: value});
+            }
+        });
+        return userPropertyList;
+    }
 };
     data.init();
 return data;
