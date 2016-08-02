@@ -25,9 +25,9 @@ import javax.jms.Topic;
  */
 @Component
 public class SendJmsMessage {
-    private static final Logger LOG = LoggerFactory.getLogger(SendJmsMessage.class);
+    private static final Logger log = LoggerFactory.getLogger(SendJmsMessage.class);
 
-    private static final String TEST_MESSAGE_TOPIC_NAME = "thinkbig.nifi.test.topic";
+    private static final String TEST_MESSAGE_QUEUE_NAME = "thinkbig.nifi.test-queue";
     private static final String TEST_MESSAGE = "testing123";
 
     @Autowired
@@ -37,15 +37,12 @@ public class SendJmsMessage {
     @Qualifier("jmsTemplate")
     private JmsMessagingTemplate jmsMessagingTemplate;
 
-
-    public void sendMessage(Topic topic, String msg) {
-        this.sendObject(topic,msg);
+    public void sendObjectToQueue(String queueName, final Object obj){
+        sendObjectToQueue(queueName, obj, obj.getClass().getName());
     }
 
-
-
-    public void sendObject(Topic topic, final Object obj,final String objectClassType) throws JmsException{
-        LOG.info("Sending ActiveMQ message ["+obj+"] to topic ["+topic+"]");
+    public void sendObjectToQueue(String queueName, final Object obj, final String objectClassType) throws JmsException{
+        log.info("Sending ActiveMQ message ["+obj+"] to queue ["+queueName+"]");
         MessageCreator creator = new MessageCreator() {
             TextMessage message = null;
             @Override
@@ -56,25 +53,22 @@ public class SendJmsMessage {
                 return message;
             }
         };
-        this.jmsMessagingTemplate.getJmsTemplate().send(topic, creator);
-    }
-
-    public void sendObject(Topic topic, final Object obj){
-        sendObject(topic, obj, obj.getClass().getName());
+        this.jmsMessagingTemplate.getJmsTemplate().send(queueName, creator);
     }
 
     public boolean testJmsIsRunning() {
-        LOG.info("Testing JMS connection");
+        log.info("Testing JMS connection");
         try {
-            ActiveMQTopic topic = new ActiveMQTopic(TEST_MESSAGE_TOPIC_NAME);
-            sendMessage(topic, TEST_MESSAGE);
-            Message jmsMessage = jmsMessagingTemplate.receive(topic);
+            sendObjectToQueue(TEST_MESSAGE_QUEUE_NAME, TEST_MESSAGE);
+            log.info("sending message to the topic");
+            Message jmsMessage = jmsMessagingTemplate.receive(TEST_MESSAGE_QUEUE_NAME);
+            log.info("received the JMS message back");
             String payload = (String)jmsMessage.getPayload();
             if(("\"" + TEST_MESSAGE + "\"").equals(payload)) {
                 return true;
             }
         } catch(Throwable t) {
-            LOG.info("Error testing JMS connection. This is most likely because it's down", t);
+            log.info("Error testing JMS connection. This is most likely because it's down", t);
         }
         return false;
     }

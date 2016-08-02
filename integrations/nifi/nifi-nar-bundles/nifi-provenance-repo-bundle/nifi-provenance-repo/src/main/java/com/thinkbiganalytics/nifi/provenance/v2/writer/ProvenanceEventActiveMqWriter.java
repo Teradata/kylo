@@ -3,9 +3,8 @@ package com.thinkbiganalytics.nifi.provenance.v2.writer;
 import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
 import com.thinkbiganalytics.activemq.SendJmsMessage;
 import com.thinkbiganalytics.nifi.activemq.ProvenanceEventReceiverDatabaseWriter;
-import com.thinkbiganalytics.nifi.activemq.Topics;
+import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.provenance.v2.ProvenanceEventConverter;
-import com.thinkbiganalytics.util.SpringApplicationContext;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
@@ -13,25 +12,15 @@ import org.h2.tools.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
-import org.springframework.context.ApplicationContext;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabase;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
-import org.springframework.jms.JmsException;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
-import javax.jms.Topic;
 
-import java.util.Comparator;
 import java.util.List;
-import java.util.Timer;
-import java.util.TreeSet;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by sr186054 on 3/3/16.
@@ -53,11 +42,6 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
     public Long getMaxEventId() {
         return eventIdIncrementer.getId();
     }
-
-
-    @Autowired
-    @Qualifier(Topics.NIFI_EVENT_TOPIC_BEAN)
-    private Topic topic;
 
     @Autowired
     private SendJmsMessage sendJmsMessage;
@@ -99,7 +83,7 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
                 persistEventToTemporaryTable(dto);
             } else {
                 logger.info("Processing the JMS message as normal");
-                sendJmsMessage.sendObject(topic, dto);
+                sendJmsMessage.sendObjectToQueue(Queues.FEED_MANAGER_QUEUE, dto);
             }
         } catch (Exception e) {
             logger.error("JMS Error has occurred. Enable temporary queue", e);
@@ -141,10 +125,10 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
             // catch up on the cached messages then send the last message
             List<ProvenanceEventDTO> eventsFromDatabase = databaseWriter.getEvents();
             for (ProvenanceEventDTO eventDTO : eventsFromDatabase) {
-                sendJmsMessage.sendObject(topic, eventDTO);
+                sendJmsMessage.sendObjectToQueue(Queues.FEED_MANAGER_QUEUE, eventDTO);
             }
             databaseWriter.clearEvents();
-            sendJmsMessage.sendObject(topic, dto);
+            sendJmsMessage.sendObjectToQueue(Queues.FEED_MANAGER_QUEUE, dto);
 
             shutdownTemporaryDatabaseAndResumeJms();
         } else {

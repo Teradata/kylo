@@ -31,7 +31,7 @@ import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
 @EnableJms
 public class ActiveMqConfig {
 
-    private static final Logger LOG = LoggerFactory.getLogger(ActiveMqConfig.class);
+    private static final Logger log = LoggerFactory.getLogger(ActiveMqConfig.class);
 
     @Value("${jms.activemq.broker.url:tcp://localhost:61616}")
     private String activeMqBrokerUrl;
@@ -45,17 +45,18 @@ public class ActiveMqConfig {
         ActiveMQConnectionFactory factory = new ActiveMQConnectionFactory(activeMqBrokerUrl);
         factory.setTrustAllPackages(true);
         pool.setConnectionFactory(factory);
-        LOG.info("Setup ActiveMQ ConnectionFactory for "+activeMqBrokerUrl);
+        log.info("Setup ActiveMQ ConnectionFactory for "+activeMqBrokerUrl);
         return pool;
     }
 
     @Bean
     public JmsListenerContainerFactory<?> jmsContainerFactory(ConnectionFactory connectionFactory) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        factory.setPubSubDomain(true);
+        factory.setPubSubDomain(false);
         factory.setConnectionFactory(connectionFactory);
-        factory.setSubscriptionDurable(true);
+        //factory.setSubscriptionDurable(true);
         factory.setClientId(jmsClientId);
+        factory.setConcurrency("5-200");
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
         converter.setTargetType(MessageType.TEXT);
         converter.setTypeIdPropertyName("jms_javatype");

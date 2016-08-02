@@ -1,5 +1,4 @@
 import com.thinkbiganalytics.activemq.config.ActiveMqConfig;
-import com.thinkbiganalytics.nifi.activemq.NifiActiveMqConfig;
 import com.thinkbiganalytics.nifi.config.NifiProvenanceConfig;
 import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventActiveMqWriter;
 
@@ -22,7 +21,7 @@ import java.util.UUID;
 // Ignore due to dependency on MySQL
 @Ignore
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {NifiActiveMqConfig.class, ActiveMqConfig.class, NifiProvenanceConfig.class, TestConfig.class})
+@ContextConfiguration(classes = { ActiveMqConfig.class, NifiProvenanceConfig.class, TestConfig.class})
 public class TestProvenance {
 
 

@@ -6,8 +6,7 @@ package com.thinkbiganalytics.jobrepo.nifi.provenance;
 
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
 import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.nifi.activemq.Subscriptions;
-import com.thinkbiganalytics.nifi.activemq.Topics;
+import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.rest.client.NifiConnectionException;
 
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
@@ -133,8 +132,7 @@ public class ProvenanceEventReceiver implements ProvenanceEventJobExecutionStart
         provenanceEventStartupListener.subscribe(this);
     }
 
-    @JmsListener(destination = Topics.THINKBIG_NIFI_EVENT_TOPIC, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY,
-                 subscription = Subscriptions.FEED_MANAGER_NIFI_PROVENANCE)
+    @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
     public void receiveTopic(ProvenanceEventDTO message) {
         Long eventId = message.getEventId();
         log.info("Received ProvenanceEvent with Nifi Event Id of {}", eventId);

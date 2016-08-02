@@ -113,7 +113,7 @@ public class ProvenanceEventListener {
         }
 
         long stop = System.currentTimeMillis();
-        //log.info("************ Total time to process event {} ({}): {}",component.getComponetName(),event.getEventType(),(stop-start)+" ms");
+        log.debug("************ Total time to process event {} ({}): {}",component.getComponetName(),event.getEventType(),(stop-start)+" ms");
     }
 
     private FlowFileComponent attachEventComponent(ProvenanceEventRecordDTO event) {
