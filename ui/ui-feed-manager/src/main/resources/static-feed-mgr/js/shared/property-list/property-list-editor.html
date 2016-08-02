@@ -1,0 +1,18 @@
+<div class="feed-user-property" layout="row" ng-repeat="property in propertyList">
+    <md-input-container flex="50">
+        <label>Property</label>
+        <input ng-model="property.key">
+        <div ng-messages="property.$error" md-auto-hide="false">
+            <div ng-message="duplicate">Properties must be unique.</div>
+        </div>
+    </md-input-container>
+    <md-input-container flex="50">
+        <label>Value</label>
+        <input ng-model="property.value">
+    </md-input-container>
+    <md-button class="md-icon-button" aria-label="Delete" ng-click="vm.removeProperty($index)">
+        <md-icon>close</md-icon>
+    </md-button>
+</div>
+
+<md-button class="md-raised" ng-click="vm.addProperty()">New Property</md-button>

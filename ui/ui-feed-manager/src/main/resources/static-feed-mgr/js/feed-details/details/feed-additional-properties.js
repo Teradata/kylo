@@ -33,30 +33,6 @@
         self.tagChips.searchText = null;
         this.isValid = true;
 
-        /**
-         * List of user-defined properties.
-         *
-         * @type {Array.<{key: string, value: string}>}
-         */
-        self.userPropertyList = FeedService.getUserPropertyList(this.model);
-
-        /**
-         * Adds a new user-defined property.
-         */
-        self.addProperty = function() {
-            self.userPropertyList.push({key: "", value: "", $error: {}});
-        };
-
-        /**
-         * Deletes the item at the specified index from the user-defined properties list.
-         *
-         * @param {number} index the index of the property to delete
-         */
-        self.deleteProperty = function(index) {
-            self.userPropertyList.splice(index, 1);
-            self.updateUserProperties();
-        };
-
         this.transformChip = function(chip) {
             // If it is an object, it's already a known chip
             if (angular.isObject(chip)) {
@@ -64,31 +40,6 @@
             }
             // Otherwise, create a new one
             return {name: chip}
-        };
-
-        /**
-         * Updates the model with the list of user-defined properties.
-         */
-        self.updateUserProperties = function() {
-            var keys = {};
-            var userProperties = {};
-
-            angular.forEach(self.userPropertyList, function(property) {
-                // Validate property
-                if (angular.isUndefined(property.$error)) {
-                    property.$error = {};
-                }
-
-                property.$error.duplicate = angular.isDefined(keys[property.key]);
-
-                // Add to user properties object
-                if (property.key.length > 0) {
-                    keys[property.key] = true;
-                    userProperties[property.key] = property.value;
-                }
-            });
-
-            self.editModel.userProperties = userProperties;
         };
 
         $scope.$watch(function() {
@@ -111,16 +62,11 @@
             self.editModel = {};
             self.editModel.dataOwner = self.model.dataOwner;
             self.editModel.tags = tags;
-            self.editModel.userProperties = _.pick(self.model.userProperties, function(value, key) {
-                return !key.startsWith("jcr:");
-            });
-
-            // Refresh user property list
-            self.userPropertyList = FeedService.getUserPropertyList(self.editModel);
+            self.editModel.userProperties = angular.copy(self.model.userProperties);
         };
 
         this.onCancel = function() {
-            self.userPropertyList = FeedService.getUserPropertyList(this.model);
+            // do nothing
         };
 
         this.onSave = function(ev) {

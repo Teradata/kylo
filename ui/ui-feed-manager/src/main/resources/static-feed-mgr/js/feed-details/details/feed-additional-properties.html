@@ -17,13 +17,7 @@
                     {{vm.model.tags | join: ',':'name'}}
                 </div>
             </div>
-            <div layout="row" ng-repeat="property in vm.userPropertyList" class="layout-padding-top-bottom">
-                <span flex="25" class="property-name">{{property.key}}</span>
-
-                <div flex>
-                    {{property.value}}
-                </div>
-            </div>
+            <thinkbig-property-list properties="vm.model.userProperties"></thinkbig-property-list>
         </div>
     </readonly-section>
 
@@ -48,23 +42,6 @@
             </md-chips>
         </md-input-container>
 
-        <div class="feed-user-property" layout="row" ng-repeat="property in vm.userPropertyList">
-            <md-input-container flex="50">
-                <label>Property</label>
-                <input ng-change="vm.updateUserProperties()" ng-model="property.key">
-                <div ng-messages="property.$error" md-auto-hide="false">
-                    <div ng-message="duplicate">Properties must be unique.</div>
-                </div>
-            </md-input-container>
-            <md-input-container flex="50">
-                <label>Value</label>
-                <input ng-change="vm.updateUserProperties()" ng-model="property.value">
-            </md-input-container>
-            <md-button class="md-icon-button" aria-label="Delete" ng-click="vm.deleteProperty($index)">
-                <md-icon>close</md-icon>
-            </md-button>
-        </div>
-
-        <md-button class="md-raised" ng-click="vm.addProperty()">New Property</md-button>
+        <thinkbig-property-list-editor properties="vm.editModel.userProperties"></thinkbig-property-list-editor>
     </editable-section>
 </vertical-section-layout>
