@@ -1,123 +1,16 @@
 <div ng-controller="CategoryDetailsController as vm">
-<card-layout body-css="md-padding" class="centered">
-
-    <header-section>
-        <div layout="row" layout-align="center start">
-        <h2 class="md-title">Category Details</h2>
-            <span flex></span>
-             <ng-md-icon icon="{{vm.model.icon}}" style="fill:{{vm.model.iconColor}};padding-right:16px;" size="30"></ng-md-icon>
-
-          </div>
-    </header-section>
-    <body-section>
-        <vertical-section-layout section-title="{{vm.sectionTitle}}" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" editable="vm.editable">
-
-        <readonly-section>
-            <div layout="row" class="layout-padding-top-bottom">
-                <span flex="25" class="property-name">Category Name</span>
-
-                <div flex>
-                    {{vm.model.name}}
-                </div>
+    <md-progress-linear md-mode="indeterminate" ng-if="vm.loadingCategory"></md-progress-linear>
+    <card-layout body-css="md-padding" class="centered" ng-if="!vm.loadingCategory">
+        <header-section>
+            <div layout="row" layout-align="center start">
+                <h2 class="md-title">Category Details</h2>
+                <span flex></span>
+                <ng-md-icon icon="{{vm.model.icon}}" style="fill:{{vm.model.iconColor}}; padding-right:16px;" size="30"></ng-md-icon>
             </div>
-            <div layout="row" class="layout-padding-top-bottom">
-                <span flex="25" class="property-name">Description</span>
-
-                <div flex>
-                    {{vm.model.description}}
-                </div>
-            </div>
-            <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
-                <span flex="25" class="property-name">Icon</span>
-
-                <div layout="column">
-                    <ng-md-icon icon="{{vm.model.icon}}" style="fill:{{vm.model.iconColor}};margin:inherit" size="45"></ng-md-icon>
-                </div>
-
-            </div>
-
-
-        </readonly-section>
-
-        <editable-section>
-            <form>
-                <md-input-container class="md-block">
-                    <label>Name</label>
-                    <input ng-model="vm.editModel.name"/>
-                </md-input-container>
-
-                <md-input-container class="md-block">
-                    <label>Description</label>
-                    <textarea ng-model="vm.editModel.description"></textarea>
-                </md-input-container>
-
-                <div layout="column">
-
-                <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
-                   <span class="md-input-label" style="font-size: 11px;"  flex="25" >Icon </span>
-                   <ng-md-icon icon="{{vm.editModel.icon}}" size="45" style="margin:inherit;fill:{{vm.editModel.iconColor}}"></ng-md-icon>
-                   <md-button class="md-primary" ng-click="vm.showIconPicker()" style="margin-left:35px;">
-                       Change Icon
-                   </md-button>
-
-               </div>
-
-                </div>
-
-            </form>
-
-        </editable-section>
-        </vertical-section-layout>
-
-
-        <div>
-            <vertical-section-layout allow-edit="false" show-vertical-check="true" section-title="Related Feeds" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()">
-
-                <readonly-section>
-
-                    <md-list  layout-fill class="list-item-table list-condensed" id="policy-list" ng-if="vm.model.relatedFeedSummaries != null && vm.model.relatedFeedSummaries.length >0">
-
-                        <md-list-item  >
-                            <div layout="row" layout-fill>
-                                <div flex="50" class="md-list-item-text hint">
-                                    Name
-                                </div>
-                                <div flex="10" class="md-list-item-text hint">
-                                    Active
-                                </div>
-                                <div flex="40" class="md-list-item-text hint">
-                                    Last Modified
-                                </div>
-                            </div>
-                        </md-list-item>
-
-
-                        <md-list-item ng-repeat="feed in vm.model.relatedFeedSummaries" ng-click="vm.onFeedClick(feed)">
-                            <div layout="row" layout-fill>
-                                <div flex="50" class="md-list-item-text">
-                                    <md-input-container class="md-block" flex-gt-sm>
-                                        <div>{{feed.feedName}}</div>
-                                    </md-input-container>
-                                </div>
-                                <div flex="10" class="md-list-item-text ">
-                                    <ng-md-icon icon="check"></ng-md-icon>
-                                </div>
-                                <div flex="40" class="md-list-item-text ">
-                                    {{feed.updateDate | date : 'MM/dd/yyyy hh:mm:ss'}}
-                                </div>
-                            </div>
-                        </md-list-item>
-                    </md-list>
-                    <div ng-if="vm.model.relatedFeedSummaries == null || vm.model.relatedFeedSummaries.length ==0">
-                        There are no feeds associated with this category
-                    </div>
-
-                </readonly-section>
-
-                </vertical-section-layout>
-
-        </div>
-
-    </body-section>
-</card-layout>
+        </header-section>
+        <body-section>
+            <thinkbig-category-definition></thinkbig-category-definition>
+            <thinkbig-category-feeds></thinkbig-category-feeds>
+        </body-section>
+    </card-layout>
 </div>

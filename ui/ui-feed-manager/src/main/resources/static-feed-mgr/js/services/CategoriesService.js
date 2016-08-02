@@ -59,20 +59,39 @@ angular.module(MODULE_FEED_MGR).factory('CategoriesService', function ($q,$http,
         });
     }
 
+    /**
+     * A category for grouping similar feeds.
+     *
+     * @typedef {Object} CategoryModel
+     * @property {string|null} id the unique identifier
+     * @property {string|null} name a human-readable name
+     * @property {string|null} description a sentence describing the category
+     * @property {string|null} icon the name of a Material Design icon
+     * @property {string|null} iconColor the color of the icon
+     * @property {Array<Object>} relatedFeedSummaries the feeds within this category
+     */
 
-
+    /**
+     * Utility functions for managing categories.
+     *
+     * @type {Object}
+     */
     var data = {
+        /**
+         * Global category data used across directives.
+         *
+         * @type {CategoryModel}
+         */
+        model: {},
+
         init:function() {
            this.reload();
         },
         reload:function(){
             var self = this;
-            var promise = loadAll();
-            $q.when(promise).then(function(categories)
-            {
-                self.categories = categories;
+            return loadAll().then(function(categories) {
+                return self.categories = categories;
             });
-            return promise;
         },
         delete:function(category){
             var promise = $http({
@@ -131,8 +150,14 @@ angular.module(MODULE_FEED_MGR).factory('CategoriesService', function ($q,$http,
                 return results;
             }
         },
+
+        /**
+         * Creates a new category model.
+         *
+         * @returns {CategoryModel} the new category model
+         */
         newCategory:function(){
-            return {name:'',description:'',icon:'',iconColor:''};
+            return {id: null, name: null, description: null, icon: null, iconColor: null, relatedFeedSummaries: []};
         }
 
     };
