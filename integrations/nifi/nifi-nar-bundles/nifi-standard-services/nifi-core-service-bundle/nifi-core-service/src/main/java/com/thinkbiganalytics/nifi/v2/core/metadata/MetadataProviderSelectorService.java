@@ -69,7 +69,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             .description("Optional password if the client requires a credential")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .defaultValue("")
-//            .sensitive(true)
+            .sensitive(true)
             .required(false)
             .build();
 
