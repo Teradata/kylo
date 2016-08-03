@@ -11,6 +11,7 @@ import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.annotation.lifecycle.OnEnabled;
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
@@ -58,6 +59,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             .displayName("REST Client User Name")
             .description("Optional user name if the client requires a credential")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("")
             .required(false)
             .build();
     
@@ -65,7 +67,9 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             .name("client-password")
             .displayName("REST Client Password")
             .description("Optional password if the client requires a credential")
-            .sensitive(true)
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .defaultValue("")
+//            .sensitive(true)
             .required(false)
             .build();
 
@@ -76,7 +80,8 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         final List<PropertyDescriptor> props = new ArrayList<>();
         props.add(IMPLEMENTATION);
         props.add(CLIENT_URL);
-
+        props.add(CLIENT_USERNAME);
+        props.add(CLIENT_PASSWORD);
         properties = Collections.unmodifiableList(props);
     }
 
@@ -95,8 +100,15 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
         this.recorder = new MetadataClientRecorder();
 
         if (impl.getValue().equalsIgnoreCase("REMOTE")) {
-            URI uri = URI.create(context.getProperty(CLIENT_URL).toString());
-            this.provider = new MetadataClientProvider(uri);
+            URI uri = URI.create(context.getProperty(CLIENT_URL).getValue());
+            String user = context.getProperty(CLIENT_USERNAME).getValue();
+            String password = context.getProperty(CLIENT_PASSWORD).getValue();
+            
+            if (StringUtils.isEmpty(user)) {
+                this.provider = new MetadataClientProvider(uri);
+            } else {
+                this.provider = new MetadataClientProvider(uri, user, password);
+            }
         } else {
             throw new UnsupportedOperationException("Provider implementations not currently supported: " + impl.getValue());
         }

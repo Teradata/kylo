@@ -47,6 +47,10 @@ public class MetadataClientProvider implements MetadataProvider {
         this.client = new MetadataClient(baseUri);
     }
     
+    public MetadataClientProvider(URI baseUri, String username, String password) {
+        this.client = new MetadataClient(baseUri, username, password);
+    }
+    
     @Override
     public String getFeedId(String category, String feedName) {
         List<Feed> feeds = this.client.getFeeds(this.client.feedCriteria().category(category).name(feedName));

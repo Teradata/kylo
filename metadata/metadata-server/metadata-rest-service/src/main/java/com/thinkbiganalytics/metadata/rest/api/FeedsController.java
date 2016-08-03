@@ -159,7 +159,7 @@ public class FeedsController {
     @Path("{id}/depfeeds")
     @Produces(MediaType.APPLICATION_JSON)
     public FeedDependencyGraph getDependencyGraph(@PathParam("id") final String feedId,
-                                             @QueryParam("preconds") @DefaultValue("true") final boolean assessPrecond) {
+                                                  @QueryParam("preconds") @DefaultValue("false") final boolean assessPrecond) {
         LOG.debug("Get feed dependencies {}", feedId);
 
         return this.metadata.read(() -> {
@@ -178,7 +178,7 @@ public class FeedsController {
     @Path("{feedId}/depfeeds")
     @Produces(MediaType.APPLICATION_JSON)
     public FeedDependencyGraph addDependent(@PathParam("feedId") final String feedIdStr, 
-                                       @QueryParam("dependentId") final String depIdStr) {
+                                            @QueryParam("dependentId") final String depIdStr) {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = this.feedProvider.resolveFeed(feedIdStr);
         com.thinkbiganalytics.metadata.api.feed.Feed.ID depId = this.feedProvider.resolveFeed(depIdStr);
         
@@ -194,7 +194,7 @@ public class FeedsController {
     @Path("{feedId}/depfeeds")
     @Produces(MediaType.APPLICATION_JSON)
     public FeedDependencyGraph removeDependent(@PathParam("feedId") final String feedIdStr, 
-                                          @QueryParam("dependentId") final String depIdStr) {
+                                               @QueryParam("dependentId") final String depIdStr) {
         com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId = this.feedProvider.resolveFeed(feedIdStr);
         com.thinkbiganalytics.metadata.api.feed.Feed.ID depId = this.feedProvider.resolveFeed(depIdStr);
         
