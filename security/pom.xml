@@ -13,6 +13,7 @@
         <module>simple-auth</module>
         <module>oauth-server</module>
         <module>security-auth</module>
+        <module>security-auth-file</module>
     </modules>
 
     <dependencies>

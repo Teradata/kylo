@@ -77,6 +77,12 @@ public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuild
             this.options.put(name, value);
             return this;
         }
+        
+        @Override
+        public ModuleBuilder options(Map<String, Object> options) {
+            this.options.putAll(options);
+            return this;
+        }
 
         @Override
         public LoginConfigurationBuilder add() {

@@ -53,15 +53,9 @@ public class JcrExtensibleProvidersTestConfig {
     }
     
 
-    @Bean(name = "restModeShapeLoginConfiguration")
+    @Bean(name = "servicesModeShapeLoginConfiguration")
     @Primary
     public LoginConfiguration restModeShapeLoginConfiguration() {
-        return Mockito.mock(LoginConfiguration.class);
-    }
-    
-    @Bean(name = "uiModeShapeLoginConfiguration")
-    @Primary
-    public LoginConfiguration uiModeShapeLoginConfiguration() {
         return Mockito.mock(LoginConfiguration.class);
     }
 }

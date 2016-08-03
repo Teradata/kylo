@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.auth.jaas;
 
+import java.util.Map;
+
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 import javax.security.auth.spi.LoginModule;
 
@@ -22,6 +24,7 @@ public interface LoginConfigurationBuilder {
         ModuleBuilder moduleClass(Class<? extends LoginModule> moduleClass);
         ModuleBuilder controlFlag(LoginModuleControlFlag flag);
         ModuleBuilder option(String name, Object value);
+        ModuleBuilder options(Map<String, Object> options);
         
         LoginConfigurationBuilder add();
     }

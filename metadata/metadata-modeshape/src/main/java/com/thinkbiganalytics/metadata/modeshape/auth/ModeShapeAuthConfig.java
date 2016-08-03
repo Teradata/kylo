@@ -25,20 +25,10 @@ public class ModeShapeAuthConfig {
         return new ModeShapeAuthorityGranter();
     }
 
-    @Bean(name = "restModeShapeLoginConfiguration")
-    public LoginConfiguration restModeShapeLoginConfiguration(LoginConfigurationBuilder builder) {
+    @Bean(name = "servicesModeShapeLoginConfiguration")
+    public LoginConfiguration servicesModeShapeLoginConfiguration(LoginConfigurationBuilder builder) {
         return builder
-                        .loginModule(JaasAuthConfig.JAAS_REST)
-                            .moduleClass(ModeShapeLoginModule.class)
-                            .controlFlag(LoginModuleControlFlag.REQUIRED)
-                            .add()
-                        .build();
-    }
-    
-    @Bean(name = "uiModeShapeLoginConfiguration")
-    public LoginConfiguration uiModeShapeLoginConfiguration(LoginConfigurationBuilder builder) {
-        return builder
-                        .loginModule(JaasAuthConfig.JAAS_UI)
+                        .loginModule(JaasAuthConfig.JAAS_SERVICES)
                             .moduleClass(ModeShapeLoginModule.class)
                             .controlFlag(LoginModuleControlFlag.REQUIRED)
                             .add()

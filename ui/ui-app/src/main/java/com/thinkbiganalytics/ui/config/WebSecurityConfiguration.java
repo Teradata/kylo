@@ -16,6 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
 import com.thinkbiganalytics.auth.AuthenticationService;
+import com.thinkbiganalytics.auth.jaas.JaasAuthConfig;
 
 /**
  *Form Based Auth with Spring Security.
@@ -35,7 +36,7 @@ public class WebSecurityConfiguration {
     public static class UiSecurityConfiguration extends WebSecurityConfigurerAdapter {
         
         @Autowired
-        @Qualifier("uiAuthenticationProvider")
+        @Qualifier(JaasAuthConfig.UI_AUTH_PROVIDER)
         private AuthenticationProvider uiAuthenticationProvider;
 
         @Override
@@ -80,10 +81,10 @@ public class WebSecurityConfiguration {
 
     @Configuration
     @Order(5)
-    public static class RestSecurityConfiguration extends WebSecurityConfigurerAdapter {
+    public static class ProxySecurityConfiguration extends WebSecurityConfigurerAdapter {
 
         @Autowired
-        @Qualifier("restAuthenticationProvider")
+        @Qualifier(JaasAuthConfig.SERVICES_AUTH_PROVIDER)
         private AuthenticationProvider restAuthenticationProvider;
 
         /* (non-Javadoc)

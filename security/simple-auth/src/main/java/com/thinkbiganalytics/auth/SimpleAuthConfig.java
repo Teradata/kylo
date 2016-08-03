@@ -24,7 +24,7 @@ import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
  * }
  */
 @Configuration
-@Profile("simple-auth")
+@Profile("auth-simple")
 public class SimpleAuthConfig {
     
     @Bean(name = "authenticationService")
@@ -32,10 +32,10 @@ public class SimpleAuthConfig {
         return new SimpleAuthenticationService();
     }
     
-    @Bean(name = "restServiceLoginConfiguration")
-    public LoginConfiguration restServiceLoginConfiguration(LoginConfigurationBuilder builder) {
+    @Bean(name = "servicesLoginConfiguration")
+    public LoginConfiguration servicesLoginConfiguration(LoginConfigurationBuilder builder) {
         return builder
-                        .loginModule(JaasAuthConfig.JAAS_REST)
+                        .loginModule(JaasAuthConfig.JAAS_SERVICES)
                             .moduleClass(AuthServiceLoginModule.class)
                             .controlFlag(LoginModuleControlFlag.REQUIRED)
                             .option("authService", authenticationService())
