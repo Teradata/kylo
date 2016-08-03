@@ -52,6 +52,22 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             .addValidator(StandardValidators.URL_VALIDATOR)
             .required(false)
             .build();
+    
+    public static final PropertyDescriptor CLIENT_USERNAME = new PropertyDescriptor.Builder()
+            .name("client-username")
+            .displayName("REST Client User Name")
+            .description("Optional user name if the client requires a credential")
+            .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+            .required(false)
+            .build();
+    
+    public static final PropertyDescriptor CLIENT_PASSWORD = new PropertyDescriptor.Builder()
+            .name("client-password")
+            .displayName("REST Client Password")
+            .description("Optional password if the client requires a credential")
+            .sensitive(true)
+            .required(false)
+            .build();
 
 
     private static final List<PropertyDescriptor> properties;

@@ -17,6 +17,7 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 
 import org.joda.time.DateTime;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.Test;
 
 import java.net.URI;
 import java.text.ParseException;
@@ -43,7 +44,7 @@ public class MetadataClientTest {
         List<ExtensibleTypeDescriptor> types = client.getExtensibleTypes();
         
         assertThat(types).extracting("name")
-            .contains("feed", "feedConnection", "feedSource", "feedDestination", "datasource");
+            .contains("feed", "datasource");
         assertThat(types.get(0).getFields()).extracting("name")
             .isNotEmpty();
     }

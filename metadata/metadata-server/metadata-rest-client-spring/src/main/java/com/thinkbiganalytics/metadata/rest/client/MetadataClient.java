@@ -3,6 +3,40 @@
  */
 package com.thinkbiganalytics.metadata.rest.client;
 
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Properties;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.CredentialsProvider;
+import org.apache.http.client.HttpClient;
+import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.http.impl.client.HttpClients;
+import org.joda.time.DateTime;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
@@ -25,32 +59,6 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 
-import org.joda.time.DateTime;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
-
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-
 /**
  *
  * @author Sean Felten
@@ -71,11 +79,32 @@ public class MetadataClient {
     private final URI base;
     private final RestTemplate template;
     
+    
+    public static CredentialsProvider createCredentialProvider(String username, String password) {
+        CredentialsProvider credsProvider = new BasicCredentialsProvider();
+        credsProvider.setCredentials(AuthScope.ANY, new UsernamePasswordCredentials(username, password));
+        return credsProvider;
+    }
+    
     public MetadataClient(URI base) {
+        this(base, null);
+    }
+    
+    public MetadataClient(URI base, String username, String password) {
+        this(base, createCredentialProvider(username, password));
+    }
+    
+    public MetadataClient(URI base, CredentialsProvider credsProvider) {
         super();
         this.base = base;
-        this.template = new RestTemplate();
-//        this.template = new RestTemplate(new HttpComponentsClientHttpRequestFactory());
+        
+        if (credsProvider != null) {
+            HttpClient httpClient = HttpClients.custom().setDefaultCredentialsProvider(credsProvider).build();
+            ClientHttpRequestFactory reqFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
+            this.template = new RestTemplate(reqFactory);
+        } else {
+            this.template = new RestTemplate();
+        }
         
         ObjectMapper mapper = createObjectMapper();
         this.template.getMessageConverters().add(new MappingJackson2HttpMessageConverter(mapper));
