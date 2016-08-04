@@ -68,6 +68,7 @@ angular.module(MODULE_FEED_MGR).factory('CategoriesService', function ($q,$http,
      * @property {string|null} description a sentence describing the category
      * @property {string|null} icon the name of a Material Design icon
      * @property {string|null} iconColor the color of the icon
+     * @property {Object.<string,string>} userProperties map of user-defined property name to value
      * @property {Array<Object>} relatedFeedSummaries the feeds within this category
      */
 
@@ -157,7 +158,7 @@ angular.module(MODULE_FEED_MGR).factory('CategoriesService', function ($q,$http,
          * @returns {CategoryModel} the new category model
          */
         newCategory:function(){
-            return {id: null, name: null, description: null, icon: null, iconColor: null, relatedFeedSummaries: []};
+            return {id: null, name: null, description: null, icon: null, iconColor: null, userProperties: {}, relatedFeedSummaries: []};
         }
 
     };

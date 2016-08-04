@@ -16,7 +16,7 @@
          * Category data used in "edit" mode.
          * @type {CategoryModel}
          */
-        self.editModel = CategoriesService.editModel;
+        self.editModel = CategoriesService.newCategory();
 
         /**
          * Indicates if the view is in "edit" mode.
@@ -84,9 +84,9 @@
          * Saves the category definition.
          */
         self.onSave = function() {
-            CategoriesService.save(self.editModel).then(function() {
+            CategoriesService.save(self.editModel).then(function(response) {
                 CategoriesService.reload();
-                self.model = self.editModel;
+                self.model = CategoriesService.model = response.data;
                 $mdToast.show(
                     $mdToast.simple()
                         .textContent('Saved the Category')
