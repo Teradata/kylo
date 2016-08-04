@@ -2,6 +2,7 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Maps;
 import com.thinkbiganalytics.db.model.schema.Field;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
@@ -187,7 +188,7 @@ public class FeedModelTransform {
                 }
                 feed.setState(domain.getState() != null ? domain.getState().name() : null);
                 feed.setVersionName(domain.getVersionName() != null ? domain.getVersionName() : null);
-                feed.setUserProperties(domain.getProperties());
+                feed.setUserProperties(Maps.filterKeys(domain.getProperties(), key -> (key != null && !key.startsWith("jcr:") && !key.startsWith("tba:"))));
                 return feed;
             }
         };
