@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.server;
 
-import com.thinkbiganalytics.rest.SpringJerseyConfiguration;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import org.springframework.beans.factory.config.PropertyOverrideConfigurer;
 import org.springframework.boot.SpringApplication;
@@ -16,8 +17,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import com.thinkbiganalytics.rest.SpringJerseyConfiguration;
 
 @Configuration
 @SpringBootApplication

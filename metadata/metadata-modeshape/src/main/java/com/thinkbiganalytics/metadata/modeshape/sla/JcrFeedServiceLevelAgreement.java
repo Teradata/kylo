@@ -1,12 +1,12 @@
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
-
 import java.util.Set;
 
 import javax.jcr.Node;
+
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 
 /**
  * Resulting Query object that gets all SLAs and their related Feeds

@@ -1,14 +1,14 @@
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
+import java.util.Set;
+
+import javax.jcr.Node;
+
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-
-import java.util.Set;
-
-import javax.jcr.Node;
 
 /**
  * Created by sr186054 on 8/5/16. a Join Object that Relates Feeds to SLAs

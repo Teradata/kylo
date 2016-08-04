@@ -1,25 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
-import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
-import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
-import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.auth.AdminCredentials;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
-import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
-import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,6 +16,26 @@ import javax.jcr.Session;
 import javax.jcr.query.QueryResult;
 import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
+
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementRelationship;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
+import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
  * Created by sr186054 on 8/4/16.

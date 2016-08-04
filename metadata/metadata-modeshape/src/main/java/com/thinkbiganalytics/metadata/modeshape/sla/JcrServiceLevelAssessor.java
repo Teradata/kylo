@@ -3,6 +3,22 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -22,22 +38,6 @@ import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessmentBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 public class JcrServiceLevelAssessor implements ServiceLevelAssessor {
 

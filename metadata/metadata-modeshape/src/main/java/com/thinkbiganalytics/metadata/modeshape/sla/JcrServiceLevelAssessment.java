@@ -1,5 +1,16 @@
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
+import org.joda.time.DateTime;
+
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -11,17 +22,6 @@ import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
-
-import org.joda.time.DateTime;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
 
 /**
  * Created by sr186054 on 7/23/16.

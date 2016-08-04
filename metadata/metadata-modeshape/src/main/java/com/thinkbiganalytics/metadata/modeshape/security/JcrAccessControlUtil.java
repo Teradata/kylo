@@ -24,14 +24,7 @@ public class JcrAccessControlUtil {
     
     public static AccessControlList addPermissions(Node node, Principal principal, String... privilegeNames) {
         try {
-            AccessControlManager acm = node.getSession().getAccessControlManager();
-            Privilege[] privs = new Privilege[privilegeNames.length];
-            
-            for (int i = 0; i < privilegeNames.length; i++) {
-                privs[i] = acm.privilegeFromName(privilegeNames[i]);
-            }
-            
-            return addPermissions(node, principal, privs);
+            return addPermissions(node.getSession(), node.getPath(), principal, privilegeNames);
         } catch (RepositoryException e) {
             throw new MetadataAccessControlException("Failed to add permission(s) to node " + node + ": " + privilegeNames, e);
         }
@@ -39,20 +32,7 @@ public class JcrAccessControlUtil {
 
     public static AccessControlList addPermissions(Node node, Principal principal, Privilege... privileges) {
         try {
-            AccessControlManager acm = node.getSession().getAccessControlManager();
-            AccessControlList acl = null;
-            AccessControlPolicyIterator it = acm.getApplicablePolicies(node.getPath());
-            
-            if (it.hasNext()) {
-                acl = (AccessControlList)it.nextAccessControlPolicy();
-            } else {
-                acl = (AccessControlList)acm.getPolicies(node.getPath())[0];
-            }
-            
-            acl.addAccessControlEntry(principal, privileges);
-            acm.setPolicy(node.getPath(), acl);
-            
-            return acl;
+            return addPermissions(node.getSession(), node.getPath(), principal, privileges);
         } catch (RepositoryException e) {
             throw new MetadataAccessControlException("Failed to add permission(s) to node " + node + ": " + privileges, e);
         }

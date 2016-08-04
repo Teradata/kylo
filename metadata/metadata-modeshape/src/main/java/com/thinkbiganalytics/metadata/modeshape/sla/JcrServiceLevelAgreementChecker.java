@@ -3,6 +3,16 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.Level;
 import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
@@ -17,16 +27,6 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
 
 /**
  * Reads all existing (currently) SLAs and assesses them.  If any assessments fail then it will generate an SLA violation alert for each failure.

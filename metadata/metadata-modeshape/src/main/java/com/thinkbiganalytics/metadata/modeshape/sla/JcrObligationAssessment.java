@@ -1,5 +1,14 @@
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Set;
+
+import javax.jcr.Node;
+
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
@@ -9,15 +18,6 @@ import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Set;
-
-import javax.jcr.Node;
 
 /**
  * Created by sr186054 on 7/23/16.

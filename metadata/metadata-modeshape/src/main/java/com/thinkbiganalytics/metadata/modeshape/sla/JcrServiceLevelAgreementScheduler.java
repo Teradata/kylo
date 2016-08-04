@@ -1,12 +1,24 @@
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.auth.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
+import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
@@ -15,18 +27,6 @@ import com.thinkbiganalytics.scheduler.JobIdentifier;
 import com.thinkbiganalytics.scheduler.JobScheduler;
 import com.thinkbiganalytics.scheduler.JobSchedulerException;
 import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
-
-import org.apache.commons.lang.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
-
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 7/22/16.
