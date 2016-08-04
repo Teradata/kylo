@@ -15,11 +15,11 @@
         "providers" : [
             {
                 "name" : "Spring Security-Based Provider",
-                "classname" : "com.thinkbiganalytics.metadata.modeshape.auth.SpringAuthenticationProvider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationProvider",
             },
             {
                 "name" : "DB Admin Provider",
-                "classname" : "com.thinkbiganalytics.metadata.modeshape.auth.AdminAuthenticationProvider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.AdminAuthenticationProvider",
             }
         ]
     },

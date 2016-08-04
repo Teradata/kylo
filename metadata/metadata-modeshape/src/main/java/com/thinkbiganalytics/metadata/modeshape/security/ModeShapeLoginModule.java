@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.modeshape.auth;
+package com.thinkbiganalytics.metadata.modeshape.security;
 
 import java.util.Map;
 

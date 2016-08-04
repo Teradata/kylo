@@ -26,7 +26,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.auth.SpringAuthenticationCredentials;
+import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 

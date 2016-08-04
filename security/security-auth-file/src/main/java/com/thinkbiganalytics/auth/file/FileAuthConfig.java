@@ -23,11 +23,11 @@ import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 public class FileAuthConfig {
     
     @Bean(name = "servicesFileLoginConfiguration" )
-    public LoginConfiguration servicesModeShapeLoginConfiguration(LoginConfigurationBuilder builder) {
+    public LoginConfiguration servicesFileLoginConfiguration(LoginConfigurationBuilder builder) {
         return builder
                         .loginModule(JaasAuthConfig.JAAS_SERVICES)
                             .moduleClass(UsersRolesLoginModule.class)
-                            .controlFlag(LoginModuleControlFlag.REQUIRED)
+                            .controlFlag(LoginModuleControlFlag.OPTIONAL)      
                             .option("defaultUsersProperties", "users.default.properties")
                             .option("defaultRolesProperties", "roles.default.properties")
                             .option("users.properties", "users.properties")
@@ -37,11 +37,11 @@ public class FileAuthConfig {
     }
     
     @Bean(name = "uiFileLoginConfiguration")
-    public LoginConfiguration uiModeShapeLoginConfiguration(LoginConfigurationBuilder builder) {
+    public LoginConfiguration uiFileLoginConfiguration(LoginConfigurationBuilder builder) {
         return builder
                         .loginModule(JaasAuthConfig.JAAS_UI)
                             .moduleClass(UsersRolesLoginModule.class)
-                            .controlFlag(LoginModuleControlFlag.REQUIRED)
+                            .controlFlag(LoginModuleControlFlag.OPTIONAL)
                             .option("defaultUsersProperties", "users.default.properties")
                             .option("defaultRolesProperties", "roles.default.properties")
                             .option("users.properties", "users.properties")

@@ -24,7 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.core.io.ClassPathResource;
 
-import com.thinkbiganalytics.metadata.modeshape.auth.ModeShapeAuthConfig;
+import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
 
 /**
  *

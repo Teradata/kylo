@@ -14,9 +14,13 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.PropertyDefinition;
+import javax.jcr.security.Privilege;
 
-import com.thinkbiganalytics.metadata.modeshape.auth.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
+
+import org.modeshape.jcr.security.SimplePrincipal;
 
 /**
  *
@@ -34,6 +38,7 @@ public class MetadataJcrConfigurator {
                 
                 ensureLayout(session);
                 ensureTypes(session);
+                ensureAccessControl(session);
                 return null;
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Could not create initial JCR metadata", e);
@@ -41,6 +46,18 @@ public class MetadataJcrConfigurator {
         });
     }
     
+
+    private void ensureAccessControl(Session session) {
+//        JcrAccessControlUtil.addPermissions(session, "metadata/feeds/test", SimplePrincipal.newInstance("admin"), Privilege.JCR_ALL);
+//        JcrAccessControlUtil.addPermissions(session, "metadata/feeds/test/trigger1", SimplePrincipal.newInstance("sean"), Privilege.JCR_ALL);
+//        JcrAccessControlUtil.addPermissions(session, "metadata/feeds/test/dependent1", SimplePrincipal.newInstance("dev"), Privilege.JCR_ALL);
+//    
+//        JcrAccessControlUtil.clearPermissions(session, "metadata/feeds/test");
+//        JcrAccessControlUtil.clearPermissions(session, "metadata/feeds/test/trigger1");
+//        JcrAccessControlUtil.clearPermissions(session, "metadata/feeds/test/dependent1");
+    
+    }
+
 
     protected void ensureTypes(Session session) throws RepositoryException {
         Node typesNode = session.getRootNode().getNode(ExtensionsConstants.TYPES);
