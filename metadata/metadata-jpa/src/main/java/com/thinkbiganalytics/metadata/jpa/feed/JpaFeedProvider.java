@@ -516,4 +516,9 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
     public Map<String, Object> replaceProperties(ID feedId, Map<String, Object> properties) {
         return null;
     }
+
+    @Override
+    public void deleteFeed(ID feedId) {
+        deleteById(feedId);
+    }
 }
