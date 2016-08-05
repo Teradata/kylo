@@ -3,10 +3,12 @@ package com.thinkbiganalytics.metadata.rest.model.sla;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 8/5/16.
@@ -31,6 +33,16 @@ public class FeedServiceLevelAgreement extends ServiceLevelAgreement {
 
     public void setFeeds(Set<Feed> feeds) {
         this.feeds = feeds;
+    }
+
+
+    @JsonProperty("feedNames")
+    public String getFeedNames() {
+        String feedNames = "";
+        if (feeds != null && !feeds.isEmpty()) {
+            feedNames = feeds.stream().map(feed -> feed.getCategory().getSystemName() + "." + feed.getSystemName()).collect(Collectors.joining(","));
+        }
+        return feedNames;
     }
 
     @Override

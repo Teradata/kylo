@@ -1,19 +1,24 @@
-<md-content layout="column" layout-padding>
+<md-content layout="column">
 
   <div flex layout="column" layout-align="center end" ng-if="vm.editSla == null">
     <md-button class="md-raised md-primary" aria-label="Add" ng-click="vm.onNewSla($event)">New SLA</md-button>
   </div>
-  <md-list ng-if="vm.editSla == null && vm.serviceLevelAgreements.length >0">
-    <md-list-item ng-repeat="sla in vm.serviceLevelAgreements" class="md-2-line">
-      <div class="md-list-item-text">
-        <h3>{{sla.name}}</h3>
-
-        <p>{{sla.description}}</p>
+  <md-list ng-if="vm.editSla == null && vm.serviceLevelAgreements.length >0" flex layout-fill class="list-item-table">
+    <md-list-item ng-repeat="sla in vm.serviceLevelAgreements">
+      <div layout="row" layout-fill>
+        <div flex="50" layout="column" class="item-column md-list-item-text ">
+          <span class="item-title">{{sla.name}}</span>
+          <span class="column-title column-title-bottom">{{sla.description}}</span>
       </div>
+        <div flex="30" class="item-column md-list-item-text " ng-show="sla.feedNames != ''">
+          <span class="item-title">{{sla.feedNames}}</span>
+          <span class="column-title column-title-bottom">Related Feeds</span>
+        </div>
       <md-button class="md-secondary" ng-click="vm.onEditSla($index)">
         <ng-md-icon icon="edit" size="20" style="fill:grey;"></ng-md-icon>
       </md-button>
       <md-divider ng-if="!$last"></md-divider>
+      </div>
     </md-list-item>
   </md-list>
   <div ng-if="vm.serviceLevelAgreements.length ==0 && !vm.creatingNewSla" class="layout-padding">
