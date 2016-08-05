@@ -23,16 +23,17 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
-import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.policy.precondition.transform.PreconditionPolicyTransformer;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
-import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 import com.thinkbiganalytics.rest.model.LabelValue;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +42,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -77,6 +77,10 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     @Inject
     ServiceLevelAgreementProvider slaProvider;
+
+    @Inject
+    FeedServiceLevelAgreementProvider feedServiceLevelAgreementProvider;
+
 
     /** Operations manager feed repository */
     @Inject
@@ -402,27 +406,28 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             @Override
             public FeedServiceLevelAgreements execute() {
                 FeedManagerFeed.ID domainId = feedManagerFeedProvider.resolveId(feedId);
-                FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(domainId);
-                if (domainFeed != null) {
-                    List<com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement> slaList = domainFeed.getServiceLevelAgreements();
-                    List<ServiceLevelAgreement> restModels = new ArrayList<ServiceLevelAgreement>();
-                    for (com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement sla : slaList) {
-                        ServiceLevelAgreement restModel = Model.toModel(sla, true);
+
+
+                List<FeedServiceLevelAgreement> feedServiceLevelAgreements = feedServiceLevelAgreementProvider.findFeedServiceLevelAgreements(domainId);
+                List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> restModels = new ArrayList<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement>();
+                if(feedServiceLevelAgreements != null && !feedServiceLevelAgreements.isEmpty()){
+                    for(FeedServiceLevelAgreement feedServiceLevelAgreement : feedServiceLevelAgreements) {
+                        com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement restModel = Model.toModel(feedServiceLevelAgreement,true);
                         restModels.add(restModel);
                     }
+                }
+
 
                     ServiceLevelAgreementMetricTransformerHelper helper = new ServiceLevelAgreementMetricTransformerHelper();
 
-                    FeedServiceLevelAgreements feedServiceLevelAgreements = helper.toFeedServiceLevelAgreements(feedId, restModels);
+                    FeedServiceLevelAgreements feedServiceLevelAgreementHolder = helper.toFeedServiceLevelAgreements(feedId, restModels);
 
                     applyFeedSelectOptions(ServiceLevelAgreementMetricTransformer.instance()
-                                               .findPropertiesForRulesetMatchingRenderTypes(feedServiceLevelAgreements.getAllRules(), new String[]{PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
-                                                                                                                                                   PolicyPropertyTypes.PROPERTY_TYPE.feedSelect
-                                                                                                                                                       .name()}));
-                    return feedServiceLevelAgreements;
+                                               .findPropertiesForRulesetMatchingRenderTypes(feedServiceLevelAgreementHolder.getAllRules(), new String[]{PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name(),
+                                                                                                                                                        PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
+                                                                                                                                                   PolicyPropertyTypes.PROPERTY_TYPE.feedSelect.name()}));
 
-                }
-                return null;
+                return feedServiceLevelAgreementHolder;
             }
         });
 

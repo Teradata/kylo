@@ -3,7 +3,7 @@ package com.thinkbiganalytics.metadata.sla.alerts;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
-import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 
 /**
  * Created by sr186054 on 7/20/16.

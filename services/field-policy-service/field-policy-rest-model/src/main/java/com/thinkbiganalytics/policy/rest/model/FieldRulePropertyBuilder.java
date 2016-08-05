@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.policy.rest.model;
 
 
-import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.rest.model.LabelValue;
 
 import java.util.ArrayList;

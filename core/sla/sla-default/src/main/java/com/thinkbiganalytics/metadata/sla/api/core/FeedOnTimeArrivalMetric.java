@@ -15,8 +15,8 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementMetric;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.policy.PropertyLabelValue;
-import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 import com.thinkbiganalytics.scheduler.util.TimerToCronExpression;
 
 import org.apache.commons.lang3.StringUtils;
@@ -36,8 +36,9 @@ import java.util.Locale;
 public class FeedOnTimeArrivalMetric implements Metric {
 
     @PolicyProperty(name = "FeedName",
-                    type = PolicyPropertyTypes.PROPERTY_TYPE.currentFeed,
-                    hidden = true)
+                    type = PolicyPropertyTypes.PROPERTY_TYPE.feedSelect,
+                    required = true,
+                    value = PolicyPropertyTypes.CURRENT_FEED_VALUE)
     private String feedName;
 
     @PolicyProperty(name = "ExpectedDeliveryTime",

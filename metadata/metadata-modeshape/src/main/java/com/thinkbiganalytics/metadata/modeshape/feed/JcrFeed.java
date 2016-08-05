@@ -8,7 +8,6 @@ import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
@@ -21,13 +20,13 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
 import javax.jcr.Node;
-import javax.jcr.PathNotFoundException;
-import javax.jcr.Property;
 import javax.jcr.RepositoryException;
+import javax.jcr.Value;
 
 /**
  * Created by sr186054 on 6/4/16.
@@ -282,26 +281,23 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         return serviceLevelAgreements;
     }
 
-    public void clearServiceLevelAgreements() {
+    public void removeServiceLevelAgreement(ServiceLevelAgreement.ID id) {
         try {
-            JcrMetadataAccess.ensureCheckoutNode(node);
-            if (this.node.hasNode(SLA)) {
-                this.node.getNode(SLA).remove();
+            Set<Node> nodes = JcrPropertyUtil.getSetProperty(this.node, SLA);
+            Set<Value> updatedSet = new HashSet<>();
+            for (Node node : nodes) {
+                if (!node.getIdentifier().equalsIgnoreCase(id.toString())) {
+                    Value value = this.node.getSession().getValueFactory().createValue(node, true);
+                    updatedSet.add(value);
+                }
             }
-            Property p = null;
-            try {
-                p = getNode().getProperty(JcrFeed.SLA);
-            } catch (PathNotFoundException e) {
-                //this is ok, it just means no SLAs were assigned yet so we cannot remove the references.
-            }
-            if (p != null) {
-                p.remove();
-            }
-
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to clear the feed tba:sla", e);
+            node.setProperty(SLA, (Value[]) updatedSet.stream().toArray(size -> new Value[size]));
+        }catch (RepositoryException e){
+            throw new MetadataRepositoryException("Unable to remove reference to SLA "+id+ "from feed "+this.getId());
         }
+
     }
+
 
     public void setServiceLevelAgreements(List<? extends ServiceLevelAgreement> serviceLevelAgreements) {
         setProperty(SLA, serviceLevelAgreements);

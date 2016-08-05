@@ -7,12 +7,16 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
-import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
+import com.thinkbiganalytics.rest.model.LabelValue;
+
+import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 7/19/16.
@@ -36,14 +40,60 @@ public class ServiceLevelAgreementMetricTransformerHelper {
         }
     }
 
-    public void applyFeedNameToCurrentFeedProperties(ServiceLevelAgreementGroup serviceLevelAgreement, String category, String feed) {
+    /**
+     * gets all SystemCategory.SystemFeedName values
+     */
+    public List<String> getCategoryFeedNames(ServiceLevelAgreementGroup serviceLevelAgreement) {
+        List<String> names = new ArrayList<>();
+
         if (serviceLevelAgreement != null) {
             List<FieldRuleProperty>
                 properties =
-                ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderType(serviceLevelAgreement.getRules(), PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name());
+                ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderTypes(serviceLevelAgreement.getRules(),
+                                                                                                              new String[]{PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name(),
+                                                                                                                           PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
+                                                                                                                           PolicyPropertyTypes.PROPERTY_TYPE.feedSelect.name()});
             if (properties != null && !properties.isEmpty()) {
+                //get the Value or List of values.
                 for (FieldRuleProperty property : properties) {
-                    property.setValue(category + "." + feed);
+                    String value = property.getValue();
+                    if (StringUtils.isNotBlank(value)) {
+                        names.add(value);
+                    } else if (property.getValues() != null && !property.getValues().isEmpty()) {
+                        names.addAll(property.getValues().stream().map(LabelValue::getValue).collect(Collectors.toList()));
+                    }
+                }
+            }
+        }
+        return names;
+
+    }
+
+    public void applyFeedNameToCurrentFeedProperties(ServiceLevelAgreementGroup serviceLevelAgreement, String category, String feed) {
+        if (serviceLevelAgreement != null) {
+            List<FieldRuleProperty>
+                properties = new ArrayList<>();
+            List<FieldRuleProperty>
+                currentFeedProperties =
+                ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderType(serviceLevelAgreement.getRules(), PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name());
+
+            if(currentFeedProperties != null && !currentFeedProperties.isEmpty()) {
+                properties.addAll(currentFeedProperties);
+            }
+
+            List<FieldRuleProperty>
+                defaultValueProperties = ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesMatchingDefaultValue(serviceLevelAgreement.getRules(),
+                                                                                                                                      PolicyPropertyTypes.CURRENT_FEED_VALUE);
+
+            if (defaultValueProperties != null && !defaultValueProperties.isEmpty()) {
+                properties.addAll(defaultValueProperties);
+            }
+
+            if (!properties.isEmpty()) {
+                for (FieldRuleProperty property : properties) {
+                    if(StringUtils.isBlank(property.getValue())) {
+                        property.setValue(category + "." + feed);
+                    }
                 }
             }
         }
@@ -106,7 +156,7 @@ public class ServiceLevelAgreementMetricTransformerHelper {
     }
 
 
-    public FeedServiceLevelAgreements toFeedServiceLevelAgreements(String feedId, List<ServiceLevelAgreement> slas) {
+    public FeedServiceLevelAgreements toFeedServiceLevelAgreements(String feedId, List<? extends ServiceLevelAgreement> slas) {
         FeedServiceLevelAgreements feedServiceLevelAgreements = new FeedServiceLevelAgreements();
         for (ServiceLevelAgreement sla : slas) {
             ServiceLevelAgreementGroup group = toServiceLevelAgreementGroup(sla);

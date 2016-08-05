@@ -31,6 +31,7 @@ import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedE
 import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceScheduleMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceFeedMetric;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedExecutedSinceScheduleMetric;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment.Result;
@@ -349,8 +350,8 @@ public class Model {
                 op.setState(FeedOperation.State.valueOf(domain.getState().name()));
                 op.setStatus(domain.getStatus());
                 op.setResults(domain.getResults().entrySet().stream()
-                              .collect(Collectors.toMap(Map.Entry::getKey, 
-                                                        e -> e.getValue().toString())));
+                                  .collect(Collectors.toMap(Map.Entry::getKey,
+                                                            e -> e.getValue().toString())));
                 
                 return op;
             }
@@ -455,9 +456,25 @@ public class Model {
                 return toModel(domain, true);
             }
     };
-    
-    
-    
+
+
+    public static final Function<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> DOMAIN_TO_FEED_SLA
+        = new Function<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement>() {
+        @Override
+        public com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement apply(com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement domain) {
+            return toModel(domain, true);
+        }
+    };
+
+public static final     List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> transformFeedServiceLevelAgreements(List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> slaList) {
+        Collection<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> list = null;
+        if (slaList != null) {
+            list = Collections2.transform(slaList, Model.DOMAIN_TO_FEED_SLA);
+            return new ArrayList<>(list);
+        }
+    return null;
+
+    }
     
     public static final Function<ServiceLevelAssessment, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment> DOMAIN_TO_SLA_ASSMT
         = new Function<ServiceLevelAssessment, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment>() {
@@ -498,8 +515,6 @@ public class Model {
                 return com.thinkbiganalytics.metadata.api.op.DataOperation.State.valueOf(input.name());
             }
         };
-
-    
         
     public static List<Metric> toModelMetrics(Collection<com.thinkbiganalytics.metadata.sla.api.Metric> metrics) {
         return new ArrayList<>(Collections2.transform(metrics, DOMAIN_TO_METRIC));
@@ -579,6 +594,22 @@ public class Model {
         }
         
         return sla;
+    }
+
+    public static FeedServiceLevelAgreement toModel(com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement domain, boolean deep){
+        return toModel(domain,(Set<com.thinkbiganalytics.metadata.api.feed.Feed>)domain.getFeeds(),deep);
+    }
+
+    public static FeedServiceLevelAgreement toModel(ServiceLevelAgreement domain, Set<com.thinkbiganalytics.metadata.api.feed.Feed> feeds, boolean deep){
+        com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement slaModel = toModel(domain,deep);
+        FeedServiceLevelAgreement feedServiceLevelAgreement = new FeedServiceLevelAgreement(slaModel);
+        if(feeds != null && !feeds.isEmpty()) {
+            Collection<Feed> feedModels = Collections2.transform(feeds, DOMAIN_TO_FEED);
+            if (feedModels != null) {
+                feedServiceLevelAgreement.setFeeds(new HashSet(feedModels));
+            }
+        }
+        return feedServiceLevelAgreement;
     }
 
     public static com.thinkbiganalytics.metadata.rest.model.sla.Obligation toModel(Obligation domainOb, boolean deep) {

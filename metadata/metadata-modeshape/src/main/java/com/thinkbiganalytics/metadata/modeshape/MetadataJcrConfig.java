@@ -14,15 +14,18 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategoryProvider;
+import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.op.JobRepoFeedOperationsProvider;
+import com.thinkbiganalytics.metadata.modeshape.sla.JcrFeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementActionAlertResponderFactory;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
@@ -128,6 +131,11 @@ public class MetadataJcrConfig {
     }
 
     @Bean
+    public FeedServiceLevelAgreementProvider jcrFeedSlaProvider(){
+        return new JcrFeedServiceLevelAgreementProvider();
+    }
+
+    @Bean
     public ServiceLevelAgreementScheduler serviceLevelAgreementScheduler() {
         return new JcrServiceLevelAgreementScheduler();
     }
@@ -159,6 +167,10 @@ public class MetadataJcrConfig {
         return responder;
     }
 
+    @Bean
+    public ModeShapeAvailability modeShapeAvailability(){
+        return new ModeShapeAvailability();
+    }
 
 
 

@@ -1,9 +1,9 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.policy.precondition.AvailablePolicies;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
-import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 
 import java.util.List;
 

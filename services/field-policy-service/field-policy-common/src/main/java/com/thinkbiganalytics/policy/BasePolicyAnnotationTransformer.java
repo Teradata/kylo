@@ -8,7 +8,6 @@ import com.thinkbiganalytics.annotations.AnnotationFieldNameResolver;
 import com.thinkbiganalytics.policy.rest.model.BaseUiPolicyRule;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldRulePropertyBuilder;
-import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 import com.thinkbiganalytics.rest.model.LabelValue;
 
 import org.apache.commons.beanutils.BeanUtils;
@@ -155,6 +154,23 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
         return null;
     }
 
+    public List<FieldRuleProperty> findPropertiesMatchingDefaultValue(List<FieldRuleProperty> properties, final String value) {
+        if (StringUtils.isNotBlank(value)) {
+            return findPropertiesMatchingRenderTypes(properties, new String[]{value});
+        }
+        return null;
+    }
+
+    public List<FieldRuleProperty> findPropertiesMatchingDefaultValue(List<FieldRuleProperty> properties, final String[] values) {
+        final List list = Arrays.asList(values);
+        return Lists.newArrayList(Iterables.filter(properties, new Predicate<FieldRuleProperty>() {
+            @Override
+            public boolean apply(FieldRuleProperty fieldRuleProperty) {
+                return list.contains(fieldRuleProperty.getValue());
+            }
+        }));
+    }
+
     public List<FieldRuleProperty> findPropertiesMatchingRenderTypes(List<FieldRuleProperty> properties, final String[] types) {
         final List list = Arrays.asList(types);
         return Lists.newArrayList(Iterables.filter(properties, new Predicate<FieldRuleProperty>() {
@@ -173,6 +189,16 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
         }
         return findPropertiesMatchingRenderType(properties, type);
     }
+
+    public List<FieldRuleProperty> findPropertiesForRulesMatchingDefaultValue(List<? extends BaseUiPolicyRule> rules, final String value) {
+
+        List<FieldRuleProperty> properties = new ArrayList<>();
+        for (BaseUiPolicyRule rule : rules) {
+            properties.addAll(rule.getProperties());
+        }
+        return findPropertiesMatchingDefaultValue(properties, value);
+    }
+
 
     public List<FieldRuleProperty> findPropertiesForRulesetMatchingRenderTypes(List<? extends BaseUiPolicyRule> rules, final String[] types) {
 

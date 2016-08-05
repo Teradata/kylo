@@ -564,42 +564,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     }
 
-
-    @SuppressWarnings("unchecked")
-    public Feed updateFeedServiceLevelAgreements(Feed.ID feedId, List<ServiceLevelAgreement> serviceLevelAgreements) {
-        JcrFeed feed = (JcrFeed) getFeed(feedId);
-        //remove previous SLA references
-
-        //TODO change this around to do a merge of the SLAs/ObligationGroups/Obligation/Metric objects to keep/track history changes instead of a a full clear and replace
-
-        List<JcrServiceLevelAgreement> feedSlas = (List<JcrServiceLevelAgreement>) feed.getServiceLevelAgreements();
-        feed.clearServiceLevelAgreements();
-        if (feedSlas != null) {
-            for (JcrServiceLevelAgreement sla : feedSlas) {
-                try {
-                    sla.getNode().remove();
-                } catch (RepositoryException e) {
-                    throw new MetadataRepositoryException("Failed to clear the tba:sla prior to updating Feed SLA for SLA " + sla.getId(), e);
-                }
-            }
-
-        }
-
-        for (ServiceLevelAgreement sla : serviceLevelAgreements) {
-            //build and attach the SLA to the Feed
-            feed.addServiceLevelAgreement(sla);
-        }
-        return feed;
-
-
-    }
-
     public Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla) {
         JcrFeed feed = (JcrFeed) getFeed(feedId);
         feed.addServiceLevelAgreement(sla);
         return feed;
-
-
     }
 
 

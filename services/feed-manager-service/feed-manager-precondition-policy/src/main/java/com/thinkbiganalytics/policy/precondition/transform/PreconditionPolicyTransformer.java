@@ -2,11 +2,11 @@ package com.thinkbiganalytics.policy.precondition.transform;
 
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 import com.thinkbiganalytics.policy.precondition.Precondition;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
-import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 
 import java.util.ArrayList;
 import java.util.List;

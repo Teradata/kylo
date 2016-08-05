@@ -1,13 +1,14 @@
 package com.thinkbiganalytics.feedmgr.sla;
 
-import com.google.common.collect.Collections2;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
-import com.thinkbiganalytics.metadata.api.Command;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
@@ -19,14 +20,15 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.GenericBaseUiPolicyRuleBuilder;
-import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
 
 import org.apache.commons.lang3.StringUtils;
 import org.reflections.Reflections;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -44,7 +46,10 @@ public class ServiceLevelAgreementService {
     ServiceLevelAgreementProvider slaProvider;
 
     @Inject
-    MetadataAccess metadataAccess;
+    FeedServiceLevelAgreementProvider feedSlaProvider;
+
+    @Inject
+    JcrMetadataAccess metadataAccess;
 
     @Inject
     ServiceLevelAgreementScheduler serviceLevelAgreementScheduler;
@@ -77,23 +82,21 @@ public class ServiceLevelAgreementService {
         feedManagerFeedService
             .applyFeedSelectOptions(
                 ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderTypes(rules, new String[]{PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
-                                                                                                                                  PolicyPropertyTypes.PROPERTY_TYPE.feedSelect.name()}));
+                                                                                                                                  PolicyPropertyTypes.PROPERTY_TYPE.feedSelect.name(),
+                                                                                                                                  PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name()}));
 
         return rules;
     }
 
-    public List<ServiceLevelAgreement> getServiceLevelAgreements() {
-        return metadataAccess.read(new Command<List<ServiceLevelAgreement>>() {
-            @Override
-            public List<ServiceLevelAgreement> execute() {
+    public List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> getServiceLevelAgreements() {
+        return metadataAccess.read(() -> {
 
-                List<com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement> agreements = slaProvider.getAgreements();
-                if (agreements != null) {
-                    return new ArrayList<>(Collections2.transform(agreements, Model.DOMAIN_TO_SLA));
-                }
-                return null;
-
+            List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findAllAgreements();
+            if (agreements != null) {
+                return Model.transformFeedServiceLevelAgreements(agreements);
             }
+            return null;
+
         });
     }
 
@@ -101,29 +104,28 @@ public class ServiceLevelAgreementService {
      * get a SLA and convert it to the editable SLA form object
      */
     public ServiceLevelAgreementGroup getServiceLevelAgreementAsFormObject(String slaId) {
-        return metadataAccess.read(new Command<ServiceLevelAgreementGroup>() {
-            @Override
-            public ServiceLevelAgreementGroup execute() {
+        return metadataAccess.read(() -> {
 
-                com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement agreement = slaProvider.getAgreement(slaProvider.resolve(slaId));
-                if (agreement != null) {
-                    ServiceLevelAgreement modelSla = Model.toModel(agreement, true);
-                    ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
-                    return transformer.toServiceLevelAgreementGroup(modelSla);
-                }
-                return null;
-
+            FeedServiceLevelAgreement agreement = feedSlaProvider.findAgreement(slaProvider.resolve(slaId));
+            if (agreement != null) {
+                com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement modelSla = Model.toModel(agreement, true);
+                ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
+                ServiceLevelAgreementGroup serviceLevelAgreementGroup = transformer.toServiceLevelAgreementGroup(modelSla);
+                feedManagerFeedService
+                    .applyFeedSelectOptions(
+                        ServiceLevelAgreementMetricTransformer.instance()
+                            .findPropertiesForRulesetMatchingRenderTypes(serviceLevelAgreementGroup.getRules(), new String[]{PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
+                                                                                                                             PolicyPropertyTypes.PROPERTY_TYPE.feedSelect.name(),
+                                                                                                                             PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name()}));
+                return serviceLevelAgreementGroup;
             }
+            return null;
+
         });
     }
 
     public boolean removeAgreement(String id) {
-        return metadataAccess.commit(new Command<Boolean>() {
-            @Override
-            public Boolean execute() {
-                return slaProvider.removeAgreement(slaProvider.resolve(id));
-            }
-        });
+        return metadataAccess.commit(() -> slaProvider.removeAgreement(slaProvider.resolve(id)));
 
     }
 
@@ -162,10 +164,7 @@ public class ServiceLevelAgreementService {
 
 
     private ServiceLevelAgreement saveSla(ServiceLevelAgreementGroup serviceLevelAgreement, FeedMetadata feed) {
-
-        return metadataAccess.commit(new Command<ServiceLevelAgreement>() {
-            @Override
-            public ServiceLevelAgreement execute() {
+        return metadataAccess.commit(() -> {
 
                 if (serviceLevelAgreement != null) {
                     ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
@@ -200,10 +199,32 @@ public class ServiceLevelAgreementService {
                     // now assign the sla checks
                     slaProvider.slaCheckBuilder(savedSla.getId()).removeSlaChecks().actionConfigurations(actions).build();
 
-                    if (feed != null) {
-                        feedProvider.updateFeedServiceLevelAgreement(feedProvider.resolveFeed(feed.getFeedId()), savedSla);
+                    //all referencing Feeds
+                    List<String> systemCategoryAndFeedNames = transformer.getCategoryFeedNames(serviceLevelAgreement);
+                    Set<Feed> slaFeeds = new HashSet<Feed>();
+                    Set<Feed.ID> slaFeedIds = new HashSet<Feed.ID>();
+                    for (String categoryAndFeed : systemCategoryAndFeedNames) {
+                        //fetch and update the reference to the sla
+                        String categoryName = StringUtils.trim(StringUtils.substringBefore(categoryAndFeed, "."));
+                        String feedName = StringUtils.trim(StringUtils.substringAfterLast(categoryAndFeed, "."));
+                        Feed feedEntity = feedProvider.findBySystemName(categoryName, feedName);
+                        if (feedEntity != null) {
+                            slaFeeds.add(feedEntity);
+                            slaFeedIds.add(feedEntity.getId());
+                        }
                     }
-                    ServiceLevelAgreement restModel = Model.toModel(savedSla, true);
+
+
+                    if (feed != null) {
+                        Feed.ID feedId = feedProvider.resolveFeed(feed.getFeedId());
+                        if (!slaFeedIds.contains(feedId)) {
+                            Feed feedEntity = feedProvider.getFeed(feedId);
+                            slaFeeds.add(feedEntity);
+                        }
+                    }
+                    //relate them
+                    feedSlaProvider.relateFeeds(savedSla, slaFeeds);
+                    com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement restModel = Model.toModel(savedSla, slaFeeds, true);
 
 
 
@@ -212,31 +233,28 @@ public class ServiceLevelAgreementService {
                 }
                 return null;
 
-            }
+
         });
 
 
     }
 
     public ServiceLevelAgreement saveFeedSla(ServiceLevelAgreementGroup serviceLevelAgreement, String feedId) {
-        return metadataAccess.commit(new Command<ServiceLevelAgreement>() {
-            @Override
-            public ServiceLevelAgreement execute() {
-                FeedMetadata feed = null;
-                if (StringUtils.isNotBlank(feedId)) {
-                    feed = feedManagerFeedService.getFeedById(feedId);
-                }
-                if (feed != null) {
 
-                    ServiceLevelAgreement sla = saveSla(serviceLevelAgreement, feed);
-
-                    return sla;
-                } else {
-                    //TODO LOG ERROR CANNOT GET FEED
-                    throw new FeedNotFoundExcepton("Unable to create SLA for Feed " + feedId, feedProvider.resolveFeed(feedId));
-                }
+        return metadataAccess.commit(() -> {
+            FeedMetadata feed = null;
+            if (StringUtils.isNotBlank(feedId)) {
+                feed = feedManagerFeedService.getFeedById(feedId);
             }
+            if (feed != null) {
 
+                ServiceLevelAgreement sla = saveSla(serviceLevelAgreement, feed);
+
+                return sla;
+            } else {
+                //TODO LOG ERROR CANNOT GET FEED
+                throw new FeedNotFoundExcepton("Unable to create SLA for Feed " + feedId, feedProvider.resolveFeed(feedId));
+            }
         });
 
     }

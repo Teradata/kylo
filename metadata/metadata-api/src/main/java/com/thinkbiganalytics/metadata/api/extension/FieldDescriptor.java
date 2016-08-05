@@ -9,7 +9,7 @@ package com.thinkbiganalytics.metadata.api.extension;
  */
 public interface FieldDescriptor {
 
-    enum Type { STRING, BOOLEAN, INTEGER, LONG, DOUBLE, DATE, ENTITY } // TODO need BINARY? 
+    enum Type {STRING, BOOLEAN, INTEGER, LONG, DOUBLE, DATE, ENTITY, WEAK_REFERENCE} // TODO need BINARY?
 
 
     Type getType();  // 

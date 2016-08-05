@@ -22,7 +22,7 @@ public class EmailServiceLevelAgreementAction implements ServiceLevelAgreementAc
         String slaName = assessment.getAgreement().getName();
         String email = actionConfiguration.getEmailAddresses();
         //mail it
-        // emailService.sendMail(email,"SLA Violated: "+slaName,desc);
+         emailService.sendMail(email,"SLA Violated: "+slaName,desc);
         return true;
     }
 }

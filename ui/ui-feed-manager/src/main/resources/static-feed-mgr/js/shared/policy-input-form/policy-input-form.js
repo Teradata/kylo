@@ -9,7 +9,9 @@
             restrict: "EA",
             bindToController: {
                 rule: '=',
-                theForm: '='
+                theForm: '=',
+                feed: '=?',
+                mode: '&' //NEW or EDIT
             },
             controllerAs: 'vm',
             scope: {},

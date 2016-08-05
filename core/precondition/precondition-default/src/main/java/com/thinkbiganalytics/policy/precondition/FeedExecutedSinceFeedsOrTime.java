@@ -6,7 +6,7 @@ import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
-import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 
 import org.joda.time.Period;
 

@@ -21,6 +21,13 @@
 
         var self = this;
 
+        /**
+         * The default value that is supplied via java annotation if user wants the value to be defaulted to the current feed
+         * @see java class(PolicyPropertyTypes)
+         * @type {string}
+         */
+        var CURRENT_FEED_DEFAULT_VALUE = "#currentFeed";
+
         //   this.feed = FeedService.editFeedModel;
 
         /**
@@ -107,6 +114,12 @@
         self.creatingNewSla = false;
 
         /**
+         * Either NEW or EDIT
+         * @type {string}
+         */
+        self.mode = 'NEW';
+
+        /**
          * Load and copy the serviceLevelAgreements from the feed if available
          * @type {Array|*}
          */
@@ -125,11 +138,13 @@
                     _.each(response.data.serviceLevelAgreements, function (sla) {
                         _.each(sla.rules, function (rule) {
                             rule.groups = PolicyInputFormService.groupProperties(rule);
+                            rule.mode == 'EDIT'
                             PolicyInputFormService.updatePropertyIndex(rule);
                         });
 
                         _.each(sla.actionConfigurations, function (rule) {
                             rule.groups = PolicyInputFormService.groupProperties(rule);
+                            rule.mode == 'EDIT'
                             PolicyInputFormService.updatePropertyIndex(rule);
                         });
                     });
@@ -148,7 +163,33 @@
          * Load up the Metric Options for defining SLAs
          */
         SlaService.getPossibleSlaMetricOptions().then(function (response) {
+
+            var currentFeedValue = null;
+            if (self.feed != null) {
+                currentFeedValue = self.feed.systemCategoryName + "." + self.feed.systemFeedName;
+
+            }
+            //set the currentFeed property value to be this.feed if it is not null
+            var currentFeedProperties = [];
+            _.each(response.data, function (rules) {
+
+                _.each(rules.properties, function (prop) {
+                    if (prop.type == 'currentFeed' || prop.value == CURRENT_FEED_DEFAULT_VALUE) {
+                        currentFeedProperties.push(prop);
+                    }
+                });
+
+            });
+            _.each(currentFeedProperties, function (prop) {
+                if (prop.value == undefined || prop.value == null || prop.value == CURRENT_FEED_DEFAULT_VALUE) {
+                    prop.value = currentFeedValue;
+                }
+
+            });
+
+
             self.options = PolicyInputFormService.groupPolicyOptions(response.data);
+
         });
 
         SlaService.getPossibleSlaActionOptions().then(function (response) {
@@ -245,6 +286,7 @@
         }
 
         self.onNewSla = function () {
+            self.mode = 'NEW';
             self.creatingNewSla = true;
             self.editSlaIndex = null;
             self.editSla = {name: '', description: '', rules: [], actionConfigurations: []};
@@ -252,6 +294,7 @@
         }
 
         self.onEditSla = function (index) {
+            self.mode = 'EDIT';
             self.creatingNewSla = false;
             self.editSlaIndex = index;
             self.ruleType = EMPTY_RULE_TYPE;
@@ -264,17 +307,20 @@
 
                 _.each(sla.rules, function (rule) {
                     rule.editable = true;
+                    rule.mode = 'EDIT'
                     rule.groups = PolicyInputFormService.groupProperties(rule);
                     PolicyInputFormService.updatePropertyIndex(rule);
                 });
 
                 _.each(sla.actionConfigurations, function (rule) {
                     rule.editable = true;
+                    rule.mode = 'EDIT'
                     rule.groups = PolicyInputFormService.groupProperties(rule);
                     PolicyInputFormService.updatePropertyIndex(rule);
                 });
                 sla.editable = true;
                 self.editSla = sla;
+                console.log('SLA ', self.editSla)
 
             });
         }
@@ -336,6 +382,7 @@
             if (self.ruleType != EMPTY_RULE_TYPE) {
                 //replace current sla rule if already editing
                 var newRule = angular.copy(self.ruleType);
+                newRule.mode = 'NEW'
                 //update property index
                 PolicyInputFormService.updatePropertyIndex(newRule);
 
@@ -352,6 +399,7 @@
             if (self.slaAction != EMPTY_RULE_TYPE) {
                 //replace current sla rule if already editing
                 var newRule = angular.copy(self.slaAction);
+                newRule.mode = 'NEW'
                 //update property index
                 PolicyInputFormService.updatePropertyIndex(newRule);
 

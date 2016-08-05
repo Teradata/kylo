@@ -35,11 +35,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
-import java.util.UUID;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
-import javax.jcr.Session;
 
 public class JcrServiceLevelAssessor implements ServiceLevelAssessor {
 
@@ -107,16 +105,9 @@ public class JcrServiceLevelAssessor implements ServiceLevelAssessor {
 
         AssessmentResult combinedResult = AssessmentResult.FAILURE;
         JcrServiceLevelAgreement serviceLevelAgreement = (JcrServiceLevelAgreement) sla;
-
-        try {
-
+try {
             //create the new Assessment
-            Session session = serviceLevelAgreement.getNode().getSession();
-            Node slaAssessmentFolder = session.getNode(JcrServiceLevelAssessmentProvider.SLA_ASSESSMENT_PATH);
-            Node assessmentNode = slaAssessmentFolder.addNode("sla_assessment-" + UUID.randomUUID(), JcrServiceLevelAssessment.NODE_TYPE);
-
-            JcrServiceLevelAssessment slaAssessment = new JcrServiceLevelAssessment(assessmentNode, (JcrServiceLevelAgreement) sla);
-
+            JcrServiceLevelAssessment slaAssessment = serviceLevelAgreement.newAssessment();
             List<ObligationGroup> groups = sla.getObligationGroups();
 
             for (ObligationGroup group : groups) {
@@ -150,10 +141,7 @@ public class JcrServiceLevelAssessor implements ServiceLevelAssessor {
             }
 
             return completeAssessment(slaAssessment, combinedResult);
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("unable to assess sla ", e);
-
-        } finally {
+        }  finally {
             log.debug("Completed assessment of SLA {}: {}", sla.getName(), combinedResult);
         }
     }

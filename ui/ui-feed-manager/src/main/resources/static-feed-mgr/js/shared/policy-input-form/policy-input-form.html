@@ -2,7 +2,7 @@
 
   <div ng-repeat="property in group.properties">
     <md-input-container class="md-block"
-                        ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect' || property.type == 'email'  ">
+                        ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect' || property.type == 'email' || property.type == 'currentFeed' ">
       <label>{{property.displayName}}</label>
       <input name="{{property.formKey}}" string-to-number type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"
              ng-required="property.required" ng-disabled="!vm.rule.editable"/>
@@ -10,12 +10,14 @@
              ng-required="property.required" ng-disabled="!vm.rule.editable" type="email"/>
       <input name="{{property.formKey}}" ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder"
              ng-required="property.required" ng-disabled="!vm.rule.editable"/>
-      <md-select ng-model="property.value" ng-if="property.type == 'select' || property.type == 'feedSelect' " ng-required="property.required" name="{{property.formKey}}"
-                 ng-disabled="!vm.rule.editable">
+      <md-select ng-model="property.value" ng-if="property.type == 'select' || property.type == 'feedSelect' || property.type == 'currentFeed' " ng-required="property.required"
+                 name="{{property.formKey}}"
+                 ng-disabled="!vm.rule.editable || (property.type == 'currentFeed' && (vm.feed != null || (vm.rule.mode != undefined && vm.rule.mode == 'EDIT')))">
         <md-option ng-repeat="value in property.selectableValues" value="{{value.value}}">
           {{value.label}}
         </md-option>
       </md-select>
+
       <div ng-if="property.hint" class="hint">
         {{property.hint}}
       </div>

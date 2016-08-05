@@ -1,24 +1,12 @@
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Timer;
-import java.util.TimerTask;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-
-import org.apache.commons.lang.StringUtils;
-import org.modeshape.jcr.ModeShapeEngine;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.thinkbiganalytics.auth.concurrent.ServiceSecurityContextRunnable;
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.auth.AdminCredentials;
+import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
+import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
@@ -28,14 +16,32 @@ import com.thinkbiganalytics.scheduler.JobScheduler;
 import com.thinkbiganalytics.scheduler.JobSchedulerException;
 import com.thinkbiganalytics.scheduler.model.DefaultJobIdentifier;
 
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+
 /**
  * Created by sr186054 on 7/22/16.
  */
-public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler {
+public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementScheduler, ModeShapeAvailabilityListener {
 
     private static final Logger log = LoggerFactory.getLogger(JcrServiceLevelAgreementScheduler.class);
 
-    private String DEFAULT_CRON = "0 0/1 * 1/1 * ? *";// every 5 min
+    private String DEFAULT_CRON = "0 0/5 * 1/1 * ? *";// every 5 min
+
+
+    @Value("${sla.cron.default:0 0/5 * 1/1 * ? *}")
+    private String defaultCron;
+
+
     @Inject
     private JobScheduler jobScheduler;
 
@@ -49,44 +55,31 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
     ServiceLevelAgreementProvider slaProvider;
 
     @Inject
-    private ModeShapeEngine modeShapeEngine;
+    private ModeShapeAvailability modeShapeAvailability;
 
-    Timer modeshapeAvailableTimer;
 
     private Map<ServiceLevelAgreement.ID, String> scheduledJobNames = new ConcurrentHashMap<>();
 
 
     @PostConstruct
     public void scheduleServiceLevelAgreements() {
-        modeshapeAvailableTimer = new Timer();
-        modeshapeAvailableTimer.schedule(new QueryAndScheduleServiceLevelAgreementsTask(), 0, 10 * 1000);
+        modeShapeAvailability.subscribe(this);
     }
 
-    class QueryAndScheduleServiceLevelAgreementsTask extends TimerTask {
+    @Override
+    public void modeShapeAvailable() {
+        metadataAccess.read(new AdminCredentials(),() -> {
+            List<ServiceLevelAgreement> agreements = slaProvider.getAgreements();
 
-        private final ServiceSecurityContextRunnable secRunnable = new ServiceSecurityContextRunnable(() -> {
-            if (ModeShapeEngine.State.RUNNING.equals(modeShapeEngine.getState())) {
-                modeshapeAvailableTimer.cancel();
-                metadataAccess.read(() -> {
-                    List<ServiceLevelAgreement> agreements = slaProvider.getAgreements();
-                    
-                    if (agreements != null) {
-                        for (ServiceLevelAgreement agreement : agreements) {
-                            scheduleServiceLevelAgreement(agreement);
-                        }
-                    }
-                    
-                    return null;
-                });
+            if (agreements != null) {
+                for (ServiceLevelAgreement agreement : agreements) {
+                    scheduleServiceLevelAgreement(agreement);
+                }
             }
-        });
-        
-        @Override
-        public void run() {
-            this.secRunnable.run();
-        }
-    }
 
+            return null;
+        });
+    }
 
     private String getUniqueName(String name) {
         String uniqueName = name;
@@ -163,7 +156,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
                     public void run() {
 
                         //query for this SLA
-                        metadataAccess.commit(new Command<Object>() {
+                        metadataAccess.commit(new AdminCredentials(),new Command<Object>() {
                             @Override
                             public Object execute() {
                                 ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
@@ -174,7 +167,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
 
 
                     }
-                }, DEFAULT_CRON);
+                }, (StringUtils.isBlank(defaultCron) ? DEFAULT_CRON : defaultCron));
             scheduledJobNames.put(sla.getId(), jobIdentifier.getName());
             } catch (JobSchedulerException e) {
                 throw new RuntimeException(e);

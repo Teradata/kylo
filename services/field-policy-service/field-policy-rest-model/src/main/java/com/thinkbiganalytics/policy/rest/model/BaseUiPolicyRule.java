@@ -3,7 +3,7 @@ package com.thinkbiganalytics.policy.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 
 import java.util.ArrayList;
 import java.util.List;

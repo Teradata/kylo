@@ -2,6 +2,7 @@ package com.thinkbiganalytics.policy.validation;
 
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.policy.PropertyLabelValue;
 
 import org.apache.commons.lang3.StringUtils;

@@ -13,7 +13,7 @@
  *             template
  *         "sla"
  *             sla*
-               slaAssessment*
+                  slaAssessment*
  *         "extensions"
  *             "types"
  *                 typeDescriptor
@@ -60,10 +60,6 @@
 [tba:templatesFolder] > nt:folder
 
 [tba:slaFolder] > nt:folder
-    + slaAssessments (tba:slaAssessmentsFolder) = tba:slaAssessmentsFolder autocreated mandatory
-
-[tba:slaAssessmentsFolder] > nt:folder
-
 
 /*
  * // Predefined types ////
@@ -163,6 +159,7 @@
     - tba:defaultGroup (REFERENCE)
     + tba:groups (tba:obligationGroup) sns
     + tba:slaChecks (tba:slaCheck) sns
+    + tba:serviceLevelAssessments (tba:serviceLevelAssessment) sns
 
 [tba:obligationGroup] > nt:hierarchyNode
     - tba:condition (STRING) = 'REQUIRED' mandatory
@@ -182,8 +179,7 @@
 [tba:slaActionConfiguration] > tba:extensibleEntity, mix:title
     + tba:json (tba:genericJson) mandatory
 
-[tba:serviceLevelAssessment] > nt:hierarchyNode
-    - tba:sla (WEAKREFERENCE) mandatory
+[tba:serviceLevelAssessment] > nt:hierarchyNode, mix:referenceable
     - tba:message (STRING) 
     - tba:result (STRING) mandatory
     + tba:obligationAssessments (tba:obligationAssessment) sns

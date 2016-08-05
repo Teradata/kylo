@@ -1,9 +1,11 @@
 package com.thinkbiganalytics.metadata.modeshape.common;
 
 
-import java.nio.file.Paths;
+import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 
-import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import org.apache.commons.lang3.StringUtils;
+
+import java.nio.file.Paths;
 
 /**
  * Utility to get basic Paths for schema
@@ -38,6 +40,18 @@ public class EntityUtil {
         return Paths.get("/metadata", "templates").toString();
     }
 
+    public static String pathForExtensibleEntity(){
+        return EntityUtil.pathForExtensibleEntity(null);
+    }
+
+    public static String pathForExtensibleEntity(String typeName){
+        if(StringUtils.isNotBlank(typeName)){
+            return Paths.get("/", ExtensionsConstants.ENTITIES,typeName).toString();
+        }
+        else {
+            return Paths.get("/", ExtensionsConstants.ENTITIES).toString();
+        }
+    }
 
 
     public static String asQueryProperty(String prop) {

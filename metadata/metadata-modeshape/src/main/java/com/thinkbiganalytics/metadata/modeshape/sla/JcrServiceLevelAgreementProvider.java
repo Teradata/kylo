@@ -11,7 +11,6 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement.SlaId;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
@@ -131,6 +130,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         return findFirst(query);
     }
 
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider#removeAgreement(com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID)
      */
@@ -161,12 +161,6 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         try {
             Session session = getSession();
             Node slasNode = session.getNode(SLA_PATH);
-            JcrTool tool = new JcrTool();
-            Node assessmentNode = tool.findOrCreateChild(slasNode, "slaAssessments", "nt:folder");
-
-
-
-
             Node slaNode = slasNode.addNode("sla-" + UUID.randomUUID(), "tba:sla");
             
             return builder(slaNode);
@@ -213,9 +207,8 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         }
     }
 
-    
 
-    private class SLABuilderImpl implements ServiceLevelAgreementBuilder {
+    protected class SLABuilderImpl implements ServiceLevelAgreementBuilder {
 
         private Node slaNode;
 

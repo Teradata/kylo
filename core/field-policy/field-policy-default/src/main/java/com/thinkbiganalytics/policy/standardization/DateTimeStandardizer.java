@@ -6,7 +6,7 @@ package com.thinkbiganalytics.policy.standardization;
 
 import com.thinkbiganalytics.policy.PolicyProperty;
 import com.thinkbiganalytics.policy.PolicyPropertyRef;
-import com.thinkbiganalytics.policy.validation.PolicyPropertyTypes;
+import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;

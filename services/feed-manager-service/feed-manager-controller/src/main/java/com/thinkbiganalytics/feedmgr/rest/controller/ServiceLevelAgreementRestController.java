@@ -4,6 +4,7 @@ import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementGroup;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementMetricTransformerHelper;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 
@@ -86,7 +87,7 @@ public class ServiceLevelAgreementRestController {
     @GET
     @Produces({MediaType.APPLICATION_JSON})
     public Response getAllSlas() {
-        List<ServiceLevelAgreement> agreementList = serviceLevelAgreementService.getServiceLevelAgreements();
+        List<FeedServiceLevelAgreement> agreementList = serviceLevelAgreementService.getServiceLevelAgreements();
         if (agreementList == null) {
             agreementList = new ArrayList<>();
         }

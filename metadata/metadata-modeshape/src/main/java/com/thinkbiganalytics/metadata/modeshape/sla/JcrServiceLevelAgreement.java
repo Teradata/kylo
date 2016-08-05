@@ -32,7 +32,7 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
 
     private static final long serialVersionUID = 2611479261936214396L;
 
-
+    public static final String NODE_TYPE = "tba:sla";
     public static final String DESCRIPTION = "jcr:description";
     public static final String NAME = "jcr:title";
     public static final String DEFAULT_GROUP = "tba:defaultGroup";
@@ -44,6 +44,11 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
 
 
     public static final String SLA_CHECKS = "tba:slaChecks";
+
+    public static final String SLA_ASSESSMENTS = "tba:serviceLevelAssessments";
+
+
+
 
     /**
      * 
@@ -79,6 +84,7 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
     public String getDescription() {
         return JcrPropertyUtil.getString(this.node, DESCRIPTION);
     }
+
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement#getObligationGroups()
@@ -127,6 +133,15 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
             this.node.addNode(GROUPS, GROUP_TYPE);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create the obligation group node", e);
+        }
+    }
+
+    public JcrServiceLevelAssessment newAssessment() {
+        try {
+            Node node = this.node.addNode(SLA_ASSESSMENTS, JcrServiceLevelAssessment.NODE_TYPE);
+            return new JcrServiceLevelAssessment(node, this);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to create the assessment node", e);
         }
     }
 

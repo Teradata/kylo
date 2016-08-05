@@ -6,7 +6,9 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Map;
@@ -126,10 +128,45 @@ public class JcrObject {
         }
         if (o != null) {
             if (o instanceof Collection) {
-                return new HashSet<T>((Collection) o);
+                //convert the objects to the correct type if needed
+                if(JcrObject.class.isAssignableFrom(objectType)) {
+                    Set<T> objects = new HashSet<>();
+                    for(Object collectionObj: (Collection) o){
+                        T obj = null;
+                        if(collectionObj instanceof Node){
+
+                            try {
+                                obj = ConstructorUtils.invokeConstructor(objectType, (Node) collectionObj);
+                            } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException| InstantiationException e) {
+                                obj = (T) collectionObj;
+                            }
+
+                        }
+                        else {
+                            obj = (T) collectionObj;
+                        }
+                        objects.add(obj);
+                    }
+                    return objects;
+                }
+                else{
+                    return new HashSet<T>((Collection) o);
+                }
             } else {
                 Set<T> set = new HashSet<>();
-                set.add((T) o);
+                if(JcrObject.class.isAssignableFrom(objectType) && o instanceof Node){
+                    T obj = null;
+                    try {
+                        obj = ConstructorUtils.invokeConstructor(objectType, (Node) o);
+                        set.add((T) obj);
+                    } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException| InstantiationException e) {
+
+                    }
+                    set.add(obj);
+                }
+                else {
+                    set.add((T) o);
+                }
                 return set;
             }
         }

@@ -43,7 +43,7 @@ public class JcrServiceLevelAssessment extends AbstractJcrAuditableSystemEntity 
 
     public JcrServiceLevelAssessment(Node node, JcrServiceLevelAgreement sla) {
         super(node);
-        JcrPropertyUtil.setWeakReferenceProperty(this.node, SLA, sla.getNode());
+      //  JcrPropertyUtil.setWeakReferenceProperty(this.node, SLA, sla.getNode());
     }
 
     public AssessmentId getId() {
@@ -61,8 +61,13 @@ public class JcrServiceLevelAssessment extends AbstractJcrAuditableSystemEntity 
 
     @Override
     public ServiceLevelAgreement getAgreement() {
-        Node slaNode = (Node) JcrPropertyUtil.getProperty(this.node, SLA);
-        return new JcrServiceLevelAgreement(slaNode);
+        try {
+            Node slaNode = this.node.getParent();
+            return new JcrServiceLevelAgreement(slaNode);
+        }
+        catch(RepositoryException e){
+            throw new MetadataRepositoryException("Unable to get SLA for Assessment ",e);
+        }
     }
 
     @Override

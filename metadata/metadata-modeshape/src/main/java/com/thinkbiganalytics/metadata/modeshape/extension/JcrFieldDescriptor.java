@@ -3,13 +3,13 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.extension;
 
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+
 import javax.jcr.Node;
 import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.PropertyDefinition;
-
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
 /**
  *
@@ -80,7 +80,12 @@ public class JcrFieldDescriptor implements FieldDescriptor {
         } else if (code == PropertyType.REFERENCE) {
 //                return prop.get
             return FieldDescriptor.Type.ENTITY;  // TODO look up relationship
-        } else {
+        }
+        else if (code == PropertyType.WEAKREFERENCE) {
+//                return prop.get
+            return Type.WEAK_REFERENCE;
+        }
+        else {
             // Use string by default
             return FieldDescriptor.Type.STRING;
         }

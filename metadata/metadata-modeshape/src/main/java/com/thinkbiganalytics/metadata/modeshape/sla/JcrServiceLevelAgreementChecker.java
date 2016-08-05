@@ -125,10 +125,11 @@ public class JcrServiceLevelAgreementChecker implements ServiceLevelAgreementChe
     private boolean shouldAlert(ServiceLevelAgreement agreement, ServiceLevelAssessment assessment) {
         // Get the last assessment that was created for this SLA (if any).
         ServiceLevelAssessment previous = null;
-        //ServiceLevelAssessment previous = this.assessmentProvider.findLatestAssessment(agreement.getId())
         ServiceLevelAssessment.ID previousId = this.alertedAssessments.get(agreement.getId());
         if (previousId != null) {
             previous = this.assessmentProvider.findServiceLevelAssessment(previousId);
+        } else {
+            previous = this.assessmentProvider.findLatestAssessment(agreement.getId());
         }
 
         if (previous != null) {

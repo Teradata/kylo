@@ -10,6 +10,7 @@ import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensiblePropertyCollection;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -154,8 +155,26 @@ public class JcrPropertyUtil {
             if (props != null) {
                 JcrMetadataAccess.ensureCheckoutNode(entNode);
                 for (Map.Entry<String, Object> entry : props.entrySet()) {
-                    Value value = asValue(factory, entry.getValue());
-                    entNode.setProperty(entry.getKey(), value);
+                    if(entry.getValue() instanceof JcrExtensiblePropertyCollection){
+                        JcrExtensiblePropertyCollection propertyCollection = ((JcrExtensiblePropertyCollection)entry.getValue());
+                        propertyCollection.getCollectionType();
+                        Value[] values = new Value[propertyCollection.getCollection().size()];
+                        int i = 0;
+                        for(Object o: propertyCollection.getCollection()){
+                            boolean weak = false;
+                            if(propertyCollection.getCollectionType() == PropertyType.WEAKREFERENCE){
+                                weak = true;
+                            }
+                           Value value = createValue(session,o,weak);
+                            values[i] = value;
+                            i++;
+                        }
+                        entNode.setProperty(entry.getKey(),values);
+                    }
+                    else {
+                        Value value = asValue(factory, entry.getValue());
+                        entNode.setProperty(entry.getKey(), value);
+                    }
                 }
             }
 
@@ -441,6 +460,25 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
         }
     }
+
+    public static boolean removeAllFromSetProperty(Node node, String name) {
+        try {
+            JcrMetadataAccess.ensureCheckoutNode(node);
+            if (node == null) {
+                throw new IllegalArgumentException("Cannot remove a property from a null-node!");
+            }
+            if (name == null) {
+                throw new IllegalArgumentException("Cannot remove a property without a provided name");
+            }
+
+            Set<Value> values = new HashSet<>();
+            node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
+            return true;
+
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to remove set property: " + name, e);
+        }
+    }
     
     public static boolean removeFromSetProperty(Node node, String name, Object value) {
         try {
@@ -574,6 +612,9 @@ public class JcrPropertyUtil {
         }
         if (obj instanceof InputStream) {
             return PropertyType.BINARY;
+        }
+        if(obj instanceof JcrExtensiblePropertyCollection){
+            return JcrExtensiblePropertyCollection.COLLECTION_TYPE;
         }
         if (obj instanceof Node) {
             return PropertyType.REFERENCE;

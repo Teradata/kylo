@@ -3,6 +3,17 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.extension;
 
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType.ID;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeBuilder;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor.Type;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptorBuilder;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.TypeAlreadyExistsException;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -20,17 +31,6 @@ import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.NodeTypeTemplate;
 import javax.jcr.nodetype.PropertyDefinitionTemplate;
-
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeBuilder;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptorBuilder;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType.ID;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor.Type;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.TypeAlreadyExistsException;
 
 /**
  *
@@ -153,7 +153,7 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
         }
     }
 
-    private int asCode(Type type) {
+    public int asCode(Type type) {
         switch (type) {
             case BOOLEAN:
                 return PropertyType.BOOLEAN;
@@ -167,6 +167,8 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
                 return PropertyType.STRING;
             case ENTITY:
                 return PropertyType.REFERENCE;
+            case WEAK_REFERENCE:
+                return PropertyType.WEAKREFERENCE;
             default:
                 return PropertyType.STRING;
         }
@@ -195,7 +197,15 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
             NodeTypeManager typeMgr = session.getWorkspace().getNodeTypeManager();
             NodeTypeTemplate nodeTemplate = typeMgr.createNodeTypeTemplate();
             nodeTemplate.setName(typeName);
+            //allow for sns
+
+           /* NodeDefinitionTemplate nodeDefinitionTemplate = typeMgr.createNodeDefinitionTemplate();
+            nodeDefinitionTemplate.setSameNameSiblings(true);
+            nodeDefinitionTemplate.setDefaultPrimaryTypeName(typeName);
+            nodeDefinitionTemplate.setRequiredPrimaryTypeNames(new String[]{typeName});
+            nodeTemplate.getNodeDefinitionTemplates().add(nodeDefinitionTemplate);
             
+            */
             if (typeBldr.supertype != null) {
                 JcrExtensibleType superImpl = (JcrExtensibleType) typeBldr.supertype;
                 String supername = superImpl.getJcrName();
@@ -216,9 +226,8 @@ public class JcrExtensibleTypeProvider implements ExtensibleTypeProvider {
                 fieldNode.setProperty(JcrExtensibleType.NAME, bldr.displayName);
                 fieldNode.setProperty(JcrExtensibleType.DESCRIPTION, bldr.description);
             }
-            
             NodeType nodeType = typeMgr.registerNodeType(nodeTemplate, true);
-            
+
             return new JcrExtensibleType(typeNode, nodeType);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create new extensible type: " + typeBldr.name, e);
