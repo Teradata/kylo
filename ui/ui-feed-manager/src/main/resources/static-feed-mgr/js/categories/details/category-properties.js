@@ -6,7 +6,7 @@
      * @param $scope the application model
      * @param CategoriesService the category service
      */
-    function CategoryPropertiesController($scope, CategoriesService) {
+    function CategoryPropertiesController($scope, $mdToast, CategoriesService) {
         var self = this;
 
         /**
