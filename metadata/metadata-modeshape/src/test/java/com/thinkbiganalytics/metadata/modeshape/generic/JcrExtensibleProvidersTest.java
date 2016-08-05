@@ -1,17 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.generic;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import javax.inject.Inject;
-
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.annotations.Test;
-
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
@@ -20,6 +8,18 @@ import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.auth.AdminCredentials;
+
+import org.springframework.boot.test.SpringApplicationConfiguration;
+import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
+import org.testng.annotations.Test;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.inject.Inject;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrExtensibleProvidersTestConfig.class })
 public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests {
@@ -42,7 +42,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             return types.size();
         });
         // Feed + SLA + metric + Datasource + HiveTableDatasource = 5
-        assertThat(size).isEqualTo(7);
+        assertThat(size).isEqualTo(8);
     }
 
     @Test(dependsOnMethods="testGetAllDefaultTypes")
@@ -123,7 +123,7 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
         });
         
         // 5 + Person + Employee = 7
-        assertThat(size).isEqualTo(9);
+        assertThat(size).isEqualTo(10);
     }
     
     @Test(dependsOnMethods="testCreatePersonType")
