@@ -4,7 +4,6 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
-import com.thinkbiganalytics.feedmgr.sla.FeedServiceLevelAgreements;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 
@@ -73,7 +72,6 @@ public interface FeedManagerFeedService {
 
     public void applyFeedSelectOptions(List<FieldRuleProperty> properties);
 
-    public FeedServiceLevelAgreements getFeedServiceLevelAgreements(String feedId);
 
 
 }

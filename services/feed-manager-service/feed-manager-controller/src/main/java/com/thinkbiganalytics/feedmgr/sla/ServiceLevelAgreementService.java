@@ -100,6 +100,20 @@ public class ServiceLevelAgreementService {
         });
     }
 
+
+    public List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> getFeedServiceLevelAgreements(String feedId) {
+        return metadataAccess.read(() -> {
+
+            Feed.ID id = feedProvider.resolveFeed(feedId);
+            List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(id);
+            if (agreements != null) {
+                return Model.transformFeedServiceLevelAgreements(agreements);
+            }
+            return null;
+
+        });
+    }
+
     /**
      * get a SLA and convert it to the editable SLA form object
      */
@@ -259,9 +273,6 @@ public class ServiceLevelAgreementService {
 
     }
 
-    public FeedServiceLevelAgreements getServiceLevelAgreements(String feedId) {
-        return feedManagerFeedService.getFeedServiceLevelAgreements(feedId);
-    }
 
 
 }

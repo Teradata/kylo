@@ -7,9 +7,6 @@ import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
-import com.thinkbiganalytics.feedmgr.sla.FeedServiceLevelAgreements;
-import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementMetricTransformer;
-import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementMetricTransformerHelper;
 import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -23,14 +20,11 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 import com.thinkbiganalytics.policy.precondition.transform.PreconditionPolicyTransformer;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
@@ -399,40 +393,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     public void updateFeedsWithTemplate(String oldTemplateId, String newTemplateId) {
         //not needed
     }
-
-
-    public FeedServiceLevelAgreements getFeedServiceLevelAgreements(String feedId) {
-        return metadataAccess.read(new Command<FeedServiceLevelAgreements>() {
-            @Override
-            public FeedServiceLevelAgreements execute() {
-                FeedManagerFeed.ID domainId = feedManagerFeedProvider.resolveId(feedId);
-
-
-                List<FeedServiceLevelAgreement> feedServiceLevelAgreements = feedServiceLevelAgreementProvider.findFeedServiceLevelAgreements(domainId);
-                List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> restModels = new ArrayList<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement>();
-                if(feedServiceLevelAgreements != null && !feedServiceLevelAgreements.isEmpty()){
-                    for(FeedServiceLevelAgreement feedServiceLevelAgreement : feedServiceLevelAgreements) {
-                        com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement restModel = Model.toModel(feedServiceLevelAgreement,true);
-                        restModels.add(restModel);
-                    }
-                }
-
-
-                    ServiceLevelAgreementMetricTransformerHelper helper = new ServiceLevelAgreementMetricTransformerHelper();
-
-                    FeedServiceLevelAgreements feedServiceLevelAgreementHolder = helper.toFeedServiceLevelAgreements(feedId, restModels);
-
-                    applyFeedSelectOptions(ServiceLevelAgreementMetricTransformer.instance()
-                                               .findPropertiesForRulesetMatchingRenderTypes(feedServiceLevelAgreementHolder.getAllRules(), new String[]{PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name(),
-                                                                                                                                                        PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
-                                                                                                                                                   PolicyPropertyTypes.PROPERTY_TYPE.feedSelect.name()}));
-
-                return feedServiceLevelAgreementHolder;
-            }
-        });
-
-    }
-
 
 
 

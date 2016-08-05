@@ -27,18 +27,6 @@ public class ServiceLevelAgreementMetricTransformerHelper {
     public ServiceLevelAgreementMetricTransformerHelper() {
     }
 
-    public void applyFeedNameToCurrentFeedProperties(FeedServiceLevelAgreements serviceLevelAgreements, String category, String feed) {
-        if (serviceLevelAgreements != null) {
-            List<FieldRuleProperty>
-                properties =
-                ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderType(serviceLevelAgreements.getAllRules(), PolicyPropertyTypes.PROPERTY_TYPE.currentFeed.name());
-            if (properties != null && !properties.isEmpty()) {
-                for (FieldRuleProperty property : properties) {
-                    property.setValue(category + "." + feed);
-                }
-            }
-        }
-    }
 
     /**
      * gets all SystemCategory.SystemFeedName values
@@ -99,20 +87,6 @@ public class ServiceLevelAgreementMetricTransformerHelper {
         }
     }
 
-    /**
-     * Transform UI model to Java Objects
-     */
-    public List<ServiceLevelAgreement> getServiceLevelAgreements(FeedServiceLevelAgreements serviceLevelAgreements) {
-        List<ServiceLevelAgreement> slaList = new ArrayList<>();
-
-        if (serviceLevelAgreements != null) {
-            for (ServiceLevelAgreementGroup sla : serviceLevelAgreements.getServiceLevelAgreements()) {
-                ServiceLevelAgreement transformedSla = getServiceLevelAgreement(sla);
-                slaList.add(transformedSla);
-            }
-        }
-        return slaList;
-    }
 
 
     public ServiceLevelAgreement getServiceLevelAgreement(ServiceLevelAgreementGroup serviceLevelAgreement) {
@@ -156,16 +130,6 @@ public class ServiceLevelAgreementMetricTransformerHelper {
     }
 
 
-    public FeedServiceLevelAgreements toFeedServiceLevelAgreements(String feedId, List<? extends ServiceLevelAgreement> slas) {
-        FeedServiceLevelAgreements feedServiceLevelAgreements = new FeedServiceLevelAgreements();
-        for (ServiceLevelAgreement sla : slas) {
-            ServiceLevelAgreementGroup group = toServiceLevelAgreementGroup(sla);
-            feedServiceLevelAgreements.addServiceLevelAgreement(group);
-        }
-        feedServiceLevelAgreements.setFeedId(feedId);
-        return feedServiceLevelAgreements;
-
-    }
 
     /**
      * Transform the Rest Model back to the form model

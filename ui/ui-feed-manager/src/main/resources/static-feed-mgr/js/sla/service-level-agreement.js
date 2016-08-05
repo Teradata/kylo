@@ -134,21 +134,8 @@
 
         if (this.feed != null) {
             SlaService.getFeedSlas(self.feed.feedId).then(function (response) {
-                if (response.data && response.data.serviceLevelAgreements != undefined && response.data.serviceLevelAgreements.length > 0) {
-                    _.each(response.data.serviceLevelAgreements, function (sla) {
-                        _.each(sla.rules, function (rule) {
-                            rule.groups = PolicyInputFormService.groupProperties(rule);
-                            rule.mode == 'EDIT'
-                            PolicyInputFormService.updatePropertyIndex(rule);
-                        });
-
-                        _.each(sla.actionConfigurations, function (rule) {
-                            rule.groups = PolicyInputFormService.groupProperties(rule);
-                            rule.mode == 'EDIT'
-                            PolicyInputFormService.updatePropertyIndex(rule);
-                        });
-                    });
-                    self.serviceLevelAgreements = response.data.serviceLevelAgreements;
+                if (response.data && response.data != undefined && response.data.length > 0) {
+                    self.serviceLevelAgreements = response.data;
                 }
             });
         }

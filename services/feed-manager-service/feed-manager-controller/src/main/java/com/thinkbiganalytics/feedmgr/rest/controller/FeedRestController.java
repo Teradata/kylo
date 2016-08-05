@@ -11,9 +11,9 @@ import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerPreconditionService;
-import com.thinkbiganalytics.feedmgr.sla.FeedServiceLevelAgreements;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.hive.service.HiveService;
+import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -343,7 +343,7 @@ public class FeedRestController {
     @Path("/{feedId}/sla")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getSla(@PathParam("feedId") String feedId) {
-        FeedServiceLevelAgreements sla = serviceLevelAgreementService.getServiceLevelAgreements(feedId);
+        List<FeedServiceLevelAgreement> sla = serviceLevelAgreementService.getFeedServiceLevelAgreements(feedId);
         return Response.ok(sla).build();
     }
 }

@@ -11,9 +11,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
-import com.thinkbiganalytics.feedmgr.sla.FeedServiceLevelAgreements;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.rest.model.LabelValue;
@@ -290,11 +288,4 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
         }
     }
 
-    public List<ServiceLevelAgreement> saveFeedSla(FeedServiceLevelAgreements serviceLevelAgreements) {
-        return null;
-    }
-
-    public FeedServiceLevelAgreements getFeedServiceLevelAgreements(String feedId) {
-        return null;
-    }
 }
