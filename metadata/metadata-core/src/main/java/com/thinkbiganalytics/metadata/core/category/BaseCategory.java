@@ -2,16 +2,19 @@ package com.thinkbiganalytics.metadata.core.category;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
-import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
+
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import javax.annotation.Nonnull;
+
 /**
- * Created by sr186054 on 5/12/16.
+ * A POJO implementation of {@link Category}.
  */
 public class BaseCategory implements Category {
 
@@ -30,6 +33,11 @@ public class BaseCategory implements Category {
     private DateTime createdTime;
 
     private DateTime modifiedTime;
+
+    /**
+     * User-defined properties
+     */
+    private Map<String, String> userProperties;
 
     @Override
     public CategoryId getId() {
@@ -87,6 +95,7 @@ public class BaseCategory implements Category {
     }
 
     private static class BaseId {
+
         private final UUID uuid;
 
         public BaseId() {
@@ -125,6 +134,7 @@ public class BaseCategory implements Category {
     }
 
     protected static class CategoryId extends BaseId implements Category.ID {
+
         public CategoryId() {
             super();
         }
@@ -150,5 +160,16 @@ public class BaseCategory implements Category {
 
     public void setModifiedTime(DateTime modifiedTime) {
         this.modifiedTime = modifiedTime;
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, String> getUserProperties() {
+        return userProperties;
+    }
+
+    @Override
+    public void setUserProperties(@Nonnull Map<String, String> userProperties) {
+        this.userProperties = userProperties;
     }
 }

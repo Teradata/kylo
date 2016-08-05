@@ -14,12 +14,15 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 /**
- * Created by sr186054 on 6/15/16.
+ * A POJO for migrating feeds to a ModeShape repository.
  */
 public class FeedManagerFeedDTO implements FeedManagerFeed {
 
@@ -49,11 +52,10 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
 
     private DateTime modifiedTime;
 
-
     private FeedManagerCategory category;
 
     private FeedManagerTemplate template;
-    
+
     private Set<Feed<?>> dependentFeeds;
 
     //template
@@ -62,12 +64,12 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     public List<Feed<?>> getDependentFeeds() {
         return new ArrayList<>(this.dependentFeeds);
     }
-    
+
     @Override
     public boolean addDependentFeed(Feed feed) {
         return this.dependentFeeds.add(feed);
     }
-    
+
     @Override
     public boolean removeDependentFeed(Feed feed) {
         return this.dependentFeeds.remove(feed);
@@ -181,7 +183,6 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
         this.state = state;
     }
 
-
     public Integer getVersion() {
         return version;
     }
@@ -213,16 +214,13 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
         this.template = template;
     }
 
-
     @Override
     public FeedManagerTemplate getTemplate() {
         return template;
     }
 
     @Override
-    public void setVersionName(String version) {
-
-    }
+    public void setVersionName(String version) {}
 
     @Override
     public FeedPrecondition getPrecondition() {
@@ -260,9 +258,7 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     }
 
     @Override
-    public void setProperties(Map<String, Object> props) {
-
-    }
+    public void setProperties(Map<String, Object> props) {}
 
     @Override
     public Map<String, Object> mergeProperties(Map<String, Object> props) {
@@ -270,17 +266,22 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     }
 
     @Override
-    public void setProperty(String key, Object value) {
-
-    }
+    public void setProperty(String key, Object value) {}
 
     @Override
-    public void removeProperty(String key) {
-
-    }
+    public void removeProperty(String key) {}
 
     @Override
     public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
         return null;
     }
+
+    @Nonnull
+    @Override
+    public Map<String, String> getUserProperties() {
+        return Collections.emptyMap();
+    }
+
+    @Override
+    public void setUserProperties(@Nonnull Map userProperties) {}
 }

@@ -2,18 +2,20 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
-import com.google.common.collect.Maps;
 import com.thinkbiganalytics.db.model.schema.Field;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
+import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.category.CategoryModelTransform;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
@@ -27,20 +29,21 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 5/11/16.
+ * Transforms feeds between Feed Manager and Metadata formats.
  */
 public class FeedModelTransform {
 
     @Inject
     FeedManagerCategoryProvider categoryProvider;
-
 
     @Inject
     FeedManagerTemplateProvider templateProvider;
@@ -57,12 +60,10 @@ public class FeedModelTransform {
     @Inject
     private CategoryModelTransform categoryModelTransform;
 
-
     @Inject
     private HiveService hiveService;
 
     public void refreshTableSchemaFromHive(FeedMetadata feed) {
-
         //Merge back in the hive table schema ?
         if (feed.getRegisteredTemplate() != null && (feed.getRegisteredTemplate().isDefineTable() || feed.getRegisteredTemplate().isDataTransformation()) && feed.getTable() != null
             && feed.getTable().getTableSchema() != null) {
@@ -86,9 +87,7 @@ public class FeedModelTransform {
             } catch (Exception e) {
                 //swallow exception.  refreshing of the hive schema is just a nice to have feature. JSON should be up to date.
             }
-
         }
-
     }
 
     public FeedManagerFeed feedToDomain(FeedMetadata feedMetadata) {
@@ -137,9 +136,9 @@ public class FeedModelTransform {
         domain.setNifiProcessGroupId(feedMetadata.getNifiProcessGroupId());
 
         domain.setJson(ObjectMapperSerializer.serialize(feedMetadata));
-       // if (feedMetadata.getVersion() == null) {
-       //     feedMetadata.setVersion(1L);
-       // }
+        // if (feedMetadata.getVersion() == null) {
+        //     feedMetadata.setVersion(1L);
+        // }
 
         //Datasource datasource = NifiFeedDatasourceFactory.transformSources(feedMetadata);
         // feedProvider.ensureFeedSource()
@@ -151,47 +150,55 @@ public class FeedModelTransform {
             domain.setTemplate(domainTemplate);
         }
 
+        // Set user-defined properties
+        if (feedMetadata.getUserProperties() != null) {
+            domain.setUserProperties(UserPropertyTransform.toMetadataProperties(feedMetadata.getUserProperties()));
+        }
+
         domain.setVersionName(feedMetadata.getVersionName());
         return domain;
-
-
     }
 
 
     public final Function<FeedManagerFeed, FeedMetadata>
-        DOMAIN_TO_FEED =
-        new Function<FeedManagerFeed, FeedMetadata>() {
-            @Override
-            public FeedMetadata apply(FeedManagerFeed domain) {
-                String json = domain.getJson();
-                FeedMetadata feed = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
-                feed.setId(domain.getId().toString());
-                feed.setFeedId(domain.getId().toString());
-                feed.setTemplateId(domain.getTemplate().getId().toString());
-                if (domain.getCreatedTime() != null) {
-                    feed.setCreateDate(domain.getCreatedTime().toDate());
-                }
-                if (domain.getModifiedTime() != null) {
-                    feed.setUpdateDate(domain.getModifiedTime().toDate());
-                }
+            DOMAIN_TO_FEED =
+            new Function<FeedManagerFeed, FeedMetadata>() {
+                @Override
+                public FeedMetadata apply(FeedManagerFeed domain) {
+                    String json = domain.getJson();
+                    FeedMetadata feed = ObjectMapperSerializer.deserialize(json, FeedMetadata.class);
+                    feed.setId(domain.getId().toString());
+                    feed.setFeedId(domain.getId().toString());
+                    feed.setTemplateId(domain.getTemplate().getId().toString());
+                    if (domain.getCreatedTime() != null) {
+                        feed.setCreateDate(domain.getCreatedTime().toDate());
+                    }
+                    if (domain.getModifiedTime() != null) {
+                        feed.setUpdateDate(domain.getModifiedTime().toDate());
+                    }
 
-                FeedManagerTemplate template = domain.getTemplate();
-                if (template != null) {
-                    RegisteredTemplate registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
-                    feed.setRegisteredTemplate(registeredTemplate);
-                    feed.setTemplateId(registeredTemplate.getId());
+                    FeedManagerTemplate template = domain.getTemplate();
+                    if (template != null) {
+                        RegisteredTemplate registeredTemplate = templateModelTransform.DOMAIN_TO_REGISTERED_TEMPLATE.apply(template);
+                        feed.setRegisteredTemplate(registeredTemplate);
+                        feed.setTemplateId(registeredTemplate.getId());
+                    }
+                    FeedManagerCategory category = domain.getCategory();
+                    if (category != null) {
+                        FeedCategory feedCategory = categoryModelTransform.DOMAIN_TO_FEED_CATEGORY_SIMPLE.apply(category);
+                        feed.setCategory(feedCategory);
+                    }
+                    feed.setState(domain.getState() != null ? domain.getState().name() : null);
+                    feed.setVersionName(domain.getVersionName() != null ? domain.getVersionName() : null);
+
+                    final Set<FieldDescriptor> userFields = Collections.emptySet();
+                    @SuppressWarnings("unchecked")
+                    final Set<UserProperty> userProperties = UserPropertyTransform.toFeedManagerProperties(userFields, domain.getUserProperties());
+                    feed.setUserProperties(userProperties);
+
+                    return feed;
                 }
-                FeedManagerCategory category = domain.getCategory();
-                if (category != null) {
-                    FeedCategory feedCategory = categoryModelTransform.DOMAIN_TO_FEED_CATEGORY_SIMPLE.apply(category);
-                    feed.setCategory(feedCategory);
-                }
-                feed.setState(domain.getState() != null ? domain.getState().name() : null);
-                feed.setVersionName(domain.getVersionName() != null ? domain.getVersionName() : null);
-                feed.setUserProperties(Maps.filterKeys(domain.getProperties(), key -> (key != null && !key.startsWith("jcr:") && !key.startsWith("tba:"))));
-                return feed;
-            }
-        };
+            };
 
     public final Function<Feed, FeedSummary> DOMAIN_TO_FEED_SUMMARY = new Function<Feed, FeedSummary>() {
         @Nullable
@@ -205,7 +212,7 @@ public class FeedModelTransform {
             feedSummary.setCategoryIconColor(((FeedManagerCategory) feedManagerFeed.getCategory()).getIconColor());
             feedSummary.setCategoryName(feedManagerFeed.getCategory().getDisplayName());
             feedSummary.setSystemCategoryName(feedManagerFeed.getCategory().getName());
-            feedSummary.setUpdateDate(feedManagerFeed.getModifiedTime() != null ? feedManagerFeed.getModifiedTime().toDate(): null);
+            feedSummary.setUpdateDate(feedManagerFeed.getModifiedTime() != null ? feedManagerFeed.getModifiedTime().toDate() : null);
             feedSummary.setFeedName(feedManagerFeed.getDisplayName());
             feedSummary.setSystemFeedName(feedManagerFeed.getName());
             feedSummary.setActive(feedManagerFeed.getState() != null ? feedManagerFeed.getState().equals(Feed.State.ENABLED) : false);
@@ -222,6 +229,4 @@ public class FeedModelTransform {
     public List<FeedSummary> domainToFeedSummary(Collection<? extends Feed> domain) {
         return new ArrayList<>(Collections2.transform(domain, DOMAIN_TO_FEED_SUMMARY));
     }
-
-
 }

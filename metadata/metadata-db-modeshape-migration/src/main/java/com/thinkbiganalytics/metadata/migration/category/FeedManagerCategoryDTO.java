@@ -6,10 +6,14 @@ import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 
 import org.joda.time.DateTime;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+
+import javax.annotation.Nonnull;
 
 /**
- * Created by sr186054 on 6/15/16.
+ * A POJO for migrating categories to a ModeShape repository.
  */
 public class FeedManagerCategoryDTO implements FeedManagerCategory {
 
@@ -108,5 +112,12 @@ public class FeedManagerCategoryDTO implements FeedManagerCategory {
         return null;
     }
 
+    @Nonnull
+    @Override
+    public Map<String, String> getUserProperties() {
+        return Collections.emptyMap();
+    }
 
+    @Override
+    public void setUserProperties(@Nonnull Map<String, String> userProperties) {}
 }

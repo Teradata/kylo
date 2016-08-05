@@ -11,14 +11,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 6/6/16.
+ * A JCR provider for {@link Category} objects.
  */
 public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> implements CategoryProvider<Category> {
 
     @Override
     public Category findBySystemName(String systemName) {
 
-        String query =  "SELECT * FROM ["+getNodeType()+"] as cat WHERE cat.["+JcrCategory.SYSTEM_NAME+"] = '"+systemName+"'";
+        String query = "SELECT * FROM [" + getNodeType() + "] as cat WHERE cat.[" + JcrCategory.SYSTEM_NAME + "] = '" + systemName + "'";
         return findFirst(query);
     }
 
@@ -37,12 +37,12 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
         return JcrCategory.class;
     }
 
-
-    public Category ensureCategory(String systemName){
+    @Override
+    public Category ensureCategory(String systemName) {
         String path = EntityUtil.pathForCategory();
-        Map<String,Object> props = new HashMap<>();
-        props.put(JcrCategory.SYSTEM_NAME,systemName);
-        return findOrCreateEntity(path, systemName,props);
+        Map<String, Object> props = new HashMap<>();
+        props.put(JcrCategory.SYSTEM_NAME, systemName);
+        return findOrCreateEntity(path, systemName, props);
     }
     /*
     @Override
@@ -52,6 +52,7 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     }
     */
 
+    @Override
     public Category.ID resolveId(Serializable fid) {
         return new JcrCategory.CategoryId(fid);
     }

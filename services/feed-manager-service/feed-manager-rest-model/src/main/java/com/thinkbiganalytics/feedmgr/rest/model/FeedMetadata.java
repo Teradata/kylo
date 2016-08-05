@@ -11,16 +11,16 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 
 /**
- * Contains the frontend and backend metadata for a feed.
+ * The specification for a feed and how it should interact with various components.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class FeedMetadata implements UIFeed{
+public class FeedMetadata implements UIFeed {
 
     public static enum STATE {
-        NEW,ENABLED,DISABLED
+        NEW, ENABLED, DISABLED
     }
 
     private String id;
@@ -31,16 +31,12 @@ public class FeedMetadata implements UIFeed{
     //pointer to RegisteredTemplate.id
     private String templateId;
 
-
     //Nifi specific
     private String inputProcessorType;
     private String templateName;
     private List<NifiProperty> properties;
 
-
     private FeedSchedule schedule;
-
-
 
     @MetadataField
     private String feedName;
@@ -49,7 +45,7 @@ public class FeedMetadata implements UIFeed{
     @MetadataField
     private String description;
 
-    private List<Tag>tags;
+    private List<Tag> tags;
     @MetadataField
     private String dataOwner;
 
@@ -59,8 +55,6 @@ public class FeedMetadata implements UIFeed{
     private Date createDate;
     @MetadataField
     private Date updateDate;
-
-
 
     private FeedDataTransformation dataTransformation;
 
@@ -74,26 +68,25 @@ public class FeedMetadata implements UIFeed{
     @JsonProperty("reusableFeed")
     private boolean isReusableFeed;
 
-
     //deprecated
     private Long version;
 
     private String versionName;
 
-
-   // private NifiProcessGroup nifiProcessGroup;
+    // private NifiProcessGroup nifiProcessGroup;
 
     private RegisteredTemplate registeredTemplate;
 
-    /** Properties for business metadata */
-    private Map<String, Object> userProperties;
+    /**
+     * User-defined business metadata
+     */
+    private Set<UserProperty> userProperties;
 
     public String getTemplateId() {
         return templateId;
     }
-    public FeedMetadata() {
 
-    }
+    public FeedMetadata() {}
 
     @Override
     public String getId() {
@@ -107,7 +100,6 @@ public class FeedMetadata implements UIFeed{
     public void setTemplateId(String templateId) {
         this.templateId = templateId;
     }
-
 
     public String getTemplateName() {
         return templateName;
@@ -197,14 +189,14 @@ public class FeedMetadata implements UIFeed{
         this.table = table;
     }
 
- /*   public NifiProcessGroup getNifiProcessGroup() {
-        return nifiProcessGroup;
-    }
+    /*   public NifiProcessGroup getNifiProcessGroup() {
+           return nifiProcessGroup;
+       }
 
-    public void setNifiProcessGroup(NifiProcessGroup nifiProcessGroup) {
-        this.nifiProcessGroup = nifiProcessGroup;
-    }
-*/
+       public void setNifiProcessGroup(NifiProcessGroup nifiProcessGroup) {
+           this.nifiProcessGroup = nifiProcessGroup;
+       }
+   */
     public Date getCreateDate() {
         return createDate;
     }
@@ -229,52 +221,50 @@ public class FeedMetadata implements UIFeed{
         this.active = active;
     }
 
-
-    public void setVersion(Long version){
+    public void setVersion(Long version) {
         this.version = version;
-        setVersionName(version+"");
+        setVersionName(version + "");
     }
 
-    public Long getVersion(){
-        if(StringUtils.isNotBlank(versionName)){
+    public Long getVersion() {
+        if (StringUtils.isNotBlank(versionName)) {
             try {
                 return new Long(versionName);
             } catch (NumberFormatException e) {
                 return 0L;
             }
-        }
-        else {
+        } else {
             return version;
         }
     }
 
-    public void setVersionName(String versionName){
+    public void setVersionName(String versionName) {
         this.versionName = versionName;
     }
 
-    public String getVersionName(){
+    public String getVersionName() {
         return this.versionName;
     }
 
     @JsonIgnore
-    public String getProfileTableName(){
-        return this.category.getSystemName()+"."+this.getSystemFeedName()+"_profile";
-    }
-    @JsonIgnore
-    public String getInvalidTableName(){
-        return this.category.getSystemName()+"."+this.getSystemFeedName()+"_invalid";
+    public String getProfileTableName() {
+        return this.category.getSystemName() + "." + this.getSystemFeedName() + "_profile";
     }
 
     @JsonIgnore
-    public String getValidTableName(){
-        return this.category.getSystemName()+"."+this.getSystemFeedName()+"_valid";
+    public String getInvalidTableName() {
+        return this.category.getSystemName() + "." + this.getSystemFeedName() + "_invalid";
     }
 
     @JsonIgnore
-    public String getCategoryAndFeedName(){
-        return this.category.getSystemName()+"."+this.getSystemFeedName();
+    public String getValidTableName() {
+        return this.category.getSystemName() + "." + this.getSystemFeedName() + "_valid";
     }
 
+    @JsonIgnore
+    public String getCategoryAndFeedName() {
+        return this.category.getSystemName() + "." + this.getSystemFeedName();
+    }
 
     public String getFeedId() {
         return feedId;
@@ -292,10 +282,9 @@ public class FeedMetadata implements UIFeed{
         this.registeredTemplate = registeredTemplate;
     }
 
-
     @Override
     public String getCategoryName() {
-   return this.category.getName();
+        return this.category.getName();
     }
 
     @Override
@@ -305,7 +294,7 @@ public class FeedMetadata implements UIFeed{
 
     @Override
     public String getCategoryAndFeedDisplayName() {
-   return this.category.getName()+"."+this.getFeedName();
+        return this.category.getName() + "." + this.getFeedName();
     }
 
     @Override
@@ -335,6 +324,7 @@ public class FeedMetadata implements UIFeed{
     public boolean isReusableFeed() {
         return isReusableFeed;
     }
+
     @JsonProperty("reusableFeed")
     public void setIsReusableFeed(boolean isReusableFeed) {
         this.isReusableFeed = isReusableFeed;
@@ -357,20 +347,24 @@ public class FeedMetadata implements UIFeed{
     }
 
     /**
-     * Gets the business metadata for this feed.
+     * Gets the user-defined business metadata for this feed.
      *
-     * @return the business metadata
+     * @return the user-defined properties
+     * @see #setUserProperties(Set)
+     * @since 0.3.0
      */
-    public Map<String, Object> getUserProperties() {
+    public Set<UserProperty> getUserProperties() {
         return userProperties;
     }
 
     /**
-     * Sets the business metadata for this feed.
+     * Sets the user-defined business metadata for this feed.
      *
-     * @param userProperties the business metadata
+     * @param userProperties the user-defined properties
+     * @see #getUserProperties()
+     * @since 0.3.0
      */
-    public void setUserProperties(final Map<String, Object> userProperties) {
+    public void setUserProperties(final Set<UserProperty> userProperties) {
         this.userProperties = userProperties;
     }
 }

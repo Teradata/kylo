@@ -20,16 +20,21 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Value;
 
 /**
- * Created by sr186054 on 6/4/16.
+ * An implementation of {@link Feed} backed by a JCR repository.
+ *
+ * @param <C> the type of parent category
  */
 public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntity implements Feed<C> {
 
@@ -49,7 +54,6 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String SCHEDULE_STRATEGY = "tba:schedulingStrategy"; //CRON_DRIVEN, TIMER_DRIVEN
     public static final String SLA = "tba:slas";
 
-
     public JcrFeed(Node node) {
         super(node);
     }
@@ -67,6 +71,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }
     }
+
     public static class FeedId extends JcrEntity.EntityId implements Feed.ID {
 
         public FeedId(Serializable ser) {
@@ -91,11 +96,9 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
             throw new CategoryNotFoundException("Unable to find category on Feed ", null);
         }
         return category;
-
     }
 
     public C getCategory() {
-
         return (C) getCategory(JcrCategory.class);
     }
 
@@ -115,12 +118,11 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         return JcrUtil.getNodes(this.node, DESTINATION_NAME, JcrFeedDestination.class);
     }
 
-
     @Override
     public String getName() {
         return getSystemName();
     }
-    
+
     @Override
     public String getQualifiedName() {
         return getCategory().getName() + "." + getName();
@@ -153,42 +155,42 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
             throw new MetadataRepositoryException("Failed to retrieve the feed precondition", e);
         }
     }
-    
+
     @Override
     public List<Feed<C>> getDependentFeeds() {
         List<Feed<C>> deps = new ArrayList<>();
         Set<Node> depNodes = JcrPropertyUtil.getSetProperty(this.node, DEPENDENTS);
-        
+
         for (Node depNode : depNodes) {
             deps.add(new JcrFeed<C>(depNode));
         }
-        
+
         return deps;
     }
-    
+
     @Override
     public boolean addDependentFeed(Feed<?> feed) {
         JcrFeed<?> dependent = (JcrFeed<?>) feed;
         Node depNode = dependent.getNode();
-        
+
         return JcrPropertyUtil.addToSetProperty(this.node, DEPENDENTS, depNode);
     }
-    
+
     @Override
     public boolean removeDependentFeed(Feed<?> feed) {
         JcrFeed<?> dependent = (JcrFeed<?>) feed;
         Node depNode = dependent.getNode();
-        
+
         return JcrPropertyUtil.removeFromSetProperty(this.node, DEPENDENTS, depNode);
     }
 
     @Override
     public FeedSource getSource(final Datasource.ID id) {
         return JcrUtil.getNodelist(this.node, SOURCE_NAME).stream()
-                        .filter(node -> JcrPropertyUtil.isReferencing(node, JcrFeedConnection.DATASOURCE, id.toString()))
-                        .findAny()
-                        .map(node -> new JcrFeedSource(node))
-                        .orElse(null);
+                .filter(node -> JcrPropertyUtil.isReferencing(node, JcrFeedConnection.DATASOURCE, id.toString()))
+                .findAny()
+                .map(node -> new JcrFeedSource(node))
+                .orElse(null);
     }
 //
 //    @Override
@@ -212,10 +214,10 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     @Override
     public FeedDestination getDestination(final Datasource.ID id) {
         return JcrPropertyUtil.getReferencedNodeSet(this.node, DESTINATION_NAME).stream()
-                        .filter(node -> JcrPropertyUtil.isReferencing(this.node, JcrFeedConnection.DATASOURCE, id.toString()))
-                        .findAny()
-                        .map(node -> new JcrFeedDestination(node))
-                        .orElse(null);
+                .filter(node -> JcrPropertyUtil.isReferencing(this.node, JcrFeedConnection.DATASOURCE, id.toString()))
+                .findAny()
+                .map(node -> new JcrFeedDestination(node))
+                .orElse(null);
     }
 //
 //    @Override
@@ -236,9 +238,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 //    }
 
     @Override
-    public void setInitialized(boolean flag) {
-
-    }
+    public void setInitialized(boolean flag) {}
 
     @Override
     public void setDisplayName(String name) {
@@ -250,22 +250,22 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         setProperty(STATE, state);
     }
 
-
-    public String getSchedulePeriod(){
-        return getProperty(SCHEDULE_PERIOD,String.class);
-    }
-    public void setSchedulePeriod(String schedulePeriod){
-        setProperty(SCHEDULE_PERIOD,schedulePeriod);
+    public String getSchedulePeriod() {
+        return getProperty(SCHEDULE_PERIOD, String.class);
     }
 
-    public String getScheduleStrategy(){
-        return getProperty(SCHEDULE_STRATEGY,String.class);
+    public void setSchedulePeriod(String schedulePeriod) {
+        setProperty(SCHEDULE_PERIOD, schedulePeriod);
     }
-    
-    public void setScheduleStrategy(String scheduleStrategy){
-        setProperty(SCHEDULE_STRATEGY,scheduleStrategy);
+
+    public String getScheduleStrategy() {
+        return getProperty(SCHEDULE_STRATEGY, String.class);
     }
-    
+
+    public void setScheduleStrategy(String scheduleStrategy) {
+        setProperty(SCHEDULE_STRATEGY, scheduleStrategy);
+    }
+
     public void setPrecondition(JcrServiceLevelAgreement sla) {
 //        Node precondNode
     }
@@ -310,5 +310,14 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         return JcrPropertyUtil.addToSetProperty(this.node, SLA, node, true);
     }
 
+    @Nonnull
+    @Override
+    public Map<String, String> getUserProperties() {
+        return JcrPropertyUtil.getUserProperties(node);
+    }
 
+    @Override
+    public void setUserProperties(@Nonnull Map<String, String> userProperties) {
+        JcrPropertyUtil.setUserProperties(node, Collections.emptySet(), userProperties);
+    }
 }

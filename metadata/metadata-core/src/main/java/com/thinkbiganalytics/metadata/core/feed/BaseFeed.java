@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.metadata.core.feed;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
@@ -25,11 +22,14 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.annotation.Nonnull;
+
 /**
+ * A POJO implementation of {@link Feed}.
  *
- * @author Sean Felten
+ * @param <C> the type of parent category
  */
-public class BaseFeed implements Feed {
+public class BaseFeed<C extends Category> implements Feed<C> {
 
     private ID Id;
     private String name;
@@ -44,7 +44,11 @@ public class BaseFeed implements Feed {
     private FeedPreconditionImpl precondition;
     private Map<String, Object> properties;
     private List<ServiceLevelAgreement> feedServiceLevelAgreements;
-    
+
+    /**
+     * User-defined properties
+     */
+    private Map<String, String> userProperties;
 
     public BaseFeed(String name, String description) {
         this.Id = new FeedId();
@@ -60,20 +64,21 @@ public class BaseFeed implements Feed {
     }
 
     @Override
-    public List<Feed<?>> getDependentFeeds() {
-        return new ArrayList<>(this.dependentFeeds);
+    @SuppressWarnings("unchecked")
+    public List<Feed<C>> getDependentFeeds() {
+        return new ArrayList(this.dependentFeeds);
     }
-    
+
     @Override
     public boolean addDependentFeed(Feed feed) {
         return this.dependentFeeds.add(feed);
     }
-    
+
     @Override
     public boolean removeDependentFeed(Feed feed) {
         return this.dependentFeeds.remove(feed);
     }
-    
+
     @Override
     public Map<String, Object> getProperties() {
         return this.properties;
@@ -91,7 +96,7 @@ public class BaseFeed implements Feed {
         }
         return this.properties;
     }
-    
+
     @Override
     public DateTime getCreatedTime() {
         return this.createdTime;
@@ -99,12 +104,12 @@ public class BaseFeed implements Feed {
 
     @Override
     public void setProperty(String key, Object value) {
-         this.properties.put(key, value);
+        this.properties.put(key, value);
     }
 
     @Override
     public void removeProperty(String key) {
-         this.properties.remove(key);
+        this.properties.remove(key);
     }
 
     public ID getId() {
@@ -114,20 +119,20 @@ public class BaseFeed implements Feed {
     public String getName() {
         return name;
     }
-    
+
     @Override
     public String getQualifiedName() {
         return getCategory().getName() + "." + getName();
     }
-    
+
     public boolean isInitialized() {
         return initialized;
     }
-    
+
     public void setInitialized(boolean initialized) {
         this.initialized = initialized;
     }
-    
+
     @Override
     public String getDisplayName() {
         return this.displayName;
@@ -151,13 +156,13 @@ public class BaseFeed implements Feed {
     public State getState() {
         return this.state;
     }
-    
+
     public void setState(State state) {
         this.state = state;
     }
 
     @Override
-    public Category getCategory() {
+    public C getCategory() {
         return null;
     }
 
@@ -173,7 +178,7 @@ public class BaseFeed implements Feed {
     public List<FeedDestination> getDestinations() {
         return new ArrayList<>(destinations);
     }
-    
+
     @Override
     public FeedDestination getDestination(Datasource.ID id) {
         for (FeedDestination dest : this.destinations) {
@@ -181,10 +186,10 @@ public class BaseFeed implements Feed {
                 return dest;
             }
         }
-        
+
         return null;
     }
-    
+
     @Override
     public FeedPrecondition getPrecondition() {
         return this.precondition;
@@ -199,7 +204,7 @@ public class BaseFeed implements Feed {
         this.sources.add(src);
         return src;
     }
-    
+
     @Override
     public FeedSource getSource(Datasource.ID id) {
         for (FeedSource src : this.sources) {
@@ -207,7 +212,7 @@ public class BaseFeed implements Feed {
                 return src;
             }
         }
-        
+
         return null;
     }
 //
@@ -226,19 +231,20 @@ public class BaseFeed implements Feed {
 //    public FeedDestination getDestination(FeedDestination.ID id) {
 //        return this.destinations.get(id);
 //    }
-    
+
     public FeedPrecondition setPrecondition(ServiceLevelAgreement sla) {
         this.precondition = new FeedPreconditionImpl(this, sla);
         return this.precondition;
     }
-    
+
     private static class BaseId {
+
         private final UUID uuid;
-        
+
         public BaseId() {
             this.uuid = UUID.randomUUID();
         }
-        
+
         public BaseId(Serializable ser) {
             if (ser instanceof String) {
                 this.uuid = UUID.fromString((String) ser);
@@ -248,7 +254,7 @@ public class BaseFeed implements Feed {
                 throw new IllegalArgumentException("Unknown ID value: " + ser);
             }
         }
-        
+
         @Override
         public boolean equals(Object obj) {
             if (getClass().isAssignableFrom(obj.getClass())) {
@@ -258,20 +264,21 @@ public class BaseFeed implements Feed {
                 return false;
             }
         }
-        
+
         @Override
         public int hashCode() {
             return Objects.hash(getClass(), this.uuid);
         }
-        
+
         @Override
         public String toString() {
             return this.uuid.toString();
         }
     }
-    
-    
+
+
     protected static class FeedId extends BaseId implements Feed.ID {
+
         public FeedId() {
             super();
         }
@@ -305,16 +312,14 @@ public class BaseFeed implements Feed {
 //        return null;
 //    }
 
-
-
     private abstract class Data implements FeedConnection {
-        
+
         private Datasource dataset;
-        
+
         public Data(Datasource ds) {
             this.dataset = ds;
         }
-        
+
         @Override
         public Feed getFeed() {
             return BaseFeed.this;
@@ -325,14 +330,14 @@ public class BaseFeed implements Feed {
             return this.dataset;
         }
     }
-    
+
     private class Source extends Data implements FeedSource {
 
         private static final long serialVersionUID = -2407190619538717445L;
-        
-//        private SourceId id;
+
+        //        private SourceId id;
         private ServiceLevelAgreement agreement;
-        
+
         public Source(Datasource ds, ServiceLevelAgreement agreement) {
             super(ds);
 //            this.id = new SourceId();
@@ -343,35 +348,36 @@ public class BaseFeed implements Feed {
 //        public ID getId() {
 //            return this.id;
 //        }
-        
+
         @Override
         public ServiceLevelAgreement getAgreement() {
             return this.agreement;
         }
     }
-    
+
     private class Destination extends Data implements FeedDestination {
 
         private static final long serialVersionUID = -6990911423133789381L;
-        
+
 //        private DestinationId id;
-        
+
         public Destination(Datasource ds) {
             super(ds);
 //            this.id = new DestinationId();
         }
-//        
+//
 //        @Override
 //        public ID getId() {
 //            return this.id;
 //        }
     }
-    
+
     protected static class FeedPreconditionImpl implements FeedPrecondition {
+
         private ServiceLevelAgreement sla;
         private BaseFeed feed;
         private ServiceLevelAssessment lastAssessment;
-        
+
         public FeedPreconditionImpl(BaseFeed feed, ServiceLevelAgreement sla) {
             this.sla = sla;
             this.feed = feed;
@@ -381,28 +387,36 @@ public class BaseFeed implements Feed {
         public Feed<?> getFeed() {
             return this.feed;
         }
-        
+
         @Override
         public ServiceLevelAgreement getAgreement() {
             return sla;
         }
-        
+
         @Override
         public ServiceLevelAssessment getLastAssessment() {
             return lastAssessment;
         }
-        
+
         @Override
         public void setLastAssessment(ServiceLevelAssessment assmnt) {
             this.lastAssessment = assmnt;
         }
     }
 
-
     @Override
     public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
         return feedServiceLevelAgreements;
     }
 
+    @Nonnull
+    @Override
+    public Map<String, String> getUserProperties() {
+        return userProperties;
+    }
 
+    @Override
+    public void setUserProperties(@Nonnull Map<String, String> userProperties) {
+        this.userProperties = userProperties;
+    }
 }

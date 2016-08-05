@@ -1,6 +1,3 @@
-/**
- *
- */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
 import com.google.common.base.Predicate;
@@ -54,8 +51,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 /**
- *
- * @author Sean Felten
+ * A JCR provider for {@link Feed} objects.
  */
 public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider {
 
@@ -73,7 +69,6 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         return JcrFeed.NODE_TYPE;
     }
 
-
     @Override
     public Class<JcrFeed> getEntityClass() {
         return JcrFeed.class;
@@ -84,19 +79,18 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         return JcrFeed.class;
     }
 
-
     @Override
     public FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId) {
         try {
             JcrFeed<?> feed = (JcrFeed) findById(feedId);
             FeedSource source = feed.getSource(dsId);
-            
+
             if (source == null) {
                 JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
-            
+
                 if (datasource != null) {
                     Node feedNode = getNodeByIdentifier(feedId);
-                    
+
                     return JcrUtil.addJcrObject(feedNode, JcrFeed.SOURCE_NAME, JcrFeedSource.NODE_TYPE, JcrFeedSource.class, datasource);
                 } else {
                     throw new DatasourceNotFoundException(dsId);
@@ -119,10 +113,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     public FeedDestination ensureFeedDestination(Feed.ID feedId, com.thinkbiganalytics.metadata.api.datasource.Datasource.ID dsId) {
         JcrFeed<?> feed = (JcrFeed) findById(feedId);
         FeedDestination source = feed.getDestination(dsId);
-        
+
         if (source == null) {
             JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
-        
+
             if (datasource != null) {
                 Node feedNode = getNodeByIdentifier(feedId);
                 Node feedDestNode = JcrUtil.getOrCreateNode(feedNode, JcrFeed.DESTINATION_NAME, JcrFeedDestination.NODE_TYPE);
@@ -132,20 +126,20 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 throw new DatasourceNotFoundException(dsId);
             }
         }
-        
+
         return source;
     }
 
     @Override
     public Feed ensureFeed(Category.ID categoryId, String feedSystemName) {
         Category category = categoryProvider.findById(categoryId);
-        return ensureFeed(category.getName(),feedSystemName);
+        return ensureFeed(category.getName(), feedSystemName);
     }
 
-    @Override
     /**
      * Ensure the Feed, but the Category must exist!
      */
+    @Override
     public Feed ensureFeed(String categorySystemName, String feedSystemName) {
         String categoryPath = EntityUtil.pathForCategory(categorySystemName);
         JcrCategory category = null;
@@ -184,7 +178,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public Feed ensureFeed(String categorySystemName, String feedSystemName, String descr, Datasource.ID srcId, Datasource.ID destId) {
-        Feed feed = ensureFeed(categorySystemName,feedSystemName,descr);
+        Feed feed = ensureFeed(categorySystemName, feedSystemName, descr);
         if (srcId != null) {
             ensureFeedSource(feed.getId(), srcId);
         }
@@ -196,14 +190,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         JcrFeed<?> feed = (JcrFeed<?>) findById(feedId);
 
         ServiceLevelAgreementBuilder slaBldr = buildPrecondition(feed)
-            .name("Precondition for feed " + feedId)
-            .description(descr);
+                .name("Precondition for feed " + feedId)
+                .description(descr);
 
         slaBldr.obligationGroupBuilder(Condition.REQUIRED)
-            .obligationBuilder()
-            .metric(metrics)
-            .build()
-            .build();
+                .obligationBuilder()
+                .metric(metrics)
+                .build()
+                .build();
 
         return feed;
     }
@@ -220,7 +214,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (feed != null) {
                 Node feedNode = feed.getNode();
                 Node precondNode = JcrUtil.getOrCreateNode(feedNode, JcrFeed.PRECONDITION, JcrFeed.PRECONDITION_TYPE, true);
-                
+
                 if (precondNode.hasProperty(JcrFeedPrecondition.SLA_REF)) {
                     precondNode.getProperty(JcrFeedPrecondition.SLA_REF).remove();
                 }
@@ -246,35 +240,35 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Override
     public Feed<?> addDependent(ID targetId, ID dependentId) {
         JcrFeed<?> target = (JcrFeed<?>) getFeed(targetId);
-        
+
         if (target == null) {
             throw new FeedNotFoundExcepton("The target feed to be assigned the dependent does not exists", targetId);
         }
-        
+
         JcrFeed<?> dependent = (JcrFeed<?>) getFeed(dependentId);
-        
+
         if (dependent == null) {
             throw new FeedNotFoundExcepton("The dependent feed does not exists", dependentId);
         }
-        
+
         target.addDependentFeed(dependent);
         return target;
     }
-    
+
     @Override
     public Feed<?> removeDependent(ID feedId, ID dependentId) {
         JcrFeed<?> target = (JcrFeed<?>) getFeed(feedId);
-        
+
         if (target == null) {
             throw new FeedNotFoundExcepton("The target feed to be assigned the dependent does not exists", feedId);
         }
-        
+
         JcrFeed<?> dependent = (JcrFeed<?>) getFeed(dependentId);
-        
+
         if (dependent == null) {
             throw new FeedNotFoundExcepton("The dependent feed does not exists", dependentId);
         }
-        
+
         target.removeDependentFeed(dependent);
         return target;
     }
@@ -308,7 +302,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     public Feed findBySystemName(String systemName) {
         return findBySystemName(null, systemName);
     }
-    
+
     @Override
     public Feed findBySystemName(String categorySystemName, String systemName) {
         FeedCriteria c = feedCriteria();
@@ -369,14 +363,12 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public boolean enableFeed(Feed.ID id) {
-
         Feed feed = getFeed(id);
         if (!feed.getState().equals(Feed.State.ENABLED)) {
             feed.setState(Feed.State.ENABLED);
             return true;
         }
         return false;
-
     }
 
     @Override
@@ -400,7 +392,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         private Set<Datasource.ID> sourceIds = new HashSet<>();
         private Set<Datasource.ID> destIds = new HashSet<>();
         private String category;
-        
+
         /**
          * Selects by navigation rather than SQL
          */
@@ -410,34 +402,34 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 // Datasources are not currently used so only name comparison is necessary
                 Node feedsNode = session.getRootNode().getNode("metadata/feeds");
                 NodeIterator catItr = null;
-                
+
                 if (this.category != null) {
                     catItr = feedsNode.getNodes(this.category);
                 } else {
                     catItr = feedsNode.getNodes();
                 }
-                
+
                 List<Feed<?>> list = new ArrayList<Feed<?>>();
-                
+
                 while (catItr.hasNext()) {
                     Node catNode = (Node) catItr.next();
                     NodeIterator feedItr = null;
-                    
+
                     if (this.name != null) {
                         feedItr = catNode.getNodes(this.name);
                     } else {
                         feedItr = catNode.getNodes();
                     }
-                    
+
                     while (feedItr.hasNext()) {
                         Node feedNode = (Node) feedItr.next();
-                        
+
                         if (feedNode.getPrimaryNodeType().getName().equals("tba:feed")) {
                             list.add(JcrUtil.createJcrObject(feedNode, JcrFeed.class));
                         }
                     }
                 }
-                
+
                 return (List<E>) list;
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Failed to select feeds", e);
@@ -457,8 +449,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             if (this.category != null) {
                 //TODO FIX SQL
                 join.append(
-                    " join [" + JcrCategory.NODE_TYPE + "] as c on e." + EntityUtil.asQueryProperty(JcrFeed.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c." + EntityUtil
-                        .asQueryProperty(JcrCategory.SYSTEM_NAME));
+                        " join [" + JcrCategory.NODE_TYPE + "] as c on e." + EntityUtil.asQueryProperty(JcrFeed.CATEGORY) + "." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = c."
+                        + EntityUtil
+                                .asQueryProperty(JcrCategory.SYSTEM_NAME));
                 cond.append(" c." + EntityUtil.asQueryProperty(JcrCategory.SYSTEM_NAME) + " = $category ");
                 params.put("category", this.category);
             }
@@ -555,13 +548,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         return new JcrFeed.FeedId(fid);
     }
 
-
     protected JcrFeed<?> setupPrecondition(JcrFeed<?> feed, ServiceLevelAgreement sla) {
 //        this.preconditionService.watchFeed(feed);
         feed.setPrecondition((JcrServiceLevelAgreement) sla);
         return feed;
-
-
     }
 
     public Feed updateFeedServiceLevelAgreement(Feed.ID feedId, ServiceLevelAgreement sla) {
@@ -571,8 +561,8 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     }
 
 
-
     private class JcrPreconditionbuilder implements PreconditionBuilder {
+
         private final ServiceLevelAgreementBuilder slaBuilder;
         private final JcrFeed<?> feed;
 

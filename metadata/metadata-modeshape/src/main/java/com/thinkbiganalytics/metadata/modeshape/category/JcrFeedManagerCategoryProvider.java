@@ -12,20 +12,17 @@ import java.io.Serializable;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 6/8/16.
+ * A JCR provider for {@link FeedManagerCategory} objects.
  */
 public class JcrFeedManagerCategoryProvider extends BaseJcrProvider<FeedManagerCategory, Category.ID> implements FeedManagerCategoryProvider {
 
     @Inject
     private CategoryProvider categoryProvider;
 
-
-
     @Override
     public Class<? extends FeedManagerCategory> getEntityClass() {
         return JcrFeedManagerCategory.class;
     }
-
 
     @Override
     public Class<? extends JcrEntity> getJcrEntityClass() {

@@ -6,16 +6,20 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
+import javax.annotation.Nonnull;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 /**
- * Created by sr186054 on 6/5/16.
+ * An implementation of {@link Category} backed by a JCR repository.
  */
 public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Category {
 
@@ -25,7 +29,6 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     public JcrCategory(Node node) {
         super(node);
     }
-
 
     public List<? extends Feed> getFeeds() {
         List<JcrFeed> feeds = JcrUtil.getChildrenMatchingNodeType(this.node, "tba:feed", JcrFeed.class);
@@ -40,13 +43,13 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
             throw new MetadataRepositoryException("Failed to retrieve the entity id", e);
         }
     }
-     public static class CategoryId extends JcrEntity.EntityId implements Category.ID {
 
-         public CategoryId(Serializable ser) {
-             super(ser);
-         }
-     }
+    public static class CategoryId extends JcrEntity.EntityId implements Category.ID {
 
+        public CategoryId(Serializable ser) {
+            super(ser);
+        }
+    }
 
     @Override
     public String getDisplayName() {
@@ -63,7 +66,6 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
         return null;
     }
 
-
     @Override
     public void setDisplayName(String displayName) {
         setTitle(displayName);
@@ -74,5 +76,14 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
         setSystemName(name);
     }
 
+    @Nonnull
+    @Override
+    public Map<String, String> getUserProperties() {
+        return JcrPropertyUtil.getUserProperties(node);
+    }
 
+    @Override
+    public void setUserProperties(@Nonnull Map<String, String> userProperties) {
+        JcrPropertyUtil.setUserProperties(node, Collections.emptySet(), userProperties);
+    }
 }

@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
@@ -18,7 +20,10 @@ import org.joda.time.DateTime;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -32,6 +37,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nonnull;
 import javax.jcr.Binary;
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
@@ -47,9 +53,15 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.PropertyDefinition;
 
 /**
- * Created by sr186054 on 6/13/16.
+ * Utility functions for JCR properties.
  */
 public class JcrPropertyUtil {
+
+    /** TODO */
+    private static final String USER_PROPERTY_ENCODING = "UTF-8";
+
+    /** TODO */
+    private static final String USER_PROPERTY_PREFIX = "usr:";
 
     protected static final ObjectWriter writer;
     protected static final ObjectReader reader;
@@ -58,17 +70,16 @@ public class JcrPropertyUtil {
         ObjectMapper mapper = new ObjectMapper();
         mapper.registerModule(new JodaModule());
         mapper.setSerializationInclusion(Include.NON_NULL);
-        
+
         mapper.setVisibility(mapper.getSerializationConfig().getDefaultVisibilityChecker()
-                 .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
-                 .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
-                 .withIsGetterVisibility(JsonAutoDetect.Visibility.NONE) );
-        
+                                     .withFieldVisibility(JsonAutoDetect.Visibility.ANY)
+                                     .withGetterVisibility(JsonAutoDetect.Visibility.NONE)
+                                     .withIsGetterVisibility(JsonAutoDetect.Visibility.NONE));
+
         reader = mapper.reader();
         writer = mapper.writer();
     }
 
-    
     public static String getString(Node node, String name) {
         try {
             Property prop = node.getProperty(name);
@@ -79,7 +90,7 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to access property: " + name, e);
         }
     }
-    
+
     public static <E extends Enum<E>> E getEnum(Node node, String name, Class<E> enumType, E defaultValue) {
         try {
             Property prop = node.getProperty(name);
@@ -91,21 +102,20 @@ public class JcrPropertyUtil {
         }
     }
 
-    
     public static <T> T getJsonObject(Node node, String name, Class<T> type) {
         try {
             String json = getString(node, name);
-            
+
             return reader.forType(type).readValue(json);
         } catch (IOException e) {
             throw new MetadataRepositoryException("Failed to deserialize JSON property: " + name, e);
         }
     }
-    
+
     public static <T> void setJsonObject(Node node, String name, Object value) {
         try {
             String json = writer.forType(value.getClass()).writeValueAsString(value);
-            
+
             setProperty(node, name, json);
         } catch (IOException e) {
             throw new MetadataRepositoryException("Failed to serialize JSON property: " + value, e);
@@ -194,7 +204,6 @@ public class JcrPropertyUtil {
         return false;
     }
 
-
     @SuppressWarnings("unchecked")
     public static <T> T asValue(Value value, Session session) {
         try {
@@ -246,7 +255,7 @@ public class JcrPropertyUtil {
                 Value[] values = prop.getValues();
                 if (values != null) {
                     for (Value value : values) {
-                        T o = asValue(value, prop.getSession()); 
+                        T o = asValue(value, prop.getSession());
                         list.add(o);
                     }
                 }
@@ -310,12 +319,11 @@ public class JcrPropertyUtil {
 
     }
 
-
     public static void setProperty(Node node, String name, Object value) {
         try {
             //ensure checked out
             JcrMetadataAccess.ensureCheckoutNode(node);
-            
+
             if (node == null) {
                 throw new IllegalArgumentException("Cannot set a property on a null-node!");
             }
@@ -370,7 +378,7 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to set property value: " + name + "=" + value, e);
         }
     }
-    
+
     /**
      * Used to retrieve the referenced nodes from a multi-valued property of type (WEAK)REFERENCE
      */
@@ -382,15 +390,15 @@ public class JcrPropertyUtil {
             if (propName == null) {
                 throw new IllegalArgumentException("Cannot set a property without a provided name");
             }
-            
+
             final Session session = node.getSession();
             JcrMetadataAccess.ensureCheckoutNode(node);
-            
+
             if (node.hasProperty(propName)) {
                 return Arrays.stream(node.getProperty(propName).getValues())
-                                .map(v -> (Node) JcrPropertyUtil.asValue(v, session))
-                                .filter(n -> n != null)  // weak refs can produce null nodes
-                                .collect(Collectors.toSet());
+                        .map(v -> (Node) JcrPropertyUtil.asValue(v, session))
+                        .filter(n -> n != null)  // weak refs can produce null nodes
+                        .collect(Collectors.toSet());
             } else {
                 return new HashSet<>();
             }
@@ -398,7 +406,7 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to get the node property set: " + propName, e);
         }
     }
-    
+
     public static boolean addToSetProperty(Node node, String name, Object value) {
         return addToSetProperty(node, name, value, false);
     }
@@ -479,26 +487,26 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to remove set property: " + name, e);
         }
     }
-    
+
     public static boolean removeFromSetProperty(Node node, String name, Object value) {
         try {
             JcrMetadataAccess.ensureCheckoutNode(node);
-            
+
             if (node == null) {
                 throw new IllegalArgumentException("Cannot remove a property from a null-node!");
             }
             if (name == null) {
                 throw new IllegalArgumentException("Cannot remove a property without a provided name");
             }
-            
+
             Set<Value> values = new HashSet<>();
-            
+
             if (node.hasProperty(name)) {
                 values = Arrays.stream(node.getProperty(name).getValues()).collect(Collectors.toSet());
             } else {
                 values = new HashSet<>();
             }
-            
+
             Value existingVal = createValue(node.getSession(), value);
             boolean result = values.remove(existingVal);
             node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
@@ -507,7 +515,7 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Failed to remove from set property: " + name + "->" + value, e);
         }
     }
-    
+
     public static <T> Set<T> getSetProperty(Node node, String name) {
         try {
             if (node == null) {
@@ -516,7 +524,7 @@ public class JcrPropertyUtil {
             if (name == null) {
                 throw new IllegalArgumentException("Cannot set a property without a provided name");
             }
-            
+
             if (node.hasProperty(name)) {
                 Set<Node> result = new HashSet<Node>((List<Node>) getProperty(node, name));
                 return (Set<T>) result;
@@ -647,7 +655,7 @@ public class JcrPropertyUtil {
             throw new MetadataRepositoryException("Invalid value format", e);
         }
     }
-    
+
     /**
      * Assuming the specified property is a (WEAK)REFERENCE type, returns whether it is pointing at the specified node.
      */
@@ -670,4 +678,104 @@ public class JcrPropertyUtil {
         }
     }
 
+    /**
+     * Gets the user-defined property names and values for the specified node.
+     *
+     * @param node the node to be searched
+     * @return a map of property names to values
+     * @throws IllegalStateException if a property name is encoded incorrectly
+     * @throws MetadataRepositoryException if the metadata repository is unavailable
+     */
+    @Nonnull
+    public static Map<String, String> getUserProperties(@Nonnull final Node node) {
+        // Get node properties
+        final PropertyIterator iterator;
+        try {
+            iterator = node.getProperties();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get properties for node: " + node, e);
+        }
+
+        // Convert iterator to map
+        final int prefixLength = USER_PROPERTY_PREFIX.length();
+        final Map<String, String> properties = new HashMap<>((int) Math.min(iterator.getSize(), Integer.MAX_VALUE));
+
+        while (iterator.hasNext()) {
+            final Property property = iterator.nextProperty();
+            try {
+                if (property.getName().startsWith(USER_PROPERTY_PREFIX)) {
+                    properties.put(URLDecoder.decode(property.getName().substring(prefixLength), USER_PROPERTY_ENCODING), property.getString());
+                }
+            } catch(RepositoryException e){
+                throw new MetadataRepositoryException("Failed to access property \"" + property + "\" on node: " + node, e);
+            } catch(UnsupportedEncodingException e){
+                throw new IllegalStateException("Unsupported encoding for property \"" + property + "\" on node: " + node, e);
+            }
+        }
+
+        return properties;
+    }
+
+    /**
+     * Sets the specified user-defined properties on the specified node.
+     *
+     * @param node the target node
+     * @param fields the predefined user fields
+     * @param properties the map of user-defined property names to values
+     * @throws IllegalStateException if a property name is encoded incorrectly
+     * @throws MetadataRepositoryException if the metadata repository is unavailable
+     */
+    public static void setUserProperties(@Nonnull final Node node, @Nonnull final Set<FieldDescriptor> fields, @Nonnull final Map<String, String> properties) {
+        // Verify required properties are not empty
+        for (final FieldDescriptor field : fields) {
+            if (field.isRequired() && StringUtils.isEmpty(properties.get(field.getName()))) {
+                throw new MissingUserPropertyException("Missing required property: " + field.getName());
+            }
+        }
+
+        // Set properties on node
+        final Set<String> newProperties = new HashSet<>(properties.size());
+
+        properties.forEach((key, value) -> {
+            try {
+                final String name = USER_PROPERTY_PREFIX + URLEncoder.encode(key, USER_PROPERTY_ENCODING);
+                newProperties.add(name);
+                node.setProperty(name, value);
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to set user property \"" + key + "\" on node: " + node, e);
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException(e.toString(), e);
+            }
+        });
+
+        // Get node properties
+        final PropertyIterator iterator;
+        try {
+            iterator = node.getProperties();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get properties for node: " + node, e);
+        }
+
+        // Remove properties from node
+        while (iterator.hasNext()) {
+            final Property property = iterator.nextProperty();
+            try {
+                final String name = property.getName();
+                if (name.startsWith(USER_PROPERTY_PREFIX) && !newProperties.contains(name)) {
+                    property.remove();
+                }
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to remove property \"" + property + "\" on node: " + node, e);
+            }
+        }
+    }
+
+    /**
+     * Instances of {@code JcrPropertyUtil} may not be constructed.
+     *
+     * @throws UnsupportedOperationException always
+     */
+    private JcrPropertyUtil() {
+        throw new UnsupportedOperationException();
+    }
 }

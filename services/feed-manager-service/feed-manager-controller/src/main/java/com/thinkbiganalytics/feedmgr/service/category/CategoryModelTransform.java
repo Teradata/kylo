@@ -4,9 +4,11 @@ import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
+import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 
@@ -14,12 +16,14 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 5/4/16.
+ * Transforms categories between Feed Manager and Metadata formats.
  */
 public class CategoryModelTransform {
 
@@ -49,6 +53,11 @@ public class CategoryModelTransform {
                         category.setDescription(domainCategory.getDescription());
                         category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
                         category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
+
+                        // Transforms the domain user-defined properties to Feed Manager user-defined properties
+                        final Set<FieldDescriptor> userFields = Collections.emptySet();
+                        category.setUserProperties(UserPropertyTransform.toFeedManagerProperties(userFields, domainCategory.getUserProperties()));
+
                         return category;
                     } else {
                         return null;
@@ -79,7 +88,7 @@ public class CategoryModelTransform {
 
     public Function<FeedCategory, FeedManagerCategory>
             FEED_CATEGORY_TO_DOMAIN =
-            new Function<FeedCategory,FeedManagerCategory>() {
+            new Function<FeedCategory, FeedManagerCategory>() {
                 @Override
                 public FeedManagerCategory apply(FeedCategory feedCategory) {
                     Category.ID domainId = feedCategory.getId() != null ? categoryProvider.resolveId(feedCategory.getId()) : null;
@@ -103,6 +112,12 @@ public class CategoryModelTransform {
                     category.setIconColor(feedCategory.getIconColor());
                     category.setCreatedTime(new DateTime(feedCategory.getCreateDate()));
                     category.setModifiedTime(new DateTime(feedCategory.getUpdateDate()));
+
+                    // Transforms the Feed Manager user-defined properties to domain user-defined properties
+                    if (feedCategory.getUserProperties() != null) {
+                        category.setUserProperties(UserPropertyTransform.toMetadataProperties(feedCategory.getUserProperties()));
+                    }
+
                     return category;
                 }
             };

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.metadata.core.feed;
 
 import com.google.common.base.Predicate;
@@ -42,35 +39,34 @@ import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
- *
- * @author Sean Felten
+ * A provider of {@link Feed} objects that stores everything in memory.
  */
 public class InMemoryFeedProvider implements FeedProvider {
-    
+
     private static final Criteria ALL = new Criteria() {
         public boolean apply(BaseFeed input) {
             return true;
-        };
+        }
+
+        ;
     };
-    
+
     @Inject
     private DatasourceProvider datasetProvider;
-    
+
     @Inject
     private ServiceLevelAgreementProvider slaProvider;
 
     private Map<Feed.ID, Feed> feeds = new ConcurrentHashMap<>();
-    
-    
+
     public InMemoryFeedProvider() {
         super();
     }
-    
+
     public InMemoryFeedProvider(DatasourceProvider datasetProvider) {
         super();
         this.datasetProvider = datasetProvider;
     }
-
 
     @Inject
     public void setDatasourceProvider(DatasourceProvider datasetProvider) {
@@ -95,81 +91,81 @@ public class InMemoryFeedProvider implements FeedProvider {
     public FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId, ServiceLevelAgreement.ID slaId) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
         Datasource ds = this.datasetProvider.getDatasource(dsId);
-        
+
         if (feed == null) {
             throw new FeedCreateException("A feed with the given ID does not exists: " + feedId);
         }
-        
+
         if (ds == null) {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + dsId);
         }
-        
+
         return ensureFeedSource(feed, ds, slaId);
     }
-    
+
     @Override
     public FeedDestination ensureFeedDestination(Feed.ID feedId, Datasource.ID dsId) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
         Datasource ds = this.datasetProvider.getDatasource(dsId);
-        
+
         if (feed == null) {
             throw new FeedCreateException("A feed with the given ID does not exists: " + feedId);
         }
-        
+
         if (ds == null) {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + dsId);
         }
-        
+
         return ensureFeedDestination(feed, ds);
     }
 
     @Override
     public Feed<?> ensureFeed(Category.ID categoryId, String feedSystemName) {
-       throw new UnsupportedOperationException("Unable to ensure feed by categoryId with InMemoryProvider");
+        throw new UnsupportedOperationException("Unable to ensure feed by categoryId with InMemoryProvider");
     }
 
     @Override
     public Feed<?> ensureFeed(String categorySystemName, String feedSystemName) {
-        return ensureFeed(categorySystemName,feedSystemName,null);
+        return ensureFeed(categorySystemName, feedSystemName, null);
     }
 
     @Override
-    public Feed<?> ensureFeed(String categorySystemName,String name, String descr, ID destId) {
+    public Feed<?> ensureFeed(String categorySystemName, String name, String descr, ID destId) {
         Datasource dds = this.datasetProvider.getDatasource(destId);
-    
+
         if (dds == null) {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + destId);
         }
 
         BaseFeed feed = (BaseFeed) ensureFeed(categorySystemName, name, descr);
-        
+
         ensureFeedDestination(feed, dds);
         return feed;
     }
 
     @Override
-    public Feed<?> ensureFeed(String categorySystemName,String name, String descr, ID srcId, ID destId) {
+    public Feed<?> ensureFeed(String categorySystemName, String name, String descr, ID srcId, ID destId) {
         Datasource sds = this.datasetProvider.getDatasource(srcId);
         Datasource dds = this.datasetProvider.getDatasource(destId);
 
         if (sds == null) {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + srcId);
         }
-        
+
         if (dds == null) {
             throw new FeedCreateException("A dataset with the given ID does not exists: " + destId);
         }
 
         BaseFeed feed = (BaseFeed) ensureFeed(categorySystemName, name, descr);
-        
+
         ensureFeedSource(feed, sds, null);
         ensureFeedDestination(feed, dds);
-        
+
         return feed;
     }
 
     @Override
-    public Feed<?> ensureFeed(String categorySystemName,String name, String descr) {
+    public Feed<?> ensureFeed(String categorySystemName, String name, String descr) {
         synchronized (this.feeds) {
             for (Feed feed : this.feeds.values()) {
                 if (feed.getName().equals(name)) {
@@ -177,31 +173,31 @@ public class InMemoryFeedProvider implements FeedProvider {
                 }
             }
         }
-            
+
         BaseFeed newFeed = new BaseFeed(name, descr);
         this.feeds.put(newFeed.getId(), newFeed);
         return newFeed;
     }
-    
+
     @Override
     public Feed<?> createPrecondition(Feed.ID feedId, String descr, List<Metric> metrics) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
-        
+
         if (feed != null) {
             // Remove the old one if any
             FeedPreconditionImpl precond = (FeedPreconditionImpl) feed.getPrecondition();
             if (precond != null) {
                 this.slaProvider.removeAgreement(precond.getAgreement().getId());
             }
-            
+
             ServiceLevelAgreement sla = this.slaProvider.builder()
                     .name("Precondition for feed " + feed.getName() + " (" + feed.getId() + ")")
                     .description(descr)
                     .obligationBuilder(Condition.REQUIRED)
-                        .metric(metrics)
-                        .build()
+                    .metric(metrics)
+                    .build()
                     .build();
-            
+
             return setupPrecondition(feed, sla);
         } else {
             throw new FeedCreateException("A feed with the given ID does not exists: " + feedId);
@@ -211,7 +207,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     @Override
     public PreconditionBuilder buildPrecondition(final Feed.ID feedId) {
         BaseFeed feed = (BaseFeed) this.feeds.get(feedId);
-        
+
         if (feed != null) {
             ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder();
             return new PreconditionbuilderImpl(slaBldr, feed);
@@ -226,7 +222,7 @@ public class InMemoryFeedProvider implements FeedProvider {
         // TODO Auto-generated method stub
         return null;
     }
-    
+
     @Override
     public Feed<?> removeDependent(com.thinkbiganalytics.metadata.api.feed.Feed.ID feedId, com.thinkbiganalytics.metadata.api.feed.Feed.ID depId) {
         // TODO Auto-generated method stub
@@ -247,7 +243,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     public List<Feed> getFeeds() {
         return getFeeds(ALL);
     }
-    
+
     @Override
     public Feed<?> findBySystemName(String systemName) {
         return findBySystemName(null, systemName);
@@ -272,16 +268,15 @@ public class InMemoryFeedProvider implements FeedProvider {
         Criteria critImpl = (Criteria) criteria;
         Iterator<Feed> filtered = Iterators.filter(this.feeds.values().iterator(), critImpl);
         Iterator<Feed> limited = Iterators.limit(filtered, critImpl.getLimit());
-        
+
         return ImmutableList.copyOf(limited);
     }
 
 
-    
     @Override
     public boolean enableFeed(Feed.ID id) {
         BaseFeed feed = (BaseFeed) getFeed(id);
-        if(feed != null) {
+        if (feed != null) {
             feed.setState(Feed.State.ENABLED);
             return true;
         }
@@ -292,7 +287,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     @Override
     public boolean disableFeed(Feed.ID id) {
         BaseFeed feed = (BaseFeed) getFeed(id);
-        if(feed != null) {
+        if (feed != null) {
             feed.setState(Feed.State.DISABLED);
             return true;
         }
@@ -304,12 +299,12 @@ public class InMemoryFeedProvider implements FeedProvider {
         feeds.remove(feedId);
     }
 
-    private FeedSource ensureFeedSource(BaseFeed feed, Datasource ds, ServiceLevelAgreement.ID slaId) {
+    private FeedSource ensureFeedSource(BaseFeed<?> feed, Datasource ds, ServiceLevelAgreement.ID slaId) {
         Map<Datasource.ID, FeedSource> srcIds = new HashMap<>();
         for (FeedSource src : feed.getSources()) {
             srcIds.put(src.getDatasource().getId(), src);
         }
-        
+
         if (srcIds.containsKey(ds.getId())) {
             return srcIds.get(ds.getId());
         } else {
@@ -321,7 +316,7 @@ public class InMemoryFeedProvider implements FeedProvider {
 
     private FeedDestination ensureFeedDestination(BaseFeed feed, Datasource ds) {
         FeedDestination dest = feed.getDestination(ds.getId());
-        
+
         if (dest != null) {
             return dest;
         } else {
@@ -336,7 +331,7 @@ public class InMemoryFeedProvider implements FeedProvider {
     }
 
     private static class Criteria extends AbstractMetadataCriteria<FeedCriteria> implements FeedCriteria, Predicate<Feed> {
-        
+
         private String name;
         private Set<Datasource.ID> sourceIds = new HashSet<>();
         private Set<Datasource.ID> destIds = new HashSet<>();
@@ -344,15 +339,15 @@ public class InMemoryFeedProvider implements FeedProvider {
 
         @Override
         public boolean apply(Feed input) {
-            if (this.name != null && ! name.equals(input.getName())) return false;
-
-            if(this.category != null && input.getCategory() != null && !this.category.equals(input.getCategory().getName())){
+            if (this.name != null && !name.equals(input.getName())) {
                 return false;
             }
 
+            if (this.category != null && input.getCategory() != null && !this.category.equals(input.getCategory().getName())) {
+                return false;
+            }
 
-            
-            if (! this.destIds.isEmpty()) {
+            if (!this.destIds.isEmpty()) {
                 List<FeedDestination> destinations = input.getDestinations();
                 for (FeedDestination dest : destinations) {
                     if (this.destIds.contains(dest.getDatasource().getId())) {
@@ -361,8 +356,8 @@ public class InMemoryFeedProvider implements FeedProvider {
                 }
                 return false;
             }
-            
-            if (! this.sourceIds.isEmpty()) {
+
+            if (!this.sourceIds.isEmpty()) {
                 List<FeedSource> sources = input.getSources();
                 for (FeedSource src : sources) {
                     if (this.sourceIds.contains(src.getDatasource().getId())) {
@@ -371,7 +366,7 @@ public class InMemoryFeedProvider implements FeedProvider {
                 }
                 return false;
             }
-            
+
             return true;
         }
 
@@ -398,19 +393,21 @@ public class InMemoryFeedProvider implements FeedProvider {
             this.name = name;
             return this;
         }
+
         @Override
         public FeedCriteria category(String category) {
             this.category = category;
             return this;
         }
-        
+
     }
 
-    
+
     private class PreconditionbuilderImpl implements PreconditionBuilder {
+
         private final ServiceLevelAgreementBuilder slaBuilder;
         private final BaseFeed feed;
-        
+
         public PreconditionbuilderImpl(ServiceLevelAgreementBuilder slaBuilder, BaseFeed feed) {
             super();
             this.slaBuilder = slaBuilder;
@@ -443,7 +440,7 @@ public class InMemoryFeedProvider implements FeedProvider {
 
         public ServiceLevelAgreement build() {
             ServiceLevelAgreement sla = slaBuilder.build();
-            
+
             setupPrecondition(feed, sla);
             return sla;
         }
@@ -453,8 +450,6 @@ public class InMemoryFeedProvider implements FeedProvider {
             return null;
         }
     }
-
-
 
 
     @Override

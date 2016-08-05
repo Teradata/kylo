@@ -259,11 +259,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             }
             domainFeed = feedManagerFeedProvider.update(domainFeed);
 
-            // Replace properties
-            if (feed.getUserProperties() != null) {
-                feedProvider.replaceProperties(domainFeed.getId(), feed.getUserProperties());
-            }
-
             // Build preconditions
             List<PreconditionRule> preconditions = feed.getSchedule().getPreconditions();
             if(preconditions != null) {

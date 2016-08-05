@@ -2,21 +2,19 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.google.common.base.CaseFormat;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
 import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 /**
- * Created by sr186054 on 2/7/16.
+ * A category is a collection of zero or more feeds in the Feed Manager.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FeedCategory {
@@ -29,6 +27,12 @@ public class FeedCategory {
     private String icon;
     private String iconColor;
     private String description;
+
+    /**
+     * User-defined business metadata
+     */
+    private Set<UserProperty> userProperties;
+
     @JsonIgnore
     private List<FeedSummary> feeds;
 
@@ -54,12 +58,11 @@ public class FeedCategory {
     }
 
     public String getSystemName() {
-        if(systemName == null) {
+        if (systemName == null) {
             generateSystemName();
         }
         return systemName;
     }
-
 
     public String getIcon() {
         return icon;
@@ -85,8 +88,30 @@ public class FeedCategory {
         this.description = description;
     }
 
+    /**
+     * Gets the user-defined business metadata for this category.
+     *
+     * @return the user-defined properties
+     * @see #setUserProperties(Set)
+     * @since 0.3.0
+     */
+    public Set<UserProperty> getUserProperties() {
+        return userProperties;
+    }
+
+    /**
+     * Sets the user-defined business metadata for this category.
+     *
+     * @param userProperties the user-defined properties
+     * @see #getUserProperties()
+     * @since 0.3.0
+     */
+    public void setUserProperties(final Set<UserProperty> userProperties) {
+        this.userProperties = userProperties;
+    }
+
     public List<FeedSummary> getFeeds() {
-        if(feeds == null){
+        if (feeds == null) {
             feeds = new ArrayList<>();
         }
         return feeds;
@@ -95,21 +120,23 @@ public class FeedCategory {
     public void setFeeds(List<FeedSummary> feeds) {
         this.feeds = feeds;
     }
+
     @JsonIgnore
-    public void removeRelatedFeed(final FeedMetadata feed){
+    public void removeRelatedFeed(final FeedMetadata feed) {
         FeedSummary match = Iterables.tryFind(feeds, new Predicate<FeedSummary>() {
             @Override
             public boolean apply(FeedSummary metadata) {
                 return feed.getFeedName().equalsIgnoreCase(metadata.getFeedName());
             }
         }).orNull();
-        if(match != null) {
+        if (match != null) {
             getFeeds().remove(match);
         }
     }
+
     @JsonIgnore
-    public void addRelatedFeed(final FeedSummary feed){
-        if(feeds != null) {
+    public void addRelatedFeed(final FeedSummary feed) {
+        if (feeds != null) {
             List<FeedSummary> arr = Lists.newArrayList(feeds);
             FeedSummary match = Iterables.tryFind(arr, new Predicate<FeedSummary>() {
                 @Override
@@ -117,7 +144,7 @@ public class FeedCategory {
                     return feed.getFeedName().equalsIgnoreCase(metadata.getFeedName());
                 }
             }).orNull();
-            if(match != null){
+            if (match != null) {
                 feeds.remove(match);
             }
         }
@@ -135,7 +162,7 @@ public class FeedCategory {
     }
 
     @JsonIgnore
-    public void generateSystemName(){
+    public void generateSystemName() {
 
         this.systemName = SystemNamingService.generateSystemName(name);
     }
