@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.feedmgr.sla;
 
-import com.thinkbiganalytics.metadata.sla.alerts.EmailServiceLevelAgreementActionConfiguration;
+import com.thinkbiganalytics.metadata.sla.EmailServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.policy.PolicyTransformException;
 

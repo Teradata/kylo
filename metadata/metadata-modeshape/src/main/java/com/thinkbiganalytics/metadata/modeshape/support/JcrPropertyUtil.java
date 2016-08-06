@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
+import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
 import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
 import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -16,6 +17,7 @@ import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensiblePropertyC
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joda.time.DateTime;
 
 import java.io.IOException;
@@ -102,14 +104,37 @@ public class JcrPropertyUtil {
         }
     }
 
-    public static <T> T getJsonObject(Node node, String name, Class<T> type) {
+    private static <T> T readJsonValue(String name, Class<T> type, String json) {
         try {
-            String json = getString(node, name);
-
             return reader.forType(type).readValue(json);
         } catch (IOException e) {
+            if (ExceptionUtils.getRootCause(e) instanceof ClassNotFoundException) {
+                //attempt to find the old class name and replace it with the new one
+                ClassNotFoundException classNotFoundException = (ClassNotFoundException) ExceptionUtils.getRootCause(e);
+                String msg = classNotFoundException.getMessage();
+                msg = StringUtils.remove(msg, "java.lang.ClassNotFound:");
+                String oldName = StringUtils.trim(msg);
+                try {
+                    Class newName = ClassNameChangeRegistry.findClass(oldName);
+                    String newNameString = newName.getName();
+                    if (StringUtils.contains(json, oldName)) {
+                        //replace and try again
+                        json = StringUtils.replace(json, oldName, newNameString);
+                        return readJsonValue(name, type, json);
+                    }
+                } catch (ClassNotFoundException c) {
+
+                }
+
+
+            }
             throw new MetadataRepositoryException("Failed to deserialize JSON property: " + name, e);
         }
+    }
+
+    public static <T> T getJsonObject(Node node, String name, Class<T> type) {
+        String json = getString(node, name);
+        return readJsonValue(name, type, json);
     }
 
     public static <T> void setJsonObject(Node node, String name, Object value) {

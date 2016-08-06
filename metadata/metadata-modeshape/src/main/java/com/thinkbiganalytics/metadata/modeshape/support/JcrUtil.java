@@ -3,6 +3,16 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
+import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.modeshape.jcr.api.JcrTools;
+
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -17,15 +27,6 @@ import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.modeshape.jcr.api.JcrTools;
-
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 /**
  * @author Sean Felten
@@ -207,13 +208,14 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Failed to deserialize generic JSON node", e);
         }
     }
+
     
     public static <T extends Serializable> T getGenericJson(Node jsonNode) {
         try {
             String className = jsonNode.getProperty("tba:type").getString();
             @SuppressWarnings("unchecked")
-            Class<T> type = (Class<T>) Class.forName(className);
-            
+            Class<T> type = (Class<T>) ClassNameChangeRegistry.findClass(className);
+
             return JcrPropertyUtil.getJsonObject(jsonNode, "tba:json", type);
         } catch (RepositoryException | ClassNotFoundException | ClassCastException e) {
             throw new MetadataRepositoryException("Failed to deserialize generic JSON property", e);

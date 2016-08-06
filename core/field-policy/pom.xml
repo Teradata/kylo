@@ -11,7 +11,6 @@
 
     <modules>
         <module>field-policy-api</module>
-        <module>field-policy-default</module>
     </modules>
 
     <build>

@@ -18,5 +18,6 @@
         <module>precondition</module>
         <module>job-repository</module>
         <module>service-monitor</module>
+        <module>classname-change</module>
     </modules>
 </project>
