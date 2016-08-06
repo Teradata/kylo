@@ -12,6 +12,9 @@ import javax.annotation.PostConstruct;
 
 /**
  * Created by sr186054 on 8/6/16.
+ * This class will help find Classes that have moved or changed names.
+ * If a Class is written as JSON and then needs to be reconstructed it needs to know the Class type/name to create. If that class changes Name/pkg overtime the Object will not be able to be constructed because the Class changed.  To fix this when a class changes the is persisted/saved as JSON Annotate that class with the @ClassNameChange and then attempt to find that class using this Registry
+ *
  */
 public class ClassNameChangeRegistry {
 
