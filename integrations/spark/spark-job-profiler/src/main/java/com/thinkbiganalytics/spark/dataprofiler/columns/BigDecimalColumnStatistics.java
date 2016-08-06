@@ -56,7 +56,7 @@ public class BigDecimalColumnStatistics extends ColumnStatistics {
 		if (columnValue != null) {
 			
 			columnBigDecimalValue = new BigDecimal(String.valueOf(columnValue));
-			columnBigDecimalCount = new BigDecimal(Long.valueOf(columnCount));
+			columnBigDecimalCount = new BigDecimal(columnCount);
 			
 			if (max.compareTo(columnBigDecimalValue) < 0) {
 				max = columnBigDecimalValue;
@@ -100,15 +100,14 @@ public class BigDecimalColumnStatistics extends ColumnStatistics {
 	 */
 	@Override
 	public String getVerboseStatistics() {
-		String retVal = "{\n" + getVerboseStatisticsCommon() 
-		+ "\n" 
+
+		return "{\n" + getVerboseStatisticsCommon()
+		+ "\n"
 		+ "BigDecimalColumnStatistics ["
 		+ "max=" + max
 		+ ", min=" + min
 		+ ", sum=" + sum
 		+ "]\n}";
-		
-		return retVal;
 	}
 
 	
@@ -119,7 +118,7 @@ public class BigDecimalColumnStatistics extends ColumnStatistics {
 	public void writeStatistics() {
 		writeStatisticsCommon();
 		
-		rows = new ArrayList<OutputRow>();
+		rows = new ArrayList<>();
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX), String.valueOf(max)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN), String.valueOf(min)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SUM), String.valueOf(sum)));

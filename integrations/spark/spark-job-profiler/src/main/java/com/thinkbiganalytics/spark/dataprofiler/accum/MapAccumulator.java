@@ -19,7 +19,7 @@ public class MapAccumulator implements AccumulatorParam<Map<String, Long>>{
 	 */
 	@Override
 	public Map<String, Long> zero(Map<String, Long> m) {
-		return new HashMap<String, Long>();
+		return new HashMap<>();
 	}
 	
 	
@@ -45,7 +45,7 @@ public class MapAccumulator implements AccumulatorParam<Map<String, Long>>{
 	 * Helper method to merge two maps
 	 */
 	private Map<String, Long> mergeMap( Map<String, Long> map1, Map<String, Long> map2) {
-        Map<String, Long> result = new HashMap<String, Long>(map1);
+        Map<String, Long> result = new HashMap<>(map1);
                 
         for (String key: map2.keySet()) {
  

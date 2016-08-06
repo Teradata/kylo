@@ -32,8 +32,8 @@ public class BooleanColumnStatistics extends ColumnStatistics {
 		
 		super(columnField);
 		
-		trueCount = 0l;
-		falseCount = 0l;
+		trueCount = 0L;
+		falseCount = 0L;
 		
 		columnBooleanValue = Boolean.TRUE;
 	}
@@ -83,15 +83,13 @@ public class BooleanColumnStatistics extends ColumnStatistics {
 	 */
 	@Override
 	public String getVerboseStatistics() {
-		
-		String retVal = "{\n" + getVerboseStatisticsCommon() 
-		+ "\n" 
+
+		return "{\n" + getVerboseStatisticsCommon()
+		+ "\n"
 		+ "BooleanColumnStatistics ["
 		+ "trueCount=" + trueCount
 		+ ", falseCount=" + falseCount
 		+ "]\n}";
-		
-		return retVal;
 	}
 
 	
@@ -102,7 +100,7 @@ public class BooleanColumnStatistics extends ColumnStatistics {
 	public void writeStatistics() {
 		writeStatisticsCommon();
 		
-		rows = new ArrayList<OutputRow>();
+		rows = new ArrayList<>();
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.TRUE_COUNT), String.valueOf(trueCount)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.FALSE_COUNT), String.valueOf(falseCount)));
 		outputWriter.addRows(rows);

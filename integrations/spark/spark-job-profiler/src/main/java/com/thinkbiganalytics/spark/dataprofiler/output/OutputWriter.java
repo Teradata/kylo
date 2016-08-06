@@ -23,9 +23,8 @@ public class OutputWriter implements Serializable {
 
     private JavaSparkContext sc = null;
     private HiveContext hiveContext = null;
-    private JavaRDD<OutputRow> outputRowsRDD = null;
 
-    private static List<OutputRow> outputRows = new ArrayList<OutputRow>();
+    private static final List<OutputRow> outputRows = new ArrayList<>();
     private static OutputWriter outputWriter = null;
 
 
@@ -75,15 +74,10 @@ public class OutputWriter implements Serializable {
      */
     private boolean checkOutputConfigSettings() {
 
-        if ((ProfilerConfiguration.OUTPUT_DB_NAME == null) 
-        		|| (ProfilerConfiguration.OUTPUT_TABLE_NAME == null)
-        		|| (ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME == null)
-        		|| (ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY == null)
-        		){
-            return false;
-        } else {
-            return true;
-        }
+        return !((ProfilerConfiguration.OUTPUT_DB_NAME == null)
+                || (ProfilerConfiguration.OUTPUT_TABLE_NAME == null)
+                || (ProfilerConfiguration.OUTPUT_TABLE_PARTITION_COLUMN_NAME == null)
+                || (ProfilerConfiguration.INPUT_AND_OUTPUT_TABLE_PARTITION_KEY == null));
     }
 
 
@@ -150,8 +144,8 @@ public class OutputWriter implements Serializable {
             System.out.println("Error writing result: Hive context is not available.");
         } 
         else {
-        	
-            outputRowsRDD = sc.parallelize(outputRows);
+
+            JavaRDD<OutputRow> outputRowsRDD = sc.parallelize(outputRows);
             DataFrame outputRowsDF = hiveContext.createDataFrame(outputRowsRDD, OutputRow.class);
             //outputRowsDF.write().mode(SaveMode.Overwrite).saveAsTable(outputTable);
 

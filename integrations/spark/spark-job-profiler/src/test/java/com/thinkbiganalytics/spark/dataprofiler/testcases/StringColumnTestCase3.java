@@ -2,7 +2,8 @@ package com.thinkbiganalytics.spark.dataprofiler.testcases;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -22,24 +23,24 @@ import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
  */
 public class StringColumnTestCase3 {
 	
-	static ColumnStatistics columnStats;
-	static long nullCount;
-	static long totalCount;
-	static long uniqueCount;
-	static double percNullValues;
-	static double percUniqueValues;
-	static double percDuplicateValues;
-	static TopNDataList topNValues;
-	static int maxLength;
-	static int minLength;
-	static String longestString;
-	static String shortestString;
-	static long emptyCount;
-	static double percEmptyValues;
-	static String minStringCase;
-	static String maxStringCase;
-	static String minStringICase;
-	static String maxStringICase;
+	private static ColumnStatistics columnStats;
+	private static long nullCount;
+	private static long totalCount;
+	private static long uniqueCount;
+	private static double percNullValues;
+	private static double percUniqueValues;
+	private static double percDuplicateValues;
+	private static TopNDataList topNValues;
+	private static int maxLength;
+	private static int minLength;
+	private static String longestString;
+	private static String shortestString;
+	private static long emptyCount;
+	private static double percEmptyValues;
+	private static String minStringCase;
+	private static String maxStringCase;
+	private static String minStringICase;
+	private static String maxStringICase;
 	
 	
 	
@@ -47,9 +48,9 @@ public class StringColumnTestCase3 {
     public static void setUpClass() {      
         System.out.println("\t*** Starting run for StringColumnTestCase3 ***");
         columnStats = DataProfilerTest.columnStatsMap.get(4);	//description (comes as varchar(n))
-        nullCount = 1l;
-        totalCount = 10l;
-        uniqueCount = 9l;
+        nullCount = 1L;
+        totalCount = 10L;
+        uniqueCount = 9L;
         percNullValues = 10.0d;
         percUniqueValues = 90.0d;
         percDuplicateValues = 10.0d;
@@ -102,24 +103,39 @@ public class StringColumnTestCase3 {
 	public void testStringPercDuplicateValues() {
 		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), DataProfilerTest.epsilon);
 	}
-	
-	
+
+
 	@Test
 	public void testStringTopNValues() {
-		
-		Object[] topNDataItems;
-		topNDataItems = topNValues.getTopNDataItemsForColumnInReverse().toArray();
-		Arrays.sort(topNDataItems);		
-		int itemCount = topNDataItems.length;
-		assertEquals("Rachael::", ((TopNDataItem)topNDataItems[itemCount-1]).getValue());
-		assertEquals(Long.valueOf(2l), ((TopNDataItem)topNDataItems[itemCount-1]).getCount());
-		
-		for (int i = 0; i < (itemCount - 1 ); i++) {
-			assertEquals(Long.valueOf(1l),((TopNDataItem)(topNDataItems[i])).getCount());
+		TreeSet<TopNDataItem> items = topNValues.getTopNDataItemsForColumn();
+		Iterator<TopNDataItem> iterator = items.descendingIterator();
+
+		//Verify that there are 3 items
+		assertEquals(3, items.size());
+
+		//Verify the top 3 item counts
+		int index = 1;
+		while (iterator.hasNext()) {
+			TopNDataItem item = iterator.next();
+			if (index == 1) {
+				assertEquals("Rachael::", item.getValue());
+				assertEquals(Long.valueOf(2L), item.getCount());
+			}
+			/*
+                    Not checking values for index 2 and 3 since they can be arbitrary.
+                    All remaining values have count 1
+                */
+			else if (index == 2) {
+				assertEquals(Long.valueOf(1L), item.getCount());
+			}
+			else if (index == 3) {
+				assertEquals(Long.valueOf(1L), item.getCount());
+			}
+
+			index++;
 		}
-		
 	}
-	
+
 	
 	@Test
 	public void testStringMaxLength() {

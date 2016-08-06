@@ -23,21 +23,21 @@ import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
 public abstract class ColumnStatistics implements Serializable {
 	
 	/* Schema information for column */
-	protected StructField columnField;
+	final StructField columnField;
 	
 	/* Common metrics for all data types */
-	protected long nullCount;
-	protected long totalCount;
-	protected long uniqueCount;
-	protected double percNullValues;
-	protected double percUniqueValues;
-	protected double percDuplicateValues;
-	protected TopNDataList topNValues; 
+	long nullCount;
+	long totalCount;
+	private long uniqueCount;
+	private double percNullValues;
+	private double percUniqueValues;
+	private double percDuplicateValues;
+	private final TopNDataList topNValues;
 	
 	/* Other variables */
-	protected DecimalFormat df;
-	protected OutputWriter outputWriter; 
-	protected List<OutputRow> rows;
+	final DecimalFormat df;
+	final OutputWriter outputWriter;
+	List<OutputRow> rows;
 	
 
 	/**
@@ -52,7 +52,7 @@ public abstract class ColumnStatistics implements Serializable {
 		percNullValues = 0.0d;
 		percUniqueValues = 0.0d;
 		percDuplicateValues = 0.0d;
-		topNValues = new TopNDataList();
+		topNValues = new TopNDataList(ProfilerConfiguration.NUMBER_OF_TOP_N_VALUES);
 		outputWriter = OutputWriter.getInstance();
 		df = new DecimalFormat(getDecimalFormatPattern());
 	}
@@ -63,7 +63,7 @@ public abstract class ColumnStatistics implements Serializable {
 	 * @param columnValue value
 	 * @param columnCount frequency/count
 	 */
-	protected void accomodateCommon(Object columnValue, Long columnCount) {
+	void accomodateCommon(Object columnValue, Long columnCount) {
 		
 		totalCount += columnCount;
 		uniqueCount += 1;
@@ -82,7 +82,7 @@ public abstract class ColumnStatistics implements Serializable {
 	 * Combine with another column statistics
 	 * @param v_columnStatistics column statistics to combine with
 	 */
-	protected void combineCommon(ColumnStatistics v_columnStatistics) {
+	void combineCommon(ColumnStatistics v_columnStatistics) {
 		
 		totalCount += v_columnStatistics.totalCount;
 		uniqueCount += v_columnStatistics.uniqueCount;
@@ -91,7 +91,7 @@ public abstract class ColumnStatistics implements Serializable {
 		doPercentageCalculationsCommon();
 		
 		for (TopNDataItem dataItem:
-				v_columnStatistics.topNValues.getTopNDataItemsForColumnInReverse()) {
+				v_columnStatistics.topNValues.getTopNDataItemsForColumn()) {
 			topNValues.add(dataItem.getValue(), dataItem.getCount());
 		}
 	}
@@ -100,9 +100,9 @@ public abstract class ColumnStatistics implements Serializable {
 	/**
 	 * Write column's schema information for output result table
 	 */
-	protected void writeColumnSchemaInformation() {
+	private void writeColumnSchemaInformation() {
 		
-		rows = new ArrayList<OutputRow>();
+		rows = new ArrayList<>();
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.COLUMN_DATATYPE), String.valueOf(columnField.dataType())));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.COLUMN_NULLABLE), String.valueOf(columnField.nullable())));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.COLUMN_METADATA), String.valueOf(columnField.metadata())));
@@ -115,26 +115,24 @@ public abstract class ColumnStatistics implements Serializable {
 	 * Print column's schema information to console
 	 * @return schema information
 	 */
-	protected String getVerboseColumnSchemaInformation() {
-		
-		String retVal = "ColumnInfo ["
+	private String getVerboseColumnSchemaInformation() {
+
+		return "ColumnInfo ["
 				+ "name=" + columnField.name()
 				+ ", datatype=" + columnField.dataType().simpleString()
 				+ ", nullable=" + columnField.nullable()
 				+ ", metadata=" + columnField.metadata()
 				+ "]";
-		
-		return retVal;
 	}
 	
 	
 	/**
 	 * Write top n rows in column for output result table 
 	 */
-	protected void writeTopNInformation() {
+	private void writeTopNInformation() {
 		
-		rows = new ArrayList<OutputRow>();
-		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.TOP_N_VALUES), topNValues.printTopNItems(ProfilerConfiguration.NUMBER_OF_TOP_N_VALUES)));
+		rows = new ArrayList<>();
+		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.TOP_N_VALUES), topNValues.printTopNItems()));
 		outputWriter.addRows(rows);
 	}
 	
@@ -143,13 +141,11 @@ public abstract class ColumnStatistics implements Serializable {
 	 * Print top n rows in column to console
 	 * @return top n rows
 	 */
-	protected String getVerboseTopNInformation() {
-		
-		String retVal = "Top " + ProfilerConfiguration.NUMBER_OF_TOP_N_VALUES + " values [\n"
-				+ topNValues.printTopNItems(ProfilerConfiguration.NUMBER_OF_TOP_N_VALUES)
+	private String getVerboseTopNInformation() {
+
+		return "Top " + ProfilerConfiguration.NUMBER_OF_TOP_N_VALUES + " values [\n"
+				+ topNValues.printTopNItems()
 				+ "]";
-		
-		return retVal;
 	}
 	
 	
@@ -157,11 +153,11 @@ public abstract class ColumnStatistics implements Serializable {
 	/**
 	 * Write common statistics information for output result table
 	 */
-	protected void writeStatisticsCommon() {
+	void writeStatisticsCommon() {
 		
 		writeColumnSchemaInformation();
 		
-		rows = new ArrayList<OutputRow>();
+		rows = new ArrayList<>();
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.NULL_COUNT), String.valueOf(nullCount)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.TOTAL_COUNT), String.valueOf(totalCount)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.UNIQUE_COUNT), String.valueOf(uniqueCount)));
@@ -179,12 +175,12 @@ public abstract class ColumnStatistics implements Serializable {
 	 * Print common statistics information to console
 	 * @return common statistics
 	 */
-	protected String getVerboseStatisticsCommon() {
-			
-		String retVal = getVerboseColumnSchemaInformation() 
+	String getVerboseStatisticsCommon() {
+
+		return getVerboseColumnSchemaInformation()
 				+ "\n"
 				+ "CommonStatistics ["
-				+ "nullCount=" + nullCount 
+				+ "nullCount=" + nullCount
 				+ ", totalCount=" + totalCount
 				+ ", uniqueCount=" + uniqueCount
 				+ ", percNullValues=" + df.format(percNullValues)
@@ -193,8 +189,6 @@ public abstract class ColumnStatistics implements Serializable {
 				+ "]"
 				+ "\n"
 				+ getVerboseTopNInformation();
-				
-		return retVal;
 	}
 	
 	

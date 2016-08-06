@@ -13,10 +13,10 @@ import com.thinkbiganalytics.spark.dataprofiler.testcases.FloatColumnTestCase1;
 @SuiteClasses(value = { FloatColumnTestCase1.class })
 
 
-/**
- * Float Column Statistics Test Suite
- * @author jagrut sharma
- *
+/*
+  Float Column Statistics Test Suite
+  @author jagrut sharma
+
  */
 public class FloatColumnTestSuite {
 	

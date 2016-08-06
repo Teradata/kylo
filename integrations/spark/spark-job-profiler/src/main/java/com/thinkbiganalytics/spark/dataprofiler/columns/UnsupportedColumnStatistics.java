@@ -44,13 +44,11 @@ public class UnsupportedColumnStatistics extends ColumnStatistics {
 	 */
 	@Override
 	public String getVerboseStatistics() {
-		
-		String retVal = "{\n" + getVerboseStatisticsCommon() 
-		+ "\n" 
+
+		return "{\n" + getVerboseStatisticsCommon()
+		+ "\n"
 		+ "UnsupportedColumnType [no additional statistics"
 		+ "]\n}";
-		
-		return retVal;
 		
 	}
 

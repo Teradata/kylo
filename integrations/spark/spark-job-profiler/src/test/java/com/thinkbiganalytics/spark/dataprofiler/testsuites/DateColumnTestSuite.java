@@ -12,10 +12,10 @@ import com.thinkbiganalytics.spark.dataprofiler.testcases.DateColumnTestCase1;
 @SuiteClasses(value = { DateColumnTestCase1.class })
 
 
-/**
- * Date Column Statistics Test Suite
- * @author jagrut sharma
- *
+/*
+  Date Column Statistics Test Suite
+  @author jagrut sharma
+
  */
 public class DateColumnTestSuite {
 	

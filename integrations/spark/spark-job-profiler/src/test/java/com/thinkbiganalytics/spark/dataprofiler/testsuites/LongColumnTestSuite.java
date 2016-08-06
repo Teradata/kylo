@@ -12,10 +12,10 @@ import com.thinkbiganalytics.spark.dataprofiler.testcases.LongColumnTestCase1;
 @SuiteClasses(value = { LongColumnTestCase1.class })
 
 
-/**
- * Long Column Statistics Test Suite
- * @author jagrut sharma
- *
+/*
+  Long Column Statistics Test Suite
+  @author jagrut sharma
+
  */
 public class LongColumnTestSuite {
 	

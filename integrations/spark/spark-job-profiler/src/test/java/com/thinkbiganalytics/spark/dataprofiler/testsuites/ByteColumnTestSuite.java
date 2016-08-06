@@ -12,10 +12,10 @@ import com.thinkbiganalytics.spark.dataprofiler.testcases.ByteColumnTestCase1;
 @SuiteClasses(value = { ByteColumnTestCase1.class })
 
 
-/**
- * Byte Column Statistics Test Suite
- * @author jagrut sharma
- *
+/*
+  Byte Column Statistics Test Suite
+  @author jagrut sharma
+
  */
 public class ByteColumnTestSuite {
 	

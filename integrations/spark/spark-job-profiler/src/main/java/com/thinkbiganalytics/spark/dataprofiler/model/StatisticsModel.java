@@ -33,11 +33,9 @@ import com.thinkbiganalytics.spark.dataprofiler.output.OutputWriter;
 @SuppressWarnings("serial")
 public class StatisticsModel implements Serializable {
 
-	Map<Integer, ColumnStatistics> columnStatisticsMap = new HashMap<Integer, ColumnStatistics>();
-	final String decimalTypeRegex = "decimal\\S+";
-	OutputWriter outputWriter = null;
+	private final Map<Integer, ColumnStatistics> columnStatisticsMap = new HashMap<>();
 
-	
+
 	/**
 	 * Include a column value in calculation of profile statistics for the column
 	 * @param columnIndex numeric index of column (0-based)
@@ -47,7 +45,7 @@ public class StatisticsModel implements Serializable {
 	 */
 	public void add (Integer columnIndex, Object columnValue, Long columnCount, StructField columnField) {
 
-		ColumnStatistics newColumnStatistics = null;
+		ColumnStatistics newColumnStatistics;
 		DataType columnDataType = columnField.dataType();
 
 		switch(columnDataType.simpleString()) {
@@ -177,6 +175,7 @@ public class StatisticsModel implements Serializable {
 			 *
 			 * Handle the decimal type here since it comes with scale and precision e.g. decimal(7,5)
 			 */
+			String decimalTypeRegex = "decimal\\S+";
 			if (columnDataType.simpleString().matches(decimalTypeRegex)) {
 				newColumnStatistics = new BigDecimalColumnStatistics(columnField);
 			}
@@ -235,7 +234,7 @@ public class StatisticsModel implements Serializable {
 			columnStatisticsMap.get(columnIndex).writeStatistics();
 		}
 
-		outputWriter = OutputWriter.getInstance();
+		OutputWriter outputWriter = OutputWriter.getInstance();
 		outputWriter.writeResultToTable(sc, hiveContext);
 	}
 
@@ -245,15 +244,21 @@ public class StatisticsModel implements Serializable {
 	 * Print the profile statistics on console
 	 * @return profile model string
 	 */
-	public String printModel() {
+	private String printModel() {
 
 		StringBuilder sb = new StringBuilder();		
 		sb.append("====== Statistics Model ======");
 		sb.append("\n");
 
 		for (Integer columnIndex: columnStatisticsMap.keySet()) {
-			sb.append("=== Column #" + columnIndex + "\n");
-			sb.append(columnStatisticsMap.get(columnIndex).getVerboseStatistics() + "\n");
+			sb.append("=== Column #")
+					.append(columnIndex)
+					.append("\n");
+
+			sb.append(columnStatisticsMap
+					.get(columnIndex)
+					.getVerboseStatistics())
+					.append("\n");
 		}
 
 		sb.append("==============================");

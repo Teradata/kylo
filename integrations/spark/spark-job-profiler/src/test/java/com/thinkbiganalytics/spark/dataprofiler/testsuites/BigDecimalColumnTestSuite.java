@@ -11,7 +11,7 @@ import com.thinkbiganalytics.spark.dataprofiler.testcases.BigDecimalColumnTestCa
 @RunWith(value = Suite.class)
 @SuiteClasses(value = { BigDecimalColumnTestCase1.class })
 
-/**
+/*
  * Big Decimal Column Statistics Test Suite
  * @author jagrut sharma
  *

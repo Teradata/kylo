@@ -12,10 +12,10 @@ import com.thinkbiganalytics.spark.dataprofiler.testcases.BooleanColumnTestCase1
 @RunWith(value = Suite.class)
 @SuiteClasses(value = { BooleanColumnTestCase1.class })
 
-/**
- * Boolean Column Statistics Test Suite
- * @author jagrut sharma
- *
+/*
+  Boolean Column Statistics Test Suite
+  @author jagrut sharma
+
  */
 public class BooleanColumnTestSuite {
 	

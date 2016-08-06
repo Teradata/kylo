@@ -1,8 +1,12 @@
 package com.thinkbiganalytics.spark.dataprofiler.testcases;
 
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
-import java.util.Arrays;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -21,36 +25,36 @@ import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
  *
  */
 public class ShortColumnTestCase1 {
-	static ColumnStatistics columnStats;
-	static long nullCount;
-	static long totalCount;
-	static long uniqueCount;
-	static double percNullValues;
-	static double percUniqueValues;
-	static double percDuplicateValues;
-	static TopNDataList topNValues;
-	static short max;
-	static short min;
-	static long sum;
-	static double mean;
-	static double stddev;
-	static double variance;
+	private static ColumnStatistics columnStats;
+	private static long nullCount;
+	private static long totalCount;
+	private static long uniqueCount;
+	private static double percNullValues;
+	private static double percUniqueValues;
+	private static double percDuplicateValues;
+	private static TopNDataList topNValues;
+	private static short max;
+	private static short min;
+	private static long sum;
+	private static double mean;
+	private static double stddev;
+	private static double variance;
 	
 	@BeforeClass 
     public static void setUpClass() {    
 		
         System.out.println("\t*** Starting run for ShortColumnTestCase1 ***");
         columnStats = DataProfilerTest.columnStatsMap.get(11);	//credits
-        nullCount = 2l;
-        totalCount = 10l;
-        uniqueCount = 6l;
+        nullCount = 2L;
+        totalCount = 10L;
+        uniqueCount = 6L;
         percNullValues = 20.0d;
         percUniqueValues = 60.0d;
         percDuplicateValues = 40.0d;
         topNValues = columnStats.getTopNValues();
         max = (short)5000;
         min = (short)0;
-        sum = 8600l;
+        sum = 8600L;
         mean = 1075d;
         stddev = 1579.359047d;
         variance = 2494375d;
@@ -92,25 +96,38 @@ public class ShortColumnTestCase1 {
 		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), DataProfilerTest.epsilon);
     }
     
-    
     @Test
     public void testShortTopNValues() {
+        TreeSet<TopNDataItem> items = topNValues.getTopNDataItemsForColumn();
+        Iterator<TopNDataItem> iterator = items.descendingIterator();
 
-		Object[] topNDataItems;
-		topNDataItems = topNValues.getTopNDataItemsForColumnInReverse().toArray();
-		Arrays.sort(topNDataItems);
-		int itemCount = topNDataItems.length;
-		 assertEquals((short) 100, ((TopNDataItem)topNDataItems[itemCount-1]).getValue());
-		 assertEquals(Long.valueOf(3l), ((TopNDataItem)topNDataItems[itemCount-1]).getCount());
-		 
-		 //Tie for count=2. Just checking counts for 2nd and 3rd items.
-		 assertEquals(Long.valueOf(2l), ((TopNDataItem)topNDataItems[itemCount-2]).getCount());
-		 assertEquals(Long.valueOf(2l), ((TopNDataItem)topNDataItems[itemCount-2]).getCount());
-		 
-		 for (int i = 0; i < (itemCount - 3 ); i++) {
-			 assertEquals(Long.valueOf(1l),((TopNDataItem)(topNDataItems[i])).getCount());
-		 }
-	}
+        //Verify that there are 3 items
+        assertEquals(3, items.size());
+
+        //Verify the top 3 item counts
+        int index = 1;
+        while (iterator.hasNext()) {
+            TopNDataItem item = iterator.next();
+            if (index == 1) {
+                assertEquals((short) 100, item.getValue());
+                assertEquals(Long.valueOf(3L), item.getCount());
+            }
+            else if (index == 2) {
+                // tie for count 2
+                assertThat(String.valueOf(item.getValue()),
+                        anyOf(is(String.valueOf((short) 1400)), is("null")));
+                assertEquals(Long.valueOf(2L), item.getCount());
+            }
+            else if (index == 3) {
+                // tie for count 2
+                assertThat(String.valueOf(item.getValue()),
+                        anyOf(is(String.valueOf((short) 1400)), is("null")));
+                assertEquals(Long.valueOf(2L), item.getCount());
+            }
+
+            index++;
+        }
+    }
     
     
     @Test

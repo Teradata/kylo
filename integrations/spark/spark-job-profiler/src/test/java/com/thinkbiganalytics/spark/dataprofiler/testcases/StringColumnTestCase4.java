@@ -5,9 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -26,32 +24,32 @@ import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
  */
 public class StringColumnTestCase4 {
 
-	static ColumnStatistics columnStats;
-	static long nullCount;
-	static long totalCount;
-	static long uniqueCount;
-	static double percNullValues;
-	static double percUniqueValues;
-	static double percDuplicateValues;
-	static TopNDataList topNValues;
-	static int maxLength;
-	static int minLength;
-	static List<String> longestStrings;
-	static String shortestString;
-	static long emptyCount;
-	static double percEmptyValues;
-	static String minStringCase;
-	static String maxStringCase;
-	static String minStringICase;
-	static List<String> maxStringICaseList;
+	private static ColumnStatistics columnStats;
+	private static long nullCount;
+	private static long totalCount;
+	private static long uniqueCount;
+	private static double percNullValues;
+	private static double percUniqueValues;
+	private static double percDuplicateValues;
+	private static TopNDataList topNValues;
+	private static int maxLength;
+	private static int minLength;
+	private static List<String> longestStrings;
+	private static String shortestString;
+	private static long emptyCount;
+	private static double percEmptyValues;
+	private static String minStringCase;
+	private static String maxStringCase;
+	private static String minStringICase;
+	private static List<String> maxStringICaseList;
 	
 	@BeforeClass 
     public static void setUpClass() {      
         System.out.println("\t*** Starting run for StringColumnTestCase4 ***");
         columnStats = DataProfilerTest.columnStatsMap.get(14);	//favoritepet
-        nullCount = 1l;
-        totalCount = 10l;
-        uniqueCount = 8l;
+        nullCount = 1L;
+        totalCount = 10L;
+        uniqueCount = 8L;
         percNullValues = 10.0d;
         percUniqueValues = 80.0d;
         percDuplicateValues = 20.0d;
@@ -60,7 +58,7 @@ public class StringColumnTestCase4 {
         minLength = 3;
         
         //two longest strings with same length
-        longestStrings = new ArrayList<String>();
+        longestStrings = new ArrayList<>();
         longestStrings.add("alligator");
         longestStrings.add("albatross");
         
@@ -72,7 +70,7 @@ public class StringColumnTestCase4 {
         minStringICase = "albatross";
         
         //same word when considered without case
-        maxStringICaseList = new ArrayList<String>();
+        maxStringICaseList = new ArrayList<>();
         maxStringICaseList.add("Zebra");
         maxStringICaseList.add("ZEBRA");
         
@@ -113,24 +111,39 @@ public class StringColumnTestCase4 {
 	public void testStringPercDuplicateValues() {
 		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), DataProfilerTest.epsilon);
 	}
-	
-	
+
+
 	@Test
 	public void testStringTopNValues() {
-		Object[] topNDataItems;
-		topNDataItems = topNValues.getTopNDataItemsForColumnInReverse().toArray();
-		Arrays.sort(topNDataItems);
-		int itemCount = topNDataItems.length;
-		
-		assertEquals("Cat", ((TopNDataItem)topNDataItems[itemCount-1]).getValue());
-		assertEquals(Long.valueOf(3l), ((TopNDataItem)topNDataItems[itemCount-1]).getCount());
-		
-		for (int i = 0; i < (topNDataItems.length - 1); i++) {
-			assertEquals(Long.valueOf(1l),((TopNDataItem)(topNDataItems[i])).getCount());
+		TreeSet<TopNDataItem> items = topNValues.getTopNDataItemsForColumn();
+		Iterator<TopNDataItem> iterator = items.descendingIterator();
+
+		//Verify that there are 3 items
+		assertEquals(3, items.size());
+
+		//Verify the top 3 item counts
+		int index = 1;
+		while (iterator.hasNext()) {
+			TopNDataItem item = iterator.next();
+			if (index == 1) {
+				assertEquals("Cat", item.getValue());
+				assertEquals(Long.valueOf(3L), item.getCount());
+			}
+				/*
+                    Not checking values for index 2 and 3 since they can be arbitrary.
+                    All remaining values have count 1
+                */
+			else if (index == 2) {
+				assertEquals(Long.valueOf(1L), item.getCount());
+			}
+			else if (index == 3) {
+				assertEquals(Long.valueOf(1L), item.getCount());
+			}
+
+			index++;
 		}
-
-
 	}
+
 	
 	@Test
 	public void testStringMaxLength() {

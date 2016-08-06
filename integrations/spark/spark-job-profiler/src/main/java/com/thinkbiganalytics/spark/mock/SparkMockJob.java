@@ -11,20 +11,18 @@ import java.io.Serializable;
 /**
  * Created by Jeremy Merrifield on 3/25/16.
  */
+@SuppressWarnings("UnusedAssignment")
 public class SparkMockJob implements Serializable {
-
-    /* Initialize Spark */
-    private HiveContext hiveContext;
-    private SQLContext sqlContext;
 
     public SparkMockJob() {
         super();
         SparkContext sparkContext = SparkContext.getOrCreate();
-        hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
-        sqlContext = new SQLContext(sparkContext);
+        HiveContext hiveContext = new HiveContext(sparkContext);
+        SQLContext sqlContext = new SQLContext(sparkContext);
     }
 
 
+    @SuppressWarnings("AccessStaticViaInstance")
     public static void main(String[] args) {
         try {
             SparkConf conf = new SparkConf().setAppName("Mock Spark Job");
@@ -34,7 +32,7 @@ public class SparkMockJob implements Serializable {
             sc.close();
 
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
     }
 }

@@ -32,8 +32,6 @@ public class StringColumnStatistics extends ColumnStatistics {
 	private String columnStringValue;
 	private int columnStringLength;
 	private boolean initializationFlag;
-	
-	private final String EMPTY_STRING = "";
 
 
 	/**
@@ -45,6 +43,7 @@ public class StringColumnStatistics extends ColumnStatistics {
 
 		maxLength = Integer.MIN_VALUE;
 		minLength = Integer.MAX_VALUE;
+		String EMPTY_STRING = "";
 		longestString = EMPTY_STRING;
 		shortestString = EMPTY_STRING;
 		emptyCount = 0;
@@ -156,9 +155,11 @@ public class StringColumnStatistics extends ColumnStatistics {
 			minLength = vString_columnStatistics.minLength;
 			shortestString = vString_columnStatistics.shortestString;
 		}
+		/*
+		kept for readability
 		else if (vString_columnStatistics.minLength == Integer.MAX_VALUE) {
 			//no operation
-		}
+		}*/
 		else {
 			minLength = 0;
 		}
@@ -188,13 +189,15 @@ public class StringColumnStatistics extends ColumnStatistics {
 			minStringICase = vString_columnStatistics.minStringICase;
 			maxStringICase = vString_columnStatistics.maxStringICase;
 		}
+		/*
+		kept for readability
 		else if (!vString_columnStatistics.initializationFlag) {
-			//no operation. kept for readability.
+			//no operation.
 		}
 		else {
-			//no operation. kept for readability.
+			//no operation.
 		}
-		
+		*/
 
 
 		if (longestString.length() < vString_columnStatistics.longestString.length()) {
@@ -223,7 +226,7 @@ public class StringColumnStatistics extends ColumnStatistics {
 
 		writeStatisticsCommon();
 
-		rows = new ArrayList<OutputRow>();
+		rows = new ArrayList<>();
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX_LENGTH), String.valueOf(maxLength)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN_LENGTH), String.valueOf(minLength)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.LONGEST_STRING), String.valueOf(longestString)));
@@ -243,9 +246,10 @@ public class StringColumnStatistics extends ColumnStatistics {
 	 */
 	@Override
 	public String getVerboseStatistics() {
-		String retVal = "{\n" + getVerboseStatisticsCommon() 
-		+ "\n" 
-		+ "StringColumnStatistics [" 
+
+		return "{\n" + getVerboseStatisticsCommon()
+		+ "\n"
+		+ "StringColumnStatistics ["
 		+ "maxLength=" + maxLength
 		+ ", minLength=" + minLength
 		+ ", longestString=" + longestString
@@ -257,8 +261,6 @@ public class StringColumnStatistics extends ColumnStatistics {
 		+ ", minStringCaseInsensitive=" + minStringICase
 		+ ", maxStringCaseInsensitive=" + maxStringICase
 		+ "]\n}";
-
-		return retVal;
 	}
 
 

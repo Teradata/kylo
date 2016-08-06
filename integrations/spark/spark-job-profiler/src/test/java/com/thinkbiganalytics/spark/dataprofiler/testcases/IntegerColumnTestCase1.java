@@ -2,7 +2,8 @@ package com.thinkbiganalytics.spark.dataprofiler.testcases;
 
 import static org.junit.Assert.assertEquals;
 
-import java.util.Arrays;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -22,35 +23,35 @@ import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
  */
 public class IntegerColumnTestCase1 {
 
-	static ColumnStatistics columnStats;
-	static long nullCount;
-	static long totalCount;
-	static long uniqueCount;
-	static double percNullValues;
-	static double percUniqueValues;
-	static double percDuplicateValues;
-	static TopNDataList topNValues;
-	static int max;
-	static int min;
-	static long sum;
-	static double mean;
-	static double stddev;
-	static double variance;
+	private static ColumnStatistics columnStats;
+	private static long nullCount;
+	private static long totalCount;
+	private static long uniqueCount;
+	private static double percNullValues;
+	private static double percUniqueValues;
+	private static double percDuplicateValues;
+	private static TopNDataList topNValues;
+	private static int max;
+	private static int min;
+	private static long sum;
+	private static double mean;
+	private static double stddev;
+	private static double variance;
 	
     @BeforeClass 
     public static void setUpClass() {      
         System.out.println("\t*** Starting run for IntegerColumnTestCase1 ***");
         columnStats = DataProfilerTest.columnStatsMap.get(0);	//id
-        nullCount = 0l;
-        totalCount = 10l;
-        uniqueCount = 10l;
+        nullCount = 0L;
+        totalCount = 10L;
+        uniqueCount = 10L;
         percNullValues = 0.0d;
         percUniqueValues = 100.0d;
         percDuplicateValues = 0.0d;
         topNValues = columnStats.getTopNValues();
         max = 10;
         min = 1;
-        sum = 55l;
+        sum = 55L;
         mean = 5.5d;
         stddev = 2.872281323d;
         variance = 8.25d;
@@ -93,17 +94,37 @@ public class IntegerColumnTestCase1 {
 		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), DataProfilerTest.epsilon);
     }
     
-    
-    @Test
-    public void testIntegerTopNValues() {
 
-		Object[] topNDataItems;
-		topNDataItems = topNValues.getTopNDataItemsForColumnInReverse().toArray();
-		Arrays.sort(topNDataItems);
-		for (int i = 0; i < topNDataItems.length; i++) {
-			assertEquals(Long.valueOf(1l),((TopNDataItem)(topNDataItems[i])).getCount());
-		}
-	}
+	@Test
+    public void testIntegerTopNValues() {
+        TreeSet<TopNDataItem> items = topNValues.getTopNDataItemsForColumn();
+        Iterator<TopNDataItem> iterator = items.descendingIterator();
+
+        /* Verify that there are 3 items */
+        assertEquals(3, items.size());
+
+        /*
+            Verify the top 3 item counts
+            Not checking values since they can be arbitrary
+            All values have count 1 for this column
+         */
+
+        int index = 1;
+        while (iterator.hasNext()) {
+            TopNDataItem item = iterator.next();
+            if (index == 1) {
+                assertEquals(Long.valueOf(1L), item.getCount());
+            }
+            else if (index == 2) {
+                assertEquals(Long.valueOf(1L), item.getCount());
+            }
+            else if (index == 3) {
+                assertEquals(Long.valueOf(1L), item.getCount());
+            }
+
+            index++;
+        }
+    }
     
     
     @Test

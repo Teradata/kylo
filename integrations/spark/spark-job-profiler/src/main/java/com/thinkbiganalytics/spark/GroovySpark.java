@@ -29,6 +29,7 @@ public class GroovySpark implements Serializable {
         this.path = path;
     }
 
+    @SuppressWarnings("deprecation")
     public void doScript() throws ScriptException, IOException {
         Path pathToResource = Paths.get(path);
         if (!pathToResource.toFile().exists()) {
@@ -58,7 +59,7 @@ public class GroovySpark implements Serializable {
             GroovySpark gs = new GroovySpark(URI.create(path));
             gs.doScript();
         } catch (Exception e) {
-            System.out.println(e);
+            e.printStackTrace();
         }
 
 

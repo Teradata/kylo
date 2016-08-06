@@ -13,10 +13,10 @@ import com.thinkbiganalytics.spark.dataprofiler.testcases.ShortColumnTestCase1;
 @SuiteClasses(value = { ShortColumnTestCase1.class })
 
 
-/**
- * Short Column Statistics Test Suite
- * @author jagrut sharma
- *
+/*
+  Short Column Statistics Test Suite
+  @author jagrut sharma
+
  */
 public class ShortColumnTestSuite {
 	

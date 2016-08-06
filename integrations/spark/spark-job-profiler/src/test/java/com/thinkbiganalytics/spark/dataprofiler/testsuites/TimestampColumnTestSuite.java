@@ -7,15 +7,19 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 import com.thinkbiganalytics.spark.dataprofiler.testcases.TimestampColumnTestCase1;
+import com.thinkbiganalytics.spark.dataprofiler.testcases.TimestampColumnTestCase2;
 
 @RunWith(value = Suite.class)
-@SuiteClasses(value = { TimestampColumnTestCase1.class })
+@SuiteClasses(value = {
+						TimestampColumnTestCase1.class,
+						TimestampColumnTestCase2.class
+						})
 
 
-/**
- * Timestamp Column Statistics Test Suite
- * @author jagrut sharma
- *
+/*
+  Timestamp Column Statistics Test Suite
+  @author jagrut sharma
+
  */
 public class TimestampColumnTestSuite {
 	

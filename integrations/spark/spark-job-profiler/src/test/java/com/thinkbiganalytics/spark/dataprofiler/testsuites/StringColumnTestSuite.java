@@ -18,10 +18,10 @@ import com.thinkbiganalytics.spark.dataprofiler.testcases.StringColumnTestCase4;
 						StringColumnTestCase3.class,
 						StringColumnTestCase4.class})
 
-/**
- * String Column Statistics Test Suite
- * @author jagrut sharma
- *
+/*
+  String Column Statistics Test Suite
+  @author jagrut sharma
+
  */
 public class StringColumnTestSuite {
 	

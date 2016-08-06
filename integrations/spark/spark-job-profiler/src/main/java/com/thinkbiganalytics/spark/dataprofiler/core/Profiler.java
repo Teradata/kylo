@@ -51,7 +51,7 @@ public class Profiler {
 	
 	/**
 	 * Main entry point into program
-	 * @param list of args
+	 * @param args: list of args
 	 */
 	public static void main(String[] args) {
 
@@ -140,7 +140,7 @@ public class Profiler {
 			return null;
 		}
 		
-		String retVal = null;
+		String retVal;
 		
 		String profileObjectType = args[0];	
 		String profileObjectDesc = args[1];	
@@ -153,19 +153,20 @@ public class Profiler {
 			inputAndOutputTablePartitionKey = args[4];
 		}
 
-		if (profileObjectType.equals("table")) {
-			retVal = "select * from " + profileObjectDesc;
-			if (inputAndOutputTablePartitionKey != null && !"ALL".equalsIgnoreCase(inputAndOutputTablePartitionKey)) {
-				retVal += " where " + ProfilerConfiguration.INPUT_TABLE_PARTITION_COLUMN_NAME + " = '" + inputAndOutputTablePartitionKey + "'";
-			}
-		}
-		else if (profileObjectType.equals("query")) {
-			retVal = profileObjectDesc;
-		}
-		else {
-			System.out.println("Illegal command line argument for object type (" + profileObjectType + ")");
-			showCommandLineArgs();
-			return null;
+		switch (profileObjectType) {
+			case "table":
+				retVal = "select * from " + profileObjectDesc;
+				if (inputAndOutputTablePartitionKey != null && !"ALL".equalsIgnoreCase(inputAndOutputTablePartitionKey)) {
+					retVal += " where " + ProfilerConfiguration.INPUT_TABLE_PARTITION_COLUMN_NAME + " = '" + inputAndOutputTablePartitionKey + "'";
+				}
+				break;
+			case "query":
+				retVal = profileObjectDesc;
+				break;
+			default:
+				System.out.println("Illegal command line argument for object type (" + profileObjectType + ")");
+				showCommandLineArgs();
+				return null;
 		}
 		
 		
@@ -225,7 +226,7 @@ public class Profiler {
 
 		conf.set("spark.serializer", "org.apache.spark.serializer.KryoSerializer"); 
 
-		serializeClassesList = new ArrayList<Class<?>>();
+		serializeClassesList = new ArrayList<>();
 		serializeClassesList.add(ColumnStatistics.class);
 		serializeClassesList.add(BigDecimalColumnStatistics.class);
 		serializeClassesList.add(BooleanColumnStatistics.class);
@@ -290,7 +291,7 @@ public class Profiler {
 	private static void printSchema(StructField[] schemaFields) {
 		
 		System.out.println("=== Schema ===");
-		System.out.println("[Field#\tName\tDataType\tNullable?\tMetadata]");;
+		System.out.println("[Field#\tName\tDataType\tNullable?\tMetadata]");
 		for (int i = 0; i < schemaFields.length; i++) {			
 			String output = "Field #" + i + "\t"
 					+ schemaFields[i].name() + "\t"

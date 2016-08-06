@@ -46,14 +46,14 @@ public class ShortColumnStatistics extends ColumnStatistics {
 		max = Short.MIN_VALUE;
 		min = Short.MAX_VALUE;
 
-		sum = 0l;
+		sum = 0L;
 		mean = 0.0d;
 		stddev = 0.0d;
 		variance = 0.0d;
 		
 		sumOfSquares = 0.0d;
-		oldTotalCount = 0l;
-		oldNullCount = 0l;
+		oldTotalCount = 0L;
+		oldNullCount = 0L;
 		oldMean = 0.0d;
 		oldStdDev = 0.0d;
 		oldSumOfSquares = 0.0d;
@@ -157,8 +157,9 @@ public class ShortColumnStatistics extends ColumnStatistics {
 	 */
 	@Override
 	public String getVerboseStatistics() {
-		String retVal = "{\n" + getVerboseStatisticsCommon() 
-		+ "\n" 
+
+		return "{\n" + getVerboseStatisticsCommon()
+		+ "\n"
 		+ "ShortColumnStatistics ["
 		+ "max=" + max
 		+ ", min=" + min
@@ -167,8 +168,6 @@ public class ShortColumnStatistics extends ColumnStatistics {
 		+ ", stddev=" + df.format(stddev)
 		+ ", variance=" + df.format(variance)
 		+ "]\n}";
-
-		return retVal;
 	}
 
 	
@@ -180,7 +179,7 @@ public class ShortColumnStatistics extends ColumnStatistics {
 		
 		writeStatisticsCommon();
 		
-		rows = new ArrayList<OutputRow>();
+		rows = new ArrayList<>();
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX), String.valueOf(max)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN), String.valueOf(min)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SUM), String.valueOf(sum)));

@@ -15,9 +15,9 @@ import java.io.InputStreamReader;
 
 public class InputStreamReaderRunnable implements Runnable {
 
-    private Logger logger = LoggerFactory.getLogger(InputStreamReaderRunnable.class);
+    private final Logger logger = LoggerFactory.getLogger(InputStreamReaderRunnable.class);
 
-    private BufferedReader reader;
+    private final BufferedReader reader;
     
     public InputStreamReaderRunnable(InputStream is) {
         this.reader = new BufferedReader(new InputStreamReader(is));

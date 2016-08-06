@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.spark.dataprofiler.topn;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 
 /**
@@ -73,18 +74,51 @@ public class TopNDataItem implements Serializable, Comparable<TopNDataItem> {
 
 	/**
 	 * Compare to another item based upon count/frequency
+	 * This is used by TreeSet for ordering
 	 */
 	@Override
-	public int compareTo(TopNDataItem other) {
+	public int compareTo(@Nonnull TopNDataItem other) {
+
+		/* if count of this item is lower, it is smaller */
 		if (this.count < other.count) {
 			return -1;
 		}
+		/* if count of this item is higher, it is bigger */
 		else if (this.count > other.count) {
 			return 1;
 		}
-		else {
-			return 0;
+		/*
+			if both items have same count
+				- 1. if both items have values as null, they are equal
+				- 2. if this item's value is null and other item's value is not null, this item is lower
+				- 3. if this item's value is not null and other item's value is null, this item is higher
+				- 4. if both items have same non-null values, they are equal.
+				- 5. if both items have different non-null values, consider this item as lower. (favors keeping non-null items seen earlier)
+		*/
+		else if (this.count.equals(other.count)) {
+			//1
+			if ((this.value == null) && (other.value == null)) {
+				return 0;
+			}
+			//2
+			else if (this.value == null) {
+				return -1;
+			}
+			//3
+			else if (other.value == null) {
+				return 1;
+			}
+			//4
+			else if (this.value.equals(other.value)) {
+				return 0;
+			}
+			//5
+			else {
+				return -1;
+			}
 		}
+
+		return -1;
 	}
 
 

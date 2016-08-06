@@ -16,7 +16,7 @@ public abstract class SchemaInfo {
 	/**
 	 * Mapping from column index to column schema
 	 */
-	public static Map<Integer, StructField> schemaMap = new HashMap<Integer, StructField>();
+	public static final Map<Integer, StructField> schemaMap = new HashMap<>();
 
 	/* no instantiation */
 	private SchemaInfo() {}

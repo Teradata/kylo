@@ -1,8 +1,12 @@
 package com.thinkbiganalytics.spark.dataprofiler.testcases;
 
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
-import java.util.Arrays;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -21,20 +25,20 @@ import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
  */
 public class FloatColumnTestCase1 {
 	
-	static ColumnStatistics columnStats;
-	static long nullCount;
-	static long totalCount;
-	static long uniqueCount;
-	static double percNullValues;
-	static double percUniqueValues;
-	static double percDuplicateValues;
-	static TopNDataList topNValues;
-	static float max;
-	static float min;
-	static double sum;
-	static double mean;
-	static double stddev;
-	static double variance;
+	private static ColumnStatistics columnStats;
+    private static long nullCount;
+    private static long totalCount;
+    private static long uniqueCount;
+    private static double percNullValues;
+	static private double percUniqueValues;
+    private static double percDuplicateValues;
+    private static TopNDataList topNValues;
+    private static float max;
+    private static float min;
+    private static double sum;
+    private static double mean;
+    private static double stddev;
+    private static double variance;
 	
 	
 	@BeforeClass 
@@ -42,9 +46,9 @@ public class FloatColumnTestCase1 {
 		
         System.out.println("\t*** Starting run for FloatColumnTestCase1 ***");
         columnStats = DataProfilerTest.columnStatsMap.get(10);	//weight
-        nullCount = 3l;
-        totalCount = 10l;
-        uniqueCount = 6l;
+        nullCount = 3L;
+        totalCount = 10L;
+        uniqueCount = 6L;
         percNullValues = 30.0d;
         percUniqueValues = 60.0d;
         percDuplicateValues = 40.0d;
@@ -92,26 +96,40 @@ public class FloatColumnTestCase1 {
     public void testFloatPercDuplicateValues() {
 		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), DataProfilerTest.epsilon);
     }
-    
-    
+
+
     @Test
     public void testFloatTopNValues() {
-	 Object[] topNDataItems;
-	 topNDataItems = topNValues.getTopNDataItemsForColumnInReverse().toArray();
-	 Arrays.sort(topNDataItems);
-	 int itemCount = topNDataItems.length;
-	 assertEquals(null, ((TopNDataItem)topNDataItems[itemCount-1]).getValue());
-	 assertEquals(Long.valueOf(3l), ((TopNDataItem)topNDataItems[itemCount-1]).getCount());
+        TreeSet<TopNDataItem> items = topNValues.getTopNDataItemsForColumn();
+        Iterator<TopNDataItem> iterator = items.descendingIterator();
 
-	 //A tie for count=2. Just check that the next two values have count=2.
-	 assertEquals(Long.valueOf(2l), ((TopNDataItem)topNDataItems[itemCount-2]).getCount());
-	 assertEquals(Long.valueOf(2l), ((TopNDataItem)topNDataItems[itemCount-3]).getCount());
+        //Verify that there are 3 items
+        assertEquals(3, items.size());
 
-	 for (int i = 0; i < (itemCount - 3 ); i++) {
-		 assertEquals(Long.valueOf(1l),((TopNDataItem)(topNDataItems[i])).getCount());
-	 }
- }
+        //Verify the top 3 item counts
+        int index = 1;
+        while (iterator.hasNext()) {
+            TopNDataItem item = iterator.next();
+            if (index == 1) {
+                assertEquals(null, item.getValue());
+                assertEquals(Long.valueOf(3L), item.getCount());
+            }
+            else if (index == 2) {
+                // A tie for count 2
+                assertThat(Float.valueOf(item.getValue().toString()),
+                        anyOf(is(110.5f), is(160.7f)));
+                assertEquals(Long.valueOf(2L), item.getCount());
+            }
+            else if (index == 3) {
+                // A tie for count 2
+                assertThat(Float.valueOf(item.getValue().toString()),
+                        anyOf(is(110.5f), is(160.7f)));
+                assertEquals(Long.valueOf(2L), item.getCount());
+            }
 
+            index++;
+        }
+    }
     
     
     @Test

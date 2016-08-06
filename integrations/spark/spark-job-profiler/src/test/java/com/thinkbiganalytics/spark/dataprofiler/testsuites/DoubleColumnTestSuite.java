@@ -12,10 +12,10 @@ import com.thinkbiganalytics.spark.dataprofiler.testcases.DoubleColumnTestCase1;
 @SuiteClasses(value = { DoubleColumnTestCase1.class })
 
 
-/**
- * Double Column Statistics Test Suite
- * @author jagrut sharma
- *
+/*
+  Double Column Statistics Test Suite
+  @author jagrut sharma
+
  */
 public class DoubleColumnTestSuite {
 	

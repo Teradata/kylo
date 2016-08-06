@@ -23,7 +23,7 @@ import scala.Tuple2;
 @SuppressWarnings("serial")
 public class PartitionLevelModels implements FlatMapFunction<Iterator<Tuple2<Tuple2<Integer, Object>, Integer>>, StatisticsModel>{
 
-	Map<Integer, StructField> schemaMap = new HashMap<Integer, StructField>();
+	private Map<Integer, StructField> schemaMap = new HashMap<>();
 	
 	
 	public PartitionLevelModels(Broadcast<Map<Integer, StructField>> bSchemaMap) {
@@ -44,7 +44,7 @@ public class PartitionLevelModels implements FlatMapFunction<Iterator<Tuple2<Tup
 			statisticsModel.add(columnIndex,  columnValue,  count, schemaMap.get(columnIndex));
 		}
 
-		List<StatisticsModel> listStatisticsModels = new ArrayList<StatisticsModel>();
+		List<StatisticsModel> listStatisticsModels = new ArrayList<>();
 		listStatisticsModels.add(statisticsModel);
 		return listStatisticsModels;
 	}

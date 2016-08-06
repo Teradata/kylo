@@ -13,10 +13,10 @@ import com.thinkbiganalytics.spark.dataprofiler.testcases.IntegerColumnTestCase2
 @SuiteClasses(value = { IntegerColumnTestCase1.class, IntegerColumnTestCase2.class })
 
 
-/**
- * Integer Column Statistics Test Suite
- * @author jagrut sharma
- *
+/*
+  Integer Column Statistics Test Suite
+  @author jagrut sharma
+
  */
 public class IntegerColumnTestSuite {
 	

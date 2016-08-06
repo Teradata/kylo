@@ -1,17 +1,27 @@
-package com.thinkbiganalytics.spark.dataprofiler.columns;
+package com.thinkbiganalytics.spark.dataprofiler.testcases;
 
+import com.thinkbiganalytics.spark.dataprofiler.columns.TimestampColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputWriter;
 
 import org.apache.spark.sql.types.DataTypes;
 import org.joda.time.DateTime;
+import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import java.sql.Timestamp;
 import java.util.List;
 
-public class TimestampColumnStatisticsTest {
+public class TimestampColumnTestCase2 {
+
+    @BeforeClass
+    public static void setUpClass() {
+        System.out.println("\t*** Starting run for TimestampColumnTestCase2 ***");
+    }
+
+
     /** Verify accommodating column values. */
     @Test
     public void accomodate() {
@@ -101,7 +111,7 @@ public class TimestampColumnStatisticsTest {
 
         expected = "{\nColumnInfo [name=ts, datatype=timestamp, nullable=true, metadata={}]\n"
                    + "CommonStatistics [nullCount=1, totalCount=5, uniqueCount=5, percNullValues=20, percUniqueValues=100, percDuplicateValues=0]\n"
-                   + "Top 3 values [\n1^Anull^A1^B2^A2016-06-27 14:04:31^A1^B3^A2016-06-27 14:04:30^A1^B]\n"
+                   + "Top 3 values [\n1^A^A1^B2^A2016-06-27 14:04:29^A1^B3^A2016-06-27 14:04:30^A1^B]\n"
                    + "TimestampColumnStatistics [maxTimestamp=2016-06-27 14:04:31.0, minTimestamp=2016-06-27 14:04:29.0]\n}";
         Assert.assertEquals(expected, stats.getVerboseStatistics());
     }
@@ -148,8 +158,14 @@ public class TimestampColumnStatisticsTest {
         Assert.assertEquals("OutputRow [columnName=ts, metricType=PERC_NULL_VALUES, metricValue=20]", rows.get(6).toString());
         Assert.assertEquals("OutputRow [columnName=ts, metricType=PERC_UNIQUE_VALUES, metricValue=100]", rows.get(7).toString());
         Assert.assertEquals("OutputRow [columnName=ts, metricType=PERC_DUPLICATE_VALUES, metricValue=0]", rows.get(8).toString());
-        Assert.assertEquals("OutputRow [columnName=ts, metricType=TOP_N_VALUES, metricValue=1^Anull^A1^B2^A2016-06-27 14:04:31^A1^B3^A2016-06-27 14:04:30^A1^B]", rows.get(9).toString());
+        Assert.assertEquals("OutputRow [columnName=ts, metricType=TOP_N_VALUES, metricValue=1^A^A1^B2^A2016-06-27 14:04:29^A1^B3^A2016-06-27 14:04:30^A1^B]", rows.get(9).toString());
         Assert.assertEquals("OutputRow [columnName=ts, metricType=MAX_TIMESTAMP, metricValue=2016-06-27 14:04:31.0]", rows.get(10).toString());
         Assert.assertEquals("OutputRow [columnName=ts, metricType=MIN_TIMESTAMP, metricValue=2016-06-27 14:04:29.0]", rows.get(11).toString());
+    }
+
+
+    @AfterClass
+    public static void tearDownClass() {
+        System.out.println("\t*** Completed run for TimestampColumnTestCase2 ***");
     }
 }

@@ -3,7 +3,8 @@ package com.thinkbiganalytics.spark.dataprofiler.testcases;
 import static org.junit.Assert.assertEquals;
 
 import java.sql.Timestamp;
-import java.util.Arrays;
+import java.util.Iterator;
+import java.util.TreeSet;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -23,25 +24,25 @@ import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
  */
 public class TimestampColumnTestCase1 {
 	
-	static ColumnStatistics columnStats;
-	static long nullCount;
-	static long totalCount;
-	static long uniqueCount;
-	static double percNullValues;
-	static double percUniqueValues;
-	static double percDuplicateValues;
-	static TopNDataList topNValues;
-	static Timestamp maxTimestamp;
-	static Timestamp minTimestamp;
+	private static ColumnStatistics columnStats;
+	private static long nullCount;
+	private static long totalCount;
+	private static long uniqueCount;
+	private static double percNullValues;
+	private static double percUniqueValues;
+	private static double percDuplicateValues;
+	private static TopNDataList topNValues;
+	private static Timestamp maxTimestamp;
+	private static Timestamp minTimestamp;
 	
 	
 	@BeforeClass 
     public static void setUpClass() {      
         System.out.println("\t*** Starting run for TimestampColumnTestCase1 ***");
         columnStats = DataProfilerTest.columnStatsMap.get(8);	//lastlogin
-        nullCount = 0l;
-        totalCount = 10l;
-        uniqueCount = 5l;
+        nullCount = 0L;
+        totalCount = 10L;
+        uniqueCount = 5L;
         percNullValues = 0.0d;
         percUniqueValues = 50.0d;
         percDuplicateValues = 50.0d;
@@ -85,24 +86,37 @@ public class TimestampColumnTestCase1 {
 	public void testTimestampPercDuplicateValues() {
 		assertEquals(percDuplicateValues, columnStats.getPercDuplicateValues(), DataProfilerTest.epsilon);
 	}
-	
-	
+
+
 	@Test
-	public void testStringTopNValues() {
-		
-		Object[] topNDataItems;
-		topNDataItems = topNValues.getTopNDataItemsForColumnInReverse().toArray();
-		Arrays.sort(topNDataItems);
-		int itemCount = topNDataItems.length;
-		
-		assertEquals(Timestamp.valueOf("2008-05-06 23:10:10"), ((TopNDataItem)topNDataItems[itemCount-1]).getValue());
-		assertEquals(Long.valueOf(4l), ((TopNDataItem)topNDataItems[itemCount-1]).getCount());
-		assertEquals(Timestamp.valueOf("2011-01-08 11:25:45"), ((TopNDataItem)topNDataItems[itemCount-2]).getValue());
-		assertEquals(Long.valueOf(3l), ((TopNDataItem)topNDataItems[itemCount-2]).getCount());
-		
-		
-		for (int i = 0; i < (topNDataItems.length - 2); i++) {
-			assertEquals(Long.valueOf(1l),((TopNDataItem)(topNDataItems[i])).getCount());
+	public void testTimestampTopNValues() {
+		TreeSet<TopNDataItem> items = topNValues.getTopNDataItemsForColumn();
+		Iterator<TopNDataItem> iterator = items.descendingIterator();
+
+		//Verify that there are 3 items
+		assertEquals(3, items.size());
+
+		//Verify the top 3 item counts
+		int index = 1;
+		while (iterator.hasNext()) {
+			TopNDataItem item = iterator.next();
+			if (index == 1) {
+				assertEquals(Timestamp.valueOf("2008-05-06 23:10:10"), item.getValue());
+				assertEquals(Long.valueOf(4L), item.getCount());
+			}
+			else if (index == 2) {
+				assertEquals(Timestamp.valueOf("2011-01-08 11:25:45"), item.getValue());
+				assertEquals(Long.valueOf(3L), item.getCount());
+			}
+			else if (index == 3) {
+				/*
+                    Not checking value since it can be arbitrary.
+                    All remaining values have count 1
+                */
+				assertEquals(Long.valueOf(1L), item.getCount());
+			}
+
+			index++;
 		}
 	}
 	

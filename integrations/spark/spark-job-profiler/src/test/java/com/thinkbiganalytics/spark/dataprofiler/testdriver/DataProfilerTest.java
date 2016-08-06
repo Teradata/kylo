@@ -62,23 +62,12 @@ import com.thinkbiganalytics.spark.dataprofiler.testsuites.DataChecksTestSuite;
 		})
 
 public class DataProfilerTest {
-	
-	static String SPARK_MASTER = "local[*]";
-	static String APP_NAME = "Profiler Test";
-	public static String EMPTY_STRING = "";
-	public static double epsilon = 0.0001d;
-	public static double epsilon2 = 3000.0d; //only used for long-variance, since they are extremely large numbers
-	
-	static int i;
-	static StructField[] schemaFields;
-	static List<Row> rows;
-	static SparkConf conf;
-	static JavaSparkContext sc;
-	static JavaRDD<Row> dataRDD;
-	static DataFrame dataDF;
-	static SQLContext sqlContext;
-	static StructType schema;
-	static StatisticsModel statsModel;
+
+	public static final String EMPTY_STRING = "";
+	public static final double epsilon = 0.0001d;
+	public static final double epsilon2 = 3000.0d; //only used for long-variance, since they are extremely large numbers
+
+	private static JavaSparkContext sc;
 	public static Map<Integer, ColumnStatistics> columnStatsMap;
 	
     
@@ -86,8 +75,8 @@ public class DataProfilerTest {
 	@BeforeClass 
 	public static void setUpClass() {
 		System.out.println("||=== Starting run for DataProfilerTest ===||");
-		
-		schemaFields = new StructField[15];
+
+		StructField[] schemaFields = new StructField[15];
 		schemaFields[0] = DataTypes.createStructField("id", DataTypes.IntegerType, true);
 		schemaFields[1] = DataTypes.createStructField("firstname", DataTypes.StringType, true);
 		schemaFields[2] = DataTypes.createStructField("lastname", DataTypes.StringType, true);
@@ -103,188 +92,190 @@ public class DataProfilerTest {
 		schemaFields[12] = DataTypes.createStructField("ccode", DataTypes.ByteType, true);
 		schemaFields[13] = DataTypes.createStructField("score", DataTypes.createDecimalType(7, 5), true);
 		schemaFields[14] = DataTypes.createStructField("favoritepet", DataTypes.StringType, true);
-		
-		schema = DataTypes.createStructType(schemaFields);
 
-		rows = new ArrayList<Row>();
+		StructType schema = DataTypes.createStructType(schemaFields);
+
+		List<Row> rows = new ArrayList<>();
 		
 		rows.add(RowFactory.create(
-				new Integer(1), 
-				new String("Jon"), 
-				new String("Wright"), 
-				new Integer(14), 
-				new String("Jon::Wright"), 
-				new Double(5.85d), 
+				1,
+				"Jon",
+				"Wright",
+				14,
+				"Jon::Wright",
+				5.85d,
 				Date.valueOf("2010-05-04"),
-				new Boolean(true),
+				Boolean.TRUE,
 				Timestamp.valueOf("2008-05-06 23:10:10"),
-				new Long(1456890911l),
-				new Float(40.2f),
-				new Short((short)100),
-				new Byte((byte)99),
+				1456890911L,
+				40.2f,
+				(short) 100,
+				(byte) 99,
 				new BigDecimal(String.valueOf(1.567)),
-				new String("Cat")));
+				"Cat"));
 		
 		rows.add(RowFactory.create(
-				new Integer(2), 
-				new String("Jon"), 
-				new String("Hudson"), 
-				null, 
-				new String("Jon::Hudson"), 
-				new Double(5.85d), 
+				2,
+				"Jon",
+				"Hudson",
+				null,
+				"Jon::Hudson",
+				5.85d,
 				Date.valueOf("1990-10-25"), 
 				null,
 				Timestamp.valueOf("2011-01-08 11:25:45"),
-				new Long(7638962135l),
-				new Float(110.5f),
-				new Short((short)100),
-				new Byte((byte)99),
+				7638962135L,
+				110.5f,
+				(short) 100,
+				(byte) 99,
 				new BigDecimal(String.valueOf(8.223)),
-				new String("alligator")));
+				"alligator"));
 		
 		rows.add(RowFactory.create(
-				new Integer(3), 
-				new String("Rachael"), 
-				new String("Hu"), 
-				new Integer(40), 
-				new String("Rachael::Hu"), 
-				new Double(6.22d), 
-				Date.valueOf("1990-10-25"), 
-				new Boolean(true),
+				3,
+				"Rachael",
+				"Hu",
+				40,
+				"Rachael::Hu",
+				6.22d,
+				Date.valueOf("1990-10-25"),
+				Boolean.TRUE,
 				Timestamp.valueOf("2011-01-08 11:25:45"),
-				new Long(2988626110l),
-				new Float(160.7f),
-				new Short((short)1400),
-				new Byte((byte)99),
+				2988626110L,
+				160.7f,
+				(short) 1400,
+				(byte) 99,
 				new BigDecimal(String.valueOf(1.567)),
-				new String("Alpaca")));
+				"Alpaca"));
 		
 		rows.add(RowFactory.create(
-				new Integer(4), 
+				4,
 				EMPTY_STRING, 
-				EMPTY_STRING, 
-				new Integer(40), 
+				EMPTY_STRING,
+				40,
 				null, 
 				null, 
-				Date.valueOf("1956-11-12"), 
-				new Boolean(true),
+				Date.valueOf("1956-11-12"),
+				Boolean.TRUE,
 				Timestamp.valueOf("2008-05-06 23:10:10"),
-				new Long(2988626110l),
+				2988626110L,
 				null,
 				null,
-				new Byte((byte)99),
+				(byte) 99,
 				null,
-				new String("Cat")));
+				"Cat"));
 		
 		rows.add(RowFactory.create(
-				new Integer(5), 
-				new String("Rachael"), 
-				EMPTY_STRING, 
-				new Integer(22), 
-				new String("Rachael::"), 
-				new Double(5.85d), 
+				5,
+				"Rachael",
+				EMPTY_STRING,
+				22,
+				"Rachael::",
+				5.85d,
 				Date.valueOf("2005-12-24"),
-				new Boolean(false),
+				Boolean.FALSE,
 				Timestamp.valueOf("2008-05-06 23:10:10"),
-				new Long(8260467621l),
-				new Float(160.7f),
-				new Short((short)100),
+				8260467621L,
+				160.7f,
+				(short) 100,
 				null,
 				new BigDecimal(String.valueOf(4.343)),
-				new String("Zebra")));
+				"Zebra"));
 		
 		rows.add(RowFactory.create(
-				new Integer(6), 
-				new String("Elizabeth"), 
-				new String("Taylor"), 
-				new Integer(40), 
-				new String("Elizabeth::Taylor"), 
-				new Double(5.85d), 
+				6,
+				"Elizabeth",
+				"Taylor",
+				40,
+				"Elizabeth::Taylor",
+				5.85d,
 				Date.valueOf("2011-08-08"),
 				null,
 				Timestamp.valueOf("2016-01-14 14:20:20"),
-				new Long(8732866249l),
+				8732866249L,
 				null,
-				new Short((short)1400),
+				(short) 1400,
 				null,
 				new BigDecimal(String.valueOf(4.343)),
-				new String("ZEBRA")));
+				"ZEBRA"));
 		
 		rows.add(RowFactory.create(
-				new Integer(7), 
-				new String("Jon"), 
-				new String("Taylor"), 
-				new Integer(18), 
-				new String("Jon::Taylor"), 
+				7,
+				"Jon",
+				"Taylor",
+				18,
+				"Jon::Taylor",
 				null, 
 				Date.valueOf("2011-08-08"),
-				new Boolean(true),
+				Boolean.TRUE,
 				Timestamp.valueOf("2011-01-08 11:25:45"),
-				new Long(2988626110l),
-				new Float(110.5f),
-				new Short((short)500),
-				new Byte((byte)40),
+				2988626110L,
+				110.5f,
+				(short) 500,
+				(byte) 40,
 				new BigDecimal(String.valueOf(4.343)),
 				null));
 		
 		rows.add(RowFactory.create(
-				new Integer(8), 
-				new String("Rachael"), 
-				EMPTY_STRING, 
-				new Integer(22), 
-				new String("Rachael::"),
-				new Double(4.37d), 
+				8,
+				"Rachael",
+				EMPTY_STRING,
+				22,
+				"Rachael::",
+				4.37d,
 				Date.valueOf("2011-08-08"),
-				new Boolean(false),
+				Boolean.FALSE,
 				Timestamp.valueOf("2008-05-06 23:10:10"),
-				new Long(8782348100l),
+				8782348100L,
 				null,
 				null,
 				null,
 				null,
-				new String("albatross")));
+				"albatross"));
 		
 		rows.add(RowFactory.create(
-				new Integer(9), 
-				EMPTY_STRING, 
-				new String("Edmundson Jr"), 
-				new Integer(11), 
-				new String("::Edmundson Jr"), 
-				new Double(4.88d), 
+				9,
+				EMPTY_STRING,
+				"Edmundson Jr",
+				11,
+				"::Edmundson Jr",
+				4.88d,
 				Date.valueOf("2007-06-07"),
-				new Boolean(false),
+				Boolean.FALSE,
 				Timestamp.valueOf("2007-03-16 08:24:37"),
 				null,
-				new Float(155.3f),
-				new Short((short)0),
-				new Byte((byte)99),
+				155.3f,
+				(short) 0,
+				(byte) 99,
 				new BigDecimal(String.valueOf(1.567)),
 				EMPTY_STRING));
 		
 		rows.add(RowFactory.create(
-				new Integer(10), 
-				new String("Jon"), 
-				EMPTY_STRING, 
-				new Integer(65), 
-				new String("Jon::"), 
+				10,
+				"Jon",
+				EMPTY_STRING,
+				65,
+				"Jon::",
 				null, 
 				Date.valueOf("1975-04-04"),
-				new Boolean(true),
+				Boolean.TRUE,
 				Timestamp.valueOf("2007-03-16 08:24:31"),
 				null,
-				new Float(180.6f),
-				new Short((short)5000),
-				new Byte((byte)2),
+				180.6f,
+				(short) 5000,
+				(byte) 2,
 				new BigDecimal(String.valueOf(4.343)),
-				new String("Cat")));
-		
-		
-		conf = new SparkConf().setMaster(SPARK_MASTER).setAppName(APP_NAME);
+				"Cat"));
+
+
+		String SPARK_MASTER = "local[*]";
+		String APP_NAME = "Profiler Test";
+		SparkConf conf = new SparkConf().setMaster(SPARK_MASTER).setAppName(APP_NAME);
 		sc = new JavaSparkContext(conf);
-		sqlContext = new SQLContext(sc);
-		
-		dataRDD = sc.parallelize(rows);
-		dataDF = sqlContext.createDataFrame(dataRDD, schema);
+		SQLContext sqlContext = new SQLContext(sc);
+
+		JavaRDD<Row> dataRDD = sc.parallelize(rows);
+		DataFrame dataDF = sqlContext.createDataFrame(dataRDD, schema);
 		
 		/* Enable to debug contents of test data */
 		/*
@@ -292,10 +283,9 @@ public class DataProfilerTest {
 			System.out.println(r.toString());
 		}
 		*/
-		
-		
+
 		Profiler.populateAndBroadcastSchemaMap(dataDF, sc);
-		statsModel = Profiler.profileStatistics(dataDF);
+		StatisticsModel statsModel = Profiler.profileStatistics(dataDF);
 		columnStatsMap = statsModel.getColumnStatisticsMap();		
 	}
 	

@@ -24,12 +24,8 @@ public class DateColumnStatistics extends ColumnStatistics {
 	
 	/* Other variables */
 	private Date columnDateValue;
-	
-	/* Assumptions on min and max dates possible */
-	private final String MAX_DATE = "9999-12-12";
-	private final String MIN_DATE = "1000-01-01";
-	
-	
+
+
 	/**
 	 * One-argument constructor
 	 * @param columnField field schema
@@ -37,8 +33,10 @@ public class DateColumnStatistics extends ColumnStatistics {
 	public DateColumnStatistics(StructField columnField) {
 		
 		super(columnField);
-		
+
+		String MIN_DATE = "1000-01-01";
 		maxDate = Date.valueOf(MIN_DATE);
+		String MAX_DATE = "9999-12-12";
 		minDate = Date.valueOf(MAX_DATE);
 		
 	}
@@ -92,15 +90,13 @@ public class DateColumnStatistics extends ColumnStatistics {
 	 */
 	@Override
 	public String getVerboseStatistics() {
-		
-		String retVal = "{\n" + getVerboseStatisticsCommon() 
-		+ "\n" 
+
+		return "{\n" + getVerboseStatisticsCommon()
+		+ "\n"
 		+ "DateColumnStatistics ["
 		+ "maxDate=" + maxDate
 		+ ", minDate=" + minDate
 		+ "]\n}";
-		
-		return retVal;
 	}
 
 	
@@ -112,7 +108,7 @@ public class DateColumnStatistics extends ColumnStatistics {
 		
 		writeStatisticsCommon();
 		
-		rows = new ArrayList<OutputRow>();
+		rows = new ArrayList<>();
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX_DATE), String.valueOf(maxDate)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN_DATE), String.valueOf(minDate)));
 		outputWriter.addRows(rows);

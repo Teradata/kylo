@@ -79,10 +79,10 @@ public class InvalidStatsSummaryDemo {
 		resultDF = hiveContext.sql(queryString);
 		
 		/* Get list of column names from result */
-		columnNames = new ArrayList<String>();
+		columnNames = new ArrayList<>();
 		for (StructField field: resultDF.schema().fields()) {
 			columnNames.add(field.name());
-		};
+		}
 		
 		
 		/* Process result, populate accumulator as a side-effect */
@@ -90,7 +90,7 @@ public class InvalidStatsSummaryDemo {
 
 			@Override
 			public Row call(Row row) throws Exception {
-				Map<String, Long> invalidFieldCount = new HashMap<String, Long>();
+				Map<String, Long> invalidFieldCount = new HashMap<>();
 				
 				for (int i = 0; i < columnNames.size(); i++) {
 					/* Custom rules can be applied to check value and consider it as invalid.
@@ -98,7 +98,7 @@ public class InvalidStatsSummaryDemo {
 					 */
 					Object value = row.get(i);
 					if (value == null) {
-						invalidFieldCount.put(columnNames.get(i), 1l);
+						invalidFieldCount.put(columnNames.get(i), 1L);
 					}
 				}
 				
@@ -120,7 +120,7 @@ public class InvalidStatsSummaryDemo {
 		 * Create a simple schema to store result:
 		 * columnname, invalidcount 
 		 */
-		fields = new ArrayList<StructField>();
+		fields = new ArrayList<>();
 		fields.add(DataTypes.createStructField("columnname", DataTypes.StringType, true));
 		fields.add(DataTypes.createStructField("invalidcount", DataTypes.LongType, true));
 		invalidStatsSchema = DataTypes.createStructType(fields);
@@ -129,7 +129,7 @@ public class InvalidStatsSummaryDemo {
 		/*
 		 * Transform map into comma-separated strings
 		 */
-		List<String> invalidFieldCounterList = new ArrayList<String>();
+		List<String> invalidFieldCounterList = new ArrayList<>();
 		Map<String, Long> invalidFieldCounterMap = invalidFieldCounter.value();
 		
 		for (Entry<String, Long> entry: invalidFieldCounterMap.entrySet()) {

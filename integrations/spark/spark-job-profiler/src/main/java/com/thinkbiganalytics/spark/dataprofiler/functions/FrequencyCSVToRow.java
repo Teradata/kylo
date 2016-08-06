@@ -16,8 +16,7 @@ public class FrequencyCSVToRow implements Function<String, Row>{
 	@Override
 	public Row call(String line) throws Exception {
 		String[] fields = line.split(",");
-		Row r = RowFactory.create(fields[0].trim(), Long.valueOf(fields[1].trim()));
-		return r;
+		return RowFactory.create(fields[0].trim(), Long.valueOf(fields[1].trim()));
 	}
 
 }

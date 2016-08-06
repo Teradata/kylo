@@ -51,8 +51,8 @@ public class DoubleColumnStatistics extends ColumnStatistics {
 		variance = 0.0d;
 		
 		sumOfSquares = 0.0d;
-		oldTotalCount = 0l;
-		oldNullCount = 0l;
+		oldTotalCount = 0L;
+		oldNullCount = 0L;
 		oldMean = 0.0d;
 		oldStdDev = 0.0d;
 		oldSumOfSquares = 0.0d;
@@ -156,8 +156,9 @@ public class DoubleColumnStatistics extends ColumnStatistics {
 	 */
 	@Override
 	public String getVerboseStatistics() {
-		String retVal = "{\n" + getVerboseStatisticsCommon() 
-		+ "\n" 
+
+		return "{\n" + getVerboseStatisticsCommon()
+		+ "\n"
 		+ "DoubleColumnStatistics ["
 		+ "max=" + max
 		+ ", min=" + min
@@ -166,8 +167,6 @@ public class DoubleColumnStatistics extends ColumnStatistics {
 		+ ", stddev=" + df.format(stddev)
 		+ ", variance=" + df.format(variance)
 		+ "]\n}";
-		
-		return retVal;
 	}
 
 	
@@ -179,7 +178,7 @@ public class DoubleColumnStatistics extends ColumnStatistics {
 		
 		writeStatisticsCommon();
 		
-		rows = new ArrayList<OutputRow>();
+		rows = new ArrayList<>();
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MAX), String.valueOf(max)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.MIN), String.valueOf(min)));
 		rows.add(new OutputRow(columnField.name(), String.valueOf(MetricType.SUM), String.valueOf(sum)));
