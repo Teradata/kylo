@@ -9,49 +9,13 @@
         var self = this;
 
         /**
-         * Copy of model that mirrors the property list.
-         * @type {Object.<String, String>}
-         */
-        self.lastModel = {};
-
-        /**
-         * List of properties in the model.
-         * @type {Array.<{key: string, value: string, $error: Object}>}
-         */
-        $scope.propertyList = [];
-
-        // Watch for changes to model
-        $scope.$watch(
-            function() { return $scope.model; },
-            function() { self.onModelChange(); },
-            true
-        );
-
-        // Watch for changes to property list
-        $scope.$watch(
-            function() { return $scope.propertyList; },
-            function() { self.onPropertyChange(); },
-            true
-        );
-
-        /**
          * Adds a new user-defined property.
          */
         self.addProperty = function() {
-            $scope.propertyList.push({key: "", value: "", $error: {}});
-        };
-
-        /**
-         * Updates the property list with changes to the model.
-         */
-        self.onModelChange = function() {
-            if (!angular.equals($scope.model, self.lastModel)) {
-                $scope.propertyList = [];
-                angular.forEach($scope.model, function(value, key) {
-                    $scope.propertyList.push({key: key, value: value, $error: {}});
-                });
-                self.lastModel = angular.copy($scope.model);
+            if ($scope.model === null) {
+                $scope.model = [];
             }
+            $scope.model.push({systemName: "", value: "", $error: {}});
         };
 
         /**
@@ -59,20 +23,20 @@
          */
         self.onPropertyChange = function() {
             var keys = {};
-            $scope.model = {};
 
-            angular.forEach($scope.propertyList, function(property) {
+            angular.forEach($scope.model, function(property) {
                 // Validate property
-                property.$error.duplicate = angular.isDefined(keys[property.key]);
+                if (angular.isUndefined(property.$error)) {
+                    property.$error = {};
+                }
+
+                property.$error.duplicate = angular.isDefined(keys[property.systemName]);
 
                 // Add to user properties object
-                if (property.key.length > 0) {
-                    keys[property.key] = true;
-                    $scope.model[property.key] = property.value;
+                if (property.systemName.length > 0) {
+                    keys[property.systemName] = true;
                 }
             });
-
-            self.lastModel = angular.copy($scope.model);
         };
 
         /**
@@ -81,7 +45,7 @@
          * @param {number} index the index of the property to delete
          */
         self.removeProperty = function(index) {
-            $scope.propertyList.splice(index, 1);
+            $scope.model.splice(index, 1);
         };
     }
 

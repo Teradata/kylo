@@ -1,7 +1,7 @@
-<div class="feed-user-property" layout="row" ng-repeat="property in propertyList">
+<div class="feed-user-property" layout="row" ng-repeat="property in model">
     <md-input-container flex="50">
         <label>Property</label>
-        <input ng-model="property.key">
+        <input ng-model="property.systemName">
         <div ng-messages="property.$error" md-auto-hide="false">
             <div ng-message="duplicate">Properties must be unique.</div>
         </div>

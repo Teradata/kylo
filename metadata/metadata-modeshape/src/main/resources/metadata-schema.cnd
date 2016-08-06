@@ -89,7 +89,8 @@
 
 [tba:entity] > nt:hierarchyNode, mix:lastModified, tba:taggable
 
-[tba:extensibleEntity] > tba:entity 
+[tba:extensibleEntity] > tba:entity
+    - * (UNDEFINED) COPY
 
 [tba:feedTemplate] > tba:entity, mix:title, tba:propertied
     - tba:defineTable (BOOLEAN) = 'false'
@@ -100,7 +101,7 @@
     - tba:nifiTemplateId (STRING)   
     - tba:json (STRING)
 
-[tba:category] > tba:entity, mix:referenceable, mix:title, tba:propertied
+[tba:category] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
 	- tba:systemName (STRING) mandatory
 	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'

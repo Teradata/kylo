@@ -3,7 +3,9 @@ package com.thinkbiganalytics.feedmgr.rest.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
+import com.thinkbiganalytics.feedmgr.rest.model.json.UserPropertyDeserializer;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
@@ -364,6 +366,7 @@ public class FeedMetadata implements UIFeed {
      * @see #getUserProperties()
      * @since 0.3.0
      */
+    @JsonDeserialize(using = UserPropertyDeserializer.class)
     public void setUserProperties(final Set<UserProperty> userProperties) {
         this.userProperties = userProperties;
     }
