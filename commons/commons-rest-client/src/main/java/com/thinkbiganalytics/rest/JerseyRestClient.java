@@ -147,7 +147,7 @@ public class JerseyRestClient {
         client.register(JacksonFeature.class);
         client.register(MultiPartFeature.class);
 
-        if (StringUtils.isNotBlank(getUsername())) {
+        if (StringUtils.isNotBlank(config.getUsername())) {
             HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), config.getPassword());
             client.register(feature);
         }

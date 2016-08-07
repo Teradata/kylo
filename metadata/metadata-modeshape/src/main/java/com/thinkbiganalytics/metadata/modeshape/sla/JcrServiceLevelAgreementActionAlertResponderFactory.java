@@ -6,7 +6,8 @@ import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
 import com.thinkbiganalytics.metadata.api.Command;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.auth.AdminCredentials;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementAction;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
@@ -29,7 +30,7 @@ import javax.inject.Inject;
 public class JcrServiceLevelAgreementActionAlertResponderFactory implements AlertResponder {
 
     @Inject
-    MetadataAccess metadataAccess;
+    JcrMetadataAccess metadataAccess;
 
     @Inject
     private ServiceLevelAssessmentProvider assessmentProvider;
@@ -57,7 +58,7 @@ public class JcrServiceLevelAgreementActionAlertResponderFactory implements Aler
     }
 
     private void handleViolation(Alert alert) {
-        metadataAccess.read(new Command<Object>() {
+        metadataAccess.read(new AdminCredentials(),new Command<Object>() {
             @Override
             public Object execute() {
                 ServiceLevelAssessment.ID assessmentId = alert.getContent();

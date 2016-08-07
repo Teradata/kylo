@@ -130,8 +130,6 @@ public class JiraJerseyClient extends JerseyRestClient implements JiraClient{
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("projectKeys", projectKey);
             params.put("expand", "projects.issuetypes.fields");
-            String str = get("/issue/createmeta", params, String.class);
-
             CreateMeta createData = get("/issue/createmeta", params, CreateMeta.class);
             return createData;
         } catch (Exception e) {
