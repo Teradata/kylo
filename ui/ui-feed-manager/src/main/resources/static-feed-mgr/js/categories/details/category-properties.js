@@ -22,6 +22,12 @@
         self.isEditable = !angular.isString(CategoriesService.model.id);
 
         /**
+         * Indicates if the properties are valid and can be saved.
+         * @type {boolean} {@code true} if all properties are valid, or {@code false} otherwise
+         */
+        self.isValid = true;
+
+        /**
          * Category data used in "normal" mode.
          * @type {CategoryModel}
          */
@@ -44,6 +50,7 @@
 
             CategoriesService.save(model).then(function(response) {
                 self.model = CategoriesService.model = response.data;
+                CategoriesService.reload();
                 $mdToast.show(
                     $mdToast.simple()
                         .textContent('Saved the Category')

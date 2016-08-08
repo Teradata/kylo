@@ -31,7 +31,7 @@
             </md-chips>
         </md-input-container>
 
-        <thinkbig-property-list-editor properties="vm.model.userProperties"></thinkbig-property-list-editor>
+        <thinkbig-property-list-editor properties="vm.model.userProperties" is-valid="vm.isValid"></thinkbig-property-list-editor>
 
         <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}"></thinkbig-step-buttons>
     </body-section>

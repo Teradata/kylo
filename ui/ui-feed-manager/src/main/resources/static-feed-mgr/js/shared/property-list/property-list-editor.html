@@ -1,14 +1,18 @@
-<div class="feed-user-property" layout="row" ng-repeat="property in model">
+<div class="feed-user-property" layout="row" ng-repeat="property in propertyList">
     <md-input-container flex="50">
         <label>Property</label>
         <input ng-model="property.systemName">
         <div ng-messages="property.$error" md-auto-hide="false">
             <div ng-message="duplicate">Properties must be unique.</div>
+            <div ng-message="missingName">A name is required.</div>
         </div>
     </md-input-container>
     <md-input-container flex="50">
         <label>Value</label>
         <input ng-model="property.value">
+        <div ng-messages="property.$error" md-auto-hide="false">
+            <div ng-message="missingValue">A value is required.</div>
+        </div>
     </md-input-container>
     <md-button class="md-icon-button" aria-label="Delete" ng-click="vm.removeProperty($index)">
         <md-icon>close</md-icon>

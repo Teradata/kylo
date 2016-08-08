@@ -16,8 +16,14 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Deserializes a JSON array or object into a set of user-defined property objects.
+ */
 public class UserPropertyDeserializer extends StdDeserializer<Set<UserProperty>> {
 
+    /**
+     * Constructs a {@code UserPropertyDeserializer}.
+     */
     public UserPropertyDeserializer() {
         super(Object.class);
     }
@@ -44,7 +50,7 @@ public class UserPropertyDeserializer extends StdDeserializer<Set<UserProperty>>
                 userProperties.add(userProperty);
             }
         } else {
-            throw new JsonParseException("TODO", p.getCurrentLocation());  // TODO
+            throw new JsonParseException("Unsupported user property node: " + node, p.getCurrentLocation());
         }
 
         return userProperties;
