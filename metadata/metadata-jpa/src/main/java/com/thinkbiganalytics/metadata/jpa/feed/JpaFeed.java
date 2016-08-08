@@ -449,4 +449,14 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
     public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
         return null;
     }
+
+    @Override
+    public Map<String, String> getUserProperties() {
+        return null;
+    }
+
+    @Override
+    public void setUserProperties(Map<String, String> userProperties) {
+
+    }
 }

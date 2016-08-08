@@ -8,10 +8,22 @@ import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
 import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
 
-import javax.persistence.*;
 import java.io.Serializable;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+
+import javax.persistence.Column;
+import javax.persistence.Embeddable;
+import javax.persistence.EmbeddedId;
+import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
+import javax.persistence.Inheritance;
+import javax.persistence.InheritanceType;
+import javax.persistence.NamedQuery;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
+import javax.persistence.Version;
 
 /**
  * Created by sr186054 on 5/3/16.
@@ -140,5 +152,15 @@ public class JpaCategory extends AbstractAuditedEntity implements Category {
         public void setUuid(UUID uuid) {
             this.uuid = uuid;
         }
+    }
+
+    @Override
+    public Map<String, String> getUserProperties() {
+        return null;
+    }
+
+    @Override
+    public void setUserProperties(Map<String, String> userProperties) {
+
     }
 }
