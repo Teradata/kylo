@@ -47,6 +47,8 @@
         var multiBarHorizontalChartMarginRight = 50;
 
         function selectRow(row) {
+            //console.log("Selecting row " + row);
+
             selectColumn(row);
 
             selectColumnData();
@@ -342,10 +344,19 @@
 
                 };
                 self.data = HiveService.transformResults2(response, ['processing_dttm'], transformFn);
-                if (self.data && self.data.rows && self.data.rows.length > 1) {
-                    selectRow(self.data.rows[1]);
+
+                if (self.data && self.data.rows && self.data.rows.length > 0) {
+                    var unique = _.uniq(self.data.rows, _.property('columnname'));
+                    self.sorted = _.sortBy(unique, _.property('columnname'));
+                    if (self.sorted && self.sorted.length > 1) {
+                        //default to selecting other than (ALL) column - (ALL) column will be first, so we select second
+                        selectRow(self.sorted[1]);
+                    } else if (self.sorted && self.sorted.length > 0) {
+                        //fall back to selecting first column if no other exist
+                        selectRow(self.sorted[1]);
+                    }
                 }
-                //console.log(self.data);
+
                 self.loading = false;
                 BroadcastService.notify('PROFILE_TAB_DATA_LOADED','profile-stats');
             };
