@@ -6,6 +6,7 @@ import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementMetricTransformerH
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
 import com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionValidation;
 import com.thinkbiganalytics.rest.model.beanvalidation.UUID;
 
 import org.springframework.stereotype.Component;
@@ -20,6 +21,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -103,6 +105,15 @@ public class ServiceLevelAgreementRestController {
         return Response.ok(agreement).build();
     }
 
+
+    @GET
+    @Path("/action/validate")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response validateAction(@QueryParam("actionConfigClass") String actionConfigClass) {
+
+        List<ServiceLevelAgreementActionValidation> validation = serviceLevelAgreementService.validateAction(actionConfigClass);
+        return Response.ok(validation).build();
+    }
 
 
 }

@@ -9,4 +9,6 @@ public interface ServiceLevelAgreementAction<T extends ServiceLevelAgreementActi
 
     boolean respond(T actionConfiguration, ServiceLevelAssessment assessment,Alert a);
 
+    ServiceLevelAgreementActionValidation validateConfiguration();
+
 }

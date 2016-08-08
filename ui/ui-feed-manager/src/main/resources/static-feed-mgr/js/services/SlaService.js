@@ -16,6 +16,49 @@ angular.module(MODULE_FEED_MGR).factory('SlaService', function ($http, $q, $mdTo
 
         },
 
+        validateSlaActionClass: function (actionClass) {
+            var successFn = function (response) {
+                return response.data;
+            }
+            var errorFn = function (err) {
+                console.log('ERROR ', err)
+            }
+            var promise = $http.get(RestUrlService.VALIDATE_SLA_ACTION_URL, {params: {"actionConfigClass": actionClass}});
+            promise.then(successFn, errorFn);
+            return promise;
+
+        },
+        validateSlaActionRule: function (rule) {
+            rule.validConfiguration = true;
+            rule.validationMessage = '';
+            var successFn = function (response) {
+                if (response.data && response.data.length) {
+                    var validationMessage = "";
+                    _.each(response.data, function (validation) {
+                        if (!validation.valid) {
+                            if (validationMessage != "") {
+                                validationMessage += ", ";
+                            }
+                            validationMessage += validation.validationMessage;
+                        }
+                    });
+                    if (validationMessage != "") {
+                        rule.validConfiguration = false;
+                        rule.validationMessage = validationMessage;
+                    }
+                }
+                ;
+
+            }
+            var errorFn = function (err) {
+                console.log('ERROR ', err)
+            }
+            var promise = $http.get(RestUrlService.VALIDATE_SLA_ACTION_URL, {params: {"actionConfigClass": rule.objectClassType}});
+            promise.then(successFn, errorFn);
+            return promise;
+
+        },
+
         getPossibleSlaActionOptions: function () {
 
             var successFn = function (response) {

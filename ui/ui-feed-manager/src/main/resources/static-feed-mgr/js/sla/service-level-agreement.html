@@ -105,8 +105,9 @@
       <div>
         <h4 class="subhead">SLA Actions</h4>
 
-        <div class="layout-padding" ng-if="vm.editSla.actionConfigurations.length ==0">
-          No SLA Actions are defined. An Action is required. Please click the Add Action button to configure.
+        <div class="layout-padding" ng-if="vm.editSla.actionConfigurations.length ==0" layout="column">
+          <span>All SLA violations will generate an Alert.</span>
+          <span ng-if="vm.showActionOptions"">Click the 'Add Action' button to add additional actions when an SLA is violated</span>
         </div>
         <div ng-repeat="rule in vm.editSla.actionConfigurations" layout="column" class="layout-padding-left-right">
 
@@ -116,6 +117,7 @@
             <div layout="column" flex class="layout-padding-left" style="padding-top:25px">
               <span>{{rule.name}}</span>
               <span class="hint">{{rule.description}}</span>
+              <span ng-if="rule.validConfiguration == false" class="error"><strong>Warning</strong>  Configuration Error!  You can still assign this action, but it may not fire due to configuration issues. {{rule.validationMessage}}</span>
             </div>
             <div>
               <div style="padding-top:25px;">
@@ -143,7 +145,7 @@
         </div>
         <div ng-if="vm.addingSlaAction == false" flex layout="row">
           <span flex></span>
-          <md-button class="md-raised" ng-click="vm.addingSlaAction = true">Add Action</md-button>
+          <md-button class="md-raised" ng-click="vm.addingSlaAction = true" ng-if="vm.showActionOptions">Add Action</md-button>
         </div>
       </div>
 

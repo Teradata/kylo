@@ -12,6 +12,10 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ServiceLevelAgreementActionUiConfigurationItem extends BaseUiPolicyRule {
 
+    private boolean validConfiguration = false;
+
+    private String validationMessage;
+
     private List<Class<? extends ServiceLevelAgreementAction>> actionClasses;
 
     public List<Class<? extends ServiceLevelAgreementAction>> getActionClasses() {
@@ -20,5 +24,22 @@ public class ServiceLevelAgreementActionUiConfigurationItem extends BaseUiPolicy
 
     public void setActionClasses(List<Class<? extends ServiceLevelAgreementAction>> actionClasses) {
         this.actionClasses = actionClasses;
+    }
+
+
+    public boolean isValidConfiguration() {
+        return validConfiguration;
+    }
+
+    public void setValidConfiguration(boolean validConfiguration) {
+        this.validConfiguration = validConfiguration;
+    }
+
+    public String getValidationMessage() {
+        return validationMessage;
+    }
+
+    public void setValidationMessage(String validationMessage) {
+        this.validationMessage = validationMessage;
     }
 }

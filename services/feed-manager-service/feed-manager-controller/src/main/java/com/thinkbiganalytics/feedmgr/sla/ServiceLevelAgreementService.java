@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.feedmgr.sla;
 
-import com.google.common.collect.Lists;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -13,21 +12,16 @@ import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementMetric;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionValidation;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
-import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
-import com.thinkbiganalytics.policy.rest.model.GenericBaseUiPolicyRuleBuilder;
 
 import org.apache.commons.lang3.StringUtils;
-import org.reflections.Reflections;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -59,26 +53,7 @@ public class ServiceLevelAgreementService {
     private FeedProvider feedProvider;
 
     public List<ServiceLevelAgreementRule> discoverSlaMetrics() {
-
-        List<ServiceLevelAgreementRule> rules = new ArrayList<>();
-        Set<Class<?>>
-            validators = new Reflections("com.thinkbiganalytics").getTypesAnnotatedWith(ServiceLevelAgreementMetric.class);
-        for (Class c : validators) {
-            ServiceLevelAgreementMetric policy = (ServiceLevelAgreementMetric) c.getAnnotation(ServiceLevelAgreementMetric.class);
-            String desc = policy.description();
-            String shortDesc = policy.shortDescription();
-            if (StringUtils.isBlank(desc) && StringUtils.isNotBlank(shortDesc)) {
-                desc = shortDesc;
-            }
-            if (StringUtils.isBlank(shortDesc) && StringUtils.isNotBlank(desc)) {
-                shortDesc = desc;
-            }
-            List<FieldRuleProperty> properties = ServiceLevelAgreementMetricTransformer.instance().getUiProperties(c);
-            rules.add(
-                (ServiceLevelAgreementRule) new GenericBaseUiPolicyRuleBuilder<ServiceLevelAgreementRule>(ServiceLevelAgreementRule.class, policy.name()).description(desc).shortDescription(shortDesc)
-                    .addProperties(properties).objectClassType(c).build());
-        }
-
+        List<ServiceLevelAgreementRule> rules = ServiceLevelAgreementMetricTransformer.instance().discoverSlaMetrics();
         feedManagerFeedService
             .applyFeedSelectOptions(
                 ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderTypes(rules, new String[]{PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),
@@ -145,30 +120,12 @@ public class ServiceLevelAgreementService {
 
     public List<ServiceLevelAgreementActionUiConfigurationItem> discoverActionConfigurations() {
 
-        List<ServiceLevelAgreementActionUiConfigurationItem> rules = new ArrayList<>();
-        Set<Class<?>>
-            items = new Reflections("com.thinkbiganalytics").getTypesAnnotatedWith(ServiceLevelAgreementActionConfig.class);
-        for (Class c : items) {
-            ServiceLevelAgreementActionConfig policy = (ServiceLevelAgreementActionConfig) c.getAnnotation(ServiceLevelAgreementActionConfig.class);
-            String desc = policy.description();
-            String shortDesc = policy.shortDescription();
-            if (StringUtils.isBlank(desc) && StringUtils.isNotBlank(shortDesc)) {
-                desc = shortDesc;
-            }
-            if (StringUtils.isBlank(shortDesc) && StringUtils.isNotBlank(desc)) {
-                shortDesc = desc;
-            }
-            List<FieldRuleProperty> properties = ServiceLevelAgreementMetricTransformer.instance().getUiProperties(c);
-            ServiceLevelAgreementActionUiConfigurationItem
-                configItem =
-                (ServiceLevelAgreementActionUiConfigurationItem) new GenericBaseUiPolicyRuleBuilder<ServiceLevelAgreementActionUiConfigurationItem>(
-                    ServiceLevelAgreementActionUiConfigurationItem.class, policy.name()).description(desc).shortDescription(shortDesc)
-                    .addProperties(properties).objectClassType(c).build();
-            configItem.setActionClasses(Lists.newArrayList(policy.actionClasses()));
-            rules.add(configItem);
-        }
+      return ServiceLevelAgreementActionConfigTransformer.instance().discoverActionConfigurations();
+    }
 
-        return rules;
+
+    public List<ServiceLevelAgreementActionValidation> validateAction(String actionConfigurationClassName ) {
+        return ServiceLevelAgreementActionConfigTransformer.instance().validateAction(actionConfigurationClassName);
     }
 
 

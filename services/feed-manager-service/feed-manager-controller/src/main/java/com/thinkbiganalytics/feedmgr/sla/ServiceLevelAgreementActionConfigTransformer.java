@@ -2,15 +2,22 @@ package com.thinkbiganalytics.feedmgr.sla;
 
 
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
+import com.thinkbiganalytics.metadata.sla.alerts.ServiceLevelAgreementActionUtil;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementAction;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionValidation;
 import com.thinkbiganalytics.policy.BasePolicyAnnotationTransformer;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.GenericBaseUiPolicyRuleBuilder;
 
 import org.apache.commons.lang3.StringUtils;
+import org.reflections.Reflections;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by sr186054 on 4/21/16.
@@ -21,6 +28,12 @@ public class ServiceLevelAgreementActionConfigTransformer
     private static final ServiceLevelAgreementActionConfigTransformer instance = new ServiceLevelAgreementActionConfigTransformer();
 
     public ServiceLevelAgreementActionUiConfigurationItem buildUiModel(ServiceLevelAgreementActionConfig annotation, ServiceLevelAgreementActionConfiguration policy,
+                                                                       List<FieldRuleProperty> properties) {
+return buildUiModel(annotation,policy.getClass(),properties);
+    }
+
+
+    private ServiceLevelAgreementActionUiConfigurationItem buildUiModel(ServiceLevelAgreementActionConfig annotation, Class policyClass,
                                                                        List<FieldRuleProperty> properties) {
         String desc = annotation.description();
         String shortDesc = annotation.shortDescription();
@@ -34,12 +47,56 @@ public class ServiceLevelAgreementActionConfigTransformer
         ServiceLevelAgreementActionUiConfigurationItem
             rule =
             (ServiceLevelAgreementActionUiConfigurationItem) new GenericBaseUiPolicyRuleBuilder<ServiceLevelAgreementActionUiConfigurationItem>(ServiceLevelAgreementActionUiConfigurationItem.class,
-                                                                                                                                                annotation.name()).objectClassType(policy.getClass())
+                                                                                                                                                annotation.name()).objectClassType(policyClass)
                 .description(
                     desc).shortDescription(shortDesc).addProperties(properties).build();
         rule.setActionClasses(Lists.newArrayList(annotation.actionClasses()));
         return rule;
     }
+
+    public List<ServiceLevelAgreementActionValidation> validateAction(String actionConfigurationClassName ){
+        List<ServiceLevelAgreementActionValidation> validation = null;
+        try {
+            Class<? extends ServiceLevelAgreementActionConfiguration> configurationClass = ClassNameChangeRegistry.findClass(actionConfigurationClassName);
+            ServiceLevelAgreementActionConfig annotation = (ServiceLevelAgreementActionConfig) configurationClass.getAnnotation(ServiceLevelAgreementActionConfig.class);
+            Class<?extends ServiceLevelAgreementAction>[] actions = annotation.actionClasses();
+            if(actions != null){
+                List< Class<?extends ServiceLevelAgreementAction>> actionClassList = Lists.newArrayList(actions);
+                validation = ServiceLevelAgreementActionUtil.validateActionConfiguration(actionClassList);
+            }
+            else {
+                validation.add(new ServiceLevelAgreementActionValidation(false, "No Actions are defined for :"+actionConfigurationClassName));
+            }
+
+        }catch (ClassNotFoundException e)
+        {
+            validation.add(new ServiceLevelAgreementActionValidation(false,"Action Configuration Not Found: "+e.getMessage()));
+        }
+
+        return validation;
+
+    }
+
+
+    public List<ServiceLevelAgreementActionUiConfigurationItem> discoverActionConfigurations() {
+
+        List<ServiceLevelAgreementActionUiConfigurationItem> rules = new ArrayList<>();
+        Set<Class<?>>
+            items = new Reflections("com.thinkbiganalytics").getTypesAnnotatedWith(ServiceLevelAgreementActionConfig.class);
+        for (Class c : items) {
+            List<FieldRuleProperty> properties = getUiProperties(c);
+            ServiceLevelAgreementActionConfig policy = (ServiceLevelAgreementActionConfig) c.getAnnotation(ServiceLevelAgreementActionConfig.class);
+            ServiceLevelAgreementActionUiConfigurationItem
+                configItem = buildUiModel(policy,c,properties);
+                 rules.add(configItem);
+
+        }
+
+        return rules;
+    }
+
+
+
 
     @Override
     public void afterFromUiModel(ServiceLevelAgreementActionConfiguration policy, ServiceLevelAgreementActionUiConfigurationItem uiModel) {

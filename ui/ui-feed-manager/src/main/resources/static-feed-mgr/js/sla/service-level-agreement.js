@@ -95,6 +95,8 @@
          */
         self.slaActionOptions = []
 
+        self.showActionOptions = false;
+
         /**
          * flag to indicated if we should show the Add Another Action button or not along with the Action dropdown
          * @type {boolean}
@@ -181,6 +183,18 @@
 
         SlaService.getPossibleSlaActionOptions().then(function (response) {
             self.slaActionOptions = PolicyInputFormService.groupPolicyOptions(response.data);
+            if (self.slaActionOptions.length > 0) {
+                self.showActionOptions = true;
+
+                _.each(self.slaActionOptions, function (action) {
+                    //validate the rules
+                    SlaService.validateSlaActionRule(action);
+                });
+
+            }
+            else {
+                self.showActionOptions = false;
+            }
         })
 
         self.cancelEditSla = function () {
@@ -287,6 +301,7 @@
             self.ruleType = EMPTY_RULE_TYPE;
             self.addingSlaCondition = false;
 
+
             var slaObj = self.serviceLevelAgreements[index]
             //fetch the SLA
             SlaService.getSlaForEditForm(slaObj.id).then(function (response) {
@@ -304,10 +319,12 @@
                     rule.mode = 'EDIT'
                     rule.groups = PolicyInputFormService.groupProperties(rule);
                     PolicyInputFormService.updatePropertyIndex(rule);
+                    //validate the rules
+                    SlaService.validateSlaActionRule(rule)
+
                 });
                 sla.editable = true;
                 self.editSla = sla;
-                console.log('SLA ', self.editSla)
 
             });
         }
@@ -415,6 +432,7 @@
             if (validForm) {
                 //validate there is at least 1 action configuration
                 var actions = self.editSla.actionConfigurations.length;
+                /*
                 if (actions == 0) {
                     validForm = false;
                     $mdDialog.show(
@@ -427,6 +445,7 @@
                             .ok('Got it!')
                     );
                 }
+                 */
             }
             return validForm;
         }

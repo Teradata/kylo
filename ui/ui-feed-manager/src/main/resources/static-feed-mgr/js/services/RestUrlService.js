@@ -96,6 +96,8 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
 
     this.GET_POSSIBLE_SLA_ACTION_OPTIONS_URL = self.SLA_BASE_URL + "/available-responders";
 
+    this.VALIDATE_SLA_ACTION_URL = self.SLA_BASE_URL + "/action/validate";
+
     this.SAVE_FEED_SLA_URL = function (feedId) {
         return self.SLA_BASE_URL + "/feed/" + feedId;
     }

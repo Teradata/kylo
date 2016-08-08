@@ -3,8 +3,12 @@ package com.thinkbiganalytics.metadata.sla;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+
+import java.util.Properties;
 
 import javax.inject.Inject;
+import javax.mail.MessagingException;
 
 /**
  * Created by sr186054 on 7/25/16.
@@ -29,6 +33,16 @@ public class SlaEmailService {
         message.setSubject(subject);
         message.setText(body);
         mailSender.send(message);
+    }
+
+    public boolean testConnection() throws MessagingException{
+      Properties props =  ((JavaMailSenderImpl)mailSender).getSession().getProperties();
+        ((JavaMailSenderImpl)mailSender).testConnection();
+        return true;
+    }
+
+    public boolean isConfigured(){
+        return emailConfiguration.isConfigured();
     }
 
 

@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.metadata.sla;
 
+import org.apache.commons.lang3.StringUtils;
+
 /**
  * Properties
  */
@@ -14,6 +16,8 @@ public class EmailConfiguration {
     private String from;
     private String username;
     private String password;
+    private String smptAuthNtmlDomain;
+    private boolean sslEnable;
 
     public String getProtocol() {
         return protocol;
@@ -77,5 +81,25 @@ public class EmailConfiguration {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getSmptAuthNtmlDomain() {
+        return smptAuthNtmlDomain;
+    }
+
+    public void setSmptAuthNtmlDomain(String smptAuthNtmlDomain) {
+        this.smptAuthNtmlDomain = smptAuthNtmlDomain;
+    }
+
+    public boolean isSslEnable() {
+        return sslEnable;
+    }
+
+    public void setSslEnable(boolean sslEnable) {
+        this.sslEnable = sslEnable;
+    }
+
+    public boolean isConfigured(){
+        return StringUtils.isNotBlank(getHost()) && StringUtils.isNotBlank(getProtocol());
     }
 }

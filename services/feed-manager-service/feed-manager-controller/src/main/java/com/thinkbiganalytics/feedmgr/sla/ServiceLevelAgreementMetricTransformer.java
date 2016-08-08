@@ -8,8 +8,11 @@ import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.GenericBaseUiPolicyRuleBuilder;
 
 import org.apache.commons.lang3.StringUtils;
+import org.reflections.Reflections;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Created by sr186054 on 4/21/16. Transforms UI Model to/from Metric class
@@ -22,6 +25,12 @@ public class ServiceLevelAgreementMetricTransformer
     @Override
     public ServiceLevelAgreementRule buildUiModel(ServiceLevelAgreementMetric annotation, Metric policy,
                                                   List<FieldRuleProperty> properties) {
+      return buildUiModel(annotation,policy.getClass(),properties);
+    }
+
+
+    private ServiceLevelAgreementRule buildUiModel(ServiceLevelAgreementMetric annotation, Class policyClass,
+                                                                        List<FieldRuleProperty> properties) {
         String desc = annotation.description();
         String shortDesc = annotation.shortDescription();
         if (StringUtils.isBlank(desc) && StringUtils.isNotBlank(shortDesc)) {
@@ -33,13 +42,32 @@ public class ServiceLevelAgreementMetricTransformer
 
         ServiceLevelAgreementRule
             rule =
-            (ServiceLevelAgreementRule) new GenericBaseUiPolicyRuleBuilder<ServiceLevelAgreementRule>(ServiceLevelAgreementRule.class, annotation.name()).objectClassType(policy.getClass())
-                .description(
-                    desc).shortDescription(shortDesc).addProperties(properties).build();
+            (ServiceLevelAgreementRule) new GenericBaseUiPolicyRuleBuilder<ServiceLevelAgreementRule>(ServiceLevelAgreementRule.class, annotation.name()).objectClassType(policyClass)
+                .description(desc).shortDescription(shortDesc).addProperties(properties).build();
         return rule;
     }
 
-    @Override
+
+
+
+
+    public List<ServiceLevelAgreementRule> discoverSlaMetrics() {
+
+        List<ServiceLevelAgreementRule> rules = new ArrayList<>();
+        Set<Class<?>>
+            validators = new Reflections("com.thinkbiganalytics").getTypesAnnotatedWith(ServiceLevelAgreementMetric.class);
+        for (Class c : validators) {
+            List<FieldRuleProperty> properties = getUiProperties(c);
+            ServiceLevelAgreementMetric policy = (ServiceLevelAgreementMetric) c.getAnnotation(ServiceLevelAgreementMetric.class);
+            rules.add(buildUiModel(policy,c,properties));
+        }
+        return rules;
+    }
+
+
+
+
+        @Override
     public Class<ServiceLevelAgreementMetric> getAnnotationClass() {
         return ServiceLevelAgreementMetric.class;
     }

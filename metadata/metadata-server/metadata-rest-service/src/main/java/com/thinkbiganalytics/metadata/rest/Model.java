@@ -466,10 +466,18 @@ public class Model {
         }
     };
 
+    public static final Function<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> DOMAIN_TO_FEED_SLA_SHALLOW
+        = new Function<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement, com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement>() {
+        @Override
+        public com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement apply(com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement domain) {
+            return toModel(domain, false);
+        }
+    };
+
 public static final     List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> transformFeedServiceLevelAgreements(List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> slaList) {
         Collection<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> list = null;
         if (slaList != null) {
-            list = Collections2.transform(slaList, Model.DOMAIN_TO_FEED_SLA);
+            list = Collections2.transform(slaList, Model.DOMAIN_TO_FEED_SLA_SHALLOW);
             return new ArrayList<>(list);
         }
     return null;

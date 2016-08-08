@@ -8,6 +8,7 @@ import com.thinkbiganalytics.jira.domain.Issue;
 import com.thinkbiganalytics.jira.domain.IssueBuilder;
 import com.thinkbiganalytics.metadata.sla.alerts.ServiceLevelAssessmentAlertUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementAction;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionValidation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
 import org.slf4j.Logger;
@@ -56,5 +57,13 @@ public class JiraServiceLevelAgreementAction implements ServiceLevelAgreementAct
         return true;
     }
 
+    public ServiceLevelAgreementActionValidation validateConfiguration() {
+        boolean configured = jiraClient.isHostConfigured();
+        if (configured) {
+            return ServiceLevelAgreementActionValidation.VALID;
+        } else {
+            return new ServiceLevelAgreementActionValidation(false, "JIRA connection information is not setup.  Please contact an administrator to set this up.");
+        }
+    }
 
 }

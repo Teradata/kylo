@@ -8,18 +8,18 @@ import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.auth.AdminCredentials;
+import com.thinkbiganalytics.metadata.sla.alerts.ServiceLevelAgreementActionUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementAction;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionValidation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
-import com.thinkbiganalytics.spring.SpringApplicationContext;
 
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.springframework.beans.factory.NoSuchBeanDefinitionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -28,6 +28,8 @@ import javax.inject.Inject;
  * Created by sr186054 on 7/20/16.
  */
 public class JcrServiceLevelAgreementActionAlertResponderFactory implements AlertResponder {
+
+    private static final Logger log = LoggerFactory.getLogger(JcrServiceLevelAgreementActionAlertResponderFactory.class);
 
     @Inject
     JcrMetadataAccess metadataAccess;
@@ -71,26 +73,17 @@ public class JcrServiceLevelAgreementActionAlertResponderFactory implements Aler
                             if (responders != null) {
                                 //first check to see if there is a Spring Bean configured for this class type... if so call that
                                 for (Class<? extends ServiceLevelAgreementAction> responderClass : responders) {
-                                    ServiceLevelAgreementAction action = null;
-                                    try {
-                                        action = SpringApplicationContext.getBean(responderClass);
-                                    } catch (NoSuchBeanDefinitionException e) {
-                                        //this is ok
-                                    }
-
-                                    //if not spring bound then construct the Responder
-                                    if (action == null) {
-                                        //construct and invoke
-                                        try {
-                                            action = ConstructorUtils.invokeConstructor(responderClass, null);
-                                        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-                                            //TODO LOG error
-                                            e.printStackTrace();
-                                        }
-                                    }
+                                    ServiceLevelAgreementAction action = ServiceLevelAgreementActionUtil.instantiate(responderClass);
                                     if (action != null) {
                                         //reassign the content of the alert to the ServiceLevelAssessment
-                                        action.respond(configuration, assessment, alert);
+                                        //validate the action is ok
+                                        ServiceLevelAgreementActionValidation validation = ServiceLevelAgreementActionUtil.validateConfiguration(action);
+                                        if (validation.isValid()) {
+                                            action.respond(configuration, assessment, alert);
+                                        } else {
+                                            log.error("Unable to invoke SLA Action {} while assessing {} due to Configuration error: {}.  Please fix.", action.getClass(), agreement.getName(),
+                                                      validation.getValidationMessage());
+                                        }
                                     }
                                 }
                             }
