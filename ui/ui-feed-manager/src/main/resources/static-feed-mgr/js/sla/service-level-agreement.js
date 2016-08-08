@@ -4,7 +4,8 @@
         return {
             restrict: "EA",
             bindToController: {
-                feed: '=?'
+                feed: '=?',
+                newSla: '=?'
             },
             controllerAs: 'vm',
             scope: {},
@@ -17,9 +18,25 @@
         };
     }
 
-    var controller = function ($scope, $mdDialog, $mdToast, $http, StateService, FeedService, SlaService, PolicyInputFormService) {
+    var controller = function ($scope, $mdDialog, $mdToast, $http, $stateParams, $rootScope, StateService, FeedService, SlaService, PolicyInputFormService) {
 
         var self = this;
+
+        //if the newSLA flag is tripped then show the new SLA form and then reset it
+
+        if (self.newSla == null && self.newSla == undefined) {
+            self.newSla = false;
+        }
+
+        $scope.$watch(function () {
+            return self.newSla;
+        }, function (newVal) {
+            if (newVal == true) {
+                self.onNewSla();
+                self.newSla = false;
+            }
+        });
+
 
         /**
          * The default value that is supplied via java annotation if user wants the value to be defaulted to the current feed
@@ -295,16 +312,19 @@
         }
 
         self.onEditSla = function (index) {
+            var slaObj = self.serviceLevelAgreements[index]
+            self.loadAndEditSla(slaObj.id);
+        }
+
+        self.loadAndEditSla = function (slaId) {
             self.mode = 'EDIT';
             self.creatingNewSla = false;
             self.editSlaIndex = index;
             self.ruleType = EMPTY_RULE_TYPE;
             self.addingSlaCondition = false;
 
-
-            var slaObj = self.serviceLevelAgreements[index]
             //fetch the SLA
-            SlaService.getSlaForEditForm(slaObj.id).then(function (response) {
+            SlaService.getSlaForEditForm(slaId).then(function (response) {
                 var sla = response.data;
 
                 _.each(sla.rules, function (rule) {
@@ -328,6 +348,8 @@
 
             });
         }
+
+
 
         self.onDeleteSla = function (ev) {
             //warn are you sure you want to delete?

@@ -176,7 +176,8 @@ app.config(function($stateProvider,$urlRouterProvider) {
     }).state('feed-details',{
         url:'/feed-details/{feedId}',
         params: {
-            feedId:null
+            feedId: null,
+            tabIndex: 0
         },
         views: {
             'content': {

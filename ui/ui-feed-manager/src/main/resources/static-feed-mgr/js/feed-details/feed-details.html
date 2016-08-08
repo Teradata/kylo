@@ -41,7 +41,7 @@
                         <div>SLA</div>
                     </md-tab-label>
                     <md-tab-body>
-                        <thinkbig-service-level-agreement feed="vm.model" ng-if="vm.selectedTabIndex == 3"></thinkbig-service-level-agreement>
+                        <thinkbig-service-level-agreement feed="vm.model" ng-if="vm.selectedTabIndex == 3" new-sla="vm.newSla"></thinkbig-service-level-agreement>
                     </md-tab-body>
                 </md-tab>
                 <md-tab ng-disabled="true">
@@ -106,7 +106,7 @@
                  <md-button ng-click="addAlert()" class="md-primary" ng-disabled="true">
                  ADD ALERT
                  </md-button>
-                 <md-button ng-click="addSla()" class="md-primary" ng-disabled="true">
+                 <md-button ng-click="vm.addSla()" class="md-primary" ng-disabled="vm.model.state != 'ENABLED'">
                      ADD SLA
                  </md-button>
              </div>

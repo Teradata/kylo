@@ -1,13 +1,17 @@
 (function () {
 
-    var controller = function ($scope, $q, $stateParams, $mdDialog, $mdToast, $http, $state, RestUrlService, FeedService, RegisterTemplateService, StateService) {
+    var controller = function ($scope, $q, $stateParams, $mdDialog, $mdToast, $http, $state, $stateParams, RestUrlService, FeedService, RegisterTemplateService, StateService) {
 
+        var SLA_INDEX = 3;
         var self = this;
         this.feedId = null;
         this.selectedTabIndex = 0;
         var init = function () {
             self.feedId = $stateParams.feedId;
-            loadFeed()
+            loadFeed();
+            if ($stateParams.tabIndex != null && $stateParams.tabIndex != self.selectedTabIndex) {
+                self.selectedTabIndex = $stateParams.tabIndex;
+            }
         }
         this.loadingFeedData = false;
         this.model = FeedService.editFeedModel;
@@ -19,6 +23,16 @@
         }, function (newVal) {
 
         })
+
+        /**
+         * flag to indicate if the SLA page should be set to empty new form rather than the list
+         * Used for when the "Add SLA" button is clicked
+         * @type {boolean}
+         */
+        this.newSla = false;
+
+
+
 
         /**
          * Displays a confirmation dialog for deleting the feed.
@@ -111,6 +125,11 @@
 
         this.onTableClick = function () {
             StateService.navigateToTable(self.model.category.systemName, self.model.table.tableSchema.name);
+        }
+
+        this.addSla = function () {
+            self.selectedTabIndex = SLA_INDEX;
+            self.newSla = true;
         }
 
         function loadFeed() {

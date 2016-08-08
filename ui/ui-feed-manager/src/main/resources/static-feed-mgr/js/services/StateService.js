@@ -6,9 +6,11 @@ angular.module(MODULE_FEED_MGR).service('StateService', function ($state) {
 
     var self = this;
 
-
-    this.navigateToFeedDetails=function(feedId){
-        $state.go('feed-details',{feedId:feedId});
+    this.navigateToFeedDetails = function (feedId, tabIndex) {
+        if (tabIndex == null || tabIndex == undefined) {
+            tabIndex = 0;
+        }
+        $state.go('feed-details', {feedId: feedId, tabIndex: tabIndex});
     }
 
     this.navigateToDefineFeed = function(templateId){

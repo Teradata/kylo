@@ -23,11 +23,11 @@
     </md-list-item>
   </md-list>
   <div ng-if="vm.serviceLevelAgreements.length ==0 && !vm.creatingNewSla" class="layout-padding">
-    No Service Level Agreements exist for this feed.
+    No Service Level Agreements exist.
   </div>
 
 
-  <ng-form name="vm.slaForm" ng-if="vm.editSla != null">
+  <ng-form name="vm.slaForm" ng-if="vm.editSla != null" layout-padding>
     <md-button class="md-raised" ng-click="vm.onBackToList($event)">Back to List</md-button>
 
     <div layout="column">
