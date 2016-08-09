@@ -110,7 +110,7 @@ public class JcrFeedSlaTest {
     @Before
     public void setUp() throws Exception {
         JcrFeedServiceLevelAgreementProvider jcrFeedSlaProvider = (JcrFeedServiceLevelAgreementProvider) feedSlaProvider;
-        jcrFeedSlaProvider.createType();
+        // jcrFeedSlaProvider.createType();
     }
 
     @Test
