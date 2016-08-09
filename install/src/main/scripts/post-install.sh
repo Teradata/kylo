@@ -93,7 +93,7 @@ cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
 export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export THINKBIG_SERVICES_OPTS=
-java \$THINKBIG_SERVICES_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
+java \$THINKBIG_SERVICES_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/*:$rpmInstallDir/thinkbig-services/plugin/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
 EOF
 cat << EOF > $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
 #!/bin/bash
@@ -101,7 +101,7 @@ export JAVA_HOME=/opt/java/current
 export PATH=\$JAVA_HOME/bin:\$PATH
 export THINKBIG_SERVICES_OPTS=
 JAVA_DEBUG_OPTS=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=9998
-java \$THINKBIG_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
+java \$THINKBIG_SERVICES_OPTS \$JAVA_DEBUG_OPTS -cp $rpmInstallDir/thinkbig-services/conf:$rpmInstallDir/thinkbig-services/lib/*:$rpmInstallDir/thinkbig-services/plugin/* com.thinkbiganalytics.server.ThinkbigServerApplication --pgrep-marker=$pgrepMarkerThinkbigServices > /var/log/thinkbig-services/thinkbig-services.log 2>&1 &
 EOF
 chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh
 chmod +x $rpmInstallDir/thinkbig-services/bin/run-thinkbig-services-with-debug.sh
