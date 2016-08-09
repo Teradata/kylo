@@ -15,9 +15,9 @@
 
             <md-list class="list-item-table ">
                 <md-virtual-repeat-container browser-height browser-height-offset="400" browser-height-scroll-y="false">
-                    <md-list-item
-                            md-virtual-repeat="row in vm.data.rows | unique:'columnname' | orderBy:['columnname'] | filter:vm.profileFilter"
-                            class="md-secondary" flex>
+                    <md-list-item md-ink-ripple
+                                  md-virtual-repeat="row in vm.sorted | filter:vm.profileFilter"
+                                  class="md-secondary" flex>
                         <div layout="row" layout-fill>
                             <div flex="100" layout="column" class="item-column md-list-item-text"
                                  ng-click="vm.selectRowAndUpdateCharts($event, row)">
