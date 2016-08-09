@@ -118,7 +118,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
             if (scheduledJobNames.containsKey(sla.getId())) {
 
             scheduledJobId = slaJobName(sla);
-            log.info("Unscheduling sla job " + scheduledJobId.getName());
+            log.debug("Unscheduling sla job " + scheduledJobId.getName());
             jobScheduler.deleteJob(scheduledJobId);
             scheduledJobNames.remove(sla.getId());
             unscheduled = true;
@@ -168,6 +168,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
 
                     }
                 }, (StringUtils.isBlank(defaultCron) ? DEFAULT_CRON : defaultCron));
+            log.debug("Schedule sla job " + jobIdentifier.getName());
             scheduledJobNames.put(sla.getId(), jobIdentifier.getName());
             } catch (JobSchedulerException e) {
                 throw new RuntimeException(e);
