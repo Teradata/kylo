@@ -200,10 +200,14 @@ public class JcrUtil {
     }
 
     public static <T extends Serializable> T getGenericJson(Node parent, String nodeName) {
+       return getGenericJson(parent,nodeName,false);
+    }
+
+    public static <T extends Serializable> T getGenericJson(Node parent, String nodeName, boolean allowClassNotFound) {
         try {
             Node jsonNode = parent.getNode(nodeName);
-            
-            return getGenericJson(jsonNode);
+
+            return getGenericJson(jsonNode,allowClassNotFound);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to deserialize generic JSON node", e);
         }
@@ -211,6 +215,11 @@ public class JcrUtil {
 
     
     public static <T extends Serializable> T getGenericJson(Node jsonNode) {
+      return getGenericJson(jsonNode,false);
+    }
+
+
+    public static <T extends Serializable> T getGenericJson(Node jsonNode, boolean allowClassNotFound) {
         try {
             String className = jsonNode.getProperty("tba:type").getString();
             @SuppressWarnings("unchecked")
@@ -218,9 +227,16 @@ public class JcrUtil {
 
             return JcrPropertyUtil.getJsonObject(jsonNode, "tba:json", type);
         } catch (RepositoryException | ClassNotFoundException | ClassCastException e) {
-            throw new MetadataRepositoryException("Failed to deserialize generic JSON property", e);
+            if(e instanceof ClassNotFoundException && allowClassNotFound){
+                //swallow this exception
+                return null;
+            }
+            else {
+                throw new MetadataRepositoryException("Failed to deserialize generic JSON property", e);
+            }
         }
     }
+
     
     public static <T extends Serializable> void addGenericJson(Node parent, String nodeName, T object) {
         try {

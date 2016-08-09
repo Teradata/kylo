@@ -97,13 +97,20 @@ public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEnt
     }
 
     public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations() {
+       return getActionConfigurations(true);
+    }
+
+    public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations(boolean allowClassNotFound) {
         try {
             @SuppressWarnings("unchecked")
             Iterator<Node> itr = (Iterator<Node>) this.node.getNodes(ACTION_CONFIGURATIONS);
 
             return Lists.newArrayList(Iterators.transform(itr, (actionConfigNode) -> {
-                return JcrUtil.getGenericJson(actionConfigNode, JcrPropertyConstants.JSON);
+                  return JcrUtil.getGenericJson(actionConfigNode, JcrPropertyConstants.JSON,allowClassNotFound);
             }));
+
+
+
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to retrieve the metric nodes", e);
         }
