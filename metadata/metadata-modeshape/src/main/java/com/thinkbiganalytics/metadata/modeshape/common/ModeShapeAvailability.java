@@ -3,12 +3,15 @@ package com.thinkbiganalytics.metadata.modeshape.common;
 import com.thinkbiganalytics.auth.concurrent.ServiceSecurityContextRunnable;
 
 import org.modeshape.jcr.ModeShapeEngine;
+import org.springframework.context.ApplicationListener;
+import org.springframework.context.event.ContextRefreshedEvent;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -16,13 +19,14 @@ import javax.inject.Inject;
 /**
  * Service that classes can subscribe and listen to when ModeShape is up and running.
  */
-public class ModeShapeAvailability {
+public class ModeShapeAvailability implements ApplicationListener<ContextRefreshedEvent> {
 
     @Inject
     private ModeShapeEngine modeShapeEngine;
 
     private Timer modeshapeAvailableTimer;
 
+    private AtomicBoolean applicationStarted = new AtomicBoolean(false);
 
     private List<ModeShapeAvailabilityListener> listeners = new ArrayList<>();
 
@@ -39,14 +43,20 @@ public class ModeShapeAvailability {
         }
     }
 
+    @Override
+    public void onApplicationEvent(final ContextRefreshedEvent event) {
+        applicationStarted.set(true);
+    }
+
+
     public boolean isRunning() {
-        return (ModeShapeEngine.State.RUNNING.equals(modeShapeEngine.getState()));
+        return (ModeShapeEngine.State.RUNNING.equals(modeShapeEngine.getState()) && applicationStarted.get());
     }
 
     class CheckModeShapeAvailability extends TimerTask {
 
         private final ServiceSecurityContextRunnable secRunnable = new ServiceSecurityContextRunnable(() -> {
-            if (ModeShapeEngine.State.RUNNING.equals(modeShapeEngine.getState())) {
+            if (ModeShapeEngine.State.RUNNING.equals(modeShapeEngine.getState()) && applicationStarted.get()) {
                 modeshapeAvailableTimer.cancel();
                 List<ModeShapeAvailabilityListener> currentListeners = Collections.unmodifiableList(listeners);
                 for (ModeShapeAvailabilityListener listener : currentListeners) {
