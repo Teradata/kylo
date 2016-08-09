@@ -41,8 +41,8 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             
             return types.size();
         });
-        // Category + Datasource + Feed + FeedSla + HiveTableDatasource + Metric + Sla + SlaActionConfiguration + SlaCheck = 9
-        assertThat(size).isEqualTo(9);
+        // Category + Datasource + Feed + HiveTableDatasource + Metric + Sla + SlaActionConfiguration + SlaCheck = 8
+        assertThat(size).isEqualTo(8);
     }
 
     @Test(dependsOnMethods="testGetAllDefaultTypes")
