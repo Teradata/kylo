@@ -38,9 +38,50 @@ angular.module(MODULE_FEED_MGR).factory('PolicyInputFormService', function ($htt
         };
     }
 
+    /**
+     * The default value that is supplied via java annotation if user wants the value to be defaulted to the current feed
+     * @see java class(PolicyPropertyTypes)
+     * @type {string}
+     */
+    var CURRENT_FEED_DEFAULT_VALUE = "#currentFeed";
+
+    var attachCurrentFeedValueToProperty = function (prop, feedName) {
+        if (prop.value == undefined || prop.value == null || prop.value == CURRENT_FEED_DEFAULT_VALUE) {
+            prop.value = feedName;
+        }
+    };
+
     var data = {
 
-        groupPolicyOptions: function (options) {
+        currentFeedValue: function (feed) {
+            console.log('FEED NAME ', feed)
+            return feed.category.systemName + "." + feed.systemFeedName;
+        },
+        attachCurrentFeedValues: function (data, feedName) {
+            console.log('ATTACH FEED VALUE To ', data, feedName)
+
+            //set the currentFeed property value to be this.feed if it is not null
+            var currentFeedProperties = [];
+            _.each(data, function (rules) {
+
+                _.each(rules.properties, function (prop) {
+                    if (prop.type == 'currentFeed' || prop.value == CURRENT_FEED_DEFAULT_VALUE) {
+                        currentFeedProperties.push(prop);
+                    }
+                });
+
+            });
+            _.each(currentFeedProperties, function (prop) {
+                attachCurrentFeedValueToProperty(prop, feedName);
+
+            });
+
+        },
+
+        groupPolicyOptions: function (options, currentFeedName) {
+            if (currentFeedName != null && currentFeedName != undefined) {
+                data.attachCurrentFeedValues(options, currentFeedName);
+            }
 
             var optionsArr = [];
             angular.forEach(options, function (opt) {

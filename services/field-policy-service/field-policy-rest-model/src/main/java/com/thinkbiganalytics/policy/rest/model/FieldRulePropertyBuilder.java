@@ -25,6 +25,7 @@ public class FieldRulePropertyBuilder {
     private String group;
     private Integer groupOrder;
     private String layout;
+    private boolean hidden;
 
     public FieldRulePropertyBuilder(String name){
         this.name = name;
@@ -86,7 +87,12 @@ public class FieldRulePropertyBuilder {
     }
 
     public FieldRulePropertyBuilder groupOrder(Integer order) {
-        this.groupOrder = groupOrder;
+        this.groupOrder = order;
+        return this;
+    }
+
+    public FieldRulePropertyBuilder hidden(boolean hidden) {
+        this.hidden = hidden;
         return this;
     }
 
@@ -126,6 +132,7 @@ public class FieldRulePropertyBuilder {
         property.setRequired(this.required);
         property.setGroup(this.group);
         property.setGroupOrder(this.groupOrder);
+        property.setHidden(this.hidden);
         return property;
     }
 }

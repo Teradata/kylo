@@ -526,6 +526,10 @@ border: 1px solid #d7d7d7;
   border-radius: 3px;
 }
 
+.md-button.md-icon-button.auto-height {
+  height: inherit;
+}
+
 .icon-btn {
   line-height: inherit;
   margin: inherit;

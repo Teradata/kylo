@@ -38,12 +38,7 @@
         });
 
 
-        /**
-         * The default value that is supplied via java annotation if user wants the value to be defaulted to the current feed
-         * @see java class(PolicyPropertyTypes)
-         * @type {string}
-         */
-        var CURRENT_FEED_DEFAULT_VALUE = "#currentFeed";
+
 
         //   this.feed = FeedService.editFeedModel;
 
@@ -178,34 +173,18 @@
 
             var currentFeedValue = null;
             if (self.feed != null) {
-                currentFeedValue = self.feed.systemCategoryName + "." + self.feed.systemFeedName;
-
+                currentFeedValue = PolicyInputFormService.currentFeedValue(self.feed);
             }
-            //set the currentFeed property value to be this.feed if it is not null
-            var currentFeedProperties = [];
-            _.each(response.data, function (rules) {
-
-                _.each(rules.properties, function (prop) {
-                    if (prop.type == 'currentFeed' || prop.value == CURRENT_FEED_DEFAULT_VALUE) {
-                        currentFeedProperties.push(prop);
-                    }
-                });
-
-            });
-            _.each(currentFeedProperties, function (prop) {
-                if (prop.value == undefined || prop.value == null || prop.value == CURRENT_FEED_DEFAULT_VALUE) {
-                    prop.value = currentFeedValue;
-                }
-
-            });
-
-
-            self.options = PolicyInputFormService.groupPolicyOptions(response.data);
+            self.options = PolicyInputFormService.groupPolicyOptions(response.data, currentFeedValue);
 
         });
 
         SlaService.getPossibleSlaActionOptions().then(function (response) {
-            self.slaActionOptions = PolicyInputFormService.groupPolicyOptions(response.data);
+            var currentFeedValue = null;
+            if (self.feed != null) {
+                currentFeedValue = PolicyInputFormService.currentFeedValue(self.feed);
+            }
+            self.slaActionOptions = PolicyInputFormService.groupPolicyOptions(response.data, currentFeedValue);
             if (self.slaActionOptions.length > 0) {
                 self.showActionOptions = true;
 

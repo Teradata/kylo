@@ -17,14 +17,22 @@
                 {{vm.model.schedule.schedulingPeriod}}
             </div>
         </div>
-        <div layout="row" class="layout-padding-top-bottom">
-            <span flex="25" class="property-name"># Concurrent Tasks</span>
-
-            <div flex>
-                {{vm.model.schedule.concurrentTasks}}
+            <div ng-if="vm.model.schedule.schedulingStrategy == 'TRIGGER_DRIVEN'">
+                <div layout="column">
+                    <div class="md-subhead">Run Preconditions</div>
+                </div>
+                <div ng-if="vm.model.schedule.preconditions != null && vm.model.schedule.preconditions.length >0 " layout-fill>
+                    <md-list class="md-2-line">
+                        <md-list-item ng-repeat="rule in vm.model.schedule.preconditions track by $index" layout-fill class="with-padding layout-padding-top-bottom">
+                            <div layout="column" flex="75" class="md-list-item-text">
+                                <span>{{rule.propertyValuesDisplayString}}</span>
+                                <span class="hint">{{rule.name}}</span>
+                            </div>
+                            <md-divider ng-if="!$last"></md-divider>
+                        </md-list-item>
+                    </md-list>
+                </div>
             </div>
-        </div>
-
         </div>
         <div ng-if="vm.model.reusableFeed == true">
             This is an abstract Reusable Feed. No Schedule is applied to this Feed.  Other Templates that reference this feed will supply their schedule
@@ -95,7 +103,7 @@
 
                     <div ng-if="vm.editModel.schedule.preconditions != null && vm.editModel.schedule.preconditions.length >0 " layout-fill>
                         <md-list>
-                            <md-list-item ng-repeat="rule in vm.editModel.schedule.preconditions track by $index" layout-fill>
+                            <md-list-item ng-repeat="rule in vm.editModel.schedule.preconditions track by $index" layout-fill class="layout-padding-top-bottom">
                                 <div layout="column" flex="75" class="md-list-item-text">
                                     <span>{{rule.propertyValuesDisplayString}}</span>
                                     <span class="hint">{{rule.name}}</span>

@@ -77,6 +77,7 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                     .required(prop.required())
                     .group(group)
                     .groupOrder(order)
+                    .hidden(prop.hidden())
                     .addSelectableValues(convertToLabelValue(prop.selectableValues()))
                     .addSelectableValues(convertToLabelValue(prop.labelValues())).build();
                 properties.add(rule);
@@ -127,6 +128,7 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                     .required(prop.required())
                     .group(group)
                     .groupOrder(order)
+                    .hidden(prop.hidden())
                     .addSelectableValues(convertToLabelValue(prop.selectableValues()))
                     .addSelectableValues(convertToLabelValue(prop.labelValues())).build();
                 properties.add(rule);

@@ -15,7 +15,7 @@
           <span class="item-title">{{sla.feedNames}}</span>
           <span class="column-title column-title-bottom">Related Feeds</span>
         </div>
-      <md-button class="md-secondary" ng-click="vm.onEditSla($index)">
+        <md-button class="icon-btn md-icon-button auto-height" class="md-secondary" ng-click="vm.onEditSla($index)">
         <ng-md-icon icon="edit" size="20" style="fill:grey;"></ng-md-icon>
       </md-button>
       <md-divider ng-if="!$last"></md-divider>
@@ -27,10 +27,10 @@
   </div>
 
 
-  <ng-form name="vm.slaForm" ng-if="vm.editSla != null" layout-padding>
+  <ng-form name="vm.slaForm" ng-if="vm.editSla != null" class="layout-padding-left-right layout-padding-top">
     <md-button class="md-raised" ng-click="vm.onBackToList($event)">Back to List</md-button>
 
-    <div layout="column">
+    <div layout="column" layout-padding>
       <md-input-container class="md-block">
         <label>Name</label>
         <input name="slaName" type="text" ng-model="vm.editSla.name" md-placeholder="SLA name"
@@ -64,7 +64,7 @@
           </div>
           <div>
             <div style="padding-top:25px;">
-              <md-button ng-click="vm.onDeleteSlaMetric($index)" ng-if="rule.editable">
+              <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.onDeleteSlaMetric($index)" ng-if="rule.editable">
                 <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
               </md-button>
             </div>
@@ -97,7 +97,7 @@
           </md-select>
         </md-input-container>
         <span flex></span>
-        <md-button ng-click="vm.addingSlaCondition = false" ng-if="vm.editSla != null && vm.editSla.rules.length >0">
+        <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.addingSlaCondition = false" ng-if="vm.editSla != null && vm.editSla.rules.length >0">
           <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
         </md-button>
       </div>
@@ -121,7 +121,7 @@
             </div>
             <div>
               <div style="padding-top:25px;">
-                <md-button ng-click="vm.onDeleteSlaAction($index)" ng-if="rule.editable">
+                <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.onDeleteSlaAction($index)" ng-if="rule.editable">
                   <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
                 </md-button>
               </div>
@@ -139,7 +139,7 @@
               <md-option ng-value="opt" ng-repeat="opt in vm.slaActionOptions">{{ opt.name }}</md-option>
             </md-select>
           </md-input-container>
-          <md-button ng-click="vm.addingSlaAction = false">
+          <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.addingSlaAction = false">
             <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
           </md-button>
         </div>

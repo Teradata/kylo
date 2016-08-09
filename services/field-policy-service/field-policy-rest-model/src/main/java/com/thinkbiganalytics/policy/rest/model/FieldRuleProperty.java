@@ -28,6 +28,7 @@ public class FieldRuleProperty {
     private String group;
     private Integer groupOrder;
     private String layout = "column";
+    private boolean hidden;
 
     public String getName() {
         return name;
@@ -161,5 +162,13 @@ public class FieldRuleProperty {
 
     public void setLayout(String layout) {
         this.layout = layout;
+    }
+
+    public boolean isHidden() {
+        return hidden;
+    }
+
+    public void setHidden(boolean hidden) {
+        this.hidden = hidden;
     }
 }

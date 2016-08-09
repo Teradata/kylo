@@ -50,6 +50,7 @@ public class CategoryModelTransform {
                         category.setIconColor(domainCategory.getIconColor());
                         category.setIcon(domainCategory.getIcon());
                         category.setName(domainCategory.getDisplayName());
+                        category.setSystemName(domainCategory.getName());
                         category.setDescription(domainCategory.getDescription());
                         category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
                         category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
@@ -76,6 +77,7 @@ public class CategoryModelTransform {
                         category.setIconColor(domainCategory.getIconColor());
                         category.setIcon(domainCategory.getIcon());
                         category.setName(domainCategory.getDisplayName());
+                        category.setSystemName(domainCategory.getName());
                         category.setDescription(domainCategory.getDescription());
                         category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
                         category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);

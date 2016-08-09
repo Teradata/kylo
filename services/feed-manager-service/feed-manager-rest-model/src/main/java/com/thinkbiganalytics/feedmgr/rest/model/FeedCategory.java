@@ -182,4 +182,9 @@ public class FeedCategory {
     public void setCreateDate(Date createDate) {
         this.createDate = createDate;
     }
+
+
+    public void setSystemName(String systemName) {
+        this.systemName = systemName;
+    }
 }

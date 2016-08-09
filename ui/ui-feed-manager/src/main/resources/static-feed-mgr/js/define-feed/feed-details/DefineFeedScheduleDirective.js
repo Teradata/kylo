@@ -248,8 +248,16 @@
         $scope.feed = feed;
         $scope.options = [];
 
+        $scope.ruleMode = 'NEW'
+
         FeedService.getPossibleFeedPreconditions().then(function(response){
-            $scope.options = PolicyInputFormService.groupPolicyOptions(response.data);
+            var currentFeedValue = null;
+            if ($scope.feed != null) {
+                currentFeedValue = PolicyInputFormService.currentFeedValue($scope.feed);
+                currentFeedValue = currentFeedValue.toLowerCase();
+            }
+
+            $scope.options = PolicyInputFormService.groupPolicyOptions(response.data, currentFeedValue);
             ruleTypesAvailable();
         })
 

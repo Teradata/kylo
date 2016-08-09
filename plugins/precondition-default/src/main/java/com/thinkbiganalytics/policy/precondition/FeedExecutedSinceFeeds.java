@@ -23,7 +23,7 @@ import java.util.Set;
 @PreconditionPolicy(name = PreconditionPolicyConstants.FEED_EXECUTED_SINCE_FEEDS_NAME, description = "Policy will trigger the feed when all of the supplied feeds have successfully finished")
 public class FeedExecutedSinceFeeds implements Precondition {
 
-    @PolicyProperty(name = "Since Feed", type = PolicyPropertyTypes.PROPERTY_TYPE.currentFeed)
+    @PolicyProperty(name = "Since Feed", type = PolicyPropertyTypes.PROPERTY_TYPE.currentFeed, hidden = true)
     private String sinceCategoryAndFeedName;
 
     @PolicyProperty(name = "Dependent Feeds", required = true, type = PolicyPropertyTypes.PROPERTY_TYPE.feedChips, placeholder = "Start typing a feed",
