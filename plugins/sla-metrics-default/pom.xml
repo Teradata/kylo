@@ -55,29 +55,10 @@
     </dependency>
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-field-policy-common</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-sla-core</artifactId>
       <version>0.3.0-SNAPSHOT</version>
     </dependency>
 
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sla-rest-model</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-core</artifactId>
-    </dependency>
-    <dependency>
-      <groupId>com.fasterxml.jackson.core</groupId>
-      <artifactId>jackson-databind</artifactId>
-    </dependency>
     <dependency>
       <groupId>com.fasterxml.jackson.core</groupId>
       <artifactId>jackson-annotations</artifactId>
@@ -111,16 +92,6 @@
     </dependency>
 
 
-    <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mail</artifactId>
-      <version>1.4.7</version>
-    </dependency>
 
-    <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>javax.mail-api</artifactId>
-      <version>1.5.5</version>
-    </dependency>
   </dependencies>
 </project>

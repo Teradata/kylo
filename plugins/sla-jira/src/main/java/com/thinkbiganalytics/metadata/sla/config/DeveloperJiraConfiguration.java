@@ -1,27 +1,29 @@
-package com.thinkbiganalytics.metadata.sla;
+package com.thinkbiganalytics.metadata.sla.config;
 
 import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.Profile;
 import org.springframework.core.io.ClassPathResource;
 
 /**
- * Created by sr186054 on 8/7/16.
+ * Created by sr186054 on 8/9/16.
  */
 @Configuration
-@ImportResource("classpath:/conf/jira-rest-client.xml")
-public class TestJiraConfiguration {
+@Profile("developer.jira")
+public class DeveloperJiraConfiguration {
 
 
-    @Bean
+    @Bean(name = "jiraProperties")
     public PropertyPlaceholderConfigurer jiraPropertiesConfigurer() {
         PropertyPlaceholderConfigurer configurer = new
             PropertyPlaceholderConfigurer();
-        configurer.setLocations(new ClassPathResource("jira.properties"));
+        configurer.setLocations(new ClassPathResource("/conf/jira.properties"));
         configurer.setIgnoreUnresolvablePlaceholders(true);
         configurer.setIgnoreResourceNotFound(true);
         return configurer;
     }
 
+
 }
+

@@ -6,6 +6,7 @@ import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
+import com.thinkbiganalytics.metadata.sla.config.DeveloperJiraConfiguration;
 import com.thinkbiganalytics.metadata.sla.config.JiraSpringConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 
@@ -14,7 +15,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.PropertySource;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -28,9 +29,9 @@ import javax.inject.Inject;
  */
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {JiraSpringConfiguration.class, TestJiraConfiguration.class})
+@ContextConfiguration(classes = {JiraSpringConfiguration.class, DeveloperJiraConfiguration.class})
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
-@PropertySource("classpath:jira.properties")
+@ActiveProfiles("developer.jira")
 @Ignore
 public class TestJira {
 
@@ -114,7 +115,6 @@ public class TestJira {
     JiraServiceLevelAgreementAction agreementAction;
 
     @Test
-    @Ignore
     public void testJira() {
         JiraServiceLevelAgreementActionConfiguration agreementActionConfiguration = new JiraServiceLevelAgreementActionConfiguration();
         agreementActionConfiguration.setAssignee("pc_service");

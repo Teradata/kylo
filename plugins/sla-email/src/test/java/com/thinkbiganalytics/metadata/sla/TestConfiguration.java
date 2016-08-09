@@ -2,8 +2,10 @@ package com.thinkbiganalytics.metadata.sla;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
@@ -14,6 +16,17 @@ import java.util.Properties;
  */
 @Configuration
 public class TestConfiguration {
+
+
+    @Bean
+    public PropertyPlaceholderConfigurer jiraPropertiesConfigurer() {
+        PropertyPlaceholderConfigurer configurer = new
+            PropertyPlaceholderConfigurer();
+        configurer.setLocations(new ClassPathResource("/conf/sla.email.properties"));
+        configurer.setIgnoreUnresolvablePlaceholders(true);
+        configurer.setIgnoreResourceNotFound(true);
+        return configurer;
+    }
 
     @Bean
     public EmailServiceLevelAgreementAction emailServiceLevelAgreementAction() {

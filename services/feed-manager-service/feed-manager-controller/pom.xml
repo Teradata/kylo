@@ -39,27 +39,6 @@
       <version>0.3.0-SNAPSHOT</version>
     </dependency>
 
-    <!-- TODO MOVE OUT of here into plugins -->
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sla-metrics-default</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sla-email</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sla-jira</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
-    </dependency>
-
-    <!--- END OF TODO -->
-
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>thinkbig-metadata-rest-service</artifactId>
@@ -97,6 +76,26 @@
       <version>0.3.0-SNAPSHOT</version>
     </dependency>
 
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-sla-metrics-default</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+     </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-sla-email</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-sla-jira</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+      <scope>test</scope>
+    </dependency>
 
 
     <!-- HIVE THRIFT CLIENT -->

@@ -6,6 +6,7 @@ import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
+import com.thinkbiganalytics.metadata.sla.config.DeveloperEmailConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 
 import org.joda.time.DateTime;
@@ -13,6 +14,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
@@ -25,10 +27,11 @@ import javax.inject.Inject;
  * Created by sr186054 on 8/6/16.
  */
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(classes = {TestConfiguration.class})
+@ContextConfiguration(classes = {TestConfiguration.class, DeveloperEmailConfiguration.class})
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
+@ActiveProfiles("developer.email")
 @Ignore
-public class TestEmailConfiguration {
+public class TestEmail {
 
 
     @Inject

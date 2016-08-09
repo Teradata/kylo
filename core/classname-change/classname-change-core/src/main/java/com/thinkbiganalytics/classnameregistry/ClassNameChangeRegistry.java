@@ -50,7 +50,7 @@ public class ClassNameChangeRegistry {
                 return classRegistry.get(name);
             } else {
                 log.warn(
-                    "Unable to find Class for name {}.  Did this class name change?  If so find the new Class and Annotate it with the @ClassNameChange adding this class {} as a previous class name ",
+                    "Unable to find Class: {}.  Are you missing a jar plugin?  Please be sure all plugins are included in the /plugin directory.  Did this class name change?  If so find the new Class and annotate it with the @ClassNameChange(classNames:{\"{}\"})",
                     name, name);
                 throw e;
             }

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.JavaMailSenderImpl;
 
@@ -19,7 +20,8 @@ import java.util.Properties;
  * Created by sr186054 on 7/22/16.
  */
 @Configuration
-public class EmailServiceLevelAgreementConfiguration {
+@PropertySource(value = "classpath:sla.email.properties", ignoreResourceNotFound = true)
+public class EmailServiceLevelAgreementSpringConfiguration {
 
 
     @Bean
@@ -33,22 +35,23 @@ public class EmailServiceLevelAgreementConfiguration {
         return new EmailConfiguration();
     }
 
+
     @Bean(name = "slaEmailSender")
     public JavaMailSender javaMailSender(@Qualifier("slaEmailConfiguration") EmailConfiguration emailConfiguration) {
         JavaMailSenderImpl mailSender = new JavaMailSenderImpl();
         Properties mailProperties = new Properties();
         mailProperties.put("mail.smtp.auth", emailConfiguration.isSmtpAuth());
         mailProperties.put("mail.smtp.starttls.enable", emailConfiguration.isStarttls());
-        if(StringUtils.isNotBlank(emailConfiguration.getSmptAuthNtmlDomain())){
+        if (StringUtils.isNotBlank(emailConfiguration.getSmptAuthNtmlDomain())) {
             mailProperties.put("mail.smtp.auth.ntlm.domain", emailConfiguration.getSmptAuthNtmlDomain());
         }
-        mailProperties.put("mail.smtp.connectiontimeout ","5000");
+        mailProperties.put("mail.smtp.connectiontimeout ", "5000");
         mailProperties.put("mail.smtp.timeout", "5000");
         mailProperties.put("mail.smtp.writetimeout", "5000");
-        if(emailConfiguration.isSslEnable()) {
+        if (emailConfiguration.isSslEnable()) {
             mailProperties.put("mail.smtp.ssl.enable", "true");
         }
-        mailProperties.put("mail.debug","true");
+        mailProperties.put("mail.debug", "true");
 
         mailSender.setJavaMailProperties(mailProperties);
         mailSender.setHost(emailConfiguration.getHost());

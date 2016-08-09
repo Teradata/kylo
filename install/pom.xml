@@ -21,6 +21,25 @@
     <rpm.user>thinkbig</rpm.user>
     <file.permissions>744</file.permissions>
   </properties>
+
+  <dependencies>
+
+    <!-- used to copy in the default dependencies to the plugin folder -->
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-sla-email</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-sla-jira</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+    </dependency>
+
+
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
@@ -177,6 +196,50 @@
               <filemode>${file.permissions}</filemode>
               <username>${rpm.user}</username>
               <groupname>${rpm.user}</groupname>
+              <sources>
+                <source>
+                  <location>../plugins/sla-email/target</location>
+                  <includes>
+                    <include>thinkbig-sla-email-${project.version}.jar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../plugins/sla-email/src/main/resources/conf</location>
+                  <includes>
+                    <include>sla.email.properties</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../plugins/sla-jira/target</location>
+                  <includes>
+                    <include>thinkbig-sla-jira-${project.version}.jar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../plugins/sla-jira/src/main/resources/conf</location>
+                  <includes>
+                    <include>thinkbig_jira.jks</include>
+                    <include>jira.properties</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../plugins/precondition-default/target</location>
+                  <includes>
+                    <include>thinkbig-precondition-default-${project.version}.jar</include>
+                  </includes>
+                </source>
+              </sources>
+            </mapping>
+            <mapping>
+              <directory>${rpm.install.dir}/thinkbig-services/plugin</directory>
+              <filemode>${file.permissions}</filemode>
+              <username>${rpm.user}</username>
+              <groupname>${rpm.user}</groupname>
+              <dependency>
+                <includes>
+                  <include>com.thinkbiganalytics.datalake:thinkbig-jira-rest-client</include>
+                </includes>
+              </dependency>
             </mapping>
             <mapping>
               <directory>${rpm.install.dir}/thinkbig-services/plugin/conf</directory>
