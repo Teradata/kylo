@@ -58,11 +58,11 @@ public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements D
 
 
     public List<JcrFeedSource> getSources(){
-     return  JcrUtil.getNodes(this.node,SOURCE_NAME, JcrFeedSource.class);
+     return  JcrUtil.getJcrObjects(this.node,SOURCE_NAME, JcrFeedSource.class);
     }
 
     public List<JcrFeedDestination> getDestinations(){
-        return  JcrUtil.getNodes(this.node, DESTINATION_NAME, JcrFeedDestination.class);
+        return  JcrUtil.getJcrObjects(this.node, DESTINATION_NAME, JcrFeedDestination.class);
     }
 
 

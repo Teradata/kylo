@@ -44,6 +44,11 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-security-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-security-auth</artifactId>
             <version>${project.version}</version>
         </dependency>

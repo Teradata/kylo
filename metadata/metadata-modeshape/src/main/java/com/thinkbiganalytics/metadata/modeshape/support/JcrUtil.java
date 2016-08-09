@@ -11,6 +11,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -75,14 +77,36 @@ public class JcrUtil {
         }
     }
 
+    public static List<Node> getNodelist(Node parent, String property) {
+        return StreamSupport
+                        .stream(getInterableChildren(parent, property).spliterator(), false)
+                        .collect(Collectors.toList());
+    }
 
     public static Node getNode(Node parentNode, String name) {
         try {
             return parentNode.getNode(name);
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the Node named" + name, e);
+            throw new MetadataRepositoryException("Failed to retrieve the Node named " + name, e);
         }
     }
+    
+    public static Iterable<Node> getInterableChildren(Node parent) {
+        return getInterableChildren(parent, null);
+    }
+    
+    public static Iterable<Node> getInterableChildren(Node parent, String name) {
+        @SuppressWarnings("unchecked")
+        Iterable<Node> itr = () -> { 
+                try {
+                    return name != null ? parent.getNodes(name) : parent.getNodes();
+                } catch (RepositoryException e) {
+                    throw new MetadataRepositoryException("Failed to retrieve the child nodes from:  " + parent, e);
+                } 
+            };
+        return itr;
+    }
+
 
     public static <T extends JcrObject> List<T> getChildrenMatchingNodeType(Node parentNode, String childNodeType, Class<T> type) {
 
@@ -100,16 +124,30 @@ public class JcrUtil {
     }
     
     /**
-     * get All Child nodes under a parentNode and create the wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
+     * get All Child nodes under a parentNode and create the wrapped JCRObject.
      */
-    public static <T extends JcrObject> List<T> getNodes(Node parentNode, String name, Class<T> type) {
-        return getNodes(parentNode, name, new DefaultObjectTypeResolver<>(type));
+    public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, Class<T> type) {
+        return getJcrObjects(parentNode, null, new DefaultObjectTypeResolver<T>(type));
     }
 
     /**
      * get All Child nodes under a parentNode and create the wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
      */
-    public static <T extends JcrObject> List<T> getNodes(Node parentNode, String name, JcrObjectTypeResolver<T> typeResolver) {
+    public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, String name, Class<T> type) {
+        return getJcrObjects(parentNode, name, new DefaultObjectTypeResolver<T>(type));
+    }
+    
+    /**
+     * get All Child nodes under a parentNode and create the wrapped JCRObject.
+     */
+    public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, JcrObjectTypeResolver<T> typeResolver) {
+        return getJcrObjects(parentNode, null, typeResolver);
+    }
+
+    /**
+     * get All Child nodes under a parentNode and create the wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
+     */
+    public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, String name, JcrObjectTypeResolver<T> typeResolver) {
         List<T> list = new ArrayList<>();
         try {
 
@@ -135,7 +173,7 @@ public class JcrUtil {
     /**
      * Get a child node relative to the parentNode and create the Wrapper object
      */
-    public static <T extends JcrObject> T getNode(Node parentNode, String name, Class<T> type) {
+    public static <T extends JcrObject> T getJcrObject(Node parentNode, String name, Class<T> type) {
         T entity = null;
         try {
             Node n = parentNode.getNode(name);
@@ -395,20 +433,7 @@ public class JcrUtil {
         }
     }
 
-    public static List<Node> getNodelist(Node parentNode, String property) {
-        try {
-            List<Node> list = new ArrayList<>();
-            NodeIterator itr = parentNode.getNodes(property);
-            while (itr.hasNext()) {
-                Node node = (Node) itr.next();
-                list.add(node);
-            }
-            return list;
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to create list of nodes from property: " + property, e);
-        }
-    }
-
+    
     
     private static class DefaultObjectTypeResolver<T extends JcrObject> implements JcrObjectTypeResolver<T> {
         

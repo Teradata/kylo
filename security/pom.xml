@@ -15,6 +15,7 @@
         <module>security-auth</module>
         <module>security-auth-file</module>
         <module>security-auth-metadata</module>
+        <module>security-api</module>
     </modules>
 
     <dependencies>

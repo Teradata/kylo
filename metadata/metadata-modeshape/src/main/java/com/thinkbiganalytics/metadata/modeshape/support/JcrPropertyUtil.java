@@ -86,6 +86,15 @@ public class JcrPropertyUtil {
         writer = mapper.writer();
     }
 
+
+    public static String getName(Node node) {
+        try {
+            return node.getName();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access name property of node: " + node, e);
+        }
+    }
+    
     public static String getString(Node node, String name) {
         try {
             Property prop = node.getProperty(name);

@@ -18,6 +18,8 @@
  *                 typeDescriptor
  *             "entities"
  *                 extensibleEntity
+ *         "globalAllowedActions"
+ *             allowableAction*
  */
 <jcr = 'http://www.jcp.org/jcr/1.0'>
 <nt='http://www.jcp.org/jcr/nt/1.0'>
@@ -35,6 +37,7 @@
 	+ templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
 	+ sla (tba:slaFolder) = tba:slaFolder autocreated mandatory
 	+ extensions (tba:extensionsFolder) = tba:extensionsFolder autocreated mandatory
+	+ globalAllowedActions (tba:allowedActions) = tba:allowedActions authocreate mandatory
 
 [tba:feedsFolder] > nt:folder 
     + * (tba:category) sns
@@ -60,10 +63,25 @@
 [tba:templatesFolder] > nt:folder
 
 [tba:slaFolder] > nt:folder
+    + slaAssessments (tba:slaAssessmentsFolder) = tba:slaAssessmentsFolder autocreated mandatory
 
-/*
- * // Predefined types ////
- */
+[tba:slaAssessmentsFolder] > nt:folder
+
+/* -=-=-=-=-=--=-=-  Security  -=-=-=-=-=-=-=-=- */
+
+[tba:actionControlled] mixin
+    + allowedActions (tba:allowdedActions) = tba:allowdedActions autocreate mandatory
+
+[tba:allowedActions] > nt:hierarchyNode
+    + * (tba:allowableAction)
+
+[tba:allowableAction] > nt:hierarchyNode, mix:title
+    + * (tba:allowableAction) 
+
+
+
+/* -=-=-=-=-=--=-=-  Predefined types  -=-=-=-=-=-=-=-=- */
+
 [tba:genericJson] > nt:hierarchyNode
     - tba:type (STRING)
     - tba:json (STRING)
@@ -102,14 +120,14 @@
     - tba:nifiTemplateId (STRING)   
     - tba:json (STRING)
 
-[tba:category] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied
+[tba:category] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:actionControlled
 	- tba:systemName (STRING) mandatory
 	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'
 	+ * (tba:feed) sns
 
 
-[tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, mix:versionable
+[tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:actionControlled, mix:versionable
 	+ tba:sources (tba:feedSource) sns
 	+ tba:destinations (tba:feedDestination) sns
     + tba:precondition (tba:feedPrecondition)

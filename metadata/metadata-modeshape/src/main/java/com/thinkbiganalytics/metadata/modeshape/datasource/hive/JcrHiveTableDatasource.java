@@ -71,7 +71,7 @@ public class JcrHiveTableDatasource extends JcrDatasource implements HiveTableDa
     @Override
     public List<TableColumn> getColumns() {
         try {
-            return JcrUtil.getNodes(this.node.getNode(COLUMNS), null, JcrTableColumn.class).stream().collect(Collectors.toList());
+            return JcrUtil.getJcrObjects(this.node.getNode(COLUMNS), JcrTableColumn.class).stream().collect(Collectors.toList());
         } catch (RepositoryException e) {
             throw new MetadataException("Failed to retrieve table columns", e);
         }

@@ -91,7 +91,7 @@ public class JcrServiceLevelAssessment extends AbstractJcrAuditableSystemEntity 
 
     @Override
     public Set<ObligationAssessment> getObligationAssessments() {
-        return Sets.newHashSet(JcrUtil.getNodes(this.node, OBLIGATION_ASSESSMENTS, JcrObligationAssessment.class));
+        return Sets.newHashSet(JcrUtil.getJcrObjects(this.node, OBLIGATION_ASSESSMENTS, JcrObligationAssessment.class));
     }
 
 

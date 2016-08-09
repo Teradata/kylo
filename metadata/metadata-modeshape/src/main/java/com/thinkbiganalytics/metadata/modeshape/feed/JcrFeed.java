@@ -111,11 +111,11 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     }
 
     public List<? extends FeedSource> getSources() {
-        return JcrUtil.getNodes(this.node, SOURCE_NAME, JcrFeedSource.class);
+        return JcrUtil.getJcrObjects(this.node, SOURCE_NAME, JcrFeedSource.class);
     }
 
     public List<? extends FeedDestination> getDestinations() {
-        return JcrUtil.getNodes(this.node, DESTINATION_NAME, JcrFeedDestination.class);
+        return JcrUtil.getJcrObjects(this.node, DESTINATION_NAME, JcrFeedDestination.class);
     }
 
     @Override

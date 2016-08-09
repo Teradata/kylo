@@ -74,7 +74,7 @@ public class JcrObligationAssessment extends AbstractJcrAuditableSystemEntity im
 
     @Override
     public Set<MetricAssessment> getMetricAssessments() {
-        return Sets.newHashSet(JcrUtil.getNodes(this.node, METRIC_ASSESSMENTS, JcrMetricAssessment.class));
+        return Sets.newHashSet(JcrUtil.getJcrObjects(this.node, METRIC_ASSESSMENTS, JcrMetricAssessment.class));
     }
 
 

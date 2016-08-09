@@ -39,6 +39,10 @@ public class EntityUtil {
     public static String pathForTemplates() {
         return Paths.get("/metadata", "templates").toString();
     }
+    
+    public static String pathForAccessibleFunctions() {
+        return Paths.get("/metadata", "accessibleFunctions").toString();
+    }
 
     public static String pathForExtensibleEntity() {
         return EntityUtil.pathForExtensibleEntity(null);
