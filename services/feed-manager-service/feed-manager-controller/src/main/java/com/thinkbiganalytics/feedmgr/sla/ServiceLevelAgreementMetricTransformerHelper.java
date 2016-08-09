@@ -155,9 +155,11 @@ public class ServiceLevelAgreementMetricTransformerHelper {
         if (sla.getSlaChecks() != null) {
             List<ServiceLevelAgreementActionUiConfigurationItem> agreementActionUiConfigurationItems = new ArrayList<>();
             for(ServiceLevelAgreementCheck check: sla.getSlaChecks()) {
-                for (ServiceLevelAgreementActionConfiguration responderConfig : check.getActionConfigurations()) {
-                    ServiceLevelAgreementActionUiConfigurationItem uiModel = ServiceLevelAgreementActionConfigTransformer.instance().toUIModel(responderConfig);
-                    agreementActionUiConfigurationItems.add(uiModel);
+                for (ServiceLevelAgreementActionConfiguration actionConfig : check.getActionConfigurations()) {
+                   if(actionConfig != null) {
+                       ServiceLevelAgreementActionUiConfigurationItem uiModel = ServiceLevelAgreementActionConfigTransformer.instance().toUIModel(actionConfig);
+                       agreementActionUiConfigurationItems.add(uiModel);
+                   }
                 }
             }
             slaGroup.setActionConfigurations(agreementActionUiConfigurationItems);
