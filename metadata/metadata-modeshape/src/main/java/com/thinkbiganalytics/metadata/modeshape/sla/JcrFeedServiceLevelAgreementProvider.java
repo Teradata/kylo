@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
@@ -55,6 +56,8 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
 
     @Inject
     private ModeShapeAvailability modeShapeAvailability;
+
+    private AtomicBoolean typeCreated = new AtomicBoolean(false);
 
     /**
      * Finds All Service Level Agreements and also adds in an related feeds
@@ -163,28 +166,31 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
      * Creates the Extensible Entity Type
      */
     public String createType() {
-        return metadata.commit(new AdminCredentials(), () -> {
-            ExtensibleType feedSla = typeProvider.getType(JcrFeedServiceLevelAgreementRelationship.TYPE_NAME);
-            if (feedSla == null) {
-                feedSla = typeProvider.buildType(JcrFeedServiceLevelAgreementRelationship.TYPE_NAME)
-                    .field(JcrFeedServiceLevelAgreementRelationship.FEEDS)
-                    .type(FieldDescriptor.Type.WEAK_REFERENCE)
-                    .displayName("Feeds")
-                    .description("The Feeds referenced on this SLA")
-                    .required(false)
-                    .collection(true)
-                    .add()
-                    .field(JcrFeedServiceLevelAgreementRelationship.SLA)
-                    .type(FieldDescriptor.Type.WEAK_REFERENCE)
-                    .displayName("SLA")
-                    .description("The SLA")
-                    .required(true)
-                    .add()
-                    .build();
-            }
+        if (typeCreated.compareAndSet(false, true)) {
+            return metadata.commit(new AdminCredentials(), () -> {
+                ExtensibleType feedSla = typeProvider.getType(JcrFeedServiceLevelAgreementRelationship.TYPE_NAME);
+                if (feedSla == null) {
+                    feedSla = typeProvider.buildType(JcrFeedServiceLevelAgreementRelationship.TYPE_NAME)
+                        .field(JcrFeedServiceLevelAgreementRelationship.FEEDS)
+                        .type(FieldDescriptor.Type.WEAK_REFERENCE)
+                        .displayName("Feeds")
+                        .description("The Feeds referenced on this SLA")
+                        .required(false)
+                        .collection(true)
+                        .add()
+                        .field(JcrFeedServiceLevelAgreementRelationship.SLA)
+                        .type(FieldDescriptor.Type.WEAK_REFERENCE)
+                        .displayName("SLA")
+                        .description("The SLA")
+                        .required(true)
+                        .add()
+                        .build();
+                }
 
-            return feedSla.getName();
-        });
+                return feedSla.getName();
+            });
+        }
+        return null;
     }
 
 

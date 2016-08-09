@@ -26,7 +26,7 @@ public class ModeShapeAvailability implements ApplicationListener<ContextRefresh
 
     private Timer modeshapeAvailableTimer;
 
-    private AtomicBoolean applicationStarted = new AtomicBoolean(false);
+    private AtomicBoolean applicationStarted = new AtomicBoolean(true);
 
     private List<ModeShapeAvailabilityListener> listeners = new ArrayList<>();
 
