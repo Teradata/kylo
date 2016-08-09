@@ -101,6 +101,12 @@
         self.editSlaIndex = null;
 
         /**
+         * The ID of the SLA that is being modified/edited
+         * @type {null}
+         */
+        self.editSlaId = null;
+
+        /**
          * The SLA Object that is being created/edited
          * @type {null}
          */
@@ -218,6 +224,7 @@
             self.addingSlaCondition = false;
             self.editSla = null;
             self.editSlaIndex = null;
+            self.editSlaId = null;
         }
 
         self.addNewCondition = function () {
@@ -301,25 +308,30 @@
         self.onBackToList = function (ev) {
             self.editSla = null;
             self.creatingNewSla = null;
+            self.editSlaId = null;
+            //Requery?
+
         }
 
         self.onNewSla = function () {
             self.mode = 'NEW';
             self.creatingNewSla = true;
             self.editSlaIndex = null;
+            self.editSlaId = null;
             self.editSla = {name: '', description: '', rules: [], actionConfigurations: []};
             self.addingSlaCondition = true;
         }
 
         self.onEditSla = function (index) {
             var slaObj = self.serviceLevelAgreements[index]
+            self.editSlaIndex = index;
             self.loadAndEditSla(slaObj.id);
         }
 
         self.loadAndEditSla = function (slaId) {
             self.mode = 'EDIT';
             self.creatingNewSla = false;
-            self.editSlaIndex = index;
+            self.editSlaId = slaId;
             self.ruleType = EMPTY_RULE_TYPE;
             self.addingSlaCondition = false;
 
@@ -353,7 +365,7 @@
 
         self.onDeleteSla = function (ev) {
             //warn are you sure you want to delete?
-            if (self.editSlaIndex != null) {
+            if (self.editSlaIndex != null || self.editSlaId != null) {
                 var confirm = $mdDialog.confirm()
                     .title('Delete SLA')
                     .textContent('Are you sure you want to Delete this SLA?')
@@ -364,7 +376,9 @@
                 $mdDialog.show(confirm).then(function () {
                     SlaService.deleteSla(self.editSla.id).then(function () {
                         self.editSla = null;
-                        self.serviceLevelAgreements.splice(self.editSlaIndex, 1);
+                        if (self.editSlaIndex != null) {
+                                  self.serviceLevelAgreements.splice(self.editSlaIndex, 1);
+                            }
                         $mdToast.show(
                             $mdToast.simple()
                                 .textContent('SLA Deleted.')

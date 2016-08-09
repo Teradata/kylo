@@ -8,10 +8,8 @@
         this.selectedTabIndex = 0;
         var init = function () {
             self.feedId = $stateParams.feedId;
-            loadFeed();
-            if ($stateParams.tabIndex != null && $stateParams.tabIndex != self.selectedTabIndex) {
-                self.selectedTabIndex = $stateParams.tabIndex;
-            }
+            loadFeed($stateParams.tabIndex);
+
         }
         this.loadingFeedData = false;
         this.model = FeedService.editFeedModel;
@@ -132,7 +130,7 @@
             self.newSla = true;
         }
 
-        function loadFeed() {
+        function loadFeed(tabIndex) {
             self.loadingFeedData = true;
             self.model.loaded = false;
             self.loadMessage = '';
@@ -158,6 +156,9 @@
                         } else {
                             self.model.loaded = true;
                             FeedService.updateFeed(updatedFeedResponse.data);
+                            if (tabIndex != null && tabIndex != undefined && tabIndex != self.selectedTabIndex) {
+                                self.selectedTabIndex = tabIndex;
+                            }
 
                             //get those properties that are Input properties
                             var processors = {};
