@@ -9,7 +9,18 @@
             },
             controllerAs: 'vm',
             scope: {},
-            templateUrl: 'js/sla/service-level-agreement.html',
+            templateUrl: function (tElement, tAttrs) {
+                if (tAttrs) {
+                    if (tAttrs.view === 'all') {
+                        return 'js/sla/service-level-agreements.html'
+                    }
+                    if (tAttrs.view === 'feed') {
+                        return 'js/sla/feed-service-level-agreements.html'
+                    }
+                }
+            },
+
+
             controller: "ServiceLevelAgreementController",
             link: function ($scope, element, attrs, controller) {
 
@@ -18,9 +29,14 @@
         };
     }
 
-    var controller = function ($scope, $mdDialog, $mdToast, $http, $stateParams, $rootScope, StateService, FeedService, SlaService, PolicyInputFormService) {
+    var controller = function ($scope, $mdDialog, $mdToast, $http, $stateParams, $rootScope, StateService, FeedService, SlaService, PolicyInputFormService, PaginationDataService, TableOptionsService,
+                               AddButtonService) {
 
         var self = this;
+
+        self.cardTitle = "Service Level Agreements";
+
+        self.loading = true;
 
         //if the newSLA flag is tripped then show the new SLA form and then reset it
 
@@ -34,7 +50,12 @@
             if (newVal == true) {
                 self.onNewSla();
                 self.newSla = false;
+                self.loading = false;
             }
+        });
+
+        AddButtonService.registerAddButton('service-level-agreements', function () {
+            self.onNewSla();
         });
 
 
@@ -139,6 +160,64 @@
          */
         self.mode = 'NEW';
 
+        //Pagination DAta
+        this.pageName = "service-level-agreements";
+        this.paginationData = PaginationDataService.paginationData(this.pageName);
+        this.paginationId = 'service-level-agreements';
+        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', 'All']);
+        this.currentPage = PaginationDataService.currentPage(self.pageName) || 1;
+        this.viewType = PaginationDataService.viewType(this.pageName);
+        this.sortOptions = loadSortOptions();
+
+        this.filter = PaginationDataService.filter(self.pageName);
+
+        $scope.$watch(function () {
+            return self.viewType;
+        }, function (newVal) {
+            self.onViewTypeChange(newVal);
+        })
+
+        this.onViewTypeChange = function (viewType) {
+            PaginationDataService.viewType(this.pageName, self.viewType);
+        }
+
+        this.onOrderChange = function (order) {
+            PaginationDataService.sort(self.pageName, order);
+            TableOptionsService.setSortOption(self.pageName, order);
+        };
+
+        this.onPaginationChange = function (page, limit) {
+            PaginationDataService.currentPage(self.pageName, null, page);
+            self.currentPage = page;
+        };
+
+
+        /**
+         * Called when a user Clicks on a table Option
+         * @param option
+         */
+        this.selectedTableOption = function (option) {
+            var sortString = TableOptionsService.toSortString(option);
+            PaginationDataService.sort(self.pageName, sortString);
+            var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
+            TableOptionsService.setSortOption(self.pageName, sortString);
+        }
+
+        /**
+         * Build the possible Sorting Options
+         * @returns {*[]}
+         */
+        function loadSortOptions() {
+            var options = {'Name': 'name', 'Description': 'description'};
+
+            var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'name', 'asc');
+            var currentOption = TableOptionsService.getCurrentSort(self.pageName);
+            if (currentOption) {
+                TableOptionsService.saveSortOption(self.pageName, currentOption)
+            }
+            return sortOptions;
+        }
+
         /**
          * Load and copy the serviceLevelAgreements from the feed if available
          * @type {Array|*}
@@ -157,12 +236,14 @@
                 if (response.data && response.data != undefined && response.data.length > 0) {
                     self.serviceLevelAgreements = response.data;
                 }
+                self.loading = false;
             });
         }
         else {
             //get All Slas
             SlaService.getAllSlas().then(function (response) {
                 self.serviceLevelAgreements = response.data;
+                self.loading = false;
             });
         }
 
@@ -204,6 +285,7 @@
             self.editSla = null;
             self.editSlaIndex = null;
             self.editSlaId = null;
+            AddButtonService.showAddButton();
         }
 
         self.addNewCondition = function () {
@@ -242,6 +324,7 @@
                     self.addingSlaCondition = false;
                     self.editSla = null;
                     self.editSlaIndex = null;
+                    AddButtonService.showAddButton();
 
                     $mdDialog.show(
                         $mdDialog.alert()
@@ -289,10 +372,12 @@
             self.creatingNewSla = null;
             self.editSlaId = null;
             //Requery?
+            AddButtonService.showAddButton();
 
         }
 
         self.onNewSla = function () {
+            AddButtonService.hideAddButton();
             self.mode = 'NEW';
             self.creatingNewSla = true;
             self.editSlaIndex = null;
@@ -301,10 +386,10 @@
             self.addingSlaCondition = true;
         }
 
-        self.onEditSla = function (index) {
-            var slaObj = self.serviceLevelAgreements[index]
-            self.editSlaIndex = index;
-            self.loadAndEditSla(slaObj.id);
+        self.onEditSla = function (sla) {
+            AddButtonService.hideAddButton();
+            self.editSlaIndex = _.findIndex(self.serviceLevelAgreements, sla);
+            self.loadAndEditSla(sla.id);
         }
 
         self.loadAndEditSla = function (slaId) {
@@ -364,6 +449,7 @@
                                 .position('bottom left')
                                 .hideDelay(3000)
                         );
+                        AddButtonService.showAddButton();
                     }, function () {
                         //alert delete error
                         $mdToast.show(

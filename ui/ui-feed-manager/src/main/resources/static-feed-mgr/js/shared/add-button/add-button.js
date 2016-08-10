@@ -32,6 +32,14 @@
                     updateShowState();
                 });
 
+                function hideButton() {
+                    element.hide();
+                }
+
+                function showButton() {
+                    element.show();
+                }
+
                 function updateShowState(){
                      if(isShowAddButton()){
                         element.show();
@@ -43,7 +51,8 @@
 
                 BroadcastService.subscribe($scope,AddButtonService.NEW_ADD_BUTTON_EVENT,updateShowState)
 
-                BroadcastService.subscribe($scope,AddButtonService.NEW_ADD_BUTTON_EVENT,updateShowState)
+                BroadcastService.subscribe($scope, AddButtonService.HIDE_ADD_BUTTON_EVENT, hideButton)
+                BroadcastService.subscribe($scope, AddButtonService.SHOW_ADD_BUTTON_EVENT, showButton)
 
             }
 

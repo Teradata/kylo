@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.modeshape.sla;
 
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
@@ -58,7 +59,10 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     private final JcrTools jcrTools = new JcrTools();
 
     @Inject
-    ServiceLevelAgreementScheduler serviceLevelAgreementScheduler;
+    private FeedServiceLevelAgreementProvider feedServiceLevelAgreementProvider;
+
+    @Inject
+    private ServiceLevelAgreementScheduler serviceLevelAgreementScheduler;
 
     @Override
     public Class<? extends ServiceLevelAgreement> getEntityClass() {
@@ -167,6 +171,9 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             if(slaNode != null) {
                 JcrServiceLevelAgreement sla = new JcrServiceLevelAgreement(slaNode);
                 serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(sla);
+
+                //remove any other relationships
+                feedServiceLevelAgreementProvider.removeAllRelationships(id);
                 slaNode.remove();
             }
             return true;

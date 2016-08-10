@@ -273,6 +273,25 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
         return false;
     }
 
+    public boolean removeAllRelationships(ServiceLevelAgreement.ID id) {
+        try {
+            Session session = getSession();
+            JcrFeedServiceLevelAgreementRelationship extensibleEntity = (JcrFeedServiceLevelAgreementRelationship) findRelationship(id);
+            if (extensibleEntity != null) {
+                JcrMetadataAccess.ensureCheckoutNode(extensibleEntity.getNode());
+                for (Feed feed : extensibleEntity.getFeeds()) {
+                    JcrFeed jcrFeed = (JcrFeed) feed;
+                    JcrMetadataAccess.ensureCheckoutNode(jcrFeed.getNode());
+                }
+                extensibleEntity.removeFeedRelationships(id);
+                extensibleEntity.getNode().remove();
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("unable to remove Feed SLA relationships for SLA " + id, e);
+        }
+        return false;
+    }
+
 
     protected Session getSession() {
         return JcrMetadataAccess.getActiveSession();
