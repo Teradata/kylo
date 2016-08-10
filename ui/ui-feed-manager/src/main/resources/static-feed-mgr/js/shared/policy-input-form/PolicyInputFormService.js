@@ -54,12 +54,9 @@ angular.module(MODULE_FEED_MGR).factory('PolicyInputFormService', function ($htt
     var data = {
 
         currentFeedValue: function (feed) {
-            console.log('FEED NAME ', feed)
             return feed.category.systemName + "." + feed.systemFeedName;
         },
         attachCurrentFeedValues: function (data, feedName) {
-            console.log('ATTACH FEED VALUE To ', data, feedName)
-
             //set the currentFeed property value to be this.feed if it is not null
             var currentFeedProperties = [];
             _.each(data, function (rules) {

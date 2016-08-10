@@ -23,7 +23,6 @@
 
         var controller = function ($scope, $element) {
             var self = this;
-            console.log('loading title ',this.loadingTitle)
         };
         angular.module(MODULE_OPERATIONS).controller('LoadingIndicatorController', controller);
 

@@ -170,7 +170,6 @@
                 });
                 //set the feedFormat property
                 self.model.table.feedFormat = response.hiveRecordFormat;
-                console.log('self.model.table.feedFormat',self.model.table.feedFormat)
 
                 hideProgress();
                 self.uploadBtnDisabled = false;

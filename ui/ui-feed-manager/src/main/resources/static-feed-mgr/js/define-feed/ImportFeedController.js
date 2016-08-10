@@ -86,7 +86,6 @@
 
                 hideProgress();
 
-                console.log('ERRROR MAP ', self.errorMap, self.errorCount)
                 if (count == 0) {
                     self.importResultIcon = "check_circle";
                     self.importResultIconColor = "#009933";

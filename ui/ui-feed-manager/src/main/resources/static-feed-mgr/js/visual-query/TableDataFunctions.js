@@ -172,7 +172,7 @@ angular.module(MODULE_FEED_MGR).factory('TableDataFunctions', function () {
                 }
             }
             else {
-                console.log('CANT FIND COLUMNS',str)
+                //     console.log('CANT FIND COLUMNS',str)
             }
         }
 
@@ -204,7 +204,7 @@ angular.module(MODULE_FEED_MGR).factory('TableDataFunctions', function () {
                 if(command != null) {
                     tableData = command.execute(tableData);
                     commands.push(command);
-                    console.log(action(command) + ": " + tableData);
+                    //    console.log(action(command) + ": " + tableData);
                 }
                 //LOG THE ERROR!!!
                 return tableData;
@@ -214,7 +214,7 @@ angular.module(MODULE_FEED_MGR).factory('TableDataFunctions', function () {
                 var command = commands.pop();
                 tableData = command.undo(tableData);
                 undoCommands.push(command);
-                console.log("Undo " + action(command) + ": " + tableData);
+                //  console.log("Undo " + action(command) + ": " + tableData);
                 return tableData;
             },
             redo: function () {

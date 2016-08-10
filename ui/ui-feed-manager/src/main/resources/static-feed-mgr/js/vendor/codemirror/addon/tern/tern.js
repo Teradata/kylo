@@ -109,7 +109,6 @@
     },
     updateDefs:function(defs) {
       this.options.defs = defs
-      console.log('DELETE ',defs[0]['!name'],defs)
       this.server.deleteDefs(defs[0]['!name']);
       this.server.addDefs(defs[0]);
     },
@@ -135,7 +134,6 @@
       var extraOptions = request.query && this.options.queryOptions && this.options.queryOptions[request.query.type]
       if (extraOptions) for (var prop in extraOptions) request.query[prop] = extraOptions[prop];
 
-      console.log('REQUEST ',this.server, request, request.query)
       this.server.request(request, function (error, data) {
         if (!error && self.options.responseFilter)
           data = self.options.responseFilter(doc, query, request, error, data);
@@ -214,7 +212,6 @@
   // Completion
 
   function hint(ts, cm, c) {
-    console.log('HINT ',ts,cm,c)
     ts.request(cm, {type: "completions", types: true, docs: true, urls: true}, function(error, data) {
       if (error) return showError(ts, cm, error);
       var completions = [], after = "";
