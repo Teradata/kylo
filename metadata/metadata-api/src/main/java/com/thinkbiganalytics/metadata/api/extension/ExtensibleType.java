@@ -31,4 +31,13 @@ public interface ExtensibleType {
     Set<FieldDescriptor> getFieldDescriptors();
 
     FieldDescriptor getFieldDescriptor(String name);
+
+    /**
+     * Gets the user-defined fields for this type.
+     *
+     * @return the user-defined fields
+     * @since 0.4.0
+     */
+    @Nonnull
+    Set<UserFieldDescriptor> getUserFieldDescriptors();
 }

@@ -8,7 +8,7 @@ import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedModelTransform;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 
@@ -16,7 +16,6 @@ import org.joda.time.DateTime;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -55,8 +54,11 @@ public class CategoryModelTransform {
                         category.setCreateDate(domainCategory.getCreatedTime() != null ? domainCategory.getCreatedTime().toDate() : null);
                         category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
 
+                        // Transforms the domain user-defined fields to Feed Manager user-defined fields
+                        category.setUserFields(UserPropertyTransform.toUserFields(categoryProvider.getFeedUserFields(domainCategory.getId())));
+
                         // Transforms the domain user-defined properties to Feed Manager user-defined properties
-                        final Set<FieldDescriptor> userFields = Collections.emptySet();
+                        final Set<UserFieldDescriptor> userFields = categoryProvider.getUserFields();
                         category.setUserProperties(UserPropertyTransform.toFeedManagerProperties(userFields, domainCategory.getUserProperties()));
 
                         return category;

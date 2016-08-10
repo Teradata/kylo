@@ -2,12 +2,14 @@ package com.thinkbiganalytics.metadata.api.feed;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -77,6 +79,23 @@ public interface FeedProvider {
     Map<String, Object> mergeFeedProperties(Feed.ID feedId, Map<String, Object> properties);
 
     Map<String, Object> replaceProperties(Feed.ID feedId, Map<String, Object> properties);
+
+    /**
+     * Gets the user fields for all feeds.
+     *
+     * @return user field descriptors
+     * @since 0.4.0
+     */
+    @Nonnull
+    Set<UserFieldDescriptor> getUserFields();
+
+    /**
+     * Sets the user fields for all feeds.
+     *
+     * @param userFields user field descriptors
+     * @since 0.4.0
+     */
+    void setUserFields(@Nonnull Set<UserFieldDescriptor> userFields);
 
     // TODO Methods to add policy info to source
 }

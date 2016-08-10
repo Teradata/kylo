@@ -6,6 +6,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.rest.model.UserField;
+import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
 import com.thinkbiganalytics.metadata.api.Command;
@@ -36,13 +38,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
-/**
- * Created by sr186054 on 5/4/16.
- */
 public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
@@ -75,7 +75,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Inject
     FeedServiceLevelAgreementProvider feedServiceLevelAgreementProvider;
 
-
     /** Operations manager feed repository */
     @Inject
     FeedRepository feedRepository;
@@ -103,16 +102,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         });
         return feedMetadata;
     }
-    /*
-
-     return metadataAccess.read(new Command<FeedMetadata>() {
-            @Override
-            public FeedMetadata execute() {
-                return null;
-            }
-        });
-
-     */
 
     @Override
     public FeedMetadata getFeedById(final String id) {
@@ -223,7 +212,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     }
 
     @Override
-    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId)  {
+    protected RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId) {
         return metadataAccess.read(new Command<RegisteredTemplate>() {
             @Override
             public RegisteredTemplate execute() {
@@ -239,14 +228,13 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     }
 
     // @Transactional(transactionManager = "metadataTransactionManager")
-    public NifiFeed createFeed(final FeedMetadata feedMetadata)  {
+    public NifiFeed createFeed(final FeedMetadata feedMetadata) {
         if (feedMetadata.getState() == null) {
             feedMetadata.setState(Feed.State.ENABLED.name());
         }
         return super.createFeed(feedMetadata);
 
     }
-
 
     @Override
     //@Transactional(transactionManager = "metadataTransactionManager")
@@ -261,7 +249,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
             // Build preconditions
             List<PreconditionRule> preconditions = feed.getSchedule().getPreconditions();
-            if(preconditions != null) {
+            if (preconditions != null) {
                 PreconditionPolicyTransformer transformer = new PreconditionPolicyTransformer(preconditions);
                 transformer.applyFeedNameToCurrentFeedProperties(feed.getCategory().getSystemName(), feed.getSystemFeedName());
                 List<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> transformedPreconditions = transformer.getPreconditions();
@@ -389,7 +377,17 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         //not needed
     }
 
+    @Nonnull
+    @Override
+    public Set<UserField> getUserFields() {
+        return metadataAccess.read(() -> UserPropertyTransform.toUserFields(feedProvider.getUserFields()));
+    }
 
-
-
+    @Override
+    public void setUserFields(@Nonnull final Set<UserField> userFields) {
+        metadataAccess.commit(() -> {
+            feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+            return userFields;
+        });
+    }
 }

@@ -8,12 +8,18 @@ import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
 import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeBuilder;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.api.extension.FieldDescriptorBuilder;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.UnknownPropertyException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensiblePropertyCollection;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrUserFieldDescriptor;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -59,11 +65,8 @@ import javax.jcr.nodetype.PropertyDefinition;
  */
 public class JcrPropertyUtil {
 
-    /** TODO */
-    private static final String USER_PROPERTY_ENCODING = "UTF-8";
-
-    /** TODO */
-    private static final String USER_PROPERTY_PREFIX = "usr:";
+    /** Encoding for user-defined property names */
+    public static final String USER_PROPERTY_ENCODING = "UTF-8";
 
     protected static final ObjectWriter writer;
     protected static final ObjectReader reader;
@@ -704,6 +707,61 @@ public class JcrPropertyUtil {
     }
 
     /**
+     * Gets the user-defined fields for the specified type.
+     *
+     * @param name the type name
+     * @param extensibleTypeProvider the type provider
+     * @return the user-defined fields
+     */
+    @Nonnull
+    public static Set<UserFieldDescriptor> getUserFields(@Nonnull final String name, @Nonnull final ExtensibleTypeProvider extensibleTypeProvider) {
+        final ExtensibleType type = extensibleTypeProvider.getType(name);
+        return (type != null) ? type.getUserFieldDescriptors() : Collections.emptySet();
+    }
+
+    /**
+     * Sets the user-defined fields for the specified type.
+     *
+     * @param name the type name
+     * @param fields the user-defined fields
+     * @param extensibleTypeProvider the type provider
+     */
+    public static void setUserFields(@Nonnull final String name, @Nonnull final Set<UserFieldDescriptor> fields, @Nonnull final ExtensibleTypeProvider extensibleTypeProvider) {
+        // Get type builder
+        final ExtensibleTypeBuilder builder;
+        final ExtensibleType type = extensibleTypeProvider.getType(name);
+
+        if (type == null) {
+            builder = extensibleTypeProvider.buildType(name);
+        } else {
+            builder = extensibleTypeProvider.updateType(type.getId());
+        }
+
+        // Add fields to type
+        final String prefix = JcrMetadataAccess.USR_PREFIX + ":";
+
+        fields.forEach(field -> {
+            // Encode field name
+            final String systemName;
+            try {
+                systemName = prefix + URLEncoder.encode(field.getSystemName(), USER_PROPERTY_ENCODING);
+            } catch (UnsupportedEncodingException e) {
+                throw new IllegalStateException(e.toString(), e);
+            }
+
+            // Create field descriptor
+            final FieldDescriptorBuilder fieldBuilder = builder.field(systemName);
+            fieldBuilder.description(field.getDescription());
+            fieldBuilder.displayName(field.getDisplayName());
+            fieldBuilder.type(FieldDescriptor.Type.STRING);
+            fieldBuilder.property(JcrUserFieldDescriptor.ORDER, Integer.toString(field.getOrder()));
+            fieldBuilder.property(JcrUserFieldDescriptor.REQUIRED, Boolean.toString(field.isRequired()));
+            fieldBuilder.add();
+        });
+        builder.build();
+    }
+
+    /**
      * Gets the user-defined property names and values for the specified node.
      *
      * @param node the node to be searched
@@ -722,13 +780,14 @@ public class JcrPropertyUtil {
         }
 
         // Convert iterator to map
-        final int prefixLength = USER_PROPERTY_PREFIX.length();
+        final String prefix = JcrMetadataAccess.USR_PREFIX + ":";
+        final int prefixLength = prefix.length();
         final Map<String, String> properties = new HashMap<>((int) Math.min(iterator.getSize(), Integer.MAX_VALUE));
 
         while (iterator.hasNext()) {
             final Property property = iterator.nextProperty();
             try {
-                if (property.getName().startsWith(USER_PROPERTY_PREFIX)) {
+                if (property.getName().startsWith(prefix)) {
                     properties.put(URLDecoder.decode(property.getName().substring(prefixLength), USER_PROPERTY_ENCODING), property.getString());
                 }
             } catch(RepositoryException e){
@@ -760,10 +819,11 @@ public class JcrPropertyUtil {
 
         // Set properties on node
         final Set<String> newProperties = new HashSet<>(properties.size());
+        final String prefix = JcrMetadataAccess.USR_PREFIX + ":";
 
         properties.forEach((key, value) -> {
             try {
-                final String name = USER_PROPERTY_PREFIX + URLEncoder.encode(key, USER_PROPERTY_ENCODING);
+                final String name = prefix + URLEncoder.encode(key, USER_PROPERTY_ENCODING);
                 newProperties.add(name);
                 node.setProperty(name, value);
             } catch (RepositoryException e) {
@@ -786,7 +846,7 @@ public class JcrPropertyUtil {
             final Property property = iterator.nextProperty();
             try {
                 final String name = property.getName();
-                if (name.startsWith(USER_PROPERTY_PREFIX) && !newProperties.contains(name)) {
+                if (name.startsWith(prefix) && !newProperties.contains(name)) {
                     property.remove();
                 }
             } catch (RepositoryException e) {

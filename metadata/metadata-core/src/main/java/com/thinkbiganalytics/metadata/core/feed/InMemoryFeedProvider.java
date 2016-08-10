@@ -7,6 +7,7 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource.ID;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
@@ -27,6 +28,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -466,4 +468,13 @@ public class InMemoryFeedProvider implements FeedProvider {
     public Map<String, Object> replaceProperties(Feed.ID feedId, Map<String, Object> properties) {
         return null;
     }
+
+    @Nonnull
+    @Override
+    public Set<UserFieldDescriptor> getUserFields() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public void setUserFields(@Nonnull Set<UserFieldDescriptor> userFields) {}
 }

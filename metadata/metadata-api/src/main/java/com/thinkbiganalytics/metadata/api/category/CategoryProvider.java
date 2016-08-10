@@ -1,6 +1,11 @@
 package com.thinkbiganalytics.metadata.api.category;
 
 import com.thinkbiganalytics.metadata.api.BaseProvider;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+
+import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 /**
  * Manages the repository of category objects.
@@ -13,5 +18,39 @@ public interface CategoryProvider<T extends Category> extends BaseProvider<T, Ca
 
     T ensureCategory(String systemName);
 
+    /**
+     * Gets the user fields for all categories.
+     *
+     * @return user field descriptors
+     * @since 0.4.0
+     */
+    @Nonnull
+    Set<UserFieldDescriptor> getUserFields();
 
+    /**
+     * Sets the user fields for all categories.
+     *
+     * @param userFields user field descriptors
+     * @since 0.4.0
+     */
+    void setUserFields(@Nonnull Set<UserFieldDescriptor> userFields);
+
+    /**
+     * Gets the user fields for all feeds within the specified category.
+     *
+     * @param categoryId the category id
+     * @return user field descriptors
+     * @since 0.4.0
+     */
+    @Nonnull
+    Set<UserFieldDescriptor> getFeedUserFields(@Nonnull Category.ID categoryId);
+
+    /**
+     * Sets the user fields for all feeds within the specified category.
+     *
+     * @param categoryId the category id
+     * @param userFields user field descriptors
+     * @since 0.4.0
+     */
+    void setFeedUserFields(@Nonnull Category.ID categoryId, @Nonnull Set<UserFieldDescriptor> userFields);
 }

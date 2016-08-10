@@ -2,21 +2,40 @@ package com.thinkbiganalytics.feedmgr.service.category;
 
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 
 import java.util.Collection;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
 
 /**
- * Created by sr186054 on 5/1/16.
+ * Manages Feed Manager categories.
  */
 public interface FeedManagerCategoryService {
 
-  Collection<FeedCategory> getCategories();
+    Collection<FeedCategory> getCategories();
 
-  FeedCategory getCategoryById(String id);
+    FeedCategory getCategoryById(String id);
 
-  FeedCategory getCategoryBySystemName(String name);
+    FeedCategory getCategoryBySystemName(String name);
 
-  void saveCategory(FeedCategory category);
+    void saveCategory(FeedCategory category);
 
-  boolean deleteCategory(String categoryId) throws InvalidOperationException;
+    boolean deleteCategory(String categoryId) throws InvalidOperationException;
+
+    /**
+     * Gets the user-defined fields for all categories.
+     *
+     * @return the user-defined fields
+     */
+    @Nonnull
+    Set<UserField> getUserFields();
+
+    /**
+     * Sets the user-defined fields for all categories.
+     *
+     * @param userFields the new set of user-defined fields
+     */
+    void setUserFields(@Nonnull Set<UserField> userFields);
 }

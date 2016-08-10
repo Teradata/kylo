@@ -59,9 +59,6 @@ import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
 
-/**
- * Created by sr186054 on 1/13/16.
- */
 @Api(value = "feed-manager-feeds", produces = "application/json")
 @Path("/v1/feedmgr/feeds")
 @Component
@@ -74,12 +71,10 @@ public class FeedRestController {
     @Qualifier("nifiRestClient")
     NifiRestClient nifiRestClient;
 
-
     @Autowired
     MetadataService metadataService;
 
     //Profile needs hive service
-
     @Autowired
     HiveService hiveService;
 
@@ -90,19 +85,17 @@ public class FeedRestController {
     ServiceLevelAgreementService serviceLevelAgreementService;
 
     public FeedRestController() {
-        int i = 0;
     }
 
     private MetadataService getMetadataService() {
         return metadataService;
     }
 
-
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
     public Response createFeed(FeedMetadata feedMetadata) {
-        NifiFeed feed = null;
+        NifiFeed feed;
         try {
             feed = getMetadataService().createFeed(feedMetadata);
         } catch (Exception e) {
@@ -232,13 +225,13 @@ public class FeedRestController {
             }
         }
         if (registeredTemplate != null) {
-            NifiPropertyUtil.matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feed.getProperties(),NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
+            NifiPropertyUtil
+                    .matchAndSetPropertyByProcessorName(registeredTemplate.getProperties(), feed.getProperties(), NifiPropertyUtil.PROPERTY_MATCH_AND_UPDATE_MODE.UPDATE_NON_EXPRESSION_PROPERTIES);
             feed.setProperties(registeredTemplate.getProperties());
         }
 
         return Response.ok(feed).build();
     }
-
 
     @POST
     @Path("/table/sample-file")
@@ -250,7 +243,6 @@ public class FeedRestController {
         TableSchema schema = parser.parse(fileInputStream);
         return Response.ok(schema).build();
     }
-
 
     @GET
     @Path("/{feedId}/profile-summary")
@@ -294,7 +286,6 @@ public class FeedRestController {
         return Response.ok(rows).build();
     }
 
-
     @GET
     @Path("/{feedId}/profile-stats")
     @Produces({MediaType.APPLICATION_JSON})
@@ -328,7 +319,6 @@ public class FeedRestController {
         return Response.ok(rows.getRows()).build();
     }
 
-
     @GET
     @Path("/possible-preconditions")
     @Produces({MediaType.APPLICATION_JSON})
@@ -336,8 +326,6 @@ public class FeedRestController {
         List<PreconditionRule> conditions = feedManagerPreconditionService.getPossiblePreconditions();
         return Response.ok(conditions).build();
     }
-
-
 
     @GET
     @Path("/{feedId}/sla")

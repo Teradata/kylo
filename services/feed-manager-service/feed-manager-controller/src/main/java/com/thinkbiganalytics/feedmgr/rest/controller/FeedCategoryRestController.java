@@ -27,7 +27,7 @@ import javax.ws.rs.core.Response;
 import io.swagger.annotations.Api;
 
 /**
- * Created by sr186054 on 1/13/16.
+ * REST API for managing categories within the Feed Manager.
  */
 @Api(value = "feed-manager-categories", produces = "application/json")
 @Path("/v1/feedmgr/categories")
@@ -38,9 +38,6 @@ public class FeedCategoryRestController {
 
     @Autowired
     MetadataService metadataService;
-
-    public FeedCategoryRestController() {
-    }
 
     private MetadataService getMetadataService() {
         return metadataService;
@@ -76,6 +73,4 @@ public class FeedCategoryRestController {
         List<FeedSummary> summaryList = getMetadataService().getFeedSummaryForCategory(categoryId);
         return Response.ok(summaryList).build();
     }
-
-
 }

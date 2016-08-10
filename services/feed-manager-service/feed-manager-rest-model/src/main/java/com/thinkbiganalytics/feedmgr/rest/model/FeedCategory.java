@@ -28,9 +28,10 @@ public class FeedCategory {
     private String iconColor;
     private String description;
 
-    /**
-     * User-defined business metadata
-     */
+    /** User-defined fields for feeds within this category */
+    private Set<UserField> userFields;
+
+    /** User-defined business metadata */
     private Set<UserProperty> userProperties;
 
     @JsonIgnore
@@ -86,6 +87,28 @@ public class FeedCategory {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    /**
+     * Gets the user-defined fields for feeds within this category.
+     *
+     * @return the user-defined fields
+     * @see #setUserFields(Set)
+     * @since 0.4.0
+     */
+    public Set<UserField> getUserFields() {
+        return userFields;
+    }
+
+    /**
+     * Sets the user-defined fields for feeds within this category.
+     *
+     * @param userFields the new user-defined fields
+     * @see #setUserFields(Set)
+     * @since 0.4.0
+     */
+    public void setUserFields(final Set<UserField> userFields) {
+        this.userFields = userFields;
     }
 
     /**

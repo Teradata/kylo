@@ -2,6 +2,7 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.Sets;
 import com.thinkbiganalytics.db.model.schema.Field;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
@@ -15,7 +16,7 @@ import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.hive.service.HiveService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.extension.FieldDescriptor;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
@@ -29,7 +30,6 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -191,7 +191,9 @@ public class FeedModelTransform {
                     feed.setState(domain.getState() != null ? domain.getState().name() : null);
                     feed.setVersionName(domain.getVersionName() != null ? domain.getVersionName() : null);
 
-                    final Set<FieldDescriptor> userFields = Collections.emptySet();
+                    final Set<UserFieldDescriptor> userFields = (category != null)
+                                                            ? Sets.union(feedProvider.getUserFields(), categoryProvider.getFeedUserFields(category.getId()))
+                                                            : feedProvider.getUserFields();
                     @SuppressWarnings("unchecked")
                     final Set<UserProperty> userProperties = UserPropertyTransform.toFeedManagerProperties(userFields, domain.getUserProperties());
                     feed.setUserProperties(userProperties);

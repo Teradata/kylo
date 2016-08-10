@@ -77,6 +77,8 @@
     + * (tba:fieldDescriptor) sns
 
 [tba:fieldDescriptor] > nt:hierarchyNode, mix:title
+    - usr:mandatory (BOOLEAN)
+    - usr:order (LONG)
     
 [tba:taggable] mixin
   - tba:tags (STRING) multiple

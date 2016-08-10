@@ -4,18 +4,17 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
-/**
- * Created by sr186054 on 5/1/16.
- */
 public interface FeedManagerFeedService {
 
     List<FeedMetadata> getReusableFeeds();
@@ -28,11 +27,11 @@ public interface FeedManagerFeedService {
 
     Collection<FeedMetadata> getFeeds();
 
-    public Collection<? extends UIFeed> getFeeds(boolean verbose);
+    Collection<? extends UIFeed> getFeeds(boolean verbose);
 
-    public List<FeedSummary> getFeedSummaryData();
+    List<FeedSummary> getFeedSummaryData();
 
-    public List<FeedSummary> getFeedSummaryForCategory(String categoryId);
+    List<FeedSummary> getFeedSummaryForCategory(String categoryId);
 
     List<FeedMetadata> getFeedsWithTemplate(String registeredTemplateId);
 
@@ -68,10 +67,22 @@ public interface FeedManagerFeedService {
 
     FeedSummary disableFeed(String feedId);
 
-    public void updateFeedsWithTemplate(String oldTemplateId, String newTemplateId);
+    void updateFeedsWithTemplate(String oldTemplateId, String newTemplateId);
 
-    public void applyFeedSelectOptions(List<FieldRuleProperty> properties);
+    void applyFeedSelectOptions(List<FieldRuleProperty> properties);
 
+    /**
+     * Gets the user-defined fields for feeds.
+     *
+     * @return the user-defined fields
+     */
+    @Nonnull
+    Set<UserField> getUserFields();
 
-
+    /**
+     * Sets the user-defined fields for feeds.
+     *
+     * @param userFields the new set of user-defined fields
+     */
+    void setUserFields(@Nonnull Set<UserField> userFields);
 }

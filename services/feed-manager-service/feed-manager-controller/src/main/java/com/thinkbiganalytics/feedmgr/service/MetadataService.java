@@ -7,6 +7,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.rest.model.UserField;
+import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -84,4 +87,19 @@ public interface MetadataService {
     void saveCategory(FeedCategory category);
 
     boolean deleteCategory(String categoryId) throws InvalidOperationException;
+
+    /**
+     * Gets the user-defined fields for all categories and feeds.
+     *
+     * @return the user-defined fields
+     */
+    @Nonnull
+    UserFieldCollection getUserFields();
+
+    /**
+     * Sets the user-defined fields for all categories and feeds.
+     *
+     * @param userFields the new user-defined fields
+     */
+    void setUserFields(@Nonnull UserFieldCollection userFields);
 }

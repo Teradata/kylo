@@ -41,6 +41,9 @@ public class JcrMetadataAccess implements MetadataAccess {
 
     public static final String TBA_PREFIX = "tba";
 
+    /** Namespace for user-defined items */
+    public static final String USR_PREFIX = "usr";
+
     private static final ThreadLocal<Session> activeSession = new ThreadLocal<Session>() {
         protected Session initialValue() {
             return null;

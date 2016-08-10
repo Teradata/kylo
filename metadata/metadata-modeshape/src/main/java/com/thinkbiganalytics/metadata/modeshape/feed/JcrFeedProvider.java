@@ -7,6 +7,8 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
@@ -26,6 +28,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
@@ -44,6 +47,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
@@ -63,6 +67,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Inject
     DatasourceProvider datasourceProvider;
+
+    /** JCR node type manager */
+    @Inject
+    ExtensibleTypeProvider extensibleTypeProvider;
 
     @Override
     public String getNodeType() {
@@ -630,5 +638,16 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to replace Feed Properties for Feed " + feedId, e);
         }
+    }
+
+    @Nonnull
+    @Override
+    public Set<UserFieldDescriptor> getUserFields() {
+        return JcrPropertyUtil.getUserFields("usr:feed", extensibleTypeProvider);
+    }
+
+    @Override
+    public void setUserFields(@Nonnull final Set<UserFieldDescriptor> userFields) {
+        JcrPropertyUtil.setUserFields("usr:feed", userFields, extensibleTypeProvider);
     }
 }

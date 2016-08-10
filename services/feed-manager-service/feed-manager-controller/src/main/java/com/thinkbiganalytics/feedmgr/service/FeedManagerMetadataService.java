@@ -7,6 +7,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.rest.model.UserField;
+import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
@@ -34,9 +36,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 
-/**
- * Created by sr186054 on 1/13/16.
- */
 public class FeedManagerMetadataService implements MetadataService {
 
     @Inject
@@ -57,7 +56,6 @@ public class FeedManagerMetadataService implements MetadataService {
     // Metadata event service
     @Inject
     private MetadataEventService eventService;
-
 
     public FeedManagerMetadataService() {
 
@@ -94,6 +92,7 @@ public class FeedManagerMetadataService implements MetadataService {
         });
 
     }
+
     @Override
     public RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName) {
         return metadataAccess.read(new Command<RegisteredTemplate>() {
@@ -101,12 +100,11 @@ public class FeedManagerMetadataService implements MetadataService {
                 return templateProvider.getRegisteredTemplateForNifiProperties(nifiTemplateId, nifiTemplateName);
             }
         });
-       }
+    }
 
     public void deleteRegisteredTemplate(String templateId) {
         templateProvider.deleteRegisteredTemplate(templateId);
     }
-
 
     @Override
     public List<RegisteredTemplate> getRegisteredTemplates() {
@@ -222,7 +220,7 @@ public class FeedManagerMetadataService implements MetadataService {
     }
 
     //@Transactional(transactionManager = "metadataTransactionManager")
-    public FeedSummary disableFeed( final String feedId) {
+    public FeedSummary disableFeed(final String feedId) {
         return metadataAccess.commit(new Command<FeedSummary>() {
 
             @Override
@@ -289,8 +287,6 @@ public class FeedManagerMetadataService implements MetadataService {
         return categoryProvider.getCategories();
     }
 
-
-
     @Override
     public FeedCategory getCategoryBySystemName(String name) {
         return categoryProvider.getCategoryBySystemName(name);
@@ -310,9 +306,9 @@ public class FeedManagerMetadataService implements MetadataService {
      * Runs the cleanup flow for the specified feed.
      *
      * @param feed the feed to be cleaned up
-     * @throws FeedCleanupFailedException if the cleanup flow was started but failed to complete successfully
+     * @throws FeedCleanupFailedException  if the cleanup flow was started but failed to complete successfully
      * @throws FeedCleanupTimeoutException if the cleanup flow was started but failed to complete in the allotted time
-     * @throws RuntimeException if the cleanup flow could not be started
+     * @throws RuntimeException            if the cleanup flow could not be started
      */
     private void cleanupFeed(@Nonnull final FeedMetadata feed) {
         // Create event listener
@@ -348,6 +344,21 @@ public class FeedManagerMetadataService implements MetadataService {
         }
     }
 
+    @Nonnull
+    @Override
+    public UserFieldCollection getUserFields() {
+        final UserFieldCollection collection = new UserFieldCollection();
+        collection.setCategoryFields(categoryProvider.getUserFields());
+        collection.setFeedFields(feedProvider.getUserFields());
+        return collection;
+    }
+
+    @Override
+    public void setUserFields(@Nonnull final UserFieldCollection userFields) {
+        categoryProvider.setUserFields(userFields.getCategoryFields());
+        feedProvider.setUserFields(userFields.getFeedFields());
+    }
+
     /**
      * Listens for a feed completion then interrupts a target thread.
      */
@@ -368,7 +379,7 @@ public class FeedManagerMetadataService implements MetadataService {
         /**
          * Constructs a {@code FeedCompletionListener} that listens for events for the specified feed then interrupts the specified thread.
          *
-         * @param feed the feed to watch far
+         * @param feed   the feed to watch far
          * @param target the thread to interrupt
          */
         FeedCompletionListener(@Nonnull final FeedMetadata feed, @Nonnull final Thread target) {

@@ -2,13 +2,16 @@ package com.thinkbiganalytics.metadata.modeshape.category;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 
 import java.io.Serializable;
+import java.util.Set;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 
 /**
@@ -55,5 +58,29 @@ public class JcrFeedManagerCategoryProvider extends BaseJcrProvider<FeedManagerC
 
     public Category.ID resolveId(Serializable fid) {
         return new JcrCategory.CategoryId(fid);
+    }
+
+    @Nonnull
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<UserFieldDescriptor> getUserFields() {
+        return categoryProvider.getUserFields();
+    }
+
+    @Override
+    public void setUserFields(@Nonnull Set<UserFieldDescriptor> userFields) {
+        categoryProvider.setUserFields(userFields);
+    }
+
+    @Nonnull
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<UserFieldDescriptor> getFeedUserFields(@Nonnull Category.ID categoryId) {
+        return categoryProvider.getFeedUserFields(categoryId);
+    }
+
+    @Override
+    public void setFeedUserFields(@Nonnull Category.ID categoryId, @Nonnull Set<UserFieldDescriptor> userFields) {
+        categoryProvider.setFeedUserFields(categoryId, userFields);
     }
 }

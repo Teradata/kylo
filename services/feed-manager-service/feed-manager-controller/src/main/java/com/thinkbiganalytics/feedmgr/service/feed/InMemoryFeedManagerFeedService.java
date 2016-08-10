@@ -8,6 +8,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
@@ -19,18 +20,17 @@ import com.thinkbiganalytics.rest.model.LabelValue;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
-/**
- * Created by sr186054 on 5/1/16.
- */
 public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedService implements FeedManagerFeedService {
 
     @Inject
@@ -42,9 +42,7 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
     @Inject
     private FeedManagerTemplateService templateProvider;
 
-
     private Map<String, FeedMetadata> feeds = new HashMap<>();
-
 
     @PostConstruct
     private void postConstruct() {
@@ -64,9 +62,7 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
 
             loadSavedFeedsToMetaClientStore();
         }
-
     }
-
 
     public Collection<FeedMetadata> getFeeds() {
         return feeds.values();
@@ -168,7 +164,6 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
 
     @Override
     public List<FeedMetadata> getFeedsWithTemplate(final String registeredTemplateId) {
-
         return Lists.newArrayList(Iterables.filter(feeds.values(), new Predicate<FeedMetadata>() {
             @Override
             public boolean apply(FeedMetadata feed) {
@@ -201,7 +196,6 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
     protected RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId) {
         return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
     }
-
 
     @Override
     public void saveFeed(FeedMetadata feed) {
@@ -270,7 +264,6 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
         return null;
     }
 
-
     @Override
     public void applyFeedSelectOptions(List<FieldRuleProperty> properties) {
         if (properties != null && !properties.isEmpty()) {
@@ -288,4 +281,13 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
         }
     }
 
+    @Nonnull
+    @Override
+    public Set<UserField> getUserFields() {
+        return Collections.emptySet();
+    }
+
+    @Override
+    public void setUserFields(@Nonnull Set<UserField> userFields) {
+    }
 }

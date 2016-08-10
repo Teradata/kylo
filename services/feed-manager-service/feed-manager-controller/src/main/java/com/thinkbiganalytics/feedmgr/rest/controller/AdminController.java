@@ -1,7 +1,9 @@
 package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.feedmgr.service.feed.ExportImportFeedService;
 
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
@@ -10,6 +12,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.annotation.Nonnull;
 import javax.inject.Inject;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
@@ -24,9 +27,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 /**
- * Created by sr186054 on 5/6/16.
+ * REST API for administrative functions.
  */
 @Api(value = "admin", produces = "application/json")
 @Path("/v1/feedmgr/admin")
@@ -37,6 +43,10 @@ public class AdminController {
 
     @Inject
     ExportImportFeedService exportImportFeedService;
+
+    /** Feed manager metadata service */
+    @Inject
+    MetadataService metadataService;
 
     @GET
     @Path("/export-template/{templateId}")
@@ -64,7 +74,6 @@ public class AdminController {
         }
     }
 
-
     @POST
     @Path("/import-feed")
     @Consumes({MediaType.MULTIPART_FORM_DATA})
@@ -81,7 +90,6 @@ public class AdminController {
 
         return Response.ok(importFeed).build();
     }
-
 
     @POST
     @Path("/import-template")
@@ -102,5 +110,40 @@ public class AdminController {
         return Response.ok(importTemplate).build();
     }
 
+    /**
+     * Gets the user-defined fields for all categories and feeds.
+     *
+     * @return the user-defined fields
+     * @since 0.4.0
+     */
+    @GET
+    @Path("user-fields")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Gets the user-defined fields for categories and feeds.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 200, message = "Returns the user-defined fields.", response = UserFieldCollection.class),
+            @ApiResponse(code = 500, message = "There was a problem accessing the user-defined fields.")
+    })
+    @Nonnull
+    public Object getUserFields() {
+        return metadataService.getUserFields();
+    }
 
+    /**
+     * Sets the user-defined fields for all categories and feeds.
+     *
+     * @param userFields the new user-defined fields
+     * @since 0.4.0
+     */
+    @POST
+    @Path("user-fields")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation(value = "Sets the user-defined fields for categories and feeds.")
+    @ApiResponses(value = {
+            @ApiResponse(code = 204, message = "The user-defined fields have been updated."),
+            @ApiResponse(code = 500, message = "There was a problem updating the user-defined fields.")
+    })
+    public void setUserFields(@Nonnull final UserFieldCollection userFields) {
+        metadataService.setUserFields(userFields);
+    }
 }
