@@ -139,6 +139,8 @@ public class ServiceLevelAgreementMetricTransformerHelper {
         slaGroup.setId(sla.getId());
         slaGroup.setName(sla.getName());
         slaGroup.setDescription(sla.getDescription());
+        slaGroup.setActionErrors(sla.getSlaCheckErrors());
+        slaGroup.setRuleErrors(sla.getObligationErrors());
         for (ObligationGroup group : sla.getGroups()) {
             List<Obligation> obligations = group.getObligations();
             for (Obligation obligation : obligations) {

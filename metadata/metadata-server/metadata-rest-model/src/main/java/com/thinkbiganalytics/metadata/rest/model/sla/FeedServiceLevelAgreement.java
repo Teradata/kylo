@@ -120,4 +120,35 @@ public class FeedServiceLevelAgreement extends ServiceLevelAgreement {
     public void setSlaChecks(List<ServiceLevelAgreementCheck> slaChecks) {
         serviceLevelAgreement.setSlaChecks(slaChecks);
     }
+
+
+    @Override
+    public void addSlaCheckError(String error) {
+        serviceLevelAgreement.addSlaCheckError(error);
+    }
+
+    @Override
+    public void addObligationError(String error) {
+        serviceLevelAgreement.addObligationError(error);
+    }
+
+    @Override
+    public List<String> getObligationErrors() {
+        return serviceLevelAgreement.getObligationErrors();
+    }
+
+    @Override
+    public void setObligationErrors(List<String> obligationErrors) {
+        serviceLevelAgreement.setObligationErrors(obligationErrors);
+    }
+
+    @Override
+    public List<String> getSlaCheckErrors() {
+        return serviceLevelAgreement.getSlaCheckErrors();
+    }
+
+    @Override
+    public void setSlaCheckErrors(List<String> slaCheckErrors) {
+        serviceLevelAgreement.setSlaCheckErrors(slaCheckErrors);
+    }
 }

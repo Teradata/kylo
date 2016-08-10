@@ -19,6 +19,10 @@ public class ServiceLevelAgreementGroup {
 
     private List<ServiceLevelAgreementActionUiConfigurationItem> actionConfigurations;
 
+    private List<String> actionErrors;
+
+    private List<String> ruleErrors;
+
 
     public String getName() {
         return name;
@@ -66,5 +70,21 @@ public class ServiceLevelAgreementGroup {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public List<String> getActionErrors() {
+        return actionErrors;
+    }
+
+    public void setActionErrors(List<String> actionErrors) {
+        this.actionErrors = actionErrors;
+    }
+
+    public List<String> getRuleErrors() {
+        return ruleErrors;
+    }
+
+    public void setRuleErrors(List<String> ruleErrors) {
+        this.ruleErrors = ruleErrors;
     }
 }

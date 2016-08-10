@@ -13,6 +13,7 @@ import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableUpdate;
 import com.thinkbiganalytics.metadata.api.feed.Feed.State;
 import com.thinkbiganalytics.metadata.api.op.ChangeSet;
 import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceSchedule;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.data.DirectoryDatasource;
@@ -48,6 +49,8 @@ import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.joda.time.Period;
 import org.quartz.CronExpression;
 
@@ -576,7 +579,21 @@ public static final     List<com.thinkbiganalytics.metadata.rest.model.sla.FeedS
             for (com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck check : domain.getSlaChecks()) {
                 ServiceLevelAgreementCheck restModel = new ServiceLevelAgreementCheck();
                 restModel.setCronSchedule(check.getCronSchedule());
-                restModel.setActionConfigurations(check.getActionConfigurations());
+                if (deep) {
+                    try {
+                        restModel.setActionConfigurations(check.getActionConfigurations());
+                    } catch (MetadataRepositoryException e) {
+                        if (ExceptionUtils.getRootCause(e) instanceof ClassNotFoundException) {
+                            String msg = ExceptionUtils.getRootCauseMessage(e);
+                            //get just the simpleClassName stripping the package info
+                            msg = StringUtils.substringAfterLast(msg, ".");
+                            sla.addSlaCheckError("Unable to find the SLA Action Configurations of type: " + msg
+                                                 + ". Check with an administrator to ensure the correct plugin is intalled with this SLA configuration. ");
+                        } else {
+                            throw e;
+                        }
+                    }
+                }
                 checks.add(restModel);
             }
         }

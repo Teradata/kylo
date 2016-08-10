@@ -3,14 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import java.io.Serializable;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -22,6 +14,14 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
+
+import java.io.Serializable;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
 
 
 public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEntity implements ServiceLevelAgreementCheck, Serializable {
@@ -97,7 +97,7 @@ public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEnt
     }
 
     public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations() {
-       return getActionConfigurations(true);
+       return getActionConfigurations(false);
     }
 
     public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations(boolean allowClassNotFound) {

@@ -1171,6 +1171,10 @@ md-toast .md-toast-content {
   color: dimgray;
 }
 
+.bold {
+  font-weight: 500;
+}
+
 /* Feed Details */
 .feed-user-property .md-button.md-icon-button {
   height: 36px;
@@ -1181,3 +1185,4 @@ md-toast .md-toast-content {
 .feed-user-property .md-button.md-icon-button .material-icons {
   font-size: 18px;
 }
+

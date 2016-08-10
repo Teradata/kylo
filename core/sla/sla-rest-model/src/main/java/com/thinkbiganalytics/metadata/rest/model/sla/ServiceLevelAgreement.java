@@ -10,6 +10,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -29,6 +30,16 @@ public class ServiceLevelAgreement {
     private List<ObligationGroup> groups;
 
     private List<ServiceLevelAgreementCheck> slaChecks;
+
+    /**
+     * List to hold any transformation errors found when converting Domain to this model
+     */
+    private List<String> obligationErrors;
+
+    /**
+     * List to hold any transformation errors found when converting Domain to this model
+     */
+    private List<String> slaCheckErrors;
     
     public ServiceLevelAgreement() {
         this.defaultGroup = new ObligationGroup("REQUIRED");
@@ -126,5 +137,36 @@ public class ServiceLevelAgreement {
 
     public void setSlaChecks(List<ServiceLevelAgreementCheck> slaChecks) {
         this.slaChecks = slaChecks;
+    }
+
+    public void addSlaCheckError(String error) {
+        getSlaCheckErrors().add(error);
+    }
+
+    public void addObligationError(String error) {
+        getObligationErrors().add(error);
+    }
+
+
+    public List<String> getObligationErrors() {
+        if (obligationErrors == null) {
+            obligationErrors = new ArrayList<>();
+        }
+        return obligationErrors;
+    }
+
+    public void setObligationErrors(List<String> obligationErrors) {
+        this.obligationErrors = obligationErrors;
+    }
+
+    public List<String> getSlaCheckErrors() {
+        if (slaCheckErrors == null) {
+            slaCheckErrors = new ArrayList<>();
+        }
+        return slaCheckErrors;
+    }
+
+    public void setSlaCheckErrors(List<String> slaCheckErrors) {
+        this.slaCheckErrors = slaCheckErrors;
     }
 }

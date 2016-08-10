@@ -1,12 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import java.util.List;
-
-import javax.inject.Inject;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
@@ -23,6 +16,13 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionValidat
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 7/20/16.
@@ -68,7 +68,7 @@ public class JcrServiceLevelAgreementActionAlertResponderFactory implements Aler
                 ServiceLevelAgreement agreement = assessment.getAgreement();
                 if (agreement.getSlaChecks() != null) {
                     for (ServiceLevelAgreementCheck check : agreement.getSlaChecks()) {
-                        for (ServiceLevelAgreementActionConfiguration configuration : check.getActionConfigurations()) {
+                        for (ServiceLevelAgreementActionConfiguration configuration : ((JcrServiceLevelAgreementCheck)check).getActionConfigurations(true)) {
                             List<Class<? extends ServiceLevelAgreementAction>> responders = configuration.getActionClasses();
                             if (responders != null) {
                                 //first check to see if there is a Spring Bean configured for this class type... if so call that

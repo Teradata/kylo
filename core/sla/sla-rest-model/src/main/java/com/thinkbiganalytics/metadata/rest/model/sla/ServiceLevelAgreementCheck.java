@@ -2,6 +2,7 @@ package com.thinkbiganalytics.metadata.rest.model.sla;
 
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -22,6 +23,9 @@ public class ServiceLevelAgreementCheck {
     }
 
     public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations() {
+        if (actionConfigurations == null) {
+            return new ArrayList<>();
+        }
         return actionConfigurations;
     }
 

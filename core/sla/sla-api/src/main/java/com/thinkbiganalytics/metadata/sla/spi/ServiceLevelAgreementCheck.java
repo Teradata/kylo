@@ -17,8 +17,6 @@ public interface ServiceLevelAgreementCheck {
 
     }
 
-    ;
-
     /**
      * @return the unique ID of this SLACheck
      */

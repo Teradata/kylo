@@ -5,20 +5,20 @@
   </div>
   <md-list ng-if="vm.editSla == null && vm.serviceLevelAgreements.length >0" flex layout-fill class="list-item-table">
 
-  <md-list-item ng-repeat="sla in vm.serviceLevelAgreements">
+    <md-list-item ng-repeat="sla in vm.serviceLevelAgreements">
       <div layout="row" layout-fill>
         <div flex="50" layout="column" class="item-column md-list-item-text ">
           <span class="item-title">{{sla.name}}</span>
           <span class="column-title column-title-bottom">{{sla.description}}</span>
-      </div>
+        </div>
         <div flex="30" class="item-column md-list-item-text " ng-show="sla.feedNames != ''">
           <span class="item-title">{{sla.feedNames}}</span>
           <span class="column-title column-title-bottom">Related Feeds</span>
         </div>
         <md-button class="icon-btn md-icon-button auto-height" class="md-secondary" ng-click="vm.onEditSla($index)">
-        <ng-md-icon icon="edit" size="20" style="fill:grey;"></ng-md-icon>
-      </md-button>
-      <md-divider ng-if="!$last"></md-divider>
+          <ng-md-icon icon="edit" size="20" style="fill:grey;"></ng-md-icon>
+        </md-button>
+        <md-divider ng-if="!$last"></md-divider>
       </div>
     </md-list-item>
   </md-list>
@@ -48,8 +48,8 @@
       <h4 class="subhead">SLA Conditions</h4>
 
       <div ng-repeat="rule in vm.editSla.rules" layout="column" class="layout-padding-left-right">
-        <div layout="row" flex class="primary-color-1 md-subhead">
-          <div style="padding-top:25px;" class="layout-padding-right">{{($index+1)}}.</div>
+        <div layout="row" flex class="md-subhead ">
+          <div style="padding-top:25px;" class="layout-padding-right bold">{{($index+1)}}.</div>
           <md-input-container class="md-block layout-padding-left" ng-if="!$first" md-no-float>
             <md-select ng-model="rule.condition" aria-label="Condition" ng-disabled="!rule.editable" placeholder="Condition">
               <md-option value="REQUIRED">AND</md-option>
@@ -57,7 +57,7 @@
             </md-select>
           </md-input-container>
 
-          <div layout="column" flex class="layout-padding-left" style="padding-top:25px">
+          <div layout="column" flex class="layout-padding-left bold" style="padding-top:25px">
             <span>{{rule.name}}</span>
             <span class="hint">{{rule.description}}</span>
           </div>
@@ -73,8 +73,8 @@
 
         <md-divider ng-if="!$last"></md-divider>
         <div ng-if="vm.addingSlaCondition == false && $last" flex layout="row">
+          <md-button class="md-primary" ng-click="vm.addNewCondition()">Add Condition</md-button>
           <span flex></span>
-          <md-button class="md-raised" ng-click="vm.addNewCondition()">Add Another Condition</md-button>
         </div>
 
       </div>
@@ -90,7 +90,7 @@
           </md-select>
         </md-input-container>
         <md-input-container class="md-block layout-padding-top-bottom">
-          <label class="md-container-ignore label-small layout-padding-top">Select New Condition Rule</label>
+          <label class="md-container-ignore label-small layout-padding-top">Select New Condition</label>
           <md-select ng-model="vm.ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="vm.onAddConditionRuleTypeChange()" aria-label="Rule Type">
             <md-option ng-value="opt" ng-repeat="opt in vm.options">{{ opt.name }}</md-option>
           </md-select>
@@ -106,14 +106,26 @@
 
         <div class="layout-padding" ng-if="vm.editSla.actionConfigurations.length ==0" layout="column">
           <span>All SLA violations will generate an Alert.</span>
-          <span ng-if="vm.showActionOptions"">Click the 'Add Action' button to add additional actions when an SLA is violated</span>
+          <span ng-if="vm.showActionOptions">Click the 'Add Action' button to add additional actions when an SLA is violated</span>
+        </div>
+        <div ng-if="vm.editSla.actionErrors != null && vm.editSla.actionErrors.length >0" layout="column">
+          <div class="error md-title bold layout-padding-left" layout="row">
+            <div class="layout-padding-left">
+              <ng-md-icon icon="warning" size="20" class="error">WARNING</ng-md-icon>
+            </div>
+            <span>Errors found. Saving this SLA will result in loss of configuration data.</span>
+          </div>
+
+          <div ng-repeat="error in vm.editSla.actionErrors" layout="column" class="layout-padding-left-right">
+            <span class="error">{{error}}</span>
+          </div>
         </div>
         <div ng-repeat="rule in vm.editSla.actionConfigurations" layout="column" class="layout-padding-left-right">
 
-          <div layout="row" flex class="primary-color-1 md-subhead">
-            <div style="padding-top:25px;" class="layout-padding-right">{{($index+1)}}.</div>
+          <div layout="row" flex class="md-subhead">
+            <div style="padding-top:25px;" class="layout-padding-right bold">{{($index+1)}}.</div>
 
-            <div layout="column" flex class="layout-padding-left" style="padding-top:25px">
+            <div layout="column" flex class="layout-padding-left bold" style="padding-top:25px">
               <span>{{rule.name}}</span>
               <span class="hint">{{rule.description}}</span>
               <span ng-if="rule.validConfiguration == false" class="error"><strong>Warning</strong>  Configuration Error!  You can still assign this action, but it may not fire due to configuration issues. {{rule.validationMessage}}</span>
@@ -143,8 +155,8 @@
           </md-button>
         </div>
         <div ng-if="vm.addingSlaAction == false" flex layout="row">
+          <md-button class="md-primary" ng-click="vm.addingSlaAction = true" ng-if="vm.showActionOptions">Add Action</md-button>
           <span flex></span>
-          <md-button class="md-raised" ng-click="vm.addingSlaAction = true" ng-if="vm.showActionOptions">Add Action</md-button>
         </div>
       </div>
 
