@@ -58,7 +58,17 @@
             self.onNewSla();
         });
 
-
+        function showList() {
+            self.editSla = null;
+            self.creatingNewSla = null;
+            self.editSlaId = null;
+            self.addingSlaCondition = false;
+            self.editSlaIndex = null;
+            //Requery?
+            if (self.feed == null) {
+                AddButtonService.showAddButton();
+            }
+        }
 
 
         //   this.feed = FeedService.editFeedModel;
@@ -281,11 +291,7 @@
         })
 
         self.cancelEditSla = function () {
-            self.addingSlaCondition = false;
-            self.editSla = null;
-            self.editSlaIndex = null;
-            self.editSlaId = null;
-            AddButtonService.showAddButton();
+            showList();
         }
 
         self.addNewCondition = function () {
@@ -321,10 +327,7 @@
                     else {
                         self.serviceLevelAgreements.push(self.editSla);
                     }
-                    self.addingSlaCondition = false;
-                    self.editSla = null;
-                    self.editSlaIndex = null;
-                    AddButtonService.showAddButton();
+                    showList();
 
                     $mdDialog.show(
                         $mdDialog.alert()
@@ -368,11 +371,7 @@
         }
 
         self.onBackToList = function (ev) {
-            self.editSla = null;
-            self.creatingNewSla = null;
-            self.editSlaId = null;
-            //Requery?
-            AddButtonService.showAddButton();
+            showList();
 
         }
 
@@ -449,7 +448,7 @@
                                 .position('bottom left')
                                 .hideDelay(3000)
                         );
-                        AddButtonService.showAddButton();
+                        showList();
                     }, function () {
                         //alert delete error
                         $mdToast.show(
