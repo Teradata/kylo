@@ -56,7 +56,7 @@ public class ActiveMqConfig {
         factory.setConnectionFactory(connectionFactory);
         //factory.setSubscriptionDurable(true);
         factory.setClientId(jmsClientId);
-        factory.setConcurrency("5-200");
+        factory.setConcurrency("1-1");
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
         converter.setTargetType(MessageType.TEXT);
         converter.setTypeIdPropertyName("jms_javatype");
