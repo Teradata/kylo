@@ -6,6 +6,7 @@
         this.tableSchema =null;
 
         self.selectedTabIndex = 0;
+        self.hql = '';
 
         var init = function(){
             var schema = $stateParams.schema;

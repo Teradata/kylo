@@ -88,7 +88,8 @@
                         </div>
                     </md-tab-label>
                     <md-tab-body>
-                        <thinkbig-hql-editor default-schema-name="{{vm.schema}}" default-table-name="{{vm.tableName}}" allow-database-browse="false" allow-execute-query="true" ng-if="vm.selectedTabIndex == 3"></thinkbig-hql-editor>
+                        <thinkbig-hql-editor ng-model="vm.hql" default-schema-name="{{vm.schema}}" default-table-name="{{vm.tableName}}" allow-database-browse="false" allow-execute-query="true"
+                                             ng-if="vm.selectedTabIndex == 3"></thinkbig-hql-editor>
 
                     </md-tab-body>
                 </md-tab>

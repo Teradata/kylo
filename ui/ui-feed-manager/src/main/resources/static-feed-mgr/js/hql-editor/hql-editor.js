@@ -19,7 +19,9 @@
             require: "ngModel",
             link: function($scope, element, attrs, ngModel) {
                 ngModel.$render = function() {
-                    $scope.vm.sql = ngModel.$viewValue;
+                    if (ngModel.$viewValue != '') {
+                        $scope.vm.sql = ngModel.$viewValue;
+                    }
                 };
                 $scope.$watch("vm.sql", function() {
                     ngModel.$setViewValue($scope.vm.sql);
@@ -171,6 +173,7 @@
                 clickOutsideToClose: false,
                 fullscreen: true,
                 locals: {
+                    hql: self.sql,
                     defaultSchemaName: self.defaultSchemaName,
                     defaultTableName: self.defaultTableName,
                     allowExecuteQuery: self.allowExecuteQuery,
@@ -213,9 +216,10 @@
 
 (function() {
 
-    var controller = function($scope, $mdDialog, defaultSchemaName, defaultTableName, allowExecuteQuery, allowDatabaseBrowse, mode) {
+    var controller = function ($scope, $mdDialog, hql, defaultSchemaName, defaultTableName, allowExecuteQuery, allowDatabaseBrowse, mode) {
 
         var self = this;
+        this.hql = hql;
         this.defaultSchemaName = defaultSchemaName;
         this.defaultTableName = defaultTableName;
         this.allowExecuteQuery = allowExecuteQuery;
