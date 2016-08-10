@@ -60,18 +60,21 @@
     <card-layout  style="max-width:250px;width:250px;min-width:250px;" flex="initial" body-css="md-padding">
         <header-section >
             <h2 class="md-title" flex>Feed Summary</h2>
-            <span class="md-subhead">{{vm.model.feedName}}</span>
+            <span class="md-subhead" ng-if="!vm.loadingFeedData">{{vm.model.feedName}}</span>
         </header-section>
 
         <body-section >
-         <div layout="column" class="layout-padding-top">
-             <md-button ng-if="vm.model.state == 'ENABLED' && !vm.loadingFeedData" ng-click="vm.disableFeed()" class="border-btn">
+            <div layout="column" class="layout-padding-top" ng-if="vm.loadingFeedData">
+                Loading Feed ...
+            </div>
+            <div layout="column" class="layout-padding-top" ng-if="!vm.loadingFeedData">
+                <md-button ng-if="vm.model.state == 'ENABLED'" ng-click="vm.disableFeed()" class="border-btn">
                  DISABLE FEED
              </md-button>
-             <md-button ng-if="vm.model.state != 'ENABLED' && !vm.loadingFeedData" ng-click="vm.enableFeed()" class="border-btn">
+                <md-button ng-if="vm.model.state != 'ENABLED'" ng-click="vm.enableFeed()" class="border-btn">
                  ENABLE FEED
              </md-button>
-             <md-button ng-if="vm.model.state != 'ENABLED' && !vm.loadingFeedData" ng-click="vm.confirmDeleteFeed()" class="border-btn-warn">
+                <md-button ng-if="vm.model.state != 'ENABLED'" ng-click="vm.confirmDeleteFeed()" class="border-btn-warn">
                  DELETE FEED
              </md-button>
              <div layout="column" class="layout-padding-top-bottom">
@@ -106,7 +109,7 @@
                  <md-button ng-click="addAlert()" class="md-primary" ng-disabled="true">
                  ADD ALERT
                  </md-button>
-                 <md-button ng-click="vm.addSla()" class="md-primary" ng-disabled="vm.model.state != 'ENABLED'">
+                 <md-button ng-click="vm.addSla()" class="md-primary" ng-disabled="vm.model.state != 'ENABLED'  && !vm.loadingFeedData">
                      ADD SLA
                  </md-button>
              </div>
