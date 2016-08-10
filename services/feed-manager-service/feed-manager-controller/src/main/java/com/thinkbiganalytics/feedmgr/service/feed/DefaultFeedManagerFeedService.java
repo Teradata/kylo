@@ -385,9 +385,6 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     @Override
     public void setUserFields(@Nonnull final Set<UserField> userFields) {
-        metadataAccess.commit(() -> {
-            feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
-            return userFields;
-        });
+        feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
     }
 }

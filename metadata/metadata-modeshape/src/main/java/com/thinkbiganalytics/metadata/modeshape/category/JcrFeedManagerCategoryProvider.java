@@ -60,6 +60,18 @@ public class JcrFeedManagerCategoryProvider extends BaseJcrProvider<FeedManagerC
         return new JcrCategory.CategoryId(fid);
     }
 
+    @Override
+    @SuppressWarnings("unchecked")
+    public void delete(FeedManagerCategory feedManagerCategory) {
+        categoryProvider.delete(feedManagerCategory);
+    }
+
+    @Override
+    @SuppressWarnings("unchecked")
+    public void deleteById(Category.ID id) {
+        categoryProvider.deleteById(id);
+    }
+
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")

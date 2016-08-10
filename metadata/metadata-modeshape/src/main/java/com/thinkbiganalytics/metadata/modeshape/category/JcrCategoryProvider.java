@@ -6,8 +6,10 @@ import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 
 import java.io.Serializable;
@@ -26,6 +28,10 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     /** JCR node type manager */
     @Inject
     ExtensibleTypeProvider extensibleTypeProvider;
+
+    /** Transaction support */
+    @Inject
+    JcrMetadataAccess metadataAccess;
 
     @Override
     public Category findBySystemName(String systemName) {
@@ -64,14 +70,27 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public void delete(final Category category) {
-        if (category != null) {
-            // Delete user type
-            final ExtensibleType type = extensibleTypeProvider.getType(getUserTypeName(category));
-            extensibleTypeProvider.deleteType(type.getId());
+        throw new UnsupportedOperationException();
+    }
 
-            // Delete category
-            super.delete(category);
-        }
+    @Override
+    public void deleteById(final Category.ID id) {
+        metadataAccess.commit(new AdminCredentials(), () -> {
+            // Get category
+            final Category category = metadataAccess.read(() -> findById(id));
+
+            if (category != null) {
+                // Delete user type
+                final ExtensibleType type = extensibleTypeProvider.getType(getUserTypeName(category));
+                if (type != null) {
+                    extensibleTypeProvider.deleteType(type.getId());
+                }
+
+                // Delete category
+                super.delete(category);
+            }
+            return true;
+        });
     }
 
     @Nonnull
@@ -82,7 +101,10 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public void setUserFields(@Nonnull final Set<UserFieldDescriptor> userFields) {
-        JcrPropertyUtil.setUserFields("usr:category", userFields, extensibleTypeProvider);
+        metadataAccess.commit(new AdminCredentials(), () -> {
+            JcrPropertyUtil.setUserFields("usr:category", userFields, extensibleTypeProvider);
+            return userFields;
+        });
     }
 
     @Nonnull
@@ -94,8 +116,11 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public void setFeedUserFields(@Nonnull final Category.ID categoryId, @Nonnull final Set<UserFieldDescriptor> userFields) {
-        final Category category = findById(categoryId);
-        JcrPropertyUtil.setUserFields(getUserTypeName(category), userFields, extensibleTypeProvider);
+        metadataAccess.commit(new AdminCredentials(), () -> {
+            final Category category = findById(categoryId);
+            JcrPropertyUtil.setUserFields(getUserTypeName(category), userFields, extensibleTypeProvider);
+            return userFields;
+        });
     }
 
     /**

@@ -59,7 +59,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public void saveCategory(final FeedCategory category) {
-        metadataAccess.commit(() -> {
+        final FeedManagerCategory.ID domainId = metadataAccess.commit(() -> {
             // Determine the system name
             if (category.getId() == null) {
                 category.generateSystemName();
@@ -78,22 +78,21 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
             FeedManagerCategory domainCategory = categoryModelTransform.FEED_CATEGORY_TO_DOMAIN.apply(category);
             domainCategory = categoryProvider.update(domainCategory);
 
-            final Set<UserFieldDescriptor> userFields = (category.getUserFields() != null) ? UserPropertyTransform.toUserFieldDescriptors(category.getUserFields()) : Collections.emptySet();
-            categoryProvider.setFeedUserFields(domainCategory.getId(), userFields);
-
             // Repopulate identifier
             category.setId(domainCategory.getId().toString());
-            return category;
+            return domainCategory.getId();
         });
+
+        // Update user-defined fields (must be outside metadataAccess)
+        final Set<UserFieldDescriptor> userFields = (category.getUserFields() != null) ? UserPropertyTransform.toUserFieldDescriptors(category.getUserFields()) : Collections.emptySet();
+        categoryProvider.setFeedUserFields(domainId, userFields);
     }
 
     @Override
     public boolean deleteCategory(final String categoryId) throws InvalidOperationException {
-        return metadataAccess.commit(() -> {
-            final FeedManagerCategory.ID domainId = categoryProvider.resolveId(categoryId);
-            categoryProvider.deleteById(domainId);
-            return true;
-        });
+        final FeedManagerCategory.ID domainId = metadataAccess.read(() -> categoryProvider.resolveId(categoryId));
+        categoryProvider.deleteById(domainId);
+        return true;
     }
 
     @Nonnull
@@ -104,9 +103,6 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public void setUserFields(@Nonnull Set<UserField> userFields) {
-        metadataAccess.commit(() -> {
-            categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
-            return userFields;
-        });
+        categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
     }
 }

@@ -26,6 +26,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
@@ -71,6 +72,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     /** JCR node type manager */
     @Inject
     ExtensibleTypeProvider extensibleTypeProvider;
+
+    /** Transaction support */
+    @Inject
+    JcrMetadataAccess metadataAccess;
 
     @Override
     public String getNodeType() {
@@ -648,6 +653,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public void setUserFields(@Nonnull final Set<UserFieldDescriptor> userFields) {
-        JcrPropertyUtil.setUserFields("usr:feed", userFields, extensibleTypeProvider);
+        metadataAccess.commit(new AdminCredentials(), () -> {
+            JcrPropertyUtil.setUserFields("usr:feed", userFields, extensibleTypeProvider);
+            return userFields;
+        });
     }
 }
