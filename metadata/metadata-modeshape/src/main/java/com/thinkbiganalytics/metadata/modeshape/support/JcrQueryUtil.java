@@ -16,6 +16,8 @@ import javax.jcr.Session;
 import javax.jcr.Value;
 import javax.jcr.query.Query;
 import javax.jcr.query.QueryResult;
+import javax.jcr.query.Row;
+import javax.jcr.query.RowIterator;
 
 /**
  * Created by sr186054 on 6/13/16.
@@ -65,6 +67,40 @@ public class JcrQueryUtil {
         }
         return entities;
     }
+
+
+    public static <T extends Object> List<T> queryRowItrNodeResultToList(QueryResult result, Class<T> type, String nodeName) {
+        return queryRowItrNodeResultToList(result, type, nodeName, null);
+    }
+
+    public static <T extends Object> List<T> queryRowItrNodeResultToList(QueryResult result, Class<T> type, String nodeName, Integer fetchSize) {
+        List<T> entities = new ArrayList<>();
+
+        if (result != null) {
+            try {
+                RowIterator rowIterator = result.getRows();
+                int cntr = 0;
+                while (rowIterator.hasNext()) {
+                    Row row = rowIterator.nextRow();
+                    Node node = row.getNode(nodeName);
+                    T entity = JcrUtil.constructNodeObject(node, type, null);
+                    entities.add(entity);
+                    cntr++;
+                    if (fetchSize != null && cntr == fetchSize) {
+                        break;
+                    }
+                }
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Unable to parse QueryResult to List Row Iteration for type" + type + " and Node: " + nodeName, e);
+
+            }
+        }
+        return entities;
+    }
+
+
+
+
 
     public static <T extends Object> T findFirst(Session session, String query, Class<T> type) {
         return findFirst(session, query, null, type);

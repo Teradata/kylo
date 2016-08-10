@@ -3,9 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.feed;
 
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -14,11 +11,16 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+
 /**
  *
  * @author Sean Felten
  */
 public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
+
+    public static final String NODE_TYPE = "tba:feedPrecondition";
 
     public static final String LAST_ASSESSMENT = "tba:lastAssessment";
     public static final String SLA_REF = "tba:slaRef";

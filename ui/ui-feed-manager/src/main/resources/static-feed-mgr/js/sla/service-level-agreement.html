@@ -51,7 +51,6 @@
         <div layout="row" flex class="primary-color-1 md-subhead">
           <div style="padding-top:25px;" class="layout-padding-right">{{($index+1)}}.</div>
           <md-input-container class="md-block layout-padding-left" ng-if="!$first" md-no-float>
-            <label class="md-container-ignore label-small layout-padding-top">Condition</label>
             <md-select ng-model="rule.condition" aria-label="Condition" ng-disabled="!rule.editable" placeholder="Condition">
               <md-option value="REQUIRED">AND</md-option>
               <md-option value="SUFFICIENT">OR</md-option>

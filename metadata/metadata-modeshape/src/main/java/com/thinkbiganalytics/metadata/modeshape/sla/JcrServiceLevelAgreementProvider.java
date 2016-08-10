@@ -3,31 +3,16 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-
-import org.modeshape.jcr.api.JcrTools;
-
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedPrecondition;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement.SlaId;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.Obligation;
@@ -43,6 +28,24 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
+
+import org.modeshape.jcr.api.JcrTools;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.query.QueryResult;
 
 /**
  *
@@ -86,8 +89,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
      */
     @Override
     /**
-     * Match Nodes on Pattern because slaAssessments are stored under the sla
-     * Revisit and change if Assessments are moved out
+     * Find all Agreements that are not Preconditions
      */
     public List<ServiceLevelAgreement> getAgreements() {
         try {
@@ -95,7 +97,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             Node slasNode = session.getNode(SLA_PATH);
             @SuppressWarnings("unchecked")
             Iterator<Node> itr = (Iterator<Node>) slasNode.getNodes("sla-*");
-            
+
             return Lists.newArrayList(Iterators.transform(itr, (slaNode) -> {
                 return JcrUtil.createJcrObject(slaNode, JcrServiceLevelAgreement.class);
             }));
@@ -104,6 +106,28 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         }
         
     }
+
+    /**
+     * Return All SLAs that are not Precondition SLAs
+     */
+    public List<ServiceLevelAgreement> getNonPreconditionAgreements() {
+        try {
+
+            //query for the SLAs
+            String query = "SELECT * FROM [" + getNodeType() + "] as sla "
+                           + "LEFT JOIN [" + JcrFeedPrecondition.NODE_TYPE + "] as precondition on precondition.[" + JcrFeedPrecondition.SLA + "] = sla.[jcr:uuid] "
+                           + " WHERE precondition.[jcr:uuid] is NULL ";
+
+            QueryResult result = JcrQueryUtil.query(getSession(), query, null);
+
+            return JcrQueryUtil.queryRowItrNodeResultToList(result, ServiceLevelAgreement.class, "sla");
+
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the obligation nodes", e);
+        }
+
+    }
+
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider#getAgreement(com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID)

@@ -1,22 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import javax.annotation.PostConstruct;
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.query.QueryResult;
-import javax.jcr.query.Row;
-import javax.jcr.query.RowIterator;
-
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
@@ -33,9 +16,27 @@ import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedPrecondition;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.query.QueryResult;
+import javax.jcr.query.Row;
+import javax.jcr.query.RowIterator;
 
 /**
  * Created by sr186054 on 8/4/16.
@@ -61,11 +62,14 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
 
     /**
      * Finds All Service Level Agreements and also adds in an related feeds
+     * Filter out the Precondition SLAs as those are not to be managed via the SLA screen.
      */
     @Override
     public List<FeedServiceLevelAgreement> findAllAgreements() {
         String query = "SELECT * from [" + JcrServiceLevelAgreement.NODE_TYPE + "] AS sla "
-                       + "LEFT JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[jcr:uuid] ";
+                       + "LEFT JOIN [" + JcrFeedServiceLevelAgreementRelationship.NODE_TYPE + "] AS feedSla ON feedSla.[" + JcrFeedServiceLevelAgreementRelationship.SLA + "] = sla.[jcr:uuid] "
+                       + "LEFT JOIN [" + JcrFeedPrecondition.NODE_TYPE + "] as precondition on precondition.[" + JcrFeedPrecondition.SLA + "] = sla.[jcr:uuid] "
+                       + "WHERE precondition.[jcr:uuid] is NULL ";
         return queryToList(query, null);
 
     }
