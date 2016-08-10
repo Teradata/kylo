@@ -65,13 +65,13 @@
 
         <body-section >
          <div layout="column" class="layout-padding-top">
-             <md-button ng-if="vm.model.state == 'ENABLED'" ng-click="vm.disableFeed()" class="border-btn">
+             <md-button ng-if="vm.model.state == 'ENABLED' && !vm.loadingFeedData" ng-click="vm.disableFeed()" class="border-btn">
                  DISABLE FEED
              </md-button>
-             <md-button ng-if="vm.model.state != 'ENABLED'" ng-click="vm.enableFeed()" class="border-btn">
+             <md-button ng-if="vm.model.state != 'ENABLED' && !vm.loadingFeedData" ng-click="vm.enableFeed()" class="border-btn">
                  ENABLE FEED
              </md-button>
-             <md-button ng-if="vm.model.state != 'ENABLED'" ng-click="vm.confirmDeleteFeed()" class="border-btn-warn">
+             <md-button ng-if="vm.model.state != 'ENABLED' && !vm.loadingFeedData" ng-click="vm.confirmDeleteFeed()" class="border-btn-warn">
                  DELETE FEED
              </md-button>
              <div layout="column" class="layout-padding-top-bottom">
