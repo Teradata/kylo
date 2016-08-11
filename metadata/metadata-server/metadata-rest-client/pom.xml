@@ -4,7 +4,7 @@
     <parent>
         <groupId>com.thinkbiganalytics.metadata</groupId>
         <artifactId>thinkbig-metadata-server</artifactId>
-        <version>0.3.0</version>
+        <version>0.4.0-SNAPSHOT</version>
     </parent>
     <artifactId>thinkbig-metadata-rest-client</artifactId>
 
@@ -12,7 +12,7 @@
         <dependency>
             <groupId>com.thinkbiganalytics.metadata</groupId>
             <artifactId>thinkbig-metadata-api</artifactId>
-            <version>0.3.0</version>
+            <version>0.4.0-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
         <dependency>

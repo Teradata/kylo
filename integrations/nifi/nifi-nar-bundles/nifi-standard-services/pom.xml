@@ -11,7 +11,7 @@
     <parent>
         <groupId>com.thinkbiganalytics.nifi</groupId>
         <artifactId>thinkbig-nifi-nar-bundles</artifactId>
-        <version>0.3.0</version>
+        <version>0.4.0-SNAPSHOT</version>
     </parent>
 
     <packaging>pom</packaging>
