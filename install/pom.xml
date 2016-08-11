@@ -5,7 +5,7 @@
   <parent>
     <artifactId>thinkbig-data-lake-accelerator</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.3.0-SNAPSHOT</version>
+    <version>0.3.0</version>
   </parent>
   <modelVersion>4.0.0</modelVersion>
   <artifactId>install</artifactId>
@@ -28,13 +28,13 @@
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-sla-email</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
+      <version>0.3.0</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-sla-jira</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
+      <version>0.3.0</version>
     </dependency>
 
 

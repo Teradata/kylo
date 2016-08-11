@@ -10,7 +10,7 @@
     <parent>
         <groupId>com.thinkbiganalytics.nifi.services</groupId>
         <artifactId>thinkbig-nifi-standard-services</artifactId>
-        <version>0.3.0-SNAPSHOT</version>
+        <version>0.3.0</version>
     </parent>
     <packaging>nar</packaging>
     <properties>
