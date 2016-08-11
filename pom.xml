@@ -25,6 +25,7 @@
         <junit.version>4.11</junit.version>
         <testng.version>6.9.10</testng.version>
         <slf4j.version>1.7.12</slf4j.version>
+        <io.swagger.version>1.5.9</io.swagger.version>
         <commons-beanutils.version>1.9.2</commons-beanutils.version>
         <commons.dbcp>1.4</commons.dbcp>
         <commons.dbcp2>2.1.1</commons.dbcp2>
@@ -216,7 +217,13 @@
             <dependency>
                 <groupId>io.swagger</groupId>
                 <artifactId>swagger-jersey2-jaxrs</artifactId>
-                <version>1.5.9</version>
+                <version>${io.swagger.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>io.swagger</groupId>
+                <artifactId>swagger-annotations</artifactId>
+                <version>${io.swagger.version}</version>
             </dependency>
 
             <!-- Spring boot -->
