@@ -49,7 +49,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             .name("rest-client-url")
             .displayName("REST Client URL")
             .description("The base URL to the metadata server when the REST API client implementation is chosen.")
-            .defaultValue("http://localhost:8420/api/metadata")
+        .defaultValue("http://localhost:8400/proxy/metadata")
             .addValidator(StandardValidators.URL_VALIDATOR)
             .required(false)
             .build();
@@ -59,7 +59,7 @@ public class MetadataProviderSelectorService extends AbstractControllerService i
             .displayName("REST Client User Name")
             .description("Optional user name if the client requires a credential")
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
-            .defaultValue("")
+        .defaultValue("dladmin")
             .required(false)
             .build();
     
