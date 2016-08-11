@@ -1,25 +1,26 @@
 /*
  * Defines the following structure and node types:
  * 
- *     "metadata"
- *         "feeds"
- *             categorySystemName*
- *                 feedSystemName*
- *         "datasources"
- *             "hive"
- *                 HiveTableDatasource*
- *         "templates"
+ *      "metadata"
+ *          "feeds"
+ *              categorySystemName*
+ *                  feedSystemName*
+ *          "datasources"
+ *              "hive"
+ *                  HiveTableDatasource*
+ *          "templates"
  *             template
- *         "sla"
- *             sla*
-                  slaAssessment*
- *         "extensions"
- *             "types"
- *                 typeDescriptor
- *             "entities"
- *                 extensibleEntity
- *         "globalAllowedActions"
- *             allowableAction*
+ *          "sla"
+ *              sla*
+                slaAssessment*
+ *          "extensions"
+ *              "types"
+ *                  typeDescriptor
+ *              "entities"
+ *                  extensibleEntity
+ *          "security"
+ *              "services"
+ *                  allowableAction*
  */
 <jcr = 'http://www.jcp.org/jcr/1.0'>
 <nt='http://www.jcp.org/jcr/nt/1.0'>
@@ -37,7 +38,7 @@
 	+ templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
 	+ sla (tba:slaFolder) = tba:slaFolder autocreated mandatory
 	+ extensions (tba:extensionsFolder) = tba:extensionsFolder autocreated mandatory
-	+ globalAllowedActions (tba:allowedActions) = tba:allowedActions authocreate mandatory
+	+ security (tba:securityFolder) = tba:securityFolder authocreate mandatory
 
 [tba:feedsFolder] > nt:folder 
     + * (tba:category) sns
@@ -67,10 +68,13 @@
 
 [tba:slaAssessmentsFolder] > nt:folder
 
+[tba:securityFolder] > nt:folder
+    + services (tba:allowedActions) = tba:allowedActions autocreated mandatory
+
 /* -=-=-=-=-=--=-=-  Security  -=-=-=-=-=-=-=-=- */
 
-[tba:actionControlled] mixin
-    + allowedActions (tba:allowdedActions) = tba:allowdedActions autocreate mandatory
+[tba:accessControlled] mixin
+    + tba:allowedActions (tba:allowdedActions) = tba:allowdedActions autocreate mandatory
 
 [tba:allowedActions] > nt:hierarchyNode
     + * (tba:allowableAction)
@@ -120,14 +124,14 @@
     - tba:nifiTemplateId (STRING)   
     - tba:json (STRING)
 
-[tba:category] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:actionControlled
+[tba:category] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:accessControlled
 	- tba:systemName (STRING) mandatory
 	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'
 	+ * (tba:feed) sns
 
 
-[tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:actionControlled, mix:versionable
+[tba:feed] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:accessControlled, mix:versionable
 	+ tba:sources (tba:feedSource) sns
 	+ tba:destinations (tba:feedDestination) sns
     + tba:precondition (tba:feedPrecondition)

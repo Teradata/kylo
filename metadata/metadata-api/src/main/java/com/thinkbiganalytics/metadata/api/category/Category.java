@@ -3,6 +3,7 @@ package com.thinkbiganalytics.metadata.api.category;
 import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.security.AccessControlled;
 
 import org.joda.time.DateTime;
 
@@ -16,7 +17,7 @@ import javax.annotation.Nonnull;
 /**
  * A category is a collection of zero or more feeds.
  */
-public interface Category {
+public interface Category extends AccessControlled {
 
     interface ID extends Serializable {}
 

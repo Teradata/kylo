@@ -17,5 +17,5 @@ public interface AllowableAction {
     
     String getDescription();
 
-    List<AllowableAction> getSubFunctions();
+    List<AllowableAction> getSubActions();
 }

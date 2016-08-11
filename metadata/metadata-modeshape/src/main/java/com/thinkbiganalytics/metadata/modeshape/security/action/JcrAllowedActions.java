@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.modeshape.security.function;
+package com.thinkbiganalytics.metadata.modeshape.security.action;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;

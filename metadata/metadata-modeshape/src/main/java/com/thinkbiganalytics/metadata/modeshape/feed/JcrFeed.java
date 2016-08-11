@@ -40,6 +40,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     public static final String PRECONDITION_TYPE = "tba:feedPrecondition";
 
+    public static final String ALLOWED_ACTIONS = "tba:allowedActions";
     public static final String PRECONDITION = "tba:precondition";
     public static final String DEPENDENTS = "tba:dependentFeeds";
     public static final String NODE_TYPE = "tba:feed";
@@ -54,6 +55,18 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String SCHEDULE_STRATEGY = "tba:schedulingStrategy"; //CRON_DRIVEN, TIMER_DRIVEN
     public static final String SLA = "tba:slas";
 
+
+    public static void addSecurity(Node feedNode) {
+        try {
+            Node allowedNode = feedNode.getNode(ALLOWED_ACTIONS);
+            
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to setup security", e);
+        }
+        
+    }
+
+    
     public JcrFeed(Node node) {
         super(node);
     }

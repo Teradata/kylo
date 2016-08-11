@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.modeshape.security.function;
+package com.thinkbiganalytics.metadata.modeshape.security.action;
 
 import java.util.List;
 import java.util.stream.Collectors;

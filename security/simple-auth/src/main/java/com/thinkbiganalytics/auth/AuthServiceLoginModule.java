@@ -16,12 +16,14 @@ import org.slf4j.LoggerFactory;
 import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
 
 /**
- *
+ * A LoginModule that delegates to an AuthenticationService to authenticate a user name and password.
  * @author Sean Felten
  */
 public class AuthServiceLoginModule extends AbstractLoginModule {
 
     private static final Logger log = LoggerFactory.getLogger(AuthServiceLoginModule.class);
+    
+    private static final String AUTH_SERVICE_OPTION = "authService";
     
     private AuthenticationService authService;
     private UsernamePrincipal user;
@@ -33,8 +35,8 @@ public class AuthServiceLoginModule extends AbstractLoginModule {
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         super.initialize(subject, callbackHandler, sharedState, options);
         
-        if (options.containsKey("authService")) {
-            this.authService = (AuthenticationService) options.get("authService");
+        if (options.containsKey(AUTH_SERVICE_OPTION)) {
+            this.authService = (AuthenticationService) options.get(AUTH_SERVICE_OPTION);
         } else {
             log.error("This login module requires an \"authService\" option");
             throw new IllegalArgumentException("This login module requires an \"authService\" option");

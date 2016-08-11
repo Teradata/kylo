@@ -1,14 +1,5 @@
 package com.thinkbiganalytics.metadata.api.feed;
 
-import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
-import com.thinkbiganalytics.metadata.api.Propertied;
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
-import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
-
-import org.joda.time.DateTime;
-
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
@@ -16,12 +7,22 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import org.joda.time.DateTime;
+
+import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
+import com.thinkbiganalytics.metadata.api.Propertied;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+
 /**
  * A feed is a specification for how data should flow into and out of a system.
  *
  * @param <C> the type of parent category
  */
-public interface Feed<C extends Category> extends Propertied, Serializable {
+public interface Feed<C extends Category> extends Propertied, AccessControlled, Serializable {
 
     interface ID extends Serializable { }
 

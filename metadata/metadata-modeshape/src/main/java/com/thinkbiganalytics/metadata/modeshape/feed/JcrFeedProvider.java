@@ -169,6 +169,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
         Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName, getJcrEntityClass());
         boolean versionable = JcrUtil.isVersionable(feedNode);
+        
+        JcrFeed.addSecurity(feedNode);
+        
         JcrFeed<?> feed = new JcrFeed(feedNode, category);
 
         feed.setSystemName(feedSystemName);
