@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.metadata.core.category;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 
 import org.joda.time.DateTime;
@@ -9,6 +10,7 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.annotation.Nonnull;
@@ -169,7 +171,7 @@ public class BaseCategory implements Category {
     }
 
     @Override
-    public void setUserProperties(@Nonnull Map<String, String> userProperties) {
+    public void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields) {
         this.userProperties = userProperties;
     }
 }

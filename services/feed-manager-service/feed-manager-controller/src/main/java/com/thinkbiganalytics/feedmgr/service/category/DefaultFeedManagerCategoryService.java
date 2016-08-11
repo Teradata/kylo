@@ -45,7 +45,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
         return metadataAccess.read(() -> {
             final FeedManagerCategory.ID domainId = categoryProvider.resolveId(id);
             final FeedManagerCategory domainCategory = categoryProvider.findById(domainId);
-            return categoryModelTransform.DOMAIN_TO_FEED_CATEGORY.apply(domainCategory);
+            return categoryModelTransform.domainToFeedCategory(domainCategory);
         });
     }
 
@@ -53,7 +53,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     public FeedCategory getCategoryBySystemName(final String name) {
         return metadataAccess.read(() -> {
             final FeedManagerCategory domainCategory = categoryProvider.findBySystemName(name);
-            return categoryModelTransform.DOMAIN_TO_FEED_CATEGORY.apply(domainCategory);
+            return categoryModelTransform.domainToFeedCategory(domainCategory);
         });
     }
 
@@ -75,8 +75,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
             }
 
             // Update the domain entity
-            FeedManagerCategory domainCategory = categoryModelTransform.FEED_CATEGORY_TO_DOMAIN.apply(category);
-            domainCategory = categoryProvider.update(domainCategory);
+            final FeedManagerCategory domainCategory = categoryProvider.update(categoryModelTransform.feedCategoryToDomain(category));
 
             // Repopulate identifier
             category.setId(domainCategory.getId().toString());

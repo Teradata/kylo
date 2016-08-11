@@ -2,6 +2,7 @@ package com.thinkbiganalytics.metadata.migration.feed;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
@@ -283,5 +284,5 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
     }
 
     @Override
-    public void setUserProperties(@Nonnull Map userProperties) {}
+    public void setUserProperties(@Nonnull Map userProperties, @Nonnull Set userFields) {}
 }

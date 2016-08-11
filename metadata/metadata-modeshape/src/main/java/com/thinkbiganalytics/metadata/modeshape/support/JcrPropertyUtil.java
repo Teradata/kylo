@@ -809,11 +809,11 @@ public class JcrPropertyUtil {
      * @throws IllegalStateException if a property name is encoded incorrectly
      * @throws MetadataRepositoryException if the metadata repository is unavailable
      */
-    public static void setUserProperties(@Nonnull final Node node, @Nonnull final Set<FieldDescriptor> fields, @Nonnull final Map<String, String> properties) {
+    public static void setUserProperties(@Nonnull final Node node, @Nonnull final Set<UserFieldDescriptor> fields, @Nonnull final Map<String, String> properties) {
         // Verify required properties are not empty
-        for (final FieldDescriptor field : fields) {
-            if (field.isRequired() && StringUtils.isEmpty(properties.get(field.getName()))) {
-                throw new MissingUserPropertyException("Missing required property: " + field.getName());
+        for (final UserFieldDescriptor field : fields) {
+            if (field.isRequired() && StringUtils.isEmpty(properties.get(field.getSystemName()))) {
+                throw new MissingUserPropertyException("Missing required property: " + field.getSystemName());
             }
         }
 

@@ -28,7 +28,7 @@ public class UserProperty extends UserField {
      * @return {@code true} if only the {@code value} may be changed; {@code false} or {@code null} otherwise
      * @see #setLocked(Boolean)
      */
-    public Boolean getLocked() {
+    public Boolean isLocked() {
         return locked;
     }
 
@@ -36,7 +36,7 @@ public class UserProperty extends UserField {
      * Set to indicate if all members or only the {@code value} may be changed.
      *
      * @param locked {@code true} if only the {@code value} may be changed; {@code false} or {@code null} if any member may be changed
-     * @see #getLocked()
+     * @see #isLocked()
      */
     public void setLocked(Boolean locked) {
         this.locked = locked;

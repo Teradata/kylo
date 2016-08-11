@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.metadata.api.category;
 
 import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 
 import org.joda.time.DateTime;
@@ -8,6 +9,7 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -56,9 +58,13 @@ public interface Category {
     /**
      * Replaces the user-defined properties for this category with the specified properties.
      *
+     * <p>If the user-defined field descriptors are given then a check is made to ensure that all required properties are specified.</p>
+     *
      * @param userProperties the new user-defined properties
+     * @param userFields the user-defined field descriptors
      * @throws MissingUserPropertyException if a required property is empty or missing
-     * @since 0.3.0
+     * @see CategoryProvider#getUserFields() for the user-defined field descriptors
+     * @since 0.4.0
      */
-    void setUserProperties(@Nonnull final Map<String, String> userProperties);
+    void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields);
 }

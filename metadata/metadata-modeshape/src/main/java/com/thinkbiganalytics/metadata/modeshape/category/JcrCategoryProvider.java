@@ -9,6 +9,7 @@ import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 
@@ -77,11 +78,11 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     public void deleteById(final Category.ID id) {
         metadataAccess.commit(new AdminCredentials(), () -> {
             // Get category
-            final Category category = metadataAccess.read(() -> findById(id));
+            final Category category = findById(id);
 
             if (category != null) {
                 // Delete user type
-                final ExtensibleType type = extensibleTypeProvider.getType(getUserTypeName(category));
+                final ExtensibleType type = extensibleTypeProvider.getType(ExtensionsConstants.getUserCategoryFeed(category.getName()));
                 if (type != null) {
                     extensibleTypeProvider.deleteType(type.getId());
                 }
@@ -96,13 +97,13 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     @Nonnull
     @Override
     public Set<UserFieldDescriptor> getUserFields() {
-        return JcrPropertyUtil.getUserFields("usr:category", extensibleTypeProvider);
+        return JcrPropertyUtil.getUserFields(ExtensionsConstants.USER_CATEGORY, extensibleTypeProvider);
     }
 
     @Override
     public void setUserFields(@Nonnull final Set<UserFieldDescriptor> userFields) {
         metadataAccess.commit(new AdminCredentials(), () -> {
-            JcrPropertyUtil.setUserFields("usr:category", userFields, extensibleTypeProvider);
+            JcrPropertyUtil.setUserFields(ExtensionsConstants.USER_CATEGORY, userFields, extensibleTypeProvider);
             return userFields;
         });
     }
@@ -111,26 +112,15 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     @Override
     public Set<UserFieldDescriptor> getFeedUserFields(@Nonnull final Category.ID categoryId) {
         final Category category = findById(categoryId);
-        return JcrPropertyUtil.getUserFields(getUserTypeName(category), extensibleTypeProvider);
+        return JcrPropertyUtil.getUserFields(ExtensionsConstants.getUserCategoryFeed(category.getName()), extensibleTypeProvider);
     }
 
     @Override
     public void setFeedUserFields(@Nonnull final Category.ID categoryId, @Nonnull final Set<UserFieldDescriptor> userFields) {
         metadataAccess.commit(new AdminCredentials(), () -> {
             final Category category = findById(categoryId);
-            JcrPropertyUtil.setUserFields(getUserTypeName(category), userFields, extensibleTypeProvider);
+            JcrPropertyUtil.setUserFields(ExtensionsConstants.getUserCategoryFeed(category.getName()), userFields, extensibleTypeProvider);
             return userFields;
         });
-    }
-
-    /**
-     * Gets the name of the type containing user fields for feeds within the specified category.
-     *
-     * @param category the category
-     * @return the type name
-     */
-    @Nonnull
-    private String getUserTypeName(@Nonnull final Category category) {
-        return "usr:category:" + category.getName() + ":feed";
     }
 }

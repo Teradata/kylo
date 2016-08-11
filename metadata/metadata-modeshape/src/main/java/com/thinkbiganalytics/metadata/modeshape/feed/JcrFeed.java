@@ -3,6 +3,7 @@ package com.thinkbiganalytics.metadata.modeshape.feed;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
@@ -20,7 +21,6 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -317,7 +317,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     }
 
     @Override
-    public void setUserProperties(@Nonnull Map<String, String> userProperties) {
-        JcrPropertyUtil.setUserProperties(node, Collections.emptySet(), userProperties);
+    public void setUserProperties(@Nonnull final Map<String, String> userProperties, @Nonnull final Set<UserFieldDescriptor> userFields) {
+        JcrPropertyUtil.setUserProperties(node, userFields, userProperties);
     }
 }

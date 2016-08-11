@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.category;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
@@ -10,9 +11,9 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.jcr.Node;
@@ -83,7 +84,7 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     }
 
     @Override
-    public void setUserProperties(@Nonnull Map<String, String> userProperties) {
-        JcrPropertyUtil.setUserProperties(node, Collections.emptySet(), userProperties);
+    public void setUserProperties(@Nonnull final Map<String, String> userProperties, @Nonnull final Set<UserFieldDescriptor> userFields) {
+        JcrPropertyUtil.setUserProperties(node, userFields, userProperties);
     }
 }

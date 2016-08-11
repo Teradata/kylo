@@ -95,7 +95,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             public FeedMetadata execute() {
                 FeedManagerFeed domainFeed = feedManagerFeedProvider.findBySystemName(categoryName, feedName);
                 if (domainFeed != null) {
-                    return feedModelTransform.DOMAIN_TO_FEED.apply(domainFeed);
+                    return feedModelTransform.domainToFeedMetadata(domainFeed);
                 }
                 return null;
             }
@@ -124,7 +124,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 FeedManagerFeed.ID domainId = feedManagerFeedProvider.resolveId(id);
                 FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(domainId);
                 if (domainFeed != null) {
-                    feedMetadata = feedModelTransform.DOMAIN_TO_FEED.apply(domainFeed);
+                    feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
                 }
                 if (refreshTargetTableSchema && feedMetadata != null) {
                     feedModelTransform.refreshTableSchemaFromHive(feedMetadata);

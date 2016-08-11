@@ -101,7 +101,7 @@ public class UserField {
      * @return {@code true} if the {@code value} cannot be empty; {@code false} or {@code null} otherwise
      * @see #setRequired(Boolean)
      */
-    public Boolean getRequired() {
+    public Boolean isRequired() {
         return required;
     }
 
@@ -109,7 +109,7 @@ public class UserField {
      * Set to indicate if the {@code value} can or cannot be empty.
      *
      * @param required {@code true} if the {@code value} cannot be empty; {@code false} or {@code null} if it can be empty
-     * @see #getRequired()
+     * @see #isRequired()
      */
     public void setRequired(Boolean required) {
         this.required = required;

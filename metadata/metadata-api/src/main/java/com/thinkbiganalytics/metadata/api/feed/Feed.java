@@ -4,6 +4,7 @@ import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
 import com.thinkbiganalytics.metadata.api.Propertied;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 import org.joda.time.DateTime;
@@ -11,6 +12,7 @@ import org.joda.time.DateTime;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 
@@ -77,11 +79,17 @@ public interface Feed<C extends Category> extends Propertied, Serializable {
     /**
      * Replaces the user-defined properties for this feed with the specified properties.
      *
+     * <p>If the user-defined field descriptors are given then a check is made to ensure that all required properties are specified. These field descriptors should be the union of
+     * {@link FeedProvider#getUserFields()} and {@link com.thinkbiganalytics.metadata.api.category.CategoryProvider#getFeedUserFields(Category.ID)} with precedence given to the first.</p>
+     *
      * @param userProperties the new user-defined properties
+     * @param userFields the user-defined fields
      * @throws MissingUserPropertyException if a required property is empty or missing
-     * @since 0.3.0
+     * @see FeedProvider#getUserFields() for the user-defined field descriptors for all feeds
+     * @see com.thinkbiganalytics.metadata.api.category.CategoryProvider#getFeedUserFields(Category.ID) for the user-defined field descriptors for all feeds within a given category
+     * @since 0.4.0
      */
-    void setUserProperties(@Nonnull Map<String, String> userProperties);
+    void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields);
 
     // -==-=-=-=- Deprecated -=-=-=-=-=-
 

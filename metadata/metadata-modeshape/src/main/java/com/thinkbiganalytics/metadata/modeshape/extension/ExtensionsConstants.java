@@ -1,31 +1,43 @@
-/**
- * 
- */
 package com.thinkbiganalytics.metadata.modeshape.extension;
+
+import com.google.common.collect.Sets;
 
 import java.util.Collections;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.Sets;
+import javax.annotation.Nonnull;
 
 /**
- *
- * @author Sean Felten
+ * Constants for extensible entities and types.
  */
 public interface ExtensionsConstants {
-    
-    static final Set<String> STD_PREFIXES = Collections.unmodifiableSet(Sets.newHashSet("jcr", "nt", "mix"));
-    
-    static final Pattern NAME_PATTERN = Pattern.compile("^(\\w*):(.*)");
 
-    static final String EXTENSIONS = "metadata/extensions";
-    static final String TYPES = EXTENSIONS + "/types";
-    static final String ENTITIES = EXTENSIONS + "/entities";
+    Set<String> STD_PREFIXES = Collections.unmodifiableSet(Sets.newHashSet("jcr", "nt", "mix"));
 
-    static final String EXTENSIBLE_ENTITY_TYPE = "tba:extensibleEntity";
-    static final String TYPE_DESCRIPTOR_TYPE = "tba:typeDescriptor";
-    static final String FIELD_DESCRIPTOR_TYPE = "tba:fieldDescriptor";
+    Pattern NAME_PATTERN = Pattern.compile("^(\\w*):(.*)");
 
+    String EXTENSIONS = "metadata/extensions";
+    String TYPES = EXTENSIONS + "/types";
+    String ENTITIES = EXTENSIONS + "/entities";
 
+    String EXTENSIBLE_ENTITY_TYPE = "tba:extensibleEntity";
+    String TYPE_DESCRIPTOR_TYPE = "tba:typeDescriptor";
+    String FIELD_DESCRIPTOR_TYPE = "tba:fieldDescriptor";
+
+    /** Name of the extensible type for all categories */
+    String USER_CATEGORY = "usr:category";
+
+    /** Name of the extensible type for all feeds */
+    String USER_FEED = "usr:feed";
+
+    /**
+     * Gets the name of the extensible type for all feeds within the specified category.
+     *
+     * @param categorySystemName the category's system name
+     * @return the extensible type
+     */
+    static String getUserCategoryFeed(@Nonnull final String categorySystemName) {
+        return "usr:category:" + categorySystemName + ":feed";
+    }
 }
