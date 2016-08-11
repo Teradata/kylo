@@ -13,7 +13,7 @@ import io.swagger.annotations.ApiModelProperty;
 public class ServiceLevelAgreementCheck {
 
     private String id;
-    @ApiModelProperty(hidden = true)
+    @ApiModelProperty(reference = "#")
     private List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations;
     private String cronSchedule;
 

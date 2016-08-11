@@ -26,6 +26,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
 
 @Api(value = "service-level-agreement", produces = "application/json")
 @Path("/v1/feedmgr/sla")
@@ -54,6 +55,7 @@ public class ServiceLevelAgreementRestController {
      */
     @POST
     @Produces({MediaType.APPLICATION_JSON})
+    @ApiOperation(value = "saveSla")
     public Response saveSla(ServiceLevelAgreementGroup sla) {
         ServiceLevelAgreement serviceLevelAgreement = serviceLevelAgreementService.saveSla(sla);
         ServiceLevelAgreementMetricTransformerHelper helper = new ServiceLevelAgreementMetricTransformerHelper();
@@ -67,6 +69,7 @@ public class ServiceLevelAgreementRestController {
     @POST
     @Path("/feed/{feedId}")
     @Produces({MediaType.APPLICATION_JSON})
+    @ApiOperation(value = "saveFeedSla")
     public Response saveSla(@UUID @PathParam("feedId") String feedId, ServiceLevelAgreementGroup sla) {
         ServiceLevelAgreement serviceLevelAgreement = serviceLevelAgreementService.saveFeedSla(sla, feedId);
         ServiceLevelAgreementMetricTransformerHelper helper = new ServiceLevelAgreementMetricTransformerHelper();
@@ -81,13 +84,15 @@ public class ServiceLevelAgreementRestController {
     @DELETE
     @Path("/{slaId}")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response deleteCategory(@UUID @PathParam("slaId") String slaId) throws InvalidOperationException {
+    @ApiOperation(value = "deleteSla")
+    public Response deleteSla(@UUID @PathParam("slaId") String slaId) throws InvalidOperationException {
         serviceLevelAgreementService.removeAgreement(slaId);
         return Response.ok().build();
     }
 
     @GET
     @Produces({MediaType.APPLICATION_JSON})
+    @ApiOperation(value = "getAllSlas")
     public Response getAllSlas() {
         List<FeedServiceLevelAgreement> agreementList = serviceLevelAgreementService.getServiceLevelAgreements();
         if (agreementList == null) {
@@ -99,6 +104,7 @@ public class ServiceLevelAgreementRestController {
     @GET
     @Path("/{slaId}/form-object")
     @Produces({MediaType.APPLICATION_JSON})
+    @ApiOperation(value = "getSlaAsForm")
     public Response getSlaAsForm(@UUID @PathParam("slaId") String slaId) {
         ServiceLevelAgreementGroup agreement = serviceLevelAgreementService.getServiceLevelAgreementAsFormObject(slaId);
 
@@ -109,6 +115,7 @@ public class ServiceLevelAgreementRestController {
     @GET
     @Path("/action/validate")
     @Produces({MediaType.APPLICATION_JSON})
+    @ApiOperation(value = "validateActionConfiguration")
     public Response validateAction(@QueryParam("actionConfigClass") String actionConfigClass) {
 
         List<ServiceLevelAgreementActionValidation> validation = serviceLevelAgreementService.validateAction(actionConfigClass);
