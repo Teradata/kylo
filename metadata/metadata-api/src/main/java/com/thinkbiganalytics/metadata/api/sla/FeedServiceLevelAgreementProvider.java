@@ -40,4 +40,6 @@ public interface FeedServiceLevelAgreementProvider {
      * Cleanup and remove Feed Relationships on an SLA
      */
     boolean removeFeedRelationships(ServiceLevelAgreement.ID id);
+
+    boolean removeAllRelationships(ServiceLevelAgreement.ID id);
 }

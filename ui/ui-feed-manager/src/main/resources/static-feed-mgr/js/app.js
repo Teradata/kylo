@@ -194,7 +194,7 @@ app.config(function($stateProvider,$urlRouterProvider) {
             },
             views: {
                 'content': {
-                    templateUrl: 'js/sla/service-level-agreements.html'
+                    templateUrl: 'js/sla/service-level-agreements-view.html'
                 }
             },
             data:{

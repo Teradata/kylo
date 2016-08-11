@@ -1,14 +1,12 @@
 <div>
 
-    <card-layout class="centered" body-css="md-padding">
-        <header-section>
-            <h2 class="md-title" flex>Service Level Agreements</h2>
+  <card-layout header-css="filter-header" class="centered" body-css="md-padding">
+    <header-section tba-card-filter-header flex layout card-title="vm.cardTitle" page-name="{{vm.pageName}}" view-type="vm.viewType" sort-options="vm.sortOptions"
+                    on-selected-option="vm.selectedTableOption" filter-model="vm.filter">
         </header-section>
 
         <body-section>
-
-          <thinkbig-service-level-agreement></thinkbig-service-level-agreement>
-
+          <ng-include src="'js/sla/service-level-agreement-body.html'"></ng-include>
         </body-section>
 
     </card-layout>
