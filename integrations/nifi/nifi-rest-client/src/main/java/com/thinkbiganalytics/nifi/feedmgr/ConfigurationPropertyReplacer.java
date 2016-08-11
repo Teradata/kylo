@@ -2,7 +2,11 @@ package com.thinkbiganalytics.nifi.feedmgr;
 
 
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+
+import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,6 +23,32 @@ public class ConfigurationPropertyReplacer {
     public static String getProcessorPropertyConfigName(NifiProperty property ) {
         String processorTypeName = "nifi."+(StringUtils.substringAfterLast(property.getProcessorType(), ".") + "." + property.getKey()).toLowerCase().trim().replaceAll(" +", "_");
         return processorTypeName;
+    }
+
+    /**
+     * This will replace the Map of Properties in the DTO but not persist back to Nifi.  You need to call the rest client to persist the change
+     */
+    public static void replaceControllerServiceProperties(ControllerServiceDTO controllerServiceDTO, Map<String, String> properties) {
+        if (controllerServiceDTO != null) {
+            //check both Nifis Internal Key name as well as the Displayname to match the properties
+            CaseInsensitiveMap propertyMap = new CaseInsensitiveMap(properties);
+            Map<String, String> controllerServiceProperties = controllerServiceDTO.getProperties();
+
+            controllerServiceProperties.entrySet().stream().filter(
+                entry -> (propertyMap.containsKey(entry.getKey()) || (controllerServiceDTO.getDescriptors().get(entry.getKey()) != null && propertyMap
+                    .containsKey(controllerServiceDTO.getDescriptors().get(entry.getKey()).getDisplayName())))).
+                forEach(entry -> {
+                    boolean isSensitive = controllerServiceDTO.getDescriptors().get(entry.getKey()).isSensitive();
+                    String value = (String) propertyMap.get(entry.getKey());
+                    if (StringUtils.isBlank(value)) {
+                        value = (String) propertyMap.get(controllerServiceDTO.getDescriptors().get(entry.getKey()).getDisplayName());
+                    }
+                    if (!isSensitive || (isSensitive && !StringUtils.isBlank(value))) {
+                        entry.setValue(value);
+                    }
+
+                });
+        }
     }
 
     /**

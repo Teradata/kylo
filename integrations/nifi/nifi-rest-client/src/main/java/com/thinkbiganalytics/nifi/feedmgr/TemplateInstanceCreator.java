@@ -16,8 +16,10 @@ import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 5/6/16.
@@ -33,11 +35,20 @@ public class TemplateInstanceCreator {
 
     private Map<String, Object> staticConfigPropertyMap;
 
+    private Map<String, String> staticConfigPropertyStringMap;
+
     public TemplateInstanceCreator(NifiRestClient restClient, String templateId, Map<String, Object> staticConfigPropertyMap, boolean createReusableFlow) {
         this.restClient = restClient;
         this.templateId = templateId;
         this.createReusableFlow = createReusableFlow;
         this.staticConfigPropertyMap = staticConfigPropertyMap;
+        if (staticConfigPropertyMap != null) {
+            //transform the object map to the String map
+            staticConfigPropertyStringMap = staticConfigPropertyMap.entrySet().stream().collect(Collectors.toMap(Map.Entry::getKey, e -> e.getValue() != null ? e.getValue().toString() : null));
+        }
+        if (staticConfigPropertyStringMap == null) {
+            staticConfigPropertyStringMap = new HashMap<>();
+        }
     }
 
     public boolean isCreateReusableFlow() {
@@ -136,10 +147,10 @@ public class TemplateInstanceCreator {
                     //update any references to the controller services and try to assign the value to an enabled service if it is not already
                     if (input != null) {
                         log.info("attempt to update controllerservices on {} input processor ", input.getName());
-                        templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(input));
+                        templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(input), staticConfigPropertyStringMap);
                     }
                     log.info("attempt to update controllerservices on {} processors ", (nonInputProcessors != null ? nonInputProcessors.size() : 0));
-                    templateCreationHelper.updateControllerServiceReferences(nonInputProcessors);
+                    templateCreationHelper.updateControllerServiceReferences(nonInputProcessors, staticConfigPropertyStringMap);
                     log.info("Controller service validation complete");
                     //refetch processors for updated errors
                     entity = restClient.getProcessGroup(processGroupId, true, true);

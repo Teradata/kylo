@@ -1,12 +1,11 @@
 package com.thinkbiganalytics.feedmgr.nifi;
 
-import com.google.common.base.CaseFormat;
+import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 
 import org.apache.commons.collections.map.CaseInsensitiveMap;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.entity.ControllerServiceEntity;
 import org.slf4j.Logger;
@@ -25,13 +24,14 @@ public class NifiControllerServiceProperties {
 
     private static final Logger log = LoggerFactory.getLogger(NifiControllerServiceProperties.class);
 
-    public static String ENVIRONMENT_PROPERTY_SERVICE_PREFIX = "nifi.service.";
 
     @Autowired
     SpringEnvironmentProperties environmentProperties;
 
     @Autowired
     NifiRestClient nifiRestClient;
+
+
 
     /**
      * Call out to Nifi and get all the Properties for a service by Service Name
@@ -86,11 +86,11 @@ public class NifiControllerServiceProperties {
     public Map<String,String> mergeNifiAndEnvProperties(Map<String,String> nifiProperties, String serviceName){
         if(nifiProperties != null){
             CaseInsensitiveMap propertyMap = new CaseInsensitiveMap(nifiProperties);
-            String servicePrefix = getEnvironmentControllerServicePropertyPrefix(serviceName);
+            String servicePrefix = NifiEnvironmentProperties.getEnvironmentControllerServicePropertyPrefix(serviceName);
             Map<String,Object> map = environmentProperties.getPropertiesStartingWith(servicePrefix);
             if(map != null && !map.isEmpty()) {
                 for(Map.Entry<String,Object> entry: map.entrySet()) {
-                    String key = environmentPropertyToControllerServiceProperty(entry.getKey());
+                    String key = NifiEnvironmentProperties.environmentPropertyToControllerServiceProperty(entry.getKey());
                     if(propertyMap.containsKey(key) && entry.getValue() != null){
                         propertyMap.put(key,entry.getValue());
                     }
@@ -101,31 +101,13 @@ public class NifiControllerServiceProperties {
         return null;
     }
 
-    public String getEnvironmentControllerServicePropertyPrefix(String serviceName){
-        return ENVIRONMENT_PROPERTY_SERVICE_PREFIX+nifiPropertyToEnvironmentProperty(serviceName);
+    /**
+     * returns all properties configured with the prefix
+     * @return
+     */
+    public Map<String,Object> getAllServiceProperties(){
+       return environmentProperties.getPropertiesStartingWith(NifiEnvironmentProperties.getPrefix());
     }
-
-    private String environmentPropertyToControllerServiceProperty(String envProperty){
-        String prop = envProperty;
-        prop = StringUtils.substringAfter(prop,ENVIRONMENT_PROPERTY_SERVICE_PREFIX);
-        String serviceName = StringUtils.substringBefore(prop,".");
-        prop = StringUtils.substringAfter(prop, ".");
-        prop = environmentPropertyToNifi(prop);
-        return prop;
-    }
-
-    private String environmentPropertyToNifi(String envProperty){
-        String  name = envProperty.replaceAll("_", " ");
-        name = CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL,name);
-        return name;
-    }
-
-    private String nifiPropertyToEnvironmentProperty(String nifiPropertyKey){
-        String  name = nifiPropertyKey.toLowerCase().trim().replaceAll(" +","_");
-        name = name.toLowerCase();
-        return name;
-    }
-
 
 
     public ControllerServiceDTO getControllerServiceByName(String serviceName) {
@@ -150,6 +132,10 @@ public class NifiControllerServiceProperties {
             log.error("Unable to find Nifi Controller Service with ID: " + serviceId + ".  " + e.getMessage(), e);
         }
         return controllerService;
+    }
+
+    public String getEnvironmentControllerServicePropertyPrefix(String serviceName){
+        return NifiEnvironmentProperties.getEnvironmentControllerServicePropertyPrefix(serviceName);
     }
 
 }

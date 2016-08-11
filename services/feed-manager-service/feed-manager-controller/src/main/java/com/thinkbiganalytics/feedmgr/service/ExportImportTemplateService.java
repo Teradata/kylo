@@ -2,6 +2,7 @@ package com.thinkbiganalytics.feedmgr.service;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.feedmgr.nifi.NifiControllerServiceProperties;
 import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
@@ -55,7 +56,8 @@ public class ExportImportTemplateService {
     PropertyExpressionResolver propertyExpressionResolver;
 
 
-
+@Inject
+NifiControllerServiceProperties nifiControllerServiceProperties;
 
     @Autowired
     MetadataService metadataService;

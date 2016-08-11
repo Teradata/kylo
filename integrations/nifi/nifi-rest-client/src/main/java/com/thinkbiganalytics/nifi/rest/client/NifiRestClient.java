@@ -4,7 +4,9 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.feedmgr.CreateFeedBuilder;
+import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
@@ -1217,6 +1219,33 @@ public class NifiRestClient extends JerseyRestClient {
     public ControllerServiceEntity enableControllerService(String id) throws NifiClientRuntimeException {
         ControllerServiceEntity entity = getControllerService(null, id);
         ControllerServiceDTO dto = entity.getControllerService();
+        if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
+            dto.setState(NifiProcessUtil.SERVICE_STATE.ENABLED.name());
+
+            entity.setControllerService(dto);
+            updateEntityForSave(entity);
+            return put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
+        } else {
+            return entity;
+        }
+    }
+
+    /**
+     * Enables the ControllerService and also replaces the properties if they match their keys
+     */
+    public ControllerServiceEntity enableControllerServiceAndSetProperties(String id, Map<String, String> properties) throws NifiClientRuntimeException {
+        ControllerServiceEntity entity = getControllerService(null, id);
+        ControllerServiceDTO dto = entity.getControllerService();
+
+        if (properties != null) {
+            Map<String, String> resolvedProperties = NifiEnvironmentProperties.getEnvironmentControllerServiceProperties(properties, dto.getName());
+            if (resolvedProperties != null && !resolvedProperties.isEmpty()) {
+                ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, resolvedProperties);
+            } else {
+                ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, properties);
+            }
+        }
+
         if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
             dto.setState(NifiProcessUtil.SERVICE_STATE.ENABLED.name());
 

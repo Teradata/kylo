@@ -112,7 +112,9 @@ public class PropertyExpressionResolver {
 
     public Map<String, Object> getStaticConfigProperties() {
         Map<String, Object> props = environmentProperties.getPropertiesStartingWith(configPropertyPrefix);
-
+        if(props == null){
+            props = new HashMap<>();
+        }
         Map<String, Object> nifiProps = environmentProperties.getPropertiesStartingWith("nifi.");
         if (nifiProps != null && !nifiProps.isEmpty()) {
             if (props != null) {

@@ -184,9 +184,9 @@ public class TemplateCreationHelper {
         return newServices;
     }
 
-    private ControllerServiceEntity tryToEnableControllerService(String serviceId, String name) {
+    private ControllerServiceEntity tryToEnableControllerService(String serviceId, String name, Map<String, String> properties) {
         try {
-            ControllerServiceEntity entity = restClient.enableControllerService(serviceId);
+            ControllerServiceEntity entity = restClient.enableControllerServiceAndSetProperties(serviceId, properties);
             return entity;
         } catch (Exception e) {
             NifiClientRuntimeException clientRuntimeException = null;
@@ -210,7 +210,7 @@ public class TemplateCreationHelper {
                              ENABLE_CONTROLLER_SERVICE_WAIT_TIME / 1000);
                     try {
                         Thread.sleep(ENABLE_CONTROLLER_SERVICE_WAIT_TIME);
-                        tryToEnableControllerService(serviceId, name);
+                        tryToEnableControllerService(serviceId, name, properties);
                     } catch (InterruptedException e2) {
 
                     }
@@ -273,7 +273,15 @@ public class TemplateCreationHelper {
         mergedControllerServices = map;
     }
 
+    private void reassignControllerServiceProperties() {
+
+    }
+
     public void updateControllerServiceReferences(List<ProcessorDTO> processors) {
+        updateControllerServiceReferences(processors, null);
+    }
+
+    public void updateControllerServiceReferences(List<ProcessorDTO> processors, Map<String, String> controllerServiceProperties) {
 
         try {
             //merge the snapshotted services with the newly created ones and update respective processors in the newly created flow
@@ -311,12 +319,11 @@ public class TemplateCreationHelper {
                     //if the service is not enabled, but it exists then try to enable that
                     if (!enabledServices.containsKey(property.getValue()) && allServices.containsKey(property.getValue())) {
                         ControllerServiceDTO dto = allServices.get(property.getValue());
-                        ControllerServiceEntity entity = tryToEnableControllerService(dto.getId(), dto.getName());
+                        ControllerServiceEntity entity = tryToEnableControllerService(dto.getId(), dto.getName(), controllerServiceProperties);
                         if (entity != null && entity.getControllerService() != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getControllerService().getState())) {
                             enabledServices.put(entity.getControllerService().getId(), entity.getControllerService());
+                            set = true;
                         }
-                        set = true;
-
                     }
                     if (!set) {
                         boolean controllerServiceSet = false;
@@ -364,11 +371,14 @@ public class TemplateCreationHelper {
                                 }
                                 if (allServices.containsKey(allowableValueDTO.getValue())) {
                                     property.setValue(allowableValueDTO.getValue());
-                                    ControllerServiceEntity entity = tryToEnableControllerService(allowableValueDTO.getValue(), controllerServiceName);
+                                    ControllerServiceEntity entity = tryToEnableControllerService(allowableValueDTO.getValue(), controllerServiceName, controllerServiceProperties);
                                     if (entity != null && entity.getControllerService() != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getControllerService().getState())) {
                                         enabledServices.put(entity.getControllerService().getId(), entity.getControllerService());
+                                        controllerServiceSet = true;
+                                    } else {
+                                        controllerServiceSet = false;
                                     }
-                                    controllerServiceSet = true;
+
                                 }
 
                             }
