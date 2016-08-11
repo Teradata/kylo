@@ -18,82 +18,82 @@
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-commons-util</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-nifi-rest-client</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-nifi-rest-model</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-feed-manager-rest-model</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>thinkbig-metadata-rest-service</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-sla-rest-model</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-feed-manager-core</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
     <groupId>com.thinkbiganalytics.datalake</groupId>
     <artifactId>thinkbig-schema-discovery-parser</artifactId>
-    <version>0.4.0-SNAPSHOT</version>
+    <version>${project.version}</version>
   </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-scheduler-quartz</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-feed-manager-precondition-policy</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-sla-metrics-default</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
      </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-sla-email</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-sla-jira</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
       <scope>test</scope>
     </dependency>
 
@@ -103,7 +103,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-thrift-proxy-core</artifactId>
-      <version>0.4.0-SNAPSHOT</version>
+      <version>${project.version}</version>
     </dependency>
 
 
