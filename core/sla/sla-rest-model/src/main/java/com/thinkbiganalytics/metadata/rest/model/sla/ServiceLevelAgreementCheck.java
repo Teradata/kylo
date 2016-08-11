@@ -5,12 +5,15 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfigu
 import java.util.ArrayList;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Created by sr186054 on 7/22/16.
  */
 public class ServiceLevelAgreementCheck {
 
     private String id;
+    @ApiModelProperty(hidden = true)
     private List<? extends ServiceLevelAgreementActionConfiguration> actionConfigurations;
     private String cronSchedule;
 

@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 
 /**
  *
@@ -22,6 +24,8 @@ import java.util.List;
 public class Obligation {
 
     private String description;
+
+    @ApiModelProperty(reference = "#")
     private List<Metric> metrics = new ArrayList<>();
 
     public Obligation() {

@@ -5,16 +5,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import java.util.ArrayList;
 import java.util.List;
 
+import io.swagger.annotations.ApiModel;
+
 /**
  * Created by sr186054 on 7/19/16.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
+@ApiModel(value = "Service Level Agreement UI Form Object", description = "A Service Level Agreement that is in the correct for for the UI to parse and display on a form with inputs.")
 public class ServiceLevelAgreementGroup {
 
 
     private String id;
     private String name;
     private String description;
+
     private List<ServiceLevelAgreementRule> rules;
 
     private List<ServiceLevelAgreementActionUiConfigurationItem> actionConfigurations;

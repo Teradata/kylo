@@ -6,6 +6,8 @@ import com.thinkbiganalytics.policy.rest.model.BaseUiPolicyRule;
 
 import java.util.List;
 
+import io.swagger.annotations.ApiModelProperty;
+
 /**
  * Created by sr186054 on 7/18/16.
  */
@@ -16,6 +18,7 @@ public class ServiceLevelAgreementActionUiConfigurationItem extends BaseUiPolicy
 
     private String validationMessage;
 
+    @ApiModelProperty(value = "actionClasses", name = "actionClasses", reference = "#")
     private List<Class<? extends ServiceLevelAgreementAction>> actionClasses;
 
     public List<Class<? extends ServiceLevelAgreementAction>> getActionClasses() {
