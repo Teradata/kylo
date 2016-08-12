@@ -20,6 +20,8 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
 
     private ProcessGroupDTO dto;
 
+    private ProcessGroupDTO parentProcessGroup;
+
     private Set<NifiVisitableProcessor> startingProcessors;
 
     private Set<NifiVisitableProcessor> endingProcessors;
@@ -65,6 +67,13 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
         return group;
     }
 
+    public ProcessGroupDTO getParentProcessGroup() {
+        return parentProcessGroup;
+    }
+
+    public void setParentProcessGroup(ProcessGroupDTO parentProcessGroup) {
+        this.parentProcessGroup = parentProcessGroup;
+    }
 
     @Override
     public void accept(NifiFlowVisitor nifiVisitor) {

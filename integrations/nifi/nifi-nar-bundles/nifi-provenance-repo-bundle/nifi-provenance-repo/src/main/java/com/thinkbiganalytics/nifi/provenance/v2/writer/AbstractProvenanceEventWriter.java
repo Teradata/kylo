@@ -13,4 +13,14 @@ public abstract class AbstractProvenanceEventWriter implements ProvenanceEventWr
         }
         return eventIdIncrementer.getId();
     }
+
+    @Override
+    public void setMaxEventId(Long l) {
+        eventIdIncrementer.setId(l);
+    }
+
+    @Override
+    public Long getMaxEventId() {
+        return eventIdIncrementer.getId();
+    }
 }

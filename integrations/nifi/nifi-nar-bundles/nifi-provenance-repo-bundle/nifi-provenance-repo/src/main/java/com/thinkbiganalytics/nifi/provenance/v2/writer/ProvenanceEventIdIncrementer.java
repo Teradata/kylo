@@ -14,7 +14,7 @@ public class ProvenanceEventIdIncrementer {
     private AtomicLong eventIdCounter = null;
 
     public boolean isNull() {
-        return eventIdCounter == null;
+         return eventIdCounter == null;
     }
 
     public void setId(Long l) {
