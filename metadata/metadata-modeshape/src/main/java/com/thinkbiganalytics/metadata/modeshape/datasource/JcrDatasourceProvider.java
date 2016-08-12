@@ -22,9 +22,11 @@ import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.core.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.datasource.hive.JcrHiveTableDatasource;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrObjectTypeResolver;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 
 /**
@@ -46,6 +48,37 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
         map.put(JcrHiveTableDatasource.NODE_TYPE, JcrHiveTableDatasource.class);
         NODE_TYPES_MAP = map;
     }
+    
+    public static JcrObjectTypeResolver<? extends JcrDatasource> TYPE_RESOLVER = new JcrObjectTypeResolver<JcrDatasource>() {
+        @Override
+        public Class<? extends JcrDatasource> resolve(Node node) {
+            try {
+                if (NODE_TYPES_MAP.containsKey(node.getPrimaryNodeType().getName())) {
+                    return NODE_TYPES_MAP.get(node.getPrimaryNodeType().getName());
+                } else {
+                    return JcrDatasource.class;
+                }
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to determine type of node: " + node, e);
+            }
+        }
+    };
+    
+    public static Class<? extends JcrEntity> resolveJcrEntityClass(String jcrNodeType) {
+        if (NODE_TYPES_MAP.containsKey(jcrNodeType)) {
+            return NODE_TYPES_MAP.get(jcrNodeType);
+        } else {
+            return JcrDatasource.class;
+        }
+    }
+    
+    public static Class<? extends JcrEntity> resolveJcrEntityClass(Node node) {
+        try {
+            return resolveJcrEntityClass(node.getPrimaryNodeType().getName());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to determine type of node: " + node, e);
+        }
+    }
 
     @Override
     public Class<? extends Datasource> getEntityClass() {
@@ -59,11 +92,7 @@ public class JcrDatasourceProvider extends BaseJcrProvider<Datasource, Datasourc
     
     @Override
     public Class<? extends JcrEntity> getJcrEntityClass(String jcrNodeType) {
-        if (NODE_TYPES_MAP.containsKey(jcrNodeType)) {
-            return NODE_TYPES_MAP.get(jcrNodeType);
-        } else {
-            return JcrDatasource.class;
-        }
+        return resolveJcrEntityClass(jcrNodeType);
     }
 
     @Override

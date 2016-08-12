@@ -3,16 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.support;
 
-import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.reflect.ConstructorUtils;
-import org.modeshape.jcr.api.JcrTools;
-
 import java.io.Serializable;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -27,6 +17,16 @@ import javax.jcr.NodeIterator;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
+
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.reflect.ConstructorUtils;
+import org.modeshape.jcr.api.JcrTools;
+
+import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 
 /**
  * @author Sean Felten
@@ -98,11 +98,18 @@ public class JcrUtil {
         }
 
     }
-
+    
     /**
      * get All Child nodes under a parentNode and create the wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
      */
     public static <T extends JcrObject> List<T> getNodes(Node parentNode, String name, Class<T> type) {
+        return getNodes(parentNode, name, new DefaultObjectTypeResolver<>(type));
+    }
+
+    /**
+     * get All Child nodes under a parentNode and create the wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
+     */
+    public static <T extends JcrObject> List<T> getNodes(Node parentNode, String name, JcrObjectTypeResolver<T> typeResolver) {
         List<T> list = new ArrayList<>();
         try {
 
@@ -115,7 +122,7 @@ public class JcrUtil {
             if (nodeItr != null) {
                 while (nodeItr.hasNext()) {
                     Node n = nodeItr.nextNode();
-                    T entity = ConstructorUtils.invokeConstructor(type, n);
+                    T entity = ConstructorUtils.invokeConstructor(typeResolver.resolve(n), n);
                     list.add(entity);
                 }
             }
@@ -355,13 +362,17 @@ public class JcrUtil {
         }
         return entity;
     }
-
+    
     public static <T extends JcrObject> T getReferencedObject(Node node, String property, Class<T> type) {
+        return getReferencedObject(node, property, new DefaultObjectTypeResolver<T>(type));
+    }
+
+    public static <T extends JcrObject> T getReferencedObject(Node node, String property, JcrObjectTypeResolver<T> typeResolver) {
         try {
             Property prop = node.getProperty(property);
-            return createJcrObject(prop.getNode(), type);
+            return createJcrObject(prop.getNode(), typeResolver.resolve(prop.getNode()));
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to dereference object of type: " + type, e);
+            throw new MetadataRepositoryException("Failed to dereference object of type using: " + typeResolver, e);
         }
         
     }
@@ -398,4 +409,19 @@ public class JcrUtil {
         }
     }
 
+    
+    private static class DefaultObjectTypeResolver<T extends JcrObject> implements JcrObjectTypeResolver<T> {
+        
+        private final Class<? extends T> type;
+        
+        public DefaultObjectTypeResolver(Class<? extends T> type) {
+            super();
+            this.type = type;
+        }
+
+        @Override
+        public Class<? extends T> resolve(Node node) {
+            return this.type;
+        }
+    }
 }

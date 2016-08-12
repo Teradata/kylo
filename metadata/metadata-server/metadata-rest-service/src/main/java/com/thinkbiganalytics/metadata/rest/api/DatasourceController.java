@@ -9,6 +9,7 @@ import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
@@ -47,11 +48,27 @@ public class DatasourceController {
                                            @QueryParam(DatasourceCriteria.BEFORE)final String before,
                                            @QueryParam(DatasourceCriteria.TYPE)final String type ) {
         return this.metadata.read(() -> {
-//            com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = createDatasourceCriteria(name, owner, on, after, before, type);
-            List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources();
-//                List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(criteria);
+            com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = createDatasourceCriteria(name, owner, on, after, before, type);
+//            List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources();
+            List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(criteria);
             
             return new ArrayList<>(Collections2.transform(existing, Model.DOMAIN_TO_DS));
+        });
+    }
+    
+    @GET
+    @Path("{id}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Datasource getDatasource(@PathParam("id") String idStr) {
+        return this.metadata.read(() -> {
+            com.thinkbiganalytics.metadata.api.datasource.Datasource.ID id = this.datasetProvider.resolve(idStr);
+            com.thinkbiganalytics.metadata.api.datasource.Datasource ds = this.datasetProvider.getDatasource(id);
+            
+            if (ds != null) {
+                return Model.DOMAIN_TO_DS.apply(ds);
+            } else {
+                throw new WebApplicationException("No datasource exists with the given ID: " + idStr, Status.NOT_FOUND);
+            }
         });
     }
 

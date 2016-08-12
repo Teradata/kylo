@@ -9,6 +9,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasourceProvider;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
@@ -29,7 +30,7 @@ public abstract class JcrFeedConnection extends JcrObject implements FeedConnect
     }
 
     public Datasource getDatasource() {
-        return JcrUtil.getReferencedObject(this.node, DATASOURCE, JcrDatasource.class);
+        return JcrUtil.getReferencedObject(this.node, DATASOURCE, JcrDatasourceProvider.TYPE_RESOLVER);
     }
 
 
