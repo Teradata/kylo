@@ -11,8 +11,10 @@ import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.flow.SimpleNifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
+import com.thinkbiganalytics.nifi.rest.model.visitor.SimpleFlowBuilder;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
@@ -1566,7 +1568,18 @@ public class NifiRestClient extends JerseyRestClient {
         if (processGroupEntity != null) {
             group = new NifiVisitableProcessGroup(processGroupEntity.getProcessGroup());
             NifiConnectionOrderVisitor orderVisitor = new NifiConnectionOrderVisitor(this, group);
+            try {
+                //find the parent just to get hte names andids
+                ProcessGroupEntity parent = getProcessGroup(processGroupEntity.getProcessGroup().getParentGroupId(), false, false);
+                group.setParentProcessGroup(parent.getProcessGroup());
+            } catch (NifiComponentNotFoundException e) {
+                //cant find the parent
+            }
+
             group.accept(orderVisitor);
+            orderVisitor.printOrder();
+            SimpleNifiFlowProcessGroup simpleGroup = new SimpleFlowBuilder().build(group);
+            simpleGroup.print();
             //orderVisitor.printOrder();
         }
         return group;

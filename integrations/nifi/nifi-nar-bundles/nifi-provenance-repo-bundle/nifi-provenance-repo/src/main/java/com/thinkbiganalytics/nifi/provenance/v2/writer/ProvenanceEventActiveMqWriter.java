@@ -18,9 +18,9 @@ import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseBuilder;
 import org.springframework.jdbc.datasource.embedded.EmbeddedDatabaseType;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
-
 import java.util.List;
+
+import javax.annotation.PostConstruct;
 
 /**
  * Created by sr186054 on 3/3/16.
@@ -33,15 +33,6 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
     private EmbeddedDatabase db;
     private Server h2Console;
 
-    @Override
-    public void setMaxEventId(Long l) {
-        eventIdIncrementer.setId(l);
-    }
-
-    @Override
-    public Long getMaxEventId() {
-        return eventIdIncrementer.getId();
-    }
 
     @Autowired
     private SendJmsMessage sendJmsMessage;
