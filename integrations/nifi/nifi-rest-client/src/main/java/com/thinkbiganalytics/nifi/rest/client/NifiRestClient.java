@@ -1577,12 +1577,16 @@ public class NifiRestClient extends JerseyRestClient {
             }
 
             group.accept(orderVisitor);
-            orderVisitor.printOrder();
-            SimpleNifiFlowProcessGroup simpleGroup = new SimpleFlowBuilder().build(group);
-            simpleGroup.print();
+            ///  orderVisitor.printOrder();
             //orderVisitor.printOrder();
         }
         return group;
+    }
+
+    public SimpleNifiFlowProcessGroup getSimpleFlowOrder(String processGroupId) throws NifiComponentNotFoundException {
+        SimpleNifiFlowProcessGroup group = null;
+        NifiVisitableProcessGroup visitableGroup = getFlowOrder(processGroupId);
+        return new SimpleFlowBuilder().build(visitableGroup);
     }
 
     public Set<ProcessorDTO> getProcessorsForFlow(String processGroupId) throws NifiComponentNotFoundException {
