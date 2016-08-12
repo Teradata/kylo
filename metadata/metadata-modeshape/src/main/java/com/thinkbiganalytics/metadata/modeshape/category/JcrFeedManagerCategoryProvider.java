@@ -34,8 +34,8 @@ public class JcrFeedManagerCategoryProvider extends BaseJcrProvider<FeedManagerC
     }
 
     @Override
-    public String getNodeType() {
-        return ((JcrCategoryProvider) categoryProvider).getNodeType();
+    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
+        return ((JcrCategoryProvider) categoryProvider).getNodeType(jcrEntityType);
     }
 
     @Override

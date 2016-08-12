@@ -1,17 +1,17 @@
 package com.thinkbiganalytics.metadata.modeshape.template;
 
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.lang3.StringUtils;
+
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
-
-import org.apache.commons.lang3.StringUtils;
-
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Created by sr186054 on 6/8/16.
@@ -30,7 +30,7 @@ public class JcrFeedTemplateProvider extends BaseJcrProvider<FeedManagerTemplate
     }
 
     @Override
-    public String getNodeType() {
+    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
         return JcrFeedTemplate.NODE_TYPE;
     }
 

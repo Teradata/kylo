@@ -148,11 +148,11 @@
 //  - tba:initialized (BOOLEAN) = 'false'
 
 [tba:hiveTableDatasource] > tba:datasource
-    - tba:database (STRING) mandatory
-    - tba:tableName (STRING) mandatory
+    - tba:database (STRING) 
+    - tba:tableName (STRING) 
     - tba:modifiers (STRING)
-    + tba:columns (nt:hierarchyNode) = nt:hierarchyNode autocreated
-    + tba:partitions (nt:hierarchyNode) 
+    + tba:columns (nt:folder)
+    + tba:partitions (nt:folder) 
 
 [tba:hiveTableColumn] > nt:hierarchyNode
     - tba:name (STRING) mandatory

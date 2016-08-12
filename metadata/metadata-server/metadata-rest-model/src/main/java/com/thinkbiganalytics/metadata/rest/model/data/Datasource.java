@@ -45,6 +45,19 @@ public class Datasource implements Serializable {
     public Datasource() {
         super();
     }
+    
+    public Datasource(String name) {
+        super();
+        this.name = name;
+    }
+
+    public Datasource(String id, String name) {
+        super();
+        this.id = id;
+        this.name = name;
+    }
+
+
 
     public String getId() {
         return id;

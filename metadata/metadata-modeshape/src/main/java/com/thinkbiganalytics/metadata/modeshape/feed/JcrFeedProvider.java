@@ -79,7 +79,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     JcrMetadataAccess metadataAccess;
 
     @Override
-    public String getNodeType() {
+    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
         return JcrFeed.NODE_TYPE;
     }
 
@@ -168,7 +168,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             throw new CategoryNotFoundException("Unable to find Category for " + categorySystemName, null);
         }
 
-        Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName);
+        Node feedNode = findOrCreateEntityNode(categoryPath, feedSystemName, getJcrEntityClass());
         boolean versionable = JcrUtil.isVersionable(feedNode);
         JcrFeed<?> feed = new JcrFeed(feedNode, category);
 

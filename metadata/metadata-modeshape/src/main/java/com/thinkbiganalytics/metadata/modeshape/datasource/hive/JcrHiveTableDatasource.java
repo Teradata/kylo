@@ -25,6 +25,7 @@ public class JcrHiveTableDatasource extends JcrDatasource implements HiveTableDa
 
     private static final String PATH_NAME = "hive";
     
+    // Masks field in superclass
     public static final String NODE_TYPE = "tba:hiveTableDatasource";
     
     private static final String DATABASE_NAME = "tba:database";

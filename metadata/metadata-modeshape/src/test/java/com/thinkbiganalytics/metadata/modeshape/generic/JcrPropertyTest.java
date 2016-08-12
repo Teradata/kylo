@@ -42,6 +42,7 @@ import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.datasource.JcrDatasource;
+import com.thinkbiganalytics.metadata.modeshape.datasource.hive.JcrHiveTableDatasource;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
@@ -136,10 +137,14 @@ public class JcrPropertyTest {
                 category.setTitle("my category");
                 categoryProvider.update(category);
 
-                JcrDatasource datasource1 = (JcrDatasource) datasourceProvider.ensureDatasource("mysql.table1", "mysql table source 1", HiveTableDatasource.class);
+                JcrHiveTableDatasource datasource1 = (JcrHiveTableDatasource) datasourceProvider.ensureDatasource("mysql.table1", "mysql table source 1", HiveTableDatasource.class);
+                datasource1.setDatabase("TEST");
+                datasource1.setTableName("TABLE1");
                 datasource1.setProperty(JcrDatasource.TYPE_NAME, "Database");
 
-                JcrDatasource datasource2 = (JcrDatasource) datasourceProvider.ensureDatasource("mysql.table2", "mysql table source 2", HiveTableDatasource.class);
+                JcrDatasource datasource2 = (JcrHiveTableDatasource) datasourceProvider.ensureDatasource("mysql.table2", "mysql table source 2", HiveTableDatasource.class);
+                datasource1.setDatabase("TEST");
+                datasource1.setTableName("TABLE1");
                 datasource2.setProperty(JcrDatasource.TYPE_NAME, "Database");
 
                 String feedSystemName = "my_feed";

@@ -37,12 +37,12 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
     @Override
     public Category findBySystemName(String systemName) {
 
-        String query = "SELECT * FROM [" + getNodeType() + "] as cat WHERE cat.[" + JcrCategory.SYSTEM_NAME + "] = '" + systemName + "'";
+        String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as cat WHERE cat.[" + JcrCategory.SYSTEM_NAME + "] = '" + systemName + "'";
         return findFirst(query);
     }
 
     @Override
-    public String getNodeType() {
+    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
         return JcrCategory.NODE_TYPE;
     }
 

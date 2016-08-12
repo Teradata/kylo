@@ -17,10 +17,21 @@ public class HiveTableDatasource extends Datasource {
     private String modifiers;
     private List<HiveTableColumn> columns = new ArrayList<>();
     private List<HiveTablePartition> partitions = new ArrayList<>();
+    
+    public HiveTableDatasource() {
+        super();
+    }
+    
+    public HiveTableDatasource(String name, String database, String tableName) {
+        super(name);
+        this.database = database;
+        this.tableName = tableName;
+    }
 
     public String getDatabase() {
         return database;
     }
+
 
     public void setDatabase(String database) {
         this.database = database;

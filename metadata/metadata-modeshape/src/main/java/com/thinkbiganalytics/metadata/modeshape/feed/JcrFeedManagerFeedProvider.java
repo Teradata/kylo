@@ -30,7 +30,7 @@ import javax.jcr.query.QueryResult;
 public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed, Feed.ID> implements FeedManagerFeedProvider {
 
     @Override
-    public String getNodeType() {
+    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
         return JcrFeed.NODE_TYPE;
     }
 

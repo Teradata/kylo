@@ -3,6 +3,24 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.query.QueryResult;
+
+import org.modeshape.jcr.api.JcrTools;
+
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
@@ -29,24 +47,6 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
-
-import org.modeshape.jcr.api.JcrTools;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.query.QueryResult;
 
 /**
  *
@@ -75,7 +75,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     }
 
     @Override
-    public String getNodeType() {
+    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
         return "tba:sla";
     }
 
@@ -118,7 +118,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         try {
 
             //query for the SLAs
-            String query = "SELECT * FROM [" + getNodeType() + "] as sla "
+            String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] as sla "
                            + "LEFT JOIN [" + JcrFeedPrecondition.NODE_TYPE + "] as precondition on precondition.[" + JcrFeedPrecondition.SLA + "] = sla.[jcr:uuid] "
                            + " WHERE precondition.[jcr:uuid] is NULL ";
 
@@ -154,7 +154,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
      */
     @Override
     public ServiceLevelAgreement findAgreementByName(String slaName) {
-        String query =  "SELECT * FROM ["+getNodeType()+"] as sla WHERE sla.["+JcrPropertyConstants.TITLE+"] = '"+slaName+"'";
+        String query =  "SELECT * FROM ["+getNodeType(getJcrEntityClass())+"] as sla WHERE sla.["+JcrPropertyConstants.TITLE+"] = '"+slaName+"'";
         return findFirst(query);
     }
 

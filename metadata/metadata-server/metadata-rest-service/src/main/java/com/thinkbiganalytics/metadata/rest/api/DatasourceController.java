@@ -19,7 +19,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.google.common.collect.Collections2;
-import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.rest.Model;
@@ -47,15 +46,12 @@ public class DatasourceController {
                                            @QueryParam(DatasourceCriteria.AFTER)final String after,
                                            @QueryParam(DatasourceCriteria.BEFORE)final String before,
                                            @QueryParam(DatasourceCriteria.TYPE)final String type ) {
-        return this.metadata.read(new Command<List<Datasource>>() {
-            @Override
-            public List<Datasource> execute() {
-                com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = createDatasourceCriteria(name, owner, on, after, before, type);
-                List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources();
+        return this.metadata.read(() -> {
+//            com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria criteria = createDatasourceCriteria(name, owner, on, after, before, type);
+            List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources();
 //                List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(criteria);
-                
-                return new ArrayList<>(Collections2.transform(existing, Model.DOMAIN_TO_DS));
-            }
+            
+            return new ArrayList<>(Collections2.transform(existing, Model.DOMAIN_TO_DS));
         });
     }
 
@@ -64,34 +60,31 @@ public class DatasourceController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public HiveTableDatasource createHiveTable(final HiveTableDatasource ds,
-                                               @QueryParam("ensure") @DefaultValue("true") final boolean ensure) {
+                                               @QueryParam("ensure") @DefaultValue("false") final boolean ensure) {
         Model.validateCreate(ds);
         
-        return this.metadata.commit(new Command<HiveTableDatasource>() {
-            @Override
-            public HiveTableDatasource execute() {
-                com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria crit = datasetProvider.datasetCriteria()
-                                .name(ds.getName())
-                                .type(com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource.class);
-                List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(crit);
-                
-                if (existing.isEmpty()) {
-                    com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource table 
-                        = datasetProvider.ensureDatasource(ds.getName(), 
-                                                           ds.getDescription(),
-                                                           com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource.class);
-                    table.setDatabase(ds.getDatabase());
-                    table.setTableName(ds.getTableName());
+        return this.metadata.commit(() -> {
+            com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria crit = datasetProvider.datasetCriteria()
+                            .name(ds.getName())
+                            .type(com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource.class);
+            List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(crit);
+            
+            if (existing.isEmpty()) {
+                com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource table 
+                    = datasetProvider.ensureDatasource(ds.getName(), 
+                                                       ds.getDescription(),
+                                                       com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource.class);
+                table.setDatabase(ds.getDatabase());
+                table.setTableName(ds.getTableName());
 //                    = datasetProvider.ensureHiveTableDatasource(ds.getName(), 
 //                                                                ds.getDescription(), 
 //                                                                ds.getDatabase(), 
 //                                                                ds.getTableName());
-                    return Model.DOMAIN_TO_TABLE_DS.apply(table);
-                } else if (ensure) {
-                    return Model.DOMAIN_TO_TABLE_DS.apply((com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource) existing.iterator().next());
-                } else {
-                    throw new WebApplicationException("A hive table datasource with the given name already exists: " + ds.getName(), Status.CONFLICT);
-                }
+                return Model.DOMAIN_TO_TABLE_DS.apply(table);
+            } else if (ensure) {
+                return Model.DOMAIN_TO_TABLE_DS.apply((com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource) existing.iterator().next());
+            } else {
+                throw new WebApplicationException("A hive table datasource with the given name already exists: " + ds.getName(), Status.CONFLICT);
             }
         });
     }
@@ -104,27 +97,24 @@ public class DatasourceController {
                                                @QueryParam("ensure") @DefaultValue("true") final boolean ensure) {
         Model.validateCreate(ds);
         
-        return this.metadata.commit(new Command<Datasource>() {
-            @Override
-            public Datasource execute() {
-                com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria crit 
-                    = datasetProvider.datasetCriteria()
-                        .name(ds.getName())
-                        .type(com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource.class);
-                List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(crit);
-                
-                if (existing.isEmpty()) {
-                    com.thinkbiganalytics.metadata.api.datasource.Datasource dir 
-                        = datasetProvider.ensureDatasource(ds.getName(), 
-                                                           ds.getDescription(), 
-                                                           com.thinkbiganalytics.metadata.api.datasource.Datasource.class);
-                    // TODO add paths
-                    return Model.DOMAIN_TO_DS.apply(dir);
-                } else if (ensure) {
-                    return Model.DOMAIN_TO_DIR_DS.apply((com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource) existing.iterator().next());
-                } else {
-                    throw new WebApplicationException("A directory datasource with the given name already exists: " + ds.getName(), Status.BAD_REQUEST);
-                }
+        return this.metadata.commit(() -> {
+            com.thinkbiganalytics.metadata.api.datasource.DatasourceCriteria crit 
+                = datasetProvider.datasetCriteria()
+                    .name(ds.getName())
+                    .type(com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource.class);
+            List<com.thinkbiganalytics.metadata.api.datasource.Datasource> existing = datasetProvider.getDatasources(crit);
+            
+            if (existing.isEmpty()) {
+                com.thinkbiganalytics.metadata.api.datasource.Datasource dir 
+                    = datasetProvider.ensureDatasource(ds.getName(), 
+                                                       ds.getDescription(), 
+                                                       com.thinkbiganalytics.metadata.api.datasource.Datasource.class);
+                // TODO add paths
+                return Model.DOMAIN_TO_DS.apply(dir);
+            } else if (ensure) {
+                return Model.DOMAIN_TO_DIR_DS.apply((com.thinkbiganalytics.metadata.api.datasource.filesys.DirectoryDatasource) existing.iterator().next());
+            } else {
+                throw new WebApplicationException("A directory datasource with the given name already exists: " + ds.getName(), Status.BAD_REQUEST);
             }
         });
     }

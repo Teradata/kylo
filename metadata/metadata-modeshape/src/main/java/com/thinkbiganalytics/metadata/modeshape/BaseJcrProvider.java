@@ -22,6 +22,7 @@ import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.nodetype.NodeType;
 import javax.jcr.query.QueryResult;
 
 /**
@@ -45,23 +46,47 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     /**
      * return the JCR NodeType for this entity (i.e. tba:category, tba:feed)
      */
-    public abstract String getNodeType();
+    public abstract String getNodeType(Class<? extends JcrEntity> jcrEntityType);
 
     public BaseJcrProvider() {
         this.entityClass = (Class<T>) getEntityClass();
         this.jcrEntityClass = getJcrEntityClass();
     }
 
+    /**\
+     * Gets the entity class appropriate for the given node type if polymophic types are
+     * supported by the provider implementation.  By default if simply returns the result
+     * of getJcrEntityClass().
+     * @return the appropriate entity class
+     */
+    public Class<? extends JcrEntity> getJcrEntityClass(String jcrNodeType) {
+        return getJcrEntityClass();
+    }
+
+    /**\
+     * Gets the entity class appropriate for the given node polymophic types are
+     * supported by the provider implementation.  By default if simply returns the result
+     * of getJcrEntityClass(String nodeType) by calling getPrimaryNodeType().name() on the node.
+     * @return the appropriate entity class
+     */
+    public Class getJcrEntityClass(Node node) {
+        try {
+            return getJcrEntityClass(node.getPrimaryNodeType().getName());
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to determine type of node: " + node, e);
+        }
+    }
+
     /**
      * Creates a new Entity Node object for a Parent Path, relative Path and node type
      */
-    public Node findOrCreateEntityNode(String parentPath, String relPath) {
+    public Node findOrCreateEntityNode(String parentPath, String relPath, Class<? extends JcrEntity> jcrEntityType) {
         Session session = getSession();
 
         try {
             Node typesNode = session.getNode(parentPath);
             JcrTools tools = new JcrTool();
-            Node entNode = tools.findOrCreateChild(typesNode, relPath, getNodeType());
+            Node entNode = tools.findOrCreateChild(typesNode, relPath, getNodeType(jcrEntityType));
             return entNode;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to create new entity of type: " + getEntityClass(), e);
@@ -83,9 +108,10 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     
     public T findOrCreateEntity(String path, String relPath, Class<? extends JcrEntity> entClass, Map<String, Object> props, Object... constructorArgs) {
         Session session = getSession();
-        Node entNode = findOrCreateEntityNode(path, relPath);
+        Node entNode = findOrCreateEntityNode(path, relPath, entClass);
         entNode = JcrPropertyUtil.setProperties(session, entNode, props);
-        return (T) JcrUtil.createJcrObject(entNode, entClass, constructorArgs);
+        Class<? extends JcrEntity> actualClass = getJcrEntityClass(entNode); // Handle subtypes
+        return (T) JcrUtil.createJcrObject(entNode, actualClass, constructorArgs);
     }
 
     public Node getNodeByIdentifier(PK id) {
@@ -119,7 +145,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
     protected T constructEntity(Node node) {
         @SuppressWarnings("unchecked")
-        T entity = (T) JcrUtil.createJcrObject(node, getJcrEntityClass());
+        T entity = (T) JcrUtil.createJcrObject(node, getJcrEntityClass(node));
         return entity;
     }
 
@@ -150,7 +176,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             }
             return entities;
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(), e);
+            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
         }
     }
 
@@ -168,7 +194,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             }
             return entities;
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(), e);
+            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
         }
     }
 
@@ -185,14 +211,14 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             }
             return null;
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(), e);
+            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
         }
     }
 
     @Override
     public List<T> findAll() {
 
-        String jcrQuery = "SELECT * FROM [" + getNodeType() + "]";
+        String jcrQuery = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "]";
         return find(jcrQuery);
 
     }

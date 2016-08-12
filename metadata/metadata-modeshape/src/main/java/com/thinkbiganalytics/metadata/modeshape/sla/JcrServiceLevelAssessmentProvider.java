@@ -39,7 +39,7 @@ public class JcrServiceLevelAssessmentProvider extends BaseJcrProvider<ServiceLe
 
 
     @Override
-    public String getNodeType() {
+    public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
         return "tba:serviceLevelAssessment";
     }
 
@@ -62,7 +62,7 @@ public class JcrServiceLevelAssessmentProvider extends BaseJcrProvider<ServiceLe
     //find last assessment
     public ServiceLevelAssessment findLatestAssessment(ServiceLevelAgreement.ID slaId) {
         String query = "SELECT * FROM [" + JcrServiceLevelAssessment.SLA + "] AS sla  "
-                       + "INNER JOIN  [" + getNodeType() + "] as assessment ON ISCHILDNODE(assessment,sla) "
+                       + "INNER JOIN  [" + getNodeType(getJcrEntityClass()) + "] as assessment ON ISCHILDNODE(assessment,sla) "
                        + "WHERE sla.[jcr:uuid] = '" + slaId + "'"
                        + "ORDER BY assessment.[jcr:created] DESC ";
 try {
@@ -78,7 +78,7 @@ try {
         }
     return entity;
     } catch (RepositoryException e) {
-        throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(), e);
+        throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
     }
 
     }

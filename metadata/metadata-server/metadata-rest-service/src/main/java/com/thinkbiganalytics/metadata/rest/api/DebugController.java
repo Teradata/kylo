@@ -12,6 +12,8 @@ import com.thinkbiganalytics.metadata.api.sla.FeedExecutedSinceSchedule;
 import com.thinkbiganalytics.metadata.api.sla.WithinSchedule;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
+import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
+import com.thinkbiganalytics.metadata.rest.model.data.HiveTableDatasource;
 import com.thinkbiganalytics.metadata.rest.model.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 
@@ -68,6 +70,13 @@ public class DebugController {
         this.eventService.notify(event);
         
         return event.toString();
+    }
+    
+    @GET
+    @Path("datasource/hivetable")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Datasource exampleHiveTable() {
+        return new HiveTableDatasource("table1", "database1", "table1");
     }
     
     @GET
