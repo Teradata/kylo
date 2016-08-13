@@ -1,5 +1,9 @@
 package com.thinkbiganalytics.nifi.rest.model.flow;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -9,24 +13,44 @@ import java.util.Set;
 
 /**
  * Created by sr186054 on 8/11/16.
+ * Object in a NifiFlow that has pointers to all its sources (parents)  and children (destinations)
  */
-public class SimpleNifiFlowProcessor {
+@JsonIgnoreProperties(ignoreUnknown = true)
+public class NifiFlowProcessor {
 
-    private static final Logger log = LoggerFactory.getLogger(SimpleNifiFlowProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(NifiFlowProcessor.class);
 
+    private int _id;
+
+    @JsonProperty("id")
     private String id;
+    @JsonProperty("name")
     private String name;
     private boolean isFailure;
     private boolean isEnd;
 
-    private SimpleNifiFlowProcessGroup processGroup;
+    private NifiProcessingStatistics processingStatistics = new NifiProcessingStatistics();
 
-    private Set<SimpleNifiFlowProcessor> sources; //parents
-    private Set<SimpleNifiFlowProcessor> destinations; //children
+    private NifiFlowProcessGroup processGroup;
 
-    private Set<SimpleNifiFlowProcessor> failureProcessors;
+    @JsonIgnore
+    private Set<NifiFlowProcessor> sources; //parents
 
-    public SimpleNifiFlowProcessor(String id, String name) {
+    @JsonIgnore
+    private Set<NifiFlowProcessor> destinations; //children
+
+    private Set<String> sourceIds;
+
+    private Set<String> destinationIds;
+
+
+    private Set<NifiFlowProcessor> failureProcessors;
+
+    public NifiFlowProcessor() {
+
+    }
+
+    public NifiFlowProcessor(@JsonProperty("id") String id, @JsonProperty("name") String name) {
         this.id = id;
         this.name = name;
     }
@@ -47,41 +71,44 @@ public class SimpleNifiFlowProcessor {
         this.name = name;
     }
 
-    public Set<SimpleNifiFlowProcessor> getDestinations() {
+    public Set<NifiFlowProcessor> getDestinations() {
         if (destinations == null) {
             destinations = new HashSet<>();
         }
         return destinations;
     }
 
-    public void setDestinations(Set<SimpleNifiFlowProcessor> destinations) {
+    public void setDestinations(Set<NifiFlowProcessor> destinations) {
         this.destinations = destinations;
     }
 
-    public Set<SimpleNifiFlowProcessor> getSources() {
+    public Set<NifiFlowProcessor> getSources() {
         if (sources == null) {
             sources = new HashSet<>();
         }
         return sources;
     }
 
-    public void setSources(Set<SimpleNifiFlowProcessor> sources) {
+    public void setSources(Set<NifiFlowProcessor> sources) {
         this.sources = sources;
     }
 
-    public Set<SimpleNifiFlowProcessor> getFailureProcessors() {
+    public Set<NifiFlowProcessor> getFailureProcessors() {
+        if (failureProcessors == null) {
+            failureProcessors = new HashSet<>();
+        }
         return failureProcessors;
     }
 
-    public void setFailureProcessors(Set<SimpleNifiFlowProcessor> failureProcessors) {
+    public void setFailureProcessors(Set<NifiFlowProcessor> failureProcessors) {
         this.failureProcessors = failureProcessors;
     }
 
-    public SimpleNifiFlowProcessGroup getProcessGroup() {
+    public NifiFlowProcessGroup getProcessGroup() {
         return processGroup;
     }
 
-    public void setProcessGroup(SimpleNifiFlowProcessGroup processGroup) {
+    public void setProcessGroup(NifiFlowProcessGroup processGroup) {
         this.processGroup = processGroup;
     }
 
@@ -93,7 +120,7 @@ public class SimpleNifiFlowProcessor {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        SimpleNifiFlowProcessor that = (SimpleNifiFlowProcessor) o;
+        NifiFlowProcessor that = (NifiFlowProcessor) o;
         return Objects.equals(id, that.id);
     }
 
@@ -118,6 +145,33 @@ public class SimpleNifiFlowProcessor {
         this.isEnd = isEnd;
     }
 
+    public boolean isStart() {
+        return this.getSources().isEmpty();
+    }
+
+
+    public Set<String> getSourceIds() {
+        if (sourceIds == null) {
+            sourceIds = new HashSet<>();
+        }
+        return sourceIds;
+    }
+
+    public void setSourceIds(Set<String> sourceIds) {
+        this.sourceIds = sourceIds;
+    }
+
+    public Set<String> getDestinationIds() {
+        if (destinationIds == null) {
+            destinationIds = new HashSet<>();
+        }
+        return destinationIds;
+    }
+
+    public void setDestinationIds(Set<String> destinationIds) {
+        this.destinationIds = destinationIds;
+    }
+
     public void print() {
 
         print(0);
@@ -131,7 +185,7 @@ public class SimpleNifiFlowProcessor {
         printed.add(this.getId());
         Integer nextLevel = level + 1;
 
-        for (SimpleNifiFlowProcessor child : getDestinations()) {
+        for (NifiFlowProcessor child : getDestinations()) {
             if (!child.containsDestination(this) && !child.containsDestination(child) && !child.equals(this) && !printed.contains(child.getId())) {
                 child.print(nextLevel);
                 printed.add(child.getId());
@@ -139,9 +193,7 @@ public class SimpleNifiFlowProcessor {
         }
     }
 
-    //used for connections with input/output ports
-
-    public boolean containsDestination(SimpleNifiFlowProcessor parent) {
+    public boolean containsDestination(NifiFlowProcessor parent) {
         final String thisId = getId();
         final String parentId = parent.getId();
 
@@ -149,5 +201,11 @@ public class SimpleNifiFlowProcessor {
             .equalsIgnoreCase(parentId));
     }
 
+    public int get_id() {
+        return _id;
+    }
 
+    public void set_id(int _id) {
+        this._id = _id;
+    }
 }
