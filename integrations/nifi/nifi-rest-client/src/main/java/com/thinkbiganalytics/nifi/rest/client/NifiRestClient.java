@@ -11,10 +11,10 @@ import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.nifi.rest.model.flow.SimpleNifiFlowProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
-import com.thinkbiganalytics.nifi.rest.model.visitor.SimpleFlowBuilder;
 import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
@@ -1583,10 +1583,10 @@ public class NifiRestClient extends JerseyRestClient {
         return group;
     }
 
-    public SimpleNifiFlowProcessGroup getSimpleFlowOrder(String processGroupId) throws NifiComponentNotFoundException {
-        SimpleNifiFlowProcessGroup group = null;
+    public NifiFlowProcessGroup getSimpleFlowOrder(String processGroupId) throws NifiComponentNotFoundException {
+        NifiFlowProcessGroup group = null;
         NifiVisitableProcessGroup visitableGroup = getFlowOrder(processGroupId);
-        return new SimpleFlowBuilder().build(visitableGroup);
+        return new NifiFlowBuilder().build(visitableGroup);
     }
 
     public Set<ProcessorDTO> getProcessorsForFlow(String processGroupId) throws NifiComponentNotFoundException {
