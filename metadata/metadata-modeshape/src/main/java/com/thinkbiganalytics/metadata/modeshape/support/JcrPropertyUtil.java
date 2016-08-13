@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.fasterxml.jackson.databind.deser.impl.PropertyValue;
 import com.fasterxml.jackson.datatype.joda.JodaModule;
 import com.thinkbiganalytics.classnameregistry.ClassNameChangeRegistry;
 import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
@@ -450,7 +451,7 @@ public class JcrPropertyUtil {
                 throw new IllegalArgumentException("Cannot set a property without a provided name");
             }
 
-            Set<Value> values = new HashSet<>();
+            Set<Value> values = null;
 
             if (node.hasProperty(name)) {
                 values = Arrays.stream(node.getProperty(name).getValues()).map(v -> {
@@ -579,10 +580,12 @@ public class JcrPropertyUtil {
                 return factory.createValue(((Enum) value).name());
             } else if (value instanceof JcrObject) {
                 return factory.createValue(((JcrObject) value).getNode(), weakRef);
+//                return factory.createValue(((JcrObject) value).getNode().getIdentifier(), weakRef ? PropertyType.WEAKREFERENCE : PropertyType.REFERENCE);
             } else if (value instanceof Value) {
                 return (Value) value;
             } else if (value instanceof Node) {
                 return factory.createValue((Node) value, weakRef);
+//                return factory.createValue(((Node) value).getIdentifier(), weakRef ? PropertyType.WEAKREFERENCE : PropertyType.REFERENCE);
             } else if (value instanceof Binary) {
                 return factory.createValue((Binary) value);
             } else if (value instanceof Calendar) {

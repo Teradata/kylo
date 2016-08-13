@@ -102,9 +102,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
 
             if (datasource != null) {
-                Node feedNode = getNodeByIdentifier(feedId);
-                Node feedSrcNode = JcrUtil.getOrCreateNode(feedNode, JcrFeed.SOURCE_NAME, JcrFeedSource.NODE_TYPE);
+                Node feedSrcNode = JcrUtil.getOrCreateNode(feed.getNode(), JcrFeed.SOURCE_NAME, JcrFeedSource.NODE_TYPE, true);
                 JcrFeedSource jcrSrc = new JcrFeedSource(feedSrcNode, datasource);
+                
+                save();
                 return jcrSrc;
             } else {
                 throw new DatasourceNotFoundException(dsId);
@@ -129,9 +130,10 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
 
             if (datasource != null) {
-                Node feedNode = getNodeByIdentifier(feedId);
-                Node feedDestNode = JcrUtil.getOrCreateNode(feedNode, JcrFeed.DESTINATION_NAME, JcrFeedDestination.NODE_TYPE);
+                Node feedDestNode = JcrUtil.getOrCreateNode(feed.getNode(), JcrFeed.DESTINATION_NAME, JcrFeedDestination.NODE_TYPE, true);
                 JcrFeedDestination jcrDest = new JcrFeedDestination(feedDestNode, datasource);
+                
+                save();
                 return jcrDest;
             } else {
                 throw new DatasourceNotFoundException(dsId);

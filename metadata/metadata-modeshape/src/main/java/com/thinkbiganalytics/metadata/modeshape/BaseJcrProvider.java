@@ -34,6 +34,15 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     protected Session getSession() {
         return JcrMetadataAccess.getActiveSession();
     }
+    
+    public void save() {
+        try {
+            getSession().save();
+        } catch (RepositoryException e) {
+            log.error("Failed to save session state.", e);
+            throw new MetadataRepositoryException("Failed to save the current session state.", e);
+        }
+    }
 
     protected Class<T> entityClass;
 

@@ -295,11 +295,13 @@ public class Model {
                     return DOMAIN_TO_TABLE_DS.apply((com.thinkbiganalytics.metadata.api.datasource.hive.HiveTableDatasource) domain);
                 } else {
                     Datasource ds = new Datasource();
+                    ds.setId(domain.getId().toString());
                     ds.setName(domain.getName());
                     ds.setDescription(domain.getDescription());
 //                    ds.setOwnder();
 //                    ds.setEncrypted();
 //                    ds.setCompressed();
+                    addConnections(domain, ds);
                     return ds;
                 }
             }
@@ -338,6 +340,7 @@ public class Model {
 //                dir.setEncrypted();
 //                dir.setCompressed();
                 dir.setPath(domain.getDirectory().toString());
+                addConnections(domain, dir);
                 
                 return dir;
             }
@@ -531,12 +534,14 @@ public class Model {
         for (com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc : domain.getFeedSources()) {
             Feed feed = new Feed();
             feed.setId(domainSrc.getFeed().getId().toString());
+            feed.setSystemName(domainSrc.getFeed().getName());
             
             datasource.getSourceForFeeds().add(feed);
         }
         for (com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest : domain.getFeedDestinations()) {
             Feed feed = new Feed();
             feed.setId(domainDest.getFeed().getId().toString());
+            feed.setSystemName(domainDest.getFeed().getName());
             
             datasource.getDestinationForFeeds().add(feed);
         }

@@ -111,7 +111,7 @@ public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements D
 
 
     public void addSourceNode(Node node) {
-        JcrPropertyUtil.addToSetProperty(this.node, SOURCE_NAME, node);
+        JcrPropertyUtil.addToSetProperty(this.node, SOURCE_NAME, node, true);
     }
     
     public void removeSourceNode(Node node) {
@@ -119,7 +119,7 @@ public class JcrDatasource extends AbstractJcrAuditableSystemEntity implements D
     }
     
     public void addDestinationNode(Node node) {
-        JcrPropertyUtil.addToSetProperty(this.node, DESTINATION_NAME, node);
+        JcrPropertyUtil.addToSetProperty(this.node, DESTINATION_NAME, node, true);
     }
     
     public void removeDestinationNode(Node node) {

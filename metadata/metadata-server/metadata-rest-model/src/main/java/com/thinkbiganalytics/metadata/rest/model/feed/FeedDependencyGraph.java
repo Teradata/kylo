@@ -19,7 +19,7 @@ import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment;
  */
 @JsonInclude(Include.NON_EMPTY)
 @JsonIgnoreProperties(ignoreUnknown = true)
-@JsonPropertyOrder({ "feed", "preconditonResult", "destination", "dependencies" })
+@JsonPropertyOrder({ "feed", "preconditonResult", "dependencies" })
 public class FeedDependencyGraph {
 
     private Feed feed;
