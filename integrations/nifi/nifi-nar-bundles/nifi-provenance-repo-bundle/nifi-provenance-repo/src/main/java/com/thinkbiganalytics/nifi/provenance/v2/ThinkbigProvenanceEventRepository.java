@@ -1,8 +1,9 @@
 package com.thinkbiganalytics.nifi.provenance.v2;
 
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventActiveMqWriter;
+import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventStreamWriter;
 import com.thinkbiganalytics.util.SpringInitializer;
+
 import org.apache.nifi.events.EventReporter;
 import org.apache.nifi.provenance.PersistentProvenanceRepository;
 import org.apache.nifi.provenance.ProvenanceEventBuilder;
@@ -18,8 +19,6 @@ import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
-import java.util.Timer;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -34,21 +33,24 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
     private  Lock registerEventLock = null;
 
 
-    private ProvenanceEventActiveMqWriter provenanceEventRecordWriter;
+    private ProvenanceEventStreamWriter provenanceEventRecordWriter;
+
+
 
     public ThinkbigProvenanceEventRepository() {
+        log.info(" ThinkbigProvenanceEventRepository START!!!");
         this.registerEventLock = new ReentrantReadWriteLock(true).readLock();
         try {
 
 
             repository = new PersistentProvenanceRepository();
-            provenanceEventRecordWriter = new ProvenanceEventActiveMqWriter();
+            provenanceEventRecordWriter = new ProvenanceEventStreamWriter();
             log.info(" new event recorder " + provenanceEventRecordWriter);
             //  provenanceEventRecordWriter.setEventId(repository.getMaxEventId());
             SpringInitializer.getInstance().initializeSpring();
             SpringApplicationListener listener = new SpringApplicationListener();
-            listener.addObjectToAutowire("provenanceEventRecordWriter", provenanceEventRecordWriter);
-            listener.autowire("provenanceEventRecordWriter", provenanceEventRecordWriter);
+           // listener.addObjectToAutowire("provenanceEventRecordWriter", provenanceEventRecordWriter);
+           // listener.autowire("provenanceEventRecordWriter", provenanceEventRecordWriter);
 
         } catch (IOException e) {
             throw new RuntimeException(e);
