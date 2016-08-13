@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class ProvenanceEventCache {
 
-    private static final long MAX_SIZE = 10000;
+    private static final long MAX_SIZE = 1000000;
 
     private static ProvenanceEventCache instance = new ProvenanceEventCache();
 
@@ -32,14 +32,17 @@ public class ProvenanceEventCache {
 
     public static final ProvenanceEventType[] ENDING_EVENT_TYPES = {ProvenanceEventType.DROP};
 
+
+    public static final ProvenanceEventType[] NON_COMPLETION_EVENTS ={ProvenanceEventType.SEND,ProvenanceEventType.CLONE,ProvenanceEventType.ROUTE};
+
     public static boolean contains(ProvenanceEventType[] allowedEvents, ProvenanceEventType event) {
         return Arrays.stream(allowedEvents).anyMatch(event::equals);
     }
 
 
     private ProvenanceEventCache() {
-        eventCache = CacheBuilder.newBuilder().maximumSize(MAX_SIZE).build();
-        processorEventCache = CacheBuilder.newBuilder().maximumSize(MAX_SIZE).build(new CacheLoader<String, List<ProvenanceEventRecord>>() {
+        eventCache = CacheBuilder.newBuilder().recordStats().maximumSize(MAX_SIZE).build();
+        processorEventCache = CacheBuilder.newBuilder().recordStats().maximumSize(MAX_SIZE).build(new CacheLoader<String, List<ProvenanceEventRecord>>() {
                                                                                         @Override
                                                                                         public List<ProvenanceEventRecord> load(String id) throws Exception {
                                                                                             return new ArrayList<ProvenanceEventRecord>();
@@ -57,6 +60,10 @@ public class ProvenanceEventCache {
         return eventCache.getIfPresent(id);
     }
 
+
+    public ProvenanceEventRecord getEvent(String flowFileId, Long eventId) {
+        return getEventById(key(flowFileId,eventId));
+    }
     public List<ProvenanceEventRecord> getEventsForProcessor(String processorId) {
         return processorEventCache.getIfPresent(processorId);
     }
@@ -65,8 +72,8 @@ public class ProvenanceEventCache {
         //add the event to the event id map
         eventCache.put(key(eventRecord.getFlowFileUuid(), eventRecord.getEventId()), eventRecord);
         //add the event to the processor map
-        List<ProvenanceEventRecord> events = processorEventCache.getIfPresent(eventRecord.getComponentId());
-        events.add(eventRecord);
+ //       List<ProvenanceEventRecord> events = processorEventCache.getIfPresent(eventRecord.getComponentId());
+  //      events.add(eventRecord);
     }
 
 

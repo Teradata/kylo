@@ -2,22 +2,28 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
+import com.thinkbiganalytics.feedmgr.support.FeedNameUtil;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
+import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -40,6 +46,74 @@ public class NifiConfigurationPropertiesRestController {
 
     public NifiConfigurationPropertiesRestController() {
     }
+
+
+    @GET
+    @Path("/flow/{processGroupId}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getFlow(@PathParam("processGroupId")String processGroupId) {
+       NifiFlowProcessGroup flow =  nifiRestClient.getSimpleFlowOrder(processGroupId);
+        String categoryName = flow.getParentGroupName();
+        String feedName = flow.getName();
+        feedName = FeedNameUtil.fullName(categoryName,feedName);
+        //if it is a versioned feed then strip the version to get the correct feed name
+        feedName = TemplateCreationHelper.parseVersionedProcessGroupName(feedName);
+        flow.setFeedName(feedName);
+        return Response.ok(flow).build();
+    }
+
+    @GET
+    @Path("/flow/feed/{categoryAndFeedName}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getFlowForCategoryAndFeed(@PathParam("categoryAndFeedName")String categoryAndFeedName) {
+        NifiFlowProcessGroup flow = null;
+        String category = FeedNameUtil.category(categoryAndFeedName);
+        String feed = FeedNameUtil.feed(categoryAndFeedName);
+        //1 find the ProcessGroup under "root" matching the name category
+        ProcessGroupEntity processGroupEntity = nifiRestClient.getRootProcessGroup();
+        ProcessGroupDTO root = processGroupEntity.getProcessGroup();
+        ProcessGroupDTO categoryGroup = root.getContents().getProcessGroups().stream().filter(group -> category.equalsIgnoreCase(group.getName())).findAny().orElse(null);
+        if(categoryGroup != null) {
+            ProcessGroupDTO feedGroup = categoryGroup.getContents().getProcessGroups().stream().filter(group -> feed.equalsIgnoreCase(group.getName())).findAny().orElse(null);
+            if(feedGroup != null){
+                flow = nifiRestClient.getSimpleFlowOrder(feedGroup.getId());
+            }
+        }
+        return Response.ok(flow).build();
+    }
+
+
+    //walk entire graph
+    @GET
+    @Path("/flows")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response getFlows() {
+        List<NifiFlowProcessGroup> feedFlows = new ArrayList<>();
+            ProcessGroupEntity processGroupEntity = nifiRestClient.getRootProcessGroup();
+            ProcessGroupDTO root = processGroupEntity.getProcessGroup();
+            //first level is the category
+            for (ProcessGroupDTO category : root.getContents().getProcessGroups()) {
+                for (ProcessGroupDTO feedProcessGroup : category.getContents().getProcessGroups()) {
+                    //second level is the feed
+                    String feedName = FeedNameUtil.fullName(category.getName(),feedProcessGroup.getName());
+                    //if it is a versioned feed then strip the version to get the correct feed name
+                    feedName = TemplateCreationHelper.parseVersionedProcessGroupName(feedName);
+                    NifiFlowProcessGroup feedFlow =  nifiRestClient.getSimpleFlowOrder(feedProcessGroup.getId());
+                    feedFlow.setFeedName(feedName);
+                    feedFlows.add(feedFlow);
+
+                }
+            }
+        return Response.ok(feedFlows).build();
+
+    }
+
+
+
+
+
+
+
 
     @GET
     @Path("/configuration/properties")

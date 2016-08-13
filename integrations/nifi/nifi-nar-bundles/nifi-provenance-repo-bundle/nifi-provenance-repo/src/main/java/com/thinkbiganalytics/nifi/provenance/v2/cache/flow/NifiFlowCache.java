@@ -3,71 +3,102 @@ package com.thinkbiganalytics.nifi.provenance.v2.cache.flow;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.thinkbiganalytics.nifi.rest.model.flow.SimpleNifiFlowProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.flow.SimpleNifiFlowProcessor;
+import com.thinkbiganalytics.nifi.flow.controller.NifiFlowClient;
+import com.thinkbiganalytics.nifi.provenance.v2.ThinkbigProvenanceEventRepository;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.net.URI;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 8/11/16. Cache of the Nifi Flow graph
  */
 public class NifiFlowCache {
 
+    private static final Logger log = LoggerFactory.getLogger(ThinkbigProvenanceEventRepository.class);
+
+    private NifiFlowClient nifiFlowClient;
+
     private Integer MAX_SIZE = 100;
+
+    private static NifiFlowCache instance = new NifiFlowCache();
 
     public static NifiFlowCache instance() {
         return instance;
     }
 
-    private static NifiFlowCache instance = new NifiFlowCache();
+    private void initClient() {
+        nifiFlowClient = new NifiFlowClient(URI.create("http://localhost:8400/proxy/v1"), NifiFlowClient.createCredentialProvider("dladmin", "thinkbig"));
+    }
 
-    private final LoadingCache<String, SimpleNifiFlowProcessGroup> feedFlowCache;
+    private final LoadingCache<String, NifiFlowProcessGroup> feedFlowCache;
 
-    private final LoadingCache<String, SimpleNifiFlowProcessor> processorCache;
+    //mapping to get stats outside of a feed for each processor (regardless of feed).
+    //map processorid to list of SimpleNifiFlowProcessor objects
+
 
     private NifiFlowCache() {
+        log.info("Create NifiFlowCache");
+        initClient();
 
-        feedFlowCache = CacheBuilder.newBuilder().maximumSize(MAX_SIZE).build(new CacheLoader<String, SimpleNifiFlowProcessGroup>() {
-                                                                                  @Override
-                                                                                  public SimpleNifiFlowProcessGroup load(String processGroupId) throws Exception {
-                                                                                      ///CALL OUT TO rest client to walk the flow and build the cache
-                                                                                      SimpleNifiFlowProcessGroup group = new SimpleNifiFlowProcessGroup("1", "2");
-                                                                                      //add the processors to the processor cache
-                                                                                      processorCache.putAll(group.getProcessorMap());
-                                                                                      return group;
-                                                                                  }
-                                                                              }
+        feedFlowCache = CacheBuilder.newBuilder().recordStats().maximumSize(MAX_SIZE).build(new CacheLoader<String, NifiFlowProcessGroup>() {
+                                                                                                @Override
+                                                                                                public NifiFlowProcessGroup load(String processGroupId) throws Exception {
+                                                                                                    ///CALL OUT TO rest client to walk the flow and build the cache
+                                                                                                    log.info(" START load for ProcessGroup {} ", processGroupId);
+                                                                                                    NifiFlowProcessGroup group = nifiFlowClient.getFlowForProcessGroup(processGroupId);
+                                                                                                    log.info(" Finish load for ProcessGroup {} , {} ", processGroupId, group);
+                                                                                                    return group;
+                                                                                                }
+                                                                                            }
         );
 
-        processorCache = CacheBuilder.newBuilder().maximumSize(MAX_SIZE).build(new CacheLoader<String, SimpleNifiFlowProcessor>() {
-                                                                                   @Override
-                                                                                   public SimpleNifiFlowProcessor load(String processorId) throws Exception {
-                                                                                       ///CALL OUT TO rest client to walk the flow and build the cache starting with any processor in the flow.
-                                                                                       //1 find parent processGroup for processor
-                                                                                       //2 feedFlowFileCache.get(parentProcessGroup)
-                                                                                       //return feedFlowCache.getProcessor(processorId);
-                                                                                       return new SimpleNifiFlowProcessor("1", "2");
-                                                                                   }
-                                                                               }
-        );
+        loadAll();
+
+
+
+
     }
 
-    /**
-     * Gets a Processor by Id
-     */
-    public SimpleNifiFlowProcessor getProcessor(String processorId) {
-        return processorCache.getUnchecked(processorId);
+    public void loadAll() {
+        log.info(" START loadALL ");
+        Map<String, NifiFlowProcessGroup> map = new HashMap<>();
+        List<NifiFlowProcessGroup> allFlows = nifiFlowClient.getAllFlows();
+        log.info("Finished Loading ALL");
+        if (allFlows != null) {
+            map = allFlows.stream().collect(Collectors.toMap(simpleNifiFlowProcessGroup -> simpleNifiFlowProcessGroup.getId(), simpleNifiFlowProcessGroup -> simpleNifiFlowProcessGroup));
+            feedFlowCache.putAll(map);
+        }
+
     }
 
+
     /**
-     * Gets the Parent Feed Flow Holder describing the Entire flow for any given processorId
+     * Gets a Processor by the parent Feed ProcessGroup and the id of the processor
      */
-    public SimpleNifiFlowProcessGroup getFeedFlowForProcessor(String processorId) {
-        return getProcessor(processorId).getProcessGroup();
+    public NifiFlowProcessor getProcessor(String feedProcessGroupId, String processorId) {
+        try {
+            return feedFlowCache.get(feedProcessGroupId).getProcessor(processorId);
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            //TODO LOG AND THROW RUNTIME
+        }
+        return null;
     }
+
 
     /**
      * Find The Feed Flow for a feed name This will look at the Process Group Name in Nifi and try to match it to the feed name NOTE: this assumes the ProcessGroup name == Feed System Name
      */
-    public SimpleNifiFlowProcessGroup getFeedFlowForFeedName(String category, String feedName) {
+    public NifiFlowProcessGroup getFeedFlowForFeedName(String category, String feedName) {
         return feedFlowCache.asMap().values().stream().filter(flow -> (feedName.equalsIgnoreCase(flow.getName()) && category.equalsIgnoreCase(flow.getParentGroupName()))).findAny().orElse(null);
     }
 
