@@ -4,6 +4,8 @@
 package com.thinkbiganalytics.metadata.rest.model.data;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.joda.time.DateTime;
 
@@ -16,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.datatype.joda.ser.DateTimeSerializer;
+import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
 
 /**
  *
@@ -41,6 +44,9 @@ public class Datasource implements Serializable {
     private String ownder;
     private boolean encrypted;
     private boolean compressed;
+    private List<Feed> sourceForFeeds = new ArrayList<>();
+    private List<Feed> destinationForFeeds = new ArrayList<>();
+    
 
     public Datasource() {
         super();
@@ -56,8 +62,6 @@ public class Datasource implements Serializable {
         this.id = id;
         this.name = name;
     }
-
-
 
     public String getId() {
         return id;
@@ -93,6 +97,14 @@ public class Datasource implements Serializable {
 
     public DateTime getCreationTime() {
         return creationTime;
+    }
+    
+    public List<Feed> getSourceForFeeds() {
+        return sourceForFeeds;
+    }
+    
+    public List<Feed> getDestinationForFeeds() {
+        return destinationForFeeds;
     }
 
     public void setCreationTime(DateTime creationTime) {

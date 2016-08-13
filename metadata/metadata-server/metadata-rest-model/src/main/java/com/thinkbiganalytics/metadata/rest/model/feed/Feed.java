@@ -30,9 +30,9 @@ public class Feed implements Serializable {
     private String displayName;
     private String description;
     private String owner;
-    private State state = State.ENABLED;
+    private State state;
     private DateTime createdTime;
-    private boolean initialized;
+    private Boolean initialized;
     // TODO versions
     private FeedPrecondition precondition;
     private Set<FeedSource> sources = new HashSet<>();
@@ -109,7 +109,7 @@ public class Feed implements Serializable {
         this.state = state;
     }
 
-    public boolean isInitialized() {
+    public Boolean isInitialized() {
         return initialized;
     }
 

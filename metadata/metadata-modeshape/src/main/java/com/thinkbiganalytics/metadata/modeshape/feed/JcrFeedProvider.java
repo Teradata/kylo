@@ -95,25 +95,22 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
 
     @Override
     public FeedSource ensureFeedSource(Feed.ID feedId, Datasource.ID dsId) {
-        try {
-            JcrFeed<?> feed = (JcrFeed) findById(feedId);
-            FeedSource source = feed.getSource(dsId);
+        JcrFeed<?> feed = (JcrFeed) findById(feedId);
+        FeedSource source = feed.getSource(dsId);
 
-            if (source == null) {
-                JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
+        if (source == null) {
+            JcrDatasource datasource = (JcrDatasource) datasourceProvider.getDatasource(dsId);
 
-                if (datasource != null) {
-                    Node feedNode = getNodeByIdentifier(feedId);
-
-                    return JcrUtil.addJcrObject(feedNode, JcrFeed.SOURCE_NAME, JcrFeedSource.NODE_TYPE, JcrFeedSource.class, datasource);
-                } else {
-                    throw new DatasourceNotFoundException(dsId);
-                }
+            if (datasource != null) {
+                Node feedNode = getNodeByIdentifier(feedId);
+                Node feedSrcNode = JcrUtil.getOrCreateNode(feedNode, JcrFeed.SOURCE_NAME, JcrFeedSource.NODE_TYPE);
+                JcrFeedSource jcrSrc = new JcrFeedSource(feedSrcNode, datasource);
+                return jcrSrc;
             } else {
-                return source;
+                throw new DatasourceNotFoundException(dsId);
             }
-        } catch (Exception e) {
-            throw new MetadataRepositoryException("Failed to ensure a feed sources exists to datasource: " + dsId + " for feed: " + feedId, e);
+        } else {
+            return source;
         }
     }
 
@@ -139,9 +136,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
             } else {
                 throw new DatasourceNotFoundException(dsId);
             }
+        } else {
+            return source;
         }
-
-        return source;
     }
 
     @Override

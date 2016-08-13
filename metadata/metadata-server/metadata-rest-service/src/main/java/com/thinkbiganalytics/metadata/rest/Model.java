@@ -320,6 +320,7 @@ public class Model {
                 table.setTableName(domain.getTableName());
 //                table.setFields();
 //                table.setPartitions();
+                addConnections(domain, table);
                 
                 return table;
             }
@@ -477,14 +478,13 @@ public class Model {
         }
     };
 
-public static final     List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> transformFeedServiceLevelAgreements(List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> slaList) {
+    public static final List<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> transformFeedServiceLevelAgreements(List<com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement> slaList) {
         Collection<com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement> list = null;
         if (slaList != null) {
             list = Collections2.transform(slaList, Model.DOMAIN_TO_FEED_SLA_SHALLOW);
             return new ArrayList<>(list);
         }
-    return null;
-
+        return null;
     }
     
     public static final Function<ServiceLevelAssessment, com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAssessment> DOMAIN_TO_SLA_ASSMT
@@ -527,6 +527,21 @@ public static final     List<com.thinkbiganalytics.metadata.rest.model.sla.FeedS
             }
         };
         
+    protected static void addConnections(com.thinkbiganalytics.metadata.api.datasource.Datasource domain, Datasource datasource) {
+        for (com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc : domain.getFeedSources()) {
+            Feed feed = new Feed();
+            feed.setId(domainSrc.getFeed().getId().toString());
+            
+            datasource.getSourceForFeeds().add(feed);
+        }
+        for (com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest : domain.getFeedDestinations()) {
+            Feed feed = new Feed();
+            feed.setId(domainDest.getFeed().getId().toString());
+            
+            datasource.getDestinationForFeeds().add(feed);
+        }
+    }
+
     public static List<Metric> toModelMetrics(Collection<com.thinkbiganalytics.metadata.sla.api.Metric> metrics) {
         return new ArrayList<>(Collections2.transform(metrics, DOMAIN_TO_METRIC));
     }
