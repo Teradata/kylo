@@ -5,12 +5,15 @@ import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.support.FeedNameUtil;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -38,6 +41,7 @@ import io.swagger.annotations.Api;
 @Component
 public class NifiConfigurationPropertiesRestController {
 
+    private static final Logger log = LoggerFactory.getLogger(NifiConfigurationPropertiesRestController.class);
     @Autowired
     private NifiRestClient nifiRestClient;
 
@@ -77,6 +81,7 @@ public class NifiConfigurationPropertiesRestController {
             ProcessGroupDTO feedGroup = categoryGroup.getContents().getProcessGroups().stream().filter(group -> feed.equalsIgnoreCase(group.getName())).findAny().orElse(null);
             if(feedGroup != null){
                 flow = nifiRestClient.getSimpleFlowOrder(feedGroup.getId());
+                NifiFlowDeserializer.prepareForSerialization(flow);
             }
         }
         return Response.ok(flow).build();
@@ -88,6 +93,7 @@ public class NifiConfigurationPropertiesRestController {
     @Path("/flows")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getFlows() {
+        log.info("get Graph of Nifi Flows");
         List<NifiFlowProcessGroup> feedFlows = new ArrayList<>();
             ProcessGroupEntity processGroupEntity = nifiRestClient.getRootProcessGroup();
             ProcessGroupDTO root = processGroupEntity.getProcessGroup();
@@ -101,9 +107,11 @@ public class NifiConfigurationPropertiesRestController {
                     NifiFlowProcessGroup feedFlow =  nifiRestClient.getSimpleFlowOrder(feedProcessGroup.getId());
                     feedFlow.setFeedName(feedName);
                     feedFlows.add(feedFlow);
+                    NifiFlowDeserializer.prepareForSerialization(feedFlow);
 
                 }
             }
+        log.info("finished Graph of Nifi Flows.  Returning {} flows", feedFlows.size());
         return Response.ok(feedFlows).build();
 
     }

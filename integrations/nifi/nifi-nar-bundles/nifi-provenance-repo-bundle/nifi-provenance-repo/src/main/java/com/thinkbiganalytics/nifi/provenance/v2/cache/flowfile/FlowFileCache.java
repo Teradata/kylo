@@ -4,8 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.CacheStats;
 import com.google.common.cache.LoadingCache;
-
-import org.apache.nifi.provenance.ProvenanceEventRecord;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import java.util.Map;
 import java.util.Timer;
@@ -48,9 +47,10 @@ public class FlowFileCache {
     }
 
     public void printSummary(){
+        System.out.println("ActiveFlowFile CACHE summary");
         Map<String,ActiveFlowFile> map = cache.asMap();
         map.values().stream().filter(flowFile -> flowFile.isRootFlowFile()).forEach(flowFile -> {
-        ProvenanceEventRecord firstEvent = flowFile.getFirstEvent();
+            ProvenanceEventRecordDTO firstEvent = flowFile.getFirstEvent();
             if(firstEvent != null){
                 String firstProcessorId = firstEvent != null ? firstEvent.getComponentId() : "";
                 //lookup the processor?
