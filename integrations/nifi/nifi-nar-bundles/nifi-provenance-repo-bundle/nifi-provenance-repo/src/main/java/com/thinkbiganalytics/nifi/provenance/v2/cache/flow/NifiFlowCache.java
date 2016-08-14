@@ -4,7 +4,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.nifi.flow.controller.NifiFlowClient;
-import com.thinkbiganalytics.nifi.provenance.v2.ThinkbigProvenanceEventRepository;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 
@@ -15,15 +14,20 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 8/11/16. Cache of the Nifi Flow graph
+ * TODO  Might not be necessary... Potentially we can derive the Start/Failure/End from the EventTypes and Relationships
+ * //Currently set to not active until futher discovery on event data
  */
 public class NifiFlowCache {
 
-    private static final Logger log = LoggerFactory.getLogger(ThinkbigProvenanceEventRepository.class);
+    private static final Logger log = LoggerFactory.getLogger(NifiFlowCache.class);
+
+    private boolean active = false;
 
     private NifiFlowClient nifiFlowClient;
 
@@ -36,7 +40,9 @@ public class NifiFlowCache {
     }
 
     private void initClient() {
-        nifiFlowClient = new NifiFlowClient(URI.create("http://localhost:8400/proxy/v1"), NifiFlowClient.createCredentialProvider("dladmin", "thinkbig"));
+        if (active) {
+            nifiFlowClient = new NifiFlowClient(URI.create("http://localhost:8400/proxy/v1"), NifiFlowClient.createCredentialProvider("dladmin", "thinkbig"));
+        }
     }
 
     private final LoadingCache<String, NifiFlowProcessGroup> feedFlowCache;
@@ -44,22 +50,24 @@ public class NifiFlowCache {
     //mapping to get stats outside of a feed for each processor (regardless of feed).
     //map processorid to list of SimpleNifiFlowProcessor objects
 
+    private ConcurrentHashMap<String, NifiFlowProcessor> startingFeedProcessors = new ConcurrentHashMap<>();
+
 
     private NifiFlowCache() {
         log.info("Create NifiFlowCache");
         initClient();
+        log.info("Starting to NifiFlowCache setup cache {}", nifiFlowClient);
 
         feedFlowCache = CacheBuilder.newBuilder().recordStats().maximumSize(MAX_SIZE).build(new CacheLoader<String, NifiFlowProcessGroup>() {
                                                                                                 @Override
                                                                                                 public NifiFlowProcessGroup load(String processGroupId) throws Exception {
-                                                                                                    ///CALL OUT TO rest client to walk the flow and build the cache
-                                                                                                    log.info(" START load for ProcessGroup {} ", processGroupId);
-                                                                                                    NifiFlowProcessGroup group = nifiFlowClient.getFlowForProcessGroup(processGroupId);
-                                                                                                    log.info(" Finish load for ProcessGroup {} , {} ", processGroupId, group);
+                                                                                                    NifiFlowProcessGroup group = getGraph(processGroupId);
                                                                                                     return group;
                                                                                                 }
                                                                                             }
         );
+
+        log.info("Cache setup... load All into cache ");
 
         loadAll();
 
@@ -68,17 +76,48 @@ public class NifiFlowCache {
 
     }
 
+    private NifiFlowProcessGroup getGraph(String processGroupId) {
+        if (nifiFlowClient != null) {
+
+            log.info(" START load for ProcessGroup {} ", processGroupId);
+            NifiFlowProcessGroup group = nifiFlowClient.getFlowForProcessGroup(processGroupId);
+            assignStartingProcessors(group);
+            log.info(" Finish load for ProcessGroup {} , {} ", processGroupId, group);
+            return group;
+        }
+        return null;
+    }
+
+    private void assignStartingProcessors(NifiFlowProcessGroup group) {
+        if (group != null) {
+            group.getStartingProcessors().stream().forEach(processor -> startingFeedProcessors.put(processor.getId(), processor));
+        }
+    }
+
+
     public void loadAll() {
         log.info(" START loadALL ");
-        Map<String, NifiFlowProcessGroup> map = new HashMap<>();
-        List<NifiFlowProcessGroup> allFlows = nifiFlowClient.getAllFlows();
-        log.info("Finished Loading ALL");
-        if (allFlows != null) {
-            map = allFlows.stream().collect(Collectors.toMap(simpleNifiFlowProcessGroup -> simpleNifiFlowProcessGroup.getId(), simpleNifiFlowProcessGroup -> simpleNifiFlowProcessGroup));
-            feedFlowCache.putAll(map);
+        if (nifiFlowClient != null) {
+            Map<String, NifiFlowProcessGroup> map = new HashMap<>();
+            List<NifiFlowProcessGroup> allFlows = nifiFlowClient.getAllFlows();
+            log.info("Finished Loading ALL");
+            if (allFlows != null) {
+                map = allFlows.stream().collect(
+                    Collectors.toMap(simpleNifiFlowProcessGroup -> simpleNifiFlowProcessGroup.getId(), simpleNifiFlowProcessGroup -> simpleNifiFlowProcessGroup));
+                map.values().forEach(group -> assignStartingProcessors(group));
+                feedFlowCache.putAll(map);
+            }
         }
 
     }
+
+    /**
+     * Gets a Processor by the parent Feed ProcessGroup and the id of the processor
+     */
+    public NifiFlowProcessor getStartingProcessor(String processorId) {
+        return startingFeedProcessors.get(processorId);
+    }
+
 
 
     /**
