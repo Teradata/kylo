@@ -5,14 +5,14 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
-import org.apache.nifi.provenance.ProvenanceEventType;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by sr186054 on 8/11/16. A Cache of the Provenance Events that come through Nifi This cache will be evicted from this cache once sent to jms
+ * Created by sr186054 on 8/11/16.
+ * TODO.. is this really needed???  Currently not used
+ *
  */
 public class ProvenanceEventCache {
 
@@ -28,16 +28,7 @@ public class ProvenanceEventCache {
     private final Cache<String, List<ProvenanceEventRecord>> processorEventCache;
 
 
-    public static final ProvenanceEventType[] STARTING_EVENT_TYPES = {ProvenanceEventType.RECEIVE, ProvenanceEventType.CREATE};
 
-    public static final ProvenanceEventType[] ENDING_EVENT_TYPES = {ProvenanceEventType.DROP};
-
-
-    public static final ProvenanceEventType[] NON_COMPLETION_EVENTS ={ProvenanceEventType.SEND,ProvenanceEventType.CLONE,ProvenanceEventType.ROUTE};
-
-    public static boolean contains(ProvenanceEventType[] allowedEvents, ProvenanceEventType event) {
-        return Arrays.stream(allowedEvents).anyMatch(event::equals);
-    }
 
 
     private ProvenanceEventCache() {
@@ -62,7 +53,7 @@ public class ProvenanceEventCache {
 
 
     public ProvenanceEventRecord getEvent(String flowFileId, Long eventId) {
-        return getEventById(key(flowFileId,eventId));
+        return getEventById(key(flowFileId, eventId));
     }
     public List<ProvenanceEventRecord> getEventsForProcessor(String processorId) {
         return processorEventCache.getIfPresent(processorId);
@@ -77,12 +68,5 @@ public class ProvenanceEventCache {
     }
 
 
-    public static boolean isFirstEvent(ProvenanceEventRecord event) {
-        return contains(STARTING_EVENT_TYPES, event.getEventType());
-    }
-
-    public static boolean isEndingEvent(ProvenanceEventRecord event) {
-        return contains(ENDING_EVENT_TYPES, event.getEventType());
-    }
 
 }
