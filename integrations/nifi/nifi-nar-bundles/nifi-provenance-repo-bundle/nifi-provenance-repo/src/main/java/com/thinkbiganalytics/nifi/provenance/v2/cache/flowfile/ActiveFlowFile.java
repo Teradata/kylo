@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile;
 
-import org.apache.nifi.provenance.ProvenanceEventRecord;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,8 +16,6 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class ActiveFlowFile {
 
-
-
     /**
      * FlowFile UUID
      */
@@ -29,7 +27,7 @@ public class ActiveFlowFile {
 
     private List<Long> events;
 
-    private ProvenanceEventRecord firstEvent;
+    private ProvenanceEventRecordDTO firstEvent;
 
     private ActiveFlowFile rootFlowFile;
 
@@ -38,7 +36,8 @@ public class ActiveFlowFile {
 
 
     //track failed events in this flow
-    private Set<ProvenanceEventRecord> failedEvents;
+    //change to ConcurrentSkipListSet ???
+    private Set<ProvenanceEventRecordDTO> failedEvents;
 
     public ActiveFlowFile(String id) {
         this.id = id;
@@ -90,11 +89,11 @@ public class ActiveFlowFile {
         return events;
     }
 
-    public ProvenanceEventRecord getFirstEvent() {
+    public ProvenanceEventRecordDTO getFirstEvent() {
         return firstEvent;
     }
 
-    public void setFirstEvent(ProvenanceEventRecord firstEvent) {
+    public void setFirstEvent(ProvenanceEventRecordDTO firstEvent) {
         this.firstEvent = firstEvent;
     }
 
@@ -120,7 +119,7 @@ public class ActiveFlowFile {
         return this.rootFlowFile != null && this.rootFlowFile.equals(this);
     }
 
-    public void addFailedEvent(ProvenanceEventRecord event){
+    public void addFailedEvent(ProvenanceEventRecordDTO event){
         failedEvents.add(event);
     }
 
@@ -132,8 +131,8 @@ public class ActiveFlowFile {
      * @param inclusive
      * @return
      */
-    public Set<ProvenanceEventRecord> getFailedEvents(boolean inclusive){
-        Set<ProvenanceEventRecord> failedEvents = new HashSet<>();
+    public Set<ProvenanceEventRecordDTO> getFailedEvents(boolean inclusive){
+        Set<ProvenanceEventRecordDTO> failedEvents = new HashSet<>();
         failedEvents.addAll(failedEvents);
         if(inclusive) {
             for (ActiveFlowFile child : getChildren()) {
@@ -148,7 +147,7 @@ public class ActiveFlowFile {
     }
 
     public String summary(){
-        Set<ProvenanceEventRecord> failedEvents = getFailedEvents(true);
+        Set<ProvenanceEventRecordDTO> failedEvents = getFailedEvents(true);
        return "Flow File ("+id+"), with first Event of ("+firstEvent+") processed "+getEvents().size()+" events. "+failedEvents.size()+" were failure events. "+completedEndingProcessors.longValue()+" where leaf ending events";
     }
 
