@@ -76,19 +76,8 @@ public abstract class AbstractProvenanceEventProcessor {
     }
 
     /**
-     * Return a KEY based upon the ProcessorId and Root flowfile event to determine if this event partakes in a STREAM or a BATCH
+     * Return a KEY to determine if this event partakes in a STREAM or a BATCH
      */
-
-    /*
-    private String streamingMapKey(ProvenanceEventRecordDTO event) {
-        ActiveFlowFile flowFile = event.getFlowFile();
-        if(flowFile != null && flowFile.getFirstEvent() != null){
-            return event.getComponentId();
-        }
-        return event.getComponentId();
-    }
-
-*/
     public abstract String streamingMapKey(ProvenanceEventRecordDTO event);
 
     private void movePotentialMatchingKeyToStreaming(String streamKey) {
