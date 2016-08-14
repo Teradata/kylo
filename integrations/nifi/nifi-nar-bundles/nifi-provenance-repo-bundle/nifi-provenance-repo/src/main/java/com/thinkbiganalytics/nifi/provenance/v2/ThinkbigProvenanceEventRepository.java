@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.nifi.provenance.v2;
 
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.nifi.provenance.StreamConfiguration;
 import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventStreamWriter;
 import com.thinkbiganalytics.util.SpringInitializer;
 
@@ -44,7 +45,9 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
 
 
             repository = new PersistentProvenanceRepository();
-            provenanceEventRecordWriter = new ProvenanceEventStreamWriter();
+            //get stream config from properties.... for now hardcoded
+            StreamConfiguration configuration = new StreamConfiguration();
+            provenanceEventRecordWriter = new ProvenanceEventStreamWriter(configuration);
             log.info(" new event recorder " + provenanceEventRecordWriter);
             //  provenanceEventRecordWriter.setEventId(repository.getMaxEventId());
             SpringInitializer.getInstance().initializeSpring();
