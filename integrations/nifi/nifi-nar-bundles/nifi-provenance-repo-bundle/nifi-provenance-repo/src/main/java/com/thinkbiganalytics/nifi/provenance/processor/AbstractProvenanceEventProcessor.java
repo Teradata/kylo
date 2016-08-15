@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.nifi.provenance.StreamConfiguration;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
+import com.thinkbiganalytics.nifi.provenance.v2.cache.feed.ProvenanceFeedStatsCalculator;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -129,6 +130,7 @@ public abstract class AbstractProvenanceEventProcessor {
             //now streamingCollection and Batch collection should be populated correctly
             //update flow file stats
 
+
             processBatch();
             processStream();
 
@@ -187,6 +189,7 @@ public abstract class AbstractProvenanceEventProcessor {
             batchProvenanceEvents.values().stream().flatMap(events -> events.stream()).sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).collect(Collectors.toList()).forEach(event -> {
                 //what do to with batch
                 log.info("Processing BATCH Event {}, {} ({}), for flowfile: {}  ", event.getEventId(), event.getDetails(), event.getComponentId(), event.getFlowFileUuid());
+                ProvenanceFeedStatsCalculator.instance().calculateStats(event);
             });
 
         }
@@ -203,6 +206,7 @@ public abstract class AbstractProvenanceEventProcessor {
             streamingProcessors.values().stream().flatMap(events -> events.stream()).sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).collect(Collectors.toList()).forEach(event -> {
                 //what do to with stream
                 log.info("Processing STREAM Event {}, {} ({}), for flowfile: {}  ", event.getEventId(), event.getDetails(), event.getComponentId(), event.getFlowFileUuid());
+                ProvenanceFeedStatsCalculator.instance().calculateStats(event);
             });
 
         }
