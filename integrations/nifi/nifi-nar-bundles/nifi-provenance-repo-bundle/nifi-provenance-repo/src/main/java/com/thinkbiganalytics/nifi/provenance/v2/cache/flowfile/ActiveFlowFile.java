@@ -27,6 +27,8 @@ public class ActiveFlowFile {
 
     private List<Long> events;
 
+    private Set<String> completedProcessorIds;
+
     private ProvenanceEventRecordDTO firstEvent;
 
     private ActiveFlowFile rootFlowFile;
@@ -76,6 +78,16 @@ public class ActiveFlowFile {
             children = new HashSet<>();
         }
         return children;
+    }
+
+    public Set<ActiveFlowFile> getAllChildren() {
+        Set<ActiveFlowFile> allChildren = new HashSet<>();
+        for (ActiveFlowFile child : getChildren()) {
+            allChildren.add(child);
+            allChildren.addAll(child.getAllChildren());
+        }
+        return allChildren;
+
     }
 
     public void addEvent(Long eventId) {
@@ -167,5 +179,17 @@ public class ActiveFlowFile {
     @Override
     public int hashCode() {
         return Objects.hash(id);
+    }
+
+
+    public Set<String> getCompletedProcessorIds() {
+        if (completedProcessorIds == null) {
+            completedProcessorIds = new HashSet<>();
+        }
+        return completedProcessorIds;
+    }
+
+    public void addEvent(ProvenanceEventRecordDTO event) {
+        getCompletedProcessorIds().add(event.getComponentId());
     }
 }

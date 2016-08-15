@@ -4,6 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.nifi.flow.controller.NifiFlowClient;
+import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 
@@ -20,8 +21,8 @@ import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 8/11/16. Cache of the Nifi Flow graph
- * TODO  Might not be necessary... Potentially we can derive the Start/Failure/End from the EventTypes and Relationships
- * //Currently set to not active until futher discovery on event data
+ * //TODO Might only be needed to help determine if a FlowFile is complete comparing it to the process graph.
+ * //Currently set to not active until further discovery on event data
  */
 public class NifiFlowCache {
 
@@ -139,6 +140,14 @@ public class NifiFlowCache {
      */
     public NifiFlowProcessGroup getFeedFlowForFeedName(String category, String feedName) {
         return feedFlowCache.asMap().values().stream().filter(flow -> (feedName.equalsIgnoreCase(flow.getName()) && category.equalsIgnoreCase(flow.getParentGroupName()))).findAny().orElse(null);
+    }
+
+    public NifiFlowProcessGroup getFlow(ActiveFlowFile flowFile) {
+        NifiFlowProcessor startingProcessor = getStartingProcessor(flowFile.getRootFlowFile().getFirstEvent().getComponentId());
+        if (startingProcessor != null) {
+            return startingProcessor.getProcessGroup();
+        }
+        return null;
     }
 
 }

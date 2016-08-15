@@ -10,6 +10,7 @@ import org.apache.nifi.web.api.dto.util.TimestampAdapter;
 import java.util.Collection;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
@@ -486,5 +487,27 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     @Override
     public void setSourceConnectionIdentifier(String sourceConnectionIdentifier) {
         dto.setSourceConnectionIdentifier(sourceConnectionIdentifier);
+    }
+
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ProvenanceEventRecordDTO that = (ProvenanceEventRecordDTO) o;
+        if (that.dto == null) {
+            return false;
+        }
+        return Objects.equals(getEventId(), that.getEventId()) &&
+               Objects.equals(getFlowFileUuid(), that.getFlowFileUuid());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(dto.getEventId(), dto.getFlowFileUuid());
     }
 }

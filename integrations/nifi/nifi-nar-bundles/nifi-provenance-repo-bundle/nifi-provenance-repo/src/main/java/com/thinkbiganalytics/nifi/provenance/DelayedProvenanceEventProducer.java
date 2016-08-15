@@ -34,7 +34,7 @@ public class DelayedProvenanceEventProducer {
     private ProvenanceEventRecordDTO cache(ProvenanceEventDTO dto) {
         //convert it to a dto so we can add additional tracking properties
 
-        log.info("CACHE EVENT {}, {} ", dto.getEventId(), dto.getComponentId());
+        log.info("CACHE Event Id ({}) , Processor Id ({}) ", dto.getEventId(), dto.getComponentId());
 
         ActiveFlowFile flowFile = FlowFileCache.instance().getEntry(dto.getFlowFileUuid());
 

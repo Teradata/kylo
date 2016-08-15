@@ -1,10 +1,13 @@
 package com.thinkbiganalytics.nifi.provenance.util;
 
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 
 import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * Created by sr186054 on 8/14/16.
@@ -34,5 +37,26 @@ public class ProvenanceEventUtil {
         return contains(ENDING_EVENT_TYPES, event.getEventType());
     }
 
+
+    public static Comparator<ProvenanceEventRecordDTO> provenanceEventRecordDTOComparator() {
+        return new Comparator<ProvenanceEventRecordDTO>() {
+            @Override
+            public int compare(ProvenanceEventRecordDTO o1, ProvenanceEventRecordDTO o2) {
+                if (o1 == null && o1 == null) {
+                    return 0;
+                } else if (o1 != null && o2 == null) {
+                    return -1;
+                } else if (o1 == null && o2 != null) {
+                    return 1;
+                } else {
+                    int compare = o1.getEventTime().compareTo(o2.getEventTime());
+                    if (compare == 0) {
+                        compare = o1.getEventId().compareTo(o2.getEventId());
+                    }
+                    return compare;
+                }
+            }
+        };
+    }
 
 }
