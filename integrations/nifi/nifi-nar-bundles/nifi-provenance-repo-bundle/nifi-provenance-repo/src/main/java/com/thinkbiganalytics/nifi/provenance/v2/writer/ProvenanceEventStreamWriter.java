@@ -41,6 +41,7 @@ public class ProvenanceEventStreamWriter extends AbstractProvenanceEventWriter {
         ProvenanceEventDTO dto = ProvenanceEventConverter.convert(event);
         dto.setEventId(eventIdIncrementer.incrementAndGet());
         producer.add(dto);
+        log.info("Writing Event {} ", dto.getEventId());
         return dto.getEventId();
     }
 
