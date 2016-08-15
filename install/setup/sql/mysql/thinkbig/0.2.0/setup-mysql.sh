@@ -8,6 +8,8 @@ mysql -u$1 --password=$2 thinkbig < $MY_DIR/schema-batch-thinkbig-mysql.sql
 echo "Created Operation Manager Tables";
 mysql -u$1 --password=$2 thinkbig < $MY_DIR/schema-batch-thinkbig-indexes.sql
 echo "Created Operation Manager Indexes";
+mysql -u$1 --password=$2 thinkbig < $MY_DIR/stored_procedures/delete_feed_jobs.sql
+echo "Created stored procedures"
 
 mysql -u$1 --password=$2 thinkbig < $MY_DIR/schema-metadata-mysql.sql
 mysql -u$1 --password=$2 thinkbig < $MY_DIR/schema-metadata-constraints.sql
