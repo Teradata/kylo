@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.nifi.provenance.collector;
 
+import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.ActiveFlowFile;
 
 /**
  * Created by sr186054 on 8/14/16.

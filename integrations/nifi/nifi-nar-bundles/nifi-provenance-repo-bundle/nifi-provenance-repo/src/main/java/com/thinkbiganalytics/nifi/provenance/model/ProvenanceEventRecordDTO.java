@@ -1,6 +1,5 @@
 package com.thinkbiganalytics.nifi.provenance.model;
 
-import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.ActiveFlowFile;
 import com.wordnik.swagger.annotations.ApiModelProperty;
 
 import org.apache.nifi.web.api.dto.provenance.AttributeDTO;
