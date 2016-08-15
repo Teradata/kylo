@@ -5,6 +5,16 @@ package com.thinkbiganalytics.nifi.provenance;
  */
 public class StreamConfiguration {
 
+    public StreamConfiguration() {
+
+    }
+
+    public StreamConfiguration(long processDelay, Long maxTimeBetweenEventsMillis, Integer numberOfEventsToConsiderAStream) {
+        this.processDelay = processDelay;
+        this.maxTimeBetweenEventsMillis = maxTimeBetweenEventsMillis;
+        this.numberOfEventsToConsiderAStream = numberOfEventsToConsiderAStream;
+    }
+
     /**
      * Max time to wait before processing
      */
@@ -12,10 +22,13 @@ public class StreamConfiguration {
 
 
     /**
-     * Max time between events between considered a Batch Anything under this time will be considered a Stream
+     * Max time between events for a given Feed Processor considered a Batch Anything under this time will be considered a Stream
      */
-    private Long maxTimeBetweenEventsMillis = 1000L;
+    private Long maxTimeBetweenEventsMillis = 2000L;
 
+    /**
+     * Number of events needed to be in queue/processing to be considered a stream that fall within the maxTimeBetweenEventsMillis for processing on a given Processor for a specific Feed
+     */
     private Integer numberOfEventsToConsiderAStream = 3;
 
 
@@ -23,23 +36,21 @@ public class StreamConfiguration {
         return maxTimeBetweenEventsMillis;
     }
 
-    public void setMaxTimeBetweenEventsMillis(Long maxTimeBetweenEventsMillis) {
-        this.maxTimeBetweenEventsMillis = maxTimeBetweenEventsMillis;
-    }
-
     public Integer getNumberOfEventsToConsiderAStream() {
         return numberOfEventsToConsiderAStream;
-    }
-
-    public void setNumberOfEventsToConsiderAStream(Integer numberOfEventsToConsiderAStream) {
-        this.numberOfEventsToConsiderAStream = numberOfEventsToConsiderAStream;
     }
 
     public long getProcessDelay() {
         return processDelay;
     }
 
-    public void setProcessDelay(long processDelay) {
-        this.processDelay = processDelay;
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("StreamConfiguration{");
+        sb.append("processDelay=").append(processDelay);
+        sb.append(", maxTimeBetweenEventsMillis=").append(maxTimeBetweenEventsMillis);
+        sb.append(", numberOfEventsToConsiderAStream=").append(numberOfEventsToConsiderAStream);
+        sb.append('}');
+        return sb.toString();
     }
 }

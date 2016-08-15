@@ -3,8 +3,11 @@ package com.thinkbiganalytics.nifi.provenance.processor;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.nifi.provenance.StreamConfiguration;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +21,8 @@ import java.util.stream.Collectors;
  * Process Collection of Events and determine if they are Batch or Stream based upon the supplied StreamConfiguration Created by sr186054 on 8/13/16.
  */
 public abstract class AbstractProvenanceEventProcessor {
+
+    private static final Logger log = LoggerFactory.getLogger(AbstractProvenanceEventProcessor.class);
 
     private StreamConfiguration streamConfiguration;
 
@@ -80,28 +85,47 @@ public abstract class AbstractProvenanceEventProcessor {
      */
     public abstract String streamingMapKey(ProvenanceEventRecordDTO event);
 
-    private void movePotentialMatchingKeyToStreaming(String streamKey) {
-        potentialStreamingProcessors.get(streamKey).stream().collect(Collectors.toList()).forEach(event -> addToCollection(streamingProcessors, event));
+    private void moveToStream(Map<String, List<ProvenanceEventRecordDTO>> map, String key) {
+        streamingProcessorKeys.add(key);
+        map.get(key).stream().collect(Collectors.toList()).forEach(event -> addToCollection(streamingProcessors, event));
+        map.remove(key);
 
     }
 
-    private void movePotentialToBatch() {
+    private void moveToBatch(Map<String, List<ProvenanceEventRecordDTO>> map) {
         //take all elements in potential collection and move them to  batch
-        potentialStreamingProcessors.values().stream().flatMap(events -> events.stream()).collect(Collectors.toList()).forEach(event -> addToCollection(batchProvenanceEvents, event));
+        map.values().stream().flatMap(events -> events.stream()).collect(Collectors.toList()).forEach(event -> addToCollection(batchProvenanceEvents, event));
     }
 
     public void process(List<ProvenanceEventRecordDTO> events) {
 
         if (events != null && !events.isEmpty()) {
+            log.info("process {} events", events.size());
+            //sort by time
+            events.sort(ProvenanceEventUtil.provenanceEventRecordDTOComparator());
             //Process Each event as either Batch or Streaming
             events.forEach(event -> processEvent(event));
             //after processing if potential still has data then mark them as batch and clear
-            movePotentialToBatch();
+            //join the 2 collections and move to batch
+            Map<String, List<ProvenanceEventRecordDTO>> joinedCollection = new HashMap<>(processorProvenanceEvents);
+
+            if (!potentialStreamingProcessors.isEmpty()) {
+                potentialStreamingProcessors.entrySet().forEach(entry ->
+                                                                {
+                                                                    if (joinedCollection.containsKey(entry.getKey())) {
+                                                                        Set<ProvenanceEventRecordDTO> records = new HashSet<ProvenanceEventRecordDTO>(joinedCollection.get(entry.getKey()));
+                                                                        records.addAll(entry.getValue());
+                                                                        joinedCollection.put(entry.getKey(), new ArrayList<>(records));
+                                                                    } else {
+                                                                        joinedCollection.put(entry.getKey(), entry.getValue());
+                                                                    }
+                                                                });
+            }
+
+            moveToBatch(joinedCollection);
             //clear potential
             potentialStreamingProcessors.clear();
-
             processorProvenanceEvents.clear();
-
             //now streamingCollection and Batch collection should be populated correctly
             processBatch();
             processStream();
@@ -130,7 +154,8 @@ public abstract class AbstractProvenanceEventProcessor {
                         //this is a Stream.
                         // Move all potential stream events to streaming collection for this processor
                         //copy and move
-                        movePotentialMatchingKeyToStreaming(key);
+                        moveToStream(potentialStreamingProcessors, key);
+                        moveToStream(processorProvenanceEvents, key);
                         processingType = PROCESSING_TYPE.STREAM;
                     } else {
                         addToCollection(potentialStreamingProcessors, event);
@@ -141,34 +166,46 @@ public abstract class AbstractProvenanceEventProcessor {
                     processingType = PROCESSING_TYPE.POTENTIAL_STREAM;
                 }
             } else {
-                addToCollection(batchProvenanceEvents, event);
-                processingType = PROCESSING_TYPE.BATCH;
+                addToCollection(potentialStreamingProcessors, event);
+                processingType = PROCESSING_TYPE.POTENTIAL_STREAM;
             }
+        } else {
+            //add it to processing Map
+            addToCollection(processorProvenanceEvents, event);
         }
-        //add it to processing Map
-        addToCollection(processorProvenanceEvents, event);
         return processingType;
     }
 
 
     private void processBatch() {
         //handle batch event
-        batchProvenanceEvents.values().forEach(event -> {
+        log.info("Processing BATCH ");
+        if (batchProvenanceEvents != null && !batchProvenanceEvents.isEmpty()) {
 
-            //what do to with batch
+            batchProvenanceEvents.values().stream().flatMap(events -> events.stream()).sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).collect(Collectors.toList()).forEach(event -> {
+                //what do to with batch
+                log.info("Processing BATCH Event {}, {} ({}), for flowfile: {}  ", event.getEventId(), event.getDetails(), event.getComponentId(), event.getFlowFileUuid());
+            });
 
-        });
+        }
+        batchProvenanceEvents.clear();
 
     }
 
     private void processStream() {
         //handle stream event
+        log.info("Processing STREAM ");
 
-        streamingProcessors.values().forEach(event -> {
+        if (streamingProcessors != null && !streamingProcessors.isEmpty()) {
 
-            //what to do with Stream
+            streamingProcessors.values().stream().flatMap(events -> events.stream()).sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).collect(Collectors.toList()).forEach(event -> {
+                //what do to with batch
+                log.info("Processing STREAM Event {}, {} ({}), for flowfile: {}  ", event.getEventId(), event.getDetails(), event.getComponentId(), event.getFlowFileUuid());
+            });
 
-        });
+        }
+        streamingProcessors.clear();
+
 
 
     }
