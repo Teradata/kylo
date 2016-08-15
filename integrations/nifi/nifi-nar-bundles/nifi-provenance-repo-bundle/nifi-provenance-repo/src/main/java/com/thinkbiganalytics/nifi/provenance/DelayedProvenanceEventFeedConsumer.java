@@ -5,7 +5,6 @@ import com.thinkbiganalytics.nifi.provenance.collector.ProvenanceEventFeedCollec
 import com.thinkbiganalytics.nifi.provenance.model.DelayedProvenanceEvent;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.processor.ProvenanceEventProcessor;
-import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.ActiveFlowFile;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,24 +36,18 @@ public class DelayedProvenanceEventFeedConsumer implements Runnable {
         return expired.stream().map(delayed -> delayed.getEvent()).collect(Collectors.toList());
     }
 
-    public String streamingMapKey(ProvenanceEventRecordDTO event) {
-        ActiveFlowFile flowFile = event.getFlowFile();
-        if (flowFile != null && flowFile.getFirstEvent() != null) {
-            return flowFile.getFirstEvent().getComponentId() + "-" + event.getComponentId();
-        }
-        return event.getComponentId();
-    }
 
     private void process() {
 
-        //everything in queue delayed, collect and process
+        //everything in queue collect and process
         List<ProvenanceEventRecordDTO> events = takeAll();
         //collect the events into the correct grouping (by Feed)
         if (events != null && !events.isEmpty()) {
             //process each group of events
-            //Grouped by root processorId and then by
+            //Grouped by root processorId with list of events from various FlowFiles
             eventCollector.collect(events).entrySet().stream().forEach(entry -> {
                 //This could be broken out into multiple threads if desired
+                //Send the List of events, grouped by Feed (root processorId) on to be processed to determine if they are stream or batch
                 new ProvenanceEventProcessor(configuration).process(entry.getValue());
             });
         }
