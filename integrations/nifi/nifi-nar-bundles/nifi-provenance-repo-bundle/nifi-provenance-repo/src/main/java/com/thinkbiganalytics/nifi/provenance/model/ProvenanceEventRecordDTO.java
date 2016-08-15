@@ -18,6 +18,10 @@ import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
  */
 public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
 
+    private ProvenanceEventRecordDTO previousEvent;
+
+    private Long duration;
+
     private ProvenanceEventDTO dto;
 
     private ActiveFlowFile flowFile;
@@ -489,6 +493,14 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
 
+    public ProvenanceEventRecordDTO getPreviousEvent() {
+        return previousEvent;
+    }
+
+    public void setPreviousEvent(ProvenanceEventRecordDTO previousEvent) {
+        this.previousEvent = previousEvent;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -508,5 +520,20 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     @Override
     public int hashCode() {
         return Objects.hash(dto.getEventId(), dto.getFlowFileUuid());
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ProvenanceEventRecordDTO{");
+        sb.append("eventId=").append(getEventId());
+        sb.append(", flowFile=").append(getFlowFileUuid()).append("(").append(flowFile).append(")");
+        sb.append(", eventComponentId=").append(getComponentId());
+        sb.append(", eventRelationship=").append(getRelationship());
+        sb.append(", eventType=").append(getEventType());
+        sb.append(", eventDetails=").append(getDetails());
+        sb.append(", eventDuration=").append(getEventDuration());
+        sb.append(", eventTime=").append(getEventTime());
+        sb.append('}');
+        return sb.toString();
     }
 }
