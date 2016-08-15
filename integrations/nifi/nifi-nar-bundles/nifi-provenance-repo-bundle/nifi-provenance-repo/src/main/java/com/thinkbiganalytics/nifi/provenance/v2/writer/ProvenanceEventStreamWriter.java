@@ -16,6 +16,18 @@ import java.util.concurrent.DelayQueue;
 
 /**
  * Created by sr186054 on 8/11/16.
+ *
+ * Batch Events up and later on determine how to process the events as either Batch or Stream
+ *
+ * 1. Add:  Add the events to the Queue to be processed
+ *    Events are added as "Delayed events" and will be taken from the queue when they are expired (xx time after they have been added) configured by the StreamConfiguration
+ * 2. Consume: The Consumer will then group the events together using the ProvenanceEventCollector
+ *    The default collector is to group the events by Feed and then Processor Id
+ * 3. Process: The Consumer will then send the Group off to be processed by the ProvenanceEventProcessor
+ *    The ProvenanceEventProcessor will determine if the the events are either a Stream or a Batch based upon the StreamConfiguration
+ *
+ *
+ *
  */
 public class ProvenanceEventStreamWriter extends AbstractProvenanceEventWriter {
 
