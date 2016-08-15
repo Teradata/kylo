@@ -1,11 +1,14 @@
 package com.thinkbiganalytics.nifi.provenance.model;
 
-import java.util.ArrayList;
+import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
+
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 8/11/16.
@@ -23,9 +26,11 @@ public class ActiveFlowFile {
 
     private Set<ActiveFlowFile> children;
 
-    private List<Long> events;
+    //   private List<Long> events;
 
     private Set<String> completedProcessorIds;
+
+    private List<ProvenanceEventRecordDTO> completedEvents;
 
     private ProvenanceEventRecordDTO firstEvent;
 
@@ -87,7 +92,7 @@ public class ActiveFlowFile {
         return allChildren;
 
     }
-
+/*
     public void addEvent(Long eventId) {
         getEvents().add(eventId);
     }
@@ -98,6 +103,7 @@ public class ActiveFlowFile {
         }
         return events;
     }
+    */
 
     public ProvenanceEventRecordDTO getFirstEvent() {
         return firstEvent;
@@ -156,9 +162,47 @@ public class ActiveFlowFile {
         return id;
     }
 
+    public ProvenanceEventRecordDTO getPreviousEvent(ProvenanceEventRecordDTO event) {
+        if (event.getPreviousEvent() == null) {
+            Integer index = getCompletedEvents().indexOf(event);
+            if (index > 0) {
+                event.setPreviousEvent(getCompletedEvents().get(index - 1));
+            } else {
+                //get parent flow file for this event
+                if (getParents() != null && !getParents().isEmpty()) {
+                    List<ProvenanceEventRecordDTO> previousEvents = getParents().stream()
+                        .filter(flowFile -> event.getParentUuids().contains(flowFile.getId()))
+                        .flatMap(flow -> flow.getCompletedEvents().stream()).sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator().reversed())
+                        .collect(Collectors.toList());
+                    if (previousEvents != null && !previousEvents.isEmpty()) {
+                        event.setPreviousEvent(previousEvents.get(0));
+                    }
+                }
+            }
+        }
+        return event.getPreviousEvent();
+    }
+
+    public Long calculateEventDuration(ProvenanceEventRecordDTO event) {
+
+        //lookup the flow file to get the prev event
+        ProvenanceEventRecordDTO prev = getPreviousEvent(event);
+        if (prev != null) {
+            long dur = event.getEventTime().getTime() - prev.getEventTime().getTime();
+            event.setEventDuration(dur);
+            return dur;
+        } else {
+            event.setEventDuration(0L);
+            return 0L;
+        }
+
+
+    }
+
     public String summary(){
         Set<ProvenanceEventRecordDTO> failedEvents = getFailedEvents(true);
-       return "Flow File ("+id+"), with first Event of ("+firstEvent+") processed "+getEvents().size()+" events. "+failedEvents.size()+" were failure events. "+completedEndingProcessors.longValue()+" where leaf ending events";
+        return "Flow File (" + id + "), with first Event of (" + firstEvent + ") processed " + getCompletedEvents().size() + " events. " + failedEvents.size() + " were failure events. "
+               + completedEndingProcessors.longValue() + " where leaf ending events";
     }
 
 
@@ -187,7 +231,16 @@ public class ActiveFlowFile {
         return completedProcessorIds;
     }
 
-    public void addEvent(ProvenanceEventRecordDTO event) {
+    public List<ProvenanceEventRecordDTO> getCompletedEvents() {
+        if (completedEvents == null) {
+            completedEvents = new LinkedList<>();
+        }
+        return completedEvents;
+    }
+
+    public void addCompletedEvent(ProvenanceEventRecordDTO event) {
+        getCompletedEvents().add(event);
         getCompletedProcessorIds().add(event.getComponentId());
+        calculateEventDuration(event);
     }
 }
