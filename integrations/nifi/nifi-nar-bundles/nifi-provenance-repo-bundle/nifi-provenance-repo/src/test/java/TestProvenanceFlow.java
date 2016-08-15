@@ -76,6 +76,7 @@ public class TestProvenanceFlow {
     public NifiFlowProcessGroup buildFlow1() {
 
         NifiFlowProcessGroup group = new NifiFlowProcessGroup(UUID.randomUUID().toString(), "Group");
+        group.setFeedName("TestFeed");
 
         NifiFlowProcessor processor1 = processor();
         NifiFlowProcessor processor2 = processor();
