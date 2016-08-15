@@ -6,7 +6,15 @@ import org.apache.nifi.web.api.dto.provenance.AttributeDTO;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 
 import java.text.Collator;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 /**
  * Created by sr186054 on 3/3/16.
@@ -65,6 +73,7 @@ public class ProvenanceEventConverter {
         dto.setTransitUri(event.getTransitUri());
         dto.setEventId(event.getEventId());
         dto.setEventTime(new Date(event.getEventTime()));
+        dto.setEventDuration(event.getEventDuration());
         dto.setEventType(event.getEventType().name());
         dto.setFileSize(FormatUtils.formatDataSize(event.getFileSize()));
         dto.setFileSizeBytes(event.getFileSize());

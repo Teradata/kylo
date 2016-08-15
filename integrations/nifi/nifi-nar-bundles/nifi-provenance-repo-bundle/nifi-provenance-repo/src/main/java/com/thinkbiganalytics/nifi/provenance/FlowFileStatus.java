@@ -53,4 +53,8 @@ public class FlowFileStatus {
         return false;
     }
 
+    //walk up the flow starting at the ending processors.  if any of those trees have work being done in them then its not finished
+
+
+
 }
