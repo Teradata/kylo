@@ -24,7 +24,11 @@ import java.util.concurrent.DelayQueue;
  * 2. Consume: The Consumer will then group the events together using the ProvenanceEventCollector
  *    The default collector is to group the events by Feed and then Processor Id
  * 3. Process: The Consumer will then send the Group off to be processed by the ProvenanceEventProcessor
- *    The ProvenanceEventProcessor will determine if the the events are either a Stream or a Batch based upon the StreamConfiguration
+ *    The ProvenanceEventProcessor will determine if the the events are either a Stream or a Batch based upon the StreamConfiguration.
+ *    StreamConfiguration checks 3 parameters to determine if things are a stream or batch
+ *    1) processDelay  - how long to wait before grouping events together to determine if they are stream or batch
+ *    2) maxTimeBetweenEventsMillis - Max time between events for a given Feed Processor considered a Batch Anything under this time will be considered a Stream provided it passes the numberOfEventsToConsiderAStream
+ *    3) numberOfEventsToConsiderAStream  - Number of events needed to be in queue/processing to be considered a stream that fall within the maxTimeBetweenEventsMillis for processing on a given Processor for a specific Feed
  *
  *
  *
