@@ -1,16 +1,11 @@
 package com.thinkbiganalytics.nifi.provenance.model;
 
-import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
-
-import org.apache.nifi.provenance.ProvenanceEventType;
-
+import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 8/11/16.
@@ -28,11 +23,9 @@ public class ActiveFlowFile {
 
     private Set<ActiveFlowFile> children;
 
-    //   private List<Long> events;
+    private List<Long> events;
 
     private Set<String> completedProcessorIds;
-
-    private List<ProvenanceEventRecordDTO> completedEvents;
 
     private ProvenanceEventRecordDTO firstEvent;
 
@@ -40,10 +33,6 @@ public class ActiveFlowFile {
 
     private AtomicLong completedEndingProcessors = new AtomicLong();
 
-    /**
-     * marker to determine if the Flow has Received a DROP event.
-     */
-    private boolean currentFlowFileComplete = false;
 
 
     //track failed events in this flow
@@ -99,6 +88,17 @@ public class ActiveFlowFile {
 
     }
 
+    public void addEvent(Long eventId) {
+        getEvents().add(eventId);
+    }
+
+    public List<Long> getEvents() {
+        if (events == null) {
+            events = new ArrayList<>();
+        }
+        return events;
+    }
+
     public ProvenanceEventRecordDTO getFirstEvent() {
         return firstEvent;
     }
@@ -112,7 +112,7 @@ public class ActiveFlowFile {
     }
 
 
-    public void completeEndingProcessor() {
+    public void completeEndingProcessor(){
         completedEndingProcessors.incrementAndGet();
     }
 
@@ -125,22 +125,26 @@ public class ActiveFlowFile {
         this.rootFlowFile = rootFlowFile;
     }
 
-    public boolean isRootFlowFile() {
+    public boolean isRootFlowFile(){
         return this.rootFlowFile != null && this.rootFlowFile.equals(this);
     }
 
-    public void addFailedEvent(ProvenanceEventRecordDTO event) {
+    public void addFailedEvent(ProvenanceEventRecordDTO event){
         failedEvents.add(event);
     }
 
 
+
     /**
-     * gets the flow files failed events. if inclusive then get all children
+     * gets the flow files failed events.
+     * if inclusive then get all children
+     * @param inclusive
+     * @return
      */
-    public Set<ProvenanceEventRecordDTO> getFailedEvents(boolean inclusive) {
+    public Set<ProvenanceEventRecordDTO> getFailedEvents(boolean inclusive){
         Set<ProvenanceEventRecordDTO> failedEvents = new HashSet<>();
         failedEvents.addAll(failedEvents);
-        if (inclusive) {
+        if(inclusive) {
             for (ActiveFlowFile child : getChildren()) {
                 failedEvents.addAll(child.getFailedEvents(inclusive));
             }
@@ -152,52 +156,9 @@ public class ActiveFlowFile {
         return id;
     }
 
-    public boolean isStartOfCurrentFlowFile(ProvenanceEventRecordDTO event) {
-        Integer index = getCompletedEvents().indexOf(event);
-        return index == 0;
-    }
-
-    public ProvenanceEventRecordDTO getPreviousEvent(ProvenanceEventRecordDTO event) {
-        if (event.getPreviousEvent() == null) {
-            Integer index = getCompletedEvents().indexOf(event);
-            if (index > 0) {
-                event.setPreviousEvent(getCompletedEvents().get(index - 1));
-            } else {
-                //get parent flow file for this event
-                if (getParents() != null && !getParents().isEmpty()) {
-                    List<ProvenanceEventRecordDTO> previousEvents = getParents().stream()
-                        .filter(flowFile -> event.getParentUuids().contains(flowFile.getId()))
-                        .flatMap(flow -> flow.getCompletedEvents().stream()).sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator().reversed())
-                        .collect(Collectors.toList());
-                    if (previousEvents != null && !previousEvents.isEmpty()) {
-                        event.setPreviousEvent(previousEvents.get(0));
-                    }
-                }
-            }
-        }
-        return event.getPreviousEvent();
-    }
-
-    public Long calculateEventDuration(ProvenanceEventRecordDTO event) {
-
-        //lookup the flow file to get the prev event
-        ProvenanceEventRecordDTO prev = getPreviousEvent(event);
-        if (prev != null) {
-            long dur = event.getEventTime().getTime() - prev.getEventTime().getTime();
-            event.setEventDuration(dur);
-            return dur;
-        } else {
-            event.setEventDuration(0L);
-            return 0L;
-        }
-
-
-    }
-
-    public String summary() {
+    public String summary(){
         Set<ProvenanceEventRecordDTO> failedEvents = getFailedEvents(true);
-        return "Flow File (" + id + "), with first Event of (" + firstEvent + ") processed " + getCompletedEvents().size() + " events. " + failedEvents.size() + " were failure events. "
-               + completedEndingProcessors.longValue() + " where leaf ending events";
+       return "Flow File ("+id+"), with first Event of ("+firstEvent+") processed "+getEvents().size()+" events. "+failedEvents.size()+" were failure events. "+completedEndingProcessors.longValue()+" where leaf ending events";
     }
 
 
@@ -226,44 +187,7 @@ public class ActiveFlowFile {
         return completedProcessorIds;
     }
 
-    public List<ProvenanceEventRecordDTO> getCompletedEvents() {
-        if (completedEvents == null) {
-            completedEvents = new LinkedList<>();
-        }
-        return completedEvents;
-    }
-
-    public void addCompletedEvent(ProvenanceEventRecordDTO event) {
-        getCompletedEvents().add(event);
+    public void addEvent(ProvenanceEventRecordDTO event) {
         getCompletedProcessorIds().add(event.getComponentId());
-        calculateEventDuration(event);
-        checkAndMarkIfFlowFileIsComplete(event);
-    }
-
-    public void checkAndMarkIfFlowFileIsComplete(ProvenanceEventRecordDTO event) {
-        if (ProvenanceEventType.DROP.name().equalsIgnoreCase(event.getEventType())) {
-            currentFlowFileComplete = true;
-        }
-    }
-
-    public boolean isCurrentFlowFileComplete() {
-        return currentFlowFileComplete;
-    }
-
-    /**
-     * Walks the graph of this flow and all children to see if there is a DROP event associated with each and every flow file
-     */
-    public boolean isFlowComplete() {
-        boolean complete = isCurrentFlowFileComplete();
-        Set<ActiveFlowFile> directChildren = getChildren();
-        if (complete && !directChildren.isEmpty()) {
-            for (ActiveFlowFile child : directChildren) {
-                complete &= child.isCurrentFlowFileComplete();
-                if (!complete) {
-                    break;
-                }
-            }
-        }
-        return complete;
     }
 }
