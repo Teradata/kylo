@@ -54,7 +54,7 @@ public class DelayedProvenanceEventFeedConsumer implements Runnable {
             //process each group of events
             //Grouped by root processorId and then by
             eventCollector.collect(events).entrySet().stream().forEach(entry -> {
-                //New Threads for this??
+                //This could be broken out into multiple threads if desired
                 new ProvenanceEventProcessor(configuration).process(entry.getValue());
             });
         }
@@ -65,7 +65,6 @@ public class DelayedProvenanceEventFeedConsumer implements Runnable {
 
     public void run() {
         while (true) {
-
             try {
                 //Wait a period of time before processing to group all expired events together
                 Thread.sleep(configuration.getProcessDelay());
