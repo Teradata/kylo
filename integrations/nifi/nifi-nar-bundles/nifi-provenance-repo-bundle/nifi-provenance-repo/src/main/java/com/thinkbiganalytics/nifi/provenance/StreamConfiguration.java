@@ -22,7 +22,6 @@ public class StreamConfiguration {
      */
     private long processDelay = 3000; //default to 3 sec wait before processing
 
-
     /**
      * Max time between events for a given Feed Processor considered a Batch Anything under this time will be considered a Stream
      */
@@ -44,6 +43,34 @@ public class StreamConfiguration {
 
     public long getProcessDelay() {
         return processDelay;
+    }
+
+    public static class Builder {
+
+        private long processDelay = 3000; //default to 3 sec wait before processing
+
+        private Long maxTimeBetweenEventsMillis = 2000L;
+
+        private Integer numberOfEventsToConsiderAStream = 3;
+
+        public Builder processDelay(long processDelay) {
+            this.processDelay = processDelay;
+            return this;
+        }
+
+        public Builder maxTimeBetweenEvents(Long maxTimeBetweenEventsMillis) {
+            this.maxTimeBetweenEventsMillis = maxTimeBetweenEventsMillis;
+            return this;
+        }
+
+        public Builder numberOfEventsForStream(int events) {
+            this.numberOfEventsToConsiderAStream = events;
+            return this;
+        }
+
+        public StreamConfiguration build() {
+            return new StreamConfiguration(processDelay, maxTimeBetweenEventsMillis, numberOfEventsToConsiderAStream);
+        }
     }
 
     @Override

@@ -185,6 +185,8 @@ public class TestProvenanceFlow {
         ProvenanceEventStreamWriter writer;
         int counter = 0;
 
+        int modulo = 3; // how often to create flow files
+
         /**
          * The Maximum number of flow files to produce
          */
@@ -195,7 +197,8 @@ public class TestProvenanceFlow {
          */
         long waitTime = 20L;
 
-        public TestProducer(StreamConfiguration configuration) {
+        public TestProducer(Long waitTime, StreamConfiguration configuration) {
+            this.waitTime = waitTime;
             writer = new ProvenanceEventStreamWriter(configuration);
         }
 
@@ -217,7 +220,7 @@ public class TestProvenanceFlow {
                     e.printStackTrace();
                 }
 
-                if (counter % 5 == 0 && counter < max) {
+                if (counter % modulo == 0 && counter < max) {
                     log.info("NEW FLOW FILE " + (activeFlows.size() + 1));
                     //start a new flow every 5 iterations
                     activeFlows.add(newFlowFile());
@@ -229,11 +232,19 @@ public class TestProvenanceFlow {
 
 
     @Test
-    public void testStreamWriter() {
-        StreamConfiguration configuration = new StreamConfiguration();
-        TestProducer producer = new TestProducer(configuration);
+    public void testStream() {
+        //A Stream is when there are 5 or more events spaced less than 1 sec apart coming in for a Processor for a Flow tied to a Feed
+        TestProducer producer = new TestProducer(20L, new StreamConfiguration.Builder().maxTimeBetweenEvents(1000L).numberOfEventsForStream(5).build());
         producer.run();
     }
+
+    @Test
+    public void testBatch() {
+        //A Stream is when there are 5 or more events spaced less than 1 sec apart coming in for a Processor for a Flow tied to a Feed
+        TestProducer producer = new TestProducer(500L, new StreamConfiguration.Builder().maxTimeBetweenEvents(1000L).numberOfEventsForStream(5).build());
+        producer.run();
+    }
+
 
 
 }
