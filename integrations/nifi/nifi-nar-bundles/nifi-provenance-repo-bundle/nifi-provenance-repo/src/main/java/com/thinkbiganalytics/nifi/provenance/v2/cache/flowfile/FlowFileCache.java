@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.CacheStats;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.nifi.provenance.FlowFileStatus;
+import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.slf4j.Logger;
@@ -83,6 +84,10 @@ public class FlowFileCache {
     }
 
     private void init() {
+        /**
+         * TIMER to print summary of what is in the cache
+         * CURRENTLY DISABLED
+         */
         Timer summaryTimer = new Timer();
         TimerTask task =  new TimerTask(){
             @Override
@@ -92,18 +97,23 @@ public class FlowFileCache {
         };
         ///  summaryTimer.schedule(task,15*1000,15 * 1000);
 
+        /**
+         * Timer to evict all completed FlowFiles from the Cache.
+         * CURRENTLY DISABLED
+         */
         Timer evictCompletedFlowFilesTimer = new Timer();
 
         TimerTask evictCompletedFlowFilesTimerTask = new TimerTask() {
             @Override
             public void run() {
                 FlowFileCache.instance().getRootFlowFiles().stream().filter(flowFile -> FlowFileStatus.isComplete(flowFile)).forEach(completedFile -> {
+                    log.info("FLOW FILE {} IS COMPLETE.  REMOVE FROM CACHE!!", completedFile);
                     invalidate(completedFile);
                 });
 
             }
         };
-        // evictCompletedFlowFilesTimer.schedule(evictCompletedFlowFilesTimerTask,(15*1000),30000);  //run every 30 seconds
+        //  evictCompletedFlowFilesTimer.schedule(evictCompletedFlowFilesTimerTask,0,20);  //run every 30 seconds
     }
 
 
