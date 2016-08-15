@@ -2,6 +2,8 @@ package com.thinkbiganalytics.nifi.provenance;
 
 /**
  * Created by sr186054 on 8/13/16.
+ *
+ *
  */
 public class StreamConfiguration {
 
