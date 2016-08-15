@@ -26,6 +26,7 @@ public class DelayedProvenanceEventFeedConsumer implements Runnable {
     public DelayedProvenanceEventFeedConsumer(StreamConfiguration configuration, BlockingQueue<DelayedProvenanceEvent> queue) {
         this.queue = queue;
         this.configuration = configuration;
+        //Group events by Feed before processing
         eventCollector = new ProvenanceEventFeedCollector();
     }
 
@@ -50,15 +51,13 @@ public class DelayedProvenanceEventFeedConsumer implements Runnable {
         List<ProvenanceEventRecordDTO> events = takeAll();
         //collect the events into the correct grouping (by Feed)
         if (events != null && !events.isEmpty()) {
-            eventCollector.collect(events);
+            //process each group of events
+            //Grouped by root processorId and then by
+            eventCollector.collect(events).entrySet().stream().forEach(entry -> {
+                //New Threads for this??
+                new ProvenanceEventProcessor(configuration).process(entry.getValue());
+            });
         }
-
-        //process each group of events
-        //Grouped by root processorId and then by
-        eventCollector.getEvents().entrySet().stream().forEach(entry -> {
-            //New Threads for this??
-            new ProvenanceEventProcessor(configuration).process(entry.getValue());
-        });
 
 
     }
@@ -66,6 +65,13 @@ public class DelayedProvenanceEventFeedConsumer implements Runnable {
 
     public void run() {
         while (true) {
+
+            try {
+                //Wait a period of time before processing to group all expired events together
+                Thread.sleep(configuration.getProcessDelay());
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
             process();
         }
     }

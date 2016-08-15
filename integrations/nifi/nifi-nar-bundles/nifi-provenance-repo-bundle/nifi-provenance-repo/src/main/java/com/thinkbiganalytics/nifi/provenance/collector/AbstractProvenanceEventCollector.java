@@ -14,10 +14,6 @@ import java.util.Map;
  */
 public abstract class AbstractProvenanceEventCollector {
 
-    //Group the Events up
-    private Map<String, List<ProvenanceEventRecordDTO>> events = new HashMap<>();
-
-
     public AbstractProvenanceEventCollector() {
     }
 
@@ -26,15 +22,13 @@ public abstract class AbstractProvenanceEventCollector {
      */
     public abstract String getMapKey(ProvenanceEventRecordDTO event);
 
-    public void collect(ProvenanceEventRecordDTO event) {
-        addToCollection(events, event);
-    }
 
-
-    public void collect(List<ProvenanceEventRecordDTO> events) {
+    public Map<String, List<ProvenanceEventRecordDTO>> collect(List<ProvenanceEventRecordDTO> events) {
+        Map<String, List<ProvenanceEventRecordDTO>> map = new HashMap<>();
         if (events != null) {
-            events.forEach(event -> addToCollection(this.events, event));
+            events.forEach(event -> addToCollection(map, event));
         }
+        return map;
 
     }
 
@@ -45,9 +39,5 @@ public abstract class AbstractProvenanceEventCollector {
             map.put(key, new ArrayList<>());
         }
         map.get(key).add(event);
-    }
-
-    public Map<String, List<ProvenanceEventRecordDTO>> getEvents() {
-        return events;
     }
 }

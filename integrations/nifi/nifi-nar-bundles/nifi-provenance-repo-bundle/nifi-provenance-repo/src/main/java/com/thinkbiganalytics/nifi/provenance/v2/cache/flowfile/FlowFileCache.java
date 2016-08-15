@@ -4,16 +4,24 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.CacheStats;
 import com.google.common.cache.LoadingCache;
+import com.thinkbiganalytics.nifi.provenance.FlowFileStatus;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 8/11/16. A cache of Flowfiles active in the system
  */
 public class FlowFileCache {
+
+    private static final Logger log = LoggerFactory.getLogger(FlowFileCache.class);
 
     private static final long MAX_SIZE = 10000;
 
@@ -41,6 +49,10 @@ public class FlowFileCache {
         return cache.getUnchecked(id);
     }
 
+    public List<ActiveFlowFile> getRootFlowFiles() {
+        return cache.asMap().values().stream().filter(flowFile -> flowFile.isRootFlowFile()).collect(Collectors.toList());
+    }
+
 
     public CacheStats stats(){
         return cache.stats();
@@ -63,6 +75,13 @@ public class FlowFileCache {
 
     }
 
+    public void invalidate(ActiveFlowFile flowFile) {
+        log.info("Invalidate Flow File {} ", flowFile.getId());
+        cache.invalidate(flowFile.getId());
+        //also invalidate all children
+        flowFile.getChildren().forEach(child -> invalidate(child));
+    }
+
     private void init() {
         Timer summaryTimer = new Timer();
         TimerTask task =  new TimerTask(){
@@ -71,10 +90,21 @@ public class FlowFileCache {
                 FlowFileCache.instance().printSummary();
             }
         };
-        summaryTimer.schedule(task,15*1000,15 * 1000);
+        ///  summaryTimer.schedule(task,15*1000,15 * 1000);
+
+        Timer evictCompletedFlowFilesTimer = new Timer();
+
+        TimerTask evictCompletedFlowFilesTimerTask = new TimerTask() {
+            @Override
+            public void run() {
+                FlowFileCache.instance().getRootFlowFiles().stream().filter(flowFile -> FlowFileStatus.isComplete(flowFile)).forEach(completedFile -> {
+                    invalidate(completedFile);
+                });
+
+            }
+        };
+        // evictCompletedFlowFilesTimer.schedule(evictCompletedFlowFilesTimerTask,(15*1000),30000);  //run every 30 seconds
     }
-
-
 
 
 }

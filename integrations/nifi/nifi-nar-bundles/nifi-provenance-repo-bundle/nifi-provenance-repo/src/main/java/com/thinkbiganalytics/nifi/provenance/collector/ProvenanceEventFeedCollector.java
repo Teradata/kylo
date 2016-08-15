@@ -5,6 +5,8 @@ import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.ActiveFlowFile;
 
 /**
  * Created by sr186054 on 8/14/16.
+ * Group Events by Feed.
+ * The Feed is derived from looking at the first ProcessorId in the flow.
  */
 public class ProvenanceEventFeedCollector extends AbstractProvenanceEventCollector implements ProvenanceEventCollector {
 
