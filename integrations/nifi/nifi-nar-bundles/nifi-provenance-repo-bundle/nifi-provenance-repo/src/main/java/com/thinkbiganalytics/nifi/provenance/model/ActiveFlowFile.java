@@ -1,6 +1,4 @@
-package com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile;
-
-import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+package com.thinkbiganalytics.nifi.provenance.model;
 
 import java.util.ArrayList;
 import java.util.HashSet;

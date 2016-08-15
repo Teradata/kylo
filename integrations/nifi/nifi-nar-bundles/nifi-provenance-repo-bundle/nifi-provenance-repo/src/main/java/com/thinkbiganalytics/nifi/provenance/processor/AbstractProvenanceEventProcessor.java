@@ -127,6 +127,8 @@ public abstract class AbstractProvenanceEventProcessor {
             potentialStreamingProcessors.clear();
             processorProvenanceEvents.clear();
             //now streamingCollection and Batch collection should be populated correctly
+            //update flow file stats
+
             processBatch();
             processStream();
 
@@ -199,7 +201,7 @@ public abstract class AbstractProvenanceEventProcessor {
         if (streamingProcessors != null && !streamingProcessors.isEmpty()) {
 
             streamingProcessors.values().stream().flatMap(events -> events.stream()).sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).collect(Collectors.toList()).forEach(event -> {
-                //what do to with batch
+                //what do to with stream
                 log.info("Processing STREAM Event {}, {} ({}), for flowfile: {}  ", event.getEventId(), event.getDetails(), event.getComponentId(), event.getFlowFileUuid());
             });
 

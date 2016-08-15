@@ -4,7 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.nifi.flow.controller.NifiFlowClient;
-import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.ActiveFlowFile;
+import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 
@@ -150,4 +150,7 @@ public class NifiFlowCache {
         return null;
     }
 
+    public void setNifiFlowClient(NifiFlowClient nifiFlowClient) {
+        this.nifiFlowClient = nifiFlowClient;
+    }
 }

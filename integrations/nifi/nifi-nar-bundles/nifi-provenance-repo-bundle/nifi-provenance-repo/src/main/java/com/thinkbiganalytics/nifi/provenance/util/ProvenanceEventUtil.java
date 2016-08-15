@@ -37,6 +37,14 @@ public class ProvenanceEventUtil {
         return contains(ENDING_EVENT_TYPES, event.getEventType());
     }
 
+    public static boolean isCompletionEvent(ProvenanceEventRecord event) {
+        return !contains(NON_COMPLETION_EVENTS, event.getEventType());
+    }
+
+    public static boolean isCompletionEvent(ProvenanceEventDTO event) {
+        return !contains(NON_COMPLETION_EVENTS, ProvenanceEventType.valueOf(event.getEventType()));
+    }
+
 
     public static Comparator<ProvenanceEventRecordDTO> provenanceEventRecordDTOComparator() {
         return new Comparator<ProvenanceEventRecordDTO>() {
