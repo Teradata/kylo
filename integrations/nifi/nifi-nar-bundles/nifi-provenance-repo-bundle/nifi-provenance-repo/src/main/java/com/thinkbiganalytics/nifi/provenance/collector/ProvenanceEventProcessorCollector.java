@@ -4,6 +4,7 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 /**
  * Created by sr186054 on 8/14/16.
+ * Group Events by ProcessorId
  */
 public class ProvenanceEventProcessorCollector extends AbstractProvenanceEventCollector implements ProvenanceEventCollector {
 
