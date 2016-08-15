@@ -1,6 +1,8 @@
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.thinkbiganalytics.nifi.flow.controller.NifiFlowClient;
 import com.thinkbiganalytics.nifi.provenance.StreamConfiguration;
+import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
 import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventStreamWriter;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
@@ -8,7 +10,10 @@ import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;
 import org.apache.nifi.provenance.StandardProvenanceEventRecord;
+import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+
+import static org.mockito.Mockito.when;
 
 /**
  * Created by sr186054 on 8/12/16.
@@ -43,6 +50,8 @@ public class TestProvenanceFlow {
         dest.getSources().add(source);
         source.getDestinationIds().add(dest.getId());
         dest.getSourceIds().add(source.getId());
+        source.setProcessGroup(group);
+        dest.setProcessGroup(group);
         group.getProcessorMap().put(source.getId(), source);
         group.getProcessorMap().put(dest.getId(), dest);
     }
@@ -229,6 +238,24 @@ public class TestProvenanceFlow {
             }
         }
     }
+
+    /**
+     * Mock up the Job Rep
+     */
+    @Before
+    public void setupMockNifiFlowClient() {
+        MockitoAnnotations.initMocks(this);
+        NifiFlowClient mockClient = Mockito.mock(NifiFlowClient.class);
+        when(mockClient.getAllFlows()).thenReturn(Lists.newArrayList(getFlow()));
+        NifiFlowCache.instance().setNifiFlowClient(mockClient);
+        NifiFlowCache.instance().loadAll();
+
+
+
+
+
+    }
+
 
 
     @Test
