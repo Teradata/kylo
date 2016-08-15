@@ -196,7 +196,7 @@ public class TestProvenanceFlow {
         long waitTime = 20L;
 
         public TestProducer(StreamConfiguration configuration) {
-            writer = new ProvenanceEventStreamWriter(new StreamConfiguration());
+            writer = new ProvenanceEventStreamWriter(configuration);
         }
 
 
