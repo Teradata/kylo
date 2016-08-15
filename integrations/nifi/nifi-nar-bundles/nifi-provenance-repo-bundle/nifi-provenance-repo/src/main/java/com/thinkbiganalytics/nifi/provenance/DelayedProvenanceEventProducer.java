@@ -1,9 +1,9 @@
 package com.thinkbiganalytics.nifi.provenance;
 
+import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.DelayedProvenanceEvent;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
-import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileCache;
 
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
@@ -72,6 +72,10 @@ public class DelayedProvenanceEventProducer {
                     childFlowFile.setRootFlowFile(rootFlowFile);
                 }
             }
+        }
+
+        if (ProvenanceEventUtil.isCompletionEvent(dto)) {
+            flowFile.addEvent(eventDto);
         }
         return eventDto;
     }

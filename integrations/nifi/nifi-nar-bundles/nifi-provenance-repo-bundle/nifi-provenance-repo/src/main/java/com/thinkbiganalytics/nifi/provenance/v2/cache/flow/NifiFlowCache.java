@@ -325,4 +325,7 @@ public class NifiFlowCache {
         return null;
     }
 
+    public void setNifiFlowClient(NifiFlowClient nifiFlowClient) {
+        this.nifiFlowClient = nifiFlowClient;
+    }
 }
