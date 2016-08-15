@@ -168,6 +168,16 @@ public class NifiFlowProcessor {
         return destinationIds;
     }
 
+    public Set<String> getAllDestinationIds() {
+        Set<String> destinationIds = new HashSet<>();
+        destinationIds.addAll(getDestinationIds());
+        for (NifiFlowProcessor destination : getDestinations()) {
+            destinationIds.addAll(destination.getAllDestinationIds());
+        }
+        return destinationIds;
+
+    }
+
     public void setDestinationIds(Set<String> destinationIds) {
         this.destinationIds = destinationIds;
     }
