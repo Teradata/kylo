@@ -11,13 +11,8 @@ public class ProcessorStats {
 
     private String processorId;
 
-    public ProcessorStats(String processorId) {
-        this.processorId = processorId;
-    }
 
     private AtomicLong eventsCount = new AtomicLong(0L);
-
-    private Double avgProcessTime;
 
     private Long totalDurationTime = 0L;
 
@@ -25,20 +20,32 @@ public class ProcessorStats {
 
     private DateTime lastProcessDate;
 
+
+    public ProcessorStats(String processorId) {
+        this.processorId = processorId;
+    }
+
+
+    public ProcessorStats(ProcessorStats p1, ProcessorStats p2) {
+        Long total = p1.getEventsCount().get() + p2.getEventsCount().get();
+        DateTime lastProcessDate = p1.getLastProcessDate().isAfter(p2.getLastProcessDate()) ? p1.getLastProcessDate() : p2.getLastProcessDate();
+        Long lastEventId = p1.getLastEventId() > p2.getLastEventId() ? p1.getLastEventId() : p2.getLastEventId();
+        this.eventsCount = new AtomicLong(total);
+        this.lastEventId = lastEventId;
+        this.lastProcessDate = lastProcessDate;
+        this.totalDurationTime = p1.getTotalDurationTime() + p2.getTotalDurationTime();
+    }
+
     public String getProcessorId() {
         return processorId;
     }
 
 
     public void addEvent(ProvenanceEventRecordDTO event) {
-        Long totalEvents = eventsCount.incrementAndGet();
+        eventsCount.incrementAndGet();
         lastEventId = event.getEventId();
-        //?? store the last n events?
         lastProcessDate = new DateTime(event.getEventTime());
         totalDurationTime += event.getEventDuration();
-        avgProcessTime = totalDurationTime.doubleValue() / totalEvents.doubleValue();
-
-
     }
 
     public AtomicLong getEventsCount() {
@@ -46,7 +53,7 @@ public class ProcessorStats {
     }
 
     public Double getAvgProcessTime() {
-        return avgProcessTime;
+        return totalDurationTime.doubleValue() / eventsCount.get();
     }
 
     public Long getTotalDurationTime() {
@@ -59,5 +66,11 @@ public class ProcessorStats {
 
     public DateTime getLastProcessDate() {
         return lastProcessDate;
+    }
+
+
+    public ProcessorStats join(ProcessorStats that) {
+        return new ProcessorStats(this, that);
+
     }
 }
