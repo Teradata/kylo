@@ -30,6 +30,7 @@ public class ProcessorStats {
         Long total = p1.getEventsCount().get() + p2.getEventsCount().get();
         DateTime lastProcessDate = p1.getLastProcessDate().isAfter(p2.getLastProcessDate()) ? p1.getLastProcessDate() : p2.getLastProcessDate();
         Long lastEventId = p1.getLastEventId() > p2.getLastEventId() ? p1.getLastEventId() : p2.getLastEventId();
+        this.processorId = p1.getProcessorId();
         this.eventsCount = new AtomicLong(total);
         this.lastEventId = lastEventId;
         this.lastProcessDate = lastProcessDate;
@@ -64,13 +65,23 @@ public class ProcessorStats {
         return lastEventId;
     }
 
+
     public DateTime getLastProcessDate() {
         return lastProcessDate;
     }
 
-
-    public ProcessorStats join(ProcessorStats that) {
-        return new ProcessorStats(this, that);
-
+    public void add(ProcessorStats that) {
+        Long total = this.getEventsCount().get() + that.getEventsCount().get();
+        DateTime
+            lastProcessDate =
+            (this.getLastProcessDate() != null && that.getLastProcessDate() != null && this.getLastProcessDate().isAfter(that.getLastProcessDate())) ? this.getLastProcessDate()
+                                                                                                                                                     : that.getLastProcessDate();
+        Long lastEventId = (this.lastEventId != null && this.lastEventId > that.getLastEventId()) ? this.getLastEventId() : that.getLastEventId();
+        this.eventsCount = new AtomicLong(total);
+        this.lastEventId = lastEventId;
+        this.lastProcessDate = lastProcessDate;
+        this.totalDurationTime = this.getTotalDurationTime() + that.getTotalDurationTime();
     }
+
+
 }
