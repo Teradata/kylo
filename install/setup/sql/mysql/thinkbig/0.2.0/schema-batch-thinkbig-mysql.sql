@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS BATCH_EXECUTION_CONTEXT_VALUES (
                                     , DATE_VAL TIMESTAMP NULL
                                     , LONG_VAL BIGINT NULL
                                     , DOUBLE_VAL DOUBLE PRECISION NULL
-                                    , CREATE_DATE TIMESTAMP NOT NULL );
+                                    , CREATE_DATE TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL );
 
 CREATE TABLE BATCH_NIFI_STEP  (
   EVENT_ID BIGINT NOT NULL ,
