@@ -99,7 +99,7 @@ public class FlowFileCache {
                 ProvenanceFeedStatsCalculator.instance().printStats();
             }
         };
-        summaryTimer.schedule(task, 15 * 1000, 15 * 1000);
+        summaryTimer.schedule(task, 10 * 1000, 10 * 1000);
 
         /**
          * Timer to evict all completed FlowFiles from the Cache.
