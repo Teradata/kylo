@@ -93,8 +93,13 @@ public class ProvenanceFeedStatsCalculator {
 
     public String printStats() {
         StringBuffer sb = new StringBuffer();
+        sb.append("FEED STATS").append("\n");
         for (ProvenanceEventFeedProcessorStats feedStats : getStats()) {
             sb.append(feedStats).append("\n");
+        }
+        sb.append("\n").append("Processor STATS").append("\n");
+        for (ProcessorStats stats : getProcessorStats()) {
+            sb.append(stats).append("\n");
         }
         log.info(sb.toString());
         return sb.toString();
