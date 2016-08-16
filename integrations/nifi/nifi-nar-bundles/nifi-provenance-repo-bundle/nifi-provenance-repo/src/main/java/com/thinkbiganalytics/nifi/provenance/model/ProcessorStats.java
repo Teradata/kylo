@@ -20,6 +20,8 @@ public class ProcessorStats {
 
     private DateTime lastProcessDate;
 
+    private String lastEventDetails;
+
 
     public ProcessorStats(String processorId) {
         this.processorId = processorId;
@@ -47,6 +49,7 @@ public class ProcessorStats {
         lastEventId = event.getEventId();
         lastProcessDate = new DateTime(event.getEventTime());
         totalDurationTime += event.getEventDuration();
+        lastEventDetails = event.getDetails();
     }
 
     public AtomicLong getEventsCount() {
@@ -70,6 +73,10 @@ public class ProcessorStats {
         return lastProcessDate;
     }
 
+    public String getLastEventDetails() {
+        return lastEventDetails;
+    }
+
     public void add(ProcessorStats that) {
         Long total = this.getEventsCount().get() + that.getEventsCount().get();
         DateTime
@@ -81,7 +88,21 @@ public class ProcessorStats {
         this.lastEventId = lastEventId;
         this.lastProcessDate = lastProcessDate;
         this.totalDurationTime = this.getTotalDurationTime() + that.getTotalDurationTime();
+        this.lastEventDetails = (this.lastEventId != null && this.lastEventId > that.getLastEventId()) ? this.getLastEventDetails() : that.getLastEventDetails();
     }
 
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("ProcessorStats{");
+        sb.append("processorId='").append(processorId).append('\'');
+        sb.append(", eventsCount=").append(eventsCount);
+        sb.append(", totalDurationTime=").append(totalDurationTime);
+        sb.append(", lastEventId=").append(lastEventId);
+        sb.append(", lastProcessDate=").append(lastProcessDate);
+        sb.append(", lastEventDetails=").append(lastEventDetails);
+        sb.append(", averageProcessTime=").append(getAvgProcessTime());
+        sb.append('}');
+        return sb.toString();
+    }
 }

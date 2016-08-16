@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.mockito.Mockito.when;
@@ -39,7 +40,9 @@ public class TestProvenanceFlow {
     /**
      * The static flow/Graph of processors and connections
      */
-    private NifiFlowProcessGroup flow;
+    private NifiFlowProcessGroup feed1;
+
+    private NifiFlowProcessGroup feed2;
 
 
     private AtomicLong processorId = new AtomicLong(0L);
@@ -64,12 +67,15 @@ public class TestProvenanceFlow {
     /**
      * Build a simple flow/tree
      *
-     * P1 P2 P3     P4 P5 P6
+     *     P1
+     *     P2
+     *   P3     P4
+     * P9  P10          P5
+     *              P6
      */
-    public NifiFlowProcessGroup buildFlow() {
+    public NifiFlowProcessGroup buildFlow1() {
 
         NifiFlowProcessGroup group = new NifiFlowProcessGroup(UUID.randomUUID().toString(), "Group");
-        group.setFeedName("TestFeed");
 
         NifiFlowProcessor processor1 = processor();
         NifiFlowProcessor processor2 = processor();
@@ -83,6 +89,38 @@ public class TestProvenanceFlow {
         connect(group, processor2, processor4);
         connect(group, processor4, processor5);
         connect(group, processor5, processor6);
+        group.setFeedName("TestFeed1 - " + group.getProcessorMap().size() + " processors (" + processor1.getName() + " - " + processor6.getName() + ") ");
+        return group;
+    }
+
+
+    /**
+     * P1 P2    P3 P4   P8    P9 P5 P6  P7
+     */
+    public NifiFlowProcessGroup buildFlow2() {
+
+        NifiFlowProcessGroup group = new NifiFlowProcessGroup(UUID.randomUUID().toString(), "Group");
+        group.setFeedName("TestFeed2");
+
+        NifiFlowProcessor processor1 = processor();
+        NifiFlowProcessor processor2 = processor();
+        NifiFlowProcessor processor3 = processor();
+        NifiFlowProcessor processor4 = processor();
+        NifiFlowProcessor processor5 = processor();
+        NifiFlowProcessor processor6 = processor();
+        NifiFlowProcessor processor7 = processor();
+        NifiFlowProcessor processor8 = processor();
+        NifiFlowProcessor processor9 = processor();
+        group.getStartingProcessors().add(processor1);
+        connect(group, processor1, processor2);
+        connect(group, processor1, processor3);
+        connect(group, processor2, processor4);
+        connect(group, processor4, processor5);
+        connect(group, processor5, processor6);
+        connect(group, processor5, processor7);
+        connect(group, processor3, processor8);
+        connect(group, processor3, processor9);
+        group.setFeedName("TestFeed2 - " + group.getProcessorMap().size() + " processors (" + processor1.getName() + " - " + processor9.getName() + ") ");
         return group;
     }
 
@@ -91,10 +129,16 @@ public class TestProvenanceFlow {
      * get the static Flow
      */
     public NifiFlowProcessGroup getFlow() {
-        if (flow == null) {
-            flow = buildFlow();
+        if (feed1 == null) {
+            feed1 = buildFlow1();
+            feed2 = buildFlow2();
         }
-        return flow;
+        int feedNumber = ThreadLocalRandom.current().nextInt(1, 3);
+        if (feedNumber == 1) {
+            return feed1;
+        } else {
+            return feed2;
+        }
     }
 
 
@@ -247,7 +291,8 @@ public class TestProvenanceFlow {
     public void setupMockNifiFlowClient() {
         MockitoAnnotations.initMocks(this);
         NifiFlowClient mockClient = Mockito.mock(NifiFlowClient.class);
-        when(mockClient.getAllFlows()).thenReturn(Lists.newArrayList(getFlow()));
+        getFlow();
+        when(mockClient.getAllFlows()).thenReturn(Lists.newArrayList(feed1, feed2));
         NifiFlowCache.instance().setNifiFlowClient(mockClient);
         NifiFlowCache.instance().loadAll();
 
