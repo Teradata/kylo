@@ -2,6 +2,8 @@ package com.thinkbiganalytics.nifi.provenance.model;
 
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 
+import org.apache.nifi.provenance.ProvenanceEventType;
+
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -37,6 +39,11 @@ public class ActiveFlowFile {
     private ActiveFlowFile rootFlowFile;
 
     private AtomicLong completedEndingProcessors = new AtomicLong();
+
+    /**
+     * marker to determine if the Flow has Received a DROP event.
+     */
+    private boolean currentFlowFileComplete = false;
 
 
 
@@ -92,18 +99,6 @@ public class ActiveFlowFile {
         return allChildren;
 
     }
-/*
-    public void addEvent(Long eventId) {
-        getEvents().add(eventId);
-    }
-
-    public List<Long> getEvents() {
-        if (events == null) {
-            events = new ArrayList<>();
-        }
-        return events;
-    }
-    */
 
     public ProvenanceEventRecordDTO getFirstEvent() {
         return firstEvent;
@@ -242,5 +237,33 @@ public class ActiveFlowFile {
         getCompletedEvents().add(event);
         getCompletedProcessorIds().add(event.getComponentId());
         calculateEventDuration(event);
+        checkAndMarkIfFlowFileIsComplete(event);
+    }
+
+    public void checkAndMarkIfFlowFileIsComplete(ProvenanceEventRecordDTO event) {
+        if (ProvenanceEventType.DROP.name().equalsIgnoreCase(event.getEventType())) {
+            currentFlowFileComplete = true;
+        }
+    }
+
+    public boolean isCurrentFlowFileComplete() {
+        return currentFlowFileComplete;
+    }
+
+    /**
+     * Walks the graph of this flow and all children to see if there is a DROP event associated with each and every flow file
+     */
+    public boolean isFlowComplete() {
+        boolean complete = isCurrentFlowFileComplete();
+        Set<ActiveFlowFile> directChildren = getChildren();
+        if (complete && !directChildren.isEmpty()) {
+            for (ActiveFlowFile child : directChildren) {
+                complete &= child.isCurrentFlowFileComplete();
+                if (!complete) {
+                    break;
+                }
+            }
+        }
+        return complete;
     }
 }
