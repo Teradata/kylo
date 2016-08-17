@@ -5,17 +5,17 @@ import org.joda.time.DateTime;
 /**
  * Created by sr186054 on 8/16/16. A Aggregrated stats
  */
-public class AggregratedProcessorStatistics {
+public class AggregatedProcessorStatistics {
 
     String processorId;
     GroupedStats stats;
     private Long totalEvents;
 
-    public AggregratedProcessorStatistics(GroupedStats stats) {
+    public AggregatedProcessorStatistics(GroupedStats stats) {
         this.stats = stats;
     }
 
-    public AggregratedProcessorStatistics(String processorId, GroupedStats stats) {
+    public AggregatedProcessorStatistics(String processorId, GroupedStats stats) {
         this.processorId = processorId;
         this.stats = stats;
         this.totalEvents = stats.getTotalCount();
