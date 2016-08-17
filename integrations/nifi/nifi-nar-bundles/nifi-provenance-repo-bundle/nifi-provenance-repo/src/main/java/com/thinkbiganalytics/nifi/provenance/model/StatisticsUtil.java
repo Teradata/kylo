@@ -27,7 +27,7 @@ public class StatisticsUtil {
     /**
      * Aggregrate
      */
-    public static GroupedStats aggregrateStats(List<ProvenanceEventStats> eventStatsList, DateTime start, DateTime end) {
+    public static GroupedStats aggregateStats(List<ProvenanceEventStats> eventStatsList, DateTime start, DateTime end) {
         List<ProvenanceEventStats> stats = getEventStatsBetween(eventStatsList, start, end);
         return new GroupedStats(start, stats);
     }
