@@ -7,7 +7,6 @@ import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.nifi.provenance.FlowFileStatus;
 import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.nifi.provenance.v2.cache.feed.ProvenanceFeedStatsCalculator;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -96,10 +95,10 @@ public class FlowFileCache {
 
                 //   FlowFileCache.instance().printSummary();
                 //feed stats
-                ProvenanceFeedStatsCalculator.instance().printStats();
+                //ProvenanceFeedStatsCalculator.instance().printStats();
             }
         };
-        summaryTimer.schedule(task, 10 * 1000, 10 * 1000);
+        // summaryTimer.schedule(task, 10 * 1000, 10 * 1000);
 
         /**
          * Timer to evict all completed FlowFiles from the Cache.
