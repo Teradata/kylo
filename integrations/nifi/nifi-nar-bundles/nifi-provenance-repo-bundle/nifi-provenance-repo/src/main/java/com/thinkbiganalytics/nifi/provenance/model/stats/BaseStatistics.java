@@ -66,6 +66,7 @@ public class BaseStatistics {
     public Double average(Long stat) {
         return stat.doubleValue() / totalCount.doubleValue();
     }
+
     public Double getAvgDuration() {
         return average(duration);
     }
