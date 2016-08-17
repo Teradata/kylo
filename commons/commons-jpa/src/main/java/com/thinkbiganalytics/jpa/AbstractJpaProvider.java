@@ -9,7 +9,7 @@ import javax.persistence.EntityManager;
 /**
  * Created by sr186054 on 5/4/16.
  */
-public abstract class AbstractJpaProvider<T, PK extends Serializable> implements BaseProvider<T, PK> {
+public abstract class AbstractJpaProvider<T, PK extends Serializable> implements BaseJpaProvider<T, PK> {
 
     protected Class<T> entityClass;
 
