@@ -2,10 +2,16 @@
 package com.thinkbiganalytics.datalake.rangeradmin;
 
 
-
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import com.thinkbiganalytics.rest.JerseyClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+
 import javax.ws.rs.client.WebTarget;
 
 /** 
@@ -23,7 +29,7 @@ import javax.ws.rs.client.WebTarget;
  */
 public class RangerRestClient extends JerseyRestClient {
 
-	private String apiPath= "/service/public/api"; 
+	private String apiPath= "/service/public/api/policy"; 
 
 	private RangerRestClientConfig clientConfig;
 
@@ -40,32 +46,32 @@ public class RangerRestClient extends JerseyRestClient {
 
 	public String getPolicy(int policyId) 
 	{
-		return get("/policy/"+policyId, null, String.class);
+		return get("/"+policyId, null, String.class);
 	}
 
 	public void createPolicy(JSONObject policy) 
 	{   
-		post("/policy",policy,String.class);
+		post("/",policy,String.class);
 	}
 
 	public void updatePolicy(JSONObject obj,int policyId)
 	{
-		put("/policy/"+policyId,obj,String.class);
+		put("/"+policyId,obj,String.class);
 	}
 
 	public String deletePolicy(int policyId) 
 	{
-		return delete("/policy/"+policyId,null,String.class);
+		return delete("/"+policyId,null,String.class);
 	}
 
 	public String searchPolicies(Map<String,Object> searchCriteria) 
 	{
-		return get("/policy",searchCriteria,String.class);
+		return get("/",searchCriteria,String.class);
 	}
 
-	public Long countPolicies(String repo)
+	public String countPolicies()
 	{
-		return null;
+		return get("/count",null,String.class);
 	}
 
 }

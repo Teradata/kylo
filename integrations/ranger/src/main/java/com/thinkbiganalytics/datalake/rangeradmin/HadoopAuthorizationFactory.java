@@ -1,11 +1,5 @@
 package com.thinkbiganalytics.datalake.rangeradmin;
 
-
-/**
- * HadoopAuthorizationFactory class for returning instance of service class.
- * @author sv186029
- *
- */
 public class HadoopAuthorizationFactory {
 
 	static String RANGER  = "ranger";
