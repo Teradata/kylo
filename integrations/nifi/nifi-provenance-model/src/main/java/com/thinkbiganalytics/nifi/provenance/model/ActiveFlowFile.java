@@ -1,8 +1,6 @@
 package com.thinkbiganalytics.nifi.provenance.model;
 
-import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
-
-import org.apache.nifi.provenance.ProvenanceEventType;
+import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventRecordDTOComparator;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -167,7 +165,7 @@ public class ActiveFlowFile {
                 if (getParents() != null && !getParents().isEmpty()) {
                     List<ProvenanceEventRecordDTO> previousEvents = getParents().stream()
                         .filter(flowFile -> event.getParentUuids().contains(flowFile.getId()))
-                        .flatMap(flow -> flow.getCompletedEvents().stream()).sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator().reversed())
+                        .flatMap(flow -> flow.getCompletedEvents().stream()).sorted(new ProvenanceEventRecordDTOComparator().reversed())
                         .collect(Collectors.toList());
                     if (previousEvents != null && !previousEvents.isEmpty()) {
                         event.setPreviousEvent(previousEvents.get(0));
@@ -241,7 +239,7 @@ public class ActiveFlowFile {
     }
 
     public void checkAndMarkIfFlowFileIsComplete(ProvenanceEventRecordDTO event) {
-        if (ProvenanceEventType.DROP.name().equalsIgnoreCase(event.getEventType())) {
+        if ("DROP".equalsIgnoreCase(event.getEventType())) {
             currentFlowFileComplete = true;
         }
     }

@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
 
     <modules>
+        <module>nifi-provenance-model</module>
         <module>nifi-flow-rest-model</module>
         <module>nifi-flow-rest-client</module>
         <module>nifi-nar-bundles</module>
