@@ -14,6 +14,7 @@
         <module>oauth-server</module>
         <module>security-auth</module>
         <module>security-auth-file</module>
+        <module>security-auth-metadata</module>
     </modules>
 
     <dependencies>
