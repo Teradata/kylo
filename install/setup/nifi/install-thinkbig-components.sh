@@ -31,18 +31,7 @@ cp $NIFI_SETUP_DIR/*.nar /opt/nifi/data/lib
 cp $NIFI_SETUP_DIR/thinkbig-spark-*.jar /opt/nifi/data/lib/app
 
 echo "Creating symbolic links to jar files"
-ln -f -s /opt/nifi/data/lib/thinkbig-nifi-spark-nar-*.nar /opt/nifi/current/lib/thinkbig-nifi-spark-nar.nar
-ln -f -s /opt/nifi/data/lib/thinkbig-nifi-core-nar-*.nar /opt/nifi/current/lib/thinkbig-nifi-core-nar.nar
-ln -f -s /opt/nifi/data/lib/thinkbig-nifi-core-service-nar-*.nar /opt/nifi/current/lib/thinkbig-nifi-core-service-nar.nar
-ln -f -s /opt/nifi/data/lib/thinkbig-nifi-elasticsearch-nar-*.nar /opt/nifi/current/lib/thinkbig-nifi-elasticsearch-nar.nar
-ln -f -s /opt/nifi/data/lib/thinkbig-nifi-hadoop-nar-*.nar /opt/nifi/current/lib/thinkbig-nifi-hadoop-nar.nar
-ln -f -s /opt/nifi/data/lib/thinkbig-nifi-hadoop-service-nar-*.nar /opt/nifi/current/lib/thinkbig-nifi-hadoop-service-nar.nar
-ln -f -s /opt/nifi/data/lib/thinkbig-nifi-provenance-repo-nar-*.nar /opt/nifi/current/lib/thinkbig-nifi-provenance-repo-nar.nar
-ln -f -s /opt/nifi/data/lib/thinkbig-nifi-standard-services-nar-*.nar /opt/nifi/current/lib/thinkbig-nifi-standard-services-nar.nar
-
-ln -f -s /opt/nifi/data/lib/app/thinkbig-spark-interpreter-*-jar-with-dependencies.jar /opt/nifi/current/lib/app/thinkbig-spark-interpreter-jar-with-dependencies.jar
-ln -f -s /opt/nifi/data/lib/app/thinkbig-spark-validate-cleanse-*-jar-with-dependencies.jar /opt/nifi/current/lib/app/thinkbig-spark-validate-cleanse-jar-with-dependencies.jar
-ln -f -s /opt/nifi/data/lib/app/thinkbig-spark-job-profiler-*-jar-with-dependencies.jar /opt/nifi/current/lib/app/thinkbig-spark-job-profiler-jar-with-dependencies.jar
+./create-symbolic-links.sh
 
 echo "Copy the mysql lib from a lib folder to /opt/nifi/mysql"
 mkdir /opt/nifi/mysql
