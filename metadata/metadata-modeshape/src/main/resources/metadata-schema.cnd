@@ -1,4 +1,3 @@
-
 /*
  * Defines the following structure and node types:
  * 
@@ -68,18 +67,18 @@
 [tba:genericJson] > nt:hierarchyNode
     - tba:type (STRING)
     - tba:json (STRING)
-    
+
 [tba:polymorphicType] > nt:hierarchyNode
     - tba:class (STRING)
     - tba:json (STRING)
-    
+
 [tba:typeDescriptor] > nt:hierarchyNode, mix:title, mix:lastModified
     + * (tba:fieldDescriptor) sns
 
 [tba:fieldDescriptor] > nt:hierarchyNode, mix:title
     - usr:mandatory (BOOLEAN)
     - usr:order (LONG)
-    
+
 [tba:taggable] mixin
   - tba:tags (STRING) multiple
 
@@ -131,7 +130,7 @@
     + tba:sla (tba:sla)
     + tba:lastAssessment (tba:serviceLevelAssessment)
     // TODO: when to check conditions (schedule, event, ...)
-    
+
 [tba:feedConnection] > nt:hierarchyNode, mix:referenceable
     - tba:datasource (REFERENCE) mandatory COPY
 
@@ -168,7 +167,7 @@
 [tba:obligationGroup] > nt:hierarchyNode
     - tba:condition (STRING) = 'REQUIRED' mandatory
     + tba:obligations (tba:obligation) sns
-    
+
 [tba:obligation] > nt:hierarchyNode, mix:referenceable
     - tba:description (STRING)
     + tba:metrics (tba:metric) sns
@@ -187,15 +186,18 @@
     - tba:message (STRING) 
     - tba:result (STRING) mandatory
     + tba:obligationAssessments (tba:obligationAssessment) sns
-    
+
 [tba:obligationAssessment] > nt:hierarchyNode, mix:referenceable
     - tba:obligation (WEAKREFERENCE) mandatory
     - tba:message (STRING) 
     - tba:result (STRING) mandatory
     + tba:metricAssessments (tba:metricAssessment) sns
-    
+
 [tba:metricAssessment] > nt:hierarchyNode, mix:referenceable
     - tba:metric (WEAKREFERENCE) mandatory
     - tba:message (STRING) 
     - tba:result (STRING) mandatory
     + tba:resource (nt:resource) 
+
+[tba:user] > tba:extensibleEntity
+    - tba:enabled (BOOLEAN)

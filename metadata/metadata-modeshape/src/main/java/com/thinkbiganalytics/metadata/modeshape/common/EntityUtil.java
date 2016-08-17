@@ -12,16 +12,16 @@ import java.nio.file.Paths;
  */
 public class EntityUtil {
 
-    public static String pathForCategory(){
+    public static String pathForCategory() {
         return Paths.get("/metadata", "feeds").toString();
     }
 
-    public static String pathForCategory(String categorySystemName){
-        return Paths.get("/metadata", "feeds",categorySystemName).toString();
+    public static String pathForCategory(String categorySystemName) {
+        return Paths.get("/metadata", "feeds", categorySystemName).toString();
     }
 
-    public static String pathForFeed(String categorySystemName, String feedSystemName){
-        return Paths.get("/metadata", "feeds",categorySystemName,feedSystemName).toString();
+    public static String pathForFeed(String categorySystemName, String feedSystemName) {
+        return Paths.get("/metadata", "feeds", categorySystemName, feedSystemName).toString();
     }
 
     public static String pathForFeedSource(String categorySystemName, String feedSystemName) {
@@ -40,24 +40,30 @@ public class EntityUtil {
         return Paths.get("/metadata", "templates").toString();
     }
 
-    public static String pathForExtensibleEntity(){
+    public static String pathForExtensibleEntity() {
         return EntityUtil.pathForExtensibleEntity(null);
     }
 
-    public static String pathForExtensibleEntity(String typeName){
-        if(StringUtils.isNotBlank(typeName)){
-            return Paths.get("/", ExtensionsConstants.ENTITIES,typeName).toString();
-        }
-        else {
+    public static String pathForExtensibleEntity(String typeName) {
+        if (StringUtils.isNotBlank(typeName)) {
+            return Paths.get("/", ExtensionsConstants.ENTITIES, typeName).toString();
+        } else {
             return Paths.get("/", ExtensionsConstants.ENTITIES).toString();
         }
     }
-
 
     public static String asQueryProperty(String prop) {
         return "[" + prop + "]";
     }
 
+    /**
+     * Instances of {@code EntityUtil} should not be constructed.
+     *
+     * @throws UnsupportedOperationException always
+     */
+    private EntityUtil() {
+        throw new UnsupportedOperationException();
+    }
 }
 
 
