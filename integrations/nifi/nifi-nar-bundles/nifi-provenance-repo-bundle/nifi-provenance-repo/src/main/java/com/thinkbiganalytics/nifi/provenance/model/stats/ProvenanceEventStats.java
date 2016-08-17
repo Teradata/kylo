@@ -1,6 +1,8 @@
 package com.thinkbiganalytics.nifi.provenance.model.stats;
 
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 
 import org.joda.time.DateTime;
 
@@ -35,7 +37,17 @@ public class ProvenanceEventStats extends BaseStatistics {
         this.rootFlowFileId = event.getFlowFile().getRootFlowFile().getId();
         this.eventDetails = event.getDetails();
         this.rootProcessGroupId = event.getFlowFile().getRootFlowFile().getFirstEvent().getGroupId();
+        this.jobsStarted = event.getFlowFile().isRootFlowFile() ? 1L : 0L;
+        this.jobsFinished = event.getFlowFile().isFlowComplete() ? 1L : 0L;
+        this.flowFilesStarted = event.isStartOfCurrentFlowFile() ? 1L : 0L;
+        this.flowFilesFinished = event.getFlowFile().isCurrentFlowFileComplete() ? 1L : 0L;
 
+        //check if it is ia faliure processor
+        // TODO!!! is there a better way???  cant we just examine the  event.getRelationship() to see if it contains "failure" ???
+        NifiFlowProcessor processor = NifiFlowCache.instance().getProcessor(event.getFlowFile().getFirstEvent().getGroupId(), event.getComponentId());
+        if (processor.isFailure()) {
+            this.processorsFailed = 1L;
+        }
     }
 
     public String getFeedName() {
