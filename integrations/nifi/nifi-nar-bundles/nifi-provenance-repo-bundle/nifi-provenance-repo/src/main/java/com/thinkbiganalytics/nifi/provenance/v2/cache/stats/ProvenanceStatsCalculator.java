@@ -4,8 +4,8 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.nifi.provenance.model.stats.AggregratedFeedProcessorStatistics;
-import com.thinkbiganalytics.nifi.provenance.model.stats.AggregratedProcessorStatistics;
+import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
+import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.FeedProcessorStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProcessorStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
@@ -39,14 +39,14 @@ public class ProvenanceStatsCalculator {
 
     private DateTime lastSendTime;
 
-    private Integer aggregrationIntervalSeconds = 10;
+    private Integer aggregationIntervalSeconds = 10;
 
 
     private final LoadingCache<String, ProcessorStats> processorStatsLoadingCache;
 
     private final LoadingCache<String, FeedProcessorStats> feedProcessorStatsLoadingCache;
 
-    private Lock aggregratingStatsLock = null;
+    private Lock aggregatingStatsLock = null;
 
     private ProvenanceStatsCalculator() {
 
@@ -67,7 +67,7 @@ public class ProvenanceStatsCalculator {
                                                                                            }
                                                                                        }
         );
-        this.aggregratingStatsLock = new ReentrantReadWriteLock(true).readLock();
+        this.aggregatingStatsLock = new ReentrantReadWriteLock(true).readLock();
         init();
 
 
@@ -79,19 +79,19 @@ public class ProvenanceStatsCalculator {
     public boolean checkAndSend(DateTime dateTime) {
         //Send in batches
         DateTime startInterval = lastSendTime;
-        DateTime endTime = startInterval.plusSeconds(aggregrationIntervalSeconds);
+        DateTime endTime = startInterval.plusSeconds(aggregationIntervalSeconds);
         if (dateTime.isAfter(endTime)) {
             //Add ReentrantLock around this code since the timer thread will be hitting this as well
-            this.aggregratingStatsLock.lock();
+            this.aggregatingStatsLock.lock();
             try {
                 //send everything in the cache and clear it
                 //2 stats are collected
                 //1 grouped by feed
                 //2 grouped by processor
-                List<AggregratedFeedProcessorStatistics>
+                List<AggregatedFeedProcessorStatistics>
                     feedStatistics =
                     feedProcessorStatsLoadingCache.asMap().values().stream().map(feedProcessorStats -> feedProcessorStats.getStats(startInterval, endTime)).collect(Collectors.toList());
-                List<AggregratedProcessorStatistics>
+                List<AggregatedProcessorStatistics>
                     processorStatsForTime =
                     processorStatsLoadingCache.asMap().values().stream().map(processorStats -> processorStats.getStats(startInterval, endTime)).collect(Collectors.toList());
 
@@ -102,7 +102,7 @@ public class ProvenanceStatsCalculator {
                 feedProcessorStatsLoadingCache.invalidateAll();
                 lastSendTime = endTime;
             } finally {
-                this.aggregratingStatsLock.unlock();
+                this.aggregatingStatsLock.unlock();
             }
             return true;
         }
