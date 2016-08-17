@@ -5,6 +5,7 @@ import com.thinkbiganalytics.nifi.provenance.model.DelayedProvenanceEvent;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileCache;
+import com.thinkbiganalytics.nifi.provenance.v2.cache.stats.ProvenanceStatsCalculator;
 
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 import org.slf4j.Logger;
@@ -90,6 +91,7 @@ public class DelayedProvenanceEventProducer {
 
     public void add(ProvenanceEventDTO event) {
         ProvenanceEventRecordDTO eventDto = cache(event);
+        ProvenanceStatsCalculator.instance().calculateStats(eventDto);
         DelayedProvenanceEvent delayedProvenanceEvent = new DelayedProvenanceEvent(eventDto, configuration.getProcessDelay());
         queue.offer(delayedProvenanceEvent);
 

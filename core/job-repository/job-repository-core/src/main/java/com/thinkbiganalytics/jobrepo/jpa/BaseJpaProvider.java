@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.metadata.jpa;
+package com.thinkbiganalytics.jobrepo.jpa;
 
 import com.thinkbiganalytics.jpa.AbstractJpaProvider;
 
@@ -10,17 +10,14 @@ import javax.inject.Inject;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 
-/**
- * Created by sr186054 on 5/4/16.
- */
 public abstract class BaseJpaProvider<T, PK extends Serializable> extends AbstractJpaProvider<T, PK> {
 
     @PersistenceContext
     @Inject
-    @Qualifier("metadataEntityManager")
+    @Qualifier("jobRepositoryEntityManager")
     protected EntityManager entityManager;
 
-    public  EntityManager getEntityManager() {
+    public EntityManager getEntityManager() {
         return entityManager;
     }
 
