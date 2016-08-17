@@ -313,6 +313,8 @@
                     <include>nifi</include>
                     <include>install-nifi.sh</include>
                     <include>install-thinkbig-components.sh</include>
+                    <include>create-symbolic-links.sh</include>
+                    <include>update-nars-jars.sh</include>
                   </includes>
                 </source>
                 <source>
