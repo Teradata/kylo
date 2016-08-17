@@ -19,6 +19,15 @@
  *              "entities"
  *                  extensibleEntity
  *          "security"
+ *              "prototypes"
+ *                  "services"
+ *                      allowableAction*
+ *                  "feed"
+ *                      allowableAction*
+ *                  "template"
+ *                      allowableAction*
+ *                  "category"
+ *                      allowableAction*
  *              "services"
  *                  allowableAction*
  */
@@ -68,10 +77,17 @@
 
 [tba:slaAssessmentsFolder] > nt:folder
 
+/* -=-=-=-=-=--=-=-  Security  -=-=-=-=-=-=-=-=- */
+
 [tba:securityFolder] > nt:folder
+    + prototypes (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
     + services (tba:allowedActions) = tba:allowedActions autocreated mandatory
 
-/* -=-=-=-=-=--=-=-  Security  -=-=-=-=-=-=-=-=- */
+[tba:templatesFolder] > nt:folder
+    + services (tba:allowedActions) = nt:folder autocreated mandatory
+    + feed (tba:allowedActions) = nt:folder autocreated mandatory
+    + template (tba:allowedActions) = nt:folder autocreated mandatory
+    + category (tba:allowedActions) = nt:folder autocreated mandatory
 
 [tba:accessControlled] mixin
     + tba:allowedActions (tba:allowdedActions) = tba:allowdedActions autocreate mandatory

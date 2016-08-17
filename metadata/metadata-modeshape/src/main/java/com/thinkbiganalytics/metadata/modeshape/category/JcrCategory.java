@@ -9,6 +9,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 import java.io.Serializable;
 import java.util.List;
@@ -86,5 +87,11 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     @Override
     public void setUserProperties(@Nonnull final Map<String, String> userProperties, @Nonnull final Set<UserFieldDescriptor> userFields) {
         JcrPropertyUtil.setUserProperties(node, userFields, userProperties);
+    }
+
+    @Override
+    public AllowedActions getAllowedActions() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

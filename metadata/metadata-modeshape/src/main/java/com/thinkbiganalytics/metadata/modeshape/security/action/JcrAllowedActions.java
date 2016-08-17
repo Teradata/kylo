@@ -28,7 +28,7 @@ import com.thinkbiganalytics.security.action.AllowedActions;
  *
  * @author Sean Felten
  */
-public abstract class JcrAllowedActions extends JcrObject implements AllowedActions {
+public class JcrAllowedActions extends JcrObject implements AllowedActions {
     
     public JcrAllowedActions(Node allowedActionsNode) {
         super(allowedActionsNode);

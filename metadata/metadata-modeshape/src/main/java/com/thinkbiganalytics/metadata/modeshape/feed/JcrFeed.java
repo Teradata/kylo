@@ -18,6 +18,7 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -332,5 +333,12 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     @Override
     public void setUserProperties(@Nonnull final Map<String, String> userProperties, @Nonnull final Set<UserFieldDescriptor> userFields) {
         JcrPropertyUtil.setUserProperties(node, userFields, userProperties);
+    }
+
+
+    @Override
+    public AllowedActions getAllowedActions() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

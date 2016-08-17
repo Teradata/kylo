@@ -7,9 +7,9 @@ package com.thinkbiganalytics.security.action;
  *
  * @author Sean Felten
  */
-public interface ApplicationAllowedActionsProvider {
+public interface AllowedActionsGroupProvider {
 
     AllowedActions getAllowedActions(String appName);
     
-    void checkPermission(String appName, AllowableAction action);
+    void checkPermission(String groupName, AllowableAction action);
 }

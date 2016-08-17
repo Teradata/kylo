@@ -6,6 +6,7 @@ package com.thinkbiganalytics.metadata.modeshape;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -14,13 +15,10 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.PropertyDefinition;
-import javax.jcr.security.Privilege;
 
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
-import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
-
-import org.modeshape.jcr.security.SimplePrincipal;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
  *
@@ -30,6 +28,10 @@ public class MetadataJcrConfigurator {
     
     @Inject
     private JcrMetadataAccess metadataAccess;
+    
+    @Inject
+    @Named("servicesPrototypeAllowedActions")
+    private AllowedActions servicesPrototypeActions;
     
     public void configure() {
         this.metadataAccess.commit(new AdminCredentials(), () -> {
@@ -56,6 +58,7 @@ public class MetadataJcrConfigurator {
 //        JcrAccessControlUtil.clearPermissions(session, "metadata/feeds/test/trigger1");
 //        JcrAccessControlUtil.clearPermissions(session, "metadata/feeds/test/dependent1");
     
+        
     }
 
 

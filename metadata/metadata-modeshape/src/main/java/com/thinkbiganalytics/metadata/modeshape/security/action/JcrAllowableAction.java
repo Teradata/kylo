@@ -52,8 +52,7 @@ public class JcrAllowableAction extends JcrObject implements AllowableAction {
      * @see com.thinkbiganalytics.security.action.AllowableAction#getSubFunctions()
      */
     @Override
-    public List<AllowableAction> getSubFunctions() {
+    public List<AllowableAction> getSubActions() {
         return JcrUtil.getJcrObjects(this.node, JcrAllowableAction.class).stream().collect(Collectors.toList());
     }
-
 }

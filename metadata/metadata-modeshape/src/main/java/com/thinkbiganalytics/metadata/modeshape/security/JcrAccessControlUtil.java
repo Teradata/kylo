@@ -16,7 +16,7 @@ import javax.jcr.security.AccessControlPolicy;
 import javax.jcr.security.AccessControlPolicyIterator;
 import javax.jcr.security.Privilege;
 
-import com.thinkbiganalytics.metadata.api.security.MetadataAccessControlException;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 
 /**
  *
@@ -28,7 +28,7 @@ public class JcrAccessControlUtil {
         try {
             return addPermissions(node.getSession(), node.getPath(), principal, privilegeNames);
         } catch (RepositoryException e) {
-            throw new MetadataAccessControlException("Failed to add permission(s) to node " + node + ": " + privilegeNames, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to node " + node + ": " + privilegeNames, e);
         }
     }
 
@@ -36,7 +36,7 @@ public class JcrAccessControlUtil {
         try {
             return addPermissions(node.getSession(), node.getPath(), principal, privileges);
         } catch (RepositoryException e) {
-            throw new MetadataAccessControlException("Failed to add permission(s) to node " + node + ": " + privileges, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to node " + node + ": " + privileges, e);
         }
 
     }
@@ -52,7 +52,7 @@ public class JcrAccessControlUtil {
             
             return addPermissions(session, path, principal, privs);
         } catch (RepositoryException e) {
-            throw new MetadataAccessControlException("Failed to add permission(s) to node " + path + ": " + privilegeNames, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": " + privilegeNames, e);
         }
     }
     
@@ -73,25 +73,25 @@ public class JcrAccessControlUtil {
             
             return added;
         } catch (RepositoryException e) {
-            throw new MetadataAccessControlException("Failed to add permission(s) to node " + path + ": " + privileges, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": " + privileges, e);
         }
         
     }
     
-    public static boolean addHierarchyPermissions(Node node, Principal principal, Node toNode, String... permissions) {
+    public static boolean addHierarchyPermissions(Node node, Principal principal, Node toNode, String... privilegeNames) {
         try {
             node.getSession().getRootNode();
             Node endNode = toNode;
             Node current = node;
             boolean added = false;
             
-            while (! current.equals(endNode) && ! current.equals(toNode.getSession().getRootNode())) {
-                added |= addPermissions(current, principal, permissions);
-            }
+            do {
+                added |= addPermissions(current, principal, privilegeNames);
+            } while (! current.equals(endNode) && ! current.equals(toNode.getSession().getRootNode()));
             
             return added;
         } catch (RepositoryException e) {
-            throw new MetadataAccessControlException("Failed to add permission(s) to hierarch from node " + node + " up to " + toNode, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to hierarch from node " + node + " up to " + toNode, e);
         }
     }
 
@@ -106,7 +106,7 @@ public class JcrAccessControlUtil {
             
             return removePermissions(session, path, principal, privs);
         } catch (RepositoryException e) {
-            throw new MetadataAccessControlException("Failed to add permission(s) to node " + path + ": " + privilegeNames, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": " + privilegeNames, e);
         }
     }
     
@@ -138,25 +138,25 @@ public class JcrAccessControlUtil {
                 return false;
             }
         } catch (RepositoryException e) {
-            throw new MetadataAccessControlException("Failed to add permission(s) to node " + path + ": " + removes, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to node " + path + ": " + removes, e);
         }
         
     }
     
-    public static boolean removeHierarchyPermissions(Node node, Principal principal, Node toNode, String... permissions) {
+    public static boolean removeHierarchyPermissions(Node node, Principal principal, Node toNode, String... privilegeNames) {
         try {
             node.getSession().getRootNode();
             Node endNode = toNode;
             Node current = node;
             boolean removed = false;
             
-            while (! current.equals(endNode) && ! current.equals(toNode.getSession().getRootNode())) {
-                removed |= removePermissions(node.getSession(), node.getPath(), principal, permissions);
-            }
+            do {
+                removed |= removePermissions(node.getSession(), node.getPath(), principal, privilegeNames);
+            } while (! current.equals(endNode) && ! current.equals(toNode.getSession().getRootNode()));
             
             return removed;
         } catch (RepositoryException e) {
-            throw new MetadataAccessControlException("Failed to add permission(s) to hierarch from node " + node + " up to " + toNode, e);
+            throw new MetadataRepositoryException("Failed to add permission(s) to hierarch from node " + node + " up to " + toNode, e);
         }
     }
 
@@ -175,7 +175,7 @@ public class JcrAccessControlUtil {
                 return false;
             }
         } catch (RepositoryException e) {
-            throw new MetadataAccessControlException("Failed to remove all permission(s) from node " + path, e);
+            throw new MetadataRepositoryException("Failed to remove all permission(s) from node " + path, e);
         }
         
     }
