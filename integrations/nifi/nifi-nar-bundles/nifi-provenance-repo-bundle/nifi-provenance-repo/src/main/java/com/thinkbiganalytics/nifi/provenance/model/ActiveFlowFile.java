@@ -46,7 +46,6 @@ public class ActiveFlowFile {
     private boolean currentFlowFileComplete = false;
 
 
-
     //track failed events in this flow
     //change to ConcurrentSkipListSet ???
     private Set<ProvenanceEventRecordDTO> failedEvents;
@@ -113,7 +112,7 @@ public class ActiveFlowFile {
     }
 
 
-    public void completeEndingProcessor(){
+    public void completeEndingProcessor() {
         completedEndingProcessors.incrementAndGet();
     }
 
@@ -126,26 +125,22 @@ public class ActiveFlowFile {
         this.rootFlowFile = rootFlowFile;
     }
 
-    public boolean isRootFlowFile(){
+    public boolean isRootFlowFile() {
         return this.rootFlowFile != null && this.rootFlowFile.equals(this);
     }
 
-    public void addFailedEvent(ProvenanceEventRecordDTO event){
+    public void addFailedEvent(ProvenanceEventRecordDTO event) {
         failedEvents.add(event);
     }
 
 
-
     /**
-     * gets the flow files failed events.
-     * if inclusive then get all children
-     * @param inclusive
-     * @return
+     * gets the flow files failed events. if inclusive then get all children
      */
-    public Set<ProvenanceEventRecordDTO> getFailedEvents(boolean inclusive){
+    public Set<ProvenanceEventRecordDTO> getFailedEvents(boolean inclusive) {
         Set<ProvenanceEventRecordDTO> failedEvents = new HashSet<>();
         failedEvents.addAll(failedEvents);
-        if(inclusive) {
+        if (inclusive) {
             for (ActiveFlowFile child : getChildren()) {
                 failedEvents.addAll(child.getFailedEvents(inclusive));
             }
@@ -194,7 +189,7 @@ public class ActiveFlowFile {
 
     }
 
-    public String summary(){
+    public String summary() {
         Set<ProvenanceEventRecordDTO> failedEvents = getFailedEvents(true);
         return "Flow File (" + id + "), with first Event of (" + firstEvent + ") processed " + getCompletedEvents().size() + " events. " + failedEvents.size() + " were failure events. "
                + completedEndingProcessors.longValue() + " where leaf ending events";
