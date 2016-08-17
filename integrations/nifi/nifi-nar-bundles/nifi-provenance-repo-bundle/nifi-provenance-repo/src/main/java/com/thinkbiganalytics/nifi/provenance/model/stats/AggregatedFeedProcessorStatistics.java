@@ -12,6 +12,7 @@ public class AggregatedFeedProcessorStatistics {
 
     String feedName;
     String processGroup;
+    DateTime intervalTime;
     DateTime minTime;
     DateTime maxTime;
     private Long totalEvents = 0L;
@@ -53,6 +54,13 @@ public class AggregatedFeedProcessorStatistics {
         this.processorStats = processorStats;
     }
 
+    public DateTime getIntervalTime() {
+        return intervalTime;
+    }
+
+    public void setIntervalTime(DateTime intervalTime) {
+        this.intervalTime = intervalTime;
+    }
 
     public DateTime getMinTime() {
         return minTime;

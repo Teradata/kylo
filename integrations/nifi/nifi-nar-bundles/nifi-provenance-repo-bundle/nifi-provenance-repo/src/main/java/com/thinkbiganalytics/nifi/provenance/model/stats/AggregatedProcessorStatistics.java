@@ -21,7 +21,7 @@ public class AggregatedProcessorStatistics {
         this.totalEvents = stats.getTotalCount();
     }
 
-    public String getCollectionId() {
+    public DateTime getIntervalTime() {
         return stats.getGroupKey();
     }
 
