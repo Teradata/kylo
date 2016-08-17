@@ -1,8 +1,10 @@
 package com.thinkbiganalytics.jobrepo.nifi.config;
 
 
+import com.thinkbiganalytics.jobrepo.jpa.NifiEventStatisticsProvider;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.FlowFileEventProvider;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.InMemoryFlowFileEventProvider;
+import com.thinkbiganalytics.jobrepo.nifi.provenance.NifiStatsJmsReceiver;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventApplicationStartupListener;
 import com.thinkbiganalytics.jobrepo.repository.dao.NifJobRepositoryFactoryBean;
 
@@ -55,6 +57,17 @@ public class DatabaseConfig {
     @Bean
     public ProvenanceEventApplicationStartupListener provenanceEventStartupListener() {
         return new ProvenanceEventApplicationStartupListener();
+    }
+
+
+    @Bean
+    public NifiEventStatisticsProvider nifiEventStatisticsProvider() {
+        return new NifiEventStatisticsProvider();
+    }
+
+    @Bean
+    public NifiStatsJmsReceiver nifiStatsJmsReceiver() {
+        return new NifiStatsJmsReceiver();
     }
 
 

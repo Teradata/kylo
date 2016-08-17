@@ -5,8 +5,10 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
+import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.FeedProcessorStats;
+import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProcessorStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
@@ -15,9 +17,11 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.UUID;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -55,7 +59,7 @@ public class ProvenanceStatsCalculator {
                                                                                        public ProcessorStats load(String processorId) throws Exception {
                                                                                            ProcessorStats stats = new ProcessorStats(processorId);
                                                                                            return stats;
-                                                                                       }
+                                                                                        }
                                                                                    }
         );
 
@@ -85,15 +89,29 @@ public class ProvenanceStatsCalculator {
             this.aggregatingStatsLock.lock();
             try {
                 //send everything in the cache and clear it
-                //2 stats are collected
-                //1 grouped by feed
-                //2 grouped by processor
+                //3 stats are collected
+                //1 grouped by feed and processor
+                //2 grouped by feed (high level feed stats)
+                //3 grouped by procssors
+                String collectionId = UUID.randomUUID().toString();
                 List<AggregatedFeedProcessorStatistics>
-                    feedStatistics =
-                    feedProcessorStatsLoadingCache.asMap().values().stream().map(feedProcessorStats -> feedProcessorStats.getStats(startInterval, endTime)).collect(Collectors.toList());
+                    feedProcessorStatistics =
+                    feedProcessorStatsLoadingCache.asMap().values().stream().map(feedProcessorStats -> feedProcessorStats.getStats(collectionId, startInterval, endTime)).collect(Collectors.toList());
+
+                List<AggregatedFeedStatistics> feedStatistics = new ArrayList<>();
+                for(AggregatedFeedProcessorStatistics processorStatistics: feedProcessorStatistics){
+                    String feedName = processorStatistics.getFeedName();
+                    List<ProvenanceEventStats> feedEventStats = new ArrayList<>();
+                    for(AggregatedProcessorStatistics aggregatedProcessorStatistics : processorStatistics.getProcessorStats().values()){
+                        feedEventStats.addAll(aggregatedProcessorStatistics.getStats().getEventStatsList());
+                    }
+                    feedStatistics.add(new AggregatedFeedStatistics(feedName, new GroupedStats(collectionId, feedEventStats)));
+                }
+
+
                 List<AggregatedProcessorStatistics>
                     processorStatsForTime =
-                    processorStatsLoadingCache.asMap().values().stream().map(processorStats -> processorStats.getStats(startInterval, endTime)).collect(Collectors.toList());
+                    processorStatsLoadingCache.asMap().values().stream().map(processorStats -> processorStats.getStats(collectionId,startInterval, endTime)).collect(Collectors.toList());
 
                 //TODO SEND TO JMS HERE!
 
@@ -122,6 +140,8 @@ public class ProvenanceStatsCalculator {
         //1 get Feed Name for event
         String feedName = NifiFlowCache.instance().getFlow(event.getFlowFile()).getFeedName();
         ProvenanceEventStats eventStats = new ProvenanceEventStats(feedName, event);
+
+
 
         feedProcessorStatsLoadingCache.getUnchecked(feedName).addEventStats(eventStats);
         processorStatsLoadingCache.getUnchecked(event.getComponentId()).addProvenanceEventStats(eventStats);
@@ -152,7 +172,7 @@ public class ProvenanceStatsCalculator {
 
             }
         };
-        summaryTimer.schedule(task, 10 * 1000, interval);
+        summaryTimer.schedule(task, 10 * 1000, interval*1000);
     }
 
 }
