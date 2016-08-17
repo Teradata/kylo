@@ -40,12 +40,12 @@ public class FeedProcessorStats {
         return processorStats;
     }
 
-    public AggregratedFeedProcessorStatistics getStats(DateTime start, DateTime end) {
-        AggregratedFeedProcessorStatistics feedStatistics = new AggregratedFeedProcessorStatistics(feedName);
+    public AggregatedFeedProcessorStatistics getStats(DateTime start, DateTime end) {
+        AggregatedFeedProcessorStatistics feedStatistics = new AggregatedFeedProcessorStatistics(feedName);
         feedStatistics.setMinTime(start);
         feedStatistics.setMaxTime(end);
         for (Map.Entry<String, ProcessorStats> entry : processorStats.entrySet()) {
-            AggregratedProcessorStatistics statistics = entry.getValue().getStats(start, end);
+            AggregatedProcessorStatistics statistics = entry.getValue().getStats(start, end);
             feedStatistics.getProcessorStats().put(statistics.getProcessorId(), statistics);
         }
         feedStatistics.calculateTotalEvents();
