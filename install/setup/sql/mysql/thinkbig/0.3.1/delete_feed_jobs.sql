@@ -1,4 +1,5 @@
-use thinkbig;
+USE thinkbig;
+DROP PROCEDURE IF EXISTS `delete_feed_jobs`;
 DELIMITER $$
 CREATE DEFINER=`root`@`%` PROCEDURE `delete_feed_jobs`(in category varchar(255), in feed varchar(255))
 BEGIN
