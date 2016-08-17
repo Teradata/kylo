@@ -295,6 +295,18 @@ This step is required on the node that NiFi is installed on to set the correct p
         Note: If you want to perform actions as a root user in a development environment run the below command
         $ usermod -a -G supergroup root
 
+. For Clusters:
+
+In addition to adding the nifi/thinkbig user to the supergroup on the edge node you also need to add the users/groups to the name nodes on a cluster.
+
+    Hortonworks
+    $ useradd thinkbig
+    $ useradd nifi
+    $ usermod -G hdfs nifi
+    $ usermod -G hdfs thinkbig
+
+    Cloudera - <Fill me in after testing >
+
 === Create a dropzone folder on the edge node for file ingest, for example:
 Perform the following step on the node NiFI is installed on
 
