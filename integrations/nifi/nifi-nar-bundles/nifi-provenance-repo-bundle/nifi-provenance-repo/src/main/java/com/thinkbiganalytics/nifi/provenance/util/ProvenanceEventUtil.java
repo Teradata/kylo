@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.nifi.provenance.util;
 
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventRecordDTOComparator;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;
@@ -49,24 +50,7 @@ public class ProvenanceEventUtil {
 
 
     public static Comparator<ProvenanceEventRecordDTO> provenanceEventRecordDTOComparator() {
-        return new Comparator<ProvenanceEventRecordDTO>() {
-            @Override
-            public int compare(ProvenanceEventRecordDTO o1, ProvenanceEventRecordDTO o2) {
-                if (o1 == null && o1 == null) {
-                    return 0;
-                } else if (o1 != null && o2 == null) {
-                    return -1;
-                } else if (o1 == null && o2 != null) {
-                    return 1;
-                } else {
-                    int compare = o1.getEventTime().compareTo(o2.getEventTime());
-                    if (compare == 0) {
-                        compare = o1.getEventId().compareTo(o2.getEventId());
-                    }
-                    return compare;
-                }
-            }
-        };
+        return new ProvenanceEventRecordDTOComparator();
     }
 
 }

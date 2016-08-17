@@ -4,6 +4,7 @@ import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
 import com.thinkbiganalytics.activemq.SendJmsMessage;
 import com.thinkbiganalytics.nifi.activemq.ProvenanceEventReceiverDatabaseWriter;
 import com.thinkbiganalytics.nifi.activemq.Queues;
+import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.v2.ProvenanceEventConverter;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
@@ -60,6 +61,17 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
     @PostConstruct
     public void postConstruct() {
         logger.debug("!!!!!!!!!!!!!!! CREATED NEW ProvenanceEventRecordActiveMQWriter ");
+    }
+
+
+    public void writeStats(AggregatedFeedProcessorStatisticsHolder stats) {
+        try {
+            logger.info("SENDING AGGREGRATED STATS to JMS {} ", stats);
+            sendJmsMessage.sendObjectToQueue(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats);
+
+        } catch (Exception e) {
+            logger.error("JMS Error has occurred sending stats. Enable temporary queue", e);
+        }
     }
 
     @Override

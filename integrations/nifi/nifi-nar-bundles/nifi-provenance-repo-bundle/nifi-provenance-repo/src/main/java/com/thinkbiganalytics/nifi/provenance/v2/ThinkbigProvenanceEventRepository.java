@@ -52,8 +52,8 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
             //  provenanceEventRecordWriter.setEventId(repository.getMaxEventId());
             SpringInitializer.getInstance().initializeSpring();
             SpringApplicationListener listener = new SpringApplicationListener();
-           // listener.addObjectToAutowire("provenanceEventRecordWriter", provenanceEventRecordWriter);
-           // listener.autowire("provenanceEventRecordWriter", provenanceEventRecordWriter);
+            listener.addObjectToAutowire("provenanceEventRecordWriter", provenanceEventRecordWriter);
+            listener.autowire("provenanceEventRecordWriter", provenanceEventRecordWriter);
 
         } catch (IOException e) {
             throw new RuntimeException(e);

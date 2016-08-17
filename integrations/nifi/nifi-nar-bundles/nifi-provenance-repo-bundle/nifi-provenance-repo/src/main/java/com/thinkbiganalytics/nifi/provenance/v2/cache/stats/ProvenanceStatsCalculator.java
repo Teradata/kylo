@@ -5,13 +5,16 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatistics;
+import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStatistics;
 import com.thinkbiganalytics.nifi.provenance.model.stats.FeedProcessorStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProcessorStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
-import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
+import com.thinkbiganalytics.nifi.provenance.model.stats.StatsModel;
+import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventActiveMqWriter;
+import com.thinkbiganalytics.util.SpringApplicationContext;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -115,6 +118,23 @@ public class ProvenanceStatsCalculator {
 
                 //TODO SEND TO JMS HERE!
 
+                AggregatedFeedProcessorStatisticsHolder statisticsHolder = new AggregatedFeedProcessorStatisticsHolder();
+                statisticsHolder.setMinTime(startInterval);
+                statisticsHolder.setMaxTime(endTime);
+                statisticsHolder.setCollectionId(collectionId);
+                statisticsHolder.setCollectionInterval(aggregationIntervalSeconds);
+                statisticsHolder.setStatistics(feedProcessorStatistics);
+
+                ProvenanceEventActiveMqWriter activeMqWriter = null;
+                try {
+                    activeMqWriter = (ProvenanceEventActiveMqWriter) SpringApplicationContext.getBean(ProvenanceEventActiveMqWriter.class.getSimpleName());
+                } catch (Exception e) {
+                    log.error("UNABLE TO GET ACTIVEMQ bean from Spring!! ", e);
+                }
+                if (activeMqWriter != null) {
+                    log.info("WRITING STATS to JMS");
+                    activeMqWriter.writeStats(statisticsHolder);
+                }
                 //invalidate the caches
                 processorStatsLoadingCache.invalidateAll();
                 feedProcessorStatsLoadingCache.invalidateAll();
@@ -138,8 +158,8 @@ public class ProvenanceStatsCalculator {
         checkAndSend(new DateTime(event.getEventTime()));
 
         //1 get Feed Name for event
-        String feedName = NifiFlowCache.instance().getFlow(event.getFlowFile()).getFeedName();
-        ProvenanceEventStats eventStats = new ProvenanceEventStats(feedName, event);
+        String feedName = event.getFlowFile().getFirstEvent().getComponentId(); //NifiFlowCache.instance().getFlow(event.getFlowFile()).getFeedName();
+        ProvenanceEventStats eventStats = StatsModel.toProvenanceEventStats(feedName, event);
 
 
 

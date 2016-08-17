@@ -72,4 +72,39 @@ public class BaseStatistics {
     }
 
 
+    public void setBytesIn(Long bytesIn) {
+        this.bytesIn = bytesIn;
+    }
+
+    public void setBytesOut(Long bytesOut) {
+        this.bytesOut = bytesOut;
+    }
+
+    public void setDuration(Long duration) {
+        this.duration = duration;
+    }
+
+    public void setTotalCount(Long totalCount) {
+        this.totalCount = totalCount;
+    }
+
+    public void setJobsStarted(Long jobsStarted) {
+        this.jobsStarted = jobsStarted;
+    }
+
+    public void setJobsFinished(Long jobsFinished) {
+        this.jobsFinished = jobsFinished;
+    }
+
+    public void setProcessorsFailed(Long processorsFailed) {
+        this.processorsFailed = processorsFailed;
+    }
+
+    public void setFlowFilesStarted(Long flowFilesStarted) {
+        this.flowFilesStarted = flowFilesStarted;
+    }
+
+    public void setFlowFilesFinished(Long flowFilesFinished) {
+        this.flowFilesFinished = flowFilesFinished;
+    }
 }

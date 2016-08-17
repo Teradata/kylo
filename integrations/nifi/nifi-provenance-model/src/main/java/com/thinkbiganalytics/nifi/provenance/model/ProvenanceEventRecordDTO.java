@@ -1,7 +1,5 @@
 package com.thinkbiganalytics.nifi.provenance.model;
 
-import com.wordnik.swagger.annotations.ApiModelProperty;
-
 import org.apache.nifi.web.api.dto.provenance.AttributeDTO;
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 import org.apache.nifi.web.api.dto.util.TimestampAdapter;
@@ -40,7 +38,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The event uuid.")
     public String getId() {
         return dto.getId();
     }
@@ -51,7 +48,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The event id. This is a one up number thats unique per node.")
     public Long getEventId() {
         return dto.getEventId();
     }
@@ -63,7 +59,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
 
     @Override
     @XmlJavaTypeAdapter(TimestampAdapter.class)
-    @ApiModelProperty("The timestamp of the event.")
     public Date getEventTime() {
         return dto.getEventTime();
     }
@@ -74,7 +69,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The uuid of the flowfile for the event.")
     public String getFlowFileUuid() {
         return dto.getFlowFileUuid();
     }
@@ -85,7 +79,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The size of the flowfile for the event.")
     public String getFileSize() {
         return dto.getFileSize();
     }
@@ -96,7 +89,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The size of the flowfile in bytes for the event.")
     public Long getFileSizeBytes() {
         return dto.getFileSizeBytes();
     }
@@ -107,7 +99,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The type of the event.")
     public String getEventType() {
         return dto.getEventType();
     }
@@ -118,7 +109,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The attributes of the flowfile for the event.")
     public Collection<AttributeDTO> getAttributes() {
         return dto.getAttributes();
     }
@@ -129,7 +119,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The id of the group that the component resides in. If the component is no longer in the flow, the group id will not be set.")
     public String getGroupId() {
         return dto.getGroupId();
     }
@@ -140,7 +129,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The id of the component that generated the event.")
     public String getComponentId() {
         return dto.getComponentId();
     }
@@ -151,7 +139,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The name of the component that generated the event.")
     public String getComponentName() {
         return dto.getComponentName();
     }
@@ -162,7 +149,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The type of the component that generated the event.")
     public String getComponentType() {
         return dto.getComponentType();
     }
@@ -173,7 +159,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The source/destination system uri if the event was a RECEIVE/SEND.")
     public String getTransitUri() {
         return dto.getTransitUri();
     }
@@ -184,7 +169,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The alternate identifier uri for the fileflow for the event.")
     public String getAlternateIdentifierUri() {
         return dto.getAlternateIdentifierUri();
     }
@@ -195,7 +179,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The identifier for the node where the event originated.")
     public String getClusterNodeId() {
         return dto.getClusterNodeId();
     }
@@ -206,7 +189,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The label for the node where the event originated.")
     public String getClusterNodeAddress() {
         return dto.getClusterNodeAddress();
     }
@@ -217,7 +199,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The parent uuids for the event.")
     public List<String> getParentUuids() {
         return dto.getParentUuids();
     }
@@ -228,7 +209,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The child uuids for the event.")
     public List<String> getChildUuids() {
         return dto.getChildUuids();
     }
@@ -239,7 +219,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The event duration in milliseconds.")
     public Long getEventDuration() {
         return dto.getEventDuration();
     }
@@ -250,7 +229,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The duration since the lineage began, in milliseconds.")
     public Long getLineageDuration() {
         return dto.getLineageDuration();
     }
@@ -261,7 +239,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The source system flowfile id.")
     public String getSourceSystemFlowFileId() {
         return dto.getSourceSystemFlowFileId();
     }
@@ -272,7 +249,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The relationship to which the flowfile was routed if the event is of type ROUTE.")
     public String getRelationship() {
         return dto.getRelationship();
     }
@@ -283,7 +259,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The event details.")
     public String getDetails() {
         return dto.getDetails();
     }
@@ -294,7 +269,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("Whether the input and output content claim is the same.")
     public Boolean getContentEqual() {
         return dto.getContentEqual();
     }
@@ -305,7 +279,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("Whether the output content is still available.")
     public Boolean getOutputContentAvailable() {
         return dto.getOutputContentAvailable();
     }
@@ -316,7 +289,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The section in which the output content claim lives.")
     public String getOutputContentClaimSection() {
         return dto.getOutputContentClaimSection();
     }
@@ -327,7 +299,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The container in which the output content claim lives.")
     public String getOutputContentClaimContainer() {
         return dto.getOutputContentClaimContainer();
     }
@@ -338,7 +309,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The identifier of the output content claim.")
     public String getOutputContentClaimIdentifier() {
         return dto.getOutputContentClaimIdentifier();
     }
@@ -349,7 +319,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The offset into the output content claim where the flowfiles content begins.")
     public Long getOutputContentClaimOffset() {
         return dto.getOutputContentClaimOffset();
     }
@@ -360,7 +329,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The file size of the output content claim formatted.")
     public String getOutputContentClaimFileSize() {
         return dto.getOutputContentClaimFileSize();
     }
@@ -371,7 +339,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The file size of the output content claim in bytes.")
     public Long getOutputContentClaimFileSizeBytes() {
         return dto.getOutputContentClaimFileSizeBytes();
     }
@@ -382,7 +349,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("Whether the input content is still available.")
     public Boolean getInputContentAvailable() {
         return dto.getInputContentAvailable();
     }
@@ -393,7 +359,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The section in which the input content claim lives.")
     public String getInputContentClaimSection() {
         return dto.getInputContentClaimSection();
     }
@@ -404,7 +369,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The container in which the input content claim lives.")
     public String getInputContentClaimContainer() {
         return dto.getInputContentClaimContainer();
     }
@@ -415,7 +379,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The identifier of the input content claim.")
     public String getInputContentClaimIdentifier() {
         return dto.getInputContentClaimIdentifier();
     }
@@ -426,7 +389,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The offset into the input content claim where the flowfiles content begins.")
     public Long getInputContentClaimOffset() {
         return dto.getInputContentClaimOffset();
     }
@@ -437,7 +399,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The file size of the input content claim formatted.")
     public String getInputContentClaimFileSize() {
         return dto.getInputContentClaimFileSize();
     }
@@ -448,7 +409,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("The file size of the intput content claim in bytes.")
     public Long getInputContentClaimFileSizeBytes() {
         return dto.getInputContentClaimFileSizeBytes();
     }
@@ -459,7 +419,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("Whether or not replay is available.")
     public Boolean getReplayAvailable() {
         return dto.getReplayAvailable();
     }
@@ -470,7 +429,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty("Explanation as to why replay is unavailable.")
     public String getReplayExplanation() {
         return dto.getReplayExplanation();
     }
@@ -481,8 +439,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     @Override
-    @ApiModelProperty(
-        "The identifier of the queue/connection from which the flowfile was pulled to genereate this event. May be null if the queue/connection is unknown or the flowfile was generated from this event.")
     public String getSourceConnectionIdentifier() {
         return dto.getSourceConnectionIdentifier();
     }
@@ -527,7 +483,6 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
         return Objects.hash(dto.getEventId(), dto.getFlowFileUuid());
     }
 
-    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ProvenanceEventRecordDTO{");
         sb.append("eventId=").append(getEventId());

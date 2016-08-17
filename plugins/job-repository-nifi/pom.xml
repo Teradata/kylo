@@ -46,6 +46,13 @@
       <version>${project.version}</version>
     </dependency>
 
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-nifi-provenance-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
     <dependency>
       <groupId>com.thinkbiganalytics.metadata</groupId>
       <artifactId>thinkbig-metadata-api</artifactId>
