@@ -40,6 +40,6 @@ public class ProcessorStats {
     }
 
     public AggregatedProcessorStatistics getStats(DateTime start, DateTime end) {
-        return new AggregatedProcessorStatistics(processorId, StatisticsUtil.aggregrateStats(eventStats, start, end));
+        return new AggregatedProcessorStatistics(processorId, StatisticsUtil.aggregateStats(eventStats, start, end));
     }
 }

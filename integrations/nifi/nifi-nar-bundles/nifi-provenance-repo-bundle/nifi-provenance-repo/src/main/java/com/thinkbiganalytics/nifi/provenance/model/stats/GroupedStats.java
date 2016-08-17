@@ -26,6 +26,11 @@ public class GroupedStats extends BaseStatistics {
             this.bytesIn += stats.getBytesIn();
             this.bytesOut += stats.getBytesOut();
             this.duration += stats.getDuration();
+            this.processorsFailed += stats.getProcessorsFailed();
+            this.flowFilesStarted += stats.getFlowFilesStarted();
+            this.flowFilesFinished += stats.getFlowFilesFinished();
+            this.jobsStarted += stats.getJobsStarted();
+            this.jobsFinished += stats.getJobsFinished();
             if (this.time == null) {
                 this.time = stats.getTime();
             }
