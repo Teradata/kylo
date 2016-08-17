@@ -493,6 +493,11 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
 
+    public boolean isStartOfCurrentFlowFile() {
+        Integer index = flowFile.getCompletedEvents().indexOf(this);
+        return index == 0;
+    }
+
     public ProvenanceEventRecordDTO getPreviousEvent() {
         return previousEvent;
     }
