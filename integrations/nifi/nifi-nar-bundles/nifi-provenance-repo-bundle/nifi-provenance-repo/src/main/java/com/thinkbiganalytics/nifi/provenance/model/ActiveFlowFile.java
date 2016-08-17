@@ -152,6 +152,11 @@ public class ActiveFlowFile {
         return id;
     }
 
+    public boolean isStartOfCurrentFlowFile(ProvenanceEventRecordDTO event) {
+        Integer index = getCompletedEvents().indexOf(event);
+        return index == 0;
+    }
+
     public ProvenanceEventRecordDTO getPreviousEvent(ProvenanceEventRecordDTO event) {
         if (event.getPreviousEvent() == null) {
             Integer index = getCompletedEvents().indexOf(event);
