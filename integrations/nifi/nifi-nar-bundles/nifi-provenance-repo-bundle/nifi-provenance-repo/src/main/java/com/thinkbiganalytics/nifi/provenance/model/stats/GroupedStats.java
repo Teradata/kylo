@@ -10,13 +10,13 @@ import java.util.List;
  */
 public class GroupedStats extends BaseStatistics {
 
-    private DateTime groupKey;
+    private String groupKey;
     private DateTime minTime;
     private DateTime maxTime;
 
     private List<ProvenanceEventStats> eventStatsList;
 
-    public GroupedStats(DateTime groupKey, List<ProvenanceEventStats> eventStats) {
+    public GroupedStats(String groupKey, List<ProvenanceEventStats> eventStats) {
         this.groupKey = groupKey;
         this.eventStatsList = new ArrayList<>(eventStats);
 
@@ -45,6 +45,8 @@ public class GroupedStats extends BaseStatistics {
             this.minTime = (stats.getTime()).isBefore(this.minTime) ? stats.getTime() : this.minTime;
             this.time = this.minTime;
         });
+        //reassign as collection time
+        this.time = DateTime.now();
     }
 
     public DateTime getMinTime() {
@@ -55,8 +57,11 @@ public class GroupedStats extends BaseStatistics {
         return maxTime;
     }
 
-    public DateTime getGroupKey() {
+    public String getGroupKey() {
         return groupKey;
     }
 
+    public List<ProvenanceEventStats> getEventStatsList() {
+        return eventStatsList;
+    }
 }
