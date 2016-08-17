@@ -1,54 +1,24 @@
 package com.thinkbiganalytics.nifi.provenance.model.stats;
 
 import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import java.io.Serializable;
 
 /**
  * Created by sr186054 on 8/16/16. A Aggregrated stats
  */
-public class AggregatedProcessorStatistics implements Serializable {
-
-    private static final Logger log = LoggerFactory.getLogger(AggregatedProcessorStatistics.class);
+public class AggregatedProcessorStatistics {
 
     String processorId;
-    String processorName;
     GroupedStats stats;
     private Long totalEvents;
-
-    public AggregatedProcessorStatistics(){
-        this.stats = new GroupedStats();
-    }
-
-    public AggregatedProcessorStatistics(String processorId, String processorName) {
-        this.processorId = processorId;
-        this.processorName = processorName;
-        this.stats = new GroupedStats();
-    }
-
-    public AggregatedProcessorStatistics(String processorId, String processorName, String collectionId) {
-        this.processorId = processorId;
-        this.processorName = processorName;
-        this.stats = new GroupedStats();
-        this.stats.setGroupKey(collectionId);
-
-    }
 
     public AggregatedProcessorStatistics(GroupedStats stats) {
         this.stats = stats;
     }
 
-    public AggregatedProcessorStatistics(String processorId, String processorName, GroupedStats stats) {
+    public AggregatedProcessorStatistics(String processorId, GroupedStats stats) {
         this.processorId = processorId;
-        this.processorName = processorName;
         this.stats = stats;
         this.totalEvents = stats.getTotalCount();
-    }
-
-    public void add(ProvenanceEventStats stats) {
-        this.stats.add(stats);
     }
 
     public String getCollectionId() {
@@ -60,16 +30,16 @@ public class AggregatedProcessorStatistics implements Serializable {
         return processorId;
     }
 
+    public void setProcessorId(String processorId) {
+        this.processorId = processorId;
+    }
+
     public GroupedStats getStats() {
         return stats;
     }
 
     public void setStats(GroupedStats stats) {
         this.stats = stats;
-    }
-
-    public String getProcessorName() {
-        return processorName;
     }
 
     public DateTime getMinTime() {
@@ -82,15 +52,5 @@ public class AggregatedProcessorStatistics implements Serializable {
 
     public Long getTotalEvents() {
         return totalEvents;
-    }
-
-    @Override
-    public String toString() {
-        final StringBuilder sb = new StringBuilder("AggregatedProcessorStatistics{");
-        sb.append("processorId='").append(processorId).append('\'');
-        sb.append(", processorName='").append(processorName).append('\'');
-        sb.append(", stats=").append(stats);
-        sb.append('}');
-        return sb.toString();
     }
 }

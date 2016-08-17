@@ -2,37 +2,29 @@ package com.thinkbiganalytics.nifi.provenance.model.stats;
 
 import org.joda.time.DateTime;
 
-import java.io.Serializable;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Created by sr186054 on 8/16/16.
  */
-public class AggregatedFeedProcessorStatistics implements Serializable {
+public class AggregatedFeedProcessorStatistics {
 
     String feedName;
     String processGroup;
     DateTime minTime;
     DateTime maxTime;
-    private String collectionId;
     private Long totalEvents = 0L;
 
-    Map<String, AggregatedProcessorStatistics> processorStats = new ConcurrentHashMap<>();
+    Map<String, AggregatedProcessorStatistics> processorStats;
 
     public AggregatedFeedProcessorStatistics() {
     }
 
-    public AggregatedFeedProcessorStatistics(String feedName, String collectionId) {
+    public AggregatedFeedProcessorStatistics(String feedName) {
         this.feedName = feedName;
-        this.collectionId = collectionId;
     }
 
-
-    public void addEventStats(ProvenanceEventStats stats) {
-        processorStats.computeIfAbsent(stats.getProcessorId(), processorId -> new AggregatedProcessorStatistics(processorId, stats.getProcessorName(), collectionId)).add(stats);
-        totalEvents++;
-    }
 
     public String getFeedName() {
         return feedName;
@@ -51,6 +43,9 @@ public class AggregatedFeedProcessorStatistics implements Serializable {
     }
 
     public Map<String, AggregatedProcessorStatistics> getProcessorStats() {
+        if (processorStats == null) {
+            processorStats = new HashMap<>();
+        }
         return processorStats;
     }
 
