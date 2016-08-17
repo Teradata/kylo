@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.server;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import com.thinkbiganalytics.jobrepo.config.JobRepositoryJpaConfiguration;
+import com.thinkbiganalytics.rest.SpringJerseyConfiguration;
 
 import org.springframework.beans.factory.config.PropertyOverrideConfigurer;
 import org.springframework.boot.SpringApplication;
@@ -17,13 +17,14 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.annotation.SchedulingConfigurer;
 import org.springframework.scheduling.config.ScheduledTaskRegistrar;
 
-import com.thinkbiganalytics.rest.SpringJerseyConfiguration;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 @Configuration
 @SpringBootApplication
 @EnableAutoConfiguration(exclude = {VelocityAutoConfiguration.class})
 @EnableConfigurationProperties
-@Import({DatabaseConfiguration.class, SpringJerseyConfiguration.class})
+@Import({DatabaseConfiguration.class, JobRepositoryJpaConfiguration.class,SpringJerseyConfiguration.class})
 @ComponentScan("com.thinkbiganalytics") //FIX this
 public class ThinkbigServerApplication implements SchedulingConfigurer {
 
