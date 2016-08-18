@@ -53,4 +53,11 @@ public class ProvenanceEventUtil {
         return new ProvenanceEventRecordDTOComparator();
     }
 
+    public static String getFeedName(ProvenanceEventRecordDTO event){
+        return null;
+    }
+    public static String getFeedProcessGroupId(ProvenanceEventRecordDTO event){
+        return null;
+    }
+
 }

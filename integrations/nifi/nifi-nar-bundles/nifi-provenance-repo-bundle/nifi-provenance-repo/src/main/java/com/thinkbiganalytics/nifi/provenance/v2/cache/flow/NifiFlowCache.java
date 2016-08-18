@@ -28,7 +28,7 @@ public class NifiFlowCache {
 
     private static final Logger log = LoggerFactory.getLogger(NifiFlowCache.class);
 
-    private boolean active = false;
+    private boolean active = true;
 
     private NifiFlowClient nifiFlowClient;
 
@@ -42,7 +42,7 @@ public class NifiFlowCache {
 
     private void initClient() {
         if (active) {
-            nifiFlowClient = new NifiFlowClient(URI.create("http://localhost:8400/proxy/v1"), NifiFlowClient.createCredentialProvider("dladmin", "thinkbig"));
+            nifiFlowClient = new NifiFlowClient(URI.create("http://localhost:8079"));
         }
     }
 

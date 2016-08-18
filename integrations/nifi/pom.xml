@@ -11,12 +11,9 @@
 
     <modules>
         <module>nifi-provenance-model</module>
-        <module>nifi-flow-rest-model</module>
-        <module>nifi-flow-rest-client</module>
+        <module>nifi-rest</module>
         <module>nifi-nar-bundles</module>
         <module>nifi-jms</module>
-        <module>nifi-rest-client</module>
-        <module>nifi-rest-model</module>
         <module>nifi-security</module>
     </modules>
 

@@ -4,7 +4,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
+import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 
 import org.apache.nifi.web.api.dto.TemplateDTO;
@@ -74,7 +74,7 @@ public abstract class AbstractFeedManagerTemplateService {
         }
         if(registeredTemplate != null)
         {
-            if(NifiPropertyUtil.containsPropertiesForProcessorMatchingType(registeredTemplate.getProperties(), NifiConstants.TRIGGER_FEED_PROCESSOR_CLASS)){
+            if (NifiPropertyUtil.containsPropertiesForProcessorMatchingType(registeredTemplate.getProperties(), NifiFeedConstants.TRIGGER_FEED_PROCESSOR_CLASS)) {
                 registeredTemplate.setAllowPreconditions(true);
             }
             else {

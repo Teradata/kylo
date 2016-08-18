@@ -13,6 +13,7 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProcessorStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.StatsModel;
+import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
 import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventActiveMqWriter;
 import com.thinkbiganalytics.util.SpringApplicationContext;
 
@@ -173,7 +174,7 @@ public class ProvenanceStatsCalculator {
         ///TODO:1)  Wire in the NifiFlowCache to hit the NifRestClient directly so Nifi is just depenent upon itself, not ops manager!!
         //TODO:2) HANDLE MID FLOW events (i.e. Nifi goes down and comes back up.   Cant rely on looking at the flow file to get the first event/processor/group
 
-        String feedName = event.getFlowFile().getFirstEvent().getComponentId(); //NifiFlowCache.instance().getFlow(event.getFlowFile()).getFeedName();
+        String feedName = NifiFlowCache.instance().getFlow(event.getFlowFile()).getFeedName();
         ProvenanceEventStats eventStats = StatsModel.toProvenanceEventStats(feedName, event);
 
 
