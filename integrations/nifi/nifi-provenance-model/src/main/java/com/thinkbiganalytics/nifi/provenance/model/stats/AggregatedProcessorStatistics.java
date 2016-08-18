@@ -11,6 +11,10 @@ public class AggregatedProcessorStatistics {
     GroupedStats stats;
     private Long totalEvents;
 
+    public AggregatedProcessorStatistics(){
+
+    }
+
     public AggregatedProcessorStatistics(GroupedStats stats) {
         this.stats = stats;
     }

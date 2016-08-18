@@ -22,7 +22,7 @@ public class StatsModel {
         stats.setRootFlowFileId(event.getFlowFile().getRootFlowFile().getId());
         stats.setEventDetails(event.getDetails());
         stats.setRootProcessGroupId(event.getFlowFile().getRootFlowFile().getFirstEvent().getGroupId());
-        stats.setJobsStarted(event.getFlowFile().isRootFlowFile() ? 1L : 0L);
+        stats.setJobsStarted((event.getFlowFile().isRootFlowFile() && event.getFlowFile().getRootFlowFile().isStartOfCurrentFlowFile(event)) ? 1L : 0L);
         stats.setJobsFinished(event.getFlowFile().isFlowComplete() ? 1L : 0L);
         stats.setFlowFilesStarted(event.isStartOfCurrentFlowFile() ? 1L : 0L);
         stats.setFlowFilesFinished(event.getFlowFile().isCurrentFlowFileComplete() ? 1L : 0L);

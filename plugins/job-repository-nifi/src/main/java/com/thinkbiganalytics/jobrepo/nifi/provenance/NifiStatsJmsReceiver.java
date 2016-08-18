@@ -6,10 +6,12 @@ import com.thinkbiganalytics.jobrepo.jpa.NifiEventStatisticsProvider;
 import com.thinkbiganalytics.jobrepo.jpa.NifiEventSummaryStats;
 import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
+import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
 
 import org.springframework.jms.annotation.JmsListener;
 
-import java.util.UUID;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.inject.Inject;
 
@@ -30,10 +32,49 @@ public class NifiStatsJmsReceiver {
     public void receiveTopic(AggregatedFeedProcessorStatisticsHolder stats) {
 
         operationalMetadataAccess.commit(() -> {
-            String feedName = UUID.randomUUID().toString();
-            nifiEventStatisticsProvider.create(new NifiEventSummaryStats(feedName, UUID.randomUUID().toString()));
-            return null;
+            List<NifiEventSummaryStats> summaryStats = createSummaryStats(stats);
+            for (NifiEventSummaryStats stat : summaryStats) {
+                nifiEventStatisticsProvider.create(stat);
+            }
+            return summaryStats;
         });
 
+    }
+
+    private List<NifiEventSummaryStats> createSummaryStats(AggregatedFeedProcessorStatisticsHolder holder) {
+        List<NifiEventSummaryStats> nifiEventSummaryStatsList = new ArrayList<>();
+        holder.getStatistics().forEach(feedProcessorStats ->
+                                       {
+                                           String feedName = feedProcessorStats.getFeedName();
+                                           feedProcessorStats.getProcessorStats().values().forEach(processorStats ->
+                                                                                                   {
+                                                                                                       NifiEventSummaryStats nifiEventSummaryStats = toSummaryStats(processorStats.getStats());
+                                                                                                       nifiEventSummaryStats.setFeedName(feedName);
+                                                                                                       nifiEventSummaryStats.setProcessorId(processorStats.getProcessorId());
+                                                                                                       nifiEventSummaryStats.setFeedProcessGroupId(feedProcessorStats.getProcessGroup());
+                                                                                                       nifiEventSummaryStatsList.add(nifiEventSummaryStats);
+                                                                                                   });
+
+                                       });
+        return nifiEventSummaryStatsList;
+
+    }
+
+    private NifiEventSummaryStats toSummaryStats(GroupedStats groupedStats) {
+        NifiEventSummaryStats nifiEventSummaryStats = new NifiEventSummaryStats();
+        nifiEventSummaryStats.setTotalCount(groupedStats.getTotalCount());
+        nifiEventSummaryStats.setFlowFilesFinished(groupedStats.getFlowFilesFinished());
+        nifiEventSummaryStats.setFlowFilesStarted(groupedStats.getFlowFilesStarted());
+        nifiEventSummaryStats.setCollectionId(groupedStats.getGroupKey());
+        nifiEventSummaryStats.setBytesIn(groupedStats.getBytesIn());
+        nifiEventSummaryStats.setBytesOut(groupedStats.getBytesOut());
+        nifiEventSummaryStats.setDuration(groupedStats.getDuration());
+        nifiEventSummaryStats.setJobsFinished(groupedStats.getJobsFinished());
+        nifiEventSummaryStats.setJobsStarted(groupedStats.getJobsStarted());
+        nifiEventSummaryStats.setProcessorsFailed(groupedStats.getProcessorsFailed());
+        nifiEventSummaryStats.setCollectionTime(groupedStats.getTime());
+        nifiEventSummaryStats.setMinEventTime(groupedStats.getMinTime());
+        nifiEventSummaryStats.setMaxEventTime(groupedStats.getMaxTime());
+        return nifiEventSummaryStats;
     }
 }

@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.jobrepo.jpa;
 
 import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import javax.persistence.Column;
@@ -29,10 +30,14 @@ public class NifiEventSummaryStats {
     @Column(name = "NIFI_PROCESSOR_ID")
     private String processorId;
 
+    @Column(name = "PROCESSOR_NAME")
+    private String processorName;
+
     @Column(name = "NIFI_FEED_PROCESS_GROUP_ID")
     private String feedProcessGroupId;
 
-
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Column(name = "COLLECTION_TIME")
     private DateTime collectionTime;
 
     @Column(name = "COLLECTION_ID")
@@ -41,15 +46,32 @@ public class NifiEventSummaryStats {
     @Column(name = "DURATION_MILLIS")
     protected Long duration = 0L;
 
-    protected DateTime time;
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Column(name = "MIN_EVENT_TIME")
+    protected DateTime minEventTime;
+
+
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Column(name = "MAX_EVENT_TIME")
+    protected DateTime maxEventTime;
+
+    @Column(name = "BYTES_IN")
     protected Long bytesIn = 0L;
+
+    @Column(name = "BYTES_OUT")
     protected Long bytesOut = 0L;
 
+    @Column(name = "TOTAL_EVENTS")
     protected Long totalCount = 1L;
+    @Column(name = "JOBS_STARTED")
     protected Long jobsStarted = 0L;
+    @Column(name = "JOBS_FINISHED")
     protected Long jobsFinished = 0L;
+    @Column(name = "PROCESSORS_FAILED")
     protected Long processorsFailed = 0L;
+    @Column(name = "FLOW_FILES_STARTED")
     protected Long flowFilesStarted = 0L;
+    @Column(name = "FLOW_FILES_FINISHED")
     protected Long flowFilesFinished = 0L;
 
 
@@ -62,6 +84,14 @@ public class NifiEventSummaryStats {
     }
 
     public NifiEventSummaryStats() {
+    }
+
+    public String getProcessorName() {
+        return processorName;
+    }
+
+    public void setProcessorName(String processorName) {
+        this.processorName = processorName;
     }
 
     public String getFeedName() {
@@ -97,13 +127,7 @@ public class NifiEventSummaryStats {
         this.feedProcessGroupId = feedProcessGroupId;
     }
 
-    public DateTime getCollectionTime() {
-        return collectionTime;
-    }
 
-    public void setCollectionTime(DateTime collectionTime) {
-        this.collectionTime = collectionTime;
-    }
 
     public String getCollectionId() {
         return collectionId;
@@ -121,13 +145,6 @@ public class NifiEventSummaryStats {
         this.duration = duration;
     }
 
-    public DateTime getTime() {
-        return time;
-    }
-
-    public void setTime(DateTime time) {
-        this.time = time;
-    }
 
     public Long getBytesIn() {
         return bytesIn;
@@ -191,5 +208,29 @@ public class NifiEventSummaryStats {
 
     public void setFlowFilesFinished(Long flowFilesFinished) {
         this.flowFilesFinished = flowFilesFinished;
+    }
+
+    public DateTime getCollectionTime() {
+        return collectionTime;
+    }
+
+    public void setCollectionTime(DateTime collectionTime) {
+        this.collectionTime = collectionTime;
+    }
+
+    public DateTime getMinEventTime() {
+        return minEventTime;
+    }
+
+    public void setMinEventTime(DateTime minEventTime) {
+        this.minEventTime = minEventTime;
+    }
+
+    public DateTime getMaxEventTime() {
+        return maxEventTime;
+    }
+
+    public void setMaxEventTime(DateTime maxEventTime) {
+        this.maxEventTime = maxEventTime;
     }
 }
