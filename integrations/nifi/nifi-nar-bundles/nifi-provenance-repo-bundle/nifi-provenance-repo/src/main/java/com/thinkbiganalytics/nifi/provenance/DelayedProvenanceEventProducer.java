@@ -91,7 +91,11 @@ public class DelayedProvenanceEventProducer {
 
     public void add(ProvenanceEventDTO event) {
         ProvenanceEventRecordDTO eventDto = cache(event);
-        ProvenanceStatsCalculator.instance().calculateStats(eventDto);
+        try {
+            ProvenanceStatsCalculator.instance().calculateStats(eventDto);
+        }catch (Exception e){
+            log.error("Error calculating stats ",e);
+        }
         DelayedProvenanceEvent delayedProvenanceEvent = new DelayedProvenanceEvent(eventDto, configuration.getProcessDelay());
         queue.offer(delayedProvenanceEvent);
 

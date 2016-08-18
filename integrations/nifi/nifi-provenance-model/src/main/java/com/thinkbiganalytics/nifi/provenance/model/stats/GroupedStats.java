@@ -16,6 +16,9 @@ public class GroupedStats extends BaseStatistics {
 
     private List<ProvenanceEventStats> eventStatsList;
 
+    public GroupedStats() {
+    }
+
     public GroupedStats(String groupKey, List<ProvenanceEventStats> eventStats) {
         this.groupKey = groupKey;
         this.eventStatsList = new ArrayList<>(eventStats);
@@ -41,7 +44,7 @@ public class GroupedStats extends BaseStatistics {
             if (this.maxTime == null) {
                 this.maxTime = stats.getTime();
             }
-            this.maxTime = (stats.getTime()).isBefore(this.maxTime) ? stats.getTime() : this.maxTime;
+            this.maxTime = (stats.getTime()).isAfter(this.maxTime) ? stats.getTime() : this.maxTime;
             this.minTime = (stats.getTime()).isBefore(this.minTime) ? stats.getTime() : this.minTime;
             this.time = this.minTime;
         });

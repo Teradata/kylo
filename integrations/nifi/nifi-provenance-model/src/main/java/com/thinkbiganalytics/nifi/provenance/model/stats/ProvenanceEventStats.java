@@ -22,6 +22,10 @@ public class ProvenanceEventStats extends BaseStatistics {
 
     }
 
+    public ProvenanceEventStats() {
+
+    }
+
     public ProvenanceEventStats(String feedName) {
         this.feedName = feedName;
     }
