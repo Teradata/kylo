@@ -28,8 +28,8 @@ public class StatsModel {
         stats.setFlowFilesFinished(event.getFlowFile().isCurrentFlowFileComplete() ? 1L : 0L);
 
         //calc Job duration????
-        if (stats.getJobsFinished() == 1) {
-            Long totalJobTime = event.getEventTime().getTime() - event.getFlowFile().getFirstEvent().getEventTime().getTime();
+        if (stats.getJobsFinished() == 1L) {
+            //  Long totalJobTime = event.getEventTime().getTime() - event.getFlowFile().getFirstEvent().getEventTime().getTime();
 
         }
 

@@ -18,6 +18,7 @@ public class BaseStatistics {
     protected Long flowFilesStarted = 0L;
     protected Long flowFilesFinished = 0L;
 
+
     public DateTime getTime() {
         return time;
     }
