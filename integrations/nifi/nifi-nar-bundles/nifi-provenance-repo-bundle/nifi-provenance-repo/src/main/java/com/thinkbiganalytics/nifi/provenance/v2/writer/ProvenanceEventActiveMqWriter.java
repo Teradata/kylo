@@ -60,7 +60,7 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
 
     @PostConstruct
     public void postConstruct() {
-        logger.debug("!!!!!!!!!!!!!!! CREATED NEW ProvenanceEventRecordActiveMQWriter ");
+        logger.info("!!!!!!!!!!!!!!! CREATED NEW ProvenanceEventRecordActiveMQWriter ");
     }
 
 

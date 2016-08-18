@@ -17,6 +17,10 @@ public class ProvenanceEventStats extends BaseStatistics {
     private String rootFlowFileId;
     private String rootProcessGroupId;
 
+    public ProvenanceEventStats() {
+
+    }
+
     public ProvenanceEventStats(String feedName) {
         this.feedName = feedName;
     }

@@ -1,50 +1,126 @@
 package com.thinkbiganalytics.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
+import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * Wrapper to always return a reference to the Spring Application Context from
- * within non-Spring enabled beans. Unlike Spring MVC's WebApplicationContextUtils
- * we do not need a reference to the Servlet context for this. All we need is
- * for this bean to be initialized during application startup.
+ * Created by sr186054 on 3/3/16.
  */
-public class SpringApplicationContext implements ApplicationContextAware {
+public class SpringApplicationContext {
     private static final Logger log = LoggerFactory.getLogger(SpringApplicationContext.class);
 
-    private static ApplicationContext CONTEXT;
-
-    /**
-     * This method is called from within the ApplicationContext once it is
-     * done starting up, it will stick a reference to itself into this bean.
-     *
-     * @param context a reference to the ApplicationContext.
-     */
-    public void setApplicationContext(ApplicationContext context) throws BeansException {
-        log.info("!!!!!!!!!!!!!!!SET APP CONTEXT!!~!!!!!!!!!!");
-        CONTEXT = context;
+    private static class LazyHolder {
+        static final SpringApplicationContext INSTANCE = new SpringApplicationContext();
     }
 
-    public static ApplicationContext getApplicationContext() {
-        return CONTEXT;
+    public static SpringApplicationContext getInstance() {
+        return LazyHolder.INSTANCE;
+    }
+
+    private static ApplicationContext applicationContext;
+
+    private AtomicBoolean initialized = new AtomicBoolean(false);
+
+    public void initializeSpring() {
+        if (initialized.compareAndSet(false,true)) {
+            ApplicationContext applicationContext = new ClassPathXmlApplicationContext(new String[]{"application-context.xml"});
+            this.applicationContext = applicationContext;
+        }
+    }
+
+    public  ApplicationContext getApplicationContext() {
+        return applicationContext;
+    }
+
+    public  Object getBean(String beanName) throws BeansException {
+        if(applicationContext == null){
+            initializeSpring();
+        }
+        if(applicationContext != null) {
+            try {
+                return this.applicationContext.getBean(beanName);
+            }catch(Exception e){
+                log.error("Error getting bean {} , {} ",beanName,e.getMessage(),e);
+            }
+        }
+        else {
+            log.error("Unable to get Spring bean for {}.  Application Context is null");
+        }
+        return null;
+
+    }
+
+    public  String printBeanNames(){
+        if(applicationContext == null){
+            initializeSpring();
+        }
+        if(applicationContext != null) {
+            String beanNames = StringUtils.join(applicationContext.getBeanDefinitionNames(), ",");
+            log.info("SPRING BEANS: " + beanNames);
+            return beanNames;
+        }
+        else {
+            log.error("LOG: ERROR CONTEXT IS NULL");
+            return null;
+        }
     }
 
     /**
-     * This is about the same as context.getBean("beanName"), except it has its
-     * own static handle to the Spring context, so calling this method statically
-     * will give access to the beans by name in the Spring application context.
-     * As in the context.getBean("beanName") call, the caller must cast to the
-     * appropriate target class. If the bean does not exist, then a Runtime error
-     * will be thrown.
-     *
-     * @param beanName the name of the bean to get.
-     * @return an Object reference to the named bean.
+     * Autowire properties in the object
+     * @param key
+     * @param obj
+     * @return
      */
-    public static Object getBean(String beanName) throws BeansException {
-        return CONTEXT.getBean(beanName);
+    public  Object  autowire(String key, Object obj) {
+
+        return autowire(key,obj,true);
+    }
+
+
+    /**
+     * Autowire an object
+     * Force it to be autowired even if the bean is not registered with the appcontext
+     * @param key
+     * @param obj
+     * @param force
+     * @return
+     */
+    public Object autowire(String key, Object obj,boolean force) {
+        Object bean = null;
+            try {
+                bean = SpringApplicationContext.getInstance().getBean(key);
+            } catch (Exception e) {
+
+            }
+        if (bean == null  || force) {
+
+            try {
+                if (applicationContext == null) {
+                    initializeSpring();
+                }
+                if (applicationContext != null) {
+                    AutowireCapableBeanFactory autowire = getApplicationContext().getAutowireCapableBeanFactory();
+                    autowire.autowireBean(obj);
+                    //fire PostConstruct methods
+                    autowire.initializeBean(obj, key);
+                    return obj;
+                } else {
+                    log.error("Unable to autowire {} with Object.  ApplicationContext is null.", key, obj);
+                }
+            } catch (Exception e) {
+                log.error("Unable to autowire {} with Object ", key, obj);
+            }
+        }
+        else if( bean != null){
+            return bean;
+        }
+        return null;
     }
 }

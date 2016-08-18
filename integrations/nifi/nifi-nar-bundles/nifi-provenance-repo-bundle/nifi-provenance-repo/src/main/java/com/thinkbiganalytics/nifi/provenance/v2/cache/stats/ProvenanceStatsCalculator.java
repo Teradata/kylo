@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.stream.Collectors;
@@ -55,6 +56,9 @@ public class ProvenanceStatsCalculator {
 
     private Lock aggregatingStatsLock = null;
 
+    private ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter;
+
+    private AtomicBoolean autowired = new AtomicBoolean(false);
     private ProvenanceStatsCalculator() {
 
         processorStatsLoadingCache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<String, ProcessorStats>() {
@@ -62,7 +66,7 @@ public class ProvenanceStatsCalculator {
                                                                                        public ProcessorStats load(String processorId) throws Exception {
                                                                                            ProcessorStats stats = new ProcessorStats(processorId);
                                                                                            return stats;
-                                                                                        }
+                                                                                       }
                                                                                    }
         );
 
@@ -75,9 +79,22 @@ public class ProvenanceStatsCalculator {
                                                                                        }
         );
         this.aggregatingStatsLock = new ReentrantReadWriteLock(true).readLock();
+        provenanceEventActiveMqWriter = new ProvenanceEventActiveMqWriter();
+        checkAndAutowire();
         init();
 
 
+    }
+
+    private void checkAndAutowire() {
+        if (autowired.compareAndSet(false, true)) {
+            log.info("CHECK AND attempt to Autowire ActiveMqWriter");
+            //   SpringApplicationListener.addObjectToAutowire("provenanceEventActiveMqWriter", provenanceEventActiveMqWriter);
+            SpringApplicationContext.getInstance().autowire("provenanceEventActiveMqWriter", provenanceEventActiveMqWriter);
+            Object bean = SpringApplicationContext.getInstance().getBean("provenanceEventActiveMqWriter");
+            log.info("AutowireResult: " + autowired + " " + bean);
+            autowired.set(bean != null);
+        }
     }
 
     /**
@@ -125,15 +142,10 @@ public class ProvenanceStatsCalculator {
                 statisticsHolder.setCollectionInterval(aggregationIntervalSeconds);
                 statisticsHolder.setStatistics(feedProcessorStatistics);
 
-                ProvenanceEventActiveMqWriter activeMqWriter = null;
-                try {
-                    activeMqWriter = (ProvenanceEventActiveMqWriter) SpringApplicationContext.getBean(ProvenanceEventActiveMqWriter.class.getSimpleName());
-                } catch (Exception e) {
-                    log.error("UNABLE TO GET ACTIVEMQ bean from Spring!! ", e);
-                }
-                if (activeMqWriter != null) {
+                if (provenanceEventActiveMqWriter != null) {
                     log.info("WRITING STATS to JMS");
-                    activeMqWriter.writeStats(statisticsHolder);
+                    checkAndAutowire();
+                    provenanceEventActiveMqWriter.writeStats(statisticsHolder);
                 }
                 //invalidate the caches
                 processorStatsLoadingCache.invalidateAll();
@@ -158,6 +170,9 @@ public class ProvenanceStatsCalculator {
         checkAndSend(new DateTime(event.getEventTime()));
 
         //1 get Feed Name for event
+        ///TODO:1)  Wire in the NifiFlowCache to hit the NifRestClient directly so Nifi is just depenent upon itself, not ops manager!!
+        //TODO:2) HANDLE MID FLOW events (i.e. Nifi goes down and comes back up.   Cant rely on looking at the flow file to get the first event/processor/group
+
         String feedName = event.getFlowFile().getFirstEvent().getComponentId(); //NifiFlowCache.instance().getFlow(event.getFlowFile()).getFeedName();
         ProvenanceEventStats eventStats = StatsModel.toProvenanceEventStats(feedName, event);
 

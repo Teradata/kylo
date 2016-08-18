@@ -4,7 +4,7 @@
 
 package com.thinkbiganalytics.activemq.config;
 
-import javax.jms.ConnectionFactory;
+import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
 
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.apache.activemq.pool.PooledConnectionFactory;
@@ -21,7 +21,7 @@ import org.springframework.jms.core.JmsMessagingTemplate;
 import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 
-import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
+import javax.jms.ConnectionFactory;
 
 
 /**
@@ -59,6 +59,7 @@ public class ActiveMqConfig {
         factory.setConcurrency("1-1");
         MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
         converter.setTargetType(MessageType.TEXT);
+        converter.setObjectMapper(objectMapperSerializer().getMapper());
         converter.setTypeIdPropertyName("jms_javatype");
         factory.setMessageConverter(converter);
         return factory;
