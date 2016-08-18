@@ -31,7 +31,7 @@ cp $NIFI_SETUP_DIR/*.nar /opt/nifi/data/lib
 cp $NIFI_SETUP_DIR/thinkbig-spark-*.jar /opt/nifi/data/lib/app
 
 echo "Creating symbolic links to jar files"
-./create-symbolic-links.sh
+$NIFI_SETUP_DIR/create-symbolic-links.sh
 
 echo "Copy the mysql lib from a lib folder to /opt/nifi/mysql"
 mkdir /opt/nifi/mysql
