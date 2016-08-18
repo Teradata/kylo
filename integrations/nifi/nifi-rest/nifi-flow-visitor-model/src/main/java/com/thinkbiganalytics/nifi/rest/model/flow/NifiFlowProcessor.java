@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -17,9 +16,11 @@ import java.util.Set;
  * Object in a NifiFlow that has pointers to all its sources (parents)  and children (destinations)
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class NifiFlowProcessor implements Serializable {
+public class NifiFlowProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(NifiFlowProcessor.class);
+
+    private int _id;
 
     @JsonProperty("id")
     private String id;
@@ -28,6 +29,7 @@ public class NifiFlowProcessor implements Serializable {
     private boolean isFailure;
     private boolean isEnd;
 
+    private NifiProcessingStatistics processingStatistics = new NifiProcessingStatistics();
 
     private NifiFlowProcessGroup processGroup;
 
@@ -40,10 +42,6 @@ public class NifiFlowProcessor implements Serializable {
     private Set<String> sourceIds;
 
     private Set<String> destinationIds;
-
-    private Set<NiFiFlowProcessorConnection> sourceConnectionIds;
-
-    private Set<NiFiFlowProcessorConnection> destinationConnectionIds;
 
 
     private Set<NifiFlowProcessor> failureProcessors;
@@ -184,28 +182,6 @@ public class NifiFlowProcessor implements Serializable {
         this.destinationIds = destinationIds;
     }
 
-    public Set<NiFiFlowProcessorConnection> getSourceConnectionIds() {
-        if (sourceConnectionIds == null) {
-            sourceConnectionIds = new HashSet<>();
-        }
-        return sourceConnectionIds;
-    }
-
-    public void setSourceConnectionIds(Set<NiFiFlowProcessorConnection> sourceConnectionIds) {
-        this.sourceConnectionIds = sourceConnectionIds;
-    }
-
-    public Set<NiFiFlowProcessorConnection> getDestinationConnectionIds() {
-        if (destinationConnectionIds == null) {
-            destinationConnectionIds = new HashSet<>();
-        }
-        return destinationConnectionIds;
-    }
-
-    public void setDestinationConnectionIds(Set<NiFiFlowProcessorConnection> destinationConnectionIds) {
-        this.destinationConnectionIds = destinationConnectionIds;
-    }
-
     public void print() {
 
         print(0);
@@ -235,4 +211,11 @@ public class NifiFlowProcessor implements Serializable {
             .equalsIgnoreCase(parentId));
     }
 
+    public int get_id() {
+        return _id;
+    }
+
+    public void set_id(int _id) {
+        this._id = _id;
+    }
 }

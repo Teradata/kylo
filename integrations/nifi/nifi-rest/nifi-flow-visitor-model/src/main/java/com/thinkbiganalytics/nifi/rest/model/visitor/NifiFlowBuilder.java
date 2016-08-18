@@ -8,7 +8,6 @@ import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -27,14 +26,6 @@ public class NifiFlowBuilder {
     public NifiFlowProcessGroup build(NifiVisitableProcessGroup group) {
         NifiFlowProcessGroup flowProcessGroup = toFlowProcessGroup(group);
         flowProcessGroup.setProcessorMap(cache);
-        //reassign the failure map
-        if (group.getFailureConnectionIdToSourceProcessorIds() != null) {
-            group.getFailureConnectionIdToSourceProcessorIds().entrySet().forEach(connectionIdProcessorIdEntry -> {
-                flowProcessGroup.getFailureConnectionIdToSourceProcessorMap().computeIfAbsent(connectionIdProcessorIdEntry.getKey(), (connectionId) -> new ArrayList<>()).addAll(
-                    connectionIdProcessorIdEntry.getValue().stream().map(processorId -> cache.get(processorId)).collect(Collectors.toList()));
-            });
-        }
-
         ProcessGroupDTO groupDTO = group.getParentProcessGroup();
         if (groupDTO != null) {
             flowProcessGroup.setParentGroupId(groupDTO.getId());
@@ -76,13 +67,12 @@ public class NifiFlowBuilder {
             Set<NifiFlowProcessor> failureProcessors = new HashSet<>(Collections2.transform(processor.getFailureProcessors(), PROCESSOR_DTO_TO_FLOW_PROCESSOR));
             flowProcessor.setIsFailure(processor.isFailureProcessor());
             flowProcessor.setIsEnd(processor.isEnd());
+
             flowProcessor.setSourceIds(sources.stream().map(source -> source.getId()).collect(Collectors.toSet()));
             flowProcessor.setDestinationIds(destinations.stream().map(dest -> dest.getId()).collect(Collectors.toSet()));
             flowProcessor.setSources(sources);
             flowProcessor.setDestinations(destinations);
             flowProcessor.setFailureProcessors(failureProcessors);
-            flowProcessor.setSourceConnectionIds(processor.getSourceConnectionIdentifiers());
-            flowProcessor.setDestinationConnectionIds(processor.getDestinationConnectionIdentifiers());
             return flowProcessor;
         }
 
