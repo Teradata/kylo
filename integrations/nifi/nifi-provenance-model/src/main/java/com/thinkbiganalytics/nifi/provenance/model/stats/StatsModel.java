@@ -27,6 +27,12 @@ public class StatsModel {
         stats.setFlowFilesStarted(event.isStartOfCurrentFlowFile() ? 1L : 0L);
         stats.setFlowFilesFinished(event.getFlowFile().isCurrentFlowFileComplete() ? 1L : 0L);
 
+        //calc Job duration????
+        if (stats.getJobsFinished() == 1) {
+            Long totalJobTime = event.getEventTime().getTime() - event.getFlowFile().getFirstEvent().getEventTime().getTime();
+
+        }
+
         //check if it is ia faliure processor
         // TODO!!! is there a better way???  cant we just examine the  event.getRelationship() to see if it contains "failure" ???
         //  NifiFlowProcessor processor = NifiFlowCache.instance().getProcessor(event.getFlowFile().getFirstEvent().getGroupId(), event.getComponentId());
