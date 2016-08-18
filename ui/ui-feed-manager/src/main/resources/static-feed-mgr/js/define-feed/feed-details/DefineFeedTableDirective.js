@@ -30,6 +30,8 @@
         this.model = FeedService.createFeedModel;
         this.isValid = false;
         this.sampleFile = null;
+        this.sampleFileOverrideDelimiter = false;
+        this.sampleFileDelimiter = null;
         this.tableCreateMethods = [{type: 'MANUAL', name: 'Manual'}, {type: 'SAMPLE_FILE', name: 'Sample File'}];
         this.columnDefinitionDataTypes = ['string', 'int', 'bigint', 'tinyint', 'double', 'float', 'date', 'timestamp', 'boolean', 'binary'];
 
@@ -162,6 +164,7 @@
             self.uploadBtnDisabled = true;
             showProgress();
             var file = self.sampleFile;
+            var params = {};
             var uploadUrl = RestUrlService.UPLOAD_SAMPLE_TABLE_FILE;
             var successFn = function (response) {
                 resetColumns();
@@ -180,7 +183,10 @@
                 self.uploadBtnDisabled = false;
                 angular.element('#upload-sample-file-btn').removeClass('md-primary');
             }
-            FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn);
+            if (this.sampleFileOverrideDelimiter) {
+                params['delimiter'] = this.sampleFileDelimiter;
+            }
+            FileUpload.uploadFileToUrl(file, uploadUrl, successFn, errorFn, params);
         };
 
         $scope.$on('$destroy', function () {

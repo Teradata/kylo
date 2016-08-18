@@ -237,10 +237,11 @@ public class FeedRestController {
     @Path("/table/sample-file")
     @Consumes({MediaType.MULTIPART_FORM_DATA})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response uploadPdfFile(@FormDataParam("file") InputStream fileInputStream,
-                                  @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
+    public Response uploadFile(@FormDataParam("delimiter") Character delimiter,
+                               @FormDataParam("file") InputStream fileInputStream,
+                               @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
         TextFileParser parser = new TextFileParser();
-        TableSchema schema = parser.parse(fileInputStream);
+        TableSchema schema = parser.parse(fileInputStream, delimiter);
         return Response.ok(schema).build();
     }
 
