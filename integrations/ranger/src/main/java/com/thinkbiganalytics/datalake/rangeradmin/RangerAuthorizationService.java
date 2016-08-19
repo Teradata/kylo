@@ -30,23 +30,23 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 		 */
 
 		//System.out.println("\n Policy Retrived \n");
-		//System.out.println(rangerClientObj.getPolicy(66));
+		//System.out.println(rangerClientObj.getPolicy(56));
 
 		/**
 		 * Delete Policy 
 		 */
-
+		
 		//System.out.println("Delete Policy");
 		//rangerClientObj.deletePolicy((69));
-
+		
 		/**
 		 * Test search policy function set required search criteria
 		 */
 
 		//System.out.println("\nPolicy searched \n");
-		SearchPolicy search = new SearchPolicy();
-		search.setPolicyName("hive_test2");
-		search.setEnabled(true);
+		//SearchPolicy search = new SearchPolicy();
+		//search.setPolicyName("pcng_test2");
+		//search.setEnabled(true);
 		//System.out.println(rangerClientObj.searchPolicies(search.searchCriteria())+"\n");		
 
 		/**
@@ -63,6 +63,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 		//Passing permission list is mandatory if 'usersList' or 'groupList' is passed otherwise createPolicy() will fail
 
 		userList.add("shashi");
+		userList.add("pcng");
 
 		groupList.add("hadoop");
 		groupList.add("root");
@@ -71,8 +72,8 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 		permList.add("write");
 		//permList.add("execute");
 
-		policy.setPolicyName("shashi_test2");
-		policy.setResourceName("/user/shashi");
+		policy.setPolicyName("pcng_test3");
+		policy.setResourceName("/user/pcng");
 		policy.setDescription("This is test of Ranger API");
 		policy.setRepositoryName("Sandbox_hadoop");
 		policy.setRepositorytype("hdfs");
@@ -85,13 +86,13 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 
 		//System.out.println("Policy created");
 		//rangerClientObj.createPolicy(policy.policyJson());
-		//rangerClientObj.updatePolicy(policy.policyJson(), 68);
+		//rangerClientObj.updatePolicy(policy.policyJson(), 70);
 
 		/**
 		 * Get policy count
 		 */
 
-		System.out.println(rangerClientObj.countPolicies());
+		//System.out.println(rangerClientObj.countPolicies());
 
 		/**
 		 * Test create policy function for Hive
@@ -107,7 +108,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 		//Passing permission list is mandatory if 'usersList' or 'groupList' is passed otherwise createPolicy() will fail
 
 		//userListHive.add("shashi");
-		userListHive.add("shashi");
+		userListHive.add("pcng");
 
 		groupListHive.add("hadoop");
 		//groupListHive.add("root");
@@ -132,14 +133,14 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 
 		//System.out.println("Policy created");
 		//rangerClientObj.createPolicy(hivePolicy.policyJson());
-
+		
 		/***
 		 * Update policy using policy ID - Hive
 		 * 
 		 */
-
-		serListHive.add("shashi");
 		
+		//userListHive.add("shashi");
+		userListHive.add("pcng");
 
 		groupListHive.add("hadoop");
 		//groupListHive.add("root");
@@ -148,7 +149,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 		//permListHive.add("create");
 		permListHive.add("update");
 
-		hivePolicy.setPolicyName("hive_test4");
+		hivePolicy.setPolicyName("hive_test");
 		hivePolicy.setDatabases("default,test");
 		hivePolicy.setTables("sample_07,testing");
 		hivePolicy.setColumns("*");
@@ -163,7 +164,33 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 		HivePolicy.setPermList(permListHive);
 
 		//System.out.println("Policy update");
-		//rangerClientObj.updatePolicy(hivePolicy.policyJson(), 66);
+		//rangerClientObj.updatePolicy(hivePolicy.policyJson(), 71);
+		
+		/***
+		 * Get user/group information
+		 */
+		 
+		//System.out.println(rangerClientObj.getAllUsers());
+		//System.out.println(rangerClientObj.getUserByName("hive"));
+		//System.out.println(rangerClientObj.getUserById(53));
+		//System.out.println("Number of users: "+rangerClientObj.getUserCount());
+		
+		//Groups information
+		
+		//System.out.println(rangerClientObj.getAllGroups());
+		//System.out.println(rangerClientObj.getGroupById(12));
+		//System.out.println(rangerClientObj.getGroupByName("hadoop"));
+		//System.out.println("Number of groups: "+rangerClientObj.getGroupCount());
+	
+		/***
+		 * User-Group mapping information
+		 */
+		
+		//System.out.println(rangerClientObj.getUserGroupMapping());
+		//System.out.println(rangerClientObj.getUserGroupMappingCount());
+		//System.out.println(rangerClientObj.getUserGroupMappingById(12));
+		//System.out.println(rangerClientObj.getGroupInfoByUserId(53));
+		//System.out.println(rangerClientObj.getUserInfoByGroupId(3));
 	}
 
 }
