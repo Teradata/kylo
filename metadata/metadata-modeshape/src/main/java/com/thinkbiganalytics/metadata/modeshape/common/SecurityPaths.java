@@ -12,15 +12,15 @@ import java.nio.file.Paths;
  */
 public interface SecurityPaths {
 
-    public static final Path METADATA = Paths.get("/metadata");
+    public static final Path METADATA = Paths.get("metadata");
     public static final Path SECURITY = METADATA.resolve("security");
     public static final Path PROTOTYPES = SECURITY.resolve("prototypes");
     
-    default Path prototypeActionsPath(String name) {
+    static Path prototypeActionsPath(String name) {
         return PROTOTYPES.resolve(name);
     }
     
-    default Path actionGroupPath(String name) {
-        return PROTOTYPES.resolve(name);
+    static Path moduleActionPath(String name) {
+        return SECURITY.resolve(name);
     }
 }

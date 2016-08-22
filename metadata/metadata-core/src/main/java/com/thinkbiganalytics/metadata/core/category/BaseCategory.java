@@ -3,6 +3,7 @@ package com.thinkbiganalytics.metadata.core.category;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 import org.joda.time.DateTime;
 
@@ -173,5 +174,11 @@ public class BaseCategory implements Category {
     @Override
     public void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields) {
         this.userProperties = userProperties;
+    }
+
+    @Override
+    public AllowedActions getAllowedActions() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

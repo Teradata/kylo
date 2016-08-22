@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.metadata.modeshape.common;
 
 import com.thinkbiganalytics.auth.concurrent.ServiceSecurityContextRunnable;
+import com.thinkbiganalytics.metadata.modeshape.MetadataJcrConfigurator;
 
 import org.modeshape.jcr.ModeShapeEngine;
 import org.springframework.context.ApplicationListener;
@@ -23,6 +24,9 @@ public class ModeShapeAvailability implements ApplicationListener<ContextRefresh
 
     @Inject
     private ModeShapeEngine modeShapeEngine;
+    
+    @Inject
+    private MetadataJcrConfigurator configurator;
 
     private Timer modeshapeAvailableTimer;
 
@@ -56,7 +60,7 @@ public class ModeShapeAvailability implements ApplicationListener<ContextRefresh
     class CheckModeShapeAvailability extends TimerTask {
 
         private final ServiceSecurityContextRunnable secRunnable = new ServiceSecurityContextRunnable(() -> {
-            if (ModeShapeEngine.State.RUNNING.equals(modeShapeEngine.getState()) && applicationStarted.get()) {
+            if (ModeShapeEngine.State.RUNNING.equals(modeShapeEngine.getState()) && configurator.isConfigured() && applicationStarted.get()) {
                 modeshapeAvailableTimer.cancel();
                 List<ModeShapeAvailabilityListener> currentListeners = Collections.unmodifiableList(listeners);
                 for (ModeShapeAvailabilityListener listener : currentListeners) {

@@ -9,6 +9,7 @@ import java.util.Set;
 import org.springframework.security.authentication.jaas.AuthorityGranter;
 
 import com.google.common.collect.Sets;
+import com.thinkbiganalytics.security.RolePrincipal;
 
 /**
  * A granter that, when presented with a RolePrincipal, returns a set containing the name of that principal (the role's name)

@@ -1,26 +1,51 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.modeshape.security.function;
+package com.thinkbiganalytics.metadata.modeshape.security.action;
 
+import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.inject.Named;
 
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
-import com.thinkbiganalytics.security.action.config.ActionGroupsBuilder;
+import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
+import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
+import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
+import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
 
 /**
  *
  * @author Sean Felten
  */
 @Configuration
-public class TestActionsConfig {
+public class TestActionsConfig implements ModeShapeAvailabilityListener {
 
-    @Bean(name = "servicesPrototypeAllowedActions")
-    public JcrAllowedActions allowedServiceActions(@Named("prototypesActionGroupsBuilder") ActionGroupsBuilder builder) {
-        return (JcrAllowedActions) builder
+    @Inject
+    private ModeShapeAvailability modeShapeAvailability;
+
+    @Inject
+    JcrMetadataAccess metadata;
+    
+    @Inject
+    ModuleActionsBuilder builder;
+    
+    @Override
+    public void modeShapeAvailable() {
+        // TODO Auto-generated method stub
+        
+    }
+    
+    @PostConstruct
+    public AllowedActions allowedServiceActions() {
+        return metadata.commit(new AdminCredentials(), () -> {
+            JcrTool tool = new JcrTool(true);
+            tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata");
+
+            return builder
                         .group("services")
                             .action("manageAuthorization")
                                 .title("Manage Authorization")
@@ -33,7 +58,7 @@ public class TestActionsConfig {
                                     .title("Administer Operations")
                                     .add()
                                 .add()
-                            .action("accessFeeds")
+                            .action("accessFeedSupport")
                                 .title("Access Feeds")
                                 .description("Allows access of feeds and feed related functions")
                                 .subAction("categoryAccess")
@@ -69,5 +94,6 @@ public class TestActionsConfig {
                                 .add()
                             .add()
                         .build();
+        });
     }
 }

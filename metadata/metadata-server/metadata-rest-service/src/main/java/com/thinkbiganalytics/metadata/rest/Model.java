@@ -607,7 +607,7 @@ public class Model {
                             String msg = ExceptionUtils.getRootCauseMessage(e);
                             //get just the simpleClassName stripping the package info
                             msg = StringUtils.substringAfterLast(msg, ".");
-                            sla.addSlaCheckError("Unable to find the SLA Action Configurations of type: " + msg
+                            sla.addSlaCheckError("Unable to find the SLA ImmutableAction Configurations of type: " + msg
                                                  + ". Check with an administrator to ensure the correct plugin is intalled with this SLA configuration. ");
                         } else {
                             throw e;

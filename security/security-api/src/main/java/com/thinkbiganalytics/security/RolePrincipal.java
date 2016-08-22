@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.auth;
+package com.thinkbiganalytics.security;
 
 /**
  * Basic principal representing a named role.
@@ -11,11 +11,8 @@ public class RolePrincipal extends BasePrincipal {
 
     private static final long serialVersionUID = 1L;
 
-    public RolePrincipal() {
-    }
-
     public RolePrincipal(String name) {
-        super(name.toUpperCase().startsWith("ROLE_") ? name.toUpperCase() : "ROLE_" + name.toUpperCase());
+        super(name);
     }
 
 }

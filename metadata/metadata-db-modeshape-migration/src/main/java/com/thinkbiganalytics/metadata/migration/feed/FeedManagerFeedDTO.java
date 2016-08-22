@@ -11,6 +11,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 import org.joda.time.DateTime;
 
@@ -285,4 +286,10 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
 
     @Override
     public void setUserProperties(@Nonnull Map userProperties, @Nonnull Set userFields) {}
+
+    @Override
+    public AllowedActions getAllowedActions() {
+        // TODO Auto-generated method stub
+        return null;
+    }
 }

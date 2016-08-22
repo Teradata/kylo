@@ -3,20 +3,21 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.security;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
-
 import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.security.authentication.jaas.AuthorityGranter;
 
 import com.thinkbiganalytics.auth.jaas.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
-import com.thinkbiganalytics.metadata.modeshape.security.action.JcrActionGroupsBuilder;
-import com.thinkbiganalytics.security.action.config.ActionGroupsBuilder;
+import com.thinkbiganalytics.metadata.modeshape.MetadataJcrConfigurator;
+import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedModuleActionsProvider;
+import com.thinkbiganalytics.metadata.modeshape.security.action.JcrModuleActionsBuilder;
+import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
 
 /**
  *
@@ -24,8 +25,6 @@ import com.thinkbiganalytics.security.action.config.ActionGroupsBuilder;
  */
 @Configuration
 public class ModeShapeAuthConfig {
-    
-    private static final Path PROTOTYPES_PATH = Paths.get("metadata", "security", "prototypes");
     
     @Bean
     public AuthorityGranter modeShapeAuthorityGranter()  {
@@ -42,9 +41,15 @@ public class ModeShapeAuthConfig {
                         .build();
     }
     
+    @Bean
+    public JcrAllowedModuleActionsProvider allowedModuleActionsProvider() {
+        return new JcrAllowedModuleActionsProvider();
+    }
+    
     @Bean(name = "prototypesActionGroupsBuilder")
-    public ActionGroupsBuilder prototypesActionGroupsBuilder() {
-        return new JcrActionGroupsBuilder(PROTOTYPES_PATH.toString());
+    @Scope("prototype")
+    public ModuleActionsBuilder prototypesActionGroupsBuilder(MetadataJcrConfigurator conf) {
+        return new JcrModuleActionsBuilder(SecurityPaths.PROTOTYPES.toString());
     }
 
 }

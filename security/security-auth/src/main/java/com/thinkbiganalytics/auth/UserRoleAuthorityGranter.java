@@ -9,6 +9,7 @@ import java.util.Set;
 import org.springframework.security.authentication.jaas.AuthorityGranter;
 
 import com.google.common.collect.Sets;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  * A granter that, when presented with a UsernamePrincipal, returns a set containing the "ROLE_USER" role name.

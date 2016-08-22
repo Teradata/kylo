@@ -8,7 +8,7 @@
  *          "datasources"
  *              "hive"
  *                  HiveTableDatasource*
- *          "templates"
+ *          "prototypes"
  *             template
  *          "sla"
  *              sla*
@@ -47,7 +47,7 @@
 	+ templates (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
 	+ sla (tba:slaFolder) = tba:slaFolder autocreated mandatory
 	+ extensions (tba:extensionsFolder) = tba:extensionsFolder autocreated mandatory
-	+ security (tba:securityFolder) = tba:securityFolder authocreate mandatory
+	+ security (tba:securityFolder) = tba:securityFolder autocreated mandatory
 
 [tba:feedsFolder] > nt:folder 
     + * (tba:category) sns
@@ -80,17 +80,17 @@
 /* -=-=-=-=-=--=-=-  Security  -=-=-=-=-=-=-=-=- */
 
 [tba:securityFolder] > nt:folder
-    + prototypes (tba:templatesFolder) = tba:templatesFolder autocreated mandatory
+    + prototypes (tba:prototypesFolder) = tba:prototypesFolder autocreated mandatory
     + services (tba:allowedActions) = tba:allowedActions autocreated mandatory
 
-[tba:templatesFolder] > nt:folder
-    + services (tba:allowedActions) = nt:folder autocreated mandatory
-    + feed (tba:allowedActions) = nt:folder autocreated mandatory
-    + template (tba:allowedActions) = nt:folder autocreated mandatory
-    + category (tba:allowedActions) = nt:folder autocreated mandatory
+[tba:prototypesFolder] > nt:folder
+    + services (tba:allowedActions) = tba:allowedActions autocreated mandatory
+    + feed (tba:allowedActions) = tba:allowedActions autocreated mandatory
+    + template (tba:allowedActions) = tba:allowedActions autocreated mandatory
+    + category (tba:allowedActions) = tba:allowedActions autocreated mandatory
 
 [tba:accessControlled] mixin
-    + tba:allowedActions (tba:allowdedActions) = tba:allowdedActions autocreate mandatory
+    + tba:allowedActions (tba:allowedActions) = tba:allowedActions autocreated mandatory
 
 [tba:allowedActions] > nt:hierarchyNode
     + * (tba:allowableAction)

@@ -16,6 +16,7 @@ import java.util.stream.StreamSupport;
 
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeType;
@@ -82,6 +83,14 @@ public class JcrUtil {
                         .stream(getInterableChildren(parent, property).spliterator(), false)
                         .collect(Collectors.toList());
     }
+    
+    public static boolean hasNode(Node parentNode, String name) {
+        try {
+            return parentNode.hasNode(name);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to check for the existence of the node named " + name, e);
+        }
+    }
 
     public static Node getNode(Node parentNode, String name) {
         try {
@@ -91,6 +100,45 @@ public class JcrUtil {
         }
     }
     
+    public static Node createNode(Node parentNode, String name, String nodeType) {
+        try {
+            return parentNode.addNode(name, nodeType);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to create the Node named " + name, e);
+        }
+    }
+    
+    public static boolean removeNode(Node parentNode, String name) {
+        try {
+            if (parentNode.hasNode(name)) {
+                parentNode.getNode(name).remove();
+                return true;
+            } else {
+                return false;
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the Node named " + name, e);
+        }
+    }
+
+    public static List<Node> getNodesOfType(Node parentNode, String nodeType) {
+        try {
+            List<Node> list = new ArrayList<>();
+            NodeIterator itr = parentNode.getNodes();
+            
+            while (itr.hasNext()) {
+                Node node = (Node) itr.next();
+                if (node.getPrimaryNodeType().isNodeType(nodeType)) {
+                    list.add(node);
+                }
+            }
+            
+            return list;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to create set of child nodes of type: " + nodeType, e);
+        }
+    }
+
     public static Iterable<Node> getInterableChildren(Node parent) {
         return getInterableChildren(parent, null);
     }
@@ -429,12 +477,12 @@ public class JcrUtil {
             }
             return set;
         } catch (RepositoryException | NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException e) {
-            throw new MetadataRepositoryException("Failed to create seto of child objects from property: " + property, e);
+            throw new MetadataRepositoryException("Failed to create set of child objects from property: " + property, e);
         }
     }
+    
+    
 
-    
-    
     private static class DefaultObjectTypeResolver<T extends JcrObject> implements JcrObjectTypeResolver<T> {
         
         private final Class<? extends T> type;
@@ -449,4 +497,6 @@ public class JcrUtil {
             return this.type;
         }
     }
+    
+    
 }

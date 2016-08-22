@@ -18,9 +18,6 @@ import com.thinkbiganalytics.security.action.config.ActionBuilder;
  */
 public class JcrActionBuilder<P> extends JcrAbstractActionsBuilder implements ActionBuilder<P> {
     
-    public static final String ALLOWABLE_ACTION = "tba:allowableAction";
-
-
     private Node actionNode;
     private P parentBuilder;
     
@@ -52,7 +49,7 @@ public class JcrActionBuilder<P> extends JcrAbstractActionsBuilder implements Ac
      */
     @Override
     public ActionBuilder<ActionBuilder<P>> subAction(String name) {
-        Node actionNode = JcrUtil.getOrCreateNode(this.actionNode, name, ALLOWABLE_ACTION);
+        Node actionNode = JcrUtil.getOrCreateNode(this.actionNode, name, JcrAllowableAction.ALLOWABLE_ACTION);
         return new JcrActionBuilder<>(actionNode, this);
     }
 
@@ -61,7 +58,7 @@ public class JcrActionBuilder<P> extends JcrAbstractActionsBuilder implements Ac
      */
     @Override
     public P add() {
-        JcrAccessControlUtil.addPermissions(this.actionNode, getManagementPrincipal(), Privilege.JCR_ALL);
+//        JcrAccessControlUtil.addPermissions(this.actionNode, getManagementPrincipal(), Privilege.JCR_ALL);
         return this.parentBuilder;
     }
 

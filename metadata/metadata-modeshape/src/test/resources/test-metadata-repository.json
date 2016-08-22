@@ -13,6 +13,10 @@
         },
         "providers" : [
             {
+                "name" : "Test Provider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.TestAuthenticationProvider",
+            },
+            {
                 "name" : "DB Admin Provider",
                 "classname" : "com.thinkbiganalytics.metadata.modeshape.security.AdminAuthenticationProvider",
             }
@@ -22,7 +26,7 @@
     "storage" : {
         "persistence" : {
             "type" : "db",
-            "connectionUrl": "jdbc:h2:file:./target/content/db;DB_CLOSE_ON_EXIT=FALSE",
+            "connectionUrl": "jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE",
             "createOnStart" : true,
             "dropOnExit" : true
         },

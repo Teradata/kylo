@@ -867,6 +867,36 @@ public class JcrPropertyUtil {
         }
     }
 
+    
+    /**
+     * Copies a property, if present, from the source node to the destination node.
+     * @param src source node
+     * @param dest destination node
+     * @param name the name of the property
+     * @return whether the source had a value to copy
+     */
+    public static boolean copyProperty(Node src, Node dest, String name) {
+        try {
+            if (src.hasProperty(name)) {
+                Property prop = src.getProperty(name);
+                
+                if (prop.isMultiple()) {
+                    Value[] values = prop.getValues();
+                    dest.setProperty(name, values, prop.getType());
+                } else {
+                    Value value = prop.getValue();
+                    dest.setProperty(name, value, prop.getType());
+                }
+                
+                return true;
+            } else {
+                return false;
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to copy property \"" + name + "\" from node " + src + " to " + dest, e);
+        }
+    }
+
     /**
      * Instances of {@code JcrPropertyUtil} may not be constructed.
      *

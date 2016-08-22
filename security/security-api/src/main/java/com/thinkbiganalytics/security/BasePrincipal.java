@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.auth;
+package com.thinkbiganalytics.security;
 
 import java.io.Serializable;
 import java.security.Principal;

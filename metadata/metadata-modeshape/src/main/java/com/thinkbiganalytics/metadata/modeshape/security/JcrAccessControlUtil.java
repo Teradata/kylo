@@ -80,7 +80,6 @@ public class JcrAccessControlUtil {
     
     public static boolean addHierarchyPermissions(Node node, Principal principal, Node toNode, String... privilegeNames) {
         try {
-            node.getSession().getRootNode();
             Node endNode = toNode;
             Node current = node;
             boolean added = false;
@@ -145,7 +144,6 @@ public class JcrAccessControlUtil {
     
     public static boolean removeHierarchyPermissions(Node node, Principal principal, Node toNode, String... privilegeNames) {
         try {
-            node.getSession().getRootNode();
             Node endNode = toNode;
             Node current = node;
             boolean removed = false;
@@ -177,6 +175,11 @@ public class JcrAccessControlUtil {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to remove all permission(s) from node " + path, e);
         }
+        
+    }
+
+    public static void addRecursivePermissions(Node node, Principal modeShapeAdminPrincipal, String... privilegeNames) {
+        // TODO Auto-generated method stub
         
     }
 }

@@ -3,13 +3,13 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.security;
 
-import com.thinkbiganalytics.auth.BasePrincipal;
+import com.thinkbiganalytics.security.BasePrincipal;
 
 /**
  *
  * @author Sean Felten
  */
-public abstract class ModeShapePrincipal extends BasePrincipal {
+public class ModeShapePrincipal extends BasePrincipal {
 
     /**
      * 

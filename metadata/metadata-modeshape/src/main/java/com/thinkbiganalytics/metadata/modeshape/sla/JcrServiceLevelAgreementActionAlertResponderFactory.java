@@ -81,7 +81,7 @@ public class JcrServiceLevelAgreementActionAlertResponderFactory implements Aler
                                         if (validation.isValid()) {
                                             action.respond(configuration, assessment, alert);
                                         } else {
-                                            log.error("Unable to invoke SLA Action {} while assessing {} due to Configuration error: {}.  Please fix.", action.getClass(), agreement.getName(),
+                                            log.error("Unable to invoke SLA ImmutableAction {} while assessing {} due to Configuration error: {}.  Please fix.", action.getClass(), agreement.getName(),
                                                       validation.getValidationMessage());
                                         }
                                     }

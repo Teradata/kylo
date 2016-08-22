@@ -70,7 +70,7 @@ return buildUiModel(annotation,policy.getClass(),properties);
 
         }catch (ClassNotFoundException e)
         {
-            validation.add(new ServiceLevelAgreementActionValidation(false,"Action Configuration Not Found: "+e.getMessage()));
+            validation.add(new ServiceLevelAgreementActionValidation(false,"ImmutableAction Configuration Not Found: "+e.getMessage()));
         }
 
         return validation;

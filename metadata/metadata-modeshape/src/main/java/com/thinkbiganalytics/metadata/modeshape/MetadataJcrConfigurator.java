@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import java.nio.file.Path;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
@@ -15,9 +17,14 @@ import javax.jcr.nodetype.NodeType;
 import javax.jcr.nodetype.NodeTypeIterator;
 import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.PropertyDefinition;
+import javax.jcr.security.Privilege;
 
+import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
+import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
+import com.thinkbiganalytics.security.UserRolePrincipal;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
@@ -29,9 +36,12 @@ public class MetadataJcrConfigurator {
     @Inject
     private JcrMetadataAccess metadataAccess;
     
-    @Inject
-    @Named("servicesPrototypeAllowedActions")
-    private AllowedActions servicesPrototypeActions;
+//    @Inject
+//    @Named("servicesPrototypeAllowedActions")
+//    private AllowedActions servicesPrototypeActions;
+    
+    private final AtomicBoolean configured = new AtomicBoolean(false);
+    
     
     public void configure() {
         this.metadataAccess.commit(new AdminCredentials(), () -> {
@@ -41,6 +51,7 @@ public class MetadataJcrConfigurator {
                 ensureLayout(session);
                 ensureTypes(session);
                 ensureAccessControl(session);
+                this.configured.set(true);
                 return null;
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Could not create initial JCR metadata", e);
@@ -48,17 +59,26 @@ public class MetadataJcrConfigurator {
         });
     }
     
+    public boolean isConfigured() {
+        return this.configured.get();
+    }
 
-    private void ensureAccessControl(Session session) {
-//        JcrAccessControlUtil.addPermissions(session, "metadata/feeds/test", SimplePrincipal.newInstance("admin"), Privilege.JCR_ALL);
-//        JcrAccessControlUtil.addPermissions(session, "metadata/feeds/test/trigger1", SimplePrincipal.newInstance("sean"), Privilege.JCR_ALL);
-//        JcrAccessControlUtil.addPermissions(session, "metadata/feeds/test/dependent1", SimplePrincipal.newInstance("dev"), Privilege.JCR_ALL);
-//    
-//        JcrAccessControlUtil.clearPermissions(session, "metadata/feeds/test");
-//        JcrAccessControlUtil.clearPermissions(session, "metadata/feeds/test/trigger1");
-//        JcrAccessControlUtil.clearPermissions(session, "metadata/feeds/test/dependent1");
-    
+    private void ensureAccessControl(Session session) throws RepositoryException {
+        Node protoNode = session.getRootNode().getNode(SecurityPaths.PROTOTYPES.toString());
+        Path svcPath = SecurityPaths.moduleActionPath("services");
         
+        JcrAccessControlUtil.addPermissions(protoNode, new ModeShapeAdminPrincipal(), Privilege.JCR_ALL);
+        JcrAccessControlUtil.addPermissions(protoNode, AdminCredentials.getPrincipal(), Privilege.JCR_ALL);
+        JcrAccessControlUtil.addPermissions(protoNode, new UserRolePrincipal(), Privilege.JCR_READ);
+        
+//        if (session.getRootNode().hasNode(svcPath.toString())) {
+//            session.getRootNode().getNode(svcPath.toString()).remove();
+//        }
+//       
+//        session.getWorkspace().copy("/" + SecurityPaths.prototypeActionsPath("services").toString(), 
+//                                    svcPath.toString());
+//
+//        JcrAccessControlUtil.addPermissions(session.getRootNode().getNode(svcPath.toString()), new ModeShapeAdminPrincipal(), Privilege.JCR_ALL);
     }
 
 
@@ -135,4 +155,5 @@ public class MetadataJcrConfigurator {
             return null;
         }
     }
+
 }

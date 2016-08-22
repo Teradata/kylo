@@ -9,7 +9,7 @@ import javax.jcr.security.Privilege;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.config.ActionBuilder;
-import com.thinkbiganalytics.security.action.config.ActionGroupsBuilder;
+import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
 import com.thinkbiganalytics.security.action.config.ActionsTreeBuilder;
 
 /**
@@ -31,7 +31,7 @@ public class JcrActionTreeBuilder<P> extends JcrAbstractActionsBuilder implement
      */
     @Override
     public ActionBuilder<ActionsTreeBuilder<P>> action(String systemName) {
-        Node actionNode = JcrUtil.getOrCreateNode(this.actionsNode, systemName, JcrActionBuilder.ALLOWABLE_ACTION);
+        Node actionNode = JcrUtil.getOrCreateNode(this.actionsNode, systemName, JcrAllowableAction.ALLOWABLE_ACTION);
         return new JcrActionBuilder<>(actionNode, this);
     }
 
@@ -40,7 +40,7 @@ public class JcrActionTreeBuilder<P> extends JcrAbstractActionsBuilder implement
      */
     @Override
     public P add() {
-        JcrAccessControlUtil.addPermissions(this.actionsNode, getManagementPrincipal(), Privilege.JCR_ALL);
+//        JcrAccessControlUtil.addPermissions(this.actionsNode, getManagementPrincipal(), Privilege.JCR_ALL);
         return this.parentBuilder;
     }
 

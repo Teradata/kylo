@@ -10,6 +10,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
+import com.thinkbiganalytics.security.action.AllowedActions;
 
 import org.joda.time.DateTime;
 
@@ -419,5 +420,11 @@ public class BaseFeed<C extends Category> implements Feed<C> {
     @Override
     public void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields) {
         this.userProperties = userProperties;
+    }
+
+    @Override
+    public AllowedActions getAllowedActions() {
+        // TODO Auto-generated method stub
+        return null;
     }
 }

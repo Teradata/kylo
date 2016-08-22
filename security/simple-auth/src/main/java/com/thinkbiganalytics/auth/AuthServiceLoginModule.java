@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  * A LoginModule that delegates to an AuthenticationService to authenticate a user name and password.
