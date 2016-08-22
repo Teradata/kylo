@@ -32,7 +32,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -43,7 +42,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -235,20 +233,11 @@ public class FeedRestController {
         return Response.ok(feed).build();
     }
 
-    /**
-     * Uploads a sample file to allow schema specification when creating a new feed.
-     *
-     * @param delimiter Allows caller to manually select the delimiter used in the sample file
-     * @param fileInputStream The sample file
-     * @param fileMetaData Metadata regarding the sample file
-     * @return Response to file upload query
-     * @throws IOException If there is an error parsing the sample file
-     */
     @POST
     @Path("/table/sample-file")
     @Consumes({MediaType.MULTIPART_FORM_DATA})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response uploadFile(@Nullable @FormDataParam("delimiter") Character delimiter,
+    public Response uploadFile(@FormDataParam("delimiter") Character delimiter,
                                @FormDataParam("file") InputStream fileInputStream,
                                @FormDataParam("file") FormDataContentDisposition fileMetaData) throws Exception {
         TextFileParser parser = new TextFileParser();

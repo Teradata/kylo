@@ -45,6 +45,14 @@ public class TextFileParser {
     private void TextFileParser() {
     }
 
+    /**
+     * Parses a sample file to allow schema specification when creating a new feed.
+     *
+     * @param is The sample file
+     * @param delimiter Allows user to manually select the delimiter used in the sample file
+     * @return A <code>TableSchema</code> representing the schema
+     * @throws IOException If there is an error parsing the sample file
+     */
     public TableSchema parse(InputStream is, Character delimiter) throws IOException {
         TableSchema schema = null;
         try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
