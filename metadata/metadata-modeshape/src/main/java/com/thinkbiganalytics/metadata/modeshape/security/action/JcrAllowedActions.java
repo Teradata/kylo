@@ -22,6 +22,8 @@ import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.security.Privilege;
 import javax.jcr.version.VersionException;
 
+import org.modeshape.jcr.security.SimplePrincipal;
+
 import com.thinkbiganalytics.metadata.api.MetadataException;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
@@ -99,10 +101,10 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
         }
     }
     
-    public JcrAllowedActions copy(Node allowedNode, JcrAllowedActions src) {
+    public JcrAllowedActions copy(Node allowedNode, JcrAllowedActions src, Principal principal, String... privilegeNames) {
         try {
             for (Node actionNode : JcrUtil.getNodesOfType(src.getNode(), JcrAllowableAction.ALLOWABLE_ACTION)) {
-                copyAction(actionNode, allowedNode);
+                copyAction(actionNode, allowedNode, principal, privilegeNames);
             }
             
             return new JcrAllowedActions(allowedNode);
@@ -111,13 +113,14 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
         }
     }
 
-    private Node copyAction(Node src, Node destParent) throws RepositoryException {
+    private Node copyAction(Node src, Node destParent, Principal principal, String... privilegeNames) throws RepositoryException {
         Node dest = destParent.addNode(src.getName(), JcrAllowableAction.ALLOWABLE_ACTION);
         JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.TITLE);
         JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.DESCRIPTION);
+        JcrAccessControlUtil.addPermissions(dest, principal, privilegeNames);
         
         for (Node child : JcrUtil.getNodesOfType(src, JcrAllowableAction.ALLOWABLE_ACTION)) {
-            copyAction(child, dest);
+            copyAction(child, dest, principal, privilegeNames);
         }
         
         return dest;

@@ -76,7 +76,7 @@ public class JcrModuleActionsBuilder extends JcrAbstractActionsBuilder implement
             JcrAccessControlUtil.addPermissions(this.protoActionsNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);
             
             JcrAllowedActions protoAllowed = new JcrAllowedActions(this.protoActionsNode);
-            JcrAllowedActions allowed = protoAllowed.copy(this.actionsNode, protoAllowed);
+            JcrAllowedActions allowed = protoAllowed.copy(this.actionsNode, protoAllowed, this.managementPrincipal, Privilege.JCR_ALL);
             
             JcrAccessControlUtil.addPermissions(this.actionsNode, this.managementPrincipal, Privilege.JCR_ALL);
             JcrAccessControlUtil.addPermissions(this.actionsNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);

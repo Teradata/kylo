@@ -86,6 +86,7 @@ public class JcrAccessControlUtil {
             
             do {
                 added |= addPermissions(current, principal, privilegeNames);
+                current = current.getParent();
             } while (! current.equals(endNode) && ! current.equals(toNode.getSession().getRootNode()));
             
             return added;
@@ -119,14 +120,19 @@ public class JcrAccessControlUtil {
                 boolean removed = false;
                 
                 for (AccessControlEntry entry : acl.getAccessControlEntries()) {
-                    Privilege[] newPrivs = Arrays.stream(entry.getPrivileges())
-                                    .filter(p -> Arrays.stream(removes).anyMatch(r -> r.equals(p)))
-                                    .toArray(Privilege[]::new);
-                    
-                    if (entry.getPrivileges().length != newPrivs.length) {
-                        acl.removeAccessControlEntry(entry);
-                        acl.addAccessControlEntry(entry.getPrincipal(), newPrivs);
-                        removed = true;
+                    if (entry.getPrincipal().getName().equals(principal.getName())) {
+                        Privilege[] newPrivs = Arrays.stream(entry.getPrivileges())
+                                        .filter(p -> Arrays.stream(removes).anyMatch(r -> ! r.equals(p)))
+                                        .toArray(Privilege[]::new);
+                        
+                        if (entry.getPrivileges().length != newPrivs.length) {
+                            if (newPrivs.length == 0) {
+                                acl.removeAccessControlEntry(entry);
+                            } else {
+                                acl.addAccessControlEntry(entry.getPrincipal(), newPrivs);
+                            }
+                            removed = true;
+                        }
                     }
                 }
                 
@@ -150,6 +156,7 @@ public class JcrAccessControlUtil {
             
             do {
                 removed |= removePermissions(node.getSession(), node.getPath(), principal, privilegeNames);
+                current = current.getParent();
             } while (! current.equals(endNode) && ! current.equals(toNode.getSession().getRootNode()));
             
             return removed;

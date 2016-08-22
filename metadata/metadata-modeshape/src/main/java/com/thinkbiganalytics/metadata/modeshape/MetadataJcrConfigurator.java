@@ -64,6 +64,10 @@ public class MetadataJcrConfigurator {
     }
 
     private void ensureAccessControl(Session session) throws RepositoryException {
+        if (! session.getRootNode().hasNode(SecurityPaths.SECURITY.toString())) {
+            session.getRootNode().addNode(SecurityPaths.SECURITY.toString(), "tba:securityFolder");
+        }
+
         Node protoNode = session.getRootNode().getNode(SecurityPaths.PROTOTYPES.toString());
         Path svcPath = SecurityPaths.moduleActionPath("services");
         
