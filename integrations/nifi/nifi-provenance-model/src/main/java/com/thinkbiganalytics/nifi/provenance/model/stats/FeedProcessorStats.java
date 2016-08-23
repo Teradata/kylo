@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
+ * Object to collect Statistics by Feed and then by Processor
+ *
  * Created by sr186054 on 8/16/16.
  */
 public class FeedProcessorStats {
@@ -40,6 +42,13 @@ public class FeedProcessorStats {
         return processorStats;
     }
 
+    /**
+     * Aggregate stats over a period of time including start/end times
+     * @param collectionId
+     * @param start
+     * @param end
+     * @return
+     */
     public AggregatedFeedProcessorStatistics getStats(String collectionId, DateTime start, DateTime end) {
         AggregatedFeedProcessorStatistics feedStatistics = new AggregatedFeedProcessorStatistics(feedName);
         feedStatistics.setMinTime(start);
