@@ -1,15 +1,17 @@
 package com.thinkbiganalytics.nifi.provenance.v2;
 
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventAttributeComparator;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventAttributeDTO;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.util.FormatUtils;
-import org.apache.nifi.web.api.dto.provenance.AttributeDTO;
-import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
+import org.joda.time.DateTime;
 
+import java.io.Serializable;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -19,7 +21,7 @@ import java.util.TreeSet;
 /**
  * Created by sr186054 on 3/3/16.
  */
-public class ProvenanceEventConverter {
+public class ProvenanceEventRecordConverter implements Serializable {
 
     /**
      * Creates a ProvenanceEventDTO for the specified ProvenanceEventRecord.
@@ -27,17 +29,9 @@ public class ProvenanceEventConverter {
      * @param event event
      * @return event
      */
-    public static ProvenanceEventDTO convert(final ProvenanceEventRecord event) {
+    public static ProvenanceEventRecordDTO convert(final ProvenanceEventRecord event) {
 
-        // convert the attributes
-        final Comparator<AttributeDTO> attributeComparator = new Comparator<AttributeDTO>() {
-            @Override
-            public int compare(AttributeDTO a1, AttributeDTO a2) {
-                return Collator.getInstance(Locale.US).compare(a1.getName(), a2.getName());
-            }
-        };
-
-        final SortedSet<AttributeDTO> attributes = new TreeSet<>(attributeComparator);
+        final SortedSet<ProvenanceEventAttributeDTO> attributes = new TreeSet<>(new ProvenanceEventAttributeComparator());
 
         final Map<String, String> updatedAttrs = event.getUpdatedAttributes();
         final Map<String, String> previousAttrs = event.getPreviousAttributes();
@@ -49,7 +43,7 @@ public class ProvenanceEventConverter {
                 continue;
             }
 
-            final AttributeDTO attribute = new AttributeDTO();
+            final ProvenanceEventAttributeDTO attribute = new ProvenanceEventAttributeDTO();
             attribute.setName(entry.getKey());
             attribute.setValue(entry.getValue());
             attribute.setPreviousValue(entry.getValue());
@@ -58,7 +52,7 @@ public class ProvenanceEventConverter {
 
         // Add all of the update attributes
         for (final Map.Entry<String, String> entry : updatedAttrs.entrySet()) {
-            final AttributeDTO attribute = new AttributeDTO();
+            final ProvenanceEventAttributeDTO attribute = new ProvenanceEventAttributeDTO();
             attribute.setName(entry.getKey());
             attribute.setValue(entry.getValue());
             attribute.setPreviousValue(previousAttrs.get(entry.getKey()));
@@ -66,13 +60,13 @@ public class ProvenanceEventConverter {
         }
 
         // build the event dto
-        final ProvenanceEventDTO dto = new ProvenanceEventDTO();
+        final ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO();
         dto.setId(String.valueOf(event.getEventId()));
         dto.setAlternateIdentifierUri(event.getAlternateIdentifierUri());
         dto.setAttributes(attributes);
         dto.setTransitUri(event.getTransitUri());
         dto.setEventId(event.getEventId());
-        dto.setEventTime(new Date(event.getEventTime()));
+        dto.setEventTime(new DateTime(event.getEventTime()));
         dto.setEventDuration(event.getEventDuration());
         dto.setEventType(event.getEventType().name());
         dto.setFileSize(FormatUtils.formatDataSize(event.getFileSize()));

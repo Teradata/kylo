@@ -1,452 +1,499 @@
 package com.thinkbiganalytics.nifi.provenance.model;
 
-import org.apache.nifi.web.api.dto.provenance.AttributeDTO;
-import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
-import org.apache.nifi.web.api.dto.util.TimestampAdapter;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
+import org.joda.time.DateTime;
+
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
+import java.util.Map;
+import java.util.Set;
 
-import javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter;
 
 /**
- * Created by sr186054 on 8/13/16.
+ * Created by sr186054 on 2/24/16.
  */
-public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRecordDTO>, Serializable {
+
+    public static final String AUTO_TERMINATED_FAILURE_RELATIONSHIP = "auto-terminated by failure relationship";
+
+    private String feedName;
 
     private ProvenanceEventRecordDTO previousEvent;
+    private Long previousEventId;
 
-    private Long duration;
+    private String id;
+    private Long eventId;
+    private DateTime eventTime;
+    private Long eventDuration;
+    private Long lineageDuration;
+    private String eventType;
+    private String flowFileUuid;
+    private String fileSize;
+    private Long fileSizeBytes;
+    private String clusterNodeId;
+    private String clusterNodeAddress;
+    private String groupId;
+    private String componentId;
+    private String componentType;
+    private String componentName;
+    private String sourceSystemFlowFileId;
+    private String alternateIdentifierUri;
+    private transient Collection<ProvenanceEventAttributeDTO> attributes;
+    private List<String> parentUuids;
+    private List<String> childUuids;
+    private String transitUri;
+    private String relationship;
+    private String details;
+    private Boolean contentEqual;
+    private Boolean inputContentAvailable;
+    private String inputContentClaimSection;
+    private String inputContentClaimContainer;
+    private String inputContentClaimIdentifier;
+    private Long inputContentClaimOffset;
+    private String inputContentClaimFileSize;
+    private Long inputContentClaimFileSizeBytes;
+    private Boolean outputContentAvailable;
+    private String outputContentClaimSection;
+    private String outputContentClaimContainer;
+    private String outputContentClaimIdentifier;
+    private Long outputContentClaimOffset;
+    private String outputContentClaimFileSize;
+    private Long outputContentClaimFileSizeBytes;
+    private Boolean replayAvailable;
+    private String replayExplanation;
+    private String sourceConnectionIdentifier;
 
-    private ProvenanceEventDTO dto;
 
-    private ActiveFlowFile flowFile;
+    private transient FlowFile flowFile;
 
-    public ProvenanceEventRecordDTO(ProvenanceEventDTO dto, ActiveFlowFile flowFile) {
-        this.dto = dto;
-        this.flowFile = flowFile;
+    public ProvenanceEventRecordDTO() {
+
+
     }
 
-    public ActiveFlowFile getFlowFile() {
+    public FlowFile getFlowFile() {
         return flowFile;
     }
 
-    public void setFlowFile(ActiveFlowFile flowFile) {
+    public void setFlowFile(FlowFile flowFile) {
         this.flowFile = flowFile;
     }
 
-    @Override
-    public String getId() {
-        return dto.getId();
+    public String getFeedName() {
+        return feedName;
     }
 
-    @Override
-    public void setId(String id) {
-        dto.setId(id);
+    public void setFeedName(String feedName) {
+        this.feedName = feedName;
     }
 
-    @Override
-    public Long getEventId() {
-        return dto.getEventId();
+    public boolean isFailure() {
+        return this.getDetails() != null && this.getDetails().equalsIgnoreCase(AUTO_TERMINATED_FAILURE_RELATIONSHIP);
     }
 
-    @Override
-    public void setEventId(Long eventId) {
-        dto.setEventId(eventId);
-    }
-
-    @Override
-    @XmlJavaTypeAdapter(TimestampAdapter.class)
-    public Date getEventTime() {
-        return dto.getEventTime();
-    }
-
-    @Override
-    public void setEventTime(Date eventTime) {
-        dto.setEventTime(eventTime);
-    }
-
-    @Override
-    public String getFlowFileUuid() {
-        return dto.getFlowFileUuid();
-    }
-
-    @Override
-    public void setFlowFileUuid(String flowFileUuid) {
-        dto.setFlowFileUuid(flowFileUuid);
-    }
-
-    @Override
-    public String getFileSize() {
-        return dto.getFileSize();
-    }
-
-    @Override
-    public void setFileSize(String fileSize) {
-        dto.setFileSize(fileSize);
-    }
-
-    @Override
-    public Long getFileSizeBytes() {
-        return dto.getFileSizeBytes();
-    }
-
-    @Override
-    public void setFileSizeBytes(Long fileSizeBytes) {
-        dto.setFileSizeBytes(fileSizeBytes);
-    }
-
-    @Override
-    public String getEventType() {
-        return dto.getEventType();
-    }
-
-    @Override
-    public void setEventType(String eventType) {
-        dto.setEventType(eventType);
-    }
-
-    @Override
-    public Collection<AttributeDTO> getAttributes() {
-        return dto.getAttributes();
-    }
-
-    @Override
-    public void setAttributes(Collection<AttributeDTO> attributes) {
-        dto.setAttributes(attributes);
-    }
-
-    @Override
-    public String getGroupId() {
-        return dto.getGroupId();
-    }
-
-    @Override
-    public void setGroupId(String groupId) {
-        dto.setGroupId(groupId);
-    }
-
-    @Override
-    public String getComponentId() {
-        return dto.getComponentId();
-    }
-
-    @Override
-    public void setComponentId(String componentId) {
-        dto.setComponentId(componentId);
-    }
-
-    @Override
-    public String getComponentName() {
-        return dto.getComponentName();
-    }
-
-    @Override
-    public void setComponentName(String componentName) {
-        dto.setComponentName(componentName);
-    }
-
-    @Override
-    public String getComponentType() {
-        return dto.getComponentType();
-    }
-
-    @Override
-    public void setComponentType(String componentType) {
-        dto.setComponentType(componentType);
-    }
-
-    @Override
-    public String getTransitUri() {
-        return dto.getTransitUri();
-    }
-
-    @Override
-    public void setTransitUri(String transitUri) {
-        dto.setTransitUri(transitUri);
-    }
-
-    @Override
-    public String getAlternateIdentifierUri() {
-        return dto.getAlternateIdentifierUri();
-    }
-
-    @Override
-    public void setAlternateIdentifierUri(String alternateIdentifierUri) {
-        dto.setAlternateIdentifierUri(alternateIdentifierUri);
-    }
-
-    @Override
-    public String getClusterNodeId() {
-        return dto.getClusterNodeId();
-    }
-
-    @Override
-    public void setClusterNodeId(String clusterNodeId) {
-        dto.setClusterNodeId(clusterNodeId);
-    }
-
-    @Override
-    public String getClusterNodeAddress() {
-        return dto.getClusterNodeAddress();
-    }
-
-    @Override
-    public void setClusterNodeAddress(String clusterNodeAddress) {
-        dto.setClusterNodeAddress(clusterNodeAddress);
-    }
-
-    @Override
-    public List<String> getParentUuids() {
-        return dto.getParentUuids();
-    }
-
-    @Override
-    public void setParentUuids(List<String> parentUuids) {
-        dto.setParentUuids(parentUuids);
-    }
-
-    @Override
-    public List<String> getChildUuids() {
-        return dto.getChildUuids();
-    }
-
-    @Override
-    public void setChildUuids(List<String> childUuids) {
-        dto.setChildUuids(childUuids);
-    }
-
-    @Override
-    public Long getEventDuration() {
-        return dto.getEventDuration();
-    }
-
-    @Override
-    public void setEventDuration(Long eventDuration) {
-        dto.setEventDuration(eventDuration);
-    }
-
-    @Override
-    public Long getLineageDuration() {
-        return dto.getLineageDuration();
-    }
-
-    @Override
-    public void setLineageDuration(Long lineageDuration) {
-        dto.setLineageDuration(lineageDuration);
-    }
-
-    @Override
-    public String getSourceSystemFlowFileId() {
-        return dto.getSourceSystemFlowFileId();
-    }
-
-    @Override
-    public void setSourceSystemFlowFileId(String sourceSystemFlowFileId) {
-        dto.setSourceSystemFlowFileId(sourceSystemFlowFileId);
-    }
-
-    @Override
-    public String getRelationship() {
-        return dto.getRelationship();
-    }
-
-    @Override
-    public void setRelationship(String relationship) {
-        dto.setRelationship(relationship);
-    }
-
-    @Override
-    public String getDetails() {
-        return dto.getDetails();
-    }
-
-    @Override
-    public void setDetails(String details) {
-        dto.setDetails(details);
-    }
-
-    @Override
-    public Boolean getContentEqual() {
-        return dto.getContentEqual();
-    }
-
-    @Override
-    public void setContentEqual(Boolean contentEqual) {
-        dto.setContentEqual(contentEqual);
-    }
-
-    @Override
-    public Boolean getOutputContentAvailable() {
-        return dto.getOutputContentAvailable();
-    }
-
-    @Override
-    public void setOutputContentAvailable(Boolean outputContentAvailable) {
-        dto.setOutputContentAvailable(outputContentAvailable);
-    }
 
-    @Override
-    public String getOutputContentClaimSection() {
-        return dto.getOutputContentClaimSection();
+    public boolean isEndingEvent() {
+        return "DROP".equalsIgnoreCase(getEventType());
     }
 
-    @Override
-    public void setOutputContentClaimSection(String contentClaimSection) {
-        dto.setOutputContentClaimSection(contentClaimSection);
-    }
-
-    @Override
-    public String getOutputContentClaimContainer() {
-        return dto.getOutputContentClaimContainer();
-    }
-
-    @Override
-    public void setOutputContentClaimContainer(String outputContentClaimContainer) {
-        dto.setOutputContentClaimContainer(outputContentClaimContainer);
-    }
-
-    @Override
-    public String getOutputContentClaimIdentifier() {
-        return dto.getOutputContentClaimIdentifier();
-    }
-
-    @Override
-    public void setOutputContentClaimIdentifier(String outputContentClaimIdentifier) {
-        dto.setOutputContentClaimIdentifier(outputContentClaimIdentifier);
-    }
-
-    @Override
-    public Long getOutputContentClaimOffset() {
-        return dto.getOutputContentClaimOffset();
-    }
-
-    @Override
-    public void setOutputContentClaimOffset(Long outputContentClaimOffset) {
-        dto.setOutputContentClaimOffset(outputContentClaimOffset);
-    }
-
-    @Override
-    public String getOutputContentClaimFileSize() {
-        return dto.getOutputContentClaimFileSize();
-    }
+    @JsonProperty("updatedAttributes")
+    private Map<String, Object> updatedAttributes;
 
-    @Override
-    public void setOutputContentClaimFileSize(String outputContentClaimFileSize) {
-        dto.setOutputContentClaimFileSize(outputContentClaimFileSize);
-    }
-
-    @Override
-    public Long getOutputContentClaimFileSizeBytes() {
-        return dto.getOutputContentClaimFileSizeBytes();
-    }
-
-    @Override
-    public void setOutputContentClaimFileSizeBytes(Long outputContentClaimFileSizeBytes) {
-        dto.setOutputContentClaimFileSizeBytes(outputContentClaimFileSizeBytes);
-    }
-
-    @Override
-    public Boolean getInputContentAvailable() {
-        return dto.getInputContentAvailable();
-    }
-
-    @Override
-    public void setInputContentAvailable(Boolean inputContentAvailable) {
-        dto.setInputContentAvailable(inputContentAvailable);
-    }
-
-    @Override
-    public String getInputContentClaimSection() {
-        return dto.getInputContentClaimSection();
-    }
+    @JsonProperty("previousAttributes")
+    private Map<String, Object> previousAttributes;
 
-    @Override
-    public void setInputContentClaimSection(String inputContentClaimSection) {
-        dto.setInputContentClaimSection(inputContentClaimSection);
-    }
 
-    @Override
-    public String getInputContentClaimContainer() {
-        return dto.getInputContentClaimContainer();
-    }
+    @JsonIgnore
+    private Map<String, Object> additionalProperties = new HashMap<String, Object>();
 
-    @Override
-    public void setInputContentClaimContainer(String inputContentClaimContainer) {
-        dto.setInputContentClaimContainer(inputContentClaimContainer);
-    }
+    @JsonProperty("attributes")
+    private Map<String, String> attributeMap;
 
-    @Override
-    public String getInputContentClaimIdentifier() {
-        return dto.getInputContentClaimIdentifier();
-    }
 
-    @Override
-    public void setInputContentClaimIdentifier(String inputContentClaimIdentifier) {
-        dto.setInputContentClaimIdentifier(inputContentClaimIdentifier);
+    @JsonAnyGetter
+    public Map<String, Object> getAdditionalProperties() {
+        return this.additionalProperties;
     }
 
-    @Override
-    public Long getInputContentClaimOffset() {
-        return dto.getInputContentClaimOffset();
+    @JsonAnySetter
+    public void setAdditionalProperty(String name, Object value) {
+        this.additionalProperties.put(name, value);
     }
 
-    @Override
-    public void setInputContentClaimOffset(Long inputContentClaimOffset) {
-        dto.setInputContentClaimOffset(inputContentClaimOffset);
+    public void setAdditionalProperties(Map<String, Object> additionalProperties) {
+        this.additionalProperties = additionalProperties;
     }
 
-    @Override
-    public String getInputContentClaimFileSize() {
-        return dto.getInputContentClaimFileSize();
+    @JsonProperty("attributes")
+    public Map<String, String> getAttributeMap() {
+        return attributeMap;
     }
 
-    @Override
-    public void setInputContentClaimFileSize(String inputContentClaimFileSize) {
-        dto.setInputContentClaimFileSize(inputContentClaimFileSize);
+    @JsonProperty("attributes")
+    public void setAttributeMap(Map<String, String> attributeMap) {
+        this.attributeMap = attributeMap;
     }
 
-    @Override
-    public Long getInputContentClaimFileSizeBytes() {
-        return dto.getInputContentClaimFileSizeBytes();
-    }
 
-    @Override
-    public void setInputContentClaimFileSizeBytes(Long inputContentClaimFileSizeBytes) {
-        dto.setInputContentClaimFileSizeBytes(inputContentClaimFileSizeBytes);
+    @JsonProperty("updatedAttributes")
+    public Map<String, Object> getUpdatedAttributes() {
+        return updatedAttributes;
     }
 
-    @Override
-    public Boolean getReplayAvailable() {
-        return dto.getReplayAvailable();
+    @JsonProperty("updatedAttributes")
+    public void setUpdatedAttributes(Map<String, Object> updatedAttributes) {
+        this.updatedAttributes = updatedAttributes;
     }
 
-    @Override
-    public void setReplayAvailable(Boolean replayAvailable) {
-        dto.setReplayAvailable(replayAvailable);
+    @JsonProperty("previousAttributes")
+    public Map<String, Object> getPreviousAttributes() {
+        return previousAttributes;
     }
 
-    @Override
-    public String getReplayExplanation() {
-        return dto.getReplayExplanation();
+    @JsonProperty("previousAttributes")
+    public void setPreviousAttributes(Map<String, Object> previousAttributes) {
+        this.previousAttributes = previousAttributes;
     }
 
-    @Override
-    public void setReplayExplanation(String replayExplanation) {
-        dto.setReplayExplanation(replayExplanation);
+    public boolean hasUpdatedAttributes() {
+        return this.updatedAttributes != null && !this.updatedAttributes.isEmpty();
     }
 
-    @Override
     public String getSourceConnectionIdentifier() {
-        return dto.getSourceConnectionIdentifier();
+        return sourceConnectionIdentifier;
     }
 
-    @Override
     public void setSourceConnectionIdentifier(String sourceConnectionIdentifier) {
-        dto.setSourceConnectionIdentifier(sourceConnectionIdentifier);
+        this.sourceConnectionIdentifier = sourceConnectionIdentifier;
     }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public Long getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(Long eventId) {
+        this.eventId = eventId;
+    }
+
+
+    public Long getEventDuration() {
+        return eventDuration;
+    }
+
+    public void setEventDuration(Long eventDuration) {
+        this.eventDuration = eventDuration;
+    }
+
+    public Long getLineageDuration() {
+        return lineageDuration;
+    }
+
+    public void setLineageDuration(Long lineageDuration) {
+        this.lineageDuration = lineageDuration;
+    }
+
+    public String getEventType() {
+        return eventType;
+    }
+
+    public void setEventType(String eventType) {
+        this.eventType = eventType;
+    }
+
+    public String getFlowFileUuid() {
+        return flowFileUuid;
+    }
+
+    public void setFlowFileUuid(String flowFileUuid) {
+        this.flowFileUuid = flowFileUuid;
+    }
+
+    public String getFileSize() {
+        return fileSize;
+    }
+
+    public void setFileSize(String fileSize) {
+        this.fileSize = fileSize;
+    }
+
+    public Long getFileSizeBytes() {
+        return fileSizeBytes;
+    }
+
+    public void setFileSizeBytes(Long fileSizeBytes) {
+        this.fileSizeBytes = fileSizeBytes;
+    }
+
+    public String getClusterNodeId() {
+        return clusterNodeId;
+    }
+
+    public void setClusterNodeId(String clusterNodeId) {
+        this.clusterNodeId = clusterNodeId;
+    }
+
+    public String getClusterNodeAddress() {
+        return clusterNodeAddress;
+    }
+
+    public void setClusterNodeAddress(String clusterNodeAddress) {
+        this.clusterNodeAddress = clusterNodeAddress;
+    }
+
+    public String getGroupId() {
+        return groupId;
+    }
+
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
+    }
+
+    public String getComponentId() {
+        return componentId;
+    }
+
+    public void setComponentId(String componentId) {
+        this.componentId = componentId;
+    }
+
+    public String getComponentType() {
+        return componentType;
+    }
+
+    public void setComponentType(String componentType) {
+        this.componentType = componentType;
+    }
+
+    public String getComponentName() {
+        return componentName;
+    }
+
+    public void setComponentName(String componentName) {
+        this.componentName = componentName;
+    }
+
+    public String getSourceSystemFlowFileId() {
+        return sourceSystemFlowFileId;
+    }
+
+    public void setSourceSystemFlowFileId(String sourceSystemFlowFileId) {
+        this.sourceSystemFlowFileId = sourceSystemFlowFileId;
+    }
+
+    public String getAlternateIdentifierUri() {
+        return alternateIdentifierUri;
+    }
+
+    public void setAlternateIdentifierUri(String alternateIdentifierUri) {
+        this.alternateIdentifierUri = alternateIdentifierUri;
+    }
+
+    public Collection<ProvenanceEventAttributeDTO> getAttributes() {
+        if (attributes == null) {
+            attributes = new ArrayList<>();
+        }
+        return attributes;
+    }
+
+    public void setAttributes(Collection<ProvenanceEventAttributeDTO> attributes) {
+        this.attributes = attributes;
+    }
+
+
+    public List<String> getParentUuids() {
+        return parentUuids;
+    }
+
+    public void setParentUuids(List<String> parentUuids) {
+        this.parentUuids = parentUuids;
+    }
+
+    public List<String> getChildUuids() {
+        return childUuids;
+    }
+
+    public void setChildUuids(List<String> childUuids) {
+        this.childUuids = childUuids;
+    }
+
+    public String getTransitUri() {
+        return transitUri;
+    }
+
+    public void setTransitUri(String transitUri) {
+        this.transitUri = transitUri;
+    }
+
+    public String getRelationship() {
+        return relationship;
+    }
+
+    public void setRelationship(String relationship) {
+        this.relationship = relationship;
+    }
+
+    public String getDetails() {
+        return details;
+    }
+
+    public void setDetails(String details) {
+        this.details = details;
+    }
+
+    public Boolean getContentEqual() {
+        return contentEqual;
+    }
+
+    public void setContentEqual(Boolean contentEqual) {
+        this.contentEqual = contentEqual;
+    }
+
+    public Boolean getInputContentAvailable() {
+        return inputContentAvailable;
+    }
+
+    public void setInputContentAvailable(Boolean inputContentAvailable) {
+        this.inputContentAvailable = inputContentAvailable;
+    }
+
+    public String getInputContentClaimSection() {
+        return inputContentClaimSection;
+    }
+
+    public void setInputContentClaimSection(String inputContentClaimSection) {
+        this.inputContentClaimSection = inputContentClaimSection;
+    }
+
+    public String getInputContentClaimContainer() {
+        return inputContentClaimContainer;
+    }
+
+    public void setInputContentClaimContainer(String inputContentClaimContainer) {
+        this.inputContentClaimContainer = inputContentClaimContainer;
+    }
+
+    public String getInputContentClaimIdentifier() {
+        return inputContentClaimIdentifier;
+    }
+
+    public void setInputContentClaimIdentifier(String inputContentClaimIdentifier) {
+        this.inputContentClaimIdentifier = inputContentClaimIdentifier;
+    }
+
+    public Long getInputContentClaimOffset() {
+        return inputContentClaimOffset;
+    }
+
+    public void setInputContentClaimOffset(Long inputContentClaimOffset) {
+        this.inputContentClaimOffset = inputContentClaimOffset;
+    }
+
+    public String getInputContentClaimFileSize() {
+        return inputContentClaimFileSize;
+    }
+
+    public void setInputContentClaimFileSize(String inputContentClaimFileSize) {
+        this.inputContentClaimFileSize = inputContentClaimFileSize;
+    }
+
+    public Long getInputContentClaimFileSizeBytes() {
+        return inputContentClaimFileSizeBytes;
+    }
+
+    public void setInputContentClaimFileSizeBytes(Long inputContentClaimFileSizeBytes) {
+        this.inputContentClaimFileSizeBytes = inputContentClaimFileSizeBytes;
+    }
+
+    public Boolean getOutputContentAvailable() {
+        return outputContentAvailable;
+    }
+
+    public void setOutputContentAvailable(Boolean outputContentAvailable) {
+        this.outputContentAvailable = outputContentAvailable;
+    }
+
+    public String getOutputContentClaimSection() {
+        return outputContentClaimSection;
+    }
+
+    public void setOutputContentClaimSection(String outputContentClaimSection) {
+        this.outputContentClaimSection = outputContentClaimSection;
+    }
+
+    public String getOutputContentClaimContainer() {
+        return outputContentClaimContainer;
+    }
+
+    public void setOutputContentClaimContainer(String outputContentClaimContainer) {
+        this.outputContentClaimContainer = outputContentClaimContainer;
+    }
+
+    public String getOutputContentClaimIdentifier() {
+        return outputContentClaimIdentifier;
+    }
+
+    public void setOutputContentClaimIdentifier(String outputContentClaimIdentifier) {
+        this.outputContentClaimIdentifier = outputContentClaimIdentifier;
+    }
+
+    public Long getOutputContentClaimOffset() {
+        return outputContentClaimOffset;
+    }
+
+    public void setOutputContentClaimOffset(Long outputContentClaimOffset) {
+        this.outputContentClaimOffset = outputContentClaimOffset;
+    }
+
+    public String getOutputContentClaimFileSize() {
+        return outputContentClaimFileSize;
+    }
+
+    public void setOutputContentClaimFileSize(String outputContentClaimFileSize) {
+        this.outputContentClaimFileSize = outputContentClaimFileSize;
+    }
+
+    public Long getOutputContentClaimFileSizeBytes() {
+        return outputContentClaimFileSizeBytes;
+    }
+
+    public void setOutputContentClaimFileSizeBytes(Long outputContentClaimFileSizeBytes) {
+        this.outputContentClaimFileSizeBytes = outputContentClaimFileSizeBytes;
+    }
+
+    public Boolean getReplayAvailable() {
+        return replayAvailable;
+    }
+
+    public void setReplayAvailable(Boolean replayAvailable) {
+        this.replayAvailable = replayAvailable;
+    }
+
+    public String getReplayExplanation() {
+        return replayExplanation;
+    }
+
+    public void setReplayExplanation(String replayExplanation) {
+        this.replayExplanation = replayExplanation;
+    }
+
 
 
     public boolean isStartOfCurrentFlowFile() {
@@ -459,7 +506,42 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
     }
 
     public void setPreviousEvent(ProvenanceEventRecordDTO previousEvent) {
+        this.previousEventId = previousEvent.getEventId();
         this.previousEvent = previousEvent;
+    }
+
+    public Long getPreviousEventId() {
+        if (previousEventId == null && previousEvent != null) {
+            return previousEvent.getEventId();
+        }
+        return previousEventId;
+    }
+
+    @Override
+    public DateTime getEventTime() {
+        return eventTime;
+    }
+
+    @Override
+    public void setEventTime(DateTime eventTime) {
+        this.eventTime = eventTime;
+    }
+
+    @Override
+    public Set<String> getParentFlowFileIds() {
+        if (getParentUuids() != null) {
+            return new HashSet<>(this.getParentUuids());
+        }
+        return new HashSet<>();
+    }
+
+    @Override
+    public void setParentFlowFileIds(Set<String> parentFlowFileIds) {
+        if (parentFlowFileIds != null) {
+            this.setParentUuids(new ArrayList<>(parentFlowFileIds));
+        } else {
+            this.setParentUuids(null);
+        }
     }
 
     @Override
@@ -470,23 +552,30 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
+
         ProvenanceEventRecordDTO that = (ProvenanceEventRecordDTO) o;
-        if (that.dto == null) {
+
+        if (eventId != null ? !eventId.equals(that.eventId) : that.eventId != null) {
             return false;
         }
-        return Objects.equals(getEventId(), that.getEventId()) &&
-               Objects.equals(getFlowFileUuid(), that.getFlowFileUuid());
+        return !(flowFileUuid != null ? !flowFileUuid.equals(that.flowFileUuid) : that.flowFileUuid != null);
+
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(dto.getEventId(), dto.getFlowFileUuid());
+        int result = eventId != null ? eventId.hashCode() : 0;
+        result = 31 * result + (flowFileUuid != null ? flowFileUuid.hashCode() : 0);
+        return result;
     }
 
     public String toString() {
         final StringBuilder sb = new StringBuilder("ProvenanceEventRecordDTO{");
         sb.append("eventId=").append(getEventId());
-        sb.append(", flowFile=").append(getFlowFileUuid()).append("(").append(flowFile).append(")");
+        sb.append("componentId=").append(getComponentId());
+        sb.append(", flowFile=").append(getFlowFileUuid()).append("(").append(flowFile != null).append(")");
+        sb.append(", parentUUIDs=").append(getParentUuids() != null ? getParentUuids().size() : "NULL");
+        sb.append(",previous=").append(getPreviousEventId());
         sb.append(", eventComponentId=").append(getComponentId());
         sb.append(", eventRelationship=").append(getRelationship());
         sb.append(", eventType=").append(getEventType());
@@ -496,4 +585,5 @@ public class ProvenanceEventRecordDTO extends ProvenanceEventDTO {
         sb.append('}');
         return sb.toString();
     }
+
 }

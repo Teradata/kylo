@@ -14,6 +14,7 @@ import java.util.Map;
  * Created by sr186054 on 3/3/16.
  */
 public class SpringApplicationListener implements ApplicationListener<ContextRefreshedEvent> {
+
     private static final Logger log = LoggerFactory.getLogger(SpringApplicationListener.class);
 
     public static Map<String, Object> objectsToAutowire = new HashMap<>();
@@ -31,7 +32,6 @@ public class SpringApplicationListener implements ApplicationListener<ContextRef
     public static void addObjectToAutowire(String key, Object obj) {
         objectsToAutowire.put(key, obj);
     }
-
 
 
 }

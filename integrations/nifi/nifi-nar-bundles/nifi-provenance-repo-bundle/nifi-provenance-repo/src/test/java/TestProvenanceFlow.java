@@ -3,6 +3,7 @@ import com.google.common.collect.Sets;
 import com.thinkbiganalytics.nifi.flow.controller.NifiFlowClient;
 import com.thinkbiganalytics.nifi.provenance.StreamConfiguration;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
+import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileGuavaCache;
 import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventStreamWriter;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
@@ -25,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.mockito.Mockito.when;
@@ -153,10 +155,27 @@ public class TestProvenanceFlow {
         Set<String> currentProcessIds;
 
         String id;
+        private Long activeEvents = 0L;
+
+        private boolean registeredAsFinished;
+
+
+
+        public boolean isRegisteredAsFinished() {
+            return registeredAsFinished;
+        }
+
+        public void setRegisteredAsFinished(boolean registeredAsFinished) {
+            this.registeredAsFinished = registeredAsFinished;
+        }
 
         public RunningFlow(NifiFlowProcessGroup flow) {
             this.flow = flow;
             this.currentProcessIds = new HashSet<>();
+        }
+
+        public String getId(){
+            return this.id;
         }
 
 
@@ -170,28 +189,31 @@ public class TestProvenanceFlow {
         }
 
         public void start(String processorId) {
-            log.info("Starting processor {} ({}) for flow {} ", flow.getProcessor(processorId).getName(), processorId, flow.getId());
+            //log.info("Starting processor {} ({}) for flow {} ", flow.getProcessor(processorId).getName(), processorId, flow.getId());
             currentProcessIds.add(processorId);
+            activeEvents++;
         }
 
         public List<ProvenanceEventRecord> next() {
             List<ProvenanceEventRecord> completedEvents = new ArrayList<>();
             Set<String> currentIds = Sets.newHashSet(currentProcessIds);
             for (String p : currentIds) {
+                Set<String> destinations = flow.getProcessor(p).getDestinationIds();
+
+
                 if (flow.getProcessor(p).isStart()) {
                     completedEvents.add(complete(p, ProvenanceEventType.RECEIVE));
-                } else if (flow.getProcessor(p).isEnd()) {
+                } else if (flow.getProcessor(p).isEnd() || (activeEvents ==1 && destinations.size() == 0)) {
                     completedEvents.add(complete(p, ProvenanceEventType.DROP));
                 } else {
                     completedEvents.add(complete(p, ProvenanceEventType.ATTRIBUTES_MODIFIED));
-
                 }
             }
             return completedEvents;
         }
 
         public ProvenanceEventRecord complete(String processorId, ProvenanceEventType eventType) {
-            log.info("Complete processor {} ({}) for flow {} ", flow.getProcessor(processorId).getName(), processorId, flow.getId());
+          // log.info("Complete processor {} ({}) for flow {} ", flow.getProcessor(processorId).getName(), processorId, flow.getId());
             currentProcessIds.remove(processorId);
             Set<String> destinations = flow.getProcessor(processorId).getDestinationIds();
             //
@@ -201,6 +223,7 @@ public class TestProvenanceFlow {
                     start(destinationId);
                 });
             }
+
 
             ProvenanceEventRecord event = new StandardProvenanceEventRecord.Builder().setEventType(eventType)
                 .setComponentId(processorId)
@@ -215,6 +238,8 @@ public class TestProvenanceFlow {
                 completedEvents.put(processorId, new ArrayList<>());
             }
             completedEvents.get(processorId).add(event);
+            activeEvents--;
+            eventsFinished.incrementAndGet();
             return event;
         }
 
@@ -222,10 +247,20 @@ public class TestProvenanceFlow {
             return currentProcessIds;
         }
 
+        public Long getActiveEvents(){
+            return activeEvents;
+        }
+
 
     }
 
-    private List<RunningFlow> activeFlows = new ArrayList<>();
+
+    private AtomicInteger totalFinishedFlows = new AtomicInteger(0);
+    private AtomicInteger totalStartedFlows = new AtomicInteger(0);
+    private AtomicInteger finishedRuns = new AtomicInteger(0);
+    private AtomicLong eventsFinished = new AtomicLong(0);
+
+
 
     private RunningFlow newFlowFile() {
         RunningFlow flow = new RunningFlow(getFlow());
@@ -237,6 +272,8 @@ public class TestProvenanceFlow {
     private class TestProducer implements Runnable {
 
         ProvenanceEventStreamWriter writer;
+        private int finishedflows = 0;
+        private List<RunningFlow> activeFlows = new ArrayList<>();
         int counter = 0;
 
         int modulo = 3; // how often to create flow files
@@ -249,38 +286,61 @@ public class TestProvenanceFlow {
         /**
          * How long to wait before moving on to the next processor in the flow or starting the next new flow
          */
-        long waitTime = 20L;
+        long waitTime = 1L;
 
-        public TestProducer(Long waitTime, StreamConfiguration configuration) {
+        public TestProducer(Long waitTime, int max,StreamConfiguration configuration) {
             this.waitTime = waitTime;
+            this.max = max;
             writer = new ProvenanceEventStreamWriter(configuration);
         }
 
 
         @Override
         public void run() {
-            while (true) {
+            long start = System.currentTimeMillis();
+            while (finishedflows <=max) {
 
+                List<RunningFlow> finishedFlows  = new ArrayList<>();
                 for (RunningFlow flow : activeFlows) {
                     //get all completed events and then simulate Nifi Provenance writing.
                     List<ProvenanceEventRecord> completedEvents = flow.next();
-                    if (completedEvents != null) {
+                    if (completedEvents != null && !completedEvents.isEmpty()) {
                         completedEvents.forEach(event -> writer.writeEvent(event));
                     }
+                    else {
+                        if(flow.getActiveEvents()== 0L) {
+                            if(!flow.isRegisteredAsFinished()) {
+                                flow.setRegisteredAsFinished(true);
+                                finishedflows++;
+                                finishedFlows.add(flow);
+                                log.info("Finished flow {}    {}/{}", flow.getId(), totalStartedFlows.get(), totalFinishedFlows.incrementAndGet());
+                            }
+                        }
+                    }
                 }
+                //clear finished
+                for(RunningFlow finishedFlow : finishedFlows){
+                    activeFlows.remove(finishedFlow);
+                }
+
                 try {
                     Thread.sleep(waitTime);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
 
-                if (counter % modulo == 0 && counter < max) {
-                    log.info("NEW FLOW FILE " + (activeFlows.size() + 1));
+                if (counter % modulo == 0 && finishedflows <=max) {
+                    log.info("NEW FLOW FILE " + finishedflows + 1);
                     //start a new flow every 5 iterations
+                    totalStartedFlows.incrementAndGet();
                     activeFlows.add(newFlowFile());
                 }
                 counter++;
             }
+            long end = System.currentTimeMillis();
+            log.info("TOTAL TIME to process {}  = flows: {} ms.   Total counts: {}/{} ",finishedflows,(end-start),totalFinishedFlows.get(),totalStartedFlows.get());
+            FlowFileGuavaCache.instance().printSummary();
+            finishedRuns.incrementAndGet();
         }
     }
 
@@ -302,21 +362,56 @@ public class TestProvenanceFlow {
 
     }
 
+    public class Runner implements Runnable {
+        int runs = 0;
+        public Runner(int runs){
+            this.runs = runs;
+        }
+
+        @Override
+        public void run() {
+            long start = System.currentTimeMillis();
+            while(finishedRuns.get() <runs){
+
+                try {
+                    Thread.sleep(2000L);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+
+            }
+            long end = System.currentTimeMillis();
+            log.info("TOTAL TIME to process {} ms  flows Total counts: Flow files: {}/{}, Events: {} ",(end-start),totalFinishedFlows.get(),totalStartedFlows.get(),eventsFinished.get());
+        }
+    }
+
 
 
     @Test
     public void testStream() {
         //A Stream is when there are 5 or more events spaced less than 1 sec apart coming in for a Processor for a Flow tied to a Feed
-        TestProducer producer = new TestProducer(20L, new StreamConfiguration.Builder().maxTimeBetweenEvents(1000L).numberOfEventsForStream(5).build());
-        producer.run();
+        TestProducer producer = new TestProducer(1L, 1000000, new StreamConfiguration.Builder().maxTimeBetweenEvents(3000L).numberOfEventsForStream(5).build());
+        Thread t1 = new Thread(producer);
+        TestProducer producer2 = new TestProducer(1000L, 1000,new StreamConfiguration.Builder().maxTimeBetweenEvents(1000L).numberOfEventsForStream(5).build());
+        Thread t2 = new Thread(producer2);
+        TestProducer producer3 = new TestProducer(2000L, 100000, new StreamConfiguration.Builder().maxTimeBetweenEvents(3000L).numberOfEventsForStream(5).build());
+        Thread t3 = new Thread(producer3);
+        t1.start();
+        t2.start();
+        t3.start();
+        Runner runner = new Runner(3);
+        runner.run();
+
     }
 
     @Test
     public void testBatch() {
         //A Stream is when there are 5 or more events spaced less than 1 sec apart coming in for a Processor for a Flow tied to a Feed
-        TestProducer producer = new TestProducer(500L, new StreamConfiguration.Builder().maxTimeBetweenEvents(1000L).numberOfEventsForStream(5).build());
+        TestProducer producer = new TestProducer(500L, 10,new StreamConfiguration.Builder().maxTimeBetweenEvents(1000L).numberOfEventsForStream(5).build());
         producer.run();
     }
+
+
 
 
 

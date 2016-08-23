@@ -10,7 +10,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.context.annotation.PropertySources;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
@@ -24,11 +23,12 @@ import javax.sql.DataSource;
 @ComponentScan(basePackages = {"com.thinkbiganalytics"})
 @PropertySource("file:/opt/nifi/ext-config/config.properties")
 public class NifiProvenanceConfig {
+
     private static final Logger log = LoggerFactory.getLogger(NifiProvenanceConfig.class);
     @Autowired
     private Environment env;
 
-    @Bean(name="thinkbigNifiDataSource")
+    @Bean(name = "thinkbigNifiDataSource")
     public DataSource thinkbigNifiDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(env.getProperty("thinkbig.provenance.datasource.driverClassName"));

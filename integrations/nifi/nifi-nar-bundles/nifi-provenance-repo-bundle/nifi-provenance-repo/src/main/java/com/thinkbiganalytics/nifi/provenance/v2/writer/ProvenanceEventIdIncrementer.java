@@ -9,17 +9,18 @@ import java.util.concurrent.atomic.AtomicLong;
  * Created by sr186054 on 3/4/16.
  */
 public class ProvenanceEventIdIncrementer {
+
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventIdIncrementer.class);
 
     private AtomicLong eventIdCounter = null;
 
     public boolean isNull() {
-         return eventIdCounter == null;
+        return eventIdCounter == null;
     }
 
     public void setId(Long l) {
         log.info("EVENT ID SET TO " + l);
-        if(l == null){
+        if (l == null) {
             l = 0L;
         }
         if (eventIdCounter == null) {

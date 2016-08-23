@@ -10,9 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sr186054 on 8/11/16.
- * TODO.. is this really needed???  Currently not used
- *
+ * Created by sr186054 on 8/11/16. TODO.. is this really needed???  Currently not used
  */
 public class ProvenanceEventCache {
 
@@ -28,17 +26,14 @@ public class ProvenanceEventCache {
     private final Cache<String, List<ProvenanceEventRecord>> processorEventCache;
 
 
-
-
-
     private ProvenanceEventCache() {
         eventCache = CacheBuilder.newBuilder().recordStats().maximumSize(MAX_SIZE).build();
         processorEventCache = CacheBuilder.newBuilder().recordStats().maximumSize(MAX_SIZE).build(new CacheLoader<String, List<ProvenanceEventRecord>>() {
-                                                                                        @Override
-                                                                                        public List<ProvenanceEventRecord> load(String id) throws Exception {
-                                                                                            return new ArrayList<ProvenanceEventRecord>();
-                                                                                        }
-                                                                                    }
+                                                                                                      @Override
+                                                                                                      public List<ProvenanceEventRecord> load(String id) throws Exception {
+                                                                                                          return new ArrayList<ProvenanceEventRecord>();
+                                                                                                      }
+                                                                                                  }
         );
     }
 
@@ -55,6 +50,7 @@ public class ProvenanceEventCache {
     public ProvenanceEventRecord getEvent(String flowFileId, Long eventId) {
         return getEventById(key(flowFileId, eventId));
     }
+
     public List<ProvenanceEventRecord> getEventsForProcessor(String processorId) {
         return processorEventCache.getIfPresent(processorId);
     }
@@ -63,10 +59,9 @@ public class ProvenanceEventCache {
         //add the event to the event id map
         eventCache.put(key(eventRecord.getFlowFileUuid(), eventRecord.getEventId()), eventRecord);
         //add the event to the processor map
- //       List<ProvenanceEventRecord> events = processorEventCache.getIfPresent(eventRecord.getComponentId());
-  //      events.add(eventRecord);
+        //       List<ProvenanceEventRecord> events = processorEventCache.getIfPresent(eventRecord.getComponentId());
+        //      events.add(eventRecord);
     }
-
 
 
 }

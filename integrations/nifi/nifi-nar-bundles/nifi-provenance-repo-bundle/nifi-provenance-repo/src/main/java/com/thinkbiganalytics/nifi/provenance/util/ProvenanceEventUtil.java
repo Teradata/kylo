@@ -5,7 +5,6 @@ import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventRecordDTO
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;
-import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 
 import java.util.Arrays;
 import java.util.Comparator;
@@ -26,7 +25,7 @@ public class ProvenanceEventUtil {
         return Arrays.stream(allowedEvents).anyMatch(event::equals);
     }
 
-    public static boolean isFirstEvent(ProvenanceEventDTO event) {
+    public static boolean isFirstEvent(ProvenanceEventRecordDTO event) {
         return contains(STARTING_EVENT_TYPES, ProvenanceEventType.valueOf(event.getEventType()));
     }
 
@@ -42,22 +41,22 @@ public class ProvenanceEventUtil {
         return !contains(NON_COMPLETION_EVENTS, event.getEventType());
     }
 
-    public static boolean isCompletionEvent(ProvenanceEventDTO event) {
+    public static boolean isCompletionEvent(ProvenanceEventRecordDTO event) {
         return !contains(NON_COMPLETION_EVENTS, ProvenanceEventType.valueOf(event.getEventType()));
     }
-
-
 
 
     public static Comparator<ProvenanceEventRecordDTO> provenanceEventRecordDTOComparator() {
         return new ProvenanceEventRecordDTOComparator();
     }
 
-    public static String getFeedName(ProvenanceEventRecordDTO event){
+    public static String getFeedName(ProvenanceEventRecordDTO event) {
         return null;
     }
-    public static String getFeedProcessGroupId(ProvenanceEventRecordDTO event){
+
+    public static String getFeedProcessGroupId(ProvenanceEventRecordDTO event) {
         return null;
     }
+
 
 }
