@@ -100,7 +100,7 @@ public abstract class AbstractProvenanceEventProcessor {
     public void process(List<ProvenanceEventRecordDTO> events) {
 
         if (events != null && !events.isEmpty()) {
-            log.info("process {} events", events.size());
+            //log.info("process {} events", events.size());
             //sort by time
             events.sort(ProvenanceEventUtil.provenanceEventRecordDTOComparator());
             //Process Each event as either Batch or Streaming
@@ -128,7 +128,6 @@ public abstract class AbstractProvenanceEventProcessor {
             processorProvenanceEvents.clear();
             //now streamingCollection and Batch collection should be populated correctly
             //update flow file stats
-
 
             processBatch();
             processStream();
@@ -183,10 +182,11 @@ public abstract class AbstractProvenanceEventProcessor {
     private void processBatch() {
         //handle batch event
         if (batchProvenanceEvents != null && !batchProvenanceEvents.isEmpty()) {
+            log.info("Processing {} BATCH Events for {} processors.", batchProvenanceEvents.values().stream().mapToInt(processorEvents -> processorEvents.size()).sum(), batchProvenanceEvents.size());
 
             batchProvenanceEvents.values().stream().flatMap(events -> events.stream()).sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).collect(Collectors.toList()).forEach(event -> {
                 //what do to with batch
-                log.info("Processing BATCH Event {}, {} ({}), for flowfile: {}  ", event.getEventId(), event.getDetails(), event.getComponentId(), event.getFlowFileUuid());
+                //log.info("Processing BATCH Event {}, {} ({}), for flowfile: {}  ", event.getEventId(), event.getDetails(), event.getComponentId(), event.getFlowFileUuid());
             });
 
         }
@@ -197,15 +197,14 @@ public abstract class AbstractProvenanceEventProcessor {
     private void processStream() {
         //handle stream event
         if (streamingProcessors != null && !streamingProcessors.isEmpty()) {
-
+            log.info("Processing {} STREAM Events for {} processors.", streamingProcessors.values().stream().mapToInt(processorEvents -> processorEvents.size()).sum(), streamingProcessors.size());
             streamingProcessors.values().stream().flatMap(events -> events.stream()).sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).collect(Collectors.toList()).forEach(event -> {
                 //what do to with stream
-                log.info("Processing STREAM Event {}, {} ({}), for flowfile: {}  ", event.getEventId(), event.getDetails(), event.getComponentId(), event.getFlowFileUuid());
+                //  log.info("Processing STREAM Event {}, {} ({}), for flowfile: {}  ", event.getEventId(), event.getDetails(), event.getComponentId(), event.getFlowFileUuid());
             });
 
         }
         streamingProcessors.clear();
-
 
 
     }

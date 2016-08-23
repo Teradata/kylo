@@ -11,8 +11,6 @@ import org.springframework.stereotype.Component;
  *
  *  @see com.thinkbiganalytics.nifi.provenance.processor.AbstractProvenanceEventProcessor
  * Created by sr186054 on 8/13/16.
- *
- *
  */
 @Component
 public class StreamConfiguration {
