@@ -213,7 +213,7 @@
                     self.model.templateName = templateData.templateName;
                     self.model.defineTable = templateData.defineTable;
                     self.model.allowPreconditions = templateData.allowPreconditions;
-                    self.model.dataTransformationFeed = templateData.dataTransformation;
+                    self.model.dataTransformation = templateData.dataTransformation;
                     self.model.description = templateData.description;
                     self.model.icon.title = templateData.icon;
                     self.model.icon.color = templateData.iconColor;
