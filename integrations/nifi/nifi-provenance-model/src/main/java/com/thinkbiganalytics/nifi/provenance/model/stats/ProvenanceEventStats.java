@@ -105,14 +105,14 @@ public class ProvenanceEventStats extends BaseStatistics {
         if (eventId != null ? !eventId.equals(that.eventId) : that.eventId != null) {
             return false;
         }
-        return !(rootFlowFileId != null ? !rootFlowFileId.equals(that.rootFlowFileId) : that.rootFlowFileId != null);
+        return !(flowFileId != null ? !flowFileId.equals(that.flowFileId) : that.flowFileId != null);
 
     }
 
     @Override
     public int hashCode() {
         int result = eventId != null ? eventId.hashCode() : 0;
-        result = 31 * result + (rootFlowFileId != null ? rootFlowFileId.hashCode() : 0);
+        result = 31 * result + (flowFileId != null ? flowFileId.hashCode() : 0);
         return result;
     }
 

@@ -90,14 +90,11 @@ public class ProvenanceStatsCalculator {
                 String collectionId = UUID.randomUUID().toString();
 
                 //1 get stats within time period
-                //  CacheUtil.instance().logStats();
                 List<ProvenanceEventStats> statistics = new ArrayList<>(eventStatistics);
                 statsToSend = StatisticsUtil.getEventStatsBeforeOrEqualTo(statistics, endTime);
-
-                log.info("About to aggregate and send  {} event statistics out of {} for window: {} - {} ", statsToSend.size(), statistics.size(), startInterval, endTime);
-                if (statsToSend.size() > 0) {
+                  if (statsToSend.size() > 0) {
                     //2 group them by feed and then by processor
-
+                    log.info("About to aggregate and send  {} event statistics out of {} for window: {} - {} ", statsToSend.size(), statistics.size(), startInterval, endTime);
                     List<AggregatedFeedProcessorStatistics>
                         feedProcessorStatistics = StatisticsUtil.aggregateStatsByFeedAndProcessor(statsToSend, collectionId);
 
@@ -134,15 +131,19 @@ public class ProvenanceStatsCalculator {
     }
 
 
-
+    /**
+     * Converts the incoming ProvenanceEvent into an object that can be used to gather statistics (ProvenanceEventStats)
+     * @param event
+     */
     public void calculateStats(ProvenanceEventRecordDTO event) {
         if (firstEventTime == null) {
             firstEventTime = event.getEventTime();
             lastSendTime = firstEventTime;
         }
-        //   checkAndSend(event.getEventTime());
 
-        //1 get Feed Name for event
+        checkAndSend(event.getEventTime());
+
+
         String feedName = event.getFeedName() == null ? event.getFlowFile().getFeedName() : event.getFeedName();
         if (feedName != null) {
             try {

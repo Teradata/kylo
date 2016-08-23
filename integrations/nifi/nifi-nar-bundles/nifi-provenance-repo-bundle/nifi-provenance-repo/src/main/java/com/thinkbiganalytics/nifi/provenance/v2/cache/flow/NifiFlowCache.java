@@ -22,8 +22,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
- * Created by sr186054 on 8/11/16. Cache of the Nifi Flow graph //TODO Might only be needed to help determine if a FlowFile is complete comparing it to the process graph. //Currently set to not active
- * until further discovery on event data
+ * Created by sr186054 on 8/11/16. Cache of the Nifi Flow graph
+ * TODO Block and loadAll upon startup
  */
 public class NifiFlowCache {
 

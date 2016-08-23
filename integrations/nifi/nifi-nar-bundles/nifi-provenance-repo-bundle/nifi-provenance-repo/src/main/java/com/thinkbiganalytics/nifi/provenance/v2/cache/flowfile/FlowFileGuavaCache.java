@@ -46,10 +46,15 @@ public class FlowFileGuavaCache implements FlowFileCache {
 
                                                               }
         );
-        init();
+        initTimerThread();
     }
 
-    public ActiveFlowFile loadGraph(IdReferenceFlowFile parentFlowFile) {
+    /**
+     * Load the FlowFile from the saved "IdReference MapDB " or creates a new FlowFile object
+     * @param parentFlowFile
+     * @return
+     */
+    private ActiveFlowFile loadGraph(IdReferenceFlowFile parentFlowFile) {
         ActiveFlowFile parent = (ActiveFlowFile) cache.getIfPresent(parentFlowFile.getId());
         if (parentFlowFile != null) {
             if (parent == null) {
@@ -76,7 +81,7 @@ public class FlowFileGuavaCache implements FlowFileCache {
         return parent;
     }
 
-    public ActiveFlowFile loadFromCache(String flowFileId) {
+    private ActiveFlowFile loadFromCache(String flowFileId) {
         ActiveFlowFile ff = null;
         IdReferenceFlowFile idReferenceFlowFile = FlowFileMapDbCache.instance().getCachedFlowFile(flowFileId);
         if (idReferenceFlowFile != null) {
@@ -89,12 +94,11 @@ public class FlowFileGuavaCache implements FlowFileCache {
                 }
             }
             ff = (ActiveFlowFile) cache.getIfPresent(flowFileId);
-
         }
         if (ff == null) {
             ff = new ActiveFlowFile(flowFileId);
         } else {
-            log.info("LOADED FF from cached id map {} ", ff);
+            log.info("LOADED FlowFile from cached id map {} ", ff);
         }
         return ff;
     }
@@ -113,7 +117,6 @@ public class FlowFileGuavaCache implements FlowFileCache {
     public List<FlowFile> getCompletedRootFlowFiles() {
         return cache.asMap().values().stream().filter(flowFile -> (flowFile.isRootFlowFile() && flowFile.isFlowComplete())).collect(Collectors.toList());
     }
-
 
     public CacheStats stats() {
         return cache.stats();
@@ -137,8 +140,7 @@ public class FlowFileGuavaCache implements FlowFileCache {
 
     @Override
     public void invalidate(FlowFile flowFile) {
-        //   log.info("Invalidate Flow File {} ", flowFile.getId());
-        EventMapDbCache.instance().expire(flowFile);
+        //EventMapDbCache.instance().expire(flowFile);
         FlowFileMapDbCache.instance().expire(flowFile);
         cache.invalidate(flowFile.getId());
         //also invalidate all children
@@ -161,20 +163,13 @@ public class FlowFileGuavaCache implements FlowFileCache {
         }
     }
 
-    private void init() {
-        /**
-         * TIMER to print summary of what is in the cache
-         * CURRENTLY DISABLED
-         */
+    private void initTimerThread() {
         Timer summaryTimer = new Timer();
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
-
                 expire();
                 FlowFileGuavaCache.instance().printSummary();
-                //feed stats
-                //ProvenanceFeedStatsCalculator.instance().printStats();
             }
         };
         summaryTimer.schedule(task, 10 * 1000, 10 * 1000);
@@ -186,9 +181,4 @@ public class FlowFileGuavaCache implements FlowFileCache {
     }
 
 
-    @Override
-    public FlowFile save(FlowFile flowFile) {
-        cache.put(flowFile.getId(), flowFile);
-        return flowFile;
-    }
 }
