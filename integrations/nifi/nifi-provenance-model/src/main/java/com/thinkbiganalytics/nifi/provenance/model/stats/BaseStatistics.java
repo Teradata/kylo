@@ -8,15 +8,18 @@ import org.joda.time.DateTime;
 public class BaseStatistics {
 
     protected DateTime time;
-    protected Long bytesIn = 0L;
-    protected Long bytesOut = 0L;
-    protected Long duration = 0L;
-    protected Long totalCount = 1L;
-    protected Long jobsStarted = 0L;
-    protected Long jobsFinished = 0L;
-    protected Long processorsFailed = 0L;
-    protected Long flowFilesStarted = 0L;
-    protected Long flowFilesFinished = 0L;
+    protected long bytesIn = 0L;
+    protected long bytesOut = 0L;
+    protected long duration = 0L;
+    protected long totalCount = 1L;
+    protected long jobsStarted = 0L;
+    protected long jobsFinished = 0L;
+    protected long processorsFailed = 0L;
+    protected long flowFilesStarted = 0L;
+    protected long flowFilesFinished = 0L;
+    protected long jobsFailed = 0L;
+    protected long successfulJobDuration = 0L;
+    protected long jobDuration = 0L;
 
 
     public DateTime getTime() {
@@ -27,85 +30,99 @@ public class BaseStatistics {
         this.time = time;
     }
 
-    public Long getBytesIn() {
+    public long getBytesIn() {
         return bytesIn;
     }
 
-    public Long getBytesOut() {
-        return bytesOut;
-    }
-
-    public Long getDuration() {
-        return duration;
-    }
-
-    public Long getTotalCount() {
-        return totalCount;
-    }
-
-    public Long getJobsStarted() {
-        return jobsStarted;
-    }
-
-    public Long getJobsFinished() {
-        return jobsFinished;
-    }
-
-    public Long getProcessorsFailed() {
-        return processorsFailed;
-    }
-
-    public Long getFlowFilesStarted() {
-        return flowFilesStarted;
-    }
-
-    public Long getFlowFilesFinished() {
-        return flowFilesFinished;
-    }
-
-
-    public Double average(Long stat) {
-        return stat.doubleValue() / totalCount.doubleValue();
-    }
-
-    public Double getAvgDuration() {
-        return average(duration);
-    }
-
-
-    public void setBytesIn(Long bytesIn) {
+    public void setBytesIn(long bytesIn) {
         this.bytesIn = bytesIn;
     }
 
-    public void setBytesOut(Long bytesOut) {
+    public long getBytesOut() {
+        return bytesOut;
+    }
+
+    public void setBytesOut(long bytesOut) {
         this.bytesOut = bytesOut;
     }
 
-    public void setDuration(Long duration) {
+    public long getDuration() {
+        return duration;
+    }
+
+    public void setDuration(long duration) {
         this.duration = duration;
     }
 
-    public void setTotalCount(Long totalCount) {
+    public long getTotalCount() {
+        return totalCount;
+    }
+
+    public void setTotalCount(long totalCount) {
         this.totalCount = totalCount;
     }
 
-    public void setJobsStarted(Long jobsStarted) {
+    public long getJobsStarted() {
+        return jobsStarted;
+    }
+
+    public void setJobsStarted(long jobsStarted) {
         this.jobsStarted = jobsStarted;
     }
 
-    public void setJobsFinished(Long jobsFinished) {
+    public long getJobsFinished() {
+        return jobsFinished;
+    }
+
+    public void setJobsFinished(long jobsFinished) {
         this.jobsFinished = jobsFinished;
     }
 
-    public void setProcessorsFailed(Long processorsFailed) {
+    public long getProcessorsFailed() {
+        return processorsFailed;
+    }
+
+    public void setProcessorsFailed(long processorsFailed) {
         this.processorsFailed = processorsFailed;
     }
 
-    public void setFlowFilesStarted(Long flowFilesStarted) {
+    public long getFlowFilesStarted() {
+        return flowFilesStarted;
+    }
+
+    public void setFlowFilesStarted(long flowFilesStarted) {
         this.flowFilesStarted = flowFilesStarted;
     }
 
-    public void setFlowFilesFinished(Long flowFilesFinished) {
+    public long getFlowFilesFinished() {
+        return flowFilesFinished;
+    }
+
+    public void setFlowFilesFinished(long flowFilesFinished) {
         this.flowFilesFinished = flowFilesFinished;
+    }
+
+    public long getJobsFailed() {
+        return jobsFailed;
+    }
+
+    public void setJobsFailed(long jobsFailed) {
+        this.jobsFailed = jobsFailed;
+    }
+
+    public long getSuccessfulJobDuration() {
+        return successfulJobDuration;
+    }
+
+    public void setSuccessfulJobDuration(long successfulJobDuration) {
+        this.successfulJobDuration = successfulJobDuration;
+    }
+
+    public long getJobDuration() {
+        return jobDuration;
+    }
+
+    public void setJobDuration(long jobDuration) {
+        this.jobDuration = jobDuration;
     }
 }

@@ -130,6 +130,31 @@ public class ProvenanceEventStats extends BaseStatistics {
     }
 
     @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        ProvenanceEventStats that = (ProvenanceEventStats) o;
+
+        if (eventId != null ? !eventId.equals(that.eventId) : that.eventId != null) {
+            return false;
+        }
+        return !(rootFlowFileId != null ? !rootFlowFileId.equals(that.rootFlowFileId) : that.rootFlowFileId != null);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = eventId != null ? eventId.hashCode() : 0;
+        result = 31 * result + (rootFlowFileId != null ? rootFlowFileId.hashCode() : 0);
+        return result;
+    }
+
+    @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("ProvenanceEventStats{");
         sb.append("eventId=").append(eventId);
