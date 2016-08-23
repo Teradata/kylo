@@ -8,7 +8,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Created by sr186054 on 8/16/16. Object that holds onto the processor and list of events associated with the processor
+ * Holds onto the processor and list of events associated with the processor
+ *
+ * Created by sr186054 on 8/16/16.
  */
 public class ProcessorStats {
 

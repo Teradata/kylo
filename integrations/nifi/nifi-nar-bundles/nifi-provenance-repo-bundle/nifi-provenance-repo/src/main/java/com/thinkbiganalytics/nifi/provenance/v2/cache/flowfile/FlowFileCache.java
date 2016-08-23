@@ -17,7 +17,4 @@ public interface FlowFileCache {
 
     void invalidate(FlowFile flowFile);
 
-    public void commit();
-
-    FlowFile save(FlowFile flowFile);
 }

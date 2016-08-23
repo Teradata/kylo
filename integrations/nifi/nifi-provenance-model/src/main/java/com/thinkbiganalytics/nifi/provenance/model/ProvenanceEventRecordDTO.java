@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 
 import org.joda.time.DateTime;
 
@@ -23,8 +24,6 @@ import java.util.Set;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRecordDTO>, Serializable {
-
-    public static final String AUTO_TERMINATED_FAILURE_RELATIONSHIP = "auto-terminated by failure relationship";
 
     private String feedName;
 
@@ -98,12 +97,12 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
     }
 
     public boolean isFailure() {
-        return this.getDetails() != null && this.getDetails().equalsIgnoreCase(AUTO_TERMINATED_FAILURE_RELATIONSHIP);
+        return ProvenanceEventUtil.isFailure(this);
     }
 
 
-    public boolean isEndingEvent() {
-        return "DROP".equalsIgnoreCase(getEventType());
+    public boolean isEndingFlowFileEvent() {
+        return ProvenanceEventUtil.isEndingFlowFileEvent(this);
     }
 
     @JsonProperty("updatedAttributes")

@@ -14,6 +14,11 @@ import java.util.concurrent.TimeUnit;
 
 
 /**
+ * A Lightweight Map of FlowFile with ID references for Parent/children.
+ * This is persisted to disk in case NiFi crashes or goes down during flowfile execution.
+ * The cache is used by the FlowFileGuavaCache to load a given flowfile. and will expire and remove itself when the FlowFileGuavaCache#expire() is called on via the TimerThread in the GuavaCache.
+ * If the cache here is not used by a configurable expiration time it will invalidate itself and be removed from the cache.
+ *
  * Created by sr186054 on 8/19/16.
  */
 public class FlowFileMapDbCache {

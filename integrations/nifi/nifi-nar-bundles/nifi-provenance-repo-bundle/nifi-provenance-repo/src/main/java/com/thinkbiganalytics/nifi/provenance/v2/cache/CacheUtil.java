@@ -3,14 +3,12 @@ package com.thinkbiganalytics.nifi.provenance.v2.cache;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
 import com.thinkbiganalytics.nifi.provenance.model.FlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
+import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
-import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.EventMapDbCache;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileCache;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileGuavaCache;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileMapDbCache;
 
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -19,20 +17,20 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
+ * Utility to build the FlowFile graph from an incoming Provenance Event and cache the FlowFile Graph.
+ *
  * Created by sr186054 on 8/20/16.
  */
 public class CacheUtil {
 
     private static final Logger log = LoggerFactory.getLogger(CacheUtil.class);
 
+    // internal counters for general stats
     AtomicLong startJobCounter = new AtomicLong(0L);
-    AtomicLong dropEventCounter = new AtomicLong(0L);
-    AtomicLong activeJobCounter = new AtomicLong(0L);
+    AtomicLong finishedJobCounter = new AtomicLong(0L);
     AtomicLong eventCounter = new AtomicLong(0L);
-    private DateTime minEventTime;
 
     private static CacheUtil instance = new CacheUtil();
-
     public static CacheUtil instance() {
         return instance;
     }
@@ -42,41 +40,38 @@ public class CacheUtil {
     }
 
     public void logStats() {
-        log.info("Processed {} events.  Started Jobs {}, Finished Jobs: {}, Active Jobs: {}.  MinEventTime: {}  ", eventCounter.get(), startJobCounter.get(), dropEventCounter.get(),
-                 activeJobCounter.get(), minEventTime);
+        log.info("Processed {} events.  Started Jobs {}, Finished Jobs: {}, Active Jobs: {}. ", eventCounter.get(), startJobCounter.get(), finishedJobCounter.get(),
+                 (startJobCounter.get()-finishedJobCounter.get()));
     }
 
-    public void cache(ProvenanceEventRecordDTO event) {
-        if (minEventTime == null) {
-            minEventTime = event.getEventTime();
-        }
-        if (minEventTime.isAfter(event.getEventTime())) {
-            minEventTime = event.getEventTime();
-        }
+    /**
+     * Create the FlowFile graph and cache the FlowFile with event into the GuavaCache for processing
+     *
+     * @param event
+     */
+    public void cacheAndBuildFlowFileGraph(ProvenanceEventRecordDTO event) {
 
-        //convert it to a dto so we can add additional tracking properties
-
+        // Get the FlowFile from the Cache.  It is LoadingCache so if the file is new the Cache will create it
         FlowFileCache flowFileCache = FlowFileGuavaCache.instance();
-
         FlowFile flowFile = flowFileCache.getEntry(event.getFlowFileUuid());
-        Set<FlowFile> modified = new HashSet<>();
-
         event.setFlowFile(flowFile);
 
+         // Track what flow files were modified so they can be persisted until the entire Flow file is complete in case NiFi goes down while processing
+        Set<FlowFile> modified = new HashSet<>();
+
         //An event is the very first in the flow if it is a CREATE or RECEIVE event and if there are no Parent flow files
+        //This indicates the start of a Job.
         if (ProvenanceEventUtil.isFirstEvent(event) && (event.getParentUuids() == null || (event.getParentUuids() != null && event.getParentUuids().isEmpty()))) {
             flowFile.setFirstEvent(event);
             flowFile.markAsRootFlowFile();
-            startJobCounter.incrementAndGet();
-            activeJobCounter.incrementAndGet();
+            startJobCounter.incrementAndGet();;
             modified.add(flowFile);
-            //       log.info("marking flow file as root {} ", flowFile.getId());
         }
 
+        //Build the graph of parent/child flow files
         if (event.getParentUuids() != null && !event.getParentUuids().isEmpty()) {
             for (String parent : event.getParentUuids()) {
                 if (!flowFile.getId().equals(parent)) {
-                    //      log.info("adding parent {} to child {} ", parent, flowFile.getId());
                     FlowFile parentFlowFile = flowFile.addParent(flowFileCache.getEntry(parent));
                     parentFlowFile.addChild(flowFile);
                     modified.add(flowFile);
@@ -84,10 +79,8 @@ public class CacheUtil {
                 }
             }
         }
-
         if (event.getChildUuids() != null && !event.getChildUuids().isEmpty()) {
             for (String child : event.getChildUuids()) {
-                //     log.info("adding child {} to parent {} ", child, flowFile.getId());
                 FlowFile childFlowFile = flowFile.addChild(flowFileCache.getEntry(child));
                 childFlowFile.addParent(flowFile);
                 modified.add(flowFile);
@@ -101,17 +94,18 @@ public class CacheUtil {
         } else {
             event.setFeedName(flowFile.getFeedName());
         }
-        //finalize the event if it is not pulled from loading map
+
+        //If the event is the final event for the processor then add it to the flow file
         if (ProvenanceEventUtil.isCompletionEvent(event)) {
             flowFile.addCompletedEvent(event);
         }
-        if (event.isEndingEvent()) {
-            dropEventCounter.incrementAndGet();
-            // if(flowFile.isFlowComplete()) {
-            //     activeJobCounter.decrementAndGet();
-            //  }
+        //update the internal counters
+        if (event.isEndingFlowFileEvent() && flowFile.isFlowComplete()) {
+             finishedJobCounter.incrementAndGet();
         }
+
         eventCounter.incrementAndGet();
+        //persist the files to disk
         for (FlowFile modifiedFlowFile : modified) {
             FlowFileMapDbCache.instance().cacheFlowFile(modifiedFlowFile);
         }
@@ -120,6 +114,5 @@ public class CacheUtil {
 
     public static void bootstrapCache() {
         NifiFlowCache.instance(); //.loadAll();
-        EventMapDbCache.instance();
     }
 }

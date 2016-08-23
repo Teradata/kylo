@@ -42,7 +42,7 @@ public class StatisticsUtil {
     }
 
     /**
-     * Aggregrate
+     * Aggregate
      */
     public static GroupedStats aggregateStats(List<ProvenanceEventStats> eventStatsList, String collectionId, DateTime start, DateTime end) {
         List<ProvenanceEventStats> stats = getEventStatsBetween(eventStatsList, start, end);
@@ -53,6 +53,12 @@ public class StatisticsUtil {
         return new GroupedStats(collectionId, eventStatsList);
     }
 
+    /**
+     * For the incoming list of EventStats group them by Feed and then By Processor and sum up the totals.
+     * @param eventStatsList
+     * @param collectionId
+     * @return
+     */
     public static List<AggregatedFeedProcessorStatistics> aggregateStatsByFeedAndProcessor(List<ProvenanceEventStats> eventStatsList, String collectionId) {
 
         List<AggregatedFeedProcessorStatistics> aggregatedFeedProcessorStatisticsList;

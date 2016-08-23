@@ -1,8 +1,12 @@
 package com.thinkbiganalytics.nifi.provenance;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
 /**
  * Created by sr186054 on 8/13/16.
  */
+@Component
 public class StreamConfiguration {
 
     public StreamConfiguration() {
@@ -18,16 +22,19 @@ public class StreamConfiguration {
     /**
      * Max time to wait before processing
      */
+    @Value("${thinkbig.provenance.streamconfig.processDelay}")
     private long processDelay = 3000; //default to 3 sec wait before processing
 
     /**
      * Max time between events for a given Feed Processor considered a Batch Anything under this time will be considered a Stream
      */
+    @Value("${thinkbig.provenance.streamconfig.maxTimeBetweenEventsMillis}")
     private Long maxTimeBetweenEventsMillis = 2000L;
 
     /**
      * Number of events needed to be in queue/processing to be considered a stream that fall within the maxTimeBetweenEventsMillis for processing on a given Processor for a specific Feed
      */
+    @Value("${thinkbig.provenance.streamconfig.numberOfEventsToConsiderAStream}")
     private Integer numberOfEventsToConsiderAStream = 3;
 
 
