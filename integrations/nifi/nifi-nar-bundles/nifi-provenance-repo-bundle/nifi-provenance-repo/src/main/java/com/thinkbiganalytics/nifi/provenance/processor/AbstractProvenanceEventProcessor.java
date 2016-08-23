@@ -3,7 +3,7 @@ package com.thinkbiganalytics.nifi.provenance.processor;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.nifi.provenance.StreamConfiguration;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
-import com.thinkbiganalytics.nifi.provenance.util.ProvenanceEventUtil;
+import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -30,9 +30,9 @@ public abstract class AbstractProvenanceEventProcessor {
 
     private Map<String, List<ProvenanceEventRecordDTO>> batchProvenanceEvents = new HashMap<>();
 
-    private Map<String, List<ProvenanceEventRecordDTO>> potentialStreamingProcessors = new HashMap<>();
+    private Map<String, List<ProvenanceEventRecordDTO>> potentialStreamingProvenanceEvents = new HashMap<>();
 
-    private Map<String, List<ProvenanceEventRecordDTO>> streamingProcessors = new HashMap<>();
+    private Map<String, List<ProvenanceEventRecordDTO>> streamingProvenanceEvents = new HashMap<>();
 
 
     public AbstractProvenanceEventProcessor(StreamConfiguration streamConfiguration) {
@@ -42,12 +42,7 @@ public abstract class AbstractProvenanceEventProcessor {
     /**
      * Set of the #streamingMapKey which have already be designated as a Streaming Used for quick calculation if the Events coming in should be marked as a Stream or not
      */
-    private Set<String> streamingProcessorKeys = new HashSet<>();
-
-
-    private enum PROCESSING_TYPE {
-        STREAM, POTENTIAL_STREAM, BATCH, UNKNOWN
-    }
+    private Set<String> streamingProcessorProvenanceEventKeys = new HashSet<>();
 
 
     private DateTime getLastEventProcessTime(ProvenanceEventRecordDTO event) {
@@ -86,8 +81,8 @@ public abstract class AbstractProvenanceEventProcessor {
     public abstract String streamingMapKey(ProvenanceEventRecordDTO event);
 
     private void moveToStream(Map<String, List<ProvenanceEventRecordDTO>> map, String key) {
-        streamingProcessorKeys.add(key);
-        map.get(key).stream().collect(Collectors.toList()).forEach(event -> addToCollection(streamingProcessors, event));
+        streamingProcessorProvenanceEventKeys.add(key);
+        map.get(key).stream().collect(Collectors.toList()).forEach(event -> addToCollection(streamingProvenanceEvents, event));
         map.remove(key);
 
     }
@@ -109,8 +104,8 @@ public abstract class AbstractProvenanceEventProcessor {
             //join the 2 collections and move to batch
             Map<String, List<ProvenanceEventRecordDTO>> joinedCollection = new HashMap<>(processorProvenanceEvents);
 
-            if (!potentialStreamingProcessors.isEmpty()) {
-                potentialStreamingProcessors.entrySet().forEach(entry ->
+            if (!potentialStreamingProvenanceEvents.isEmpty()) {
+                potentialStreamingProvenanceEvents.entrySet().forEach(entry ->
                                                                 {
                                                                     if (joinedCollection.containsKey(entry.getKey())) {
                                                                         Set<ProvenanceEventRecordDTO> records = new HashSet<ProvenanceEventRecordDTO>(joinedCollection.get(entry.getKey()));
@@ -124,7 +119,7 @@ public abstract class AbstractProvenanceEventProcessor {
 
             moveToBatch(joinedCollection);
             //clear potential
-            potentialStreamingProcessors.clear();
+            potentialStreamingProvenanceEvents.clear();
             processorProvenanceEvents.clear();
             //now streamingCollection and Batch collection should be populated correctly
             //update flow file stats
@@ -139,43 +134,37 @@ public abstract class AbstractProvenanceEventProcessor {
 
     /**
      * Based upon the supplied configuration determine if this event is a Stream or a Batch
+     * TODO: add logic to mark as a Stream if the current item says its a Batch, but the starting flow processor was really a Stream
      */
-    private PROCESSING_TYPE processEvent(ProvenanceEventRecordDTO event) {
-        PROCESSING_TYPE processingType = PROCESSING_TYPE.UNKNOWN;
+    private void processEvent(ProvenanceEventRecordDTO event) {
         String key = streamingMapKey(event);
-        if (streamingProcessorKeys.contains(key)) {
+        if (streamingProcessorProvenanceEventKeys.contains(key)) {
             //mark as Stream
-            addToCollection(streamingProcessors, event);
-            processingType = PROCESSING_TYPE.STREAM;
+            addToCollection(streamingProvenanceEvents, event);
         } else if (processorProvenanceEvents.containsKey(key)) {
             Long timeDiff = getTimeSinceLastEventForProcessor(event);
             if (timeDiff <= streamConfiguration.getMaxTimeBetweenEventsMillis()) {
-                if (potentialStreamingProcessors.containsKey(key)) {
-                    Integer size = potentialStreamingProcessors.get(key).size();
+                if (potentialStreamingProvenanceEvents.containsKey(key)) {
+                    Integer size = potentialStreamingProvenanceEvents.get(key).size();
                     if (size >= streamConfiguration.getNumberOfEventsToConsiderAStream()) {
                         //this is a Stream.
                         // Move all potential stream events to streaming collection for this processor
                         //copy and move
-                        moveToStream(potentialStreamingProcessors, key);
+                        moveToStream(potentialStreamingProvenanceEvents, key);
                         moveToStream(processorProvenanceEvents, key);
-                        processingType = PROCESSING_TYPE.STREAM;
                     } else {
-                        addToCollection(potentialStreamingProcessors, event);
-                        processingType = PROCESSING_TYPE.POTENTIAL_STREAM;
+                        addToCollection(potentialStreamingProvenanceEvents, event);
                     }
                 } else {
-                    addToCollection(potentialStreamingProcessors, event);
-                    processingType = PROCESSING_TYPE.POTENTIAL_STREAM;
+                    addToCollection(potentialStreamingProvenanceEvents, event);
                 }
             } else {
-                addToCollection(potentialStreamingProcessors, event);
-                processingType = PROCESSING_TYPE.POTENTIAL_STREAM;
+                addToCollection(potentialStreamingProvenanceEvents, event);
             }
         } else {
             //add it to processing Map
             addToCollection(processorProvenanceEvents, event);
         }
-        return processingType;
     }
 
 
@@ -196,15 +185,15 @@ public abstract class AbstractProvenanceEventProcessor {
 
     private void processStream() {
         //handle stream event
-        if (streamingProcessors != null && !streamingProcessors.isEmpty()) {
-            log.info("Processing {} STREAM Events for {} processors.", streamingProcessors.values().stream().mapToInt(processorEvents -> processorEvents.size()).sum(), streamingProcessors.size());
-            streamingProcessors.values().stream().flatMap(events -> events.stream()).sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).collect(Collectors.toList()).forEach(event -> {
+        if (streamingProvenanceEvents != null && !streamingProvenanceEvents.isEmpty()) {
+            log.info("Processing {} STREAM Events for {} processors.", streamingProvenanceEvents.values().stream().mapToInt(processorEvents -> processorEvents.size()).sum(), streamingProvenanceEvents.size());
+            streamingProvenanceEvents.values().stream().flatMap(events -> events.stream()).sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).collect(Collectors.toList()).forEach(event -> {
                 //what do to with stream
                 //  log.info("Processing STREAM Event {}, {} ({}), for flowfile: {}  ", event.getEventId(), event.getDetails(), event.getComponentId(), event.getFlowFileUuid());
             });
 
         }
-        streamingProcessors.clear();
+        streamingProvenanceEvents.clear();
 
 
     }
