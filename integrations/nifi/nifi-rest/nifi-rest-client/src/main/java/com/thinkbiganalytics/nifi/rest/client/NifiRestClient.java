@@ -34,6 +34,7 @@ import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
 import org.apache.nifi.web.api.entity.AboutEntity;
 import org.apache.nifi.web.api.entity.BulletinBoardEntity;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
@@ -56,6 +57,7 @@ import org.apache.nifi.web.api.entity.ProcessGroupsEntity;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
 import org.apache.nifi.web.api.entity.ProvenanceEntity;
 import org.apache.nifi.web.api.entity.ProvenanceEventEntity;
+import org.apache.nifi.web.api.entity.SearchResultsEntity;
 import org.apache.nifi.web.api.entity.TemplateEntity;
 import org.apache.nifi.web.api.entity.TemplatesEntity;
 import org.glassfish.jersey.media.multipart.MultiPart;
@@ -1587,6 +1589,33 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
         }
         return group;
     }
+
+    public SearchResultsEntity search(String query) {
+        Map<String,Object> map = new HashMap<>();
+        map.put("q", query);
+        return get("/controller/search-results", map, SearchResultsEntity.class);
+    }
+
+    public ProcessorDTO findProcessorById(String processorId){
+        SearchResultsEntity results = search(processorId);
+        //log this
+        if(results != null && results.getSearchResultsDTO() != null && results.getSearchResultsDTO().getProcessorResults() != null && !results.getSearchResultsDTO().getProcessorResults().isEmpty()){
+            log.info("Attempt to find processor by id {}. Processors Found: {} ",processorId,results.getSearchResultsDTO().getProcessorResults().size());
+            ComponentSearchResultDTO processorResult =  results.getSearchResultsDTO().getProcessorResults().get(0);
+            String id = processorResult.getId();
+            String groupId = processorResult.getGroupId();
+            ProcessorEntity processorEntity = getProcessor(groupId,id);
+
+            if(processorEntity != null){
+                return processorEntity.getProcessor();
+            }
+        }
+        else {
+            log.info("Unable to find Processor in Nifi for id: {}",processorId);
+        }
+        return null;
+    }
+
 
     public NifiFlowProcessGroup getFeedFlow(String processGroupId) throws NifiComponentNotFoundException {
         NifiFlowProcessGroup group = null;

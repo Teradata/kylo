@@ -4,25 +4,26 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.nifi.flow.controller.NifiFlowClient;
-import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
+import com.thinkbiganalytics.nifi.provenance.model.FlowFile;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 
+import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 /**
- * Created by sr186054 on 8/11/16. Cache of the Nifi Flow graph
- * //TODO Might only be needed to help determine if a FlowFile is complete comparing it to the process graph.
- * //Currently set to not active until further discovery on event data
+ * Created by sr186054 on 8/11/16. Cache of the Nifi Flow graph //TODO Might only be needed to help determine if a FlowFile is complete comparing it to the process graph. //Currently set to not active
+ * until further discovery on event data
  */
 public class NifiFlowCache {
 
@@ -32,9 +33,9 @@ public class NifiFlowCache {
 
     private NifiFlowClient nifiFlowClient;
 
-    private Integer MAX_SIZE = 100;
-
     private static NifiFlowCache instance = new NifiFlowCache();
+    private DateTime loadAllTime;
+    private AtomicBoolean loading = new AtomicBoolean(false);
 
     public static NifiFlowCache instance() {
         return instance;
@@ -59,20 +60,18 @@ public class NifiFlowCache {
         initClient();
         log.info("Starting to NifiFlowCache setup cache {}", nifiFlowClient);
 
-        feedFlowCache = CacheBuilder.newBuilder().recordStats().maximumSize(MAX_SIZE).build(new CacheLoader<String, NifiFlowProcessGroup>() {
-                                                                                                @Override
-                                                                                                public NifiFlowProcessGroup load(String processGroupId) throws Exception {
-                                                                                                    NifiFlowProcessGroup group = getGraph(processGroupId);
-                                                                                                    return group;
-                                                                                                }
-                                                                                            }
+        feedFlowCache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<String, NifiFlowProcessGroup>() {
+                                                                          @Override
+                                                                          public NifiFlowProcessGroup load(String processGroupId) throws Exception {
+                                                                              NifiFlowProcessGroup group = getGraph(processGroupId);
+                                                                              return group;
+                                                                          }
+                                                                      }
         );
 
         log.info("Cache setup... load All into cache ");
 
         loadAll();
-
-
 
 
     }
@@ -98,16 +97,18 @@ public class NifiFlowCache {
 
     public void loadAll() {
         log.info(" START loadALL ");
-        if (nifiFlowClient != null) {
-            Map<String, NifiFlowProcessGroup> map = new HashMap<>();
+        long start = System.currentTimeMillis();
+        if (nifiFlowClient != null && loading.compareAndSet(false, true)) {
             List<NifiFlowProcessGroup> allFlows = nifiFlowClient.getAllFlows();
-            log.info("Finished Loading ALL");
             if (allFlows != null) {
-                map = allFlows.stream().collect(
+                Map<String, NifiFlowProcessGroup> map = allFlows.stream().collect(
                     Collectors.toMap(simpleNifiFlowProcessGroup -> simpleNifiFlowProcessGroup.getId(), simpleNifiFlowProcessGroup -> simpleNifiFlowProcessGroup));
                 map.values().forEach(group -> assignStartingProcessors(group));
                 feedFlowCache.putAll(map);
             }
+            loadAllTime = DateTime.now();
+            log.info("Finished Loading Feed flow cache.  size: {}.  Time took to load:  {} ms ", feedFlowCache.asMap().size(), (System.currentTimeMillis() - start));
+            loading.set(false);
         }
 
     }
@@ -118,7 +119,6 @@ public class NifiFlowCache {
     public NifiFlowProcessor getStartingProcessor(String processorId) {
         return startingFeedProcessors.get(processorId);
     }
-
 
 
     /**
@@ -142,12 +142,28 @@ public class NifiFlowCache {
         return feedFlowCache.asMap().values().stream().filter(flow -> (feedName.equalsIgnoreCase(flow.getName()) && category.equalsIgnoreCase(flow.getParentGroupName()))).findAny().orElse(null);
     }
 
-    public NifiFlowProcessGroup getFlow(ActiveFlowFile flowFile) {
-        NifiFlowProcessor startingProcessor = getStartingProcessor(flowFile.getRootFlowFile().getFirstEvent().getComponentId());
-        if (startingProcessor != null) {
-            return startingProcessor.getProcessGroup();
+    public NifiFlowProcessGroup getFlow(FlowFile flowFile) {
+        NifiFlowProcessGroup flow = null;
+        if (flowFile != null) {
+            String firstProcessorId = (flowFile.getRootFlowFile() != null && flowFile.getRootFlowFile().hasFirstEvent()) ? flowFile.getRootFlowFile().getFirstEvent().getComponentId() : null;
+            if (firstProcessorId != null) {
+                NifiFlowProcessor startingProcessor = getStartingProcessor(firstProcessorId);
+                if (startingProcessor != null) {
+                    flow = startingProcessor.getProcessGroup();
+                } else {
+                    //Lock on firstProcessorID
+                    //unlock
+                    synchronized (firstProcessorId) {
+                        ///find the processGroup for this first component and then  get the graph
+                        ProcessorDTO processorDTO = nifiFlowClient.findProcessorById(firstProcessorId);
+                        if (processorDTO != null) {
+                            flow = getGraph(processorDTO.getParentGroupId());
+                        }
+                    }
+                }
+            }
         }
-        return null;
+        return flow;
     }
 
     public void setNifiFlowClient(NifiFlowClient nifiFlowClient) {

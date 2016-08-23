@@ -75,6 +75,9 @@ public class NifiStatsJmsReceiver {
         nifiEventSummaryStats.setCollectionTime(groupedStats.getTime());
         nifiEventSummaryStats.setMinEventTime(groupedStats.getMinTime());
         nifiEventSummaryStats.setMaxEventTime(groupedStats.getMaxTime());
+        nifiEventSummaryStats.setJobsFailed(groupedStats.getJobsFailed());
+        nifiEventSummaryStats.setSuccessfulJobDuration(groupedStats.getSuccessfulJobDuration());
+        nifiEventSummaryStats.setJobDuration(groupedStats.getJobDuration());
         return nifiEventSummaryStats;
     }
 }

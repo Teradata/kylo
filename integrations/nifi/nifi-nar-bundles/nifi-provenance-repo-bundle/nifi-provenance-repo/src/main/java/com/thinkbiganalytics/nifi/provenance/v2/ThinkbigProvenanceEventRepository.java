@@ -27,16 +27,15 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  * Custom Event Repository that will take the PovenanceEvents and write them to some output.
  */
 public class ThinkbigProvenanceEventRepository implements ProvenanceEventRepository {
+
     private static final Logger log = LoggerFactory.getLogger(ThinkbigProvenanceEventRepository.class);
 
     private PersistentProvenanceRepository repository;
 
-    private  Lock registerEventLock = null;
+    private Lock registerEventLock = null;
 
 
     private ProvenanceEventStreamWriter provenanceEventRecordWriter;
-
-
 
 
     public ThinkbigProvenanceEventRepository() {
@@ -69,20 +68,18 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
 
     @Override
     public void registerEvent(ProvenanceEventRecord provenanceEventRecord) {
-        log.info("ThinkbigProvenanceEventRepository recording 1 single provenance event: " + provenanceEventRecord.getComponentId() + ", " + provenanceEventRecord.getComponentType());
+        //   log.info("ThinkbigProvenanceEventRepository recording 1 single provenance event: " + provenanceEventRecord.getComponentId() + ", " + provenanceEventRecord.getComponentType());
         registerEvents(Collections.singleton(provenanceEventRecord));
     }
 
     /**
-     * get the latest event id
-     * if the getMaxEventId is null use -1 as a base id
-     * the writer will do an incrementAndGet on it to start it off a 0 which is what Nifi starts with
+     * get the latest event id if the getMaxEventId is null use -1 as a base id the writer will do an incrementAndGet on it to start it off a 0 which is what Nifi starts with
      */
-    private void checkAndSetEventId(){
+    private void checkAndSetEventId() {
         Long maxId = getMaxEventId();
-        Long eventId = provenanceEventRecordWriter.checkAndSetMaxEventId(maxId == null ? -1L : maxId) ;
-        if(maxId == null){
-            log.info("Register Events ... getMaxEventId is null  using "+eventId+" from internal incrementer");
+        Long eventId = provenanceEventRecordWriter.checkAndSetMaxEventId(maxId == null ? -1L : maxId);
+        if (maxId == null) {
+            log.info("Register Events ... getMaxEventId is null  using " + eventId + " from internal incrementer");
         }
     }
 
@@ -90,15 +87,15 @@ public class ThinkbigProvenanceEventRepository implements ProvenanceEventReposit
     public void registerEvents(Iterable<ProvenanceEventRecord> iterable) {
         this.registerEventLock.lock();
         try {
-        List<ProvenanceEventRecord> events = Lists.newArrayList(iterable);
-        checkAndSetEventId();
-        repository.registerEvents(events);
-        if (events != null && events.size() > 0) {
-            log.info("ThinkbigProvenanceEventRepository recording " + events.size() + " provenance events ");
-            for (ProvenanceEventRecord event : events) {
-                provenanceEventRecordWriter.writeEvent(event);
+            List<ProvenanceEventRecord> events = Lists.newArrayList(iterable);
+            checkAndSetEventId();
+            repository.registerEvents(events);
+            if (events != null && events.size() > 0) {
+                //       log.info("ThinkbigProvenanceEventRepository recording " + events.size() + " provenance events ");
+                for (ProvenanceEventRecord event : events) {
+                    provenanceEventRecordWriter.writeEvent(event);
+                }
             }
-        }
         } finally {
             this.registerEventLock.unlock();
         }

@@ -66,7 +66,7 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
 
     public void writeStats(AggregatedFeedProcessorStatisticsHolder stats) {
         try {
-            logger.info("SENDING AGGREGRATED STATS to JMS {} ", stats);
+            logger.info("SENDING AGGREGATED STATS to JMS {} ", stats);
             sendJmsMessage.sendObjectToQueue(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats);
 
         } catch (Exception e) {
@@ -103,7 +103,7 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
     }
 
     private void initializeTemporaryDatabase() throws Exception {
-        logger.info("Starting H2 database. The database name is:  " + h2DatabaseName );
+        logger.info("Starting H2 database. The database name is:  " + h2DatabaseName);
         db = new EmbeddedDatabaseBuilder()
             .generateUniqueName(false)
             .setType(EmbeddedDatabaseType.H2)

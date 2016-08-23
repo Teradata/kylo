@@ -27,9 +27,14 @@ import org.apache.http.client.CredentialsProvider;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.nio.client.CloseableHttpAsyncClient;
+import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
+import org.apache.nifi.web.api.entity.ProcessorEntity;
+import org.apache.nifi.web.api.entity.SearchResultsEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.ParameterizedTypeReference;
@@ -39,10 +44,12 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.client.ClientHttpRequestFactory;
+import org.springframework.http.client.HttpComponentsAsyncClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.http.converter.xml.Jaxb2RootElementHttpMessageConverter;
+import org.springframework.web.client.AsyncRestTemplate;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -58,6 +65,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.ws.rs.NotFoundException;
+
 /**
  * Simple Client that will return a Graph of objects representing the NifiFlow
  */
@@ -70,6 +79,7 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
     private String nifiApiPath = "/nifi-api/";
     private final URI base;
     private RestTemplate template;
+    private AsyncRestTemplate asyncRestTemplate;
 
     public static final ParameterizedTypeReference<List<NifiFlowProcessGroup>> FLOW_LIST_TYPE = new ParameterizedTypeReference<List<NifiFlowProcessGroup>>() {
     };
@@ -102,13 +112,18 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
             ClientHttpRequestFactory reqFactory = new HttpComponentsClientHttpRequestFactory(httpClient);
             this.template = new RestTemplate(messageConverters);
             this.template.setRequestFactory(reqFactory);
+            CloseableHttpAsyncClient asyncClient = HttpAsyncClients.custom().setDefaultCredentialsProvider(credsProvider).build();
+            HttpComponentsAsyncClientHttpRequestFactory asyncRequestFactory = new HttpComponentsAsyncClientHttpRequestFactory(asyncClient);
+            asyncRestTemplate = new AsyncRestTemplate(asyncRequestFactory);
+            asyncRestTemplate.setMessageConverters(messageConverters);
             //new RestTemplate(reqFactory);
         } else {
             this.template = new RestTemplate(messageConverters);
+
+            asyncRestTemplate = new AsyncRestTemplate();
+            asyncRestTemplate.setMessageConverters(messageConverters);
         }
-        for (HttpMessageConverter converter : this.template.getMessageConverters()) {
-            log.info("MESSAGE CONVERTER {}", converter);
-        }
+
     }
 
 
@@ -120,6 +135,9 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
         mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
         return mapper;
     }
+
+    ///Core methods to look up Processors and ProcessGroups for the flow
+
 
 
     public ProcessGroupEntity getProcessGroup(String processGroupId, boolean recursive, boolean verbose) throws NifiComponentNotFoundException {
@@ -144,6 +162,48 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
             throw new NifiComponentNotFoundException("root", NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
     }
+
+    public ProcessorEntity getProcessor(String processGroupId, String processorId) throws NifiComponentNotFoundException {
+        try {
+            return getWithQueryParams(Paths.get("controller", "process-groups", processGroupId, "processors", processorId), null, ProcessorEntity.class);
+        } catch (NotFoundException e) {
+            throw new NifiComponentNotFoundException(processorId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESSOR, e);
+        }
+    }
+
+    private SearchResultsEntity search(String query) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("q", query);
+        return getWithQueryParams(Paths.get("controller", "search-results"), map, SearchResultsEntity.class);
+    }
+
+    public ProcessorDTO findProcessorById(String processorId) {
+        SearchResultsEntity results = search(processorId);
+        //log this
+        if (results != null && results.getSearchResultsDTO() != null && results.getSearchResultsDTO().getProcessorResults() != null && !results.getSearchResultsDTO().getProcessorResults().isEmpty()) {
+            log.info("Attempt to find processor by id {}. Processors Found: {} ", processorId, results.getSearchResultsDTO().getProcessorResults().size());
+            ComponentSearchResultDTO processorResult = results.getSearchResultsDTO().getProcessorResults().get(0);
+            String id = processorResult.getId();
+            String groupId = processorResult.getGroupId();
+            ProcessorEntity processorEntity = getProcessor(groupId, id);
+
+            if (processorEntity != null) {
+                return processorEntity.getProcessor();
+            }
+        } else {
+            log.info("Unable to find Processor in Nifi for id: {}", processorId);
+        }
+        return null;
+    }
+
+
+
+
+
+
+
+
+
 
 
     private NifiVisitableProcessGroup visitFlow(String processGroup) {

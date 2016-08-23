@@ -1,8 +1,9 @@
 package com.thinkbiganalytics.nifi.provenance.model.stats;
 
+import com.thinkbiganalytics.nifi.provenance.model.FlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
-import org.joda.time.DateTime;
+import java.util.Set;
 
 /**
  * Created by sr186054 on 8/17/16.
@@ -10,35 +11,52 @@ import org.joda.time.DateTime;
 public class StatsModel {
 
     public static ProvenanceEventStats toProvenanceEventStats(String feedName, ProvenanceEventRecordDTO event) {
+        FlowFile rootFlowFile = event.getFlowFile().getRootFlowFile();
+
         ProvenanceEventStats stats = new ProvenanceEventStats(feedName);
         stats.setEventId(event.getEventId());
         stats.setProcessorId(event.getComponentId());
         stats.setClusterNodeId(event.getClusterNodeId());
-        stats.setTime(new DateTime(event.getEventTime()));
+        stats.setTime(event.getEventTime());
         stats.setDuration(event.getEventDuration() != null ? event.getEventDuration() : 0L);
         stats.setBytesIn(event.getInputContentClaimFileSizeBytes() != null ? event.getInputContentClaimFileSizeBytes() : 0L);
         stats.setBytesOut(event.getOutputContentClaimFileSizeBytes() != null ? event.getOutputContentClaimFileSizeBytes() : 0L);
         stats.setFlowFileId(event.getFlowFileUuid());
-        stats.setRootFlowFileId(event.getFlowFile().getRootFlowFile().getId());
+        stats.setRootFlowFileId(rootFlowFile != null ? rootFlowFile.getId() : null);
         stats.setEventDetails(event.getDetails());
-        stats.setRootProcessGroupId(event.getFlowFile().getRootFlowFile().getFirstEvent().getGroupId());
-        stats.setJobsStarted((event.getFlowFile().isRootFlowFile() && event.getFlowFile().getRootFlowFile().isStartOfCurrentFlowFile(event)) ? 1L : 0L);
-        stats.setJobsFinished(event.getFlowFile().isFlowComplete() ? 1L : 0L);
+        stats.setRootProcessGroupId((rootFlowFile != null && rootFlowFile.hasFeedInformationAssigned()) ? rootFlowFile.getFeedProcessGroupId() : null);
+        stats.setJobsStarted((event.getFlowFile().isRootFlowFile() && rootFlowFile.getFirstEvent() != null && event.equals(rootFlowFile.getFirstEvent())) ? 1L : 0L);
+        stats.setJobsFinished((event.isEndingEvent() && rootFlowFile != null && rootFlowFile.isFlowComplete()) ? 1L : 0L);
         stats.setFlowFilesStarted(event.isStartOfCurrentFlowFile() ? 1L : 0L);
         stats.setFlowFilesFinished(event.getFlowFile().isCurrentFlowFileComplete() ? 1L : 0L);
-
-        //calc Job duration????
-        if (stats.getJobsFinished() == 1L) {
-            //  Long totalJobTime = event.getEventTime().getTime() - event.getFlowFile().getFirstEvent().getEventTime().getTime();
+        if (event.isFailure()) {
+            event.getFlowFile().addFailedEvent(event);
+            stats.setProcessorsFailed(1L);
+            //TODO if event is on a failure relationship need to fail the prev event?
+            //handle retrys?
 
         }
 
-        //check if it is ia faliure processor
-        // TODO!!! is there a better way???  cant we just examine the  event.getRelationship() to see if it contains "failure" ???
-        //  NifiFlowProcessor processor = NifiFlowCache.instance().getProcessor(event.getFlowFile().getFirstEvent().getGroupId(), event.getComponentId());
-        //  if (processor.isFailure()) {
-        //      this.processorsFailed = 1L;
-        //  }
+
+        if (stats.getJobsFinished() == 1L) {
+            Long jobTime = null;
+            if (event.getFlowFile().getFirstEvent() != null) {
+                jobTime = event.getEventTime().getMillis() - event.getFlowFile().getFirstEvent().getEventTime().getMillis();
+                stats.setJobDuration(jobTime);
+            }
+
+            Set<ProvenanceEventRecordDTO> failedEvents = event.getFlowFile().getRootFlowFile().getFailedEvents(true);
+            if (failedEvents != null && !failedEvents.isEmpty()) {
+                stats.setJobsFailed(1L);
+            } else {
+                if (jobTime != null) {
+                    stats.setSuccessfulJobDuration(jobTime);
+                }
+            }
+
+
+        }
+
         return stats;
     }
 

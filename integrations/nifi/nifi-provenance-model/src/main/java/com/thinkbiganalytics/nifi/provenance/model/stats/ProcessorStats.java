@@ -15,6 +15,8 @@ public class ProcessorStats {
     private String processorId;
     private List<ProvenanceEventStats> eventStats;
 
+    //partition it by eventTime for easy removal
+
 
     public ProcessorStats(String processorId) {
         this.processorId = processorId;

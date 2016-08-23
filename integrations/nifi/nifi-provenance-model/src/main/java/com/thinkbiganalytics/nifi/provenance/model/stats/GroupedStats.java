@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.nifi.provenance.model.stats;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import org.joda.time.DateTime;
 
 import java.util.ArrayList;
@@ -14,6 +16,7 @@ public class GroupedStats extends BaseStatistics {
     private DateTime minTime;
     private DateTime maxTime;
 
+    @JsonIgnore
     private List<ProvenanceEventStats> eventStatsList;
 
     public GroupedStats() {
@@ -21,34 +24,40 @@ public class GroupedStats extends BaseStatistics {
 
     public GroupedStats(String groupKey, List<ProvenanceEventStats> eventStats) {
         this.groupKey = groupKey;
-        this.eventStatsList = new ArrayList<>(eventStats);
+        if (eventStats != null && !eventStats.isEmpty()) {
+            this.eventStatsList = new ArrayList<>(eventStats);
+            this.totalCount = new Long(eventStats.size());
+            eventStatsList.stream().forEach(stats -> {
+                this.bytesIn += stats.getBytesIn();
+                this.bytesIn += stats.getBytesIn();
+                this.bytesOut += stats.getBytesOut();
+                this.duration += stats.getDuration();
+                this.processorsFailed += stats.getProcessorsFailed();
+                this.flowFilesStarted += stats.getFlowFilesStarted();
+                this.flowFilesFinished += stats.getFlowFilesFinished();
+                this.jobsStarted += stats.getJobsStarted();
+                this.jobsFinished += stats.getJobsFinished();
+                this.jobsFailed += stats.getJobsFailed();
+                this.processorsFailed += stats.getProcessorsFailed();
+                this.jobDuration += stats.getJobDuration();
+                this.successfulJobDuration += stats.getSuccessfulJobDuration();
 
-        this.totalCount = new Long(eventStats.size());
+                if (this.time == null) {
+                    this.time = stats.getTime();
+                }
+                if (this.minTime == null) {
+                    this.minTime = stats.getTime();
+                }
 
-        eventStatsList.stream().forEach(stats -> {
-            this.bytesIn += stats.getBytesIn();
-            this.bytesOut += stats.getBytesOut();
-            this.duration += stats.getDuration();
-            this.processorsFailed += stats.getProcessorsFailed();
-            this.flowFilesStarted += stats.getFlowFilesStarted();
-            this.flowFilesFinished += stats.getFlowFilesFinished();
-            this.jobsStarted += stats.getJobsStarted();
-            this.jobsFinished += stats.getJobsFinished();
-            if (this.time == null) {
-                this.time = stats.getTime();
-            }
-            if (this.minTime == null) {
-                this.minTime = stats.getTime();
-            }
-
-            if (this.maxTime == null) {
-                this.maxTime = stats.getTime();
-            }
-            this.maxTime = (stats.getTime()).isAfter(this.maxTime) ? stats.getTime() : this.maxTime;
-            this.minTime = (stats.getTime()).isBefore(this.minTime) ? stats.getTime() : this.minTime;
-            this.time = this.minTime;
-        });
-        //reassign as collection time
+                if (this.maxTime == null) {
+                    this.maxTime = stats.getTime();
+                }
+                this.maxTime = (stats.getTime()).isAfter(this.maxTime) ? stats.getTime() : this.maxTime;
+                this.minTime = (stats.getTime()).isBefore(this.minTime) ? stats.getTime() : this.minTime;
+                this.time = this.minTime;
+            });
+            //reassign as collection time
+        }
         this.time = DateTime.now();
     }
 

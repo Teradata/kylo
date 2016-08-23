@@ -67,6 +67,12 @@ public class NifiEventSummaryStats {
     protected Long jobsStarted = 0L;
     @Column(name = "JOBS_FINISHED")
     protected Long jobsFinished = 0L;
+    @Column(name = "JOBS_FAILED")
+    protected Long jobsFailed = 0L;
+    @Column(name = "JOB_DURATION")
+    protected Long jobDuration = 0L;
+    @Column(name = "SUCCESSFUL_JOB_DURATION")
+    protected Long successfulJobDuration = 0L;
     @Column(name = "PROCESSORS_FAILED")
     protected Long processorsFailed = 0L;
     @Column(name = "FLOW_FILES_STARTED")
@@ -184,6 +190,30 @@ public class NifiEventSummaryStats {
 
     public void setJobsFinished(Long jobsFinished) {
         this.jobsFinished = jobsFinished;
+    }
+
+    public Long getJobsFailed() {
+        return jobsFailed;
+    }
+
+    public void setJobsFailed(Long jobsFailed) {
+        this.jobsFailed = jobsFailed;
+    }
+
+    public Long getJobDuration() {
+        return jobDuration;
+    }
+
+    public void setJobDuration(Long jobDuration) {
+        this.jobDuration = jobDuration;
+    }
+
+    public Long getSuccessfulJobDuration() {
+        return successfulJobDuration;
+    }
+
+    public void setSuccessfulJobDuration(Long successfulJobDuration) {
+        this.successfulJobDuration = successfulJobDuration;
     }
 
     public Long getProcessorsFailed() {

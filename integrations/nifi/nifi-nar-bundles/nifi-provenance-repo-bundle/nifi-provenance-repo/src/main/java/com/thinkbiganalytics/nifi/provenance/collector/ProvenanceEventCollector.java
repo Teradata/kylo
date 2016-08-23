@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Created by sr186054 on 8/14/16.
- * Group Events before processing
+ * Created by sr186054 on 8/14/16. Group Events before processing
  */
 public interface ProvenanceEventCollector {
 
