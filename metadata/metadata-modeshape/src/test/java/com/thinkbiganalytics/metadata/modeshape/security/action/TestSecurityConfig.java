@@ -5,15 +5,11 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 import org.springframework.context.annotation.Configuration;
 
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
 
@@ -22,28 +18,19 @@ import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
  * @author Sean Felten
  */
 @Configuration
-public class TestActionsConfig implements ModeShapeAvailabilityListener {
+public class TestSecurityConfig {
 
     @Inject
-    private ModeShapeAvailability modeShapeAvailability;
-
-    @Inject
-    JcrMetadataAccess metadata;
+    private JcrMetadataAccess metadata;
     
     @Inject
-    ModuleActionsBuilder builder;
-    
-    @Override
-    public void modeShapeAvailable() {
-        // TODO Auto-generated method stub
-        
-    }
+    private ModuleActionsBuilder builder;
     
     @PostConstruct
     public AllowedActions allowedServiceActions() {
         return metadata.commit(new AdminCredentials(), () -> {
-            JcrTool tool = new JcrTool(true);
-            tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata");
+//            JcrTool tool = new JcrTool(true);
+//            tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata");
 
             return builder
                         .group("services")

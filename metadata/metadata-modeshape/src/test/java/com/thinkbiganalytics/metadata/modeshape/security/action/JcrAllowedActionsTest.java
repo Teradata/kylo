@@ -32,7 +32,7 @@ import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
  *
  * @author Sean Felten
  */
-@SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrTestConfig.class, TestActionsConfig.class })
+@SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrTestConfig.class, TestSecurityConfig.class })
 public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     
     public static final Action FEED_SUPPORT = Action.create("accessFeedSupport");

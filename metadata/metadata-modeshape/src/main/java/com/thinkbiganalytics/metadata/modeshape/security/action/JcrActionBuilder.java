@@ -10,6 +10,7 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.config.ActionBuilder;
 
 /**
@@ -42,6 +43,14 @@ public class JcrActionBuilder<P> extends JcrAbstractActionsBuilder implements Ac
     public ActionBuilder<P> description(String descr) {
         JcrPropertyUtil.setProperty(this.actionNode, JcrPropertyConstants.DESCRIPTION, descr);
         return this;
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.security.action.config.ActionBuilder#subAction(com.thinkbiganalytics.security.action.Action)
+     */
+    @Override
+    public ActionBuilder<ActionBuilder<P>> subAction(Action action) {
+        return subAction(action.getSystemName());
     }
 
     /* (non-Javadoc)

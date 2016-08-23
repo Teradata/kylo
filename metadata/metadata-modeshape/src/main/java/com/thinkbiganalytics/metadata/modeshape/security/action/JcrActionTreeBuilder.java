@@ -32,7 +32,7 @@ public class JcrActionTreeBuilder<P> extends JcrAbstractActionsBuilder implement
      */
     @Override
     public ActionBuilder<ActionsTreeBuilder<P>> action(Action action) {
-        // TODO: validate action path
+        // TODO: validate action hierarchy?
         return action(action.getSystemName());
     }
 

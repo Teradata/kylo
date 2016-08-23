@@ -19,6 +19,8 @@ import javax.jcr.nodetype.NodeTypeManager;
 import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.security.Privilege;
 
+import org.modeshape.jcr.security.SimplePrincipal;
+
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
@@ -73,7 +75,7 @@ public class MetadataJcrConfigurator {
         
         JcrAccessControlUtil.addPermissions(protoNode, new ModeShapeAdminPrincipal(), Privilege.JCR_ALL);
         JcrAccessControlUtil.addPermissions(protoNode, AdminCredentials.getPrincipal(), Privilege.JCR_ALL);
-        JcrAccessControlUtil.addPermissions(protoNode, new UserRolePrincipal(), Privilege.JCR_READ);
+        JcrAccessControlUtil.addPermissions(protoNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);
         
 //        if (session.getRootNode().hasNode(svcPath.toString())) {
 //            session.getRootNode().getNode(svcPath.toString()).remove();

@@ -22,7 +22,7 @@ public interface Action {
         return create(name, this);
     }
     
-    static ImmutableAction create(String name, Action... parents) {
+    static Action create(String name, Action... parents) {
         return new ImmutableAction(name, Arrays.asList(parents));
     }
 }
