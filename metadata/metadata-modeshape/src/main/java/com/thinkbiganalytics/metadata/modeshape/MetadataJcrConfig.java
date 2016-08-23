@@ -3,6 +3,12 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import java.util.List;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -15,6 +21,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplatePr
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.config.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategoryProvider;
@@ -39,24 +46,12 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import javax.annotation.PostConstruct;
-
 /**
  *
  * @author Sean Felten
  */
 @Configuration
 public class MetadataJcrConfig {
-    
-    @PostConstruct
-    public void initializeMetadata() {
-        jcrConfigurator().configure();
-    }                
-    
     
     @Bean
     public ExtensibleTypeProvider extensibleTypeProvider() {
@@ -179,9 +174,9 @@ public class MetadataJcrConfig {
         return new JcrMetadataAccess();
     }
     
-    @Bean
-    public MetadataJcrConfigurator jcrConfigurator() {
-        return new MetadataJcrConfigurator();
+    @Bean(initMethod="configure")
+    public MetadataJcrConfigurator jcrConfigurator(List<PostMetadataConfigAction> postConfigActions) {
+        return new MetadataJcrConfigurator(postConfigActions);
     }
 
     

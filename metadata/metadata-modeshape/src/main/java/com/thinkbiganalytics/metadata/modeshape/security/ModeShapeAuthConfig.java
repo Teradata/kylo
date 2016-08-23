@@ -48,7 +48,7 @@ public class ModeShapeAuthConfig {
     
     @Bean(name = "prototypesActionGroupsBuilder")
     @Scope("prototype")
-    public ModuleActionsBuilder prototypesActionGroupsBuilder(MetadataJcrConfigurator conf) {
+    public ModuleActionsBuilder prototypesActionGroupsBuilder() {
         return new JcrModuleActionsBuilder(SecurityPaths.PROTOTYPES.toString());
     }
 

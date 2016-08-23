@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
-import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 import javax.jcr.Repository;
 
@@ -16,7 +15,6 @@ import org.modeshape.jcr.JcrRepository;
 import org.modeshape.jcr.ModeShapeEngine;
 import org.modeshape.jcr.RepositoryConfiguration;
 import org.modeshape.jcr.api.txn.TransactionManagerLookup;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -35,13 +33,6 @@ import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAuthConfig;
 public class ModeShapeEngineConfig {
     
     private static final Logger log = LoggerFactory.getLogger(ModeShapeEngineConfig.class);
-    
-    @PostConstruct
-    public void startEngine() {
-        log.info("Starting ModeShap engine...");
-        modeShapeEngine().start();
-        log.info("ModeShap engine started");
-    }
     
     @PreDestroy
     public void stopEngine() throws InterruptedException, ExecutionException {
@@ -78,7 +69,11 @@ public class ModeShapeEngineConfig {
 
     @Bean
     public ModeShapeEngine modeShapeEngine() {
-        return new ModeShapeEngine();
+        ModeShapeEngine engine = new ModeShapeEngine();
+        log.info("Starting ModeShap engine...");
+        engine.start();
+        log.info("ModeShap engine started");
+        return engine;
     }
     
     @Bean(name="metadataJcrRepository")

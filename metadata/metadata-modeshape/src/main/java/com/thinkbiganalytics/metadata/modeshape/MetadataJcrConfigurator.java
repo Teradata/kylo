@@ -4,11 +4,12 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 
 import javax.inject.Inject;
-import javax.inject.Named;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
@@ -21,13 +22,12 @@ import javax.jcr.security.Privilege;
 
 import org.modeshape.jcr.security.SimplePrincipal;
 
+import com.thinkbiganalytics.metadata.config.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
-import com.thinkbiganalytics.security.UserRolePrincipal;
-import com.thinkbiganalytics.security.action.AllowedActions;
 
 /**
  *
@@ -38,9 +38,11 @@ public class MetadataJcrConfigurator {
     @Inject
     private JcrMetadataAccess metadataAccess;
     
-//    @Inject
-//    @Named("servicesPrototypeAllowedActions")
-//    private AllowedActions servicesPrototypeActions;
+    private List<PostMetadataConfigAction> postConfigActions = new ArrayList<>();
+    
+    public MetadataJcrConfigurator(List<PostMetadataConfigAction> actions) {
+        this.postConfigActions.addAll(actions);
+    }
     
     private final AtomicBoolean configured = new AtomicBoolean(false);
     
@@ -54,6 +56,7 @@ public class MetadataJcrConfigurator {
                 ensureTypes(session);
                 ensureAccessControl(session);
                 this.configured.set(true);
+                firePostConfigActions();
                 return null;
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Could not create initial JCR metadata", e);
@@ -61,6 +64,13 @@ public class MetadataJcrConfigurator {
         });
     }
     
+    private void firePostConfigActions() {
+        for (PostMetadataConfigAction action : this.postConfigActions) {
+            // TODO: catch exceptions and continue?  Currently propagates runtime exceptions and will fail startup.
+            action.run();
+        }
+    }
+
     public boolean isConfigured() {
         return this.configured.get();
     }
