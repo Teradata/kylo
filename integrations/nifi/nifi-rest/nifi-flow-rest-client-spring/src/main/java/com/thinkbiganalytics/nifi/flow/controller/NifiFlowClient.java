@@ -32,6 +32,7 @@ import org.apache.http.impl.nio.client.HttpAsyncClients;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
+import org.apache.nifi.web.api.entity.AboutEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
 import org.apache.nifi.web.api.entity.SearchResultsEntity;
@@ -139,6 +140,16 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
     ///Core methods to look up Processors and ProcessGroups for the flow
 
 
+    @Override
+    public boolean isConnected() {
+        try {
+            AboutEntity aboutEntity = getWithQueryParams(Paths.get("controller", "about"), null, AboutEntity.class);
+            return aboutEntity != null;
+        }catch (Exception e){
+            log.error("Error assessing Nifi Connection {} ",e);
+        }
+        return false;
+    }
 
     public ProcessGroupEntity getProcessGroup(String processGroupId, boolean recursive, boolean verbose) throws NifiComponentNotFoundException {
         try {
@@ -217,11 +228,22 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
 
 
     public NifiFlowProcessGroup getFeedFlow(String processGroupId) throws NifiComponentNotFoundException {
-        NifiFlowProcessGroup group = null;
         NifiVisitableProcessGroup visitableGroup = visitFlow(processGroupId);
         NifiFlowProcessGroup flow = new NifiFlowBuilder().build(visitableGroup);
         String categoryName = flow.getParentGroupName();
         String feedName = flow.getName();
+        feedName = FeedNameUtil.fullName(categoryName, feedName);
+        //if it is a versioned feed then strip the version to get the correct feed name
+        feedName = NifiTemplateNameUtil.parseVersionedProcessGroupName(feedName);
+        flow.setFeedName(feedName);
+        return flow;
+    }
+
+    public NifiFlowProcessGroup getFeedFlow(ProcessGroupDTO categoryGroup, ProcessGroupDTO feedGroup) throws NifiComponentNotFoundException {
+        NifiVisitableProcessGroup visitableGroup = visitFlow(feedGroup,categoryGroup);
+        NifiFlowProcessGroup flow = new NifiFlowBuilder().build(visitableGroup);
+        String categoryName = categoryGroup.getName();
+        String feedName = feedGroup.getName();
         feedName = FeedNameUtil.fullName(categoryName, feedName);
         //if it is a versioned feed then strip the version to get the correct feed name
         feedName = NifiTemplateNameUtil.parseVersionedProcessGroupName(feedName);
@@ -271,7 +293,8 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
                 String feedName = FeedNameUtil.fullName(category.getName(), feedProcessGroup.getName());
                 //if it is a versioned feed then strip the version to get the correct feed name
                 feedName = NifiTemplateNameUtil.parseVersionedProcessGroupName(feedName);
-                NifiFlowProcessGroup feedFlow = getFeedFlow(feedProcessGroup.getId());
+                log.info("Get Feed flow for feed: {} ", feedName);
+                NifiFlowProcessGroup feedFlow = getFeedFlow(category,feedProcessGroup);
                 feedFlow.setFeedName(feedName);
                 feedFlows.add(feedFlow);
             }
@@ -297,15 +320,30 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
 
 
     private NifiVisitableProcessGroup visitFlow(ProcessGroupEntity processGroupEntity) {
-        NifiVisitableProcessGroup visitableProcessGroup = new NifiVisitableProcessGroup(processGroupEntity.getProcessGroup());
+        return visitFlow(processGroupEntity.getProcessGroup());
+
+    }
+
+    private NifiVisitableProcessGroup visitFlow(ProcessGroupDTO processGroupDTO) {
+       return visitFlow(processGroupDTO,null);
+
+    }
+
+    private NifiVisitableProcessGroup visitFlow(ProcessGroupDTO processGroupDTO, ProcessGroupDTO parentProcessGroup) {
+        NifiVisitableProcessGroup visitableProcessGroup = new NifiVisitableProcessGroup(processGroupDTO);
         NifiConnectionOrderVisitor visitor = new NifiConnectionOrderVisitor(this, visitableProcessGroup);
 
-        try {
-            //find the parent just to get hte names andids
-            ProcessGroupEntity parent = getProcessGroup(processGroupEntity.getProcessGroup().getParentGroupId(), false, false);
-            visitableProcessGroup.setParentProcessGroup(parent.getProcessGroup());
-        } catch (NifiComponentNotFoundException e) {
-            //cant find the parent
+        if(parentProcessGroup == null) {
+            try {
+                //find the parent just to get hte names andids
+                ProcessGroupEntity parent = getProcessGroup(processGroupDTO.getParentGroupId(), false, false);
+                visitableProcessGroup.setParentProcessGroup(parent.getProcessGroup());
+            } catch (NifiComponentNotFoundException e) {
+                //cant find the parent
+            }
+        }
+        else {
+            visitableProcessGroup.setParentProcessGroup(parentProcessGroup);
         }
 
         visitableProcessGroup.accept(visitor);

@@ -42,6 +42,8 @@ public class ActiveFlowFile implements FlowFile<ActiveFlowFile, ProvenanceEventR
 
     private DateTime timeCompleted;
 
+    private boolean isFirstEventStream;
+
     /**
      * marker to determine if the Flow has Received a DROP event.
      */
@@ -436,4 +438,5 @@ public class ActiveFlowFile implements FlowFile<ActiveFlowFile, ProvenanceEventR
         return idReferenceFlowFile;
 
     }
+
 }

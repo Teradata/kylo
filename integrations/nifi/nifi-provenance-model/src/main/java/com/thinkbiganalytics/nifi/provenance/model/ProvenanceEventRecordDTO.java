@@ -72,6 +72,8 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
     private String replayExplanation;
     private String sourceConnectionIdentifier;
 
+    private boolean stream;
+
 
     private transient FlowFile flowFile;
 
@@ -543,6 +545,14 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
         }
     }
 
+    public boolean isStream() {
+        return stream;
+    }
+
+    public void setStream(boolean stream) {
+        this.stream = stream;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -584,5 +594,7 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
         sb.append('}');
         return sb.toString();
     }
+
+
 
 }

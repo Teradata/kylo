@@ -63,6 +63,30 @@ public abstract class AbstractProvenanceEventProcessor {
         map.get(key).add(event);
     }
 
+    private void addToPotentialStream(ProvenanceEventRecordDTO event) {
+        addToCollection(potentialStreamingProvenanceEvents, event);
+    }
+
+    private void addToStream(ProvenanceEventRecordDTO event) {
+        event.setStream(true);
+        addToCollection(streamingProvenanceEvents, event);
+    }
+
+    private void addToBatch(ProvenanceEventRecordDTO event){
+        //if the first event is a stream then no need to process it as a batch
+        ProvenanceEventRecordDTO firstEventInFlowFile = null;
+        if(event.getFlowFile() != null && event.getFlowFile().getRootFlowFile() != null && event.getFlowFile().getRootFlowFile().getFirstEvent() != null){
+            //this event is the the start of the flow file.... markt it
+            firstEventInFlowFile = (ProvenanceEventRecordDTO) event.getFlowFile().getRootFlowFile().getFirstEvent();
+            if(!firstEventInFlowFile.isStream()){
+                addToCollection(batchProvenanceEvents, event);
+            }
+            else {
+                log.info("Skipping Batch Processing for event because the start of this job was indicated as a Stream.  Event details: {}",event);
+            }
+        }
+    }
+
     /**
      * gets the time from this event compared to the last event time that was processed for this proessor
      */
@@ -82,14 +106,15 @@ public abstract class AbstractProvenanceEventProcessor {
 
     private void moveToStream(Map<String, List<ProvenanceEventRecordDTO>> map, String key) {
         streamingProcessorProvenanceEventKeys.add(key);
-        map.get(key).stream().collect(Collectors.toList()).forEach(event -> addToCollection(streamingProvenanceEvents, event));
+        map.get(key).stream().collect(Collectors.toList()).forEach(event ->
+                                                                       addToStream(event));
         map.remove(key);
 
     }
 
     private void moveToBatch(Map<String, List<ProvenanceEventRecordDTO>> map) {
         //take all elements in potential collection and move them to  batch
-        map.values().stream().flatMap(events -> events.stream()).collect(Collectors.toList()).forEach(event -> addToCollection(batchProvenanceEvents, event));
+        map.values().stream().flatMap(events -> events.stream()).collect(Collectors.toList()).forEach(event -> addToBatch(event));
     }
 
     public void process(List<ProvenanceEventRecordDTO> events) {
@@ -140,7 +165,7 @@ public abstract class AbstractProvenanceEventProcessor {
         String key = streamingMapKey(event);
         if (streamingProcessorProvenanceEventKeys.contains(key)) {
             //mark as Stream
-            addToCollection(streamingProvenanceEvents, event);
+            addToStream(event);
         } else if (processorProvenanceEvents.containsKey(key)) {
             Long timeDiff = getTimeSinceLastEventForProcessor(event);
             if (timeDiff <= streamConfiguration.getMaxTimeBetweenEventsMillis()) {
@@ -153,13 +178,13 @@ public abstract class AbstractProvenanceEventProcessor {
                         moveToStream(potentialStreamingProvenanceEvents, key);
                         moveToStream(processorProvenanceEvents, key);
                     } else {
-                        addToCollection(potentialStreamingProvenanceEvents, event);
+                        addToPotentialStream(event);
                     }
                 } else {
-                    addToCollection(potentialStreamingProvenanceEvents, event);
+                    addToPotentialStream(event);
                 }
             } else {
-                addToCollection(potentialStreamingProvenanceEvents, event);
+                addToPotentialStream(event);
             }
         } else {
             //add it to processing Map

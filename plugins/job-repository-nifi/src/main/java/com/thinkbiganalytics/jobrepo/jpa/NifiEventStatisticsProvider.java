@@ -1,24 +1,39 @@
 package com.thinkbiganalytics.jobrepo.jpa;
 
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.thinkbiganalytics.jobrepo.model.ProvenanceEventSummaryStats;
+import com.thinkbiganalytics.jobrepo.service.ProvenanceEventSummaryStatsProvider;
 
-import javax.inject.Inject;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
+import org.joda.time.DateTime;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * Created by sr186054 on 8/17/16.
  */
-public class NifiEventStatisticsProvider {
+@Service
+public class NifiEventStatisticsProvider implements ProvenanceEventSummaryStatsProvider {
 
-    @PersistenceContext
-    @Inject
-    @Qualifier("jobRepositoryEntityManager")
-    protected EntityManager entityManager;
+    private NiFiEventStatisticsRepository statisticsRepository;
 
-    public NifiEventSummaryStats create(NifiEventSummaryStats t) {
-        this.entityManager.persist(t);
-        return t;
+    @Autowired
+    public NifiEventStatisticsProvider(NiFiEventStatisticsRepository repository) {
+        this.statisticsRepository = repository;
     }
+
+
+    @Override
+    public ProvenanceEventSummaryStats create(ProvenanceEventSummaryStats t) {
+       return  statisticsRepository.save((NifiEventSummaryStats)t);
+    }
+
+
+
+    @Override
+    public List<? extends ProvenanceEventSummaryStats> findWithinTimeWindow(DateTime start, DateTime end){
+        return statisticsRepository.findWithinTimeWindow(start,end);
+    }
+
 
 }

@@ -1315,6 +1315,12 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
         return get("/controller/about", null, AboutEntity.class);
     }
 
+
+    public boolean isConnected(){
+        AboutEntity aboutEntity = getNifiVersion();
+        return aboutEntity != null;
+    }
+
     public BulletinBoardEntity getBulletins(Map<String, Object> params) {
 
         BulletinBoardEntity entity = get("/controller/bulletin-board", params, BulletinBoardEntity.class);

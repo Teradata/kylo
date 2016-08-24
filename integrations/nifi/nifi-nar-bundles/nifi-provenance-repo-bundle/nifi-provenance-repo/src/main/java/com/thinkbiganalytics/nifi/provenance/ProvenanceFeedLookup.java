@@ -8,38 +8,44 @@ import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 /**
  * Created by sr186054 on 8/18/16.
  */
+@Component
 public class ProvenanceFeedLookup {
+
+    @Autowired
+    private NifiFlowCache nifiFlowCache;
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceFeedLookup.class);
 
-    public static String getFeedNameForEvent(ProvenanceEventRecordDTO event) {
+    public  String getFeedNameForEvent(ProvenanceEventRecordDTO event) {
         String feedName = null;
-        NifiFlowProcessGroup flow = NifiFlowCache.instance().getFlow(event.getFlowFile());
+        NifiFlowProcessGroup flow = nifiFlowCache.getFlow(event.getFlowFile());
         if (flow != null) {
             feedName = flow.getFeedName();
         }
         return feedName;
     }
 
-    public static String getFeedProcessGroup(ProvenanceEventRecordDTO event) {
+    public  String getFeedProcessGroup(ProvenanceEventRecordDTO event) {
         String feedProcessGroup = null;
-        NifiFlowProcessGroup flow = NifiFlowCache.instance().getFlow(event.getFlowFile());
+        NifiFlowProcessGroup flow = nifiFlowCache.getFlow(event.getFlowFile());
         if (flow != null) {
             feedProcessGroup = flow.getId();
         }
         return feedProcessGroup;
     }
 
-    public static NifiFlowProcessGroup getFeedFlow(ProvenanceEventRecordDTO event) {
-        NifiFlowProcessGroup flow = NifiFlowCache.instance().getFlow(event.getFlowFile());
+    public  NifiFlowProcessGroup getFeedFlow(ProvenanceEventRecordDTO event) {
+        NifiFlowProcessGroup flow = nifiFlowCache.getFlow(event.getFlowFile());
         return flow;
     }
 
-    public static boolean assignFeedInformationToFlowFile(FlowFile flowFile) {
+    public  boolean assignFeedInformationToFlowFile(FlowFile flowFile) {
         boolean assigned = false;
         //attempt to assign it from the cache first
         FlowFileMapDbCache.instance().assignFeedInformation(flowFile);
@@ -52,7 +58,7 @@ public class ProvenanceFeedLookup {
             if (!flowFile.hasFeedInformationAssigned()) {
                 FlowFile rootFlowFile = flowFile.getRootFlowFile();
                 if (rootFlowFile != null) {
-                    NifiFlowProcessGroup flow = NifiFlowCache.instance().getFlow(rootFlowFile);
+                    NifiFlowProcessGroup flow = nifiFlowCache.getFlow(rootFlowFile);
                     if (flow != null) {
                         flowFile.assignFeedInformation(flow.getFeedName(), flow.getId());
                         assigned = flowFile.hasFeedInformationAssigned();

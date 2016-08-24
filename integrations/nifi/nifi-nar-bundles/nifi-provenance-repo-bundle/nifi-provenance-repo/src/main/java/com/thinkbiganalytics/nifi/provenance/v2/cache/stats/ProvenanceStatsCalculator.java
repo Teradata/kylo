@@ -12,6 +12,9 @@ import com.thinkbiganalytics.util.SpringApplicationContext;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -19,7 +22,6 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -27,56 +29,44 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * Created by sr186054 on 8/15/16.
  */
+@Component
 public class ProvenanceStatsCalculator {
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceStatsCalculator.class);
 
-    private static ProvenanceStatsCalculator instance = new ProvenanceStatsCalculator();
-
     public static ProvenanceStatsCalculator instance() {
-        return instance;
+       return (ProvenanceStatsCalculator) SpringApplicationContext.getInstance().getBean("provenanceStatsCalculator");
     }
 
     private DateTime firstEventTime;
 
     private DateTime lastSendTime = null;
 
+    @Value("${thinkbig.provenance.aggregation.interval.seconds}")
     private Integer aggregationIntervalSeconds = 10;
 
     private final List<ProvenanceEventStats> eventStatistics;
 
     private Lock aggregatingStatsLock = null;
 
+    @Autowired
     private ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter;
 
-    private AtomicBoolean autowired = new AtomicBoolean(false);
-
     private AtomicInteger nextSerialNumber = new AtomicInteger(0);
-    private ProvenanceStatsCalculator() {
+    public ProvenanceStatsCalculator() {
 
         eventStatistics = Collections.synchronizedList(new ArrayList());
 
         this.aggregatingStatsLock = new ReentrantReadWriteLock(true).readLock();
-        provenanceEventActiveMqWriter = new ProvenanceEventActiveMqWriter();
-        checkAndAutowire();
         log.info("init stats ... current Id {} ", nextSerialNumber.get());
         init();
     }
 
-    private void checkAndAutowire() {
-        if (autowired.compareAndSet(false, true)) {
-            log.info("CHECK AND attempt to Autowire ActiveMqWriter");
-            //   SpringApplicationListener.addObjectToAutowire("provenanceEventActiveMqWriter", provenanceEventActiveMqWriter);
-            SpringApplicationContext.getInstance().autowire("provenanceEventActiveMqWriter", provenanceEventActiveMqWriter);
-            Object bean = SpringApplicationContext.getInstance().getBean("provenanceEventActiveMqWriter");
-            log.info("AutowireResult: " + autowired + " " + bean);
-            autowired.set(bean != null);
-        }
-    }
+
 
     /**
-     * Check the current event date (incomind dateTime) and see if it falls outside of the batch aggregrationIntervalSeconds.  if so send stats to JMS
-     */
+     * Check the current event date (incoming dateTime) and see if it falls outside of the batch aggregrationIntervalSeconds.  if so send stats to JMS
+     **/
     public boolean checkAndSend(DateTime dateTime) {
         //Send in batches
         DateTime startInterval = lastSendTime;
@@ -84,6 +74,9 @@ public class ProvenanceStatsCalculator {
         if (dateTime.isAfter(endTime)) {
             //Add ReentrantLock around this code since the timer thread will be hitting this as well
             this.aggregatingStatsLock.lock();
+            //if the endTime is not within the same startInterval timeunit, adjust it accordingly so it is
+            DateTimeInterval dateTimeInterval = new DateTimeInterval(startInterval,endTime);
+            endTime = dateTimeInterval.getAdjustedEndTime();
             List<ProvenanceEventStats> statsToSend = null;
             try {
                 //send everything in the cache and clear it
@@ -98,8 +91,6 @@ public class ProvenanceStatsCalculator {
                     List<AggregatedFeedProcessorStatistics>
                         feedProcessorStatistics = StatisticsUtil.aggregateStatsByFeedAndProcessor(statsToSend, collectionId);
 
-                    //TODO SEND TO JMS HERE!
-
                     AggregatedFeedProcessorStatisticsHolder statisticsHolder = new AggregatedFeedProcessorStatisticsHolder();
                     statisticsHolder.setMinTime(startInterval);
                     statisticsHolder.setMaxTime(endTime);
@@ -108,11 +99,8 @@ public class ProvenanceStatsCalculator {
                     statisticsHolder.setStatistics(feedProcessorStatistics);
 
                     if (provenanceEventActiveMqWriter != null) {
-                        // log.info("WRITING STATS to JMS");
-                        checkAndAutowire();
                         provenanceEventActiveMqWriter.writeStats(statisticsHolder);
-
-                        //invalidate the ones that were sent
+                         //invalidate the ones that were sent
                         eventStatistics.removeAll(statsToSend);
                     }
                 }
@@ -120,7 +108,7 @@ public class ProvenanceStatsCalculator {
                 log.error("ERROR Aggregating Statistics for window: {} - {}, {} events. Exception: {} ", startInterval, endTime, (statsToSend != null ? statsToSend.size() : "NULL"), e);
 
             } finally {
-                lastSendTime = endTime;
+                lastSendTime = dateTimeInterval.getNextStartTime();
                 this.aggregatingStatsLock.unlock();
             }
             return true;
@@ -140,10 +128,6 @@ public class ProvenanceStatsCalculator {
             firstEventTime = event.getEventTime();
             lastSendTime = firstEventTime;
         }
-
-        checkAndSend(event.getEventTime());
-
-
         String feedName = event.getFeedName() == null ? event.getFlowFile().getFeedName() : event.getFeedName();
         if (feedName != null) {
             try {
@@ -172,11 +156,7 @@ public class ProvenanceStatsCalculator {
     private void init() {
         int interval = aggregationIntervalSeconds;
         Timer summaryTimer = new Timer("Statistics-Thread-" + serialNumber());
-        DateTime lastTime = null;
         TimerTask task = new TimerTask() {
-
-            private DateTime startInterval;
-
             @Override
             public void run() {
 
