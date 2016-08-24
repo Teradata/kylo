@@ -15,4 +15,6 @@ public interface NifiFlowVisitorClient {
 
     ProcessorDTO findProcessorById(String processorId);
 
+    boolean isConnected();
+
 }

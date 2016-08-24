@@ -48,6 +48,11 @@ public class ProvenanceEventStreamWriter extends AbstractProvenanceEventWriter {
 
     }
 
+    public ProvenanceEventStreamWriter(StreamConfiguration configuration) {
+this.configuration = configuration;
+
+    }
+
     @PostConstruct
     public void postConstruct() {
         log.info("!!!!!!!!!!!!!!! Post Construct for ProvenanceEventStreamWriter ");

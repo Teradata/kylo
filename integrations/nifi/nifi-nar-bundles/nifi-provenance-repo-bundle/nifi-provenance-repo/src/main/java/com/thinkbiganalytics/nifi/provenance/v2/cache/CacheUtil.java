@@ -4,13 +4,14 @@ import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
 import com.thinkbiganalytics.nifi.provenance.model.FlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
-import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileCache;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileGuavaCache;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileMapDbCache;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -21,19 +22,24 @@ import java.util.concurrent.atomic.AtomicLong;
  *
  * Created by sr186054 on 8/20/16.
  */
+@Component
 public class CacheUtil {
 
     private static final Logger log = LoggerFactory.getLogger(CacheUtil.class);
+
+    @Autowired
+        ProvenanceFeedLookup provenanceFeedLookup;
+
 
     // internal counters for general stats
     AtomicLong startJobCounter = new AtomicLong(0L);
     AtomicLong finishedJobCounter = new AtomicLong(0L);
     AtomicLong eventCounter = new AtomicLong(0L);
 
-    private static CacheUtil instance = new CacheUtil();
-    public static CacheUtil instance() {
-        return instance;
-    }
+    //private static CacheUtil instance = new CacheUtil();
+    //public static CacheUtil instance() {
+    //    return instance;
+   // }
 
     private CacheUtil() {
 
@@ -88,7 +94,7 @@ public class CacheUtil {
             }
         }
         //assign the feed info for quick lookup on the flow file?
-        boolean assignedFeedInfo = ProvenanceFeedLookup.assignFeedInformationToFlowFile(flowFile);
+        boolean assignedFeedInfo = provenanceFeedLookup.assignFeedInformationToFlowFile(flowFile);
         if (!assignedFeedInfo && !flowFile.hasFeedInformationAssigned()) {
             log.error("Unable to assign Feed Info to flow file {} for event {} ", flowFile.getId(), event);
         } else {
@@ -100,7 +106,7 @@ public class CacheUtil {
             flowFile.addCompletedEvent(event);
         }
         //update the internal counters
-        if (event.isEndingFlowFileEvent() && flowFile.isFlowComplete()) {
+        if (event.isEndingFlowFileEvent() && flowFile.getRootFlowFile().isFlowComplete()) {
              finishedJobCounter.incrementAndGet();
         }
 
@@ -110,9 +116,5 @@ public class CacheUtil {
             FlowFileMapDbCache.instance().cacheFlowFile(modifiedFlowFile);
         }
 
-    }
-
-    public static void bootstrapCache() {
-        NifiFlowCache.instance(); //.loadAll();
     }
 }

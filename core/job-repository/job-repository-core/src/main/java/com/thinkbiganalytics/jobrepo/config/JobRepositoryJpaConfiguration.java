@@ -7,14 +7,15 @@ package com.thinkbiganalytics.jobrepo.config;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
 import org.springframework.orm.jpa.LocalContainerEntityManagerFactoryBean;
 import org.springframework.orm.jpa.vendor.HibernateJpaVendorAdapter;
 import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.support.AbstractPlatformTransactionManager;
 
 import javax.persistence.EntityManager;
@@ -26,7 +27,9 @@ import javax.sql.DataSource;
  *
  */
 @Configuration
-@EnableAutoConfiguration
+//@EnableAutoConfiguration
+@EnableTransactionManagement
+@EnableJpaRepositories(basePackages = "com.thinkbiganalytics.jobrepo",entityManagerFactoryRef = "jobRepositoryEntityManagerFactory")
 public class JobRepositoryJpaConfiguration {
 
     @Bean(name = "jobRepositoryDateTimeFormatter")

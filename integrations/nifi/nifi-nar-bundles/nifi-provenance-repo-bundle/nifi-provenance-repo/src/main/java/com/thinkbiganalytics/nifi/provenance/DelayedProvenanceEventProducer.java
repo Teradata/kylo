@@ -4,6 +4,7 @@ import com.thinkbiganalytics.nifi.provenance.model.DelayedProvenanceEvent;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.CacheUtil;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.stats.ProvenanceStatsCalculator;
+import com.thinkbiganalytics.util.SpringApplicationContext;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,9 +43,11 @@ public class DelayedProvenanceEventProducer {
      */
     public void prepareAndAdd(ProvenanceEventRecordDTO event) {
         try {
-            CacheUtil.instance().cacheAndBuildFlowFileGraph(event);
+            CacheUtil cacheUtil = (CacheUtil) SpringApplicationContext.getInstance().getBean("cacheUtil");
+            cacheUtil.cacheAndBuildFlowFileGraph(event);
             try {
-                ProvenanceStatsCalculator.instance().calculateStats(event);
+                ProvenanceStatsCalculator statsCalculator = (ProvenanceStatsCalculator) SpringApplicationContext.getInstance().getBean("provenanceStatsCalculator");
+                statsCalculator.calculateStats(event);
             } catch (Exception e) {
                 log.error("ERROR CALCULATING STATISTICS for event:  {}. EXCEPTION: {}  ", event, e.getMessage());
             }

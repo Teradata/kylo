@@ -8,6 +8,7 @@ import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.FlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.IdReferenceFlowFile;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.CacheUtil;
+import com.thinkbiganalytics.util.SpringApplicationContext;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -127,7 +128,8 @@ public class FlowFileGuavaCache implements FlowFileCache {
 
         Map<String, FlowFile> map = cache.asMap();
         List<FlowFile> rootFiles = getRootFlowFiles();
-        CacheUtil.instance().logStats();
+        CacheUtil cacheUtil = (CacheUtil) SpringApplicationContext.getInstance().getBean("cacheUtil");
+        cacheUtil.logStats();
         log.info("FLOW FILE Cache Size: {} , root files {} ", map.size(), rootFiles.size());
         if (map.size() > 0 && rootFiles.size() == 0) {
             for (FlowFile ff : map.values()) {
@@ -173,10 +175,6 @@ public class FlowFileGuavaCache implements FlowFileCache {
             }
         };
         summaryTimer.schedule(task, 10 * 1000, 10 * 1000);
-
-    }
-
-    public void commit() {
 
     }
 
