@@ -1171,6 +1171,12 @@ md-toast .md-toast-content {
   color: dimgray;
 }
 
+.profile.profile-invalid .violation.hint {
+  /* wrap long lines inside the violation reasons, otherwise columns are not wide enough and
+  violation reasons scroll out of view */
+  white-space: normal;
+}
+
 .bold {
   font-weight: 500;
 }

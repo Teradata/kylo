@@ -23,22 +23,45 @@
         var self = this;
 
         this.model = FeedService.editFeedModel;
-        this.data = [];
         this.loading = false;
+        this.limitOptions = [10, 50, 100, 500, 1000];
+        this.limit = this.limitOptions[2];
+
+        //noinspection JSUnusedGlobalSymbols
+        this.onLimitChange = function() {
+            getProfileValidation();
+        };
+
+        $scope.gridOptions = {
+            columnDefs: [],
+            data: null,
+            enableColumnResizing: true,
+            enableGridMenu: true
+        };
 
         function getProfileValidation(){
             self.loading = true;
+
             var successFn = function (response) {
-               var data = HiveService.transformResults(response);
+                var result = self.queryResults = HiveService.transformResultsToUiGridModel(response);
+
+                $scope.gridOptions.columnDefs = result.columns;
+                $scope.gridOptions.data = result.rows;
+
                 self.loading = false;
-                //add a row to fix counts
-                self.data = data;
+
                 BroadcastService.notify('PROFILE_TAB_DATA_LOADED','valid');
-            }
+            };
             var errorFn = function (err) {
                 self.loading = false;
-            }
-            var promise = $http.get(RestUrlService.FEED_PROFILE_VALID_RESULTS_URL(self.model.id),{params:{'processingdttm':self.processingdttm}});
+            };
+            var promise = $http.get(RestUrlService.FEED_PROFILE_VALID_RESULTS_URL(self.model.id),
+                { params:
+                    {
+                        'processingdttm': self.processingdttm,
+                        'limit': self.limit
+                    }
+                });
             promise.then(successFn, errorFn);
             return promise;
         }

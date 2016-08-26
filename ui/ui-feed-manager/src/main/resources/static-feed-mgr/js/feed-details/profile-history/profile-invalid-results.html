@@ -1,33 +1,24 @@
 <div class="layout-padding-left">
-       <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
 
-    <div flex="initial" overflow-scroll parent="md-dialog-content" offset-height="100" class="layout-padding-top">
+    <md-input-container>
+        <label>Limit</label>
+        <md-select ng-model="vm.limit" ng-change="vm.onLimitChange()">
+            <md-option ng-repeat="opt in vm.limitOptions track by $index" ng-value="opt">
+                {{opt}}
+            </md-option>
+        </md-select>
+    </md-input-container>
 
-        <table class="hive-table" style="width:100%">
-             <thead>
-                 <tr>
-                     <th ng-repeat="column in ::vm.data.displayColumns" >
-                         {{::column}}
-                     </th>
-                 </tr>
-             </thead>
-             <tbody>
-                 <tr dir-paginate="row in vm.data.rows |itemsPerPage:vm.rowsPerPage" pagination-id="profile_stats_2" >
-                     <td ng-repeat="field in ::vm.data.columns "  ng-class="{'warn':row.invalidField(field) != undefined}">
-                         {{::row[field]}}
-                         <br/>
-                         <span class="hint" ng-if="row.invalidField(field) != undefined">
-                             {{::row.invalidField(field).rule}}<br/>
-                             {{::row.invalidField(field).reason}}
-                         </span>
-                     </td>
-                 </tr>
-             </tbody>
-         </table>
+    <div ui-grid-auto-resize
+         browser-height
+         browser-height-scroll-y="false"
+         browser-height-offset="284"
+         ui-grid="gridOptions"
+         ui-grid-move-columns
+         flex
+         class="profile profile-invalid">
 
+    </div>
 
-
-
-
-     </div>
 </div>

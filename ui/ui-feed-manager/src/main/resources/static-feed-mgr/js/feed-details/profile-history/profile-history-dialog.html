@@ -41,22 +41,5 @@
                 Cancel
             </md-button>
             <span flex></span>
-
-          <div layout-align="end start" layout-row class="pagination-list-item" ng-if="renderPagination &&  selectedTabIndex != 0">
-                <dir-pagination-controls pagination-id="paginationId"
-                                         auto-hide="false"
-                                         max-size="5"
-                                         direction-links="true"
-                                         boundary-links="false"
-                                         template-url="js/vendor/dirPagination/dirPagination.tpl.html"
-                                         on-page-change="onPaginationChange(newPageNumber)"
-                                         label="Rows per page"
-                                         rows-per-page="paginationData.rowsPerPage"
-                                         rows-per-page-options="paginationData.rowsPerPageOptions"
-                                         class="pagination-row">
-                </dir-pagination-controls>
-            </div>
-
-
         </md-dialog-actions>
 </md-dialog>

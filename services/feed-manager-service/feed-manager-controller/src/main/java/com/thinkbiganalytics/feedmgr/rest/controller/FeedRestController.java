@@ -2,11 +2,7 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 
 import com.thinkbiganalytics.db.model.query.QueryResult;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
-import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
+import com.thinkbiganalytics.feedmgr.rest.model.*;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupFailedException;
 import com.thinkbiganalytics.feedmgr.service.FeedCleanupTimeoutException;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
@@ -66,6 +62,7 @@ public class FeedRestController {
 
     /** Messages for the default locale */
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.feedmgr.rest.controller.FeedMessages");
+    private static final int MAX_LIMIT = 1000;
 
     @Autowired
     @Qualifier("nifiRestClient")
@@ -300,21 +297,32 @@ public class FeedRestController {
     @GET
     @Path("/{feedId}/profile-invalid-results")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response queryProfileInvalidResults(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) {
+    public Response queryProfileInvalidResults(
+            @PathParam("feedId") String feedId,
+            @QueryParam("processingdttm") String processingdttm,
+            @QueryParam("limit") int limit) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
-        String table = feedMetadata.getInvalidTableName();
-        String query = "SELECT * from " + table + " where processing_dttm  = '" + processingdttm + "'";
-        QueryResult rows = hiveService.query(query);
-        return Response.ok(rows.getRows()).build();
+        return getPage(processingdttm, limit, feedMetadata.getInvalidTableName());
     }
 
     @GET
     @Path("/{feedId}/profile-valid-results")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response queryProfileValidResults(@PathParam("feedId") String feedId, @QueryParam("processingdttm") String processingdttm) {
+    public Response queryProfileValidResults(
+            @PathParam("feedId") String feedId,
+            @QueryParam("processingdttm") String processingdttm,
+            @QueryParam("limit") int limit) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
-        String table = feedMetadata.getValidTableName();
-        String query = "SELECT * from " + table + " where processing_dttm  = '" + processingdttm + "'";
+        return getPage(processingdttm, limit, feedMetadata.getValidTableName());
+    }
+
+    private Response getPage(String processingdttm, int limit, String table) {
+        if (limit > MAX_LIMIT) {
+            limit = MAX_LIMIT;
+        } else if (limit < 1) {
+            limit = 1;
+        }
+        String query = "SELECT * from " + table + " where processing_dttm = '" + processingdttm + "' limit " + limit;
         QueryResult rows = hiveService.query(query);
         return Response.ok(rows.getRows()).build();
     }

@@ -1,21 +1,22 @@
 <div class="layout-padding-left">
     <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
-    <div flex="initial" overflow-scroll parent="md-dialog-content" offset-height="100" class="layout-padding-top">
-        <table class="hive-table">
-            <thead>
-            <tr>
-                <th ng-repeat="column in ::vm.data.displayColumns" >
-                    {{::column}}
-                </th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr dir-paginate="row in vm.data.rows |itemsPerPage:vm.rowsPerPage" pagination-id="profile_stats_1" >
-                <td ng-repeat="field in ::vm.data.columns" >
-                    {{::row[field]}}
-                </td>
-            </tr>
-            </tbody>
-        </table>
+
+    <md-input-container>
+        <label>Limit</label>
+        <md-select ng-model="vm.limit" ng-change="vm.onLimitChange()">
+            <md-option ng-repeat="opt in vm.limitOptions track by $index" ng-value="opt">
+                {{opt}}
+            </md-option>
+        </md-select>
+    </md-input-container>
+
+    <div ui-grid-auto-resize
+         browser-height
+         browser-height-scroll-y="false"
+         browser-height-offset="284"
+         ui-grid="gridOptions"
+         ui-grid-move-columns
+         flex>
+
     </div>
 </div>
