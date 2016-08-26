@@ -1,4 +1,4 @@
-<div class="layout-padding-left">
+<div class="profile profile-invalid layout-padding-left">
     <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
 
     <md-input-container>
@@ -10,14 +10,22 @@
         </md-select>
     </md-input-container>
 
+    <md-input-container>
+        <label>Filter By Rule Violation</label>
+        <md-select ng-model="vm.filter" ng-change="vm.onFilterChange()">
+            <md-option ng-repeat="opt in vm.filterOptions track by $index" ng-value="opt">
+                {{opt.name}}
+            </md-option>
+        </md-select>
+    </md-input-container>
+
     <div ui-grid-auto-resize
          browser-height
          browser-height-scroll-y="false"
          browser-height-offset="284"
          ui-grid="gridOptions"
          ui-grid-move-columns
-         flex
-         class="profile profile-invalid">
+         flex>
 
     </div>
 

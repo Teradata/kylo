@@ -17,6 +17,7 @@ import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.schema.TextFileParser;
 
+import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
@@ -300,9 +301,14 @@ public class FeedRestController {
     public Response queryProfileInvalidResults(
             @PathParam("feedId") String feedId,
             @QueryParam("processingdttm") String processingdttm,
-            @QueryParam("limit") int limit) {
+            @QueryParam("limit") int limit,
+            @QueryParam("filter") String filter) {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
-        return getPage(processingdttm, limit, feedMetadata.getInvalidTableName());
+        String condition = "";
+        if (StringUtils.isNotBlank(filter)) {
+            condition = " and dlp_reject_reason like '%" + ClassUtils.getShortCanonicalName(filter) + "%' ";
+        }
+        return getPage(processingdttm, limit, feedMetadata.getInvalidTableName(), condition);
     }
 
     @GET
@@ -317,13 +323,20 @@ public class FeedRestController {
     }
 
     private Response getPage(String processingdttm, int limit, String table) {
+        return getPage(processingdttm, limit, table, null);
+    }
+    private Response getPage(String processingdttm, int limit, String table, String filter) {
         if (limit > MAX_LIMIT) {
             limit = MAX_LIMIT;
         } else if (limit < 1) {
             limit = 1;
         }
-        String query = "SELECT * from " + table + " where processing_dttm = '" + processingdttm + "' limit " + limit;
-        QueryResult rows = hiveService.query(query);
+        StringBuilder query = new StringBuilder("SELECT * from " + table + " where processing_dttm = '" + processingdttm + "' ");
+        if (StringUtils.isNotBlank(filter)) {
+            query.append(filter);
+        }
+        query.append(" limit ").append(limit);
+        QueryResult rows = hiveService.query(query.toString());
         return Response.ok(rows.getRows()).build();
     }
 

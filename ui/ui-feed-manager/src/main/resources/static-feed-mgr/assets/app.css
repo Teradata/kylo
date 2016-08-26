@@ -1177,6 +1177,10 @@ md-toast .md-toast-content {
   white-space: normal;
 }
 
+.profile.profile-invalid label {
+  white-space: nowrap;
+}
+
 .bold {
   font-weight: 500;
 }
