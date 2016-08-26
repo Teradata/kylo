@@ -19,6 +19,8 @@ import javax.jcr.NodeIterator;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.nodetype.NoSuchNodeTypeException;
 import javax.jcr.nodetype.NodeType;
 
 import org.apache.commons.lang3.ArrayUtils;
@@ -75,6 +77,14 @@ public class JcrUtil {
             return versionable;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to check if versionable for Node " + name, e);
+        }
+    }
+
+    public static boolean isNodeType(Node node, String typeName) {
+        try {
+            return node.getPrimaryNodeType().isNodeType(typeName);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve the type of node: " + node, e);
         }
     }
 
@@ -179,23 +189,44 @@ public class JcrUtil {
     }
 
     /**
-     * get All Child nodes under a parentNode and create the wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
+     * get All Child nodes under a parentNode matching the name and type, and create the wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
      */
     public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, String name, Class<T> type) {
-        return getJcrObjects(parentNode, name, new DefaultObjectTypeResolver<T>(type));
+        return getJcrObjects(parentNode, name, null, new DefaultObjectTypeResolver<T>(type));
+    }
+    
+    /**
+     * get All Child nodes under a parentNode matching the type and create the wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
+     */
+    public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, NodeType nodeType, Class<T> type) {
+        return getJcrObjects(parentNode, nodeType, new DefaultObjectTypeResolver<T>(type));
+    }
+    
+    /**
+     * get All Child nodes under a parentNode matching the name and type, returning a wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
+     */
+    public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, String name, NodeType nodeType, Class<T> type) {
+        return getJcrObjects(parentNode, name, nodeType, new DefaultObjectTypeResolver<T>(type));
     }
     
     /**
      * get All Child nodes under a parentNode and create the wrapped JCRObject.
      */
     public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, JcrObjectTypeResolver<T> typeResolver) {
-        return getJcrObjects(parentNode, null, typeResolver);
+        return getJcrObjects(parentNode, null, null, typeResolver);
+    }
+    
+    /**
+     * get All Child nodes under a parentNode of a certain type and create the wrapped JCRObject.
+     */
+    public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, NodeType nodeType, JcrObjectTypeResolver<T> typeResolver) {
+        return getJcrObjects(parentNode, null, nodeType, typeResolver);
     }
 
     /**
      * get All Child nodes under a parentNode and create the wrapped JCRObject the second argument, name, can be null to get all the nodes under the parent
      */
-    public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, String name, JcrObjectTypeResolver<T> typeResolver) {
+    public static <T extends JcrObject> List<T> getJcrObjects(Node parentNode, String name, NodeType nodeType, JcrObjectTypeResolver<T> typeResolver) {
         List<T> list = new ArrayList<>();
         try {
 
@@ -208,8 +239,11 @@ public class JcrUtil {
             if (nodeItr != null) {
                 while (nodeItr.hasNext()) {
                     Node n = nodeItr.nextNode();
-                    T entity = ConstructorUtils.invokeConstructor(typeResolver.resolve(n), n);
-                    list.add(entity);
+                    
+                    if (nodeType == null || n.isNodeType(nodeType.getName())) {
+                        T entity = ConstructorUtils.invokeConstructor(typeResolver.resolve(n), n);
+                        list.add(entity);
+                    }
                 }
             }
         } catch (RepositoryException | InvocationTargetException | NoSuchMethodException | InstantiationException | IllegalAccessException e) {
@@ -480,6 +514,16 @@ public class JcrUtil {
             throw new MetadataRepositoryException("Failed to create set of child objects from property: " + property, e);
         }
     }
+
+    public static NodeType getNodeType(Session session, String typeName) {
+        try {
+            return session.getWorkspace().getNodeTypeManager().getNodeType(typeName);
+        } catch (NoSuchNodeTypeException e) {
+            throw new MetadataRepositoryException("No node type exits named: " + typeName, e);
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to retrieve node type named: " + typeName, e);
+        }
+    }
     
     
 
@@ -497,6 +541,5 @@ public class JcrUtil {
             return this.type;
         }
     }
-    
     
 }

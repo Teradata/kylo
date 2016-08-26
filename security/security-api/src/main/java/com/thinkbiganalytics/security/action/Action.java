@@ -17,6 +17,9 @@ public interface Action {
 
     List<Action> getHierarchy();
     
+    default boolean implies(Action action) {
+        return getHierarchy().stream().anyMatch(a -> a.equals(action));
+    }
     
     default Action subAction(String name) {
         return create(name, this);

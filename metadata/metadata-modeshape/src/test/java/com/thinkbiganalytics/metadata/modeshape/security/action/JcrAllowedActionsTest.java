@@ -5,8 +5,6 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.security.AccessControlException;
 import java.util.Optional;
 
@@ -14,7 +12,7 @@ import javax.inject.Inject;
 
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
-import org.testng.annotations.BeforeClass;
+import org.testng.Assert;
 import org.testng.annotations.Test;
 
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -23,8 +21,6 @@ import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.TestCredentials;
 import com.thinkbiganalytics.metadata.modeshape.TestUserPrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
-import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 
@@ -35,11 +31,6 @@ import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 @SpringApplicationConfiguration(classes = { ModeShapeEngineConfig.class, JcrTestConfig.class, TestSecurityConfig.class })
 public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     
-    public static final Action FEED_SUPPORT = Action.create("accessFeedSupport");
-    public static final Action ACCESS_FEEDS = FEED_SUPPORT.subAction("accessFeeds");
-    public static final Action CREATE_FEEDS = ACCESS_FEEDS.subAction("createFeeds");
-    public static final Action EXPORT_FEEDS = ACCESS_FEEDS.subAction("exportFeeds");
-
     @Inject
     private JcrMetadataAccess metadata;
     
@@ -71,7 +62,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             
             AllowedActions actions = option.get(); // Throws exception on failure
             
-            actions.checkPermission(EXPORT_FEEDS);
+            actions.checkPermission(TestSecurityConfig.EXPORT_FEEDS);
             
             return null;
         });
@@ -84,7 +75,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             
             assertThat(option.isPresent()).isTrue();
             
-            option.get().checkPermission(EXPORT_FEEDS); // Throws exception on failure
+            option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS); // Throws exception on failure
             
             return null;
         });
@@ -99,7 +90,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             
             AllowedActions actions = option.get(); // Throws exception on failure
             
-            actions.checkPermission(EXPORT_FEEDS);
+            actions.checkPermission(TestSecurityConfig.EXPORT_FEEDS);
             
             return null;
         });
@@ -112,7 +103,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             
             assertThat(option.isPresent()).isTrue();
             
-            option.get().checkPermission(EXPORT_FEEDS);
+            option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
             
             return null;
         });
@@ -125,7 +116,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             
             assertThat(option.isPresent()).isTrue();
             
-            return option.get().enable(EXPORT_FEEDS, new TestUserPrincipal());
+            return option.get().enable(new TestUserPrincipal(), TestSecurityConfig.EXPORT_FEEDS);
         });
         
         assertThat(changed).isTrue();
@@ -135,7 +126,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             
             assertThat(option.isPresent()).isTrue();
             
-            option.get().checkPermission(EXPORT_FEEDS); 
+            option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS); 
             return true;
         });
         
@@ -149,7 +140,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             
             assertThat(option.isPresent()).isTrue();
             
-            return option.get().disable(EXPORT_FEEDS, new TestUserPrincipal());
+            return option.get().disable(new TestUserPrincipal(), TestSecurityConfig.EXPORT_FEEDS);
         });
         
         assertThat(changed).isTrue();
@@ -159,7 +150,36 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             
             assertThat(option.isPresent()).isTrue();
             
-            option.get().checkPermission(EXPORT_FEEDS); 
+            option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS); 
+            return null;
+        });
+    }
+    
+    @Test(dependsOnMethods="testDisableExport", expectedExceptions=AccessControlException.class)
+    public void testEnableOnlyCreate() {
+        boolean changed = this.metadata.commit(new AdminCredentials(), () -> {
+            Optional<AllowedActions> option = this.provider.getAllowedActions("services");
+            
+            assertThat(option.isPresent()).isTrue();
+            
+            option.get().enable(new TestUserPrincipal(), TestSecurityConfig.EXPORT_FEEDS);
+            return option.get().enableOnly(new TestUserPrincipal(), TestSecurityConfig.CREATE_FEEDS);
+        });
+        
+        assertThat(changed).isTrue();
+        
+        this.metadata.read(new TestCredentials(), () -> {
+            Optional<AllowedActions> option = this.provider.getAllowedActions("services");
+            
+            assertThat(option.isPresent()).isTrue();
+            
+            try {
+                option.get().checkPermission(TestSecurityConfig.CREATE_FEEDS);
+            } catch (Exception e) {
+                Assert.fail("Permission check should pass", e);
+            } 
+            
+            option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS); 
             return null;
         });
     }

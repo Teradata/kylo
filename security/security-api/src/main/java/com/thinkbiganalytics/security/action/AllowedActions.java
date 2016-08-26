@@ -9,23 +9,31 @@ import java.util.Set;
 
 /**
  * Represents a set of actions that may be allowed or disallowed for a user or group.
- * It also supports checking whether and action is permissible based on the current state
- * of allowed actions.
+ * It also supports checking whether certain actions are permitted based on the principals
+ * of the active security context.
  * @author Sean Felten
  */
 public interface AllowedActions {
 
+    /**
+     * Retrieves the set permitted actions available based on the current security context in effect.
+     * @return the set of allowed actions
+     */
     List<AllowableAction> getAvailableActions();
     
-    boolean enable(Action action, Principal... principals);
+    void checkPermission(Set<Action> actions);
     
-    boolean enable(Action action, Set<Principal> principals);
+    void checkPermission(Action action, Action... more);
     
-    boolean disable(Action action, Principal... principals);
+    boolean enable(Principal principal, Action action, Action... more);
     
-    boolean disable(Action action, Set<Principal> principals);
+    boolean enable(Principal principal, Set<Action> actions);
     
-//    void checkPermission(Action action, Principal... principals);
+    boolean enableOnly(Principal principal, Action action, Action... more);
     
-    void checkPermission(Action action);
+    boolean enableOnly(Principal principal, Set<Action> actions);
+    
+    boolean disable(Principal principal, Action action, Action... more);
+    
+    boolean disable(Principal principal, Set<Action> actions);
 }

@@ -44,7 +44,7 @@ public class FeedManagerSecurityConfiguration {
                             .group("services")
                                 .action(FeedsAccessControl.FEEDS_SUPPORT)
                                     .title("Access Feed Support")
-                                    .description("Allow access to feeds and feed-related functions")
+                                    .description("Allows access to feeds and feed-related functions")
                                     .subAction(FeedsAccessControl.ACCESS_FEEDS)
                                         .title("Access Feeds")
                                         .description("Allows access to feeds")

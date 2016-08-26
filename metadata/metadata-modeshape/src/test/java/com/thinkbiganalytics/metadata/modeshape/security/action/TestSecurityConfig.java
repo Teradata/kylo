@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import com.thinkbiganalytics.metadata.config.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
+import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
 
 /**
@@ -19,6 +20,23 @@ import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
  */
 @Configuration
 public class TestSecurityConfig {
+    
+    public static final Action MANAGE_AUTH = Action.create("manageAuthorization");
+    public static final Action MANAGE_OPS = Action.create("manageOperations");
+    public static final Action ADMIN_OPS = MANAGE_OPS.subAction("adminOperations");
+    public static final Action FEED_SUPPORT = Action.create("accessFeedSupport");
+    public static final Action ACCESS_CATEGORIES = FEED_SUPPORT.subAction("categoryAccess");
+    public static final Action CREATE_CATEGORIES = ACCESS_CATEGORIES.subAction("createCategories");
+    public static final Action ADMIN_CATEGORIES = ACCESS_CATEGORIES.subAction("adminCategories");
+    public static final Action ACCESS_FEEDS = FEED_SUPPORT.subAction("accessFeeds");
+    public static final Action CREATE_FEEDS = ACCESS_FEEDS.subAction("createFeeds");
+    public static final Action IMPORT_FEEDS = ACCESS_FEEDS.subAction("importFeeds");
+    public static final Action EXPORT_FEEDS = ACCESS_FEEDS.subAction("exportFeeds");
+    public static final Action ADMIN_FEEDS = ACCESS_FEEDS.subAction("adminFeeds");
+    public static final Action ACCESS_TEMPLATES = FEED_SUPPORT.subAction("accessTemplates");
+    public static final Action CREATE_TEMPLATESS = ACCESS_TEMPLATES.subAction("adminTemplates");
+    public static final Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminCategories");
+
 
     @Bean
     public PostMetadataConfigAction configAuthorization() {
@@ -39,47 +57,47 @@ public class TestSecurityConfig {
 
                 return builder
                             .group("services")
-                                .action("manageAuthorization")
+                                .action(MANAGE_AUTH)
                                     .title("Manage Authorization")
                                     .description("Allows modification of authorization access control lists")
                                     .add()
-                                .action("manageOperations")
+                                .action(MANAGE_OPS)
                                     .title("Manage Operations")
                                     .description("Allows access to operations")
-                                    .subAction("adminOperations")
+                                    .subAction(ADMIN_OPS)
                                         .title("Administer Operations")
                                         .add()
                                     .add()
-                                .action("accessFeedSupport")
+                                .action(FEED_SUPPORT)
                                     .title("Access Feeds")
                                     .description("Allows access of feeds and feed related functions")
-                                    .subAction("categoryAccess")
-                                        .subAction("createCategories")
+                                    .subAction(ACCESS_CATEGORIES)
+                                        .subAction(CREATE_CATEGORIES)
                                             .title("Create Categories")
                                             .add()
-                                        .subAction("adminCategories")
+                                        .subAction(ADMIN_CATEGORIES)
                                             .title("Administer Categories")
                                             .add()
                                         .add()
-                                    .subAction("accessFeeds")
-                                        .subAction("createFeeds")
+                                    .subAction(ACCESS_FEEDS)
+                                        .subAction(CREATE_FEEDS)
                                             .title("Create Feeds")
                                             .add()
-                                        .subAction("adminFeeds")
+                                        .subAction(ADMIN_FEEDS)
                                             .title("Administer Feeds")
                                             .add()
-                                        .subAction("importFeeds")
+                                        .subAction(IMPORT_FEEDS)
                                             .title("Import Feeds")
                                             .add()
-                                        .subAction("exportFeeds")
+                                        .subAction(EXPORT_FEEDS)
                                             .title("Export Feeds")
                                             .add()
                                         .add()
-                                    .subAction("accessTemplates")
-                                        .subAction("createTemplates")
+                                    .subAction(ACCESS_TEMPLATES)
+                                        .subAction(CREATE_TEMPLATESS)
                                             .title("Create Templates")
                                             .add()
-                                        .subAction("adminTemplates")
+                                        .subAction(ADMIN_TEMPLATES)
                                             .title("Administer Templates")
                                             .add()
                                         .add()
