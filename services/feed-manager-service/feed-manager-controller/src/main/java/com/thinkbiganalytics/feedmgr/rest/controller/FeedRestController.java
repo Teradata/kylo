@@ -306,7 +306,7 @@ public class FeedRestController {
         FeedMetadata feedMetadata = getMetadataService().getFeedById(feedId);
         String condition = "";
         if (StringUtils.isNotBlank(filter)) {
-            condition = " and dlp_reject_reason like '%" + ClassUtils.getShortCanonicalName(filter) + "%' ";
+            condition = " and dlp_reject_reason like '%" + filter + "%' ";
         }
         return getPage(processingdttm, limit, feedMetadata.getInvalidTableName(), condition);
     }

@@ -28,7 +28,10 @@
         this.limitOptions = [10, 50, 100, 500, 1000];
         this.limit = this.limitOptions[2];
 
-        this.filterOptions = [{name: 'None', objectClassType: ''}];
+        this.filterOptions = [
+            {name: 'None', objectShortClassType: ''},
+            {name: 'Type Conversion', objectShortClassType: 'Not convertible to'}
+        ];
         this.filter = self.filterOptions[0];
 
         //noinspection JSUnusedGlobalSymbols
@@ -122,7 +125,7 @@
                     {
                         'processingdttm': self.processingdttm,
                         'limit': self.limit,
-                        'filter': _.isUndefined(self.filter) ? '' : self.filter.objectClassType
+                        'filter': _.isUndefined(self.filter) ? '' : self.filter.objectShortClassType
                     }
                 });
             promise.then(successFn, errorFn);

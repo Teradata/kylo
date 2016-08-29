@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
+import org.apache.commons.lang3.ClassUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +19,7 @@ public class BaseUiPolicyRule {
   private String shortDescription;
   private List<FieldRuleProperty> properties;
   private String objectClassType;
+  private String objectShortClassType;
   private String propertyValuesDisplayString;
 
   public String getName() {
@@ -61,6 +63,15 @@ public class BaseUiPolicyRule {
 
   public void setObjectClassType(String objectClassType) {
     this.objectClassType = objectClassType;
+    setObjectShortClassType(ClassUtils.getShortCanonicalName(objectClassType));
+  }
+
+  public String getObjectShortClassType() {
+    return objectShortClassType;
+  }
+
+  public void setObjectShortClassType(String objectShortClassType) {
+    this.objectShortClassType = objectShortClassType;
   }
 
   @JsonIgnore
