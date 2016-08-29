@@ -33,6 +33,33 @@ All client node should have java installed  on it.
     #sudo rm -r UnlimitedJCEPolicy*
 	
     ls -l
+	
+=== Test Java Cryptography Extension
+
+	Create a java Test.java and paste below mentioned code in it.
+	$ vi Test.java
+
+	import javax.crypto.Cipher;
+	class Test {
+	public static void main(String[] args) {
+	try {
+	  System.out.println("Hello World!");
+	  int maxKeyLen = Cipher.getMaxAllowedKeyLength("AES");
+	  System.out.println(maxKeyLen);
+	} catch (Exception e){
+	  System.out.println("Sad world :(");
+	}
+	}
+	}
+
+	Compile:
+	$ javac Test.java
+
+	Run test, the expected number is: 2147483647
+
+	$ java Test
+	Hello World!
+	2147483647
     
 == Install Kerberos
 
@@ -41,12 +68,12 @@ On Cluser , go to master node for installation of Kerberos utils.
 1. Install a new version of the KDC server: 
 
     yum install krb5-server krb5-libs krb5-workstation
-    
-2. Using a text editor, open the KDC server configuration file, located by default here:
+
+2.  Using a text editor, open the KDC server configuration file, located by default here:
 
     vi /etc/krb5.conf
 
-3. Change the [realms] as below where the sandbox.hortonworks.com is the domain name.
+3. Change the [realms] as below to sandbox.hortonworks.com . Udapte KDC and Admin Server Information.
     
     [logging]
      default = FILE:/var/log/krb5libs.log
@@ -62,71 +89,110 @@ On Cluser , go to master node for installation of Kerberos utils.
      forwardable = true
     
     [realms]
-     HDP-TBRND-DEV = {
-      kdc = HDP-TBRND-DEV.us.west2.compute.internal
-      admin_server = HDP-TBRND-DEV.us.west2.compute.internal
+     sandbox.hortonworks.com = {
+      kdc = sandbox.hortonworks.com
+      admin_server = sandbox.hortonworks.com
      }
             
 
-4. Create the Kerberos Database. Use the utility kdb5_util to create the Kerberos database. While asking for password , enter password as thinkbig. 
+			
+4. Update /var/kerberos/krb5kdc/kdc.conf. Change the [realms] as  sandbox.hortonworks.com.
+    
+	[kdcdefaults]
+	kdc_ports = 88
+	kdc_tcp_ports = 88
+
+	[realms]
+	 sandbox.hortonworks.com = {
+	  #master_key_type = aes256-cts
+	  acl_file = /var/kerberos/krb5kdc/kadm5.acl
+	  dict_file = /usr/share/dict/words
+	  admin_keytab = /var/kerberos/krb5kdc/kadm5.keytab
+	  supported_enctypes = aes256-cts:normal aes128-cts:normal des3-hmac-sha1:normal arcfour-hmac:normal des-hmac-sha1:normal des-cbc-md5:normal des-cbc-crc:normal
+	 }
+
+5. Update /var/kerberos/krb5kdc/kadm5.acl and replace EXAMPLE.COM with 	sandbox.hortonworks.com.
+	
+	*/admin@sandbox.hortonworks.com     *
+	
+6. Create the Kerberos Database. Use the utility kdb5_util to create the Kerberos database. While asking for password , enter password as thinkbig. 
     
     kdb5_util create -s
-
 	
-5. Start the KDC. Start the KDC server and the KDC admin server. 
+7. Start the KDC. Start the KDC server and the KDC admin server. 
 
     /etc/rc.d/init.d/krb5kdc start
     /etc/rc.d/init.d/kadmin start
     
-6. When installing and managing your own MIT KDC, it is very important to set
+8. When installing and managing your own MIT KDC, it is very important to set
 up the KDC server to auto-start on boot. 
 
     chkconfig krb5kdc on
     chkconfig kadmin on
 
-7. Create a KDC admin by creating an admin principal. While asking for password , enter password as thinkbig. 
+9. Create a KDC admin by creating an admin principal. While asking for password , enter password as thinkbig. 
 
     kadmin.local -q "addprinc admin/admin"
     
-8. Confirm that this admin principal has permissions in the KDC ACL. Using a text editor, open the KDC ACL file:
+10. Confirm that this admin principal has permissions in the KDC ACL. Using a text editor, open the KDC ACL file:
     
     vi /var/kerberos/krb5kdc/kadm5.acl
 
-9. Ensure that the KDC ACL file includes an entry so to allow the admin principal to administer the KDC for your specific realm. The file should have an entry:
-    */HDP-TBRND-DEV *
+11. Ensure that the KDC ACL file includes an entry so to allow the admin principal to administer the KDC for your specific realm. The file should have an entry:
 
+    */sandbox.hortonworks.com *
 
-10. After editing and saving the kadm5.acl file, you must restart the kadmin process.
+12. After editing and saving the kadm5.acl file, you must restart the kadmin process.
     
     /etc/rc.d/init.d/kadmin restart
 
 
-11. Create a user in the linux by typing below. We will use this user to test whether the Kerberos authentication is working or not. We will first run the command “hadoop fs –ls /” but switching to this user. And we will run the same command again when we enable Kerberos. 
+13. Create a user in the linux by typing below. We will use this user to test whether the Kerberos authentication is working or not. We will first run the command “hadoop fs –ls /” but switching to this user. And we will run the same command again when we enable Kerberos. 
 
     adduser testUser
 
     su testUser
 
     hadoop fs –ls /
+	
+=== Install Kerberos on HDP Cluster.	
 
-12. Open Ambari and go to admin tab and select Kerberos. 
+	Open Ambari and go to admin tab and select Kerberos. 
 
 image::images/1_1.gif[]
 
-13.Click on enable Kerberos. Then following screen will appear check all the things as appear. Click next.
+	Click on enable Kerberos. Then following screen will appear check all the things as appear. Click next.
 
 image::images/2.png[]
 
-14. Put sandbox.hortonworks.com in KDC tab and click test KDC connection. Then in Kadmin again put HDP-TBRND-DEV as host and admin principal as admin/admin@HDP-TBRND-DEV and give the password as exactly created in step 7. Leave the advanced Kerberos-env and advanced krb5-conf as it is. And click next.
+	Put sandbox.hortonworks.com in KDC tab and click test KDC connection. Then in Kadmin again put sandbox.hortonworks.com as host and admin principal as admin/admin@sandbox.hortonworks.com and give the password as exactly created in step 7. 
+	Leave the advanced Kerberos-env and advanced krb5-conf as it is. And click next.
 
 image::images/3.png[]
 
-15. Downlaod csv and save it. 
+	Downlaod csv and save it. 
 
 image::images/4.png[]
 
-16. Then do next till end. Finally click on complete.
+	Then do next till end. Finally click on complete.
 
 image::images/5.png[]
 
 Make sure all services started properly. Kerberos is sucessfully installed on cluster.
+
+=== KeyTab Generation
+
+Create a keytab file for Nifi user.
+
+	kadmin.local
+	addprinc -randkey nifi@sandbox.hortonworks.com 
+	xst -norandkey -k /etc/security/keytabs/nifi.headless.keytab nifi@sandbox.hortonworks.com
+	exit
+	
+	chown nifi:hadoop /etc/security/keytabs/nifi.headless.keytab
+	chmod 440 /etc/security/keytabs/nifi.headless.keytab
+
+[Optional] You can initialize your keytab file using below command.
+	
+	kinit -kt  /etc/security/keytabs/nifi.headless.keytab nifi
+
