@@ -45,6 +45,12 @@
             <version>${project.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-security-controller</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
 
         <!-- end service monitoring -->
 

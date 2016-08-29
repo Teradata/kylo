@@ -19,5 +19,6 @@
         <module>thrift-proxy-service</module>
         <module>feed-manager-service</module>
         <module>service-app</module>
+        <module>security-service</module>
     </modules>
 </project>
