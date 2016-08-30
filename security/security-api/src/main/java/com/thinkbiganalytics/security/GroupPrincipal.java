@@ -4,14 +4,15 @@
 package com.thinkbiganalytics.security;
 
 /**
- * Basic principal representing a named role.
+ * Basic principal representing a named user group.
+ * 
  * @author Sean Felten
  */
-public class RolePrincipal extends BasePrincipal {
+public class GroupPrincipal extends BasePrincipal {
 
     private static final long serialVersionUID = 1L;
 
-    public RolePrincipal(String name) {
+    public GroupPrincipal(String name) {
         super(name);
     }
 

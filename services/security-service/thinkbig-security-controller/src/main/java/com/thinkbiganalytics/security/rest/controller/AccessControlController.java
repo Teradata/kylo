@@ -20,11 +20,10 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.security.RolePrincipal;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 import com.thinkbiganalytics.security.rest.model.ActionSet;
@@ -40,7 +39,7 @@ import io.swagger.annotations.Api;
 @Component
 @Api(value = "security-acesscontrol", produces = "application/json", description = "Obtain and manage access control information for users and groups")
 @Path("/v1/security/actions")
-public class AccessController {
+public class AccessControlController {
 
     @Inject
     private MetadataAccess metadata;
@@ -55,9 +54,9 @@ public class AccessController {
     @GET
     @Path("{name}/available")
     @Produces(MediaType.APPLICATION_JSON)
-    public ActionSet getAvailableActions(@PathParam("name") String groupName) {
+    public ActionSet getAvailableActions(@PathParam("name") String moduleName) {
         return metadata.read(() -> {
-            return actionsProvider.getAvailavleActions("services")
+            return actionsProvider.getAvailableActions(moduleName)
                             .map(this.actionsTransform.availableActionsToActionSet("services"))
                             .orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
         });
@@ -66,9 +65,13 @@ public class AccessController {
     @GET
     @Path("{name}/allowed")
     @Produces(MediaType.APPLICATION_JSON)
-    public ActionSet getAllowedActions(@PathParam("name") String groupName) {
+    public ActionSet getAllowedActions(@PathParam("name") String moduleName,
+                                       @QueryParam("users") Set<String> userNames,
+                                       @QueryParam("roles") Set<String> roleNames) {
         return metadata.read(() -> {
-            return actionsProvider.getAllowedActions("services")
+            Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
+            Set<Principal> roles = this.actionsTransform.toGroupPrincipals(userNames);
+            return actionsProvider.getAllowedActions(moduleName)
                             .map(this.actionsTransform.availableActionsToActionSet("services"))
                             .orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
         });
@@ -78,34 +81,37 @@ public class AccessController {
     @Path("{name}/allowed")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ActionSet putAvailableServicesActions(@PathParam("name") String groupName,
-                                                 PermissionsChange changes) {
+    public ActionSet postPermissionsChange(@PathParam("name") String moduleName,
+                                           PermissionsChange changes) {
         Set<Action> actionSet = collectActions(changes);
         Set<Principal> principals = collectPrincipals(changes);
         
         metadata.commit(() -> {
             principals.stream().forEach(principal -> {
-                actionsProvider.getAvailavleActions("services").ifPresent(available -> available.enableOnly(principal, actionSet));
+                actionsProvider.getAvailableActions(moduleName).ifPresent(available -> available.enableOnly(principal, actionSet));
             });
             return null;
         });
         
-        return getAvailableActions(groupName);
+        return getAvailableActions(moduleName);
     }
     
     
     @GET
-    @Path("permschange/{name}")
+    @Path("{name}/change/allowed")
     @Produces(MediaType.APPLICATION_JSON)
-    public PermissionsChange permissionsChange(@PathParam("name") String name,
-                                               @QueryParam("type") ChangeType changeType,
-                                               @QueryParam("users") Set<String> users,
-                                               @QueryParam("roles") Set<String> roles) {
+    public PermissionsChange getAllowedPermissionsChange(@PathParam("name") String moduleName,
+                                                         @QueryParam("type") String changeType,
+                                                         @QueryParam("user") Set<String> users,
+                                                         @QueryParam("group") Set<String> groups) {
+        if (StringUtils.isBlank(changeType)) {
+            throw new WebApplicationException("The query parameter \"type\" is required", Status.BAD_REQUEST);
+        }
+        
         return metadata.read(() -> {
-            PermissionsChange change = new PermissionsChange(changeType, name);
-            actionsProvider.getAvailavleActions(name)
-                .ifPresent(allowed -> actionsTransform.addAction(change, allowed.getAvailableActions()));
-            return change;
+            return actionsProvider.getAvailableActions(moduleName)
+                            .map(this.actionsTransform.availableActionsToPermissionsChange(ChangeType.valueOf(changeType.toUpperCase()), moduleName, users, groups))
+                            .orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
         });
     }
 
@@ -113,16 +119,16 @@ public class AccessController {
     private Set<Principal> collectPrincipals(PermissionsChange changes) {
         Set<Principal> set = new HashSet<>();
         
-        for (String user : changes.getUsers()) {
-            set.add(new UsernamePrincipal(user));
-        }
-        for (String group : changes.getGroups()) {
-            set.add(new RolePrincipal(group));
-        }
+        set.addAll(this.actionsTransform.toUserPrincipals(changes.getUsers()));
+        set.addAll(this.actionsTransform.toGroupPrincipals(changes.getGroups()));
         
         return set;
     }
 
+    /**
+     * Creates a set of domain actions from the REST model actions.  The resulting set will
+     * contain only the leaf actions from domain action hierarchy.
+     */
     private Set<Action> collectActions(PermissionsChange changes) {
         Set<Action> set = new HashSet<>();
         
@@ -133,6 +139,10 @@ public class AccessController {
         return set;
     }
 
+    /**
+     * Adds an new domain action to the set if the REST model action represents a leaf of the action hierarchy.  
+     * Otherwise, it loads the child actions recursively.
+     */
     private void loadActionSet(com.thinkbiganalytics.security.rest.model.Action modelAction, Action action, Set<Action> set) {
         if (modelAction.getActions().isEmpty()) {
             set.add(action);

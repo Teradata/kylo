@@ -28,7 +28,7 @@ public class JcrAllowedModuleActionsProvider implements AllowedModuleActionsProv
      * @see com.thinkbiganalytics.security.action.AllowedModuleActionsProvider#getAvailavleActions(java.lang.String)
      */
     @Override
-    public Optional<AllowedActions> getAvailavleActions(String moduleName) {
+    public Optional<AllowedActions> getAvailableActions(String moduleName) {
         Path modulePath = SecurityPaths.prototypeActionsPath(moduleName);
         
         return getActions(moduleName, modulePath);

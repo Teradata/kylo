@@ -8,7 +8,7 @@ import java.util.Arrays;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
 
-import com.thinkbiganalytics.security.ServiceRolePrincipal;
+import com.thinkbiganalytics.security.ServiceGroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
@@ -22,8 +22,8 @@ public class ServiceAuthenticatoinToken extends AbstractAuthenticationToken {
     private static final UsernamePrincipal USER = new UsernamePrincipal("service");
     
     public ServiceAuthenticatoinToken() {
-        super(Arrays.asList(new JaasGrantedAuthority("ROLE_SERVICE", new ServiceRolePrincipal()),
-                            new JaasGrantedAuthority("admin", new ServiceRolePrincipal()))); // ModeShape role
+        super(Arrays.asList(new JaasGrantedAuthority("ROLE_SERVICE", new ServiceGroupPrincipal()),
+                            new JaasGrantedAuthority("admin", new ServiceGroupPrincipal()))); // ModeShape role
     }
 
     /* (non-Javadoc)

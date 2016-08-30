@@ -56,7 +56,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     @Test
     public void testAdminGetAvailable() throws Exception {
         this.metadata.read(new AdminCredentials(), () -> {
-            Optional<AllowedActions> option = this.provider.getAvailavleActions("services");
+            Optional<AllowedActions> option = this.provider.getAvailableActions("services");
             
             assertThat(option.isPresent()).isTrue();
             
@@ -71,7 +71,7 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
     @Test
     public void testTestGetAvailable() throws Exception {
         this.metadata.read(new TestCredentials(), () -> {
-            Optional<AllowedActions> option = this.provider.getAvailavleActions("services");
+            Optional<AllowedActions> option = this.provider.getAvailableActions("services");
             
             assertThat(option.isPresent()).isTrue();
             

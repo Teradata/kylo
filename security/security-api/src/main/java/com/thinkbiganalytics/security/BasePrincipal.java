@@ -8,7 +8,8 @@ import java.security.Principal;
 
 /**
  * Base principal type that is serializable and provides default implementations of equals and 
- * hashCode that should cover most subclass uses.
+ * hashCode that should cover most subclass requirements.
+ * 
  * @author Sean Felten
  */
 public abstract class BasePrincipal implements Principal, Serializable {

@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
  * @author Sean Felten
  */
 @Configuration
-public class ModelTransformConfig {
+public class AccessControlConfig {
 
 //    @Bean(name="servicesAllowedActionsTransform")
 //    public Function<AllowedActions, ActionSet> availableActions() {
