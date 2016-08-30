@@ -5,11 +5,13 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
 import com.thinkbiganalytics.feedmgr.service.MetadataService;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,6 +44,9 @@ public class ExportImportFeedService {
 
     @Inject
     ExportImportTemplateService exportImportTemplateService;
+
+    @Inject
+    private AccessController accessController;
 
     public class ExportFeed {
 
@@ -190,6 +195,8 @@ public class ExportImportFeedService {
     }
 
     public ExportFeed exportFeed(String feedId) throws IOException {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EXPORT_FEEDS);
+
         FeedMetadata feed = metadataService.getFeedById(feedId);
         RegisteredTemplate template = feed.getRegisteredTemplate();
         ExportImportTemplateService.ExportTemplate exportTemplate = exportImportTemplateService.exportTemplate(feed.getTemplateId());
@@ -202,6 +209,7 @@ public class ExportImportFeedService {
     }
 
     public ImportFeed importFeed(String fileName, InputStream inputStream, ImportOptions importOptions) throws IOException {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.IMPORT_FEEDS);
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         byte[] buf = new byte[1024];

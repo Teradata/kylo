@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
 import java.nio.file.Path;
+import java.security.AccessControlException;
 import java.util.Optional;
 
 import javax.jcr.AccessDeniedException;
@@ -14,7 +15,7 @@ import javax.jcr.Session;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
-import com.thinkbiganalytics.security.action.AllowableAction;
+import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 
@@ -45,12 +46,16 @@ public class JcrAllowedModuleActionsProvider implements AllowedModuleActionsProv
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.security.action.AllowedModuleActionsProvider#checkPermission(java.lang.String, com.thinkbiganalytics.security.action.AllowableAction)
+     * @see com.thinkbiganalytics.security.action.AllowedModuleActionsProvider#checkPermission(java.lang.String, com.thinkbiganalytics.security.action.Action)
      */
     @Override
-    public void checkPermission(String moduleName, AllowableAction action) {
-        // TODO Auto-generated method stub
-
+    public void checkPermission(String moduleName, Action action) {
+        getAllowedActions(moduleName)
+            .map((allowed) -> { 
+                allowed.checkPermission(action);
+                return null;
+            })
+            .orElseThrow(() -> new AccessControlException("No actions are defined for a madule named: " + moduleName));
     }
 
     protected Optional<AllowedActions> getActions(String moduleName, Path modulePath) {

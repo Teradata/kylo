@@ -25,7 +25,7 @@ public interface FeedsAccessControl {
     public static final Action ADMIN_FEEDS = ACCESS_FEEDS.subAction("adminFeeds");
     public static final Action ACCESS_TEMPLATES = FEEDS_SUPPORT.subAction("accessTemplates");
     public static final Action CREATE_TEMPLATES = ACCESS_TEMPLATES.subAction("createTemplates");
-    public static final Action DELTE_TEMPLATES = ACCESS_TEMPLATES.subAction("deleteTemplates");
+    public static final Action DELETE_TEMPLATES = ACCESS_TEMPLATES.subAction("deleteTemplates");
     public static final Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminTemplates");
     
     

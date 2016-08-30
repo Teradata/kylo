@@ -5,6 +5,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
+import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.nifi.feedmgr.CreateFeedBuilder;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
@@ -12,6 +13,7 @@ import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +23,8 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 5/4/16.
@@ -35,10 +39,15 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
     @Autowired
     PropertyExpressionResolver propertyExpressionResolver;
 
+    @Inject
+    private AccessController accessController;
+
     protected abstract RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
 
 
     public NifiFeed createFeed(FeedMetadata feedMetadata) {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.CREATE_FEEDS);
+
         NifiFeed feed = null;
         //replace expressions with values
         if (feedMetadata.getTable() != null) {

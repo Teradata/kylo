@@ -40,6 +40,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfigu
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+import com.thinkbiganalytics.security.AccessController;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -62,21 +63,24 @@ import javax.jcr.Session;
 public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements FeedProvider {
 
     @Inject
-    CategoryProvider<Category> categoryProvider;
+    private CategoryProvider<Category> categoryProvider;
 
     @Inject
     private JcrServiceLevelAgreementProvider slaProvider;
 
     @Inject
-    DatasourceProvider datasourceProvider;
+    private DatasourceProvider datasourceProvider;
 
     /** JCR node type manager */
     @Inject
-    ExtensibleTypeProvider extensibleTypeProvider;
+    private ExtensibleTypeProvider extensibleTypeProvider;
 
     /** Transaction support */
     @Inject
-    JcrMetadataAccess metadataAccess;
+    private JcrMetadataAccess metadataAccess;
+    
+    @Inject
+    private AccessController accessController;
 
     @Override
     public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {

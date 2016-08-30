@@ -13,10 +13,10 @@ import org.springframework.security.authentication.jaas.AuthorityGranter;
 import com.thinkbiganalytics.auth.jaas.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
-import com.thinkbiganalytics.metadata.modeshape.MetadataJcrConfigurator;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedModuleActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrModuleActionsBuilder;
+import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
 
 /**
@@ -39,6 +39,12 @@ public class ModeShapeAuthConfig {
                             .controlFlag(LoginModuleControlFlag.REQUIRED)
                             .add()
                         .build();
+    }
+    
+    // TODO: Move this to somewhere else more appropriate
+    @Bean
+    public AccessController accessController() {
+        return new DefaultAccessController();
     }
     
     @Bean

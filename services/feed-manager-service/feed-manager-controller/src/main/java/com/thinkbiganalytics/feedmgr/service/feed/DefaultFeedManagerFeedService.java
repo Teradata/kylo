@@ -7,6 +7,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
+import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
@@ -31,6 +32,7 @@ import com.thinkbiganalytics.policy.precondition.transform.PreconditionPolicyTra
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.LabelValue;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -83,6 +85,9 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Inject
     private MetadataEventService eventService;
 
+    @Inject
+    private AccessController accessController;
+    
     @Override
     public List<FeedMetadata> getReusableFeeds() {
         return null;
@@ -90,63 +95,58 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     @Override
     public FeedMetadata getFeedByName(final String categoryName, final String feedName) {
-        FeedMetadata feedMetadata = metadataAccess.read(new Command<FeedMetadata>() {
-            @Override
-            public FeedMetadata execute() {
-                FeedManagerFeed domainFeed = feedManagerFeedProvider.findBySystemName(categoryName, feedName);
-                if (domainFeed != null) {
-                    return feedModelTransform.domainToFeedMetadata(domainFeed);
-                }
-                return null;
+        FeedMetadata feedMetadata = metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            
+            FeedManagerFeed domainFeed = feedManagerFeedProvider.findBySystemName(categoryName, feedName);
+            if (domainFeed != null) {
+                return feedModelTransform.domainToFeedMetadata(domainFeed);
             }
+            return null;
         });
         return feedMetadata;
     }
 
     @Override
     public FeedMetadata getFeedById(final String id) {
-        return metadataAccess.read(new Command<FeedMetadata>() {
-            @Override
-            public FeedMetadata execute() {
-                return getFeedById(id, false);
-            }
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            
+            return getFeedById(id, false);
         });
 
     }
 
     @Override
     public FeedMetadata getFeedById(final String id, final boolean refreshTargetTableSchema) {
-        return metadataAccess.read(new Command<FeedMetadata>() {
-            @Override
-            public FeedMetadata execute() {
-
-                FeedMetadata feedMetadata = null;
-                FeedManagerFeed.ID domainId = feedManagerFeedProvider.resolveId(id);
-                FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(domainId);
-                if (domainFeed != null) {
-                    feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
-                }
-                if (refreshTargetTableSchema && feedMetadata != null) {
-                    feedModelTransform.refreshTableSchemaFromHive(feedMetadata);
-                }
-                return feedMetadata;
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+            
+            FeedMetadata feedMetadata = null;
+            FeedManagerFeed.ID domainId = feedManagerFeedProvider.resolveId(id);
+            FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(domainId);
+            if (domainFeed != null) {
+                feedMetadata = feedModelTransform.domainToFeedMetadata(domainFeed);
             }
+            if (refreshTargetTableSchema && feedMetadata != null) {
+                feedModelTransform.refreshTableSchemaFromHive(feedMetadata);
+            }
+            return feedMetadata;
         });
 
     }
 
     @Override
     public Collection<FeedMetadata> getFeeds() {
-        return metadataAccess.read(new Command<Collection<FeedMetadata>>() {
-            @Override
-            public Collection<FeedMetadata> execute() {
-                Collection<FeedMetadata> feeds = null;
-                List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
-                if (domainFeeds != null) {
-                    feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
-                }
-                return feeds;
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+
+            Collection<FeedMetadata> feeds = null;
+            List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
+            if (domainFeeds != null) {
+                feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
             }
+            return feeds;
         });
 
     }
@@ -177,47 +177,44 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     @Override
     public List<FeedSummary> getFeedSummaryForCategory(final String categoryId) {
-        return metadataAccess.read(new Command<List<FeedSummary>>() {
-            @Override
-            public List<FeedSummary> execute() {
-                List<FeedSummary> summaryList = new ArrayList<>();
-                FeedManagerCategory.ID categoryDomainId = categoryProvider.resolveId(categoryId);
-                List<? extends FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByCategoryId(categoryDomainId);
-                if (domainFeeds != null && !domainFeeds.isEmpty()) {
-                    List<FeedMetadata> feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
-                    for (FeedMetadata feed : feeds) {
-                        summaryList.add(new FeedSummary(feed));
-                    }
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+
+            List<FeedSummary> summaryList = new ArrayList<>();
+            FeedManagerCategory.ID categoryDomainId = categoryProvider.resolveId(categoryId);
+            List<? extends FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByCategoryId(categoryDomainId);
+            if (domainFeeds != null && !domainFeeds.isEmpty()) {
+                List<FeedMetadata> feeds = feedModelTransform.domainToFeedMetadata(domainFeeds);
+                for (FeedMetadata feed : feeds) {
+                    summaryList.add(new FeedSummary(feed));
                 }
-                return summaryList;
             }
+            return summaryList;
         });
 
     }
 
     @Override
     public List<FeedMetadata> getFeedsWithTemplate(final String registeredTemplateId) {
-        return metadataAccess.read(new Command<List<FeedMetadata>>() {
-            @Override
-            public List<FeedMetadata> execute() {
-                List<FeedMetadata> feedMetadatas = null;
-                FeedManagerTemplate.ID templateDomainId = templateProvider.resolveId(registeredTemplateId);
-                List<? extends FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByTemplateId(templateDomainId);
-                if (domainFeeds != null) {
-                    feedMetadatas = feedModelTransform.domainToFeedMetadata(domainFeeds);
-                }
-                return feedMetadatas;
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+
+            List<FeedMetadata> feedMetadatas = null;
+            FeedManagerTemplate.ID templateDomainId = templateProvider.resolveId(registeredTemplateId);
+            List<? extends FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findByTemplateId(templateDomainId);
+            if (domainFeeds != null) {
+                feedMetadatas = feedModelTransform.domainToFeedMetadata(domainFeeds);
             }
+            return feedMetadatas;
         });
     }
 
     @Override
     protected RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId) {
-        return metadataAccess.read(new Command<RegisteredTemplate>() {
-            @Override
-            public RegisteredTemplate execute() {
-                return templateRestProvider.getRegisteredTemplate(templateId);
-            }
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+
+            return templateRestProvider.getRegisteredTemplate(templateId);
         });
 
     }
@@ -240,6 +237,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     //@Transactional(transactionManager = "metadataTransactionManager")
     public void saveFeed(final FeedMetadata feed) {
         metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.CREATE_FEEDS);
+
             //if this is the first time saving this feed create a new one
             FeedManagerFeed domainFeed = feedModelTransform.feedToDomain(feed);
             if (domainFeed.getState() == null) {
@@ -272,6 +271,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public void deleteFeed(@Nonnull final String feedId) {
         metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.DELETE_FEEDS);
+
             Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(feedId));
             feedRepository.deleteFeed(feed.getCategory().getName(), feed.getName());
             feedProvider.deleteFeed(feed.getId());
@@ -282,6 +283,8 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     public void enableFeedCleanup(@Nonnull String feedId) {
         metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+
             final Feed.ID id = feedProvider.resolveFeed(feedId);
             return feedProvider.mergeFeedProperties(id, ImmutableMap.of(FeedProperties.CLEANUP_ENABLED, "true"));
         });
@@ -289,65 +292,61 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     // @Transactional(transactionManager = "metadataTransactionManager")
     private boolean enableFeed(final Feed.ID feedId) {
-        return metadataAccess.commit(new Command<Boolean>() {
-            @Override
-            public Boolean execute() {
-                return feedProvider.enableFeed(feedId);
-            }
+        return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+
+            return feedProvider.enableFeed(feedId);
         });
 
     }
 
     // @Transactional(transactionManager = "metadataTransactionManager")
     private boolean disableFeed(final Feed.ID feedId) {
-        return metadataAccess.commit(new Command<Boolean>() {
-            @Override
-            public Boolean execute() {
-                return feedProvider.disableFeed(feedId);
-            }
+        return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+
+            return feedProvider.disableFeed(feedId);
         });
 
     }
 
     public FeedSummary enableFeed(final String feedId) {
-        return metadataAccess.commit(new Command<FeedSummary>() {
-            @Override
-            public FeedSummary execute() {
-                if (StringUtils.isNotBlank(feedId)) {
-                    FeedMetadata feedMetadata = getFeedById(feedId);
-                    Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                    boolean enabled = enableFeed(domainId);
-                    //re fetch it
-                    if (enabled) {
-                        feedMetadata.setState(Feed.State.ENABLED.name());
-                    }
-                    FeedSummary feedSummary = new FeedSummary(feedMetadata);
-                    return feedSummary;
+        return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+
+            if (StringUtils.isNotBlank(feedId)) {
+                FeedMetadata feedMetadata = getFeedById(feedId);
+                Feed.ID domainId = feedProvider.resolveFeed(feedId);
+                boolean enabled = enableFeed(domainId);
+                //re fetch it
+                if (enabled) {
+                    feedMetadata.setState(Feed.State.ENABLED.name());
                 }
-                return null;
+                FeedSummary feedSummary = new FeedSummary(feedMetadata);
+                return feedSummary;
             }
+            return null;
         });
 
 
     }
 
     public FeedSummary disableFeed(final String feedId) {
-        return metadataAccess.commit(new Command<FeedSummary>() {
-            @Override
-            public FeedSummary execute() {
-                if (StringUtils.isNotBlank(feedId)) {
-                    FeedMetadata feedMetadata = getFeedById(feedId);
-                    Feed.ID domainId = feedProvider.resolveFeed(feedId);
-                    boolean enabled = disableFeed(domainId);
-                    //re fetch it
-                    if (enabled) {
-                        feedMetadata.setState(Feed.State.DISABLED.name());
-                    }
-                    FeedSummary feedSummary = new FeedSummary(feedMetadata);
-                    return feedSummary;
+        return metadataAccess.commit(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
+
+            if (StringUtils.isNotBlank(feedId)) {
+                FeedMetadata feedMetadata = getFeedById(feedId);
+                Feed.ID domainId = feedProvider.resolveFeed(feedId);
+                boolean enabled = disableFeed(domainId);
+                //re fetch it
+                if (enabled) {
+                    feedMetadata.setState(Feed.State.DISABLED.name());
                 }
-                return null;
+                FeedSummary feedSummary = new FeedSummary(feedMetadata);
+                return feedSummary;
             }
+            return null;
         });
 
     }
@@ -380,11 +379,17 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Nonnull
     @Override
     public Set<UserField> getUserFields() {
-        return metadataAccess.read(() -> UserPropertyTransform.toUserFields(feedProvider.getUserFields()));
+        return metadataAccess.read(() -> { 
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+
+            return UserPropertyTransform.toUserFields(feedProvider.getUserFields()); 
+        });
     }
 
     @Override
     public void setUserFields(@Nonnull final Set<UserField> userFields) {
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.CREATE_FEEDS);
+        
         feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
     }
 }

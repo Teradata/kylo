@@ -1,11 +1,13 @@
 package com.thinkbiganalytics.feedmgr.service.template;
 
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.slf4j.Logger;
@@ -15,6 +17,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.inject.Inject;
+
 /**
  * Created by sr186054 on 5/4/16.
  */
@@ -22,6 +26,8 @@ public abstract class AbstractFeedManagerTemplateService {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractFeedManagerTemplateService.class);
 
+    @Inject
+    private AccessController accessController;
 
     @Autowired
     private NifiRestClient nifiRestClient;
@@ -112,8 +118,9 @@ public abstract class AbstractFeedManagerTemplateService {
 
 
     public RegisteredTemplate mergeRegisteredTemplateProperties(RegisteredTemplate registeredTemplate) {
-
         if (registeredTemplate != null) {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.CREATE_TEMPLATES);
+            
             log.info("Merging properties for template {} ({})", registeredTemplate.getTemplateName(), registeredTemplate.getId());
             List<NifiProperty> properties = null;
             int matchCount = 0;
