@@ -37,7 +37,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
     //@Transactional(transactionManager = "metadataTransactionManager")
     protected RegisteredTemplate saveRegisteredTemplate(final RegisteredTemplate registeredTemplate) {
         return metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.CREATE_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
 
             //ensure that the incoming template name doesnt already exist.
             //if so remove and replace with this one
@@ -87,7 +87,7 @@ public class DefaultFeedManagerTemplateService extends AbstractFeedManagerTempla
 
     public void deleteRegisteredTemplate(final String templateId) {
         metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.DELETE_TEMPLATES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
 
             FeedManagerTemplate.ID domainId = templateProvider.resolveId(templateId);
             FeedManagerTemplate domainTemplate = templateProvider.findById(domainId);

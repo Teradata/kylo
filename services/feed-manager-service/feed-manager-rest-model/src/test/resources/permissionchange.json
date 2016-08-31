@@ -1,0 +1,69 @@
+{
+    "actionSet": {
+        "actions": [
+            {
+                "actions": [
+                    {
+                        "actions": [
+                            {
+                                "description": "Allows creating and editing new feeds",
+                                "systemName": "editFeeds",
+                                "title": "Edit Feeds"
+                            },
+                            {
+                                "description": "Allows the administration of any feed; even those created by others",
+                                "systemName": "adminFeeds",
+                                "title": "Administer Feeds"
+                            }
+                        ],
+                        "description": "Allows access to feeds",
+                        "systemName": "accessFeeds",
+                        "title": "Access Feeds"
+                    },
+                    {
+                        "actions": [
+                            {
+                                "description": "Allows creating and editing new categories",
+                                "systemName": "editCategories",
+                                "title": "Edit Categories"
+                            },
+                            {
+                                "description": "Allows the administration of any category; even those created by others",
+                                "systemName": "adminCategories",
+                                "title": "Administer Categories"
+                            }
+                        ],
+                        "description": "Allows access to categories",
+                        "systemName": "accessCategories",
+                        "title": "Access Categories"
+                    },
+                    {
+                        "actions": [
+                            {
+                                "description": "Allows creating and editing new feed templates",
+                                "systemName": "editTemplates",
+                                "title": "Edit Templates"
+                            },
+                            {
+                                "description": "Allows the administration of any feed template; even those created by others",
+                                "systemName": "adminTemplates",
+                                "title": "Administer Templates"
+                            }
+                        ],
+                        "description": "Allows access to feed templates",
+                        "systemName": "accessTemplates",
+                        "title": "Access Templates"
+                    }
+                ],
+                "description": "Allows access to feeds and feed-related functions",
+                "systemName": "accessFeedsSupport",
+                "title": "Access Feed Support"
+            }
+        ],
+        "name": "services"
+    },
+    "change": "ADD",
+    "groups": [
+        "dev"
+    ]
+}

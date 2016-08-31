@@ -4,7 +4,10 @@
 package com.thinkbiganalytics.metadata.modeshape.security;
 
 import java.security.Principal;
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -82,14 +85,17 @@ public class JcrAccessControlUtil {
         try {
             Node endNode = toNode;
             Node current = node;
-            boolean added = false;
+            Deque<Node> stack = new ArrayDeque<>();
+            AtomicBoolean added = new AtomicBoolean(false);
             
             do {
-                added |= addPermissions(current, principal, privilegeNames);
+                stack.push(current);
                 current = current.getParent();
             } while (! current.equals(endNode) && ! current.equals(toNode.getSession().getRootNode()));
             
-            return added;
+            stack.stream().forEach((n) -> added.set(addPermissions(n, principal, privilegeNames) || added.get()));
+            
+            return added.get();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add permission(s) to hierarch from node " + node + " up to " + toNode, e);
         }

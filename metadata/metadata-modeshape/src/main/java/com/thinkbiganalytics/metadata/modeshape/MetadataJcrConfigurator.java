@@ -28,6 +28,7 @@ import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  *
@@ -80,12 +81,31 @@ public class MetadataJcrConfigurator {
             session.getRootNode().addNode(SecurityPaths.SECURITY.toString(), "tba:securityFolder");
         }
 
-        Node protoNode = session.getRootNode().getNode(SecurityPaths.PROTOTYPES.toString());
-        Path svcPath = SecurityPaths.moduleActionPath("services");
+        Node prototypesNode = session.getRootNode().getNode(SecurityPaths.PROTOTYPES.toString());
         
-        JcrAccessControlUtil.addPermissions(protoNode, new ModeShapeAdminPrincipal(), Privilege.JCR_ALL);
-        JcrAccessControlUtil.addPermissions(protoNode, AdminCredentials.getPrincipal(), Privilege.JCR_ALL);
-        JcrAccessControlUtil.addPermissions(protoNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);
+        // Uncommenting below will remove all access control action configuration (DEV ONLY.)
+        // TODO a proper migration should be implemented to in case the action hierarchy
+        // has changed and the currently permitted actions need to be updated.
+//        for (Node protoNode : JcrUtil.getNodesOfType(prototypesNode, "tba:allowedActions")) {
+//            for (Node actionsNode : JcrUtil.getNodesOfType(protoNode, "tba:allowableAction")) {
+//                actionsNode.remove();
+//            }
+//            
+//            String modulePath = SecurityPaths.moduleActionPath(protoNode.getName()).toString();
+//            
+//            if (session.getRootNode().hasNode(modulePath)) {
+//                Node moduleNode = session.getRootNode().getNode(modulePath);
+//                
+//                for (Node actionsNode : JcrUtil.getNodesOfType(moduleNode, "tba:allowableAction")) {
+//                    actionsNode.remove();
+//                }
+//            }
+//        }
+        
+        
+        JcrAccessControlUtil.addPermissions(prototypesNode, new ModeShapeAdminPrincipal(), Privilege.JCR_ALL);
+        JcrAccessControlUtil.addPermissions(prototypesNode, AdminCredentials.getPrincipal(), Privilege.JCR_ALL);
+        JcrAccessControlUtil.addPermissions(prototypesNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);
         
 //        if (session.getRootNode().hasNode(svcPath.toString())) {
 //            session.getRootNode().getNode(svcPath.toString()).remove();

@@ -46,7 +46,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
 
     public NifiFeed createFeed(FeedMetadata feedMetadata) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.CREATE_FEEDS);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
         NifiFeed feed = null;
         //replace expressions with values

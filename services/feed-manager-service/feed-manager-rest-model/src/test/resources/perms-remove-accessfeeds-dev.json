@@ -1,0 +1,19 @@
+{
+    "actionSet": {
+        "actions": [
+            {
+                "actions": [
+                    {
+                        "systemName": "accessFeeds"
+                    }
+                ],
+                "systemName": "accessFeedsSupport"
+            }
+        ],
+        "name": "services"
+    },
+    "change": "REMOVE",
+    "groups": [
+        "dev"
+    ]
+}

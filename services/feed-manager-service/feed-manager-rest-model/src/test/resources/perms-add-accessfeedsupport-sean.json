@@ -1,0 +1,14 @@
+{
+    "actionSet": {
+        "actions": [
+            {
+                "systemName": "accessFeedsSupport"
+            }
+        ],
+        "name": "services"
+    },
+    "change": "ADD",
+    "users": [
+        "sean"
+    ]
+}

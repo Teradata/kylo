@@ -1,0 +1,24 @@
+{
+    "actionSet": {
+        "actions": [
+            {
+                "actions": [
+                    {
+                        "actions": [
+                            {
+                                "systemName": "editFeeds"
+                            }
+                        ],
+                        "systemName": "accessFeeds"
+                    }
+                ],
+                "systemName": "accessFeedsSupport"
+            }
+        ],
+        "name": "services"
+    },
+    "change": "ADD",
+    "users": [
+        "sean"
+    ]
+}

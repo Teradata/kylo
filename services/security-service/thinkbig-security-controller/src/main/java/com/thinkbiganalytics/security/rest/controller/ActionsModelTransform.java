@@ -97,7 +97,7 @@ public class ActionsModelTransform {
     }
 
     public void addAction(PermissionsChange change, List<? extends com.thinkbiganalytics.security.action.Action> hierarchy) {
-        ActionSet actionSet = change.getActions();
+        ActionSet actionSet = change.getActionSet();
         for (com.thinkbiganalytics.security.action.Action action : hierarchy) {
             addHierarchy(actionSet, action.getHierarchy().iterator());
         }

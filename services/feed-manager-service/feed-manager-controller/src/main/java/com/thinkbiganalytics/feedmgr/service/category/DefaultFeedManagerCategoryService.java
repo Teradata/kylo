@@ -71,7 +71,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     @Override
     public void saveCategory(final FeedCategory category) {
         final FeedManagerCategory.ID domainId = metadataAccess.commit(() -> {
-            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.CREATE_CATEGORIES);
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_CATEGORIES);
 
             // Determine the system name
             if (category.getId() == null) {
@@ -102,7 +102,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public boolean deleteCategory(final String categoryId) throws InvalidOperationException {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.DELETE_CATEGORIES);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_CATEGORIES);
 
         final FeedManagerCategory.ID domainId = metadataAccess.read(() -> categoryProvider.resolveId(categoryId));
         categoryProvider.deleteById(domainId);
@@ -121,7 +121,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public void setUserFields(@Nonnull Set<UserField> userFields) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.CREATE_CATEGORIES);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_CATEGORIES);
 
         categoryProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
     }

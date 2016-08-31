@@ -6,6 +6,7 @@ package com.thinkbiganalytics.security.rest.controller;
 import java.security.Principal;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -25,6 +26,7 @@ import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.security.action.Action;
+import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 import com.thinkbiganalytics.security.rest.model.ActionSet;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
@@ -85,11 +87,27 @@ public class AccessControlController {
                                            PermissionsChange changes) {
         Set<Action> actionSet = collectActions(changes);
         Set<Principal> principals = collectPrincipals(changes);
+        final Consumer<Principal> permChange;
+        
+        switch(changes.getChange()) {
+            case ADD:
+                permChange = (principal -> {
+                    actionsProvider.getAllowedActions(moduleName).ifPresent(allowed -> allowed.enable(principal, actionSet));
+                });
+                break;
+            case REMOVE:
+                permChange = (principal -> {
+                    actionsProvider.getAllowedActions(moduleName).ifPresent(allowed -> allowed.disable(principal, actionSet));
+                });
+                break;
+            default:
+                permChange = (principal -> {
+                    actionsProvider.getAllowedActions(moduleName).ifPresent(allowed -> allowed.enableOnly(principal, actionSet));
+                });
+        }
         
         metadata.commit(() -> {
-            principals.stream().forEach(principal -> {
-                actionsProvider.getAvailableActions(moduleName).ifPresent(available -> available.enableOnly(principal, actionSet));
-            });
+            principals.stream().forEach(permChange);
             return null;
         });
         
@@ -132,7 +150,7 @@ public class AccessControlController {
     private Set<Action> collectActions(PermissionsChange changes) {
         Set<Action> set = new HashSet<>();
         
-        for (com.thinkbiganalytics.security.rest.model.Action modelAction : changes.getActions().getActions()) {
+        for (com.thinkbiganalytics.security.rest.model.Action modelAction : changes.getActionSet().getActions()) {
             loadActionSet(modelAction, Action.create(modelAction.getSystemName()), set);
         }
         

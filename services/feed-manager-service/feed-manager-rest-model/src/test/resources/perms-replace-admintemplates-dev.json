@@ -1,0 +1,24 @@
+{
+    "actionSet": {
+        "actions": [
+            {
+                "actions": [
+                    {
+                        "actions": [
+                            {
+                                "systemName": "adminTemplates"
+                            }
+                        ],
+                        "systemName": "accessTemplates"
+                    }
+                ],
+                "systemName": "accessFeedsSupport"
+            }
+        ],
+        "name": "services"
+    },
+    "change": "REPLACE",
+    "groups": [
+        "dev"
+    ]
+}
