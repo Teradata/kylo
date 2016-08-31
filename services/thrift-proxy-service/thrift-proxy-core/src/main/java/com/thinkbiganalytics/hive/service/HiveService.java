@@ -5,6 +5,7 @@ import com.thinkbiganalytics.db.model.query.QueryResult;
 import com.thinkbiganalytics.db.model.query.QueryResultColumn;
 import com.thinkbiganalytics.db.model.schema.Field;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.schema.DBSchemaParser;
 
 import org.apache.commons.lang3.StringUtils;
@@ -41,6 +42,10 @@ public class HiveService {
     @Qualifier("hiveJdbcTemplate")
     private JdbcTemplate jdbcTemplate;
 
+    @Inject
+    @Qualifier("kerberosHiveConfiguration")
+    private KerberosTicketConfiguration kerberosHiveConfiguration;
+
     private DBSchemaParser schemaParser = null;
 
     public DataSource getDataSource(){
@@ -48,7 +53,7 @@ public class HiveService {
     }
     public DBSchemaParser getDBSchemaParser(){
         if(schemaParser == null) {
-            schemaParser = new DBSchemaParser(getDataSource());
+            schemaParser = new DBSchemaParser(getDataSource(), kerberosHiveConfiguration);
         }
         return schemaParser;
     }

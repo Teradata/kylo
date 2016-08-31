@@ -173,6 +173,13 @@
             </exclusions>
         </dependency>
 
+        <!-- Kerberos Ticket Renewer -->
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-kerberos-core</artifactId>
+            <version>0.3.2-SNAPSHOT</version>
+        </dependency>
+
         <!-- Swagger -->
         <dependency>
             <groupId>io.swagger</groupId>
