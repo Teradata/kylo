@@ -23,10 +23,10 @@ public class NifiEventStatisticsProvider implements ProvenanceEventSummaryStatsP
     @Autowired
     private JPAQueryFactory factory;
 
-    private NiFiEventStatisticsRepository statisticsRepository;
+    private NifiEventStatisticsRepository statisticsRepository;
 
     @Autowired
-    public NifiEventStatisticsProvider(NiFiEventStatisticsRepository repository) {
+    public NifiEventStatisticsProvider(NifiEventStatisticsRepository repository) {
         this.statisticsRepository = repository;
     }
 
