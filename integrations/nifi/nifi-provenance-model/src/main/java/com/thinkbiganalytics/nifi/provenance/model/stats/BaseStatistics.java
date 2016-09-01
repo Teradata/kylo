@@ -2,16 +2,18 @@ package com.thinkbiganalytics.nifi.provenance.model.stats;
 
 import org.joda.time.DateTime;
 
+import java.io.Serializable;
+
 /**
  * Created by sr186054 on 8/16/16.
  */
-public class BaseStatistics {
+public class BaseStatistics implements Serializable {
 
     protected DateTime time;
     protected long bytesIn = 0L;
     protected long bytesOut = 0L;
     protected long duration = 0L;
-    protected long totalCount = 1L;
+    protected long totalCount = 0L;
     protected long jobsStarted = 0L;
     protected long jobsFinished = 0L;
     protected long processorsFailed = 0L;
