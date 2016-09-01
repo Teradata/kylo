@@ -74,4 +74,13 @@ angular.module(MODULE_OPERATIONS).service('RestUrlService', function () {
 
 this.SERVICES_URL = "/proxy/v1/service-monitor/";
 
+    //Provenance Event Stats
+    this.STATS_BASE = "/proxy/v1/provenance-stats";
+
+    this.PROCESSOR_DURATION_FOR_FEED = function (feedName, timeInterval) {
+        return self.STATS_BASE + "/" + feedName + "/processor-duration/" + timeInterval;
+    }
+
+    this.PROVENANCE_EVENT_TIME_FRAME_OPTIONS = this.STATS_BASE + "/time-frame-options";
+
 });

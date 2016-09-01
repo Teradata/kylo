@@ -48,4 +48,8 @@ public interface ProvenanceEventSummaryStats {
     DateTime getMinEventTime();
 
     DateTime getMaxEventTime();
+
+    Long getResultSetCount();
+
+
 }

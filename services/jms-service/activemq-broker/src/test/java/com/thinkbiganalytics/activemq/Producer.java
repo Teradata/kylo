@@ -4,11 +4,11 @@
 
 package com.thinkbiganalytics.activemq;
 
-import javax.jms.*;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
+
+import javax.jms.Topic;
 
 @Component
 public class Producer {
@@ -23,12 +23,12 @@ public class Producer {
 
 
     public void send(String msg) {
-        this.sendJmsMessage.sendMessage(this.topic, msg);
+        //    this.sendJmsMessage.sendMessage(this.topic, msg);
     }
 
     public void sendObject(String msg){
-        final com.thinkbiganalytics.activemq.TestObject testObject = new com.thinkbiganalytics.activemq.TestObject(msg,1);
-        this.sendJmsMessage.sendObject(this.topic,testObject);
+        //      final com.thinkbiganalytics.activemq.TestObject testObject = new com.thinkbiganalytics.activemq.TestObject(msg,1);
+        //      this.sendJmsMessage.sendObject(this.topic,testObject);
     }
 
 }

@@ -68,5 +68,13 @@ public class DateTimeStandardizerTest {
         assertEquals("2016-05-06 15:32:54", standardizer.convertValue("05/06/2016 22:32:54"));
     }
 
+    @Test
+    public void testDateTimeConversion1() throws Exception {
+        DateTimeStandardizer
+            standardizer =
+            new DateTimeStandardizer("MM-dd-YYYYHH:mm", OutputFormats.DATE_ONLY);
+        assertEquals("2016-07-25", standardizer.convertValue("07-25-201617:18"));
+    }
+
 
 }

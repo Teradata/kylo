@@ -43,7 +43,7 @@ public class NifiStatsJmsReceiver {
 
     private List<NifiEventSummaryStats> createSummaryStats(AggregatedFeedProcessorStatisticsHolder holder) {
         List<NifiEventSummaryStats> nifiEventSummaryStatsList = new ArrayList<>();
-        holder.getStatistics().forEach(feedProcessorStats ->
+        holder.getFeedStatistics().values().stream().forEach(feedProcessorStats ->
                                        {
                                            String feedName = feedProcessorStats.getFeedName();
                                            feedProcessorStats.getProcessorStats().values().forEach(processorStats ->
@@ -51,6 +51,7 @@ public class NifiStatsJmsReceiver {
                                                                                                        NifiEventSummaryStats nifiEventSummaryStats = toSummaryStats(processorStats.getStats());
                                                                                                        nifiEventSummaryStats.setFeedName(feedName);
                                                                                                        nifiEventSummaryStats.setProcessorId(processorStats.getProcessorId());
+                                                                                                       nifiEventSummaryStats.setProcessorName(processorStats.getProcessorName());
                                                                                                        nifiEventSummaryStats.setFeedProcessGroupId(feedProcessorStats.getProcessGroup());
                                                                                                        nifiEventSummaryStatsList.add(nifiEventSummaryStats);
                                                                                                    });

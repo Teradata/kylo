@@ -12,6 +12,7 @@ import java.io.Serializable;
 import java.text.Collator;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -77,6 +78,13 @@ public class ProvenanceEventRecordConverter implements Serializable {
         dto.setFlowFileUuid(event.getFlowFileUuid());
         dto.setRelationship(event.getRelationship());
         dto.setDetails(event.getDetails());
+
+        dto.setAttributeMap(new HashMap<>());
+        dto.setUpdatedAttributes(updatedAttrs);
+        dto.setPreviousAttributes(previousAttrs);
+        for (ProvenanceEventAttributeDTO attributeDTO : dto.getAttributes()) {
+            dto.getAttributeMap().put(attributeDTO.getName(), attributeDTO.getValue());
+        }
 
         // content
         //  dto.setContentEqual(contentAvailability.isContentSame());

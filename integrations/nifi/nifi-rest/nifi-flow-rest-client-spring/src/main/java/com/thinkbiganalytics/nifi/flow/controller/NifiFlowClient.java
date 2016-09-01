@@ -138,15 +138,20 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
     }
 
     ///Core methods to look up Processors and ProcessGroups for the flow
-
-
     @Override
     public boolean isConnected() {
+        return isConnected(false);
+    }
+
+
+    public boolean isConnected(boolean logException) {
         try {
             AboutEntity aboutEntity = getWithQueryParams(Paths.get("controller", "about"), null, AboutEntity.class);
             return aboutEntity != null;
         }catch (Exception e){
-            log.error("Error assessing Nifi Connection {} ",e);
+            if(logException) {
+                log.error("Error assessing Nifi Connection {} ", e);
+            }
         }
         return false;
     }

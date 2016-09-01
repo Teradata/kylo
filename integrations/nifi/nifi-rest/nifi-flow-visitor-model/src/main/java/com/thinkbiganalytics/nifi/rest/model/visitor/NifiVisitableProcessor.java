@@ -2,7 +2,9 @@ package com.thinkbiganalytics.nifi.rest.model.visitor;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
+import com.thinkbiganalytics.nifi.rest.model.flow.NiFiFlowProcessorConnection;
 
+import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +35,10 @@ public class NifiVisitableProcessor implements  NifiVisitable {
     private Map<String,NifiVisitableProcessor> outputPortIdProcessorMap;
 
     private boolean isFailureProcessor;
+
+    private Set<NiFiFlowProcessorConnection> sourceConnectionIdentifiers;
+
+    private Set<NiFiFlowProcessorConnection> destinationConnectionIdentifiers;
 
     private ProcessorDTO dto;
     public NifiVisitableProcessor(ProcessorDTO dto) {
@@ -206,5 +212,36 @@ public class NifiVisitableProcessor implements  NifiVisitable {
 
     public String getId() {
         return id;
+    }
+
+    public void addSourceConnectionIdentifier(ConnectionDTO conn) {
+        getSourceConnectionIdentifiers().add(new NiFiFlowProcessorConnection(conn.getId(), conn.getName(), conn.getSelectedRelationships()));
+    }
+
+    public void addDestinationConnectionIdentifier(ConnectionDTO conn) {
+        getDestinationConnectionIdentifiers().add(new NiFiFlowProcessorConnection(conn.getId(), conn.getName(), conn.getSelectedRelationships()));
+    }
+
+
+    public Set<NiFiFlowProcessorConnection> getSourceConnectionIdentifiers() {
+        if (sourceConnectionIdentifiers == null) {
+            sourceConnectionIdentifiers = new HashSet<>();
+        }
+        return sourceConnectionIdentifiers;
+    }
+
+    public void setSourceConnectionIdentifiers(Set<NiFiFlowProcessorConnection> sourceConnectionIdentifiers) {
+        this.sourceConnectionIdentifiers = sourceConnectionIdentifiers;
+    }
+
+    public Set<NiFiFlowProcessorConnection> getDestinationConnectionIdentifiers() {
+        if (destinationConnectionIdentifiers == null) {
+            destinationConnectionIdentifiers = new HashSet<>();
+        }
+        return destinationConnectionIdentifiers;
+    }
+
+    public void setDestinationConnectionIdentifiers(Set<NiFiFlowProcessorConnection> destinationConnectionIdentifiers) {
+        this.destinationConnectionIdentifiers = destinationConnectionIdentifiers;
     }
 }

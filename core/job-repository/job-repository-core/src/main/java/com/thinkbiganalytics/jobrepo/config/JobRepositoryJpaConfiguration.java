@@ -4,6 +4,8 @@
 package com.thinkbiganalytics.jobrepo.config;
 
 
+import com.querydsl.jpa.impl.JPAQueryFactory;
+
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -78,6 +80,11 @@ public class JobRepositoryJpaConfiguration {
         emfBean.setJpaVendorAdapter(jpaVendorAdapter());
         emfBean.afterPropertiesSet();
         return emfBean.getObject();
+    }
+
+    @Bean
+    public JPAQueryFactory jpaQueryFactory(@Qualifier("jobRepositoryEntityManagerFactory") EntityManager em) {
+        return new JPAQueryFactory(em);
     }
 
 

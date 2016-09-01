@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.jobrepo.jpa;
 
 import com.thinkbiganalytics.jobrepo.model.ProvenanceEventSummaryStats;
+import com.thinkbiganalytics.jobrepo.support.AggregationUtil;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -11,6 +12,7 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.persistence.Transient;
 
 /**
  * Created by sr186054 on 8/17/16.
@@ -82,6 +84,9 @@ public class NifiEventSummaryStats implements ProvenanceEventSummaryStats {
     @Column(name = "FLOW_FILES_FINISHED")
     protected Long flowFilesFinished = 0L;
 
+
+    @Transient
+    protected Long resultSetCount;
 
 
 
@@ -286,4 +291,18 @@ public class NifiEventSummaryStats implements ProvenanceEventSummaryStats {
     public void setMaxEventTime(DateTime maxEventTime) {
         this.maxEventTime = maxEventTime;
     }
+
+    public Long getResultSetCount() {
+        return resultSetCount;
+    }
+
+    public void setResultSetCount(Long resultSetCount) {
+        this.resultSetCount = resultSetCount;
+    }
+
+    public Double averageDuration() {
+        return AggregationUtil.avg(duration, this.totalCount);
+    }
+
+
 }

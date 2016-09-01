@@ -84,6 +84,26 @@
       <version>${project.version}</version>
     </dependency>
 
+    <dependency>
+      <groupId>com.querydsl</groupId>
+      <artifactId>querydsl-jpa</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-jpa</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.springframework.data</groupId>
+      <artifactId>spring-data-commons</artifactId>
+    </dependency>
+
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-math3</artifactId>
+      <version>3.2</version>
+    </dependency>
 
 
     <!-- needed for spring batch execution context serialization -->
@@ -122,5 +142,62 @@
 
 
   </dependencies>
+
+  <build>
+    <plugins>
+      <!--
+            <plugin>
+              <groupId>com.querydsl</groupId>
+              <artifactId>querydsl-maven-plugin</artifactId>
+              <version>${querydsl.version}</version>
+              <executions>
+                <execution>
+                  <phase>process-classes</phase>
+                  <goals>
+                    <goal>jpa-export</goal>
+                  </goals>
+                  <configuration>
+                    <targetFolder>target/generated-sources/java</targetFolder>
+                    <packages>com.thinkbiganalytics.jobrepo.jpa</packages>
+                  </configuration>
+                </execution>
+              </executions>
+              <dependencies>
+                <dependency>
+                  <groupId>com.querydsl</groupId>
+                  <artifactId>querydsl-apt</artifactId>
+                  <version>${querydsl.version}</version>
+                </dependency>
+              </dependencies>
+            </plugin>
+      -->
+
+      <plugin>
+        <groupId>com.mysema.maven</groupId>
+        <artifactId>apt-maven-plugin</artifactId>
+        <version>1.1.3</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>process</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>target/generated-sources/java</outputDirectory>
+              <!-- com.querydsl.apt.hibernate.HibernateAnnotationProcessor -->
+              <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
+            </configuration>
+          </execution>
+        </executions>
+        <dependencies>
+          <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-apt</artifactId>
+            <version>${querydsl.version}</version>
+          </dependency>
+        </dependencies>
+      </plugin>
+
+    </plugins>
+  </build>
 
 </project>

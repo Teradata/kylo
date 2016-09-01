@@ -4,7 +4,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.nifi.flow.controller.NifiFlowClient;
-import com.thinkbiganalytics.nifi.provenance.model.FlowFile;
+import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 
@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
@@ -98,6 +99,19 @@ public class NifiFlowCache {
 
     private ConcurrentHashMap<String, NifiFlowProcessor> startingFeedProcessors = new ConcurrentHashMap<>();
 
+    private ConcurrentHashMap<String, String> processorNameMap = new ConcurrentHashMap<>();
+
+
+    private ConcurrentHashMap<String, NifiFlowProcessor> processorIdProcessorMap = new ConcurrentHashMap<>();
+
+    private ConcurrentHashMap<String, List<NifiFlowProcessor>> destinationConnectionIdProcessorMap = new ConcurrentHashMap<>();
+
+
+    /**
+     * Maintain a map for quick lookup with reference from an events SourceConnectionId to the previous Processor (one with a destination connection matching this source) This map is populated when
+     * looking for failure Events to identify the real failureEvent in the flow
+     */
+    private ConcurrentHashMap<String, String> failureProcessorSourceConnectionIdToProcessorIdMap = new ConcurrentHashMap<>();
 
     private NifiFlowCache() {
         log.info("Create NifiFlowCache");
@@ -122,17 +136,34 @@ public class NifiFlowCache {
         if (nifiFlowClient != null) {
             log.info(" START load for ProcessGroup {} ", processGroupId);
             NifiFlowProcessGroup group = nifiFlowClient.getFlowForProcessGroup(processGroupId);
-            assignStartingProcessors(group);
+            populateStartingProcessors(group);
+            populateProcessorMaps(group);
             log.info(" Finish load for ProcessGroup {} , {} ", processGroupId, group);
             return group;
         }
         return null;
     }
 
-    private void assignStartingProcessors(NifiFlowProcessGroup group) {
+    private void populateStartingProcessors(NifiFlowProcessGroup group) {
         if (group != null) {
             group.getStartingProcessors().stream().forEach(processor -> startingFeedProcessors.put(processor.getId(), processor));
         }
+    }
+
+
+    private void populateProcessorMaps(NifiFlowProcessGroup group) {
+        group.getProcessorMap().values().stream().forEach(nifiFlowProcessor -> {
+            processorIdProcessorMap.put(nifiFlowProcessor.getId(), nifiFlowProcessor);
+            processorNameMap.put(nifiFlowProcessor.getId(), nifiFlowProcessor.getName());
+
+            nifiFlowProcessor.getDestinationConnectionIds().forEach(niFiFlowProcessorConnection -> {
+                destinationConnectionIdProcessorMap.computeIfAbsent(niFiFlowProcessorConnection.getConnectionIdentifier(), (id) -> new ArrayList<>()).add(nifiFlowProcessor);
+            });
+        });
+    }
+
+    public NifiFlowProcessor getProcessor(String processorId) {
+        return processorIdProcessorMap.get(processorId);
     }
 
 
@@ -144,7 +175,11 @@ public class NifiFlowCache {
             if (allFlows != null) {
                 Map<String, NifiFlowProcessGroup> map = allFlows.stream().collect(
                     Collectors.toMap(simpleNifiFlowProcessGroup -> simpleNifiFlowProcessGroup.getId(), simpleNifiFlowProcessGroup -> simpleNifiFlowProcessGroup));
-                map.values().forEach(group -> assignStartingProcessors(group));
+                map.values().forEach(group -> {
+                    populateStartingProcessors(group);
+                    populateProcessorMaps(group);
+                });
+
                 feedFlowCache.putAll(map);
             }
             loadAllTime = DateTime.now();
@@ -161,6 +196,13 @@ public class NifiFlowCache {
         return startingFeedProcessors.get(processorId);
     }
 
+    public String getProcessorName(String processorId) {
+        return processorNameMap.get(processorId);
+    }
+
+    public Integer processorNameMapSize() {
+        return processorNameMap.size();
+    }
 
     /**
      * Gets a Processor by the parent Feed ProcessGroup and the id of the processor
@@ -183,7 +225,7 @@ public class NifiFlowCache {
         return feedFlowCache.asMap().values().stream().filter(flow -> (feedName.equalsIgnoreCase(flow.getName()) && category.equalsIgnoreCase(flow.getParentGroupName()))).findAny().orElse(null);
     }
 
-    public NifiFlowProcessGroup getFlow(FlowFile flowFile) {
+    public NifiFlowProcessGroup getFlow(ActiveFlowFile flowFile) {
         NifiFlowProcessGroup flow = null;
         if (flowFile != null) {
             String firstProcessorId = (flowFile.getRootFlowFile() != null && flowFile.getRootFlowFile().hasFirstEvent()) ? flowFile.getRootFlowFile().getFirstEvent().getComponentId() : null;
@@ -262,5 +304,15 @@ public class NifiFlowCache {
 
     }
 
+    public List<NifiFlowProcessor> getProcessorWithDestinationConnectionIdentifier(String connectionId) {
+        return destinationConnectionIdProcessorMap.get(connectionId);
+    }
 
+    public String getFailureProcessorWithDestinationConnectionIdentifier(String connectionId) {
+        return failureProcessorSourceConnectionIdToProcessorIdMap.get(connectionId);
+    }
+
+    public void putFailureProcessorConnectionIdentifier(String connectionId, String processorId) {
+        failureProcessorSourceConnectionIdToProcessorIdMap.put(connectionId, processorId);
+    }
 }

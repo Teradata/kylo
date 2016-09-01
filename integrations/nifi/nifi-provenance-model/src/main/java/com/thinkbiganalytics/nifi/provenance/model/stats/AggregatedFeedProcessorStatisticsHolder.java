@@ -2,24 +2,43 @@ package com.thinkbiganalytics.nifi.provenance.model.stats;
 
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.io.Serializable;
+import java.util.Map;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  * Created by sr186054 on 8/17/16.
  */
-public class AggregatedFeedProcessorStatisticsHolder {
+public class AggregatedFeedProcessorStatisticsHolder implements Serializable {
 
     DateTime minTime;
     DateTime maxTime;
     Integer collectionInterval;
     String collectionId;
+    AtomicLong eventCount = new AtomicLong(0L);
 
-    public AggregatedFeedProcessorStatisticsHolder() {
-
+    public AggregatedFeedProcessorStatisticsHolder(Integer collectionInterval) {
+        this.collectionId = UUID.randomUUID().toString();
+        this.collectionInterval = collectionInterval;
     }
 
-    List<AggregatedFeedProcessorStatistics> statistics;
+    Map<String, AggregatedFeedProcessorStatistics> feedStatistics = new ConcurrentHashMap<>();
+
+    public void addStat(ProvenanceEventStats stats) {
+        if (minTime == null || stats.getTime().isBefore(minTime)) {
+            minTime = stats.getTime();
+        }
+        if (maxTime == null || stats.getTime().isAfter(maxTime)) {
+            maxTime = stats.getTime();
+        }
+        feedStatistics.computeIfAbsent(stats.getFeedName(), (feedName) -> new AggregatedFeedProcessorStatistics(feedName, collectionId)).addEventStats(
+            stats);
+
+        eventCount.incrementAndGet();
+    }
+
 
     public DateTime getMinTime() {
         return minTime;
@@ -53,15 +72,12 @@ public class AggregatedFeedProcessorStatisticsHolder {
         this.collectionId = collectionId;
     }
 
-    public List<AggregatedFeedProcessorStatistics> getStatistics() {
-        if (statistics == null) {
-            statistics = new ArrayList<>();
-        }
-        return statistics;
+    public AtomicLong getEventCount() {
+        return eventCount;
     }
 
-    public void setStatistics(List<AggregatedFeedProcessorStatistics> statistics) {
-        this.statistics = statistics;
+    public Map<String, AggregatedFeedProcessorStatistics> getFeedStatistics() {
+        return feedStatistics;
     }
 
     @Override
@@ -71,7 +87,7 @@ public class AggregatedFeedProcessorStatisticsHolder {
         sb.append(", maxTime=").append(maxTime);
         sb.append(", collectionInterval=").append(collectionInterval);
         sb.append(", collectionId='").append(collectionId).append('\'');
-        sb.append(", statistics=").append(getStatistics().size());
+        sb.append(", eventCount=").append(eventCount.get());
         sb.append('}');
         return sb.toString();
     }

@@ -58,10 +58,12 @@
         <spring.batch.version>3.0.6.RELEASE</spring.batch.version>
         <spring.boot.version>1.3.3.RELEASE</spring.boot.version>
         <spring.version>4.2.5.RELEASE</spring.version>
+        <spring.jpa.version>1.10.2.RELEASE</spring.jpa.version>
         <spring.security.version>4.1.1.RELEASE</spring.security.version>
         <assertj.version>3.4.1</assertj.version>
         <surefire.version>2.19.1</surefire.version>
         <org.reflections.version>0.9.9</org.reflections.version>
+        <querydsl.version>4.1.3</querydsl.version>
     </properties>
     <modules>
         <module>commons</module>
@@ -93,6 +95,14 @@
             <id>thinkbig-release</id>
             <name>thinkbig release</name>
             <url>http://54.152.98.43:8080/artifactory/libs-release-local</url>
+        </repository>
+        <repository>
+            <id>spring-milestones</id>
+            <name>Spring Milestones</name>
+            <url>https://repo.spring.io/libs-milestone</url>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
@@ -287,12 +297,35 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-starter-data-jpa</artifactId>
                 <version>${spring.boot.version}</version>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.springframework.data</groupId>
+                        <artifactId>spring-data-jpa</artifactId>
+                    </exclusion>
+
+                    <exclusion>
+                        <groupId>org.springframework.data</groupId>
+                        <artifactId>spring-data-commons</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-configuration-processor</artifactId>
                 <version>${spring.boot.version}</version>
                 <optional>true</optional>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-commons</artifactId>
+                <version>1.12.0.RELEASE</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.data</groupId>
+                <artifactId>spring-data-jpa</artifactId>
+                <version>1.10.2.RELEASE</version>
             </dependency>
 
 
@@ -632,6 +665,17 @@
                 <version>${javax.mail}</version>
             </dependency>
 
+            <dependency>
+                <groupId>com.querydsl</groupId>
+                <artifactId>querydsl-apt</artifactId>
+                <version>${querydsl.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.querydsl</groupId>
+                <artifactId>querydsl-jpa</artifactId>
+                <version>${querydsl.version}</version>
+            </dependency>
 
 
         </dependencies>

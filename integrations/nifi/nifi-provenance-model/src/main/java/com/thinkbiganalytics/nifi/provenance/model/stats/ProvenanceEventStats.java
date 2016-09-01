@@ -16,6 +16,7 @@ public class ProvenanceEventStats extends BaseStatistics {
     private String flowFileId;
     private String rootFlowFileId;
     private String rootProcessGroupId;
+    private String processorName;
 
     public ProvenanceEventStats() {
 
@@ -91,6 +92,14 @@ public class ProvenanceEventStats extends BaseStatistics {
         this.rootProcessGroupId = rootProcessGroupId;
     }
 
+    public String getProcessorName() {
+        return processorName;
+    }
+
+    public void setProcessorName(String processorName) {
+        this.processorName = processorName;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -121,7 +130,10 @@ public class ProvenanceEventStats extends BaseStatistics {
         final StringBuilder sb = new StringBuilder("ProvenanceEventStats{");
         sb.append("eventId=").append(eventId);
         sb.append(", feedName='").append(feedName).append('\'');
+        sb.append(", processorsFailed=").append(processorsFailed);
         sb.append('}');
         return sb.toString();
     }
+
+
 }

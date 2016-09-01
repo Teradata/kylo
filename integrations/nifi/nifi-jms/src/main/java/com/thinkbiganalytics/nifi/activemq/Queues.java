@@ -7,4 +7,5 @@ public interface Queues {
     public static final String FEED_MANAGER_QUEUE = "thinkbig.feed-manager";
 
     public static final String PROVENANCE_EVENT_STATS_QUEUE = "thinkbig.provenance-event-stats";
+    public static final String PROVENANCE_EVENT_FAILURE_QUEUE = "thinkbig.provenance-event-failures";
 }

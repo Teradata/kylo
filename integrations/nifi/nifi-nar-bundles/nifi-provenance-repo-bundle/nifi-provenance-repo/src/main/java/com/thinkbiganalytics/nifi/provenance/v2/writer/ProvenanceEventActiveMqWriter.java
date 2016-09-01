@@ -4,11 +4,12 @@ import com.thinkbiganalytics.activemq.ObjectMapperSerializer;
 import com.thinkbiganalytics.activemq.SendJmsMessage;
 import com.thinkbiganalytics.nifi.activemq.ProvenanceEventReceiverDatabaseWriter;
 import com.thinkbiganalytics.nifi.activemq.Queues;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
-import com.thinkbiganalytics.nifi.provenance.v2.ProvenanceEventConverter;
+import com.thinkbiganalytics.nifi.provenance.v2.ProvenanceEventRecordConverter;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
-import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 import org.h2.tools.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,7 +28,7 @@ import javax.annotation.PostConstruct;
  * Created by sr186054 on 3/3/16.
  */
 @Component
-public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter {
+public class ProvenanceEventActiveMqWriter {
 
     private static final Logger logger = LoggerFactory.getLogger(ProvenanceEventActiveMqWriter.class);
     private boolean jmsUnavailable;
@@ -64,42 +65,60 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
     }
 
 
+    public void writeFailedEvents(ProvenanceEventRecordDTOHolder failedEvents) {
+        sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_FAILURE_QUEUE, failedEvents);
+    }
+
     public void writeStats(AggregatedFeedProcessorStatisticsHolder stats) {
         try {
-            logger.info("SENDING AGGREGATED STATS to JMS {} ", stats);
-            sendJmsMessage.sendObjectToQueue(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats);
+            logger.info("SENDING AGGREGATED STAT1S to JMS {} - {} ", stats);
+            sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats);
 
         } catch (Exception e) {
             logger.error("JMS Error has occurred sending stats. Enable temporary queue", e);
         }
     }
 
-    @Override
-    public Long writeEvent(ProvenanceEventRecord event) {
-        ProvenanceEventDTO dto = ProvenanceEventConverter.convert(event);
-        dto.setEventId(eventIdIncrementer.incrementAndGet());
+    public void writeEvents(ProvenanceEventRecordDTOHolder events) {
+        try {
+            logger.info("SENDING AGGREGATED STATS to JMS {} - {} ", events);
+            sendJmsMessage.sendSerializedObjectToQueue(Queues.FEED_MANAGER_QUEUE, events);
+
+        } catch (Exception e) {
+            logger.error("JMS Error has occurred sending stats. Enable temporary queue", e);
+        }
+    }
+
+    @Deprecated
+    public Long writeEvent(ProvenanceEventRecordDTO event) {
         logger.debug(
-            "SENDING JMS PROVENANCE_EVENT for EVENT_ID: " + dto.getEventId() + ", COMPONENT_ID: " + event.getComponentId()
+            "SENDING JMS PROVENANCE_EVENT for EVENT_ID: " + event.getEventId() + ", COMPONENT_ID: " + event.getComponentId()
             + ", COMPONENT_TYPE: " + event.getComponentType() + ", EVENT_TYPE: " + event.getEventType());
         try {
             if (jmsUnavailable) {
-                persistEventToTemporaryTable(dto);
+                persistEventToTemporaryTable(event);
             } else {
                 logger.info("Processing the JMS message as normal");
-                sendJmsMessage.sendObjectToQueue(Queues.FEED_MANAGER_QUEUE, dto);
+                sendJmsMessage.sendSerializedObjectToQueue(Queues.FEED_MANAGER_QUEUE, event);
             }
         } catch (Exception e) {
             logger.error("JMS Error has occurred. Enable temporary queue", e);
             jmsUnavailable = true;
             try {
                 initializeTemporaryDatabase();
-                databaseWriter.writeEvent(dto);
+                databaseWriter.writeEvent(event);
             } catch (Exception dwe) {
                 logger.error("Error writing the temporary provenance event to the database", dwe);
             }
         }
+        return event.getEventId();
+    }
 
-        return dto.getEventId();
+
+    @Deprecated
+    public Long writeEvent(ProvenanceEventRecord event) {
+        ProvenanceEventRecordDTO dto = ProvenanceEventRecordConverter.convert(event);
+        return writeEvent(dto);
     }
 
     private void initializeTemporaryDatabase() throws Exception {
@@ -121,17 +140,17 @@ public class ProvenanceEventActiveMqWriter extends AbstractProvenanceEventWriter
         databaseWriter.createTables();
     }
 
-    private void persistEventToTemporaryTable(ProvenanceEventDTO dto) throws Exception {
+    private void persistEventToTemporaryTable(ProvenanceEventRecordDTO dto) throws Exception {
         boolean isJmsRunningNow = sendJmsMessage.testJmsIsRunning();
         if (isJmsRunningNow) {
             logger.info("JMS is running now. Processing the cached messages");
             // catch up on the cached messages then send the last message
-            List<ProvenanceEventDTO> eventsFromDatabase = databaseWriter.getEvents();
-            for (ProvenanceEventDTO eventDTO : eventsFromDatabase) {
+            List<ProvenanceEventRecordDTO> eventsFromDatabase = databaseWriter.getEvents();
+            for (ProvenanceEventRecordDTO eventDTO : eventsFromDatabase) {
                 sendJmsMessage.sendObjectToQueue(Queues.FEED_MANAGER_QUEUE, eventDTO);
             }
             databaseWriter.clearEvents();
-            sendJmsMessage.sendObjectToQueue(Queues.FEED_MANAGER_QUEUE, dto);
+            sendJmsMessage.sendSerializedObjectToQueue(Queues.FEED_MANAGER_QUEUE, dto);
 
             shutdownTemporaryDatabaseAndResumeJms();
         } else {

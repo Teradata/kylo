@@ -277,7 +277,7 @@ public class ProvenanceEventReceiverTest {
             public void run() {
                 for (int i = 0; i < eventCount; i++) {
                     ProvenanceEventDTO event = newEvent();
-                    provenanceEventReceiver.receiveTopic(event);
+                    //  provenanceEventReceiver.receiveTopic(event);
                     //simulate wait when startup is processing backlog
                     if (!startupFinished.get()) {
                         try {
