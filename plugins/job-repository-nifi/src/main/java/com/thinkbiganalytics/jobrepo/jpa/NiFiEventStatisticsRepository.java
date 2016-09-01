@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * Created by sr186054 on 8/23/16.
  */
-public interface NiFiEventStatisticsRepository extends JpaRepository<NifiEventSummaryStats, String>, QueryDslPredicateExecutor<NifiEventSummaryStats> {
+public interface NifiEventStatisticsRepository extends JpaRepository<NifiEventSummaryStats, String>, QueryDslPredicateExecutor<NifiEventSummaryStats> {
 
     @Query(value = "select stats from NifiEventSummaryStats as stats where stats.minEventTime between :startTime and :endTime")
     List<NifiEventSummaryStats> findWithinTimeWindow(@Param("startTime")DateTime start, @Param("endTime") DateTime end);
