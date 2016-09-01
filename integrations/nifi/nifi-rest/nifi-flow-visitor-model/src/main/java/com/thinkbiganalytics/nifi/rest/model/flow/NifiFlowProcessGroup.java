@@ -38,7 +38,6 @@ public class NifiFlowProcessGroup {
 
     private Map<String, NifiFlowProcessor> endingProcessors;
 
-    private NifiProcessingStatistics processingStatistics;
 
     public NifiFlowProcessGroup() {
 
@@ -48,7 +47,6 @@ public class NifiFlowProcessGroup {
 
         this.id = id;
         this.name = name;
-        this.processingStatistics = new NifiProcessingStatistics();
     }
 
     private Set<NifiFlowProcessor> startingProcessors;
@@ -144,9 +142,6 @@ public class NifiFlowProcessGroup {
     }
 
 
-    public NifiProcessingStatistics getProcessingStatistics() {
-        return processingStatistics;
-    }
 
     public String getFeedName() {
         return feedName;
