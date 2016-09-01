@@ -1,15 +1,14 @@
 package com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile;
 
-import com.thinkbiganalytics.nifi.provenance.model.FlowFile;
+import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.IdReferenceFlowFile;
 
 import org.mapdb.DB;
-import org.mapdb.DBMaker;
-import org.mapdb.HTreeMap;
-import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -32,7 +31,7 @@ public class FlowFileMapDbCache {
 
     private DB db;
 
-    private final HTreeMap<String, IdReferenceFlowFile> idReferenceFlowFileHTreeMap;
+    private final ConcurrentMap<String, IdReferenceFlowFile> idReferenceFlowFileHTreeMap;
 
 
     private int expireAfterNumber = 7;
@@ -40,24 +39,25 @@ public class FlowFileMapDbCache {
 
     public FlowFileMapDbCache() {
 
-        db = DBMaker.fileDB("flowfile-cache.db").fileMmapEnable()
-            .fileMmapEnableIfSupported() // Only enable mmap on supported platforms
-            .fileMmapPreclearDisable()   // Make mmap file faster
-            .cleanerHackEnable()
-            .checksumHeaderBypass()
-            .closeOnJvmShutdown().make();
+        //    db = DBMaker.fileDB("flowfile-cache.db").fileMmapEnable()
+        //        .fileMmapEnableIfSupported() // Only enable mmap on supported platforms
+        //       .fileMmapPreclearDisable()   // Make mmap file faster
+        //       .cleanerHackEnable()
+        //      .checksumHeaderBypass()
+        //     .closeOnJvmShutdown().make();
+        idReferenceFlowFileHTreeMap = new ConcurrentHashMap<>();
+        //    idReferenceFlowFileHTreeMap =
+        //        (HTreeMap<String, IdReferenceFlowFile>) db.hashMap("idRefFlowFile").keySerializer(Serializer.STRING).valueSerializer(Serializer.JAVA).expireAfterCreate(expireAfterNumber, expireAfterUnit)
+        //           .createOrOpen();
 
-        idReferenceFlowFileHTreeMap =
-            (HTreeMap<String, IdReferenceFlowFile>) db.hashMap("idRefFlowFile").keySerializer(Serializer.STRING).valueSerializer(Serializer.JAVA).expireAfterCreate(expireAfterNumber, expireAfterUnit)
-                .createOrOpen();
 
         log.info("CREATED NEW flowFileFeedProcessGroupCache cache");
 
 
     }
 
-    public void assignFeedInformation(FlowFile flowFile) {
-        if (!flowFile.hasFeedInformationAssigned()) {
+    public void assignFeedInformation(ActiveFlowFile flowFile) {
+        if (false && !flowFile.hasFeedInformationAssigned()) {
             IdReferenceFlowFile ff = idReferenceFlowFileHTreeMap.get(flowFile.getId());
             if (ff != null) {
                 String feedName = ff.getFeedName();
@@ -67,11 +67,11 @@ public class FlowFileMapDbCache {
         }
     }
 
-    public void cacheFlowFile(FlowFile flowFile) {
+    public void cacheFlowFile(ActiveFlowFile flowFile) {
         idReferenceFlowFileHTreeMap.put(flowFile.getId(), flowFile.toIdReferenceFlowFile());
     }
 
-    public void expire(FlowFile flowFile) {
+    public void expire(ActiveFlowFile flowFile) {
         idReferenceFlowFileHTreeMap.remove(flowFile.getId());
     }
 

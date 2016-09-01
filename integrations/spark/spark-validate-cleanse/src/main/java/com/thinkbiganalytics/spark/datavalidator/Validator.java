@@ -441,8 +441,9 @@ public class Validator implements Serializable {
     public static void main(String[] args) {
 
         // Check how many arguments were passed in
-        if (args.length != 4) {
+        if (args.length < 4) {
             System.out.println("Proper Usage is: <targetDatabase> <entity> <partition> <path-to-policy-file>");
+            System.out.println("You provided " + args.length + " args which are (comma separated): " + StringUtils.join(args, ","));
             System.exit(1);
         }
         try {

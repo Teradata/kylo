@@ -18,8 +18,7 @@ import org.springframework.jms.annotation.EnableJms;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
 import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.core.JmsMessagingTemplate;
-import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
-import org.springframework.jms.support.converter.MessageType;
+import org.springframework.jms.support.converter.SimpleMessageConverter;
 
 import javax.jms.ConnectionFactory;
 
@@ -48,7 +47,7 @@ public class ActiveMqConfig {
         log.info("Setup ActiveMQ ConnectionFactory for "+activeMqBrokerUrl);
         return pool;
     }
-
+/*
     @Bean
     public JmsListenerContainerFactory<?> jmsContainerFactory(ConnectionFactory connectionFactory) {
         DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
@@ -62,6 +61,20 @@ public class ActiveMqConfig {
         converter.setObjectMapper(objectMapperSerializer().getMapper());
         converter.setTypeIdPropertyName("jms_javatype");
         factory.setMessageConverter(converter);
+        return factory;
+    }
+    */
+
+    @Bean
+    public JmsListenerContainerFactory<?> jmsContainerFactory(ConnectionFactory connectionFactory) {
+        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
+        factory.setPubSubDomain(false);
+        factory.setConnectionFactory(connectionFactory);
+        //factory.setSubscriptionDurable(true);
+        factory.setClientId(jmsClientId);
+        factory.setConcurrency("1-1");
+        factory.setConnectionFactory(connectionFactory);
+        factory.setMessageConverter(new SimpleMessageConverter());
         return factory;
     }
 

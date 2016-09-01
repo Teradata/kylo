@@ -17,15 +17,18 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
  * Created by sr186054 on 2/24/16.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRecordDTO>, Serializable {
+public class ProvenanceEventRecordDTO implements Serializable {
 
-    private String feedName;
+    private transient AtomicBoolean processed = new AtomicBoolean(false);
+
+    private boolean isStartOfJob;
 
     private ProvenanceEventRecordDTO previousEvent;
     private Long previousEventId;
@@ -72,21 +75,41 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
     private String replayExplanation;
     private String sourceConnectionIdentifier;
 
+
     private boolean stream;
 
+    /**
+     * The flow file id the corresponds to the parent /starting event
+     */
+    private String jobFlowFileId;
 
-    private transient FlowFile flowFile;
+    /**
+     * The Id that corresponds to the first event that started the job
+     */
+    private Long jobEventId;
+
+    //flow information
+
+    private String feedName;
+    private String feedProcessGroupId;
+
+    private String processorName;
+
+    private ProvenanceEventRecordDTO realFailureEvent;
+
+
+    private transient ActiveFlowFile flowFile;
 
     public ProvenanceEventRecordDTO() {
 
 
     }
 
-    public FlowFile getFlowFile() {
+    public ActiveFlowFile getFlowFile() {
         return flowFile;
     }
 
-    public void setFlowFile(FlowFile flowFile) {
+    public void setFlowFile(ActiveFlowFile flowFile) {
         this.flowFile = flowFile;
     }
 
@@ -108,10 +131,10 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
     }
 
     @JsonProperty("updatedAttributes")
-    private Map<String, Object> updatedAttributes;
+    private Map<String, String> updatedAttributes;
 
     @JsonProperty("previousAttributes")
-    private Map<String, Object> previousAttributes;
+    private Map<String, String> previousAttributes;
 
 
     @JsonIgnore
@@ -147,22 +170,22 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
 
 
     @JsonProperty("updatedAttributes")
-    public Map<String, Object> getUpdatedAttributes() {
+    public Map<String, String> getUpdatedAttributes() {
         return updatedAttributes;
     }
 
     @JsonProperty("updatedAttributes")
-    public void setUpdatedAttributes(Map<String, Object> updatedAttributes) {
+    public void setUpdatedAttributes(Map<String, String> updatedAttributes) {
         this.updatedAttributes = updatedAttributes;
     }
 
     @JsonProperty("previousAttributes")
-    public Map<String, Object> getPreviousAttributes() {
+    public Map<String, String> getPreviousAttributes() {
         return previousAttributes;
     }
 
     @JsonProperty("previousAttributes")
-    public void setPreviousAttributes(Map<String, Object> previousAttributes) {
+    public void setPreviousAttributes(Map<String, String> previousAttributes) {
         this.previousAttributes = previousAttributes;
     }
 
@@ -495,7 +518,13 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
         this.replayExplanation = replayExplanation;
     }
 
+    public String getProcessorName() {
+        return processorName;
+    }
 
+    public void setProcessorName(String processorName) {
+        this.processorName = processorName;
+    }
 
     public boolean isStartOfCurrentFlowFile() {
         Integer index = flowFile.getCompletedEvents().indexOf(this);
@@ -518,17 +547,14 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
         return previousEventId;
     }
 
-    @Override
     public DateTime getEventTime() {
         return eventTime;
     }
 
-    @Override
     public void setEventTime(DateTime eventTime) {
         this.eventTime = eventTime;
     }
 
-    @Override
     public Set<String> getParentFlowFileIds() {
         if (getParentUuids() != null) {
             return new HashSet<>(this.getParentUuids());
@@ -536,7 +562,6 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
         return new HashSet<>();
     }
 
-    @Override
     public void setParentFlowFileIds(Set<String> parentFlowFileIds) {
         if (parentFlowFileIds != null) {
             this.setParentUuids(new ArrayList<>(parentFlowFileIds));
@@ -552,6 +577,55 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
     public void setStream(boolean stream) {
         this.stream = stream;
     }
+
+
+    public AtomicBoolean getProcessed() {
+        return processed;
+    }
+
+    public String getFeedProcessGroupId() {
+        return feedProcessGroupId;
+    }
+
+    public void setFeedProcessGroupId(String feedProcessGroupId) {
+        this.feedProcessGroupId = feedProcessGroupId;
+    }
+
+
+    public String getJobFlowFileId() {
+        return jobFlowFileId;
+    }
+
+    public void setJobFlowFileId(String jobFlowFileId) {
+        this.jobFlowFileId = jobFlowFileId;
+    }
+
+
+    public Long getJobEventId() {
+        return jobEventId;
+    }
+
+    public void setJobEventId(Long jobEventId) {
+        this.jobEventId = jobEventId;
+    }
+
+    public ProvenanceEventRecordDTO getRealFailureEvent() {
+        return realFailureEvent;
+    }
+
+    public void setRealFailureEvent(ProvenanceEventRecordDTO realFailureEvent) {
+        this.realFailureEvent = realFailureEvent;
+    }
+
+    public boolean isStartOfJob() {
+        return isStartOfJob;
+    }
+
+    public void setIsStartOfJob(boolean isStartOfJob) {
+        this.isStartOfJob = isStartOfJob;
+    }
+
+
 
     @Override
     public boolean equals(Object o) {
@@ -581,16 +655,19 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
     public String toString() {
         final StringBuilder sb = new StringBuilder("ProvenanceEventRecordDTO{");
         sb.append("eventId=").append(getEventId());
+        sb.append("processorName=").append(getProcessorName());
         sb.append("componentId=").append(getComponentId());
         sb.append(", flowFile=").append(getFlowFileUuid()).append("(").append(flowFile != null).append(")");
         sb.append(", parentUUIDs=").append(getParentUuids() != null ? getParentUuids().size() : "NULL");
         sb.append(",previous=").append(getPreviousEventId());
         sb.append(", eventComponentId=").append(getComponentId());
-        sb.append(", eventRelationship=").append(getRelationship());
         sb.append(", eventType=").append(getEventType());
         sb.append(", eventDetails=").append(getDetails());
         sb.append(", eventDuration=").append(getEventDuration());
         sb.append(", eventTime=").append(getEventTime());
+        sb.append(", eventRelationship=").append(getRelationship());
+        sb.append(", sourceQueueId=").append(getSourceConnectionIdentifier());
+        sb.append(", sourceFlowFileId=").append(getSourceSystemFlowFileId());
         sb.append('}');
         return sb.toString();
     }

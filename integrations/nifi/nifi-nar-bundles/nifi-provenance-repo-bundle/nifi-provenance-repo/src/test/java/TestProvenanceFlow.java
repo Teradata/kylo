@@ -2,9 +2,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.nifi.flow.controller.NifiFlowClient;
 import com.thinkbiganalytics.nifi.provenance.StreamConfiguration;
-import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileGuavaCache;
-import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventStreamWriter;
+import com.thinkbiganalytics.nifi.provenance.v2.writer.ThinkbigProvenanceEventWriter;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 
@@ -271,7 +270,7 @@ public class TestProvenanceFlow {
 
     private class TestProducer implements Runnable {
 
-        ProvenanceEventStreamWriter writer;
+        ThinkbigProvenanceEventWriter writer;
         private int finishedflows = 0;
         private List<RunningFlow> activeFlows = new ArrayList<>();
         int counter = 0;
@@ -291,7 +290,7 @@ public class TestProvenanceFlow {
         public TestProducer(Long waitTime, int max,StreamConfiguration configuration) {
             this.waitTime = waitTime;
             this.max = max;
-            writer = new ProvenanceEventStreamWriter(configuration);
+            writer = new ThinkbigProvenanceEventWriter(configuration);
         }
 
 
@@ -305,7 +304,7 @@ public class TestProvenanceFlow {
                     //get all completed events and then simulate Nifi Provenance writing.
                     List<ProvenanceEventRecord> completedEvents = flow.next();
                     if (completedEvents != null && !completedEvents.isEmpty()) {
-                        completedEvents.forEach(event -> writer.writeEvent(event));
+                        completedEvents.forEach(event -> writer.writeEvent(event,event.getEventId()));
                     }
                     else {
                         if(flow.getActiveEvents()== 0L) {
@@ -353,8 +352,9 @@ public class TestProvenanceFlow {
         NifiFlowClient mockClient = Mockito.mock(NifiFlowClient.class);
         getFlow();
         when(mockClient.getAllFlows()).thenReturn(Lists.newArrayList(feed1, feed2));
-        NifiFlowCache.instance().setNifiFlowClient(mockClient);
-        NifiFlowCache.instance().loadAll();
+
+        //NifiFlowCache.setNifiFlowClient(mockClient);
+       // NifiFlowCache.instance().loadAll();
 
 
 

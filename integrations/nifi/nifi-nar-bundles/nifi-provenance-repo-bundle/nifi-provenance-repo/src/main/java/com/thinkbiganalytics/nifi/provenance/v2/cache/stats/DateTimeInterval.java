@@ -6,6 +6,7 @@ import org.joda.time.DateTime;
 /**
  * Ensure the start and endtime fall within the same Minute
  *
+ *
  * Created by sr186054 on 8/23/16.
  */
 public class DateTimeInterval {
@@ -20,21 +21,25 @@ public class DateTimeInterval {
     public DateTimeInterval(DateTime incomingStartTime, DateTime incomingEndTime){
         this.incomingStartTime = incomingStartTime;
         this.incomingEndTime = incomingEndTime;
-        adjustTimes();
+
+        this.adjustedEndTime = incomingEndTime;
+        this.nextStartTime = incomingEndTime;
+        // adjustTimes();
     }
 
 
     public DateTime getNextStartTime() {
-        return nextStartTime;
+        return nextStartTime != null ? nextStartTime : incomingEndTime;
     }
 
     public DateTime getAdjustedEndTime() {
-        return adjustedEndTime;
+        return adjustedEndTime != null ? adjustedEndTime : incomingEndTime;
     }
 
     private void adjustTimes(){
         adjustedEndTime = incomingEndTime;
         nextStartTime =incomingEndTime;
+
         //if the day of the month is different adjust the time to be the last
         boolean dayMatch = false;
         boolean hourMatch = false;

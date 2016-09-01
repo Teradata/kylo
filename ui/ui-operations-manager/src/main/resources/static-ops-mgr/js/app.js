@@ -85,7 +85,21 @@ app.config(function($stateProvider,$urlRouterProvider) {
         data:{
             displayName:'Job Details'
         }
-    }).state('feed-details',{
+    }).state('feed-stats', {
+        url: '/feed-stats/:feedName',
+        params: {
+            executionId: null
+        },
+        views: {
+            'content': {
+                templateUrl: 'js/feeds/feed-stats/feed-stats.html'
+            }
+        },
+        data: {
+            displayName: 'Job Details'
+        }
+    })
+        .state('feed-details', {
         url:'/feed-details/:feedName',
         params: {
             feedName: null

@@ -1,20 +1,17 @@
 package com.thinkbiganalytics.nifi.activemq;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
-import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.support.incrementer.DataFieldMaxValueIncrementer;
 import org.springframework.stereotype.Component;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Types;
 import java.util.List;
 
@@ -41,7 +38,7 @@ public class ProvenanceEventReceiverDatabaseWriter implements InitializingBean {
     /**
      * Write the Event to the Database Table
      */
-    public void writeEvent(ProvenanceEventDTO event) throws Exception {
+    public void writeEvent(ProvenanceEventRecordDTO event) throws Exception {
         logger.info("Writing event to temp table: " + event);
         Long eventId = event.getEventId();
         ObjectMapper mapper = new ObjectMapper();
@@ -61,24 +58,22 @@ public class ProvenanceEventReceiverDatabaseWriter implements InitializingBean {
     /**
      * Select the Events from the Database Table
      */
-    public List<ProvenanceEventDTO> getEvents() throws Exception {
+    public List<ProvenanceEventRecordDTO> getEvents() throws Exception {
         logger.info("Getting the temporary events!!! ");
 
-        List<ProvenanceEventDTO> events = this.jdbcTemplate.query(
+        List<ProvenanceEventRecordDTO> events = this.jdbcTemplate.query(
             "SELECT NIFI_EVENT_ID, JSON from " + NIFI_PROVENANCE_EVENT_TABLE + " order by NIFI_EVENT_ID ASC",
-            new RowMapper<ProvenanceEventDTO>() {
-                public ProvenanceEventDTO mapRow(ResultSet rs, int rowNum) throws SQLException {
-                    //long eventId = rs.getLong("NIFI_EVENT_ID");
-                    String json = rs.getString("JSON");
-                    ProvenanceEventDTO event = null;
-                    try {
-                        ObjectMapper mapper = new ObjectMapper();
-                        event = mapper.readValue(json, ProvenanceEventDTO.class);
-                    } catch (Exception ee) {
-                        logger.error("Error marshalling the JSON back to the DTO", ee);
-                    }
-                    return event;
+            (rs, rowNum) -> {
+                //long eventId = rs.getLong("NIFI_EVENT_ID");
+                String json = rs.getString("JSON");
+                ProvenanceEventRecordDTO event = null;
+                try {
+                    ObjectMapper mapper = new ObjectMapper();
+                    event = mapper.readValue(json, ProvenanceEventRecordDTO.class);
+                } catch (Exception ee) {
+                    logger.error("Error marshalling the JSON back to the DTO", ee);
                 }
+                return event;
             });
 
         return events;

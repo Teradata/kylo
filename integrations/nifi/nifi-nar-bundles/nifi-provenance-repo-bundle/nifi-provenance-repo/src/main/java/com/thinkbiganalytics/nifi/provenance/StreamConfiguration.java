@@ -4,6 +4,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 /**
+ * A stream event is evaluated as follows
+ * Events are initially delayed by the #processDelay and grouped together for evaluation as Stream or Batch
+ *  - A Stream = Any processor(partitioned by feed) that receives #numberOfEventsToConsiderAStream or more events where the time between each event < #maxTimeBetweenEventsMillis
+ *  - If the above criteria fails it will be considered and processed as a Batch event
+ *
+ *  @see com.thinkbiganalytics.nifi.provenance.processor.AbstractProvenanceEventProcessor
  * Created by sr186054 on 8/13/16.
  */
 @Component
@@ -23,7 +29,7 @@ public class StreamConfiguration {
      * Max time to wait before processing
      */
     @Value("${thinkbig.provenance.streamconfig.processDelay}")
-    private long processDelay = 3000; //default to 3 sec wait before processing
+    private long processDelay = 3000; //default to 3 sec wait before assessing
 
     /**
      * Max time between events for a given Feed Processor considered a Batch Anything under this time will be considered a Stream
@@ -36,6 +42,16 @@ public class StreamConfiguration {
      */
     @Value("${thinkbig.provenance.streamconfig.numberOfEventsToConsiderAStream}")
     private Integer numberOfEventsToConsiderAStream = 3;
+
+    @Value("${thinkbig.provenance.disabled:false}")
+    private boolean disabled = false;
+
+
+    /**
+     * Time to wait before processing via jms
+     */
+    @Value("${thinkbig.provenance.jmsBatchDelay}")
+    private long jmsBatchDelay = 3000; //default to 3 sec wait before grouping and sending to JMS
 
 
     public Long getMaxTimeBetweenEventsMillis() {
@@ -50,6 +66,10 @@ public class StreamConfiguration {
         return processDelay;
     }
 
+    public long getJmsBatchDelay() {
+        return jmsBatchDelay;
+    }
+
     public static class Builder {
 
         private long processDelay = 3000; //default to 3 sec wait before processing
@@ -57,6 +77,8 @@ public class StreamConfiguration {
         private Long maxTimeBetweenEventsMillis = 2000L;
 
         private Integer numberOfEventsToConsiderAStream = 3;
+
+        private long jmsBatchDelay = 3000;
 
         public Builder processDelay(long processDelay) {
             this.processDelay = processDelay;
@@ -73,10 +95,16 @@ public class StreamConfiguration {
             return this;
         }
 
+        public Builder jmsBatchDelay(long jmsBatchDelay) {
+            this.jmsBatchDelay = jmsBatchDelay;
+            return this;
+        }
+
         public StreamConfiguration build() {
             return new StreamConfiguration(processDelay, maxTimeBetweenEventsMillis, numberOfEventsToConsiderAStream);
         }
     }
+
 
     @Override
     public String toString() {

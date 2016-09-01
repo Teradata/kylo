@@ -157,6 +157,5 @@ var FeedService = angular.module(MODULE_OPERATIONS).factory('FeedData', ['$q', '
             },FeedData.FETCH_FEED_HEALTH_INTERVAL);
         }
 
-
     return FeedData;
 }]);

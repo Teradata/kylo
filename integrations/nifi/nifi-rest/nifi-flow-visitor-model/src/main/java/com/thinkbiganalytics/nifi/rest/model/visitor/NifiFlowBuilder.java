@@ -73,6 +73,8 @@ public class NifiFlowBuilder {
             flowProcessor.setSources(sources);
             flowProcessor.setDestinations(destinations);
             flowProcessor.setFailureProcessors(failureProcessors);
+            flowProcessor.setSourceConnectionIds(processor.getSourceConnectionIdentifiers());
+            flowProcessor.setDestinationConnectionIds(processor.getDestinationConnectionIdentifiers());
             return flowProcessor;
         }
 

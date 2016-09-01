@@ -12,6 +12,7 @@ import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
@@ -1590,10 +1591,33 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
             }
 
             group.accept(orderVisitor);
-            ///  orderVisitor.printOrder();
+           //  orderVisitor.printOrder();
             //orderVisitor.printOrder();
         }
         return group;
+    }
+
+    public NifiFlowProcessGroup getFlowForProcessGroup(String processGroupId) {
+        NifiFlowProcessGroup group = getFeedFlow(processGroupId);
+        log.info("********************** getFlowForProcessGroup  ({})", group);
+        NifiFlowDeserializer.constructGraph(group);
+        return group;
+    }
+
+
+
+    public List<NifiFlowProcessGroup> getAllFlows() {
+        log.info("********************** STARTING getAllFlows  ");
+        System.out.println("********************** STARTING getAllFlows  ");
+        List<NifiFlowProcessGroup> groups = getFeedFlows();
+        if (groups != null) {
+            System.out.println("********************** finished getAllFlows .. construct graph   " + groups.size());
+            log.info("********************** getAllFlows  ({})", groups.size());
+            groups.stream().forEach(group -> NifiFlowDeserializer.constructGraph(group));
+        } else {
+            log.info("********************** getAllFlows  (NULL!!!!)");
+        }
+        return groups;
     }
 
     public SearchResultsEntity search(String query) {

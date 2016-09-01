@@ -5,11 +5,17 @@
 package com.thinkbiganalytics.jobrepo.nifi.provenance;
 
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
-import com.thinkbiganalytics.jobrepo.nifi.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.jobrepo.config.OperationalMetadataAccess;
+import com.thinkbiganalytics.jobrepo.jpa.NifiEvent;
+import com.thinkbiganalytics.jobrepo.jpa.NifiEventProvider;
+import com.thinkbiganalytics.jobrepo.jpa.NifiJobExecutionProvider;
+import com.thinkbiganalytics.jobrepo.jpa.NifiStepExecution;
 import com.thinkbiganalytics.nifi.activemq.Queues;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
+import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 import com.thinkbiganalytics.nifi.rest.client.NifiConnectionException;
 
-import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +28,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 3/3/16.
@@ -36,10 +43,10 @@ public class ProvenanceEventReceiver implements ProvenanceEventJobExecutionStart
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventReceiver.class);
 
-    private ConcurrentLinkedQueue<ProvenanceEventDTO> unprocessedEventsQueue = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<ProvenanceEventRecordDTO> unprocessedEventsQueue = new ConcurrentLinkedQueue<>();
 
 
-    private ConcurrentLinkedQueue<ProvenanceEventDTO> erroredEventsQueue = new ConcurrentLinkedQueue<>();
+    private ConcurrentLinkedQueue<ProvenanceEventRecordDTO> erroredEventsQueue = new ConcurrentLinkedQueue<>();
 
 
     @Autowired
@@ -47,6 +54,18 @@ public class ProvenanceEventReceiver implements ProvenanceEventJobExecutionStart
 
     @Autowired
     private ProvenanceEventApplicationStartupListener provenanceEventStartupListener;
+
+
+    @Autowired
+    private NifiEventProvider nifiEventProvider;
+
+    @Autowired
+    private NifiJobExecutionProvider nifiJobExecutionProvider;
+
+    @Inject
+    private OperationalMetadataAccess operationalMetadataAccess;
+
+
 
 
     private AtomicBoolean canProcessJmsMessages = new AtomicBoolean(false);
@@ -133,44 +152,50 @@ public class ProvenanceEventReceiver implements ProvenanceEventJobExecutionStart
     }
 
     @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
-    public void receiveTopic(ProvenanceEventDTO message) {
-        Long eventId = message.getEventId();
-        log.info("Received ProvenanceEvent with Nifi Event Id of {}", eventId);
+    public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
+        events.getEvents().stream().sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).forEach(dto -> receiveEvent(dto));
+    }
 
 
+    public void receiveEvent(ProvenanceEventRecordDTO dto) {
+        Long eventId = dto.getEventId();
+        log.info("Received ProvenanceEvent {}", dto);
+
+        NifiStepExecution stepExecution = operationalMetadataAccess.commit(() -> {
+            NifiEvent e = nifiEventProvider.create(dto);
+            return nifiJobExecutionProvider.save(dto);
+        });
         //if Startup is complete and we are not in process of syncronizing Jobs on startup of Ops Manager then process the message
         if (canProcessJmsMessages.get() && !processingConnectionErrorStartupJobs.get() && !nifiStartupConnectionError.get()) {
             processAllUnprocessedEventsEvent(unprocessedEventsQueue);
-            ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO(eventId, message);
             try {
-                provenanceEventListener.receiveEvent(dto);
+                //    provenanceEventListener.receiveEvent(dto);
             } catch (NifiConnectionException e) {
                 canProcessJmsMessages.set(false);
                 startNifiConnectionTimer();
                 log.error("Nifi Connection Error while processing JMS Event.... Adding Event back to JMS QUEUE for processing");
-                erroredEventsQueue.add(message);
+                erroredEventsQueue.add(dto);
             }
         } else {
             //wait and hold until
-            log.info("JMS unable to process... holding event {} in internal queue", message.getEventId());
-            unprocessedEventsQueue.add(message);
+            log.info("JMS unable to process... holding event {} in internal queue", dto.getEventId());
+            unprocessedEventsQueue.add(dto);
 
             // unprocessedEvents.add(message);
         }
     }
 
 
-    private void processAllUnprocessedEventsEvent(ConcurrentLinkedQueue<ProvenanceEventDTO> queue) throws NifiConnectionException {
-        ProvenanceEventDTO event = null;
+    private void processAllUnprocessedEventsEvent(ConcurrentLinkedQueue<ProvenanceEventRecordDTO> queue) throws NifiConnectionException {
+        ProvenanceEventRecordDTO event = null;
 
         while ((event = queue.poll()) != null) {
             Long eventId = event.getEventId();
-            ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO(eventId, event);
-            log.info("process event in internal queue {} ", dto);
+            log.info("process event in internal queue {} ", event);
             try {
-                provenanceEventListener.receiveEvent(dto);
+                //      provenanceEventListener.receiveEvent(event);
             } catch (Exception e) {
-                log.error("ERROR PROCESSING EVENT (Nifi Processor Id: {} ) for job that was running prior to Pipeline Controller going down. {}. {} ", dto.getComponentId(), e.getMessage(),
+                log.error("ERROR PROCESSING EVENT (Nifi Processor Id: {} ) for job that was running prior to Pipeline Controller going down. {}. {} ", event.getComponentId(), e.getMessage(),
                           e.getStackTrace());
                 if (e instanceof NifiConnectionException) {
                     canProcessJmsMessages.set(false);

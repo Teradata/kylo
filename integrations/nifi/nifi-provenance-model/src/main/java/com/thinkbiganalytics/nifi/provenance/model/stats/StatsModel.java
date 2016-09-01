@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.nifi.provenance.model.stats;
 
-import com.thinkbiganalytics.nifi.provenance.model.FlowFile;
+import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import java.util.Set;
@@ -10,12 +10,31 @@ import java.util.Set;
  */
 public class StatsModel {
 
-    public static ProvenanceEventStats toProvenanceEventStats(String feedName, ProvenanceEventRecordDTO event) {
-        FlowFile rootFlowFile = event.getFlowFile().getRootFlowFile();
-
+    public static ProvenanceEventStats toFailureProvenanceEventStats(String feedName, ProvenanceEventRecordDTO event) {
+        ActiveFlowFile rootFlowFile = event.getFlowFile().getRootFlowFile();
         ProvenanceEventStats stats = new ProvenanceEventStats(feedName);
+        stats.setTotalCount(0L);
         stats.setEventId(event.getEventId());
         stats.setProcessorId(event.getComponentId());
+        stats.setProcessorName(event.getProcessorName());
+        stats.setClusterNodeId(event.getClusterNodeId());
+        stats.setTime(event.getEventTime());
+        stats.setProcessorsFailed(1L);
+        stats.setFlowFileId(event.getFlowFileUuid());
+        stats.setRootFlowFileId(rootFlowFile != null ? rootFlowFile.getId() : null);
+        stats.setEventDetails(event.getDetails());
+        stats.setRootProcessGroupId((rootFlowFile != null && rootFlowFile.hasFeedInformationAssigned()) ? rootFlowFile.getFeedProcessGroupId() : null);
+        return stats;
+    }
+
+    public static ProvenanceEventStats toProvenanceEventStats(String feedName, ProvenanceEventRecordDTO event) {
+        ActiveFlowFile rootFlowFile = event.getFlowFile().getRootFlowFile();
+
+        ProvenanceEventStats stats = new ProvenanceEventStats(feedName);
+        stats.setTotalCount(1L);
+        stats.setEventId(event.getEventId());
+        stats.setProcessorId(event.getComponentId());
+        stats.setProcessorName(event.getProcessorName());
         stats.setClusterNodeId(event.getClusterNodeId());
         stats.setTime(event.getEventTime());
         stats.setDuration(event.getEventDuration() != null ? event.getEventDuration() : 0L);
@@ -30,11 +49,8 @@ public class StatsModel {
         stats.setFlowFilesStarted(event.isStartOfCurrentFlowFile() ? 1L : 0L);
         stats.setFlowFilesFinished(event.getFlowFile().isCurrentFlowFileComplete() ? 1L : 0L);
         if (event.isFailure()) {
+            //mark the flow file as having a failed event.
             event.getFlowFile().addFailedEvent(event);
-            stats.setProcessorsFailed(1L);
-            //TODO if event is on a failure relationship need to fail the prev event?
-            //handle retrys?
-
         }
 
 

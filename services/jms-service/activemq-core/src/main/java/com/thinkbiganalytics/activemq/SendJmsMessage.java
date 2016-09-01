@@ -4,7 +4,6 @@
 
 package com.thinkbiganalytics.activemq;
 
-import org.apache.activemq.command.ActiveMQTopic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +14,11 @@ import org.springframework.jms.core.MessageCreator;
 import org.springframework.messaging.Message;
 import org.springframework.stereotype.Component;
 
+import java.io.Serializable;
+
 import javax.jms.JMSException;
 import javax.jms.Session;
 import javax.jms.TextMessage;
-import javax.jms.Topic;
 
 /**
  * Created by sr186054 on 3/3/16.
@@ -40,6 +40,15 @@ public class SendJmsMessage {
     public void sendObjectToQueue(String queueName, final Object obj){
         sendObjectToQueue(queueName, obj, obj.getClass().getName());
     }
+
+    public void sendSerializedObjectToQueue(String queueName, final Serializable obj) throws JmsException {
+        log.info("Sending ActiveMQ message [" + obj + "] to queue [" + queueName + "]");
+
+        jmsMessagingTemplate.convertAndSend(queueName, obj);
+
+    }
+
+
 
     public void sendObjectToQueue(String queueName, final Object obj, final String objectClassType) throws JmsException{
         log.info("Sending ActiveMQ message ["+obj+"] to queue ["+queueName+"]");

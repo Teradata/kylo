@@ -72,4 +72,6 @@ public interface FlowFile<P extends FlowFile, E extends FlowFileEvent> extends S
     DateTime getTimeCompleted();
 
     IdReferenceFlowFile toIdReferenceFlowFile();
+
+    List<ProvenanceEventRecordDTO> getPreviousEvents(ProvenanceEventRecordDTO event);
 }

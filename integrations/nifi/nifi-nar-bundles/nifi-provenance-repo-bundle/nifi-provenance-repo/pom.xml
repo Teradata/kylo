@@ -20,7 +20,7 @@
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-nifi-flow-rest-model</artifactId>
+            <artifactId>thinkbig-nifi-flow-visitor-model</artifactId>
             <version>${project.version}</version>
         </dependency>
 

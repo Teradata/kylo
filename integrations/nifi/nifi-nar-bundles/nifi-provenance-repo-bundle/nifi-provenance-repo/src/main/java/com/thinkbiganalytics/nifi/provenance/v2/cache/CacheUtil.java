@@ -1,10 +1,9 @@
 package com.thinkbiganalytics.nifi.provenance.v2.cache;
 
 import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
-import com.thinkbiganalytics.nifi.provenance.model.FlowFile;
+import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
-import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileCache;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileGuavaCache;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileMapDbCache;
 
@@ -58,18 +57,19 @@ public class CacheUtil {
     public void cacheAndBuildFlowFileGraph(ProvenanceEventRecordDTO event) {
 
         // Get the FlowFile from the Cache.  It is LoadingCache so if the file is new the Cache will create it
-        FlowFileCache flowFileCache = FlowFileGuavaCache.instance();
-        FlowFile flowFile = flowFileCache.getEntry(event.getFlowFileUuid());
+        FlowFileGuavaCache flowFileCache = FlowFileGuavaCache.instance();
+        ActiveFlowFile flowFile = flowFileCache.getEntry(event.getFlowFileUuid());
         event.setFlowFile(flowFile);
 
          // Track what flow files were modified so they can be persisted until the entire Flow file is complete in case NiFi goes down while processing
-        Set<FlowFile> modified = new HashSet<>();
+        Set<ActiveFlowFile> modified = new HashSet<>();
 
         //An event is the very first in the flow if it is a CREATE or RECEIVE event and if there are no Parent flow files
         //This indicates the start of a Job.
         if (ProvenanceEventUtil.isFirstEvent(event) && (event.getParentUuids() == null || (event.getParentUuids() != null && event.getParentUuids().isEmpty()))) {
             flowFile.setFirstEvent(event);
             flowFile.markAsRootFlowFile();
+            event.setIsStartOfJob(true);
             startJobCounter.incrementAndGet();;
             modified.add(flowFile);
         }
@@ -78,7 +78,7 @@ public class CacheUtil {
         if (event.getParentUuids() != null && !event.getParentUuids().isEmpty()) {
             for (String parent : event.getParentUuids()) {
                 if (!flowFile.getId().equals(parent)) {
-                    FlowFile parentFlowFile = flowFile.addParent(flowFileCache.getEntry(parent));
+                    ActiveFlowFile parentFlowFile = flowFile.addParent(flowFileCache.getEntry(parent));
                     parentFlowFile.addChild(flowFile);
                     modified.add(flowFile);
                     modified.add(parentFlowFile);
@@ -87,7 +87,7 @@ public class CacheUtil {
         }
         if (event.getChildUuids() != null && !event.getChildUuids().isEmpty()) {
             for (String child : event.getChildUuids()) {
-                FlowFile childFlowFile = flowFile.addChild(flowFileCache.getEntry(child));
+                ActiveFlowFile childFlowFile = flowFile.addChild(flowFileCache.getEntry(child));
                 childFlowFile.addParent(flowFile);
                 modified.add(flowFile);
                 modified.add(childFlowFile);
@@ -99,7 +99,11 @@ public class CacheUtil {
             log.error("Unable to assign Feed Info to flow file {} for event {} ", flowFile.getId(), event);
         } else {
             event.setFeedName(flowFile.getFeedName());
+            event.setFeedProcessGroupId(flowFile.getFeedProcessGroupId());
         }
+        event.setJobFlowFileId(flowFile.getRootFlowFile().getId());
+        event.setJobEventId(flowFile.getRootFlowFile().getFirstEvent().getEventId());
+        event.setProcessorName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
 
         //If the event is the final event for the processor then add it to the flow file
         if (ProvenanceEventUtil.isCompletionEvent(event)) {
@@ -112,7 +116,7 @@ public class CacheUtil {
 
         eventCounter.incrementAndGet();
         //persist the files to disk
-        for (FlowFile modifiedFlowFile : modified) {
+        for (ActiveFlowFile modifiedFlowFile : modified) {
             FlowFileMapDbCache.instance().cacheFlowFile(modifiedFlowFile);
         }
 

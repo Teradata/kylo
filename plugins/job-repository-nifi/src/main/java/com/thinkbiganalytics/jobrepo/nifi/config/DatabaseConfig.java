@@ -3,6 +3,7 @@ package com.thinkbiganalytics.jobrepo.nifi.config;
 
 import com.thinkbiganalytics.jobrepo.nifi.provenance.FlowFileEventProvider;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.InMemoryFlowFileEventProvider;
+import com.thinkbiganalytics.jobrepo.nifi.provenance.NifiFailureEventJmsReceiver;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.NifiStatsJmsReceiver;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventApplicationStartupListener;
 import com.thinkbiganalytics.jobrepo.repository.dao.NifJobRepositoryFactoryBean;
@@ -63,6 +64,11 @@ public class DatabaseConfig {
     @Bean
     public NifiStatsJmsReceiver nifiStatsJmsReceiver() {
         return new NifiStatsJmsReceiver();
+    }
+
+    @Bean
+    public NifiFailureEventJmsReceiver nifiFailureEventJmsReceiver() {
+        return new NifiFailureEventJmsReceiver();
     }
 
 
