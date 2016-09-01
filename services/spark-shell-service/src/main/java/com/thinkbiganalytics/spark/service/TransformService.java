@@ -10,6 +10,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Queues;
 import com.google.common.util.concurrent.AbstractScheduledService;
+import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+import com.thinkbiganalytics.kerberos.KerberosTicketGenerator;
 import com.thinkbiganalytics.spark.metadata.TransformJob;
 import com.thinkbiganalytics.spark.metadata.TransformRequest;
 import com.thinkbiganalytics.spark.metadata.TransformResponse;
@@ -17,11 +19,14 @@ import com.thinkbiganalytics.spark.repl.ScriptEngine;
 import com.thinkbiganalytics.spark.util.HiveUtils;
 
 import org.apache.commons.lang3.StringEscapeUtils;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SQLContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.security.PrivilegedExceptionAction;
+import java.sql.Connection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
@@ -59,6 +64,8 @@ public class TransformService extends AbstractScheduledService {
     /** Maximum database size in bytes (soft limit) */
     private static final long MAX_BYTES = 10737418240L;
 
+    private final KerberosTicketConfiguration kerberosTicketConfiguration;
+
     /** Tables with cached results */
     @Nonnull
     private final TableCache cache = new TableCache();
@@ -76,8 +83,9 @@ public class TransformService extends AbstractScheduledService {
      *
      * @param engine the script engine
      */
-    public TransformService(@Nonnull final ScriptEngine engine) {
+    public TransformService(@Nonnull final ScriptEngine engine, KerberosTicketConfiguration kerberosTicketConfiguration) {
         this.engine = engine;
+        this.kerberosTicketConfiguration = kerberosTicketConfiguration;
     }
 
     /**
@@ -213,6 +221,20 @@ public class TransformService extends AbstractScheduledService {
         log.info("Starting transform service");
 
         // Create database
+        if(kerberosTicketConfiguration.isKerberosEnabled()) {
+            createDatabaseWithKerberos();
+        }
+        else {
+            createDatabaseWithoutKerberos();
+        }
+
+        // Add tracker
+        engine.getSparkContext().addSparkListener(tracker);
+
+        log.trace("exit");
+    }
+
+    private void createDatabaseWithoutKerberos() {
         SQLContext context = this.engine.getSQLContext();
         context.sql("CREATE DATABASE IF NOT EXISTS " + HiveUtils.quoteIdentifier(DATABASE));
 
@@ -222,11 +244,34 @@ public class TransformService extends AbstractScheduledService {
         for (Row table : tables) {
             dropTable(table.getString(0), context);
         }
+    }
 
-        // Add tracker
-        engine.getSparkContext().addSparkListener(tracker);
+    private void createDatabaseWithKerberos() {
+        log.info("Initializing the database using Kerberos ");
 
-        log.trace("exit");
+        try {
+            UserGroupInformation userGroupInformation;
+            List<Row> tables;
+            KerberosTicketGenerator t = new KerberosTicketGenerator();
+            userGroupInformation = t.generateKerberosTicket(kerberosTicketConfiguration);
+            userGroupInformation.doAs(new PrivilegedExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    SQLContext context = engine.getSQLContext();
+                    context.sql("CREATE DATABASE IF NOT EXISTS " + HiveUtils.quoteIdentifier(DATABASE));
+
+                    // Drop existing tables
+                    List<Row> tables = context.sql("SHOW TABLES IN " + HiveUtils.quoteIdentifier(DATABASE)).collectAsList();
+
+                    for (Row table : tables) {
+                        dropTable(table.getString(0), context);
+                    }
+                    return null;
+                }
+            });
+        } catch (Exception e) {
+            throw new RuntimeException("Error creating the database using Kerberos authentication", e);
+        }
     }
 
     /**
