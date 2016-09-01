@@ -44,9 +44,12 @@ public class RangerRestClient extends JerseyRestClient{
 	public void createPolicy(JSONObject policy) throws RangerRestClientException
 	{   
 		try {
+			System.out.println("I am about to throw exception");
+			System.out.println("JSON Created == " + policy.toString()); 
 			post("/public/api/policy/",policy,String.class);
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
+			System.out.println("Got exception dude.......");
 			throw new RangerRestClientException("Unable to create policy." ,e);
 		}
 	}

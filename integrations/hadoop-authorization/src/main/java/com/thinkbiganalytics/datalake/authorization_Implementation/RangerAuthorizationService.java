@@ -34,8 +34,9 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 		 * Test getPolicy function pass policyId to retrieve information for that policy
 		 */
 
-		//System.out.println("\n Policy Retrived \n");
-		//System.out.println(rangerClientObj.getPolicy(56));
+		
+		System.out.println("\n Policy Retrived \n");
+		System.out.println(rangerClientObj.getPolicy(5));
 
 		/**
 		 * Delete Policy 
@@ -58,7 +59,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 		 * Test create policy function for HDFS
 		 */
 
-		HDFSPolicy policy = new HDFSPolicy();
+	/*	HDFSPolicy policy = new HDFSPolicy();
 
 		ArrayList<String> userList = new ArrayList<String>();
 		ArrayList<String> groupList = new ArrayList<String>();
@@ -93,15 +94,15 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 		//rangerClientObj.createPolicy(policy.policyJson());
 		//rangerClientObj.updatePolicy(policy.policyJson(), 70);
 
-		/**
+		*//**
 		 * Get policy count
-		 */
+		 *//*
 
 		//System.out.println(rangerClientObj.countPolicies());
 
-		/**
+		*//**
 		 * Test create policy function for Hive
-		 */
+		 *//*
 
 		HivePolicy hivePolicy = new HivePolicy();
 
@@ -139,10 +140,10 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 		//System.out.println("Policy created");
 		//rangerClientObj.createPolicy(hivePolicy.policyJson());
 
-		/***
+		*//***
 		 * Update policy using policy ID - Hive
 		 * 
-		 */
+		 *//*
 
 		//userListHive.add("shashi");
 		userListHive.add("user");
@@ -171,9 +172,9 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 		//System.out.println("Policy update");
 		//rangerClientObj.updatePolicy(hivePolicy.policyJson(), 71);
 
-		/***
+		*//***
 		 * Get user/group information
-		 */
+		 *//*
 
 		//System.out.println(rangerClientObj.getAllUsers());
 		//System.out.println(rangerClientObj.getUserByName("hive"));
@@ -187,15 +188,15 @@ public class RangerAuthorizationService implements HadoopAuthorizationService{
 		//System.out.println(rangerClientObj.getGroupByName("hadoop"));
 		//System.out.println("Number of groups: "+rangerClientObj.getGroupCount());
 
-		/***
+		*//***
 		 * User-Group mapping information
-		 */
+		 *//*
 
 		System.out.println(rangerClientObj.getUserGroupMapping());
 		//System.out.println(rangerClientObj.getUserGroupMappingCount());
 		//System.out.println(rangerClientObj.getUserGroupMappingById(12));
 		//System.out.println(rangerClientObj.getGroupInfoByUserId(53));
 		//System.out.println(rangerClientObj.getUserInfoByGroupId(3));
-	}
+*/	}
 
 }
