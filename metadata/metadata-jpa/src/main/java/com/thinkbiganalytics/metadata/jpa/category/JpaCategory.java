@@ -3,6 +3,7 @@ package com.thinkbiganalytics.metadata.jpa.category;
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.jpa.AuditTimestampListener;
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.core.BaseId;
 import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
@@ -11,6 +12,7 @@ import com.thinkbiganalytics.metadata.jpa.feed.JpaFeed;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.Column;
@@ -159,8 +161,12 @@ public class JpaCategory extends AbstractAuditedEntity implements Category {
         return null;
     }
 
-    @Override
     public void setUserProperties(Map<String, String> userProperties) {
+
+    }
+
+    @Override
+    public void setUserProperties(Map<String, String> userProperties, Set<UserFieldDescriptor> userFields) {
 
     }
 }

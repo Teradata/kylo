@@ -7,6 +7,7 @@ import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.jpa.AuditTimestampListener;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
@@ -29,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.persistence.CascadeType;
@@ -455,8 +457,9 @@ public class JpaFeed<C extends Category> extends AbstractAuditedEntity implement
         return null;
     }
 
+
     @Override
-    public void setUserProperties(Map<String, String> userProperties) {
+    public void setUserProperties(Map<String, String> userProperties, Set<UserFieldDescriptor> userFields) {
 
     }
 }
