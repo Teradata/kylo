@@ -2,11 +2,14 @@ package com.thinkbiganalytics.metadata.jpa.category;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
 import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
 
-import javax.persistence.NoResultException;
 import java.io.Serializable;
+import java.util.Set;
+
+import javax.persistence.NoResultException;
 
 /**
  * Created by sr186054 on 5/3/16.
@@ -46,5 +49,25 @@ public class JpaCategoryProvider extends BaseJpaProvider<Category,Category.ID> i
     @Override
     public Category.ID resolveId(Serializable fid) {
         return new JpaCategory.CategoryId(fid);
+    }
+
+    @Override
+    public Set<UserFieldDescriptor> getUserFields() {
+        return null;
+    }
+
+    @Override
+    public void setUserFields(Set<UserFieldDescriptor> userFields) {
+
+    }
+
+    @Override
+    public Set<UserFieldDescriptor> getFeedUserFields(Category.ID categoryId) {
+        return null;
+    }
+
+    @Override
+    public void setFeedUserFields(Category.ID categoryId, Set<UserFieldDescriptor> userFields) {
+
     }
 }

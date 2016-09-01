@@ -116,4 +116,6 @@ public class JpaFeedManagerFeed<C extends JpaFeedManagerCategory> extends JpaFee
             setVersion(l.intValue());
         }
     }
+
+
 }

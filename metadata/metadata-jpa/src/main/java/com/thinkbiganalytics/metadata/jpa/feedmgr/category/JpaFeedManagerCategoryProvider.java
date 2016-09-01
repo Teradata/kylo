@@ -1,17 +1,16 @@
 package com.thinkbiganalytics.metadata.jpa.feedmgr.category;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.jpa.BaseJpaProvider;
-import com.thinkbiganalytics.metadata.jpa.NamedJpaQueries;
-import com.thinkbiganalytics.metadata.jpa.category.JpaCategory;
-import com.thinkbiganalytics.metadata.jpa.category.JpaCategoryProvider;
 import com.thinkbiganalytics.metadata.jpa.feedmgr.FeedManagerNamedQueries;
 
-import javax.persistence.NoResultException;
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
+
+import javax.persistence.NoResultException;
 
 /**
  * Created by sr186054 on 5/3/16.
@@ -51,5 +50,25 @@ public class JpaFeedManagerCategoryProvider extends BaseJpaProvider<FeedManagerC
     @Override
     public Category.ID resolveId(Serializable fid) {
         return new JpaFeedManagerCategory.CategoryId(fid);
+    }
+
+    @Override
+    public Set<UserFieldDescriptor> getUserFields() {
+        return null;
+    }
+
+    @Override
+    public void setUserFields(Set<UserFieldDescriptor> userFields) {
+
+    }
+
+    @Override
+    public Set<UserFieldDescriptor> getFeedUserFields(Category.ID categoryId) {
+        return null;
+    }
+
+    @Override
+    public void setFeedUserFields(Category.ID categoryId, Set<UserFieldDescriptor> userFields) {
+
     }
 }

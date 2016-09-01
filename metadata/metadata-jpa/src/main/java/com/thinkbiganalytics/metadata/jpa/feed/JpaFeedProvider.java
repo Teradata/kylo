@@ -10,6 +10,7 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.Feed.ID;
 import com.thinkbiganalytics.metadata.api.feed.FeedCriteria;
@@ -520,5 +521,15 @@ public class JpaFeedProvider extends BaseJpaProvider<Feed, Feed.ID> implements F
     @Override
     public void deleteFeed(ID feedId) {
         deleteById(feedId);
+    }
+
+    @Override
+    public Set<UserFieldDescriptor> getUserFields() {
+        return null;
+    }
+
+    @Override
+    public void setUserFields(Set<UserFieldDescriptor> userFields) {
+
     }
 }
