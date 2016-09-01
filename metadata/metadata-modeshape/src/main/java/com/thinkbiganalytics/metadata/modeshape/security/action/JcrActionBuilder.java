@@ -58,7 +58,7 @@ public class JcrActionBuilder<P> extends JcrAbstractActionsBuilder implements Ac
      */
     @Override
     public ActionBuilder<ActionBuilder<P>> subAction(String name) {
-        Node actionNode = JcrUtil.getOrCreateNode(this.actionNode, name, JcrAllowableAction.ALLOWABLE_ACTION);
+        Node actionNode = JcrUtil.getOrCreateNode(this.actionNode, name, JcrAllowableAction.NODE_TYPE);
         return new JcrActionBuilder<>(actionNode, this);
     }
 

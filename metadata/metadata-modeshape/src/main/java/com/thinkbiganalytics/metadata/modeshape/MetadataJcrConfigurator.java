@@ -3,7 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -28,7 +27,6 @@ import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  *
@@ -106,15 +104,6 @@ public class MetadataJcrConfigurator {
         JcrAccessControlUtil.addPermissions(prototypesNode, new ModeShapeAdminPrincipal(), Privilege.JCR_ALL);
         JcrAccessControlUtil.addPermissions(prototypesNode, AdminCredentials.getPrincipal(), Privilege.JCR_ALL);
         JcrAccessControlUtil.addPermissions(prototypesNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);
-        
-//        if (session.getRootNode().hasNode(svcPath.toString())) {
-//            session.getRootNode().getNode(svcPath.toString()).remove();
-//        }
-//       
-//        session.getWorkspace().copy("/" + SecurityPaths.prototypeActionsPath("services").toString(), 
-//                                    svcPath.toString());
-//
-//        JcrAccessControlUtil.addPermissions(session.getRootNode().getNode(svcPath.toString()), new ModeShapeAdminPrincipal(), Privilege.JCR_ALL);
     }
 
 

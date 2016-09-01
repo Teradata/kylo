@@ -68,8 +68,8 @@ public class AccessControlController {
     @Path("{name}/allowed")
     @Produces(MediaType.APPLICATION_JSON)
     public ActionSet getAllowedActions(@PathParam("name") String moduleName,
-                                       @QueryParam("users") Set<String> userNames,
-                                       @QueryParam("roles") Set<String> roleNames) {
+                                       @QueryParam("user") Set<String> userNames,
+                                       @QueryParam("group") Set<String> groupNames) {
         return metadata.read(() -> {
             Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
             Set<Principal> roles = this.actionsTransform.toGroupPrincipals(userNames);
@@ -111,7 +111,7 @@ public class AccessControlController {
             return null;
         });
         
-        return getAvailableActions(moduleName);
+        return getAllowedActions(moduleName, changes.getUsers(), changes.getGroups());
     }
     
     

@@ -81,7 +81,7 @@ public class JcrModuleActionsBuilder extends JcrAbstractActionsBuilder implement
             JcrAccessControlUtil.addPermissions(this.actionsNode, this.managementPrincipal, Privilege.JCR_ALL);
             JcrAccessControlUtil.addPermissions(this.actionsNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);
             
-            for (Node action : JcrUtil.getNodesOfType(this.actionsNode, JcrAllowableAction.ALLOWABLE_ACTION)) {
+            for (Node action : JcrUtil.getNodesOfType(this.actionsNode, JcrAllowableAction.NODE_TYPE)) {
                 // Initially only allow the mgmt principal access to the actions themselves
                 JcrAccessControlUtil.addPermissions(action, this.managementPrincipal, Privilege.JCR_ALL);
             }

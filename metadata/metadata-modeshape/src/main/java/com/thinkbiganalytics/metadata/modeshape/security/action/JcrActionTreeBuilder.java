@@ -41,7 +41,7 @@ public class JcrActionTreeBuilder<P> extends JcrAbstractActionsBuilder implement
      */
     @Override
     public ActionBuilder<ActionsTreeBuilder<P>> action(String systemName) {
-        Node actionNode = JcrUtil.getOrCreateNode(this.actionsNode, systemName, JcrAllowableAction.ALLOWABLE_ACTION);
+        Node actionNode = JcrUtil.getOrCreateNode(this.actionsNode, systemName, JcrAllowableAction.NODE_TYPE);
         return new JcrActionBuilder<>(actionNode, this);
     }
 

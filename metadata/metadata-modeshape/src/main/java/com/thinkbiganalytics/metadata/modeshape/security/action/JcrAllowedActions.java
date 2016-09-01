@@ -45,7 +45,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     @Override
     public List<AllowableAction> getAvailableActions() {
         try {
-            NodeType type = JcrUtil.getNodeType(JcrMetadataAccess.getActiveSession(), JcrAllowableAction.ALLOWABLE_ACTION);
+            NodeType type = JcrUtil.getNodeType(JcrMetadataAccess.getActiveSession(), JcrAllowableAction.NODE_TYPE);
             return JcrUtil.getJcrObjects(this.node, type, JcrAllowableAction.class).stream().collect(Collectors.toList());
         } catch (Exception e) {
             throw new MetadataException("Failed to retrieve the accessible functons", e);
@@ -137,7 +137,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     
     public JcrAllowedActions copy(Node allowedNode, JcrAllowedActions src, Principal principal, String... privilegeNames) {
         try {
-            for (Node actionNode : JcrUtil.getNodesOfType(src.getNode(), JcrAllowableAction.ALLOWABLE_ACTION)) {
+            for (Node actionNode : JcrUtil.getNodesOfType(src.getNode(), JcrAllowableAction.NODE_TYPE)) {
                 copyAction(actionNode, allowedNode, principal, privilegeNames);
             }
             
@@ -148,12 +148,12 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     }
 
     private Node copyAction(Node src, Node destParent, Principal principal, String... privilegeNames) throws RepositoryException {
-        Node dest = JcrUtil.getOrCreateNode(destParent, src.getName(), JcrAllowableAction.ALLOWABLE_ACTION);
+        Node dest = JcrUtil.getOrCreateNode(destParent, src.getName(), JcrAllowableAction.NODE_TYPE);
         JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.TITLE);
         JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.DESCRIPTION);
         JcrAccessControlUtil.addPermissions(dest, principal, privilegeNames);
         
-        for (Node child : JcrUtil.getNodesOfType(src, JcrAllowableAction.ALLOWABLE_ACTION)) {
+        for (Node child : JcrUtil.getNodesOfType(src, JcrAllowableAction.NODE_TYPE)) {
             copyAction(child, dest, principal, privilegeNames);
         }
         
@@ -176,7 +176,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
                             if (add) {
                                 return JcrAccessControlUtil.addHierarchyPermissions(node, principal, this.node, Privilege.JCR_READ);
                             } else {
-                                return JcrAccessControlUtil.removeHierarchyPermissions(node, principal, this.node, Privilege.JCR_READ);
+                                return JcrAccessControlUtil.removeRecursivePermissions(node, JcrAllowableAction.NODE_TYPE, principal, Privilege.JCR_READ);
                             }
                         })
                     .orElseThrow(() -> new AccessControlException("Not authorized to " + (add ? "endable" : "disable") + " the action: " + action));

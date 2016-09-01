@@ -5,7 +5,6 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -28,7 +27,7 @@ import com.thinkbiganalytics.security.action.AllowableAction;
  */
 public class JcrAllowableAction extends JcrObject implements AllowableAction {
     
-    public static final String ALLOWABLE_ACTION = "tba:allowableAction";
+    public static final String NODE_TYPE = "tba:allowableAction";
 
     private volatile int hash = 0;
     
@@ -50,7 +49,7 @@ public class JcrAllowableAction extends JcrObject implements AllowableAction {
                 List<String> hierList = new ArrayList<>();
                 Node current = getNode();
 
-                while (JcrUtil.isNodeType(current, ALLOWABLE_ACTION)) {
+                while (JcrUtil.isNodeType(current, NODE_TYPE)) {
                     hierList.add(0, current.getName());
                     current = current.getParent();
                 }
@@ -75,7 +74,7 @@ public class JcrAllowableAction extends JcrObject implements AllowableAction {
             List<Action> list = new ArrayList<>();
             Node current = getNode();
             
-            while (current.getPrimaryNodeType().isNodeType(ALLOWABLE_ACTION)) {
+            while (current.getPrimaryNodeType().isNodeType(NODE_TYPE)) {
                 list.add(0, JcrUtil.createJcrObject(current, JcrAllowableAction.class));
                 current = current.getParent();
             }
@@ -115,7 +114,7 @@ public class JcrAllowableAction extends JcrObject implements AllowableAction {
      */
     @Override
     public List<AllowableAction> getSubActions() {
-        NodeType type = JcrUtil.getNodeType(JcrMetadataAccess.getActiveSession(), ALLOWABLE_ACTION);
+        NodeType type = JcrUtil.getNodeType(JcrMetadataAccess.getActiveSession(), NODE_TYPE);
         return JcrUtil.getJcrObjects(this.node, type, JcrAllowableAction.class).stream().collect(Collectors.toList());
     }
     

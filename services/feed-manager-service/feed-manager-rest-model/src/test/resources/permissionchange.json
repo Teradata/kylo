@@ -62,7 +62,7 @@
         ],
         "name": "services"
     },
-    "change": "ADD",
+    "change": "REPLACE",
     "groups": [
         "dev"
     ]
