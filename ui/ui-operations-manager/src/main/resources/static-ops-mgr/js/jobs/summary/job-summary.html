@@ -1,0 +1,56 @@
+<div layout="row" flex>
+  <div layout="column">
+    <div layout="row" flex>
+
+
+      <tba-job-summary-pie-chart panel-title="Job Execution's"></tba-job-summary-pie-chart>
+
+      <div>
+        <md-card layout-align="center center">
+          <span class="card-title kpi-header">Another Graph</span>
+          <span class="md-caption kpi-subtitle ">Another Metric</span>
+          <md-card-content layout="column" flex layout-align="center center" class="kpi-content" style="width:100%;">
+            Add another graph here
+
+          </md-card-content>
+        </md-card>
+      </div>
+    </div>
+    <tba-job-summary-nifi-stats-chart></tba-job-summary-nifi-stats-chart>
+
+
+    <md-card layout-align="center center">
+      <span class="card-title kpi-header">Stats</span>
+      <span class="md-caption kpi-subtitle ">Summary</span>
+      <md-card-content layout="column" flex layout-align="center center" class="kpi-content" style="width:100%;">
+        History Grpahs stats graphs broken down by aggregration level, by Day, By Hour, By Minute, By Second..
+
+        Throughput
+
+        Active Processors
+        <br/><br/><br/><br/>
+
+
+      </md-card-content>
+    </md-card>
+
+
+    <md-card layout-align="center center">
+      <span class="card-title kpi-header">Failed Job Executions</span>
+      <span class="md-caption kpi-subtitle ">Summary</span>
+      <md-card-content layout="column" flex layout-align="center center" class="kpi-content" style="width:100%;">
+        List the failed Jobs with links to them
+        <br/><br/><br/><br/><br/><br/>
+
+      </md-card-content>
+    </md-card>
+
+
+  </div>
+  <tba-job-summary-top-n-processors-chart></tba-job-summary-top-n-processors-chart>
+
+</div>
+<div>
+
+
+</div>

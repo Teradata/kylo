@@ -1,0 +1,23 @@
+<md-card layout-align="center center">
+  <span class="card-title kpi-header">Execution Summary</span>
+  <span class="md-caption kpi-subtitle ">Job Execution Summary</span>
+  <md-card-content layout="column" flex layout-align="center center" class="kpi-content" style="width:100%;">
+    <div ng-if="vm.dataLoaded">
+      <nvd3 flex options="vm.statusPieChartOptions" data="vm.statusPieChartData" api="vm.statusPieChartApi" config="vm.chartConfig"></nvd3>
+      <div layout="row" layout-align="space-between end" flex class="kpi-health-count-container">
+            <span layout="column">
+                <span class="kpi-health-count" ng-class="{'healthy':vm.successPieChartCount() >0}">{{vm.successPieChartCount()}}</span>
+                <span class="md-caption kpi-health-label">Success</span>
+            </span>
+            <span layout="column">
+                <span class="kpi-health-count" ng-class="{'unhealthy':vm.failedPieChartCount() >0}">{{vm.failedPieChartCount()}}</span>
+                <span class="md-caption kpi-health-label">Failed</span>
+            </span>
+      </div>
+    </div>
+    <div ng-if="!vm.dataLoaded" class="kpi-loading">
+      <md-progress-circular md-mode="indeterminate" md-diameter="96"></md-progress-circular>
+    </div>
+
+  </md-card-content>
+</md-card>
