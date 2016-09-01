@@ -1,17 +1,5 @@
 package com.thinkbiganalytics.spark.dataprofiler.core;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import org.apache.spark.SparkConf;
-import org.apache.spark.api.java.JavaPairRDD;
-import org.apache.spark.api.java.JavaSparkContext;
-import org.apache.spark.broadcast.Broadcast;
-import org.apache.spark.sql.DataFrame;
-import org.apache.spark.sql.hive.HiveContext;
-import org.apache.spark.sql.types.StructField;
-
 import com.thinkbiganalytics.spark.dataprofiler.columns.BigDecimalColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.columns.BooleanColumnStatistics;
 import com.thinkbiganalytics.spark.dataprofiler.columns.ByteColumnStatistics;
@@ -35,6 +23,19 @@ import com.thinkbiganalytics.spark.dataprofiler.output.OutputRow;
 import com.thinkbiganalytics.spark.dataprofiler.output.OutputWriter;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataItem;
 import com.thinkbiganalytics.spark.dataprofiler.topn.TopNDataList;
+
+import org.apache.commons.lang.StringUtils;
+import org.apache.spark.SparkConf;
+import org.apache.spark.api.java.JavaPairRDD;
+import org.apache.spark.api.java.JavaSparkContext;
+import org.apache.spark.broadcast.Broadcast;
+import org.apache.spark.sql.DataFrame;
+import org.apache.spark.sql.hive.HiveContext;
+import org.apache.spark.sql.types.StructField;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import scala.Tuple2;
 
@@ -133,7 +134,7 @@ public class Profiler {
 	 * @return query to run (null if invalid arguments)
 	 */
 	public static String checkCommandLineArgs(String[] args) {
-
+	    System.out.println("Running Spark Profiler with the following command line " + args.length + " args (comma separated): " + StringUtils.join(args, ","));
 		if (args.length<4) {
 			System.out.println("Invalid number of command line arguments (" + args.length + ")");
 			showCommandLineArgs();
@@ -148,8 +149,8 @@ public class Profiler {
 		String profileOutputTable = args[3];
 		
 		String inputAndOutputTablePartitionKey = "ALL";
-		
-		if (args.length == 5) {
+
+	    if (args.length >= 5) {
 			inputAndOutputTablePartitionKey = args[4];
 		}
 
