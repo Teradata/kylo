@@ -5,6 +5,7 @@ package com.thinkbiganalytics.metadata.modeshape;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -179,5 +180,13 @@ public class MetadataJcrConfig {
         return new MetadataJcrConfigurator(postConfigActions);
     }
 
-    
+    @Bean
+    protected PostMetadataConfigAction dummyAction() {
+        return new PostMetadataConfigAction() {
+            @Override
+            public void run() {
+                // Do nothing.
+            }
+        };
+    }
 }

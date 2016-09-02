@@ -49,7 +49,7 @@ public class DefaultAccessController implements AccessController {
                         allowed.checkPermission(actions);
                         return moduleName;
                     })
-                .orElseThrow(() -> new AccessControlException("No actions are defined for the module named: " + moduleName));
+                .<AccessControlException>orElseThrow(() -> new AccessControlException("No actions are defined for the module named: " + moduleName));
         });
     }
 

@@ -9,12 +9,16 @@
     "security" : {
         "anonymous" : {
             "roles" : ["readonly","readwrite","admin"],
-            "useOnFailedLogin" : false
+            "useOnFailedLogin" : true
         },
         "providers" : [
             {
                 "name" : "Test Provider",
                 "classname" : "com.thinkbiganalytics.metadata.modeshape.TestAuthenticationProvider",
+            },
+            {
+                "name" : "Override Provider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.OverrideAuthenticationProvider",
             },
             {
                 "name" : "DB Admin Provider",

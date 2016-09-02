@@ -30,7 +30,7 @@ public class FileAuthConfig {
                             .controlFlag(LoginModuleControlFlag.OPTIONAL)      
                             .option("defaultUsersProperties", "users.default.properties")
                             .option("defaultRolesProperties", "roles.default.properties")
-                            .option("users.properties", "users.properties")
+                            .option("usersProperties", "users.properties")
                             .option("rolesProperties", "roles.properties")
                             .add()
                         .build();
@@ -44,7 +44,7 @@ public class FileAuthConfig {
                             .controlFlag(LoginModuleControlFlag.OPTIONAL)
                             .option("defaultUsersProperties", "users.default.properties")
                             .option("defaultRolesProperties", "roles.default.properties")
-                            .option("users.properties", "users.properties")
+                            .option("usersProperties", "users.properties")
                             .option("rolesProperties", "roles.properties")
                             .add()
                         .build();

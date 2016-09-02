@@ -60,7 +60,7 @@ public class AccessControlController {
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
                             .map(this.actionsTransform.availableActionsToActionSet("services"))
-                            .orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
+                            .<WebApplicationException>orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
         });
     }
     
@@ -75,7 +75,7 @@ public class AccessControlController {
             Set<Principal> roles = this.actionsTransform.toGroupPrincipals(userNames);
             return actionsProvider.getAllowedActions(moduleName)
                             .map(this.actionsTransform.availableActionsToActionSet("services"))
-                            .orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
+                            .<WebApplicationException>orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
         });
     }
     
@@ -129,7 +129,7 @@ public class AccessControlController {
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
                             .map(this.actionsTransform.availableActionsToPermissionsChange(ChangeType.valueOf(changeType.toUpperCase()), moduleName, users, groups))
-                            .orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
+                            .<WebApplicationException>orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
         });
     }
 

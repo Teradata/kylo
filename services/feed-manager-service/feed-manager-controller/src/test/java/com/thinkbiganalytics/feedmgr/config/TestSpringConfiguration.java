@@ -23,6 +23,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.mockito.Mockito;
 import org.modeshape.jcr.api.txn.TransactionManagerLookup;
@@ -39,6 +40,11 @@ import javax.jcr.Repository;
  */
 @Configuration
 public class TestSpringConfiguration {
+    
+    @Bean
+    public AccessController accessController() {
+        return Mockito.mock(AccessController.class);
+    }
 
     @Bean
     public FeedServiceLevelAgreementProvider feedServiceLevelAgreementProvider() {
