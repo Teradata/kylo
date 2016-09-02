@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -37,6 +38,14 @@ public class NifiFlowProcessGroup {
     private Map<String, NifiFlowProcessor> failureProcessors;
 
     private Map<String, NifiFlowProcessor> endingProcessors;
+
+
+    /**
+     * Cached map of the ConnectionId to a list of all processors that this connection is coming from of which the connection is indicated as being a "failure"
+     *
+     * used for lookups to determine if an event has failed or not
+     */
+    private Map<String, List<NifiFlowProcessor>> failureConnectionIdToSourceProcessorMap;
 
 
     public NifiFlowProcessGroup() {
@@ -119,6 +128,8 @@ public class NifiFlowProcessGroup {
             processorMap.values().stream().filter(simpleNifiFlowProcessor -> simpleNifiFlowProcessor.isEnd()).collect(Collectors.toMap(processor -> processor.getId(), processor -> processor));
 
         processorMap.values().forEach(processor -> processor.setProcessGroup(this));
+
+
     }
 
     public Map<String, NifiFlowProcessor> getFailureProcessors() {
@@ -141,7 +152,17 @@ public class NifiFlowProcessGroup {
         this.parentGroupName = parentGroupName;
     }
 
+    public Map<String, List<NifiFlowProcessor>> getFailureConnectionIdToSourceProcessorMap() {
+        if (failureConnectionIdToSourceProcessorMap == null) {
+            failureConnectionIdToSourceProcessorMap = new HashMap<>();
+        }
+        return failureConnectionIdToSourceProcessorMap;
+    }
 
+    public void setFailureConnectionIdToSourceProcessorMap(
+        Map<String, List<NifiFlowProcessor>> failureConnectionIdToSourceProcessorMap) {
+        this.failureConnectionIdToSourceProcessorMap = failureConnectionIdToSourceProcessorMap;
+    }
 
     public String getFeedName() {
         return feedName;
@@ -150,6 +171,7 @@ public class NifiFlowProcessGroup {
     public void setFeedName(String feedName) {
         this.feedName = feedName;
     }
+
 
     @Override
     public boolean equals(Object o) {
