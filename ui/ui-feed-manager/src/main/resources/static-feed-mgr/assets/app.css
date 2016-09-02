@@ -1185,7 +1185,7 @@ md-toast .md-toast-content {
   font-weight: 500;
 }
 
-/* Feed Details */
+/* User-defined properties and fields */
 .feed-user-property .md-button.md-icon-button {
   height: 36px;
   margin: 16px 0 0 0;
@@ -1196,3 +1196,31 @@ md-toast .md-toast-content {
   font-size: 18px;
 }
 
+.user-field-list {
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+.user-field-list li {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.12);
+  padding-top: 6px;
+}
+.user-field-list .md-button.user-field-delete {
+  margin: 8px 0 0 0;
+}
+.user-field-list .md-button.user-field-move-down, .user-field-list .md-button.user-field-move-up {
+  height: 24px;
+  margin: 0;
+  min-height: 24px;
+  padding: 0;
+}
+.user-field-list md-checkbox {
+  margin-top: 4px;
+}
+.user-field-list md-input-container {
+  margin-bottom: 0;
+}
+.user-field-list div:not(:first-child) md-input-container {
+  margin-top: 0;
+}

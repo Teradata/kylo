@@ -1,12 +1,12 @@
 (function() {
     /**
-     * Manages the Category Properties section of the Category Details page.
+     * Manages the Category Feed Properties section of the Category Details page.
      *
      * @constructor
      * @param $scope the application model
      * @param CategoriesService the category service
      */
-    function CategoryPropertiesController($scope, $mdToast, CategoriesService) {
+    function CategoryFeedPropertiesController($scope, $mdToast, CategoriesService) {
         var self = this;
 
         /**
@@ -56,14 +56,14 @@
         self.onSave = function() {
             var model = angular.copy(CategoriesService.model);
             model.id = self.model.id;
-            model.userProperties = self.editModel.userProperties;
+            model.userFields = self.editModel.userFields;
 
             CategoriesService.save(model).then(function(response) {
                 self.model = CategoriesService.model = response.data;
                 CategoriesService.reload();
                 $mdToast.show(
                     $mdToast.simple()
-                        .textContent("Saved the Category")
+                        .textContent('Saved the Category')
                         .hideDelay(3000)
                 );
             });
@@ -71,20 +71,20 @@
     }
 
     /**
-     * Creates a directive for the Category Properties section.
+     * Creates a directive for the Category Feed Properties section.
      *
      * @returns {Object} the directive
      */
-    function thinkbigCategoryProperties() {
+    function thinkbigFeedCategoryProperties() {
         return {
-            controller: "CategoryPropertiesController",
+            controller: "CategoryFeedPropertiesController",
             controllerAs: 'vm',
             restrict: "E",
             scope: {},
-            templateUrl: "js/categories/details/category-properties.html"
+            templateUrl: 'js/categories/details/category-feed-properties.html'
         };
     }
 
-    angular.module(MODULE_FEED_MGR).controller("CategoryPropertiesController", CategoryPropertiesController);
-    angular.module(MODULE_FEED_MGR).directive("thinkbigCategoryProperties", thinkbigCategoryProperties);
+    angular.module(MODULE_FEED_MGR).controller('CategoryFeedPropertiesController', CategoryFeedPropertiesController);
+    angular.module(MODULE_FEED_MGR).directive('thinkbigCategoryFeedProperties', thinkbigFeedCategoryProperties);
 })();
