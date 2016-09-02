@@ -38,6 +38,13 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
 
     private Set<ConnectionDTO> connections;
 
+    /**
+     * Cached map of the ConnectionId to a list of all processors that this connection is coming from of which the connection is indicated as being a "failure"
+     *
+     * used for lookups to determine if an event has failed or not
+     */
+    private Map<String, Set<String>> failureConnectionIdToSourceProcessorIds;
+
     public NifiVisitableProcessGroup(ProcessGroupDTO dto) {
         this.dto = dto;
         startingProcessors = new HashSet<>();
@@ -106,8 +113,10 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
 
             populateStartingAndEndingProcessors();
         }
+        setFailureConnectionIdToSourceProcessorIds(nifiVisitor.getFailureConnectionIdToSourceProcessorIds());
 
     }
+
 
     public ProcessGroupDTO getDto() {
         return dto;
@@ -219,4 +228,11 @@ public class NifiVisitableProcessGroup implements  NifiVisitable {
         this.outputPortProcessors.get(id).add(outputPortProcessor);
     }
 
+    public Map<String, Set<String>> getFailureConnectionIdToSourceProcessorIds() {
+        return failureConnectionIdToSourceProcessorIds;
+    }
+
+    public void setFailureConnectionIdToSourceProcessorIds(Map<String, Set<String>> failureConnectionIdToSourceProcessorIds) {
+        this.failureConnectionIdToSourceProcessorIds = failureConnectionIdToSourceProcessorIds;
+    }
 }

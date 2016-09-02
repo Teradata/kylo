@@ -52,7 +52,7 @@ public class ProvenanceEventUtil {
     }
 
 
-    public static boolean isFailure(ProvenanceEventRecordDTO event){
+    public static boolean isTerminatedByFailureRelationship(ProvenanceEventRecordDTO event) {
 
         return event.getDetails() != null && AUTO_TERMINATED_FAILURE_RELATIONSHIP.equalsIgnoreCase(event.getDetails());
 

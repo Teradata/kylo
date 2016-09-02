@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.nifi.rest.model.visitor;
 
+import java.util.Map;
+import java.util.Set;
+
 /**
  * Created by sr186054 on 2/14/16.
  */
@@ -10,6 +13,8 @@ public interface NifiFlowVisitor {
 
     NifiVisitableProcessor getProcessor(String id);
     NifiVisitableProcessGroup getProcessGroup(String id);
+
+    Map<String, Set<String>> getFailureConnectionIdToSourceProcessorIds();
 
 
 }

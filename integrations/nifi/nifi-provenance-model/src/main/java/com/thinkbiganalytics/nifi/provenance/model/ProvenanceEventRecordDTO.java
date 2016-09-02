@@ -30,6 +30,8 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     private boolean isStartOfJob;
 
+    private boolean isEndOfJob;
+
     private ProvenanceEventRecordDTO previousEvent;
     private Long previousEventId;
 
@@ -76,6 +78,8 @@ public class ProvenanceEventRecordDTO implements Serializable {
     private String sourceConnectionIdentifier;
 
 
+    private boolean isFailure;
+
     private boolean stream;
 
     /**
@@ -121,9 +125,10 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.feedName = feedName;
     }
 
-    public boolean isFailure() {
-        return ProvenanceEventUtil.isFailure(this);
+    public boolean isTerminatedByFailureRelationship() {
+        return ProvenanceEventUtil.isTerminatedByFailureRelationship(this);
     }
+
 
 
     public boolean isEndingFlowFileEvent() {
@@ -625,7 +630,22 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.isStartOfJob = isStartOfJob;
     }
 
+    public void setIsFailure(boolean isFailure) {
+        this.isFailure = isFailure;
+    }
 
+    public boolean isFailure() {
+        return isFailure;
+    }
+
+
+    public boolean isEndOfJob() {
+        return isEndOfJob;
+    }
+
+    public void setIsEndOfJob(boolean isEndOfJob) {
+        this.isEndOfJob = isEndOfJob;
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -70,6 +70,7 @@ public class NifiFailureEventJmsReceiver {
         failedEvent.setEventDetails(event.getDetails());
         failedEvent.setEventTime(event.getEventTime());
         failedEvent.setProcessorId(event.getComponentId());
+        failedEvent.setJobFlowFileId(event.getJobFlowFileId());
         return failedEvent;
     }
 }

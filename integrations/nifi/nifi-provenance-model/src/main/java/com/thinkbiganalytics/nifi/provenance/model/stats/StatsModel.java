@@ -48,13 +48,14 @@ public class StatsModel {
         stats.setJobsFinished((event.isEndingFlowFileEvent() && rootFlowFile != null && rootFlowFile.isFlowComplete()) ? 1L : 0L);
         stats.setFlowFilesStarted(event.isStartOfCurrentFlowFile() ? 1L : 0L);
         stats.setFlowFilesFinished(event.getFlowFile().isCurrentFlowFileComplete() ? 1L : 0L);
-        if (event.isFailure()) {
+        if (event.isTerminatedByFailureRelationship()) {
             //mark the flow file as having a failed event.
             event.getFlowFile().addFailedEvent(event);
         }
 
 
         if (stats.getJobsFinished() == 1L) {
+            event.setIsEndOfJob(true);
             Long jobTime = null;
             if (event.getFlowFile().getFirstEvent() != null) {
                 jobTime = event.getEventTime().getMillis() - event.getFlowFile().getFirstEvent().getEventTime().getMillis();

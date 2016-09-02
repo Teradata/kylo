@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -57,6 +58,9 @@ public class ProvenanceEventAggregator {
 
     @Autowired
     ProvenanceFeedLookup provenanceFeedLookup;
+
+    @Autowired
+    ProvenanceStatsCalculator statsCalculator;
 
 
     Map<String, GroupedFeedProcessorEventAggregate> eventsToAggregate = new ConcurrentHashMap<>();
@@ -109,30 +113,35 @@ public class ProvenanceEventAggregator {
 
             //send the event off for stats processing to the threadpool.  order does not matter thus they can be in an number of threads
             // eventStatisticsExecutor.execute(new StatisticsProvenanceEventConsumer(event));
-            ProvenanceStatsCalculator statsCalculator = (ProvenanceStatsCalculator) SpringApplicationContext.getInstance().getBean("provenanceStatsCalculator");
+            // ProvenanceStatsCalculator statsCalculator = (ProvenanceStatsCalculator) SpringApplicationContext.getInstance().getBean("provenanceStatsCalculator");
             ProvenanceEventStats stats = statsCalculator.calculateStats(event);
             //add to delayed queue for processing
             aggregateEvent(event, stats);
 
             //if failure detected group and send off to separate queue
-            if (event.isFailure()) {
-                //batch up and send the failed events off
-                ProvenanceEventRecordDTO failedEvent = provenanceFeedLookup.getRealFailureProvenanceEvent(event);
-
-                if (failedEvent != null) {
-                    // log.info("Failed Event Detected for {} ", failedEvent);
-                    failedEventsJmsQueue.offer(failedEvent);
-                    ProvenanceEventStats failedEventStats = provenanceFeedLookup.failureEventStats(failedEvent);
-                    statsCalculator.addFailureStats(failedEventStats);
-                }
-
-            }
+            collectFailureEvents(event);
 
 
         } catch (Exception e) {
             log.error("ERROR PROCESSING EVENT! {}.  ERROR: {} ", event, e.getMessage(), e);
         }
 
+    }
+
+    public void collectFailureEvents(ProvenanceEventRecordDTO event) {
+        Set<ProvenanceEventRecordDTO> failedEvents = provenanceFeedLookup.getFailureEvents(event);
+        if (failedEvents != null && !failedEvents.isEmpty()) {
+            failedEvents.forEach(failedEvent ->
+                                 {
+                                     if (!failedEvent.isFailure()) {
+                                         failedEvent.setIsFailure(true);
+                                         log.info("Failed Event Detected for {} ", failedEvent);
+                                         failedEventsJmsQueue.offer(failedEvent);
+                                         ProvenanceEventStats failedEventStats = provenanceFeedLookup.failureEventStats(failedEvent);
+                                         statsCalculator.addFailureStats(failedEventStats);
+                                     }
+                                 });
+        }
     }
 
 

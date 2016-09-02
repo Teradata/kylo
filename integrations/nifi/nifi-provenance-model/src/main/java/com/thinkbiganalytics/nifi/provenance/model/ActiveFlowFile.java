@@ -48,7 +48,7 @@ public class ActiveFlowFile {
 
     private DateTime timeCompleted;
 
-    private boolean isFirstEventStream;
+    private boolean isFirstEventBatch;
 
     /**
      * marker to determine if the Flow has Received a DROP event.
@@ -66,11 +66,14 @@ public class ActiveFlowFile {
     private String feedName;
 
 
+    public boolean isFirstEventBatch() {
+        return isFirstEventBatch;
+    }
 
+    public void setIsFirstEventBatch(boolean isFirstEventBatch) {
+        this.isFirstEventBatch = isFirstEventBatch;
+    }
 
-
-
-    
     public void assignFeedInformation(String feedName, String feedProcessGroupId) {
         this.feedName = feedName;
         this.feedProcessGroupId = feedProcessGroupId;

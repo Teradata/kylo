@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.jobrepo.nifi.config;
 
 
+import com.thinkbiganalytics.jobrepo.jpa.ExecutionContextSerializationHelper;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.FlowFileEventProvider;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.InMemoryFlowFileEventProvider;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.NifiFailureEventJmsReceiver;
@@ -8,6 +9,8 @@ import com.thinkbiganalytics.jobrepo.nifi.provenance.NifiStatsJmsReceiver;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventApplicationStartupListener;
 import com.thinkbiganalytics.jobrepo.repository.dao.NifJobRepositoryFactoryBean;
 
+import org.springframework.batch.core.repository.ExecutionContextSerializer;
+import org.springframework.batch.core.repository.dao.XStreamExecutionContextStringSerializer;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
@@ -71,5 +74,16 @@ public class DatabaseConfig {
         return new NifiFailureEventJmsReceiver();
     }
 
+    @Bean
+    public ExecutionContextSerializer executionContextSerializer() throws Exception{
+        XStreamExecutionContextStringSerializer defaultSerializer = new XStreamExecutionContextStringSerializer();
+        defaultSerializer.afterPropertiesSet();
+        return defaultSerializer;
+    }
+
+    @Bean
+    ExecutionContextSerializationHelper executionContextSerializationHelper() {
+        return new ExecutionContextSerializationHelper();
+    }
 
 }

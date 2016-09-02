@@ -106,6 +106,29 @@ card-layout .tab-content > :not(md-list) {
   padding: 8px 25px;
 }
 
+card-layout.centered {
+  align-items:flex-start;
+  flex-flow:row nowrap;
+  justify-content: center;
+  display: flex;
+  top:250px;
+  display: -webkit-flex; /* Safari */
+  -webkit-align-items: flex-start; /* Safari 7.0+ */
+  -webkit-justify-content: center; /* Safari 6.1+ */
+  /*position:fixed*/
+}
+
+card-layout.centered section:first-child {
+  align-self: auto;
+  -webkit-align-self: auto; /* Safari 7.0+ */
+  -webkit-flex: 0 1 960px; /* Safari 6.1+ */
+  -ms-flex: 0 1 960px; /* IE 10 */
+  flex: 0 1 960px;
+  order: 0;
+  display: inline-block;
+  overflow: hidden;
+}
+
 
 
 card-layout .card-toolbar {

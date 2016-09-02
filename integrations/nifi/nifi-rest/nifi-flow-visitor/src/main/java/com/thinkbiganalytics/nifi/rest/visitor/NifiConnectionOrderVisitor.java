@@ -40,6 +40,14 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
 
     private Map<String, NifiVisitableProcessor> visitedProcessors = new HashMap<>();
 
+    /**
+     * Cached map of the ConnectionId to a list of all processors that this connection is coming from
+     * of which the connection is indicated as being a "failure"
+     *
+     * used for lookups to determine if an event has failed or not
+     */
+    private Map<String,Set<String>> failureConnectionIdToSourceProcessorIds = new HashMap<>();
+
 
     private Map<String, NifiVisitableProcessGroup> visitedProcessGroups = new HashMap<>();
 
@@ -92,6 +100,8 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                 if (relationships != null && relationships.contains("failure") && !relationships.contains("success") && (StringUtils.isBlank(connection.getDto().getName()) || (destType.equals("FUNNEL") && connection.getDto().getName().equalsIgnoreCase("failure")))) {
                     for(NifiVisitableProcessor destination:destinationProcessors) {
                         destination.setIsFailureProcessor(true);
+
+
                     }
                 }
             }
@@ -99,6 +109,10 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                 for(NifiVisitableProcessor destination:destinationProcessors) {
                     for(NifiVisitableProcessor source: sourceProcessors){
                         destination.addSource(source);
+                        if(destination.isFailureProcessor()) {
+                            //save the source processor in the incoming failed connection id map
+                            failureConnectionIdToSourceProcessorIds.computeIfAbsent(connection.getDto().getId(),(id) -> new HashSet<>()).add(source.getId());
+                        }
                         source.addDestination(destination);
                     }
                 }
@@ -112,6 +126,11 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
 
         allConnections.add(connection);
 
+    }
+
+    @Override
+    public Map<String, Set<String>> getFailureConnectionIdToSourceProcessorIds() {
+        return failureConnectionIdToSourceProcessorIds;
     }
 
     @Override

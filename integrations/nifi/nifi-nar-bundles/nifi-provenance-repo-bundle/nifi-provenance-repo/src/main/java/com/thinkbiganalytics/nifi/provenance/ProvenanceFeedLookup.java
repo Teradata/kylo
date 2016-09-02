@@ -6,7 +6,6 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.StatsModel;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileMapDbCache;
-import com.thinkbiganalytics.nifi.rest.model.flow.NiFiFlowProcessorConnection;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 
@@ -16,7 +15,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Created by sr186054 on 8/18/16.
@@ -90,33 +90,30 @@ public class ProvenanceFeedLookup {
         return assigned;
     }
 
-    public ProvenanceEventRecordDTO getRealFailureProvenanceEvent(ProvenanceEventRecordDTO event) {
+    public Set<ProvenanceEventRecordDTO> getFailureEvents(ProvenanceEventRecordDTO event) {
+        Set<ProvenanceEventRecordDTO> failureEvents = new HashSet<>();
+        if (event.isTerminatedByFailureRelationship()) {
+            failureEvents.add(event);
+        }
+        ProvenanceEventRecordDTO connectedFailure = getFailureProvenanceEventFromConnectionRelationship(event);
+        if (connectedFailure != null) {
+            failureEvents.add(connectedFailure);
+        }
+        return failureEvents;
+    }
+
+    public boolean isEventFromFailureConnection(ProvenanceEventRecordDTO event) {
+        if (StringUtils.isNotBlank(event.getSourceConnectionIdentifier())) {
+            String realFailureProcessorId = nifiFlowCache.getFailureProcessorWithDestinationConnectionIdentifier(event.getSourceConnectionIdentifier());
+            return StringUtils.isNotBlank(realFailureProcessorId);
+        }
+        return false;
+    }
+
+    public ProvenanceEventRecordDTO getFailureProvenanceEventFromConnectionRelationship(ProvenanceEventRecordDTO event) {
         ProvenanceEventRecordDTO failureEvent = null;
-        if (event.isFailure()) {
             if (StringUtils.isNotBlank(event.getSourceConnectionIdentifier())) {
                 String realFailureProcessorId = nifiFlowCache.getFailureProcessorWithDestinationConnectionIdentifier(event.getSourceConnectionIdentifier());
-                if (StringUtils.isBlank(realFailureProcessorId)) {
-                    List<NifiFlowProcessor> processorsWithConnection = nifiFlowCache.getProcessorWithDestinationConnectionIdentifier(event.getSourceConnectionIdentifier());
-                    log.info("Failure detected for event: {} with connection id of {} found {} processorsWith dest conn: {} ", event, event.getSourceConnectionIdentifier(),
-                             (processorsWithConnection != null ? processorsWithConnection.size() : 0));
-                    if (processorsWithConnection != null && !processorsWithConnection.isEmpty()) {
-                        //get the first one??
-                        NifiFlowProcessor processor = processorsWithConnection.get(0);
-                        NiFiFlowProcessorConnection
-                            conn =
-                            processor.getDestinationConnectionIds().stream()
-                                .filter(niFiFlowProcessorConnection -> niFiFlowProcessorConnection.getConnectionIdentifier().equalsIgnoreCase(event.getSourceConnectionIdentifier()) && StringUtils
-                                    .join(niFiFlowProcessorConnection.getSelectedRelationships(), ",").toLowerCase().contains("failure")).findFirst()
-                                .orElse(null);
-                        log.info("NiFiFlowProcessorConnection = {} ", conn);
-                        if (conn != null) {
-                            //the processor that failed was this one
-                            //cache the sourceconnectionID to this processorId for future reference
-                            nifiFlowCache.putFailureProcessorConnectionIdentifier(event.getSourceConnectionIdentifier(), processor.getId());
-                            realFailureProcessorId = processor.getId();
-                        }
-                    }
-                }
                 if (StringUtils.isNotBlank(realFailureProcessorId)) {
                     final String finalRealFailureProcessorId = realFailureProcessorId;
                     ProvenanceEventRecordDTO matchingFailedEvent = null;
@@ -133,11 +130,6 @@ public class ProvenanceFeedLookup {
                     }
                 }
             }
-
-            if (failureEvent == null) {
-                failureEvent = event;
-            }
-        }
 
         return failureEvent;
     }

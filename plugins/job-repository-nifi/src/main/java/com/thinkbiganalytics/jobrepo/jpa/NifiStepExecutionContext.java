@@ -121,4 +121,29 @@ public class NifiStepExecutionContext extends NifiExecutionContextValues {
     public void setExecutionContextType(String executionContextType) {
         this.executionContextType = executionContextType;
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        NifiStepExecutionContext that = (NifiStepExecutionContext) o;
+
+        if (!executionContextType.equals(that.executionContextType)) {
+            return false;
+        }
+        return stepExecutionContextPK.equals(that.stepExecutionContextPK);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = executionContextType.hashCode();
+        result = 31 * result + stepExecutionContextPK.hashCode();
+        return result;
+    }
 }

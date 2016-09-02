@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.jobrepo.jpa;
 
+import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
+
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -42,15 +44,7 @@ public class NifiJobExecution {
         UNKNOWN;
     }
 
-    public static enum ExitCode {
-        COMPLETED,
-        STOPPED,
-        FAILED,
-        ABANDONED,
-        EXECUTING,
-        NOOP,
-        UNKNOWN;
-    }
+
 
 
     @TableGenerator(
@@ -88,7 +82,7 @@ public class NifiJobExecution {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "EXIT_CODE")
-    private ExitCode exitCode = ExitCode.EXECUTING;
+    private ExecutionConstants.ExitCode exitCode = ExecutionConstants.ExitCode.EXECUTING;
 
     @Column(name = "EXIT_MESSAGE")
     private String exitMessage;
@@ -179,11 +173,11 @@ public class NifiJobExecution {
         this.status = status;
     }
 
-    public ExitCode getExitCode() {
+    public ExecutionConstants.ExitCode getExitCode() {
         return exitCode;
     }
 
-    public void setExitCode(ExitCode exitCode) {
+    public void setExitCode(ExecutionConstants.ExitCode exitCode) {
         this.exitCode = exitCode;
     }
 
@@ -226,7 +220,12 @@ public class NifiJobExecution {
     }
 
     public void setJobExecutionContext(List<NifiJobExecutionContext> jobExecutionContext) {
-        this.jobExecutionContext = jobExecutionContext;
+        if (this.jobExecutionContext != null) {
+            this.jobExecutionContext.clear();
+            this.jobExecutionContext.addAll(jobExecutionContext);
+        } else {
+            this.jobExecutionContext = jobExecutionContext;
+        }
     }
 
     public NifiEventJobExecution getNifiEventJobExecution() {
@@ -235,5 +234,97 @@ public class NifiJobExecution {
 
     public void setNifiEventJobExecution(NifiEventJobExecution nifiEventJobExecution) {
         this.nifiEventJobExecution = nifiEventJobExecution;
+    }
+
+
+    public void completeOrFailJob() {
+        StringBuffer stringBuffer = null;
+        boolean failedJob = false;
+        for (NifiStepExecution se : getStepExecutions()) {
+            if (NifiStepExecution.StepStatus.FAILED.equals(se.getStatus())) {
+                failedJob = true;
+                if (stringBuffer == null) {
+                    stringBuffer = new StringBuffer();
+                } else {
+                    stringBuffer.append(",");
+                }
+                stringBuffer.append("Failed Step " + se.getStepName());
+            }
+        }
+        if (failedJob) {
+            setExitMessage(stringBuffer != null ? stringBuffer.toString() : "");
+            setStatus(NifiJobExecution.JobStatus.FAILED);
+            setExitCode(ExecutionConstants.ExitCode.FAILED);
+        } else {
+            setStatus(NifiJobExecution.JobStatus.COMPLETED);
+            setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+        }
+    }
+
+    public boolean isFailed() {
+        return JobStatus.FAILED.equals(getStatus());
+    }
+
+    public boolean isSuccess() {
+        return JobStatus.COMPLETED.equals(getStatus());
+    }
+
+    public NifiJobExecutionParameters addParameter(String keyName, Object value) {
+        NifiJobExecutionParameters jobExecutionParameters = new NifiJobExecutionParameters();
+        jobExecutionParameters.setJobExecutionParametersPK(new NifiJobExecutionParameters.NifiJobExecutionParametersPK(getJobExecutionId(), keyName));
+        jobExecutionParameters.setJobExecution(this);
+        jobExecutionParameters.setStringVal(value != null ? value.toString() : null);
+        return jobExecutionParameters;
+    }
+
+
+    public void setAsCheckDataJob(String feedNameReference) {
+
+        NifiJobExecutionParameters feedNameRefParam = null;
+        NifiJobExecutionParameters jobTypeParam = null;
+        for (NifiJobExecutionParameters p : getJobParameters()) {
+            if (FeedConstants.PARAM__FEED_NAME.equalsIgnoreCase(p.getJobExecutionParametersPK().getKeyName())) {
+                feedNameRefParam = p;
+            } else if (FeedConstants.PARAM__JOB_TYPE.equalsIgnoreCase(p.getJobExecutionParametersPK().getKeyName())) {
+                jobTypeParam = p;
+            }
+
+            if (feedNameRefParam != null && jobTypeParam != null) {
+                break;
+            }
+        }
+
+        if (feedNameRefParam == null) {
+            feedNameRefParam = addParameter(FeedConstants.PARAM__FEED_NAME, feedNameReference);
+        } else {
+            feedNameRefParam.setStringVal(feedNameReference);
+        }
+
+        if (jobTypeParam == null) {
+            jobTypeParam = addParameter(FeedConstants.PARAM__JOB_TYPE, FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK);
+        } else {
+            jobTypeParam.setStringVal(FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK);
+        }
+
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        NifiJobExecution that = (NifiJobExecution) o;
+
+        return jobExecutionId.equals(that.jobExecutionId);
+
+    }
+
+    @Override
+    public int hashCode() {
+        return jobExecutionId.hashCode();
     }
 }

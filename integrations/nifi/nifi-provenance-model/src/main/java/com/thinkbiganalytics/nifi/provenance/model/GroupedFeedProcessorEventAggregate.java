@@ -14,9 +14,12 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Collectors;
 
 /**
  * Determines a Stream by looking at the last {n} events and determines if the time between each of the events is within a given streaming threshold.
+ *
+ * If the event is detected as being a stream but the originating flow file event ( the one that started the job) was declared a Batch event then it will also process it
  *
  * Created by sr186054 on 8/25/16.
  */
@@ -78,6 +81,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
 
 
     private void movePotentialStreamToBatch() {
+        markFirstEventsAsBatch(potentialStreamEvents);
         jmsEvents.addAll(potentialStreamEvents);
         batchCount.addAndGet(potentialStreamEvents.size());
         potentialStreamEvents.clear();
@@ -96,6 +100,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
                 lastEventTime = event.getEventTime();
             }
             if (ProvenanceEventUtil.isCompletionEvent(event)) {
+
                 //if this event time is before the allotted time between events check for streaming case
                 eventCount.incrementAndGet();
                 if (event.getEventTime().isBefore(lastEventTime.plus(allowedMillisBetweenEvents))) {
@@ -110,10 +115,10 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
                         potentialStreamEvents.add(event);
                     }
                 } else {
+                    potentialStreamEvents.add(event);
                     /// no longer a stream event
                     movePotentialStreamToBatch();
                     tempStreamingCount.set(0);
-                    jmsEvents.add(event);
                 }
             } else {
                 log.info("Non completion event {} ", event);
@@ -121,6 +126,19 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
         } finally {
             lock.unlock();
         }
+    }
+
+    private List<ProvenanceEventRecordDTO> addStreamingEventsWhoseFirstEventWasABatchToQueue() {
+        List<ProvenanceEventRecordDTO> events = streamEvents.stream().filter(e -> e.getFlowFile().getRootFlowFile().isFirstEventBatch()).collect(Collectors.toList());
+        if (events != null && !events.isEmpty()) {
+            jmsEvents.addAll(events);
+        }
+        log.info("Adding {} events since they originated from a BATCH event ", events.size());
+        return events;
+    }
+
+    private void markFirstEventsAsBatch(List<ProvenanceEventRecordDTO> events) {
+        events.stream().filter(e -> e.isStartOfJob()).map(e -> e.getFlowFile().getRootFlowFile()).forEach(ff -> ff.setIsFirstEventBatch(true));
     }
 
     private void printList(List<ProvenanceEventRecordDTO> list, String title) {
@@ -138,6 +156,8 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
             if (DateTime.now().isAfter(lastEventTime.plus(allowedMillisBetweenEvents))) {
                 movePotentialStreamToBatch();
             }
+            //if the First Event was a Batch event we should pass this event through so it gets reconciled in the Ops Manager
+            addStreamingEventsWhoseFirstEventWasABatchToQueue();
             //copy and clear
             events = new ArrayList<>(jmsEvents);
             jmsEvents.clear();

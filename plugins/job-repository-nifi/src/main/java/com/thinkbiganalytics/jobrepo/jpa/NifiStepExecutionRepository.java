@@ -1,12 +1,23 @@
 package com.thinkbiganalytics.jobrepo.jpa;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.querydsl.QueryDslPredicateExecutor;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
 
 /**
  * Created by sr186054 on 8/23/16.
  */
 public interface NifiStepExecutionRepository extends JpaRepository<NifiStepExecution, Long>, QueryDslPredicateExecutor<Long> {
+
+
+    @Query(value = "select step from NifiStepExecution as step "
+                   + "join NifiEventStepExecution as nifiEventStep on nifiEventStep.stepExecution.stepExecutionId = step.stepExecutionId  "
+                   + "join NifiFailedEvent failedEvent on failedEvent.eventId = nifiEventStep.eventId "
+                   + "where step.jobExecution.jobExecutionId = :jobExecutionId AND step.status <> 'FAILED'")
+    List<NifiStepExecution> findStepsInJobThatNeedToBeFailed(@Param("jobExecutionId") Long jobExecutionId);
 
 
 }

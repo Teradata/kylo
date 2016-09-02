@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.jobrepo.nifi.support;
 
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
 import java.util.Date;
@@ -13,6 +14,12 @@ public class DateTimeUtil {
     DateTimeZone tz = DateTimeZone.getDefault();
     Date utc = new Date(tz.convertLocalToUTC(date.getTime(), false));
     return utc;
+  }
+
+  public static DateTime convertToUTC(DateTime date) {
+    DateTimeZone tz = DateTimeZone.getDefault();
+    Date utc = new Date(tz.convertLocalToUTC(date.getMillis(), false));
+    return new DateTime(utc);
   }
 
   public static Date getUTCTime() {
