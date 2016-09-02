@@ -21,6 +21,12 @@
     </dependency>
 
     <dependency>
+      <artifactId>thinkbig-nifi-rest-common-api</artifactId>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
       <artifactId>thinkbig-commons-feed-util</artifactId>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <version>${project.version}</version>

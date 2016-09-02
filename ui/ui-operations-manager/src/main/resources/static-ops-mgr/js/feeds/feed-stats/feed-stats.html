@@ -1,11 +1,13 @@
 <div layout="row" flex ng-controller="FeedStatsController as vm">
-  <div layout="column">
+  <div layout="column" style="width:100%">
     <div layout="row" flex>
 
+      <!--
       <div flex="50">
         <tba-feed-stats-job-executions-pie-chart panel-title="Job Execution's" feed-name="{{vm.feedName}}"></tba-feed-stats-job-executions-pie-chart>
       </div>
-      <div flex="50">
+      -->
+      <div flex="100">
         <tba-feed-stats-top-n-processors-chart feed-name="{{vm.feedName}}" refresh-interval-time="5000"></tba-feed-stats-top-n-processors-chart>
       </div>
 

@@ -107,11 +107,9 @@ public class NifiFlowCache {
     private ConcurrentHashMap<String, List<NifiFlowProcessor>> destinationConnectionIdProcessorMap = new ConcurrentHashMap<>();
 
 
-    /**
-     * Maintain a map for quick lookup with reference from an events SourceConnectionId to the previous Processor (one with a destination connection matching this source) This map is populated when
-     * looking for failure Events to identify the real failureEvent in the flow
-     */
-    private ConcurrentHashMap<String, String> failureProcessorSourceConnectionIdToProcessorIdMap = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<String, List<NifiFlowProcessor>> failureConnectionIdToSourceProcessorMap = new ConcurrentHashMap<>();
+
+
 
     private NifiFlowCache() {
         log.info("Create NifiFlowCache");
@@ -160,6 +158,9 @@ public class NifiFlowCache {
                 destinationConnectionIdProcessorMap.computeIfAbsent(niFiFlowProcessorConnection.getConnectionIdentifier(), (id) -> new ArrayList<>()).add(nifiFlowProcessor);
             });
         });
+        if(group.getFailureConnectionIdToSourceProcessorMap() != null){
+            failureConnectionIdToSourceProcessorMap.putAll(group.getFailureConnectionIdToSourceProcessorMap());
+        }
     }
 
     public NifiFlowProcessor getProcessor(String processorId) {
@@ -304,15 +305,13 @@ public class NifiFlowCache {
 
     }
 
-    public List<NifiFlowProcessor> getProcessorWithDestinationConnectionIdentifier(String connectionId) {
-        return destinationConnectionIdProcessorMap.get(connectionId);
-    }
 
     public String getFailureProcessorWithDestinationConnectionIdentifier(String connectionId) {
-        return failureProcessorSourceConnectionIdToProcessorIdMap.get(connectionId);
+         List<NifiFlowProcessor> processors = failureConnectionIdToSourceProcessorMap.get(connectionId);
+        if(processors != null){
+            return processors.get(0).getId();
+        }
+        return null;
     }
 
-    public void putFailureProcessorConnectionIdentifier(String connectionId, String processorId) {
-        failureProcessorSourceConnectionIdToProcessorIdMap.put(connectionId, processorId);
-    }
 }

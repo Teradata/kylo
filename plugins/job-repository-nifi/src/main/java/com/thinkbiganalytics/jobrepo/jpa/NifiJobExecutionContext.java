@@ -38,11 +38,19 @@ public class NifiJobExecutionContext extends NifiExecutionContextValues {
 
     }
 
+    public NifiJobExecutionContext(NifiJobExecution jobExecution, String keyName) {
+        setJobExecution(jobExecution);
+        setJobExecutionContextPK(new NifiJobExecutionContextPK(jobExecution.getJobExecutionId(), keyName));
+    }
+
     @Embeddable
     public static class NifiJobExecutionContextPK implements Serializable {
 
         @Column(name = "JOB_EXECUTION_ID")
         private Long jobExecutionId;
+
+        @Column(name = "STEP_EXECUTION_ID")
+        private Long stepExecutionId = null;
 
         @Type(type = "com.thinkbiganalytics.jobrepo.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "250")})
         @Column(name = "KEY_NAME")
@@ -121,5 +129,30 @@ public class NifiJobExecutionContext extends NifiExecutionContextValues {
 
     public void setJobExecution(NifiJobExecution jobExecution) {
         this.jobExecution = jobExecution;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        NifiJobExecutionContext that = (NifiJobExecutionContext) o;
+
+        if (!executionContextType.equals(that.executionContextType)) {
+            return false;
+        }
+        return jobExecutionContextPK.equals(that.jobExecutionContextPK);
+
+    }
+
+    @Override
+    public int hashCode() {
+        int result = executionContextType.hashCode();
+        result = 31 * result + jobExecutionContextPK.hashCode();
+        return result;
     }
 }

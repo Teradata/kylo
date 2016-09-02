@@ -11,4 +11,13 @@ public interface ExecutionConstants {
     }
 
 
+    enum ExitCode {
+        COMPLETED,
+        STOPPED,
+        FAILED,
+        ABANDONED,
+        EXECUTING,
+        NOOP,
+        UNKNOWN;
+    }
 }

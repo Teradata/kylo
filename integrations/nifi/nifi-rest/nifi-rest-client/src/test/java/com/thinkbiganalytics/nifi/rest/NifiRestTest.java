@@ -8,6 +8,8 @@ import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessor;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
@@ -225,6 +227,7 @@ public class NifiRestTest {
     @Test
     public void testOrder() throws Exception {
         NifiVisitableProcessGroup g = restClient.getFlowOrder("4ddf9185-66b1-4c06-abd5-1c7fd9ee8034");
+        NifiFlowProcessGroup flow = new NifiFlowBuilder().build(g);
 
         //   Set<ProcessorDTO> processors = restClient.getProcessorsForFlow("c4c7c4be-5421-45a0-87e9-fdef211297c5");
 

@@ -18,6 +18,7 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.TableGenerator;
 import javax.persistence.Version;
@@ -29,7 +30,7 @@ import javax.persistence.Version;
 @Table(name = "BATCH_STEP_EXECUTION")
 public class NifiStepExecution implements Serializable {
 
-    public static enum StepStatus {
+    public enum StepStatus {
         COMPLETED,
         STARTING,
         STARTED,
@@ -74,6 +75,19 @@ public class NifiStepExecution implements Serializable {
     private StepStatus status = StepStatus.COMPLETED;
 
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "EXIT_CODE")
+    private ExecutionConstants.ExitCode exitCode = ExecutionConstants.ExitCode.EXECUTING;
+
+    @Column(name = "EXIT_MESSAGE")
+    private String exitMessage;
+
+    @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
+    @Column(name = "LAST_UPDATED")
+    private DateTime lastUpdated;
+
+
+
     @ManyToOne(targetEntity = NifiJobExecution.class)
     @JoinColumn(name = "JOB_EXECUTION_ID", nullable = false, insertable = true, updatable = true)
     private NifiJobExecution jobExecution;
@@ -81,6 +95,9 @@ public class NifiStepExecution implements Serializable {
 
     @OneToMany(targetEntity = NifiStepExecutionContext.class, mappedBy = "stepExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private List<NifiStepExecutionContext> stepExecutionContext;
+
+    @OneToOne(targetEntity = NifiEventStepExecution.class, mappedBy = "stepExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private NifiEventStepExecution nifiEventStepExecution;
 
 
     public NifiStepExecution() {
@@ -151,6 +168,47 @@ public class NifiStepExecution implements Serializable {
         this.stepExecutionContext = stepExecutionContext;
     }
 
+    public ExecutionConstants.ExitCode getExitCode() {
+        return exitCode;
+    }
+
+    public void setExitCode(ExecutionConstants.ExitCode exitCode) {
+        this.exitCode = exitCode;
+    }
+
+    public String getExitMessage() {
+        return exitMessage;
+    }
+
+    public void setExitMessage(String exitMessage) {
+        this.exitMessage = exitMessage;
+    }
+
+    public DateTime getLastUpdated() {
+        return lastUpdated;
+    }
+
+    public void setLastUpdated(DateTime lastUpdated) {
+        this.lastUpdated = lastUpdated;
+    }
+
+    public void failStep() {
+        setStatus(StepStatus.FAILED);
+        setExitCode(ExecutionConstants.ExitCode.FAILED);
+    }
+
+    public void completeStep() {
+        setStatus(StepStatus.COMPLETED);
+        setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+    }
+
+    public NifiEventStepExecution getNifiEventStepExecution() {
+        return nifiEventStepExecution;
+    }
+
+    public void setNifiEventStepExecution(NifiEventStepExecution nifiEventStepExecution) {
+        this.nifiEventStepExecution = nifiEventStepExecution;
+    }
 
     @Override
     public boolean equals(Object o) {

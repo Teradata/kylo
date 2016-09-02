@@ -219,7 +219,9 @@ public class NifiVisitableProcessor implements  NifiVisitable {
     }
 
     public void addDestinationConnectionIdentifier(ConnectionDTO conn) {
-        getDestinationConnectionIdentifiers().add(new NiFiFlowProcessorConnection(conn.getId(), conn.getName(), conn.getSelectedRelationships()));
+        NiFiFlowProcessorConnection destinationConnection = new NiFiFlowProcessorConnection(conn.getId(), conn.getName(), conn.getSelectedRelationships());
+        getDestinationConnectionIdentifiers().add(destinationConnection);
+
     }
 
 

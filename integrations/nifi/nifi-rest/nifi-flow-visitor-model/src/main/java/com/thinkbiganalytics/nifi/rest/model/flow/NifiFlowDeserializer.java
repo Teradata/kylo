@@ -3,6 +3,8 @@ package com.thinkbiganalytics.nifi.rest.model.flow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -49,6 +51,17 @@ public class NifiFlowDeserializer {
 
             group.setFailureProcessors(
                 group.getFailureProcessors().values().stream().map(processor -> processorMap.get(processor.getId())).collect(Collectors.toMap(processor -> processor.getId(), processor -> processor)));
+
+            Map<String, List<NifiFlowProcessor>> failureConnectionProcessors = new HashMap<>();
+
+            if (group.getFailureConnectionIdToSourceProcessorMap() != null) {
+                group.getFailureConnectionIdToSourceProcessorMap().entrySet().forEach(connectionIdProcessorIdEntry -> {
+                    List<NifiFlowProcessor> populatedProcessors = connectionIdProcessorIdEntry.getValue().stream().map(processor -> processorMap.get(processor.getId())).collect(Collectors.toList());
+                    failureConnectionProcessors.put(connectionIdProcessorIdEntry.getKey(), populatedProcessors);
+
+                });
+            }
+            group.setFailureConnectionIdToSourceProcessorMap(failureConnectionProcessors);
 
         }
     }

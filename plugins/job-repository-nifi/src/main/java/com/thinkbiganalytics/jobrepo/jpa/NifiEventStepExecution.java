@@ -16,43 +16,70 @@ import javax.persistence.Table;
  * Created by sr186054 on 9/1/16.
  */
 @Entity
-@Table(name = "BATCH_NIFI_JOB")
-public class NifiEventJobExecution implements Serializable {
+@Table(name = "BATCH_NIFI_STEP")
+public class NifiEventStepExecution implements Serializable {
 
     @EmbeddedId
-    private NifiEventJobExecutionPK eventJobExecutionPK;
+    private NifiEventStepExecutionPK eventStepExecutionPK;
 
     @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     @JoinColumn(name = "JOB_EXECUTION_ID", nullable = false, insertable = true, updatable = true)
     private NifiJobExecution jobExecution;
 
-    public NifiEventJobExecution() {
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JoinColumn(name = "STEP_EXECUTION_ID", nullable = false, insertable = true, updatable = true)
+    private NifiStepExecution stepExecution;
+
+
+    @Column(name = "EVENT_ID", insertable = false, updatable = false)
+    private Long eventId;
+
+    @Column(name = "FLOW_FILE_ID", insertable = false, updatable = false)
+    private String flowFileId;
+
+
+    public NifiEventStepExecution() {
 
     }
 
-    public NifiEventJobExecution(Long eventId, String flowFileId) {
-        this.eventJobExecutionPK = new NifiEventJobExecutionPK(eventId, flowFileId);
+    public NifiEventStepExecution(Long eventId, String flowFileId) {
+        this.eventStepExecutionPK = new NifiEventStepExecutionPK(eventId, flowFileId);
     }
 
-    public NifiEventJobExecution(NifiJobExecution jobExecution, Long eventId, String flowFileId) {
-        this.eventJobExecutionPK = new NifiEventJobExecutionPK(eventId, flowFileId);
+    public NifiEventStepExecution(NifiStepExecution stepExecution, Long eventId, String flowFileId) {
+        this.eventStepExecutionPK = new NifiEventStepExecutionPK(eventId, flowFileId);
+        this.stepExecution = stepExecution;
+        this.jobExecution = stepExecution.getJobExecution();
+    }
+
+    public NifiEventStepExecution(NifiJobExecution jobExecution, NifiStepExecution stepExecution, Long eventId, String flowFileId) {
+        this.eventStepExecutionPK = new NifiEventStepExecutionPK(eventId, flowFileId);
         this.jobExecution = jobExecution;
+        this.stepExecution = stepExecution;
+    }
+
+    public Long getEventId() {
+        return eventId;
+    }
+
+    public String getFlowFileId() {
+        return flowFileId;
     }
 
     @Embeddable
-    public static class NifiEventJobExecutionPK implements Serializable {
+    public static class NifiEventStepExecutionPK implements Serializable {
 
         @Column(name = "EVENT_ID")
         private Long eventId;
 
-        @Column(name = "FLOW_FILE_UUID")
+        @Column(name = "FLOW_FILE_ID")
         private String flowFileId;
 
-        public NifiEventJobExecutionPK() {
+        public NifiEventStepExecutionPK() {
 
         }
 
-        public NifiEventJobExecutionPK(Long eventId, String flowFileId) {
+        public NifiEventStepExecutionPK(Long eventId, String flowFileId) {
             this.eventId = eventId;
             this.flowFileId = flowFileId;
         }
@@ -82,7 +109,7 @@ public class NifiEventJobExecution implements Serializable {
                 return false;
             }
 
-            NifiEventJobExecutionPK that = (NifiEventJobExecutionPK) o;
+            NifiEventStepExecutionPK that = (NifiEventStepExecutionPK) o;
 
             if (!eventId.equals(that.eventId)) {
                 return false;
@@ -97,22 +124,6 @@ public class NifiEventJobExecution implements Serializable {
             result = 31 * result + flowFileId.hashCode();
             return result;
         }
-    }
-
-    public NifiEventJobExecutionPK getEventJobExecutionPK() {
-        return eventJobExecutionPK;
-    }
-
-    public void setEventJobExecutionPK(NifiEventJobExecutionPK eventJobExecutionPK) {
-        this.eventJobExecutionPK = eventJobExecutionPK;
-    }
-
-    public NifiJobExecution getJobExecution() {
-        return jobExecution;
-    }
-
-    public void setJobExecution(NifiJobExecution jobExecution) {
-        this.jobExecution = jobExecution;
     }
 
 

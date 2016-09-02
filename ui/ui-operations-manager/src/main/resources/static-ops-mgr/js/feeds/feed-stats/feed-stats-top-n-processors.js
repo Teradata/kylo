@@ -35,11 +35,11 @@
                     top: 5, //otherwise top of numeric value is cut off
                     right: 50,
                     bottom: 50, //otherwise bottom labels are not visible
-                    left: 100
+                    left: 150
                 },
                 duration: 500,
                 x: function (d) {
-                    return d.label;
+                    return d.label.length > 100 ? d.label.substr(0, 100) + "..." : d.label;
                 },
                 y: function (d) {
                     return d.value;
@@ -47,7 +47,6 @@
                 showControls: false,
                 showValues: true,
                 xAxis: {
-                    axisLabel: 'Processor',
                     showMaxMin: false
                 },
                 yAxis: {
@@ -89,16 +88,37 @@
 
         function buildChartData() {
             var values = [];
+            var processorNameCount = {};
+            var processorIdNameMap = {};
+
+
+
+
 
             $q.when(ProvenanceEventStatsService.getFeedProcessorDuration(self.feedName, self.timeFrame)).then(function (processorStats) {
                 var jobsStarted = 0;
                 var jobsFinished = 0;
                 var jobDuration = 0;
+                var jobsFailed = 0;
                 _.each(processorStats.data, function (p) {
-                    values.push({label: p.processorName, value: (p.duration / p.totalCount) / 1000});
+
+                    if (processorIdNameMap[p.processorId] == undefined) {
+                        if (processorNameCount[p.processorName] == undefined) {
+                            processorNameCount[p.processorName] = 0;
+                            processorIdNameMap[p.processorId] = p.processorName;
+                        }
+                        else {
+                            processorNameCount[p.processorName] = processorNameCount[p.processorName] + 1;
+                            processorIdNameMap[p.processorId] = p.processorName + " - " + processorNameCount[p.processorName];
+                        }
+                    }
+                    var processorName = processorIdNameMap[p.processorId];
+
+                    values.push({label: processorName, value: (p.duration / p.totalCount) / 1000});
                     jobsStarted += p.jobsStarted;
                     jobsFinished += p.jobsFinished;
                     jobDuration += p.jobDuration;
+                    jobsFailed += p.jobsFailed;
                 });
                 self.dataLoaded = true;
                 self.lastRefreshTime = new Date();
@@ -107,6 +127,7 @@
                 self.chartData = data
                 self.jobsStarted = jobsStarted;
                 self.jobsFinished = jobsFinished;
+                self.jobsFailed = jobsFailed;
                 self.avgJobDuration = ((jobDuration / jobsFinished) / 1000).toFixed(2)
             });
 

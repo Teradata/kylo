@@ -43,6 +43,17 @@ public class NifiFailedEvent implements FailedProvenanceEvent {
     @Column(name = "EVENT_TIME")
     private DateTime eventTime;
 
+    @Column(name = "JOB_FLOW_FILE_ID")
+    private String jobFlowFileId;
+
+
+    @Column(name = "EVENT_ID", insertable = false, updatable = false)
+    private Long eventId;
+
+    @Column(name = "FLOW_FILE_ID", insertable = false, updatable = false)
+    private String flowFileId;
+
+
     public NifiFailedEvent() {
 
     }
@@ -171,4 +182,15 @@ public class NifiFailedEvent implements FailedProvenanceEvent {
     public void setFailedEventPK(NiFiFailedEventPK failedEventPK) {
         this.failedEventPK = failedEventPK;
     }
+
+    public String getJobFlowFileId() {
+        return jobFlowFileId;
+    }
+
+    public void setJobFlowFileId(String jobFlowFileId) {
+        this.jobFlowFileId = jobFlowFileId;
+    }
+
+
+
 }
