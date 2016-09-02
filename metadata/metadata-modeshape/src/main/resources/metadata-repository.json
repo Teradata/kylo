@@ -18,6 +18,10 @@
                 "classname" : "com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationProvider",
             },
             {
+                "name" : "Override Provider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.OverrideAuthenticationProvider",
+            },
+            {
                 "name" : "DB Admin Provider",
                 "classname" : "com.thinkbiganalytics.metadata.modeshape.security.AdminAuthenticationProvider",
             }

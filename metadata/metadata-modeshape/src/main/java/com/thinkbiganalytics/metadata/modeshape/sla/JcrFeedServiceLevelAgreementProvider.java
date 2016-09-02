@@ -17,6 +17,7 @@ import javax.jcr.query.QueryResult;
 import javax.jcr.query.Row;
 import javax.jcr.query.RowIterator;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntityProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
@@ -34,7 +35,6 @@ import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityList
 import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensibleEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedPrecondition;
-import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
@@ -170,8 +170,9 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
      * Creates the Extensible Entity Type
      */
     public String createType() {
+        // TODO service?
         if (typeCreated.compareAndSet(false, true)) {
-            return metadata.commit(new AdminCredentials(), () -> {
+            return metadata.commit(() -> {
                 ExtensibleType feedSla = typeProvider.getType(JcrFeedServiceLevelAgreementRelationship.TYPE_NAME);
                 if (feedSla == null) {
                     feedSla = typeProvider.buildType(JcrFeedServiceLevelAgreementRelationship.TYPE_NAME)
@@ -192,7 +193,7 @@ public class JcrFeedServiceLevelAgreementProvider implements FeedServiceLevelAgr
                 }
 
                 return feedSla.getName();
-            });
+            }, MetadataAccess.SERVICE);
         }
         return null;
     }

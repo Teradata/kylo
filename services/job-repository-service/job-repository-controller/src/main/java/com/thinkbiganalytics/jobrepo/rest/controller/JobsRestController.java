@@ -18,8 +18,10 @@ import com.thinkbiganalytics.jobrepo.repository.rest.model.JobAction;
 import com.thinkbiganalytics.jobrepo.rest.support.DataTableColumnFactory;
 import com.thinkbiganalytics.jobrepo.rest.support.RestUtil;
 import com.thinkbiganalytics.jobrepo.rest.support.WebColumnFilterUtil;
+import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
 import com.thinkbiganalytics.jobrepo.service.JobExecutionException;
 import com.thinkbiganalytics.jobrepo.service.JobService;
+import com.thinkbiganalytics.security.AccessController;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -62,12 +64,17 @@ public class JobsRestController {
   @Inject
   private JobService jobService;
 
+  @Inject
+  private AccessController accessController;
+
 
   @GET
   @Path("/{executionId}")
   @Produces({MediaType.APPLICATION_JSON})
   public Response getJob(@PathParam("executionId") String executionId,
                          @QueryParam(value = "includeSteps") @DefaultValue("false") boolean includeSteps) {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     ExecutedJob executedJob = jobRepository.findByExecutionId(executionId);
     if (includeSteps) {
       List<ExecutedStep> steps = jobRepository.getJobProgress(executionId);
@@ -80,6 +87,8 @@ public class JobsRestController {
   @Path("/{executionId}/related")
   @Produces({MediaType.APPLICATION_JSON})
   public List<RelatedJobExecution> getRelatedJobExecutions(@PathParam("executionId") String executionId) {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     if (executionId != null) {
       return jobRepository.findRelatedJobExecutions(new Long(executionId));
     } else {
@@ -97,6 +106,8 @@ public class JobsRestController {
   @Path("/{executionId}/steps")
   @Produces({MediaType.APPLICATION_JSON})
   public List<ExecutedStep> getJobSteps(@PathParam("executionId") String executionId) {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     return jobRepository.getJobProgress(executionId);
   }
 
@@ -109,6 +120,9 @@ public class JobsRestController {
   @Path("/{executionId}/restart")
   @Produces({MediaType.APPLICATION_JSON})
   public ExecutedJob restartJob(@PathParam("executionId") Long executionId) throws JobExecutionException {
+    
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+
     ExecutedJob job = null;
 
     // Verify the job instance exists
@@ -137,6 +151,9 @@ public class JobsRestController {
   @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
   @Produces({MediaType.APPLICATION_JSON})
   public ExecutedJob stopJob(@PathParam("executionId") Long executionId, JobAction jobAction) throws JobExecutionException {
+
+      this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+
     boolean stopped = this.jobService.stopJobExecution(executionId);
     ExecutedJob job = this.jobRepository.findByExecutionId(executionId + "");
     if (jobAction.isIncludeSteps()) {
@@ -157,6 +174,8 @@ public class JobsRestController {
   @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
   @Produces({MediaType.APPLICATION_JSON})
   public ExecutedJob abandonJob(@PathParam("executionId") Long executionId, JobAction jobAction) throws JobExecutionException {
+
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
 
     this.jobService.abandonJobExecution(executionId);
     //abandon any previous runs as well.
@@ -179,13 +198,16 @@ public class JobsRestController {
    * Fail the job associated with the given instance id
    *
    * @param executionId The job instance id
-   * @return A status message and the apropriate http status code
+   * @return A status message and the appropriate http status code
    */
   @POST
   @Path("/{executionId}/fail")
   @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
   @Produces({MediaType.APPLICATION_JSON})
   public ExecutedJob failJob(@PathParam("executionId") Long executionId, JobAction jobAction) {
+      
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+
     this.jobService.failJobExecution(executionId);
     //requery for status
     ExecutedJob job = this.jobRepository.findByExecutionId(executionId + "");
@@ -219,6 +241,8 @@ public class JobsRestController {
                                         @QueryParam("limit") @DefaultValue("10") Integer limit,
                                         @QueryParam("start") @DefaultValue("1") Integer start,
                                         @Context HttpServletRequest request) {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     List<ExecutedJob> jobs = new ArrayList<>();
     List<ColumnFilter>
         filters =
@@ -236,6 +260,8 @@ public class JobsRestController {
                                       @QueryParam("limit") @DefaultValue("10") Integer limit,
                                       @QueryParam("start") @DefaultValue("1") Integer start,
                                       @Context HttpServletRequest request) {
+
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
     List<ColumnFilter>
         filters =
@@ -278,6 +304,8 @@ public class JobsRestController {
                                       @QueryParam("start") @DefaultValue("1") Integer start,
                                       @Context HttpServletRequest request) {
 
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     List<ColumnFilter>
         filters =
         WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
@@ -297,6 +325,8 @@ public class JobsRestController {
                                         @QueryParam("limit") @DefaultValue("10") Integer limit,
                                         @QueryParam("start") @DefaultValue("1") Integer start,
                                         @Context HttpServletRequest request) {
+
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
     List<ColumnFilter>
         filters =
@@ -319,6 +349,8 @@ public class JobsRestController {
                                         @QueryParam("start") @DefaultValue("1") Integer start,
                                         @Context HttpServletRequest request) {
 
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     List<ColumnFilter>
         filters =
         WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.JOB);
@@ -339,6 +371,8 @@ public class JobsRestController {
                                       @QueryParam("limit") @DefaultValue("10") Integer limit,
                                       @QueryParam("start") @DefaultValue("1") Integer start,
                                       @Context HttpServletRequest request) {
+
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
     List<ColumnFilter>
         filters =
@@ -374,6 +408,9 @@ public class JobsRestController {
   @Path("/daily-status-count/{timeframe}")
   @Produces({MediaType.APPLICATION_JSON})
   public List<JobStatusCount> findDailyStatusCount(@PathParam("timeframe") String timeframe) {
+
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     return findDailyStatusCount(timeframe, 1);
   }
 
@@ -383,6 +420,9 @@ public class JobsRestController {
   @Produces({MediaType.APPLICATION_JSON})
   public List<JobStatusCount> findDailyStatusCount(@PathParam("timeframe") String timeframe,
                                                    @PathParam("amount") Integer amount) {
+
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     DatabaseQuerySubstitution.DATE_PART datePart = DatabaseQuerySubstitution.DATE_PART.DAY;
     if (org.apache.commons.lang3.StringUtils.isNotBlank(timeframe)) {
       try {
@@ -400,6 +440,8 @@ public class JobsRestController {
   @Path("/running-failed-counts")
   @Produces({MediaType.APPLICATION_JSON})
   public List<JobStatusCount> getRunningOrFailedJobCounts() {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     return jobRepository.getRunningOrFailedJobCounts();
   }
 
@@ -427,6 +469,9 @@ public class JobsRestController {
   @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
   @Produces({MediaType.APPLICATION_JSON})
   public ExecutedJob createJob(String job) throws Exception {
+    
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
+
     ExecutedJob executedJob = null;
 
     ObjectMapper objectMapper = new ObjectMapper();
@@ -446,6 +491,8 @@ public class JobsRestController {
   @Path("/{executionId}/parameters")
   @Produces({MediaType.APPLICATION_JSON})
   public List<JobParameterType> jobParameters(@PathParam("executionId") Long executionId) {
+
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ADMIN_OPS);
 
     List<JobParameterType> jobParameters = jobService.getJobParametersForJob(executionId);
     return jobParameters;

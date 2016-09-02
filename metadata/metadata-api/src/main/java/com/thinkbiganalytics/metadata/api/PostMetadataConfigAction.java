@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.metadata.config;
+package com.thinkbiganalytics.metadata.api;
 
 /**
  * Defines an action that should be performed once the metadata system has started and been configured.

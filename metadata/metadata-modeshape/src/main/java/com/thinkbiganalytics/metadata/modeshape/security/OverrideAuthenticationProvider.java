@@ -14,7 +14,11 @@ import org.modeshape.jcr.security.AuthenticationProvider;
  *
  * @author Sean Felten
  */
-public class AdminAuthenticationProvider implements AuthenticationProvider {
+public class OverrideAuthenticationProvider implements AuthenticationProvider {
+    
+    public OverrideAuthenticationProvider() {
+        super();
+    }
 
     /* (non-Javadoc)
      * @see org.modeshape.jcr.security.AuthenticationProvider#authenticate(javax.jcr.Credentials, java.lang.String, java.lang.String, org.modeshape.jcr.ExecutionContext, java.util.Map)
@@ -26,7 +30,7 @@ public class AdminAuthenticationProvider implements AuthenticationProvider {
                                          ExecutionContext repositoryContext, 
                                          Map<String, Object> sessionAttributes) {
         if (credentials instanceof OverrideCredentials) {
-            return repositoryContext.with(new AdminSecurityContext());
+            return repositoryContext.with(new OverrideSecurityContext((OverrideCredentials) credentials));
         } else {
             return null;
         }

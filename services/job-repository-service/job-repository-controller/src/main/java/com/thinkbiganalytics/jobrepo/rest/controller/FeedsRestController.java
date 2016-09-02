@@ -4,26 +4,6 @@
 
 package com.thinkbiganalytics.jobrepo.rest.controller;
 
-import com.thinkbiganalytics.jobrepo.query.feed.FeedQueryConstants;
-import com.thinkbiganalytics.jobrepo.query.job.JobQueryConstants;
-import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
-import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
-import com.thinkbiganalytics.jobrepo.query.model.FeedStatus;
-import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
-import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
-import com.thinkbiganalytics.jobrepo.query.substitution.DatabaseQuerySubstitution;
-import com.thinkbiganalytics.jobrepo.query.support.ColumnFilter;
-import com.thinkbiganalytics.jobrepo.query.support.OrderBy;
-import com.thinkbiganalytics.jobrepo.query.support.QueryColumnFilterSqlString;
-import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
-import com.thinkbiganalytics.jobrepo.rest.support.DataTableColumnFactory;
-import com.thinkbiganalytics.jobrepo.rest.support.RestUtil;
-import com.thinkbiganalytics.jobrepo.rest.support.WebColumnFilterUtil;
-
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,6 +19,28 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.thinkbiganalytics.jobrepo.query.feed.FeedQueryConstants;
+import com.thinkbiganalytics.jobrepo.query.job.JobQueryConstants;
+import com.thinkbiganalytics.jobrepo.query.model.ExecutedFeed;
+import com.thinkbiganalytics.jobrepo.query.model.FeedHealth;
+import com.thinkbiganalytics.jobrepo.query.model.FeedStatus;
+import com.thinkbiganalytics.jobrepo.query.model.JobStatusCount;
+import com.thinkbiganalytics.jobrepo.query.model.SearchResult;
+import com.thinkbiganalytics.jobrepo.query.substitution.DatabaseQuerySubstitution;
+import com.thinkbiganalytics.jobrepo.query.support.ColumnFilter;
+import com.thinkbiganalytics.jobrepo.query.support.OrderBy;
+import com.thinkbiganalytics.jobrepo.query.support.QueryColumnFilterSqlString;
+import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
+import com.thinkbiganalytics.jobrepo.rest.support.DataTableColumnFactory;
+import com.thinkbiganalytics.jobrepo.rest.support.RestUtil;
+import com.thinkbiganalytics.jobrepo.rest.support.WebColumnFilterUtil;
+import com.thinkbiganalytics.jobrepo.security.OperationsAccessControl;
+import com.thinkbiganalytics.security.AccessController;
+
 import io.swagger.annotations.Api;
 
 @Api(value = "feeds", produces = "application/json")
@@ -50,11 +52,16 @@ public class FeedsRestController {
   @Inject
   private FeedRepository feedRepository;
 
+  @Inject
+  private AccessController accessController;
+
 
   @GET
   @Path("/{feedName}/latest")
   @Produces({MediaType.APPLICATION_JSON})
   public ExecutedFeed findLatestFeedsByName(@PathParam("feedName") String feedName, @Context HttpServletRequest request) {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+    
     return feedRepository.findLastCompletedFeed(feedName);
   }
 
@@ -65,6 +72,8 @@ public class FeedsRestController {
   public Response findFeeds(@QueryParam("sort") @DefaultValue("") String sort,
                             @QueryParam("limit") @DefaultValue("10") Integer limit,
                             @QueryParam("start") @DefaultValue("1") Integer start, @Context HttpServletRequest request) {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+      
     List<ColumnFilter>
         filters =
         WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
@@ -81,6 +90,8 @@ public class FeedsRestController {
                                        @QueryParam("limit") @DefaultValue("10") Integer limit,
                                        @QueryParam("start") @DefaultValue("1") Integer start,
                                        @Context HttpServletRequest request) {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     List<ColumnFilter>
         filters =
         WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
@@ -125,6 +136,8 @@ public class FeedsRestController {
   public List<JobStatusCount> findFeedDailyStatusCount(@PathParam("feedName") String feedName,
                                                        @PathParam("timeframe") String timeframe,
                                                        @PathParam("amount") Integer amount) {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     DatabaseQuerySubstitution.DATE_PART datePart = DatabaseQuerySubstitution.DATE_PART.DAY;
     if (StringUtils.isNotBlank(timeframe)) {
       try {
@@ -147,6 +160,8 @@ public class FeedsRestController {
                                        @QueryParam("limit") @DefaultValue("10") Integer limit,
                                        @QueryParam("start") @DefaultValue("1") Integer start,
                                        @Context HttpServletRequest request) {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     List<ColumnFilter>
         filters =
         WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
@@ -165,6 +180,8 @@ public class FeedsRestController {
                                          @QueryParam("limit") @DefaultValue("10") Integer limit,
                                          @QueryParam("start") @DefaultValue("1") Integer start,
                                          @Context HttpServletRequest request) {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     List<ColumnFilter>
         filters =
         WebColumnFilterUtil.buildFiltersFromRequestForDatatable(request, DataTableColumnFactory.PIPELINE_DATA_TYPE.FEED);
@@ -182,6 +199,8 @@ public class FeedsRestController {
   @Produces({MediaType.APPLICATION_JSON})
   public FeedStatus getFeedHealth(@Context HttpServletRequest request) {
 
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     List<ColumnFilter> filters = WebColumnFilterUtil.buildFiltersFromRequest(request, null);
     if (filters == null) {
       filters = new ArrayList<ColumnFilter>();
@@ -193,6 +212,7 @@ public class FeedsRestController {
   @Path("/health-count")
   @Produces({MediaType.APPLICATION_JSON})
   public List<FeedHealth> getFeedHealthCounts(@Context HttpServletRequest request) {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
 
     return this.feedRepository.getFeedHealthCounts();
   }
@@ -202,6 +222,8 @@ public class FeedsRestController {
   @Path("/health-count/{feedName}")
   @Produces({MediaType.APPLICATION_JSON})
   public FeedHealth getFeedHealthCounts(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     List<FeedHealth> feedHealthList = this.feedRepository.getFeedHealthCounts(feedName);
     if (feedHealthList != null && !feedHealthList.isEmpty()) {
       return feedHealthList.get(0);
@@ -216,6 +238,8 @@ public class FeedsRestController {
   @Produces({MediaType.APPLICATION_JSON})
   public FeedStatus getFeedHealthForFeed(@Context HttpServletRequest request, @PathParam("feedName") String feedName) {
 
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     List<ColumnFilter> filters = WebColumnFilterUtil.buildFiltersFromRequest(request, null);
     if (filters == null) {
       filters = new ArrayList<ColumnFilter>();
@@ -228,6 +252,8 @@ public class FeedsRestController {
   @Path("/names")
   @Produces({MediaType.APPLICATION_JSON})
   public List<String> getFeedNames() {
+    this.accessController.checkPermission(AccessController.SERVICES, OperationsAccessControl.ACCESS_OPS);
+
     return feedRepository.getFeedNames();
   }
 

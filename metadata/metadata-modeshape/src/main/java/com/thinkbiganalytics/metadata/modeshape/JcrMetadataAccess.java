@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import java.security.Principal;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -26,6 +27,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.modeshape.security.OverrideCredentials;
 import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
@@ -109,14 +111,11 @@ public class JcrMetadataAccess implements MetadataAccess {
     }
     
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.MetadataAccess#commit(com.thinkbiganalytics.metadata.api.Command)
+     * @see com.thinkbiganalytics.metadata.api.MetadataAccess#commit(com.thinkbiganalytics.metadata.api.Command, java.security.Principal[])
      */
     @Override
-    public <R> R commit(Command<R> cmd) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        SpringAuthenticationCredentials creds = new SpringAuthenticationCredentials(auth);
-        
-        return commit(creds, cmd);
+    public <R> R commit(Command<R> cmd, Principal... principals) {
+        return commit(createCredentials(principals), cmd);
     }
 
     public <R> R commit(Credentials creds, Command<R> cmd) {
@@ -171,15 +170,13 @@ public class JcrMetadataAccess implements MetadataAccess {
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.MetadataAccess#read(com.thinkbiganalytics.metadata.api.Command)
+     * @see com.thinkbiganalytics.metadata.api.MetadataAccess#read(com.thinkbiganalytics.metadata.api.Command, java.security.Principal[])
      */
     @Override
-    public <R> R read(Command<R> cmd) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        SpringAuthenticationCredentials creds = new SpringAuthenticationCredentials(auth);
-        
-        return read(creds, cmd);
+    public <R> R read(Command<R> cmd, Principal... principals) {
+        return read(createCredentials(principals), cmd);
     }
+
 
     public <R> R read(Credentials creds, Command<R> cmd) {
         Session session = activeSession.get();
@@ -217,5 +214,19 @@ public class JcrMetadataAccess implements MetadataAccess {
         } else {
             return cmd.execute();
         }
+    }
+
+
+    private Credentials createCredentials(Principal... principals) {
+        Credentials creds = null;
+        
+        if (principals.length == 0) {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            creds = new SpringAuthenticationCredentials(auth);
+        } else {
+            creds = OverrideCredentials.create(principals);
+        }
+        
+        return creds;
     }
 }

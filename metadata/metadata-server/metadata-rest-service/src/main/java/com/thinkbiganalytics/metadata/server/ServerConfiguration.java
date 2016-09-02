@@ -3,6 +3,14 @@
  */
 package com.thinkbiganalytics.metadata.server;
 
+import java.security.Principal;
+
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Profile;
+
 import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -28,12 +36,6 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 import com.thinkbiganalytics.metadata.sla.spi.core.SimpleServiceLevelAssessor;
-
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.context.annotation.Profile;
 
 /**
  * @author Sean Felten
@@ -69,12 +71,12 @@ public class ServerConfiguration {
         // Transaction behavior not enforced in memory-only mode;
         return new MetadataAccess() {
             @Override
-            public <R> R commit(Command<R> cmd) {
+            public <R> R commit(Command<R> cmd, Principal... principals) {
                 return cmd.execute();
             }
 
             @Override
-            public <R> R read(Command<R> cmd) {
+            public <R> R read(Command<R> cmd, Principal... principals) {
                 return cmd.execute();
             }
         };

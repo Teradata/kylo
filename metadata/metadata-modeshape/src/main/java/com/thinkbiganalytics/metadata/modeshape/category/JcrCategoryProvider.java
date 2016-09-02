@@ -1,18 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.category;
 
-import com.thinkbiganalytics.metadata.api.category.Category;
-import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
-import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
-import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
-import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
-import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +7,18 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.category.Category;
+import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleType;
+import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
+import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.common.EntityUtil;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 
 /**
  * A JCR provider for {@link Category} objects.
@@ -32,7 +31,7 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     /** Transaction support */
     @Inject
-    JcrMetadataAccess metadataAccess;
+    MetadataAccess metadataAccess;
 
     @Override
     public Category findBySystemName(String systemName) {
@@ -76,7 +75,8 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public void deleteById(final Category.ID id) {
-        metadataAccess.commit(new AdminCredentials(), () -> {
+        // TODO service?
+        metadataAccess.commit(() -> {
             // Get category
             final Category category = findById(id);
 
@@ -91,7 +91,7 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
                 super.delete(category);
             }
             return true;
-        });
+        }, MetadataAccess.SERVICE);
     }
 
     @Nonnull
@@ -102,10 +102,10 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public void setUserFields(@Nonnull final Set<UserFieldDescriptor> userFields) {
-        metadataAccess.commit(new AdminCredentials(), () -> {
+        metadataAccess.commit(() -> {
             JcrPropertyUtil.setUserFields(ExtensionsConstants.USER_CATEGORY, userFields, extensibleTypeProvider);
             return userFields;
-        });
+        }, MetadataAccess.SERVICE);
     }
 
     @Nonnull
@@ -117,10 +117,10 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Override
     public void setFeedUserFields(@Nonnull final Category.ID categoryId, @Nonnull final Set<UserFieldDescriptor> userFields) {
-        metadataAccess.commit(new AdminCredentials(), () -> {
+        metadataAccess.commit(() -> {
             final Category category = findById(categoryId);
             JcrPropertyUtil.setUserFields(ExtensionsConstants.getUserCategoryFeed(category.getName()), userFields, extensibleTypeProvider);
             return userFields;
-        });
+        }, MetadataAccess.SERVICE);
     }
 }

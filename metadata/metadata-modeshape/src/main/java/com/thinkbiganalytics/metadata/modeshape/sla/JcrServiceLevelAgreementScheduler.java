@@ -14,11 +14,9 @@ import org.springframework.beans.factory.annotation.Value;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
-import com.thinkbiganalytics.metadata.api.Command;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
 import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
-import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
@@ -49,7 +47,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
     private ServiceLevelAgreementChecker slaChecker;
 
     @Inject
-    private JcrMetadataAccess metadataAccess;
+    private MetadataAccess metadataAccess;
 
     @Inject
     ServiceLevelAgreementProvider slaProvider;
@@ -68,7 +66,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
 
     @Override
     public void modeShapeAvailable() {
-        metadataAccess.read(new AdminCredentials(),() -> {
+        metadataAccess.read(() -> {
             List<ServiceLevelAgreement> agreements = slaProvider.getAgreements();
 
             if (agreements != null) {
@@ -78,7 +76,7 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
             }
 
             return null;
-        });
+        }, MetadataAccess.SERVICE);
     }
 
     private String getUniqueName(String name) {
@@ -156,14 +154,11 @@ public class JcrServiceLevelAgreementScheduler implements ServiceLevelAgreementS
                     public void run() {
 
                         //query for this SLA
-                        metadataAccess.commit(new AdminCredentials(),new Command<Object>() {
-                            @Override
-                            public Object execute() {
-                                ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
-                                slaChecker.checkAgreement(sla);
-                                return null;
-                            }
-                        });
+                        metadataAccess.commit(() -> {
+                            ServiceLevelAgreement sla = slaProvider.getAgreement(slaId);
+                            slaChecker.checkAgreement(sla);
+                            return null;
+                        }, MetadataAccess.SERVICE);
 
 
                     }

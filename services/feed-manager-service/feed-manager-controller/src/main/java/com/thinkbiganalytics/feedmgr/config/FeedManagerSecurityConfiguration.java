@@ -3,17 +3,14 @@
  */
 package com.thinkbiganalytics.feedmgr.config;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
-import com.thinkbiganalytics.metadata.config.PostMetadataConfigAction;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
-import com.thinkbiganalytics.security.action.AllowedActions;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
 
 /**
@@ -24,21 +21,21 @@ import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
 public class FeedManagerSecurityConfiguration {
 
     @Bean
-    public PostMetadataConfigAction configAuthorization() {
+    public PostMetadataConfigAction feedManagerSecurityConfigAction() {
         return new ConfigureAuthorizationAction();
     }
     
     public class ConfigureAuthorizationAction implements PostMetadataConfigAction {
 
         @Inject
-        private JcrMetadataAccess metadata;
+        private MetadataAccess metadata;
         
         @Inject
         private ModuleActionsBuilder builder;
 
         @Override
         public void run() {
-            metadata.commit(new AdminCredentials(), () -> {
+            metadata.commit(() -> {
                 // Builds the allowable actions related to feeds to the services group
                 return builder
                             .group("services")
@@ -84,7 +81,7 @@ public class FeedManagerSecurityConfiguration {
                                     .add()
                                 .add()
                             .build();
-            });
+            }, MetadataAccess.SERVICE);
         }
     }
 }

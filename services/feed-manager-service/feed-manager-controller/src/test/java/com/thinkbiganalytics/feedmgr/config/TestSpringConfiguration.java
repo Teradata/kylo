@@ -29,6 +29,8 @@ import org.modeshape.jcr.api.txn.TransactionManagerLookup;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.security.Principal;
+
 import javax.jcr.Credentials;
 import javax.jcr.Repository;
 
@@ -90,12 +92,12 @@ public class TestSpringConfiguration {
         // Transaction behavior not enforced in memory-only mode;
         return new JcrMetadataAccess() {
             @Override
-            public <R> R commit(Command<R> cmd) {
+            public <R> R commit(Command<R> cmd, Principal... principals) {
                 return cmd.execute();
             }
 
             @Override
-            public <R> R read(Command<R> cmd) {
+            public <R> R read(Command<R> cmd, Principal... principals) {
                 return cmd.execute();
             }
 
@@ -117,12 +119,12 @@ public class TestSpringConfiguration {
         // Transaction behavior not enforced in memory-only mode;
         return new MetadataAccess() {
             @Override
-            public <R> R commit(Command<R> cmd) {
+            public <R> R commit(Command<R> cmd, Principal... principals) {
                 return cmd.execute();
             }
 
             @Override
-            public <R> R read(Command<R> cmd) {
+            public <R> R read(Command<R> cmd, Principal... principals) {
                 return cmd.execute();
             }
         };

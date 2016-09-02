@@ -8,9 +8,8 @@ import javax.inject.Inject;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.thinkbiganalytics.metadata.config.PostMetadataConfigAction;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.security.action.Action;
 import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
 
@@ -45,13 +44,13 @@ public class TestSecurityConfig {
     
     public class ConfigureAuthorizationAction implements PostMetadataConfigAction {
         @Inject
-        private JcrMetadataAccess metadata;
+        private MetadataAccess metadata;
         
         @Inject
         private ModuleActionsBuilder builder;
         
         public void run() {
-            metadata.commit(new AdminCredentials(), () -> {
+            metadata.commit(() -> {
 //                JcrTool tool = new JcrTool(true);
 //                tool.printSubgraph(JcrMetadataAccess.getActiveSession(), "/metadata");
 
@@ -104,7 +103,7 @@ public class TestSecurityConfig {
                                     .add()
                                 .add()
                             .build();
-            });
+            }, MetadataAccess.SERVICE);
         }
     }
     

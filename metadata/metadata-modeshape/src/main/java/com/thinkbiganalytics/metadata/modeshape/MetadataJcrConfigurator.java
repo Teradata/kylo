@@ -21,7 +21,8 @@ import javax.jcr.security.Privilege;
 
 import org.modeshape.jcr.security.SimplePrincipal;
 
-import com.thinkbiganalytics.metadata.config.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.extension.ExtensionsConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
@@ -35,7 +36,7 @@ import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeAdminPrincipal
 public class MetadataJcrConfigurator {
     
     @Inject
-    private JcrMetadataAccess metadataAccess;
+    private MetadataAccess metadataAccess;
     
     private List<PostMetadataConfigAction> postConfigActions = new ArrayList<>();
     
@@ -47,7 +48,7 @@ public class MetadataJcrConfigurator {
     
     
     public void configure() {
-        this.metadataAccess.commit(new AdminCredentials(), () -> {
+        this.metadataAccess.commit(() -> {
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
                 
@@ -60,7 +61,7 @@ public class MetadataJcrConfigurator {
             } catch (RepositoryException e) {
                 throw new MetadataRepositoryException("Could not create initial JCR metadata", e);
             }
-        });
+        }, MetadataAccess.SERVICE);
     }
     
     private void firePostConfigActions() {
