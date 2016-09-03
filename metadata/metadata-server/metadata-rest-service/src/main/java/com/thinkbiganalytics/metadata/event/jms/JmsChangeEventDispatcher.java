@@ -89,7 +89,7 @@ public class JmsChangeEventDispatcher {
                 jmsEvent.setFeedName(feed.getName());
                 jmsEvent.setCategoryName(feed.getCategory().getName());
                 return jmsEvent;
-            });
+            }, MetadataAccess.SERVICE);
 
             jmsMessagingTemplate.convertAndSend(cleanupTriggerTopic, jmsEvent);
         }
@@ -109,7 +109,7 @@ public class JmsChangeEventDispatcher {
                 triggerEv.setFeedName(feed.getName());
                 triggerEv.setCategory(feed.getCategory().getName());
                 return triggerEv;
-            });
+            }, MetadataAccess.SERVICE);
 
             jmsMessagingTemplate.convertAndSend(preconditionTriggerTopic, triggerEv);
         }

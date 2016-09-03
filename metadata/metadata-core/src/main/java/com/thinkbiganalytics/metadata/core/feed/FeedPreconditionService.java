@@ -114,7 +114,7 @@ public class FeedPreconditionService {
                         checkPrecondition(feed);
                     }
                     return null;
-                });
+                }, MetadataAccess.SERVICE);
             }
         }
     }

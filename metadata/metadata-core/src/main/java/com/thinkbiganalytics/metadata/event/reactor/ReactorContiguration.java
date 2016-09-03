@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.event.reactor;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -25,13 +27,21 @@ public class ReactorContiguration {
 
     @Bean(name="metadataEventBus")
     public EventBus metadataEventBus() {
-        return EventBus.create(reactorEnvironment());
+        Environment env = reactorEnvironment();
+        Logger log = LoggerFactory.getLogger(EventBus.class);
+        
+        return EventBus.config()
+                        .env(env)
+                        .dispatcher(env.getDefaultDispatcher())
+                        .dispatchErrorHandler((t) -> { log.error("Event bus dispatch error", t); })
+                        .get();
     }
     
     @Bean
     public MetadataEventService eventService() {
         return new ReactorMetadataEventService();
     }
+    
 //
 //    @Bean(name="metadataEventServer")
 //    public TcpServer<Buffer, Buffer> eventServer() {
