@@ -22,7 +22,7 @@
         </div>
     <div  ng-if="vm.model.table.method != 'EXISTING_TABLE'">
         <div class="md-subhead">Choose a method for specifing the schema</div>
-        <div layout="row" layout-align="start start" class="layout-padding-top-bottom">
+        <div layout="column" layout-align="start start" class="layout-padding-top-bottom">
             <div class="layout-padding-indent" style="padding-top:8px;">
                 <md-radio-group ng-model="vm.model.table.method" layout="row" >
                     <md-radio-button ng-repeat="method in vm.tableCreateMethods"
@@ -31,12 +31,22 @@
                         {{method.name}}
                     </md-radio-button>
                 </md-radio-group>
-            </div>
-            <div ng-if="vm.model.table.method == 'SAMPLE_FILE'" layout="row" layout-align="center center" style="padding-left:5px;">
-                <upload-file upload-file-model="vm.sampleFile" input-size="20" style="margin-top: -10px;" ></upload-file>
-                <md-button style="margin-top: -5px;" id="upload-sample-file-btn" class="md-raised md-primary" ng-click="vm.uploadSampleFile();" ng-if="vm.sampleFile != null" ng-disabled="vm.uploadBtnDisabled">
-                    Upload
-                </md-button>
+                <div ng-if="vm.model.table.method == 'SAMPLE_FILE'" layout="column" layout-align="center stretch" style="padding-left:5px;">
+                    <div layout="row" layout-align="center start">
+                        <upload-file upload-file-model="vm.sampleFile" input-size="20" style="margin-top: -10px;" ></upload-file>
+                    </div>
+                    <md-switch ng-model="vm.sampleFileOverrideDelimiter" aria-label="Override delimiter">
+                        Override delimiter
+                    </md-switch>
+                    <md-input-container ng-if="vm.sampleFileOverrideDelimiter" class="md-block">
+                        <label>Override delimiter</label>
+                        <input type="text" ng-model="vm.sampleFileDelimiter" ng-maxlength="1" maxlength="1" input-size="1" size="1" />
+                        <div class="hint">Delimiter should be auto-detected; but can be overridden</div>
+                    </md-input-container>
+                    <md-button style="margin-top: -5px;" id="upload-sample-file-btn" class="md-raised md-primary" ng-click="vm.uploadSampleFile();" ng-if="vm.sampleFile != null" ng-disabled="vm.uploadBtnDisabled">
+                        Upload
+                    </md-button>
+                </div>
             </div>
         </div>
     </div>

@@ -45,11 +45,23 @@ public class TextFileParser {
     private void TextFileParser() {
     }
 
-    public TableSchema parse(InputStream is) throws IOException {
+    /**
+     * Parses a sample file to allow schema specification when creating a new feed.
+     *
+     * @param is The sample file
+     * @param delimiter Allows user to manually select the delimiter used in the sample file
+     * @return A <code>TableSchema</code> representing the schema
+     * @throws IOException If there is an error parsing the sample file
+     */
+    public TableSchema parse(InputStream is, Character delimiter) throws IOException {
         TableSchema schema = null;
         try (BufferedReader br = new BufferedReader(new InputStreamReader(is))) {
             List<LineStats> lineStats = generateStats(br);
-            this.delim = guessDelimiter(lineStats);
+            if (delimiter == null) {
+                this.delim = guessDelimiter(lineStats);
+            } else {
+                this.delim = delimiter;
+            }
             this.quotes = hasQuotes(lineStats);
             this.escapes = hasEscapes(lineStats);
             if (delim == null) throw new IOException("Unrecognized format");
@@ -303,26 +315,4 @@ public class TextFileParser {
         }
 
     }
-
-    public static void main(String[] args) throws IOException {
-        File file = new File("/tmp/foo/somefile.txt");
-        try (FileInputStream fis = new FileInputStream(file)) {
-            TextFileParser parser = new TextFileParser();
-            TableSchema schema = parser.parse(fis);
-
-            System.out.println("delim: " + schema.getDelim());
-            System.out.println("quotes: " + schema.isQuotes());
-            System.out.println("escape: " + schema.isEscapes());
-
-            List<Field> fields = schema.getFields();
-            for (Field field : fields) {
-                System.out.println("name: " + field);
-                System.out.println("datatype: " + field.getDataType());
-            }
-            System.out.println(schema);
-
-        }
-    }
-
-
 }
