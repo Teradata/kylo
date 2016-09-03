@@ -121,7 +121,9 @@ public class TableMergeSyncSupportTest {
         List<String> results = fetchEmployees(targetTable);
         assertEquals(4, results.size());
 
-        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074340') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (100,'Bruce',"
+        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074340') (  `id`,  `timestamp`, `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values "
+                          + "(100,'1',"
+                          + "'Bruce',"
                           + "'ABC',"
                           + "'94550','555-1212','bruce@acme.org','2016-01-01','Canada');");
 
@@ -137,7 +139,7 @@ public class TableMergeSyncSupportTest {
     public void testMergePartition() throws Exception {
         // Insert one record to start
         hiveShell.execute(
-            "insert into emp_sr.employee partition(country='USA',year=2015) (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`)  values (1,'Sally','ABC','94550','555-1212',"
+            "insert into emp_sr.employee partition(country='USA',year=2015) (  `id`,  `timestamp`,`name`,`company`,`zip`,`phone`,`email`,  `hired`)  values (1,'1','Sally','ABC','94550','555-1212',"
             + "'sally@acme.org','2015-01-01');");
 
         doTestMerge(targetTable, spec);

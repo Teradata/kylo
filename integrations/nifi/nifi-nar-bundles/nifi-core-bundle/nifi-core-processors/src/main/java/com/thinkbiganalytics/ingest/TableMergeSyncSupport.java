@@ -491,8 +491,17 @@ public class TableMergeSyncSupport implements Serializable {
         if (partitionSpec != null) {
             destFields.removeAll(partitionSpec.getKeyNames());
         }
-        return destFields.toArray(new String[0]);
+        String[] fields = destFields.toArray(new String[0]);
+        for (int i = 0; i < fields.length; i++) {
+            fields[i] = escaped(fields[i]);
+        }
+        return fields;
     }
+
+    private String escaped(String item) {
+        return (!item.startsWith("`") ? "`"+item+"`" : item);
+    }
+
 
     protected List<String> resolveTableSchema(String qualifiedTablename) {
 
