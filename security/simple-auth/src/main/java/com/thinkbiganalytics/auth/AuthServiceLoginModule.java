@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
+import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
@@ -65,6 +66,8 @@ public class AuthServiceLoginModule extends AbstractLoginModule {
     @Override
     public boolean doCommit() throws Exception {
         getSubject().getPrincipals().add(this.user);
+        // For now assume everyone who authenticates in this simple implementation are administrators.
+        getSubject().getPrincipals().add(new GroupPrincipal("admin"));
         return true;
     }
 
@@ -76,6 +79,7 @@ public class AuthServiceLoginModule extends AbstractLoginModule {
     @Override
     public boolean doLogout() throws Exception {
         getSubject().getPrincipals().remove(this.user);
+        getSubject().getPrincipals().remove(new GroupPrincipal("admin"));
         return true;
     }
 }
