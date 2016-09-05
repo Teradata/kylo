@@ -39,7 +39,7 @@ p<md-dialog aria-label="Validation Results"  ng-cloak>
                     <md-input-container class="md-block" ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' ">
                         <label>{{property.displayName}}</label>
                         <input type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"/>
-                        <input ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder"/>
+                        <input ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder" ng-trim="false"/>
                         <md-select ng-model="property.value" ng-if="property.type == 'select' " >
                             <md-option ng-repeat="value in property.selectableValues" value="{{value.value}}">
                                 {{value.label}}

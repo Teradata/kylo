@@ -379,11 +379,12 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
     public Object convertStringToObject(String value, Class type) {
         if (type.isEnum()) {
             return Enum.valueOf(type, value);
-        } else if (StringUtils.isBlank(value)) {
-            return null;
-        }
-        if (String.class.equals(type)) {
+        } else if (String.class.equals(type)) {
             return value;
+        }
+
+        if (StringUtils.isBlank(value)) {
+            return null;
         } else if (Number.class.equals(type)) {
             return NumberUtils.createNumber(value);
         } else if (Integer.class.equals(type) || Integer.TYPE.equals(type)) {
