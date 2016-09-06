@@ -1,0 +1,26 @@
+<div ng-controller="BusinessMetadataController as vm">
+    <md-progress-linear md-mode="indeterminate" ng-if="vm.loading"></md-progress-linear>
+    <card-layout body-css="md-padding" class="centered" ng-if="!vm.loading">
+        <header-section>
+            <h2 class="md-title">Business Metadata</h2>
+        </header-section>
+        <body-section>
+            <vertical-section-layout section-title="Category Fields" on-save-edit="vm.onCategorySave()" on-edit="vm.onCategoryEdit()" editable="vm.isCategoryEditable" is-valid="vm.isCategoryValid">
+                <readonly-section>
+                    <thinkbig-properties-admin fields="vm.model.categoryFields"></thinkbig-properties-admin>
+                </readonly-section>
+                <editable-section>
+                    <thinkbig-properties-admin-editor fields="vm.editModel.categoryFields" is-valid="vm.isCategoryValid"></thinkbig-properties-admin-editor>
+                </editable-section>
+            </vertical-section-layout>
+            <vertical-section-layout section-title="Feed Fields" on-save-edit="vm.onFeedSave()" on-edit="vm.onFeedEdit()" editable="vm.isFeedEditable" is-valid="vm.isFeedValid">
+                <readonly-section>
+                    <thinkbig-properties-admin fields="vm.model.feedFields"></thinkbig-properties-admin>
+                </readonly-section>
+                <editable-section>
+                    <thinkbig-properties-admin-editor fields="vm.editModel.feedFields" is-valid="vm.isFeedValid"></thinkbig-properties-admin-editor>
+                </editable-section>
+            </vertical-section-layout>
+        </body-section>
+    </card-layout>
+</div>

@@ -158,7 +158,7 @@ angular.module(MODULE_FEED_MGR).factory('CategoriesService', function ($q,$http,
          * @returns {CategoryModel} the new category model
          */
         newCategory:function(){
-            return {id: null, name: null, description: null, icon: null, iconColor: null, userProperties: [], relatedFeedSummaries: []};
+            return {id: null, name: null, description: null, icon: null, iconColor: null, userFields: [], userProperties: [], relatedFeedSummaries: []};
         }
 
     };

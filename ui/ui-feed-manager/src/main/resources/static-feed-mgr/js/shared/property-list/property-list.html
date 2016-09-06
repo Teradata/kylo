@@ -1,5 +1,9 @@
 <div layout="row" ng-repeat="property in propertyList" class="layout-padding-top-bottom">
-    <span flex="25" class="property-name">{{property.systemName}}</span>
+    <div ng-if="property.locked" layout="column" flex="50" class="property-name">
+        <span>{{property.displayName}}</span>
+        <span class="hint">{{property.description}}</span>
+    </div>
+    <span ng-if="!property.locked" flex="50" class="property-name">{{property.systemName}}</span>
 
     <div flex>
         {{property.value}}

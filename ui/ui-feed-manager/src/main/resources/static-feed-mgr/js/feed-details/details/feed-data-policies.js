@@ -94,6 +94,7 @@
             copy.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
             copy.table.options = self.editModel.table.options;
             copy.table.securityGroups = self.editModel.table.securityGroups;
+            copy.userProperties = null;
 
             FeedService.saveFeedModel(copy).then(function (response) {
                 FeedService.hideFeedSavingDialog();

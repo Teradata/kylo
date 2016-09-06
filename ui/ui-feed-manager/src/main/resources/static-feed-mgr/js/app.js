@@ -322,6 +322,18 @@ app.config(function($stateProvider,$urlRouterProvider) {
             breadcrumbRoot: false,
             displayName: 'Edit Feed'
         }
+    }).state('business-metadata',{
+        url:'/business-metadata',
+        params: {},
+        views: {
+            'content': {
+                templateUrl: 'js/business-metadata/business-metadata.html'
+            }
+        },
+        data:{
+            breadcrumbRoot: false,
+            displayName: 'Business Metadata'
+        }
     })
 
 
