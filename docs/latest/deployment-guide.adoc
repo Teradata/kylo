@@ -91,21 +91,21 @@ link:./deployment/cloudera-docker-sandbox.adoc[Cloudera EC2 Docker Sandbox Deplo
 
 === Kerberos
 
-    If you are installing Kylo on a kerberos cluster there are some additional configuration changes required.
+    If you are installing Kylo on a kerberos cluster you will need to configure the applications before certain features will work
 
-==== Configuring Kerberos For Your Local HDP Sandbox
+==== Optional: Configure Kerberos For Your Local HDP Sandbox
 
-    This guide will help you enabled kerberos for your local development sandbox
+    This guide will help you enabled kerberos for your local development sandbox for development and testing
 
 link:./security/kerberos/kerberos-installation-example-hdp-2.4.adoc[HDP 2.4 Sandbox Kerberos Setup Example]
 
-==== Configure Kerberos for NiFi
+==== Step 1: Configure Kerberos for NiFi
 
-    Some additional configuration is required for allowing the NiFi componenets to work with a Kerberos cluster.
+    Some additional configuration is required for allowing the NiFi components to work with a Kerberos cluster.
 
 link:./security/kerberos/nifi-configuration-kerberos-cluster.adoc[Configure NiFi for Kerberos]
 
-==== Configure Kerberos for Kylo Applications
+==== Step 2: Configure Kerberos for Kylo Applications
 
     Additional configuration is required for allowing some features in the Kylo applications to work with a Kerberos cluster
 
