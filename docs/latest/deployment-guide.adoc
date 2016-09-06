@@ -95,19 +95,21 @@ If your installing Kylo on a kerberos cluster there is some additional configura
 
 . Configuring Kerberos For Your Local HDP Sandbox
 
-This guide will help you enabled kerberos for your local development sandbox
-link:./security/kerberos-installation-example-hdp-2.4.adoc
+    This guide will help you enabled kerberos for your local development sandbox
+
+    link:./security/kerberos-installation-example-hdp-2.4.adoc
 
 . Configure Kerberos for NiFi
 
-Some additional configuration is required for allowing the NiFi componenets to work with a Kerberos cluster.
-link:./security/nifi-configuration-kerberos-cluster.adoc
+    Some additional configuration is required for allowing the NiFi componenets to work with a Kerberos cluster.
+
+    link:./security/nifi-configuration-kerberos-cluster.adoc
 
 . Configure Kerberos for Kylo Applications
 
-Additional configuration is required for allowing some features in the Kylo applications to work with a Kerberos cluster
+    Additional configuration is required for allowing some features in the Kylo applications to work with a Kerberos cluster
 
-TODO
+    TODO
 
 === Configuration Files
 
