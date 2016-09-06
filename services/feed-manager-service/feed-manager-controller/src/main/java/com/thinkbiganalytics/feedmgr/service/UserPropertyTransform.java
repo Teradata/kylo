@@ -86,7 +86,7 @@ public final class UserPropertyTransform {
                     return property;
                 });
 
-        return Stream.concat(newProperties, existingProperties).collect(Collectors.toSet());
+        return Stream.concat(newProperties, existingProperties).collect(Collectors.toCollection(LinkedHashSet::new));
     }
 
     /**
