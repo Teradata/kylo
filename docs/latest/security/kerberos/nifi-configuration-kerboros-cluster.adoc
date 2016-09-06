@@ -1,4 +1,4 @@
-= NiFi Configuration for Kerborized Cluster
+= NiFi Configuration for a Kerberos Cluster
 Think Big Analytics
 June 2016
 
