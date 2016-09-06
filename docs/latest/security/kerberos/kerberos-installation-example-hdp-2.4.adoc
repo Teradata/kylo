@@ -179,20 +179,3 @@ image::images/4.png[]
 image::images/5.png[]
 
 Make sure all services started properly. Kerberos is sucessfully installed on cluster.
-
-=== KeyTab Generation
-
-Create a keytab file for Nifi user.
-
-	kadmin.local
-	addprinc -randkey nifi@sandbox.hortonworks.com 
-	xst -norandkey -k /etc/security/keytabs/nifi.headless.keytab nifi@sandbox.hortonworks.com
-	exit
-	
-	chown nifi:hadoop /etc/security/keytabs/nifi.headless.keytab
-	chmod 440 /etc/security/keytabs/nifi.headless.keytab
-
-[Optional] You can initialize your keytab file using below command.
-	
-	kinit -kt  /etc/security/keytabs/nifi.headless.keytab nifi
-

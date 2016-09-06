@@ -36,34 +36,50 @@ June 2016
 
 == Configuration Steps :
 
-*	Make sure nifi.properties file is available in conf directory of NiFi installed location.  
+*   Create a Kerberos keytab file for Nifi user
+
+	kadmin.local
+	addprinc -randkey nifi@sandbox.hortonworks.com
+	xst -norandkey -k /etc/security/keytabs/nifi.headless.keytab nifi@sandbox.hortonworks.com
+	exit
+
+	chown nifi:hadoop /etc/security/keytabs/nifi.headless.keytab
+	chmod 440 /etc/security/keytabs/nifi.headless.keytab
+
+    Test that the keytab works. You can initialize your keytab file using below command.
+
+    su - nifi
+	kinit -kt  /etc/security/keytabs/nifi.headless.keytab nifi
+	klist
+
+*	Make sure nifi.properties file is available in conf directory of NiFi installed location.
 
 image::images/N1.png[]
 
-*	Open nifi.properties file and set location of krb5.conf file to property nifi.kerberos.krb5.file.  
+*	Open nifi.properties file and set location of krb5.conf file to property nifi.kerberos.krb5.file.
 
-    vi nif.properties
+    vi nifi.properties
 	nifi.kerberos.krb5.file=/etc/krb5.conf
 
-	
+
 *	HDFS Processor Configuration : Log in to NiFi UI and select HDFS processor and set properties which is highlighted in red box.
- 
+
     Hadoop Configuration Resource : /etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
     Kerberos Principal: nifi
     Kerberos Keytab : /home/nifi/nifi.headless.keytab
- 
+
 image::images/N3.png[]
 
 *	SPARK Processor Configuration : Log in to NiFi UI and select HDFS processor and set properties which is highlighted in red box.
- 
+
 image::images/N4.png[]
- 
-*	Hive Processor Configuration : Log in to NiFi UI and go to toolbar 
- 
+
+*	Hive Processor Configuration : Log in to NiFi UI and go to toolbar
+
 image::images/N5.png[]
-  
+
 * Go to Controller Service Tab and disable Thrift Controller Services if already running which highlighted in red box
- 
+
 image::images/N6.png[]
 
 * Make sure everything has stopped properly like below.
@@ -73,7 +89,7 @@ image::images/N7.png[]
 * Update HiveServer2 hostname and Hive principal name.
 
      Database Connection URL :<HOSTNAME>:10000/default;principal=hive/<HOSTNAME>@HDP-TBRND-DEV
- 
+
 image::images/N8.png[]
 
 * Update Kerberos user information and Hadoop Configuration. Apply Changes and start controller services.
