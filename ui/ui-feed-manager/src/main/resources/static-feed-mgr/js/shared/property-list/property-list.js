@@ -66,12 +66,29 @@
          */
         self.onModelChange = function() {
             if (!angular.equals($scope.model, self.lastModel)) {
+                // Convert model to properties
                 $scope.propertyList = [];
                 angular.forEach($scope.model, function(element) {
                     var property = angular.copy(element);
                     property.$error = {};
                     $scope.propertyList.push(property);
                 });
+
+                // Sort properties
+                $scope.propertyList.sort(function(a, b) {
+                    if (a.order === null && b.order === null) {
+                        return a.systemName.localeCompare(b.systemName);
+                    }
+                    if (a.order === null) {
+                        return 1;
+                    }
+                    if (b.order === null) {
+                        return -1;
+                    }
+                    return a.order - b.order;
+                });
+
+                // Save a copy for update detection
                 self.lastModel = angular.copy($scope.model);
             }
         };
@@ -89,7 +106,7 @@
                 // Validate property
                 hasError |= (property.$error.duplicate = angular.isDefined(keys[property.systemName]));
                 hasError |= (property.$error.missingName = (property.systemName.length === 0 && property.value.length > 0));
-                hasError |= (property.$error.missingValue = (property.required && property.systemName.length > 0 && property.value.length === 0));
+                hasError |= (property.$error.missingValue = (property.required && property.systemName.length > 0 && (property.value === null || property.value.length === 0)));
 
                 // Add to user properties object
                 if (property.systemName.length > 0) {

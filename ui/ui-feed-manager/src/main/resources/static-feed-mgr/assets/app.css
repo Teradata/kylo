@@ -1186,6 +1186,10 @@ md-toast .md-toast-content {
 }
 
 /* User-defined properties and fields */
+.feed-user-property > div:first-child {
+  margin-top: 20px;
+  padding: 4px;
+}
 .feed-user-property .md-button.md-icon-button {
   height: 36px;
   margin: 16px 0 0 0;

@@ -13,6 +13,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -50,7 +51,20 @@ public final class UserPropertyTransform {
         }
 
         // Convert from Metadata to Feed Manager format
-        return properties.entrySet().stream()
+        final Stream<UserProperty> newProperties = userFieldMap.values().stream()
+                .filter(field -> !properties.containsKey(field.getSystemName()))
+                .map(field -> {
+                    final UserProperty property = new UserProperty();
+                    property.setDescription(field.getDescription());
+                    property.setDisplayName(field.getDisplayName());
+                    property.setLocked(true);
+                    property.setOrder(userFieldOrder.get(field.getSystemName()));
+                    property.setRequired(field.isRequired());
+                    property.setSystemName(field.getSystemName());
+                    return property;
+                });
+
+        final Stream<UserProperty> existingProperties = properties.entrySet().stream()
                 .map(entry -> {
                     // Create the Feed Manager property
                     final UserProperty property = new UserProperty();
@@ -70,8 +84,9 @@ public final class UserPropertyTransform {
 
                     // Return the Feed Manager property
                     return property;
-                })
-                .collect(Collectors.toCollection(LinkedHashSet::new));
+                });
+
+        return Stream.concat(newProperties, existingProperties).collect(Collectors.toSet());
     }
 
     /**
@@ -82,7 +97,9 @@ public final class UserPropertyTransform {
      */
     @Nonnull
     public static Map<String, String> toMetadataProperties(@Nonnull final Set<UserProperty> userProperties) {
-        return userProperties.stream().collect(Collectors.toMap(UserProperty::getSystemName, UserProperty::getValue));
+        return userProperties.stream()
+                .filter(property -> property.getValue() != null)
+                .collect(Collectors.toMap(UserProperty::getSystemName, UserProperty::getValue));
     }
 
     /**

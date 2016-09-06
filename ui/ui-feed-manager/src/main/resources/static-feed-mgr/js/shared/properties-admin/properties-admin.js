@@ -126,7 +126,7 @@
                     return a.order - b.order;
                 });
 
-                // Save a copy of update detection
+                // Save a copy for update detection
                 self.lastModel = angular.copy($scope.model);
             }
         };

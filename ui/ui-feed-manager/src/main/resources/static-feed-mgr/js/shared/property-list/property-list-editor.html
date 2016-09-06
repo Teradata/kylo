@@ -1,5 +1,10 @@
 <div class="feed-user-property" layout="row" ng-repeat="property in propertyList">
-    <md-input-container flex="50">
+
+    <div ng-if="property.locked" layout="column" flex="50">
+        <span>{{property.displayName}}</span>
+        <span class="hint">{{property.description}}</span>
+    </div>
+    <md-input-container ng-if="!property.locked" flex="50">
         <label>Property</label>
         <input ng-model="property.systemName">
         <div ng-messages="property.$error" md-auto-hide="false">
@@ -7,16 +12,18 @@
             <div ng-message="missingName">A name is required.</div>
         </div>
     </md-input-container>
-    <md-input-container flex="50">
+
+    <md-input-container flex="45">
         <label>Value</label>
         <input ng-model="property.value">
         <div ng-messages="property.$error" md-auto-hide="false">
             <div ng-message="missingValue">A value is required.</div>
         </div>
     </md-input-container>
-    <md-button class="md-icon-button" aria-label="Delete" ng-click="vm.removeProperty($index)">
-        <md-icon>close</md-icon>
+
+    <md-button class="md-icon-button" aria-label="Delete" ng-click="vm.removeProperty($index)" ng-hide="property.locked">
+        <md-icon>delete</md-icon>
     </md-button>
 </div>
 
-<md-button class="md-raised" ng-click="vm.addProperty()">New Property</md-button>
+<md-button class="md-primary" ng-click="vm.addProperty()">Add Property</md-button>

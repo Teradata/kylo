@@ -57,6 +57,7 @@
             var model = angular.copy(CategoriesService.model);
             model.id = self.model.id;
             model.userFields = self.editModel.userFields;
+            model.userProperties = null;
 
             CategoriesService.save(model).then(function(response) {
                 self.model = CategoriesService.model = response.data;
