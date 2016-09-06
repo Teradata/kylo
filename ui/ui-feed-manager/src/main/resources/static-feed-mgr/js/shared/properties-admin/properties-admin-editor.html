@@ -14,7 +14,7 @@
                 <label>Name</label>
                 <input ng-model="field.displayName" ng-change="vm.updateSystemName(field)">
                 <div ng-messages="field.$error" md-auto-hide="false">
-                    <div ng-message="duplicate">Fields must be unique.</div>
+                    <div ng-message="duplicate">Names must be unique.</div>
                     <div ng-message="missingName">A name is required.</div>
                 </div>
             </md-input-container>

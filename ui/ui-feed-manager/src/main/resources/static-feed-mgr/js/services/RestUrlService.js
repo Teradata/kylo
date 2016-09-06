@@ -145,6 +145,9 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
         return self.FEEDS_BASE_URL+"/disable/"+feedId;
     }
 
+    // Endpoint for administration of user fields
+    this.ADMIN_USER_FIELDS = self.ADMIN_BASE_URL + "/user-fields";
+
     //Field Policy Urls
 
     this.AVAILABLE_STANDARDIZATION_POLICIES = this.ROOT+"/proxy/v1/field-policies/standardization";

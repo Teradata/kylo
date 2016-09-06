@@ -63,6 +63,7 @@
 
         function buildAdminMenu(){
             var menu = [];
+            menu.push({sref: "business-metadata", icon: "business", text: "Business Metadata", defaultActive: false});
             menu.push({sref:"registered-templates",icon:"folder_special",text:"Templates",defaultActive:false});
             self.adminMenu = menu;
         }

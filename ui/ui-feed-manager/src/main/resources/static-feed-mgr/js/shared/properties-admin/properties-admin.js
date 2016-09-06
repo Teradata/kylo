@@ -56,7 +56,7 @@
          * Adds a new user-defined field.
          */
         self.addField = function() {
-            $scope.fieldList.push({description: null, displayName: null, order: $scope.fieldList.length, required: false, systemName: "", $error: {}, $isNew: true});
+            $scope.fieldList.push({description: null, displayName: "", order: $scope.fieldList.length, required: false, systemName: "", $error: {}, $isNew: true});
         };
 
         /**
@@ -90,7 +90,7 @@
             angular.forEach($scope.fieldList, function(field) {
                 // Validate field
                 hasError |= (field.$error.duplicate = angular.isDefined(keys[field.systemName]));
-                hasError |= (field.$error.missingName = (field.systemName.length === 0));
+                hasError |= (field.$error.missingName = (field.displayName.length === 0));
 
                 // Add to user fields object
                 if (field.systemName.length > 0) {
