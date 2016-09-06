@@ -103,7 +103,7 @@ link:./security/kerberos/kerberos-installation-example-hdp-2.4.adoc[HDP 2.4 Sand
 
     Some additional configuration is required for allowing the NiFi components to work with a Kerberos cluster.
 
-link:./security/kerberos/nifi-configuration-kerberos-cluster.adoc[Configure NiFi for Kerberos]
+link:./security/kerberos/nifi-configuration-kerboros-cluster.adoc[Configure NiFi for Kerberos]
 
 ==== Step 2: Configure Kerberos for Kylo Applications
 
