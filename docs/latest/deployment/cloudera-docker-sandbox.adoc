@@ -119,6 +119,26 @@ Create a shell script to startup the Docker container. This makes it easier to c
 
   $ cd /tmp
 
+  . Create Linux Users and Groups
+
+  Creation of users and groups is done manually because many organizations have their own user and group
+  management system. Therefore we cannot script it as part of the RPM install.
+
+      $ useradd -r -m -s /bin/bash nifi
+      $ useradd -r -m -s /bin/bash thinkbig
+      $ useradd -r -m -s /bin/bash  activemq
+
+      Validate the above commands created a group as well by looking at /etc/group. Some operating systems
+      may not create them by default.
+
+      $ cat /etc/group
+
+      If the groups are missing then run the following
+
+      $ groupadd thinkbig
+      $ groupadd nifi
+      $ groupadd activemq
+
   . Follow the instructions in the Deployment Wizard guide to install the RPM and other components
 
   NOTE: There is an issue installing the database script so say No to the wizard step asking to install the database script. We will do that manually. I will update this section when it's fixed.

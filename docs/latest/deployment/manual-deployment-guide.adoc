@@ -34,6 +34,27 @@ If an edge node has no internet access you can generate a TAR file that contains
 
     The script will download all application binaries and puts them in their respective directory in the setup folder. Last it will TAR up the setup folder
 
+=== Create Linux Users and Groups
+Creation of users and groups is done manually because many organizations have their own user and group
+management system. Therefore we cannot script it as part of the RPM install.
+
+    Note: Each of these should be ran on the node that the software will be installed on
+
+    $ useradd -r -m -s /bin/bash nifi
+    $ useradd -r -m -s /bin/bash thinkbig
+    $ useradd -r -m -s /bin/bash  activemq
+
+    Validate the above commands created a group as well by looking at /etc/group. Some operating systems
+    may not create them by default.
+
+    $ cat /etc/group
+
+    If the groups are missing then run the following
+
+    $ groupadd thinkbig
+    $ groupadd nifi
+    $ groupadd activemq
+
 === Install Think Big Services
 
 . Find and download the RPM file from artifactory and place on the host linux machine you want to install the data lake
@@ -56,7 +77,7 @@ The database scripts will create one schema called "thinkbig" and install to tha
     NOTE: The HDP sandbox doesn't have a password set for the root user so
     you would run "<SETUP_DIR>/sql/mysql/setup-mysql.sh root"
 
-=== Install and configure Elasticsearch
+=== Install and Configure Elasticsearch
 The project includes a script to stand up a single node Elasticsearch instance to get up and running quickly. You can also leverage an existing Elasticsearch instance. For example, if
 you stand up an ELK stack you will likely want to leverage the same instance.
 

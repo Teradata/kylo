@@ -15,7 +15,7 @@ fi
 
 echo "Installing NiFI"
 echo "Creating a new nifi user"
-useradd -m nifi -d /opt/nifi
+mkdir /opt/nifi
 cd /opt/nifi
 
 if [ $offline = true ]
@@ -42,5 +42,5 @@ mv /opt/nifi/current/conf/login-identity-providers.xml $NIFI_DATA/conf
 
 
 echo "Changing permissions to the nifi user"
-chown -R nifi:users /opt/nifi
+chown -R nifi:nifi /opt/nifi
 echo "NiFi installation complete"
