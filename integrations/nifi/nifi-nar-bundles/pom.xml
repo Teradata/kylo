@@ -19,6 +19,7 @@
         <module>nifi-elasticsearch-bundle</module>
         <module>nifi-core-bundle</module>
 	<module>nifi-authorization</module>
+	<module>nifi-authorization-service</module>
     </modules>
 
     <dependencyManagement>
