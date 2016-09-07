@@ -1,6 +1,8 @@
 package com.thinkbiganalytics.datalake.authorization_Implementation;
 
 import com.thinkbiganalytics.datalake.common.HadoopAuthorizationService;
+import com.thinkbiganalytics.datalake.helper.RangerConnectionHelper;
+import com.thinkbiganalytics.datalake.helper.SentryConnectionHelper;
 import com.thinkbiganalytics.datalake.sentry.SentryClient;
 import com.thinkbiganalytics.datalake.sentry.SentryClientConfig;
 import com.thinkbiganalytics.datalake.sentry.SentryClientException;
@@ -41,5 +43,17 @@ public class SentryAuthorizationService implements HadoopAuthorizationService
 		sentryClient.executeAuthorization("CREATE ROLE developer");
 		sentryClient.executeAuthorization("GRANT ROLE developer TO GROUP testsentry");
 		sentryClient.executeAuthorization("GRANT ALL ON database test TO ROLE developer");
+	}
+
+	@Override
+	public void initiateAuthorizationService(RangerConnectionHelper ranerConnHelper) throws Exception {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void initiateAuthorizationService(SentryConnectionHelper sentryConnHelper) throws Exception {
+		// TODO Auto-generated method stub
+		
 	}
 }

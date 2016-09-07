@@ -60,15 +60,15 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!--External Library -->
 
+		<!--External Library -->
 		<dependency>
 			<groupId>com.googlecode.json-simple</groupId>
 			<artifactId>json-simple</artifactId>
 			<version>1.1</version>
 		</dependency>
-	</dependencies>
 
+	</dependencies>
 	<build>
 		<plugins>
 			<plugin>

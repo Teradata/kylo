@@ -4,6 +4,8 @@ import java.io.IOException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.thinkbiganalytics.datalake.helper.RangerConnectionHelper;
+
 /**
  * HadoopAuthorizationDemo class used to invoke Ranger/Sentry authorization Service. 
  * @author sv186013
@@ -12,15 +14,20 @@ import org.slf4j.LoggerFactory;
 
 public class HadoopAuthorizationDemo 
 {
-    private static final Logger log = LoggerFactory.getLogger(HadoopAuthorizationDemo.class); 
-    
+	private static final Logger log = LoggerFactory.getLogger(HadoopAuthorizationDemo.class); 
+
 	static HadoopAuthorizationFactory hadoopAuthorizationFactory;
 	static HadoopAuthorizationService  hadoopAuthorizationServiceObj;
-	
-	
+
+
 	public  static void  main(String args []) throws IOException, Exception
 	{
 
+		RangerConnectionHelper rn = new RangerConnectionHelper();
+		rn.setHostname("localhost");
+		rn.setPort(6080);
+		rn.setUsername("admin");
+		rn.setPassword("admin");
 
 		// Initialize Ranger Authorization Service
 		hadoopAuthorizationFactory = new HadoopAuthorizationFactory();
@@ -32,10 +39,10 @@ public class HadoopAuthorizationDemo
 		}
 		else
 		{
-			hadoopAuthorizationServiceObj.initiateAuthorizationService();
+			hadoopAuthorizationServiceObj.initiateAuthorizationService(rn);
 		}
 
-		// Initialize Sentry Authorization Service
+/*		// Initialize Sentry Authorization Service
 		hadoopAuthorizationFactory = new HadoopAuthorizationFactory();
 		hadoopAuthorizationServiceObj =  hadoopAuthorizationFactory.authorizationType("sentry");
 
@@ -47,7 +54,7 @@ public class HadoopAuthorizationDemo
 		{
 			hadoopAuthorizationServiceObj.initiateAuthorizationService();
 		}
-
+*/
 	}
 }
 
