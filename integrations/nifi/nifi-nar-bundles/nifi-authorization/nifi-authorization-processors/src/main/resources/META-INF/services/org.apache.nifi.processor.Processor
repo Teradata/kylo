@@ -1,0 +1,2 @@
+com.thinkbiganalytics.nifi.processors.authorization.CreateRangerAuthorizationPolicy
+com.thinkbiganalytics.nifi.processors.authorization.CreateSentryAuthorizationPolicy
