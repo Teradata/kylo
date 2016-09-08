@@ -104,8 +104,9 @@ public class StatsModel {
             log.info("Finishing Job for flowfile: {} with eventtype: {}.  ", event.getFlowFile(), event.getEventType());
             event.setIsEndOfJob(true);
             Long jobTime = null;
-            if (event.getFlowFile().getFirstEvent() != null) {
-                jobTime = event.getEventTime().getMillis() - event.getFlowFile().getFirstEvent().getEventTime().getMillis();
+            ProvenanceEventRecordDTO firstEvent = rootFlowFile.getFirstEvent() != null ? rootFlowFile.getFirstEvent() : event.getFlowFile().getFirstEvent();
+            if (firstEvent != null) {
+                jobTime = event.getEventTime().getMillis() - firstEvent.getEventTime().getMillis();
                 stats.setJobDuration(jobTime);
             }
 

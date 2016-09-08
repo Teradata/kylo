@@ -102,7 +102,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
             potentialStreamEvents.stream().forEach(e -> {
                 e.setStream(true);
                 if (e.isStartOfJob()) {
-                    e.getFlowFile().getRootFlowFile().setFirstEventType(ActiveFlowFile.FIRST_EVENT_TYPE.STREAM);
+                    e.getFlowFile().getRootFlowFile().setFirstEventType(RootFlowFile.FIRST_EVENT_TYPE.STREAM);
                 }
                 lastStreamEventByJob.put(lastStreamEventMapKey(e), e);
             });
@@ -115,7 +115,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
     private void moveToStream(ProvenanceEventRecordDTO event) {
         event.setStream(true);
         if (event.isStartOfJob()) {
-            event.getFlowFile().getRootFlowFile().setFirstEventType(ActiveFlowFile.FIRST_EVENT_TYPE.STREAM);
+            event.getFlowFile().getRootFlowFile().setFirstEventType(RootFlowFile.FIRST_EVENT_TYPE.STREAM);
         }
         lastStreamEventByJob.put(lastStreamEventMapKey(event), event);
         streamEvents.add(event);
@@ -133,7 +133,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
                 eventCount.incrementAndGet();
                 checkAndMarkAsEndOfJob(event, stats);
                 //if the event is not the first event, but the first event is a Stream then move this to a stream
-                if (ActiveFlowFile.FIRST_EVENT_TYPE.STREAM.equals(event.getFlowFile().getRootFlowFile().getFirstEventType())) {
+                if (RootFlowFile.FIRST_EVENT_TYPE.STREAM.equals(event.getFlowFile().getRootFlowFile().getFirstEventType())) {
                     moveToStream(event);
 
                 } else {
@@ -186,7 +186,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
 
         //  List<ProvenanceEventRecordDTO> events = streamEvents.stream().filter(e -> ActiveFlowFile.FIRST_EVENT_TYPE.BATCH.equals(e.getFlowFile().getRootFlowFile().getFirstEventType())).collect(Collectors.toList());
         List<ProvenanceEventRecordDTO> events = lastStreamEventByJob.values().stream().filter(
-            e -> ActiveFlowFile.FIRST_EVENT_TYPE.BATCH.equals(e.getFlowFile().getRootFlowFile().getFirstEventType())).collect(Collectors.toList());
+            e -> RootFlowFile.FIRST_EVENT_TYPE.BATCH.equals(e.getFlowFile().getRootFlowFile().getFirstEventType())).collect(Collectors.toList());
         if (events != null && !events.isEmpty()) {
             jmsEvents.addAll(events);
             log.info("Adding {} events for feed/processor {}/{}({}) since they originated from a BATCH event ", events.size(), feedName, processorName, processorId);
@@ -195,7 +195,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
     }
 
     private void markFirstEventsAsBatch(List<ProvenanceEventRecordDTO> events) {
-        events.stream().filter(e -> e.isStartOfJob()).map(e -> e.getFlowFile().getRootFlowFile()).forEach(ff -> ff.setFirstEventType(ActiveFlowFile.FIRST_EVENT_TYPE.BATCH));
+        events.stream().filter(e -> e.isStartOfJob()).map(e -> e.getFlowFile().getRootFlowFile()).forEach(ff -> ff.setFirstEventType(RootFlowFile.FIRST_EVENT_TYPE.BATCH));
     }
 
     private void printList(List<ProvenanceEventRecordDTO> list, String title) {
