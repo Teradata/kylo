@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
  */
 public class HDFSPolicy {
 
-    private static final Logger log = LoggerFactory.getLogger(HDFSPolicy.class); 
-    
+	private static final Logger log = LoggerFactory.getLogger(HDFSPolicy.class); 
+
 	private ArrayList<String> userList = new ArrayList<String>();
 	private ArrayList<String> groupList = new ArrayList<String>();
 	private static ArrayList<String> permList = new ArrayList<String>();

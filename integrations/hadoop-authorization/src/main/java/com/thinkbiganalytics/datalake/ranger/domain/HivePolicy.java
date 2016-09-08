@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 
 public class HivePolicy {
 
-    private static final Logger log = LoggerFactory.getLogger(HivePolicy.class);  
-    
+	private static final Logger log = LoggerFactory.getLogger(HivePolicy.class);  
+
 	private String policyName;
 	private String databases;
 	private String tables;
@@ -23,12 +23,12 @@ public class HivePolicy {
 	private String columnType;
 	private String isEnabled;
 	private String isAuditEnabled;
-		
+
 	private ArrayList<String> userList = new ArrayList<String>();
 	private ArrayList<String> groupList = new ArrayList<String>();
 	private static ArrayList<String> permList = new ArrayList<String>();
-	
-	
+
+
 	public String getPolicyName() {
 		return policyName;
 	}
@@ -119,8 +119,8 @@ public class HivePolicy {
 	public static void setPermList(ArrayList<String> permList) {
 		HivePolicy.permList = permList;
 	}
-	
-	
+
+
 	/***
 	 * Method for forming JSON policy object to post to Ranger REST API
 	 * @return
@@ -189,7 +189,7 @@ public class HivePolicy {
 			permMapList.add(permList);
 			policy.put("permMapList",permMapList);
 		}
-			
+
 		policy.put("policyName",getPolicyName());
 		policy.put("databases",getDatabases());
 		policy.put("tables",getTables());
@@ -202,9 +202,9 @@ public class HivePolicy {
 		policy.put("columnType",getColumnType());
 		policy.put("isEnabled",getIsEnabled());
 		policy.put("isAuditEnabled",getIsAuditEnabled());
-		
+
 		return policy;
 
 	}
-	
+
 }	

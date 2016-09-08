@@ -42,7 +42,7 @@ public class HadoopAuthorizationDemo
 			hadoopAuthorizationServiceObj.initiateAuthorizationService(rn);
 		}
 
-/*		// Initialize Sentry Authorization Service
+		// Initialize Sentry Authorization Service
 		hadoopAuthorizationFactory = new HadoopAuthorizationFactory();
 		hadoopAuthorizationServiceObj =  hadoopAuthorizationFactory.authorizationType("sentry");
 
@@ -54,7 +54,7 @@ public class HadoopAuthorizationDemo
 		{
 			hadoopAuthorizationServiceObj.initiateAuthorizationService();
 		}
-*/
+
 	}
 }
 

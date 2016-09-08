@@ -23,12 +23,15 @@
 	<packaging>jar</packaging>
 
 	<dependencies>
+
+<!-- Think Big Dependency -->
 		<dependency>
 			<groupId>com.thinkbiganalytics.datalake</groupId>
 			<artifactId>hadoop-authorization</artifactId>
 			<version>0.3.0-SNAPSHOT</version>
 		</dependency>
 
+<!-- Nifi Dependency  -->
 		<dependency>
 			<groupId>org.apache.nifi</groupId>
 			<artifactId>nifi-api</artifactId>

@@ -3,8 +3,6 @@ package com.thinkbiganalytics.datalake.common;
 import com.thinkbiganalytics.datalake.helper.RangerConnectionHelper;
 import com.thinkbiganalytics.datalake.helper.SentryConnectionHelper;
 
-//import com.thinkbiganalytics.datalake.helper.RangerConnectionHelper;
-
 /***
  * 
  * @author sv186029

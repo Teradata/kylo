@@ -7,6 +7,7 @@ import com.thinkbiganalytics.rest.JerseyClientConfig;
 
 /** 
  * Setting Ranger REST client configuration.
+ * @author sv186029
  * @category ranger security
  * @version 1.0
  *
