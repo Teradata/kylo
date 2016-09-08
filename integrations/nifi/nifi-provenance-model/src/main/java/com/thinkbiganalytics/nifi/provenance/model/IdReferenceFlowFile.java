@@ -9,9 +9,17 @@ import java.util.Set;
  */
 public class IdReferenceFlowFile implements Serializable {
 
+
+    private static final long serialVersionUID = 610147391094972160L;
+
     private boolean rootFlowFile;
     private String feedName;
     private String feedProcessGroupId;
+
+    private Long rootFlowFileFirstEventId;
+
+
+
 
     private String rootFlowFileId;
     private boolean isComplete;
@@ -104,5 +112,13 @@ public class IdReferenceFlowFile implements Serializable {
 
     public void setIsComplete(boolean isComplete) {
         this.isComplete = isComplete;
+    }
+
+    public Long getRootFlowFileFirstEventId() {
+        return rootFlowFileFirstEventId;
+    }
+
+    public void setRootFlowFileFirstEventId(Long rootFlowFileFirstEventId) {
+        this.rootFlowFileFirstEventId = rootFlowFileFirstEventId;
     }
 }

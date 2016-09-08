@@ -66,12 +66,13 @@ public class ProvenanceEventActiveMqWriter {
 
 
     public void writeFailedEvents(ProvenanceEventRecordDTOHolder failedEvents) {
+        logger.info("SENDING FAILURE Events to JMS {} ", failedEvents);
         sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_FAILURE_QUEUE, failedEvents);
     }
 
     public void writeStats(AggregatedFeedProcessorStatisticsHolder stats) {
         try {
-            logger.info("SENDING AGGREGATED STAT1S to JMS {} - {} ", stats);
+            logger.info("SENDING AGGREGATED STAT to JMS {} ", stats);
             sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats);
 
         } catch (Exception e) {
@@ -81,11 +82,11 @@ public class ProvenanceEventActiveMqWriter {
 
     public void writeEvents(ProvenanceEventRecordDTOHolder events) {
         try {
-            logger.info("SENDING AGGREGATED STATS to JMS {} - {} ", events);
+            logger.info("SENDING Events to JMS {} ", events);
             sendJmsMessage.sendSerializedObjectToQueue(Queues.FEED_MANAGER_QUEUE, events);
 
         } catch (Exception e) {
-            logger.error("JMS Error has occurred sending stats. Enable temporary queue", e);
+            logger.error("JMS Error has occurred sending events. Enable temporary queue", e);
         }
     }
 

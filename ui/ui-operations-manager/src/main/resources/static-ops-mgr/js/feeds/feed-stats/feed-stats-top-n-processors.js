@@ -27,7 +27,9 @@
 
         this.chartApi = {};
 
-        self.chartOptions = {
+        this.statusPieChartApi = {};
+
+        self.processorDurationChartOptions = {
             chart: {
                 type: 'multiBarHorizontalChart',
                 height: 400,
@@ -61,7 +63,59 @@
             }
         };
 
-        self.chartData = [];
+        self.processorDurationChartData = [];
+
+        this.statusPieChartApi = {};
+
+        this.statusPieChartOptions = {
+            chart: {
+                type: 'pieChart',
+                x: function (d) {
+                    return d.key;
+                },
+                y: function (d) {
+                    return d.value;
+                },
+                showLabels: false,
+                duration: 100,
+                "height": 150,
+                labelThreshold: 0.01,
+                labelSunbeamLayout: false,
+                "margin": {"top": 10, "right": 10, "bottom": 10, "left": 10},
+                donut: false,
+                // donutRatio: 0.65,
+                showLegend: false,
+                valueFormat: function (d) {
+                    return parseInt(d);
+                },
+                color: function (d) {
+                    if (d.key == 'Successful Jobs') {
+                        return '#009933';
+                    }
+                    else if (d.key == 'Failed Jobs') {
+                        return '#FF0000';
+                    }
+                    else if (d.key == 'Running Jobs') {
+                        return '#FF9901';
+                    }
+                },
+                dispatch: {
+                    renderEnd: function () {
+
+                    }
+                }
+            }
+        };
+
+
+
+
+
+
+
+
+
+
 
         self.timeframeOptions = [];
         self.timeFrame = 'WEEK';
@@ -84,7 +138,12 @@
 
         self.jobsStarted = 0;
         self.jobsFinished = 0;
+        self.jobsFailed = 0;
         self.avgJobDuration = 0;
+
+        //stats for pie chart
+        self.jobsRunning = 0;
+        self.jobsSuccess = 0;
 
         function buildChartData() {
             var values = [];
@@ -100,6 +159,8 @@
                 var jobsFinished = 0;
                 var jobDuration = 0;
                 var jobsFailed = 0;
+                var jobsSuccess = 0;
+                var jobsRunning = 0;
                 _.each(processorStats.data, function (p) {
 
                     if (processorIdNameMap[p.processorId] == undefined) {
@@ -119,16 +180,25 @@
                     jobsFinished += p.jobsFinished;
                     jobDuration += p.jobDuration;
                     jobsFailed += p.jobsFailed;
+                    jobsSuccess = (jobsFinished - jobsFailed);
+                    jobsRunning = (jobsStarted - jobsFinished) < 0 ? 0 : (jobsStarted - jobsFinished);
                 });
                 self.dataLoaded = true;
                 self.lastRefreshTime = new Date();
                 var data = [{key: "Processor", "color": "#1f77b4", values: values}];
-                console.log('processorStats', processorStats.data, ' DATA ', data);
-                self.chartData = data
+                self.processorDurationChartData = data
                 self.jobsStarted = jobsStarted;
                 self.jobsFinished = jobsFinished;
                 self.jobsFailed = jobsFailed;
+                self.jobsRunning = jobsRunning;
+                self.jobsSuccess = jobsSuccess
                 self.avgJobDuration = ((jobDuration / jobsFinished) / 1000).toFixed(2)
+
+                self.statusPieChartData = [];
+                self.statusPieChartData.push({key: "Successful Jobs", value: self.jobsSuccess})
+                self.statusPieChartData.push({key: "Failed Jobs", value: self.jobsFailed})
+                self.statusPieChartData.push({key: "Running Jobs", value: self.jobsRunning})
+
             });
 
         };

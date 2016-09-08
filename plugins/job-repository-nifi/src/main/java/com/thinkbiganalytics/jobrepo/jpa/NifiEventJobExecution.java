@@ -26,6 +26,13 @@ public class NifiEventJobExecution implements Serializable {
     @JoinColumn(name = "JOB_EXECUTION_ID", nullable = false, insertable = true, updatable = true)
     private NifiJobExecution jobExecution;
 
+
+    @Column(name = "EVENT_ID", insertable = false, updatable = false)
+    private Long eventId;
+
+    @Column(name = "FLOW_FILE_UUID", insertable = false, updatable = false)
+    private String flowFileId;
+
     public NifiEventJobExecution() {
 
     }

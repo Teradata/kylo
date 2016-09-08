@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.nifi.provenance.v2.cache.stats;
 
+import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
@@ -14,6 +15,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -122,6 +125,16 @@ public class ProvenanceStatsCalculator {
             try {
                 ProvenanceEventStats eventStats = StatsModel.toProvenanceEventStats(feedName, event);
                 addStats(eventStats);
+                if (event.isEndingFlowFileEvent()) {
+                    List<ProvenanceEventRecordDTO> completed = completeStatsForParentFlowFiles(event);
+                    if (completed != null) {
+                        for (ProvenanceEventRecordDTO e : completed) {
+                            log.info("**************** SEND COMPLETED JOB EVENT for event: {}, endOfJob: {}, ff:{}, job ff: {}, etype: {}, processor: {} ", e.getEventId(), e.isEndOfJob(),
+                                     e.getFlowFileUuid(), e.getJobFlowFileId(), e.getEventType(), e.getComponentName());
+                        }
+                    }
+                }
+
                 return eventStats;
             } catch (Exception e) {
                 log.error("Unable to add Statistics for Event {}.  Exception: {} ", event, e.getMessage(), e);
@@ -131,6 +144,51 @@ public class ProvenanceStatsCalculator {
         }
         return null;
     }
+
+
+    /**
+     * get list of EventStats marking the flowfile as complete for the direct parent flowfiles if the child is complete and the parent is complete
+     */
+    public List<ProvenanceEventRecordDTO> completeStatsForParentFlowFiles(ProvenanceEventRecordDTO event) {
+
+        ActiveFlowFile rootFlowFile = event.getFlowFile().getRootFlowFile();
+        log.info("try to complete parents for {}, root: {},  parents: {} ", event.getFlowFile().getId(), rootFlowFile.getId(), event.getFlowFile().getParents().size());
+
+        if (event.isEndingFlowFileEvent() && event.getFlowFile().hasParents()) {
+            log.info("Attempt to complete all {} parent Job flow files that are complete", event.getFlowFile().getParents().size());
+            List<ProvenanceEventStats> list = new ArrayList<>();
+            List<ProvenanceEventRecordDTO> eventList = new ArrayList<>();
+            event.getFlowFile().getParents().stream().filter(parent -> parent.isCurrentFlowFileComplete()).forEach(parent -> {
+                ProvenanceEventRecordDTO lastFlowFileEvent = parent.getLastEvent();
+                log.info("Completing ff {}, {} ", event.getFlowFile().getRootFlowFile().getId(), event.getFlowFile().getRootFlowFile().isFlowFileCompletionStatsCollected());
+                ProvenanceEventStats stats = StatsModel.newJobCompletionProvenanceEventStats(event.getFeedName(), lastFlowFileEvent);
+                if (stats != null) {
+                    list.add(stats);
+                    eventList.add(lastFlowFileEvent);
+
+                }
+            });
+            if (!list.isEmpty()) {
+                aggregateStats(list);
+            }
+            return eventList;
+        }
+        return null;
+
+    }
+
+
+    /**
+     * Stores just the stats
+     */
+    private void aggregateStats(List<ProvenanceEventStats> statsList) {
+        if (statsList != null) {
+            statsList.stream().forEach(stats -> {
+                addStats(stats);
+            });
+        }
+    }
+
 
 
     /**

@@ -151,7 +151,8 @@ public class ProvenanceEventReceiver implements ProvenanceEventJobExecutionStart
         provenanceEventStartupListener.subscribe(this);
     }
 
-    @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
+
+    @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "5-25")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         events.getEvents().stream().sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).forEach(dto -> receiveEvent(dto));
     }

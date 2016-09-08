@@ -52,6 +52,19 @@ public class ProvenanceFeedLookup {
         return flow;
     }
 
+    public boolean ensureProcessorIsInCache(String processGroupId, String processorId) {
+        String processorName = getProcessorName(processorId);
+        if (StringUtils.isBlank(processorName)) {
+            log.info("Unable to get ProcessorName for {},{}.  Attempt to look it up via rest client ", processGroupId, processorId);
+            nifiFlowCache.getProcessor(processGroupId, processorId);
+            processorName = getProcessorName(processorId);
+            if (StringUtils.isNotBlank(processorName)) {
+                log.info("Sucessfully got ProcessorName {} for {},{}.  Attempt to look it up via rest client ", processorName, processGroupId, processorId);
+            }
+        }
+        return StringUtils.isNotBlank(processorName);
+    }
+
     public String getProcessorName(String processorId) {
         return nifiFlowCache.getProcessorName(processorId);
     }
@@ -73,7 +86,6 @@ public class ProvenanceFeedLookup {
             }
             if (!flowFile.hasFeedInformationAssigned()) {
                 ActiveFlowFile rootFlowFile = flowFile.getRootFlowFile();
-                if (rootFlowFile != null) {
                     NifiFlowProcessGroup flow = nifiFlowCache.getFlow(rootFlowFile);
                     if (flow != null) {
                         flowFile.assignFeedInformation(flow.getFeedName(), flow.getId());
@@ -84,8 +96,11 @@ public class ProvenanceFeedLookup {
                     } else {
                         log.error(" Unable to get Feed Name and flow/graph for Flow file: {}, rootFlowFile: {} ", flowFile, rootFlowFile);
                     }
-                }
+
             }
+        }
+        if (flowFile.getRootFlowFile() == null) {
+            log.error("ERROR ROOT FLOW FILE IS EMPTY for flowFile {} with parents: {} ", flowFile.getId(), flowFile.getParents().size());
         }
         return assigned;
     }

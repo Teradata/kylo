@@ -102,22 +102,27 @@ public class ProvenanceEventAggregator {
         return event.getFeedName() + ":" + event.getComponentId();
     }
 
+    private String mapKey(ProvenanceEventStats stats) {
+        return stats.getFeedName() + ":" + stats.getProcessorId();
+    }
+
     /**
      * - Create/update the flowfile graph for this new event - Calculate statistics on the event and add them to the aggregated set to be processed - Add the event to the DelayQueue for further
      * processing as a Batch or Stream
      */
     public void prepareAndAdd(ProvenanceEventRecordDTO event) {
         try {
+            log.info("Process Event {} ", event);
             CacheUtil cacheUtil = (CacheUtil) SpringApplicationContext.getInstance().getBean("cacheUtil");
             cacheUtil.cacheAndBuildFlowFileGraph(event);
 
+
             //send the event off for stats processing to the threadpool.  order does not matter thus they can be in an number of threads
             // eventStatisticsExecutor.execute(new StatisticsProvenanceEventConsumer(event));
-            // ProvenanceStatsCalculator statsCalculator = (ProvenanceStatsCalculator) SpringApplicationContext.getInstance().getBean("provenanceStatsCalculator");
             ProvenanceEventStats stats = statsCalculator.calculateStats(event);
+
             //add to delayed queue for processing
             aggregateEvent(event, stats);
-
             //if failure detected group and send off to separate queue
             collectFailureEvents(event);
 
@@ -164,8 +169,8 @@ public class ProvenanceEventAggregator {
     private void checkAndProcess() {
         //update the collection time
 
-        List<ProvenanceEventRecordDTO> eventsSentToJms = eventsToAggregate.values().stream().flatMap(rollingFeedProcessorEventAggregate -> {
-            return rollingFeedProcessorEventAggregate.collectEventsToBeSentToJmsQueue().stream();
+        List<ProvenanceEventRecordDTO> eventsSentToJms = eventsToAggregate.values().stream().flatMap(feedProcessorEventAggregate -> {
+            return feedProcessorEventAggregate.collectEventsToBeSentToJmsQueue().stream();
         }).collect(Collectors.toList());
         log.info("collecting {} events from {} - {} ", eventsSentToJms.size(), lastCollectionTime, DateTime.now());
         jmsProcessingQueue.addAll(eventsSentToJms);
