@@ -81,4 +81,10 @@ angular.module(MODULE_FEED_MGR).service('StateService', function ($state) {
         $state.go('feed-details.profile-stats',{feedId:feedId,processingdttm:processingdttm})
     }
 
+    /**
+     * Navigates to the Users page.
+     */
+    this.navigateToUsers = function() {
+        $state.go('users');
+    };
 });

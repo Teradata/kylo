@@ -11,6 +11,7 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
 
     this.ROOT = "";
     this.ADMIN_BASE_URL =this.ROOT+"/proxy/v1/feedmgr/admin";
+    this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
     this.TEMPLATES_BASE_URL =this.ROOT+"/proxy/v1/feedmgr/templates";
     this.FEEDS_BASE_URL = this.ROOT+"/proxy/v1/feedmgr/feeds";
     this.SLA_BASE_URL = this.ROOT + "/proxy/v1/feedmgr/sla";
@@ -162,4 +163,9 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
 
     this.ADMIN_IMPORT_FEED_URL = self.ADMIN_BASE_URL+"/import-feed";
 
+    // Security service URLs
+
+    this.SECURITY_GROUPS_URL = self.SECURITY_BASE_URL + "/groups";
+
+    this.SECURITY_USERS_URL = self.SECURITY_BASE_URL + "/users";
 });

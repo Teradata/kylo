@@ -322,7 +322,7 @@ app.config(function($stateProvider,$urlRouterProvider) {
             breadcrumbRoot: false,
             displayName: 'Edit Feed'
         }
-    }).state('business-metadata',{
+    }).state('business-metadata', {
         url:'/business-metadata',
         params: {},
         views: {
@@ -330,14 +330,23 @@ app.config(function($stateProvider,$urlRouterProvider) {
                 templateUrl: 'js/business-metadata/business-metadata.html'
             }
         },
-        data:{
+        data: {
             breadcrumbRoot: false,
             displayName: 'Business Metadata'
         }
+    }).state("users", {
+        url: "/users",
+        params: {},
+        views: {
+            "content": {
+                templateUrl: "js/users/users-table.html"
+            }
+        },
+        data: {
+            breadcrumbRoot: true,
+            displayName: "Users"
+        }
     })
-
-
-
 });
 
 angular.module('ngMdIcons').config(['ngMdIconServiceProvider',function(ngMdIconService) {
