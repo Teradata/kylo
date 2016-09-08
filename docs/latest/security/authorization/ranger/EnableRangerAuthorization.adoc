@@ -42,6 +42,10 @@ image::images/R2.png[]
 * Click on Add Policy.
 * Create policy as shown in image below.
 
+	Policy Name : ranger_superuser_policy
+	Select user : nifi
+	Permission : All
+
 image::images/R3.png[]
 
 
@@ -51,6 +55,11 @@ image::images/R3.png[]
 * Click on Add Policy.
 * Create policy as shown in image below.
 
+	Policy Name : hive_user_policy_kylo
+	Resource Path : /model.db/ 
+					/app/warehouse/ 
+					/etl/
+					
 image::images/R4.png[]
 
 
@@ -61,6 +70,11 @@ image::images/R4.png[]
 * Click on (+) sign and add RangerControllerSerive.
 * Update RangerControllerSerive property and enable it.
 
+	Ranger REST Client Hostname  : localhost
+	Ranger REST Client Port : 6080
+	Ranger REST Client User Name : admin
+	Ranger REST Client Password : <passowrd>
+
 image::images/R5.png[]
 
 
@@ -70,6 +84,14 @@ image::images/R5.png[]
 * Select resusable template.
 * Select CreataRangerAuthorizationPolicy processor.
 * Update property descriptor as per cluster.
+
+	Group List : ${security.authorization.groups}
+	Hive Permission List : create,select,update
+	HDFS Permission List : read,write
+	Category Name : ${category}
+	Feed Name : ${feed}
+	HDFS Repository Name : Sandbox_hadoop
+	HIVE Repository Name : Sandbox_hive
 
 image::images/R6.png[]
 
