@@ -8,6 +8,8 @@ import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
@@ -19,8 +21,16 @@ public class JcrUserProvider extends BaseJcrProvider<User, User.ID> implements U
 
     @Nonnull
     @Override
-    public Optional<User> findByUsername(@Nonnull final String username) {
-        final String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] AS user WHERE user.[" + JcrUser.SYSTEM_NAME + "] = '" + StringEscapeUtils.escapeSql(username) + "'";
+    public User ensureUser(@Nonnull final String systemName) {
+        final Map<String, Object> props = new HashMap<>();
+        props.put(JcrUser.SYSTEM_NAME, systemName);
+        return findOrCreateEntity("/metadata/security/users", systemName, props);
+    }
+
+    @Nonnull
+    @Override
+    public Optional<User> findBySystemName(@Nonnull final String systemName) {
+        final String query = "SELECT * FROM [" + getNodeType(getJcrEntityClass()) + "] AS user WHERE user.[" + JcrUser.SYSTEM_NAME + "] = '" + StringEscapeUtils.escapeSql(systemName) + "'";
         return Optional.ofNullable(findFirst(query));
     }
 

@@ -12,7 +12,7 @@
  *             template
  *          "sla"
  *              sla*
-                slaAssessment*
+ *              slaAssessment*
  *          "extensions"
  *              "types"
  *                  typeDescriptor
@@ -30,6 +30,8 @@
  *                      allowableAction*
  *              "services"
  *                  allowableAction*
+ *              "users"
+ *                  user*
  */
 <jcr = 'http://www.jcp.org/jcr/1.0'>
 <nt='http://www.jcp.org/jcr/nt/1.0'>
@@ -82,6 +84,7 @@
 [tba:securityFolder] > nt:folder
     + prototypes (tba:prototypesFolder) = tba:prototypesFolder autocreated mandatory
     + services (tba:allowedActions) = tba:allowedActions autocreated mandatory
+    + users (tba:usersFolder) = tba:usersFolder autocreated mandatory
 
 [tba:prototypesFolder] > nt:folder
     + services (tba:allowedActions) = tba:allowedActions autocreated mandatory
@@ -96,9 +99,10 @@
     + * (tba:allowableAction)
 
 [tba:allowableAction] > nt:hierarchyNode, mix:title
-    + * (tba:allowableAction) 
+    + * (tba:allowableAction)
 
-
+[tba:usersFolder] > nt:folder
+    + * (tba:user)
 
 /* -=-=-=-=-=--=-=-  Predefined types  -=-=-=-=-=-=-=-=- */
 
@@ -237,5 +241,9 @@
     - tba:result (STRING) mandatory
     + tba:resource (nt:resource) 
 
-[tba:user] > tba:extensibleEntity
+[tba:user] > tba:extensibleEntity, mix:referenceable
+    - tba:displayName (STRING)
+    - tba:email (STRING)
     - tba:enabled (BOOLEAN)
+    - tba:password (STRING)
+    - tba:systemName (STRING) mandatory

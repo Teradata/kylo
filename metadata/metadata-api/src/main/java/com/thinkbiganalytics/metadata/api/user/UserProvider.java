@@ -12,11 +12,20 @@ import javax.annotation.Nonnull;
 public interface UserProvider extends BaseProvider<User, User.ID> {
 
     /**
-     * Finds the user with the specified login name.
+     * Gets or creates the user with the specified username.
      *
-     * @param username the login name to find
+     * @param systemName the username
+     * @return the user
+     */
+    @Nonnull
+    User ensureUser(@Nonnull String systemName);
+
+    /**
+     * Finds the user with the specified username.
+     *
+     * @param systemName the username to find
      * @return the user, if found
      */
     @Nonnull
-    Optional<User> findByUsername(@Nonnull String username);
+    Optional<User> findBySystemName(@Nonnull String systemName);
 }

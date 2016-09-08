@@ -23,6 +23,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplatePr
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategoryProvider;
@@ -42,6 +43,7 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAssessmentPro
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAssessor;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
+import com.thinkbiganalytics.metadata.modeshape.user.JcrUserProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
@@ -178,6 +180,16 @@ public class MetadataJcrConfig {
     @Bean(initMethod="configure")
     public MetadataJcrConfigurator jcrConfigurator(List<PostMetadataConfigAction> postConfigActions) {
         return new MetadataJcrConfigurator(postConfigActions);
+    }
+
+    @Bean
+    /**
+     * Gets the {@link UserProvider} backed by the JCR repository.
+     *
+     * @return the JCR user provider
+     */
+    public UserProvider userProvider() {
+        return new JcrUserProvider();
     }
 
     @Bean
