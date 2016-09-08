@@ -35,6 +35,11 @@ public class JmsBatchedProvenanceEventFeedConsumer extends BatchedQueue<Provenan
     @Override
     public void processQueue(List<ProvenanceEventRecordDTO> elements) {
         if (elements != null) {
+            log.info("processQueue for {} Nifi Events ", elements.size());
+            //group by job and send just the leaf nodes with event graph
+            //    GroupEventsByJob groupEventsByJob = new GroupEventsByJob();
+            //   ProvenanceEventRecordDTOHolder eventRecordDTOHolder =groupEventsByJob.groupByJob(elements);
+            //provenanceEventActiveMqWriter.writeEvents(eventRecordDTOHolder);
             ProvenanceEventRecordDTOHolder eventRecordDTOHolder = new ProvenanceEventRecordDTOHolder();
             eventRecordDTOHolder.setEvents(elements);
             provenanceEventActiveMqWriter.writeEvents(eventRecordDTOHolder);

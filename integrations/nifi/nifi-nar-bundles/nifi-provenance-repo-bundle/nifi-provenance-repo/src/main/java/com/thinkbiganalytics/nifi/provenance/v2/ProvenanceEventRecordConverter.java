@@ -63,9 +63,7 @@ public class ProvenanceEventRecordConverter implements Serializable {
         // build the event dto
         final ProvenanceEventRecordDTO dto = new ProvenanceEventRecordDTO();
         dto.setId(String.valueOf(event.getEventId()));
-        dto.setAlternateIdentifierUri(event.getAlternateIdentifierUri());
         dto.setAttributes(attributes);
-        dto.setTransitUri(event.getTransitUri());
         dto.setEventId(event.getEventId());
         dto.setEventTime(new DateTime(event.getEventTime()));
         dto.setEventDuration(event.getEventDuration());
@@ -74,9 +72,7 @@ public class ProvenanceEventRecordConverter implements Serializable {
         dto.setFileSizeBytes(event.getFileSize());
         dto.setComponentId(event.getComponentId());
         dto.setComponentType(event.getComponentType());
-        dto.setSourceSystemFlowFileId(event.getSourceSystemFlowFileIdentifier());
         dto.setFlowFileUuid(event.getFlowFileUuid());
-        dto.setRelationship(event.getRelationship());
         dto.setDetails(event.getDetails());
 
         dto.setAttributeMap(new HashMap<>());
@@ -86,19 +82,7 @@ public class ProvenanceEventRecordConverter implements Serializable {
             dto.getAttributeMap().put(attributeDTO.getName(), attributeDTO.getValue());
         }
 
-        // content
-        //  dto.setContentEqual(contentAvailability.isContentSame());
-        // dto.setInputContentAvailable(contentAvailability.isInputAvailable());
-        dto.setInputContentClaimSection(event.getPreviousContentClaimSection());
-        dto.setInputContentClaimContainer(event.getPreviousContentClaimContainer());
-        dto.setInputContentClaimIdentifier(event.getPreviousContentClaimIdentifier());
-        dto.setInputContentClaimOffset(event.getPreviousContentClaimOffset());
         dto.setInputContentClaimFileSizeBytes(event.getPreviousFileSize());
-        //  dto.setOutputContentAvailable(contentAvailability.isOutputAvailable());
-        dto.setOutputContentClaimSection(event.getContentClaimSection());
-        dto.setOutputContentClaimContainer(event.getContentClaimContainer());
-        dto.setOutputContentClaimIdentifier(event.getContentClaimIdentifier());
-        dto.setOutputContentClaimOffset(event.getContentClaimOffset());
         dto.setOutputContentClaimFileSize(FormatUtils.formatDataSize(event.getFileSize()));
         dto.setOutputContentClaimFileSizeBytes(event.getFileSize());
 
@@ -115,12 +99,6 @@ public class ProvenanceEventRecordConverter implements Serializable {
         // event duration
         if (event.getEventDuration() >= 0) {
             dto.setEventDuration(event.getEventDuration());
-        }
-
-        // lineage duration
-        if (event.getLineageStartDate() > 0) {
-            final long lineageDuration = event.getEventTime() - event.getLineageStartDate();
-            dto.setLineageDuration(lineageDuration);
         }
 
         // parent uuids

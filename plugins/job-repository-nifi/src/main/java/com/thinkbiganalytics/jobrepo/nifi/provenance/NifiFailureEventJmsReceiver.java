@@ -65,7 +65,7 @@ public class NifiFailureEventJmsReceiver {
     private NifiFailedEvent toFailedEvent(ProvenanceEventRecordDTO event) {
         NifiFailedEvent failedEvent = new NifiFailedEvent(event.getEventId(), event.getFlowFileUuid());
         failedEvent.setFeedProcessGroupId(event.getFeedProcessGroupId());
-        failedEvent.setProcessorName(event.getProcessorName());
+        failedEvent.setProcessorName(event.getComponentName());
         failedEvent.setFeedName(event.getFeedName());
         failedEvent.setEventDetails(event.getDetails());
         failedEvent.setEventTime(event.getEventTime());

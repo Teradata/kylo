@@ -43,7 +43,7 @@ public class NifiEventProvider {
         nifiEvent.setFeedProcessGroupId(eventRecordDTO.getFeedProcessGroupId());
         nifiEvent.setEventType(eventRecordDTO.getEventType());
         nifiEvent.setProcessorId(eventRecordDTO.getComponentId());
-        nifiEvent.setProcessorName(eventRecordDTO.getProcessorName());
+        nifiEvent.setProcessorName(eventRecordDTO.getComponentName());
         nifiEvent.setFileSize(eventRecordDTO.getFileSize());
         nifiEvent.setFileSizeBytes(eventRecordDTO.getFileSizeBytes());
         nifiEvent.setParentFlowFileIds(StringUtils.join(eventRecordDTO.getParentFlowFileIds(), ","));

@@ -5,8 +5,11 @@ import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -102,8 +105,8 @@ public class NifiJobExecution {
     @OneToMany(targetEntity = NifiStepExecution.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<NifiStepExecution> stepExecutions = new HashSet<>();
 
-    @OneToMany(targetEntity = NifiJobExecutionContext.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<NifiJobExecutionContext> jobExecutionContext;
+    @OneToMany(targetEntity = NifiJobExecutionContext.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    private List<NifiJobExecutionContext> jobExecutionContext = new ArrayList<>();
 
 
     @OneToOne(targetEntity = NifiEventJobExecution.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -226,6 +229,24 @@ public class NifiJobExecution {
         } else {
             this.jobExecutionContext = jobExecutionContext;
         }
+    }
+
+    public void addJobExecutionContext(NifiJobExecutionContext context) {
+        if (getJobExecutionContext().contains(context)) {
+            getJobExecutionContext().remove(context);
+        }
+        getJobExecutionContext().add(context);
+    }
+
+    public Map<String, String> getJobExecutionContextAsMap() {
+        if (!getJobExecutionContext().isEmpty()) {
+            Map<String, String> map = new HashMap<>();
+            getJobExecutionContext().forEach(ctx -> {
+                map.put(ctx.getJobExecutionContextPK().getKeyName(), ctx.getStringVal());
+            });
+            return map;
+        }
+        return null;
     }
 
     public NifiEventJobExecution getNifiEventJobExecution() {

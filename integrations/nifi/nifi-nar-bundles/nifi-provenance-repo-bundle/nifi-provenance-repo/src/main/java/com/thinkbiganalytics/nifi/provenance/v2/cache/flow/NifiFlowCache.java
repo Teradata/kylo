@@ -210,9 +210,20 @@ public class NifiFlowCache {
      */
     public NifiFlowProcessor getProcessor(String feedProcessGroupId, String processorId) {
         try {
-            return feedFlowCache.get(feedProcessGroupId).getProcessor(processorId);
+            NifiFlowProcessor processor = feedFlowCache.get(feedProcessGroupId).getProcessor(processorId);
+            if (processor == null) {
+                //attempt to load the feedflow again
+                log.info("unable to find processor for group {} and id {}.  Attempt to rebuild the flow", feedProcessGroupId, processorId);
+                getGraph(feedProcessGroupId);
+                processor = feedFlowCache.get(feedProcessGroupId).getProcessor(processorId);
+                if (processor != null) {
+                    log.info("Successfully rebuilt the flow and found the processor for group {} and id {}.  Attempt to rebuild the flow", feedProcessGroupId, processorId);
+                }
+                return processor;
+
+            }
         } catch (ExecutionException e) {
-            e.printStackTrace();
+            log.error("Unable to getProcessor for group {} and id {}. {} - {} ", feedProcessGroupId, processorId, e.getMessage(), e);
             //TODO LOG AND THROW RUNTIME
         }
         return null;

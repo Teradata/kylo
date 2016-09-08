@@ -21,6 +21,7 @@
           <span class="md-caption">Last Refreshed</span>
         </div>
       </div>
+      <nvd3 flex options="vm.statusPieChartOptions" data="vm.statusPieChartData" api="vm.statusPieChartApi"></nvd3>
       <div layout="row" flex>
         <div layout="column" flex="25">
           <span class="hint">{{vm.jobsStarted}}</span>
@@ -39,7 +40,7 @@
           <span class="md-caption">Avg Job Duration (sec)</span>
         </div>
       </div>
-      <nvd3 flex options="vm.chartOptions" data="vm.chartData" api="vm.chartApi"></nvd3>
+      <nvd3 flex options="vm.processorDurationChartOptions" data="vm.processorDurationChartData" api="vm.chartApi"></nvd3>
     </div>
     <div ng-if="!vm.dataLoaded" class="kpi-loading">
       <md-progress-circular md-mode="indeterminate" md-diameter="96"></md-progress-circular>

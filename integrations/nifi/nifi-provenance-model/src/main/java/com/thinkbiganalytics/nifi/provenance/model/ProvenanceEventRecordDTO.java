@@ -32,14 +32,16 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     private boolean isEndOfJob;
 
-    private ProvenanceEventRecordDTO previousEvent;
+    private transient ProvenanceEventRecordDTO previousEvent;
+
     private Long previousEventId;
+    private String previousFlowfileId;
+    private DateTime previousEventTime;
 
     private String id;
     private Long eventId;
     private DateTime eventTime;
     private Long eventDuration;
-    private Long lineageDuration;
     private String eventType;
     private String flowFileUuid;
     private String fileSize;
@@ -50,36 +52,24 @@ public class ProvenanceEventRecordDTO implements Serializable {
     private String componentId;
     private String componentType;
     private String componentName;
-    private String sourceSystemFlowFileId;
-    private String alternateIdentifierUri;
     private transient Collection<ProvenanceEventAttributeDTO> attributes;
     private List<String> parentUuids;
     private List<String> childUuids;
-    private String transitUri;
-    private String relationship;
     private String details;
-    private Boolean contentEqual;
-    private Boolean inputContentAvailable;
-    private String inputContentClaimSection;
-    private String inputContentClaimContainer;
-    private String inputContentClaimIdentifier;
-    private Long inputContentClaimOffset;
-    private String inputContentClaimFileSize;
-    private Long inputContentClaimFileSizeBytes;
-    private Boolean outputContentAvailable;
-    private String outputContentClaimSection;
-    private String outputContentClaimContainer;
-    private String outputContentClaimIdentifier;
-    private Long outputContentClaimOffset;
-    private String outputContentClaimFileSize;
-    private Long outputContentClaimFileSizeBytes;
-    private Boolean replayAvailable;
-    private String replayExplanation;
+
     private String sourceConnectionIdentifier;
+
+    private Long inputContentClaimFileSizeBytes;
+    private String inputContentClaimFileSize;
+    private Long outputContentClaimFileSizeBytes;
+    private String outputContentClaimFileSize;
 
 
     private boolean isFailure;
 
+    /**
+     * set when the aggregator is determining if the flow of events indicate a stream (rapid fire)
+     */
     private boolean stream;
 
     /**
@@ -92,17 +82,20 @@ public class ProvenanceEventRecordDTO implements Serializable {
      */
     private Long jobEventId;
 
-    //flow information
+    //flow information  the following are set via looking at the rest api graph of events
 
+    /**
+     * The Feed name  {category}.{feed}
+     */
     private String feedName;
+    /**
+     * The processgroup that is holding the flow for this feed
+     */
     private String feedProcessGroupId;
 
-    private String processorName;
-
-    private ProvenanceEventRecordDTO realFailureEvent;
-
-
     private transient ActiveFlowFile flowFile;
+
+    private String batchId;
 
     public ProvenanceEventRecordDTO() {
 
@@ -231,14 +224,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.eventDuration = eventDuration;
     }
 
-    public Long getLineageDuration() {
-        return lineageDuration;
-    }
-
-    public void setLineageDuration(Long lineageDuration) {
-        this.lineageDuration = lineageDuration;
-    }
-
     public String getEventType() {
         return eventType;
     }
@@ -319,22 +304,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.componentName = componentName;
     }
 
-    public String getSourceSystemFlowFileId() {
-        return sourceSystemFlowFileId;
-    }
-
-    public void setSourceSystemFlowFileId(String sourceSystemFlowFileId) {
-        this.sourceSystemFlowFileId = sourceSystemFlowFileId;
-    }
-
-    public String getAlternateIdentifierUri() {
-        return alternateIdentifierUri;
-    }
-
-    public void setAlternateIdentifierUri(String alternateIdentifierUri) {
-        this.alternateIdentifierUri = alternateIdentifierUri;
-    }
-
     public Collection<ProvenanceEventAttributeDTO> getAttributes() {
         if (attributes == null) {
             attributes = new ArrayList<>();
@@ -363,20 +332,13 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.childUuids = childUuids;
     }
 
-    public String getTransitUri() {
-        return transitUri;
-    }
-
-    public void setTransitUri(String transitUri) {
-        this.transitUri = transitUri;
-    }
-
-    public String getRelationship() {
-        return relationship;
-    }
-
-    public void setRelationship(String relationship) {
-        this.relationship = relationship;
+    public void addChildUuid(String childFlowFileId) {
+        if (childUuids == null) {
+            childUuids = new ArrayList<>();
+        }
+        if (!childUuids.contains(childFlowFileId)) {
+            childUuids.add(childFlowFileId);
+        }
     }
 
     public String getDetails() {
@@ -385,150 +347,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     public void setDetails(String details) {
         this.details = details;
-    }
-
-    public Boolean getContentEqual() {
-        return contentEqual;
-    }
-
-    public void setContentEqual(Boolean contentEqual) {
-        this.contentEqual = contentEqual;
-    }
-
-    public Boolean getInputContentAvailable() {
-        return inputContentAvailable;
-    }
-
-    public void setInputContentAvailable(Boolean inputContentAvailable) {
-        this.inputContentAvailable = inputContentAvailable;
-    }
-
-    public String getInputContentClaimSection() {
-        return inputContentClaimSection;
-    }
-
-    public void setInputContentClaimSection(String inputContentClaimSection) {
-        this.inputContentClaimSection = inputContentClaimSection;
-    }
-
-    public String getInputContentClaimContainer() {
-        return inputContentClaimContainer;
-    }
-
-    public void setInputContentClaimContainer(String inputContentClaimContainer) {
-        this.inputContentClaimContainer = inputContentClaimContainer;
-    }
-
-    public String getInputContentClaimIdentifier() {
-        return inputContentClaimIdentifier;
-    }
-
-    public void setInputContentClaimIdentifier(String inputContentClaimIdentifier) {
-        this.inputContentClaimIdentifier = inputContentClaimIdentifier;
-    }
-
-    public Long getInputContentClaimOffset() {
-        return inputContentClaimOffset;
-    }
-
-    public void setInputContentClaimOffset(Long inputContentClaimOffset) {
-        this.inputContentClaimOffset = inputContentClaimOffset;
-    }
-
-    public String getInputContentClaimFileSize() {
-        return inputContentClaimFileSize;
-    }
-
-    public void setInputContentClaimFileSize(String inputContentClaimFileSize) {
-        this.inputContentClaimFileSize = inputContentClaimFileSize;
-    }
-
-    public Long getInputContentClaimFileSizeBytes() {
-        return inputContentClaimFileSizeBytes;
-    }
-
-    public void setInputContentClaimFileSizeBytes(Long inputContentClaimFileSizeBytes) {
-        this.inputContentClaimFileSizeBytes = inputContentClaimFileSizeBytes;
-    }
-
-    public Boolean getOutputContentAvailable() {
-        return outputContentAvailable;
-    }
-
-    public void setOutputContentAvailable(Boolean outputContentAvailable) {
-        this.outputContentAvailable = outputContentAvailable;
-    }
-
-    public String getOutputContentClaimSection() {
-        return outputContentClaimSection;
-    }
-
-    public void setOutputContentClaimSection(String outputContentClaimSection) {
-        this.outputContentClaimSection = outputContentClaimSection;
-    }
-
-    public String getOutputContentClaimContainer() {
-        return outputContentClaimContainer;
-    }
-
-    public void setOutputContentClaimContainer(String outputContentClaimContainer) {
-        this.outputContentClaimContainer = outputContentClaimContainer;
-    }
-
-    public String getOutputContentClaimIdentifier() {
-        return outputContentClaimIdentifier;
-    }
-
-    public void setOutputContentClaimIdentifier(String outputContentClaimIdentifier) {
-        this.outputContentClaimIdentifier = outputContentClaimIdentifier;
-    }
-
-    public Long getOutputContentClaimOffset() {
-        return outputContentClaimOffset;
-    }
-
-    public void setOutputContentClaimOffset(Long outputContentClaimOffset) {
-        this.outputContentClaimOffset = outputContentClaimOffset;
-    }
-
-    public String getOutputContentClaimFileSize() {
-        return outputContentClaimFileSize;
-    }
-
-    public void setOutputContentClaimFileSize(String outputContentClaimFileSize) {
-        this.outputContentClaimFileSize = outputContentClaimFileSize;
-    }
-
-    public Long getOutputContentClaimFileSizeBytes() {
-        return outputContentClaimFileSizeBytes;
-    }
-
-    public void setOutputContentClaimFileSizeBytes(Long outputContentClaimFileSizeBytes) {
-        this.outputContentClaimFileSizeBytes = outputContentClaimFileSizeBytes;
-    }
-
-    public Boolean getReplayAvailable() {
-        return replayAvailable;
-    }
-
-    public void setReplayAvailable(Boolean replayAvailable) {
-        this.replayAvailable = replayAvailable;
-    }
-
-    public String getReplayExplanation() {
-        return replayExplanation;
-    }
-
-    public void setReplayExplanation(String replayExplanation) {
-        this.replayExplanation = replayExplanation;
-    }
-
-    public String getProcessorName() {
-        return processorName;
-    }
-
-    public void setProcessorName(String processorName) {
-        this.processorName = processorName;
     }
 
     public boolean isStartOfCurrentFlowFile() {
@@ -543,13 +361,29 @@ public class ProvenanceEventRecordDTO implements Serializable {
     public void setPreviousEvent(ProvenanceEventRecordDTO previousEvent) {
         this.previousEventId = previousEvent.getEventId();
         this.previousEvent = previousEvent;
+        this.previousEventTime = previousEvent.getEventTime();
+        this.previousFlowfileId = previousEvent.getFlowFileUuid();
     }
 
     public Long getPreviousEventId() {
         if (previousEventId == null && previousEvent != null) {
-            return previousEvent.getEventId();
+            this.previousEventId = previousEvent.getEventId();
         }
         return previousEventId;
+    }
+
+    public DateTime getPreviousEventTime() {
+        if (previousEventTime == null && previousEvent != null) {
+            this.previousEventTime = previousEvent.getEventTime();
+        }
+        return previousEventTime;
+    }
+
+    public String getPreviousFlowfileId() {
+        if (previousFlowfileId == null && previousEvent != null) {
+            this.previousFlowfileId = previousEvent.getFlowFileUuid();
+        }
+        return previousFlowfileId;
     }
 
     public DateTime getEventTime() {
@@ -573,6 +407,39 @@ public class ProvenanceEventRecordDTO implements Serializable {
         } else {
             this.setParentUuids(null);
         }
+    }
+
+
+    public Long getInputContentClaimFileSizeBytes() {
+        return inputContentClaimFileSizeBytes;
+    }
+
+    public void setInputContentClaimFileSizeBytes(Long inputContentClaimFileSizeBytes) {
+        this.inputContentClaimFileSizeBytes = inputContentClaimFileSizeBytes;
+    }
+
+    public String getInputContentClaimFileSize() {
+        return inputContentClaimFileSize;
+    }
+
+    public void setInputContentClaimFileSize(String inputContentClaimFileSize) {
+        this.inputContentClaimFileSize = inputContentClaimFileSize;
+    }
+
+    public Long getOutputContentClaimFileSizeBytes() {
+        return outputContentClaimFileSizeBytes;
+    }
+
+    public void setOutputContentClaimFileSizeBytes(Long outputContentClaimFileSizeBytes) {
+        this.outputContentClaimFileSizeBytes = outputContentClaimFileSizeBytes;
+    }
+
+    public String getOutputContentClaimFileSize() {
+        return outputContentClaimFileSize;
+    }
+
+    public void setOutputContentClaimFileSize(String outputContentClaimFileSize) {
+        this.outputContentClaimFileSize = outputContentClaimFileSize;
     }
 
     public boolean isStream() {
@@ -614,14 +481,6 @@ public class ProvenanceEventRecordDTO implements Serializable {
         this.jobEventId = jobEventId;
     }
 
-    public ProvenanceEventRecordDTO getRealFailureEvent() {
-        return realFailureEvent;
-    }
-
-    public void setRealFailureEvent(ProvenanceEventRecordDTO realFailureEvent) {
-        this.realFailureEvent = realFailureEvent;
-    }
-
     public boolean isStartOfJob() {
         return isStartOfJob;
     }
@@ -645,6 +504,15 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     public void setIsEndOfJob(boolean isEndOfJob) {
         this.isEndOfJob = isEndOfJob;
+    }
+
+
+    public String getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(String batchId) {
+        this.batchId = batchId;
     }
 
     @Override
@@ -675,19 +543,16 @@ public class ProvenanceEventRecordDTO implements Serializable {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ProvenanceEventRecordDTO{");
         sb.append("eventId=").append(getEventId());
-        sb.append("processorName=").append(getProcessorName());
+        sb.append("processorName=").append(getComponentName());
         sb.append("componentId=").append(getComponentId());
         sb.append(", flowFile=").append(getFlowFileUuid()).append("(").append(flowFile != null).append(")");
         sb.append(", parentUUIDs=").append(getParentUuids() != null ? getParentUuids().size() : "NULL");
         sb.append(",previous=").append(getPreviousEventId());
-        sb.append(", eventComponentId=").append(getComponentId());
         sb.append(", eventType=").append(getEventType());
         sb.append(", eventDetails=").append(getDetails());
         sb.append(", eventDuration=").append(getEventDuration());
         sb.append(", eventTime=").append(getEventTime());
-        sb.append(", eventRelationship=").append(getRelationship());
         sb.append(", sourceQueueId=").append(getSourceConnectionIdentifier());
-        sb.append(", sourceFlowFileId=").append(getSourceSystemFlowFileId());
         sb.append('}');
         return sb.toString();
     }

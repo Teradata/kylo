@@ -4,6 +4,7 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedProcessorStat
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,6 +13,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
@@ -37,6 +40,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
     private List<ProvenanceEventRecordDTO> potentialStreamEvents = new ArrayList<>();
     private List<ProvenanceEventRecordDTO> jmsEvents = new ArrayList<>();
     private List<ProvenanceEventRecordDTO> streamEvents = new ArrayList<>();
+    private Map<String, ProvenanceEventRecordDTO> lastStreamEventByJob = new ConcurrentHashMap<>();
 
 
     private ProvenanceEventRecordDTO lastEvent;
@@ -71,54 +75,85 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
     }
 
 
-    public GroupedFeedProcessorEventAggregate addEvent(ProvenanceEventRecordDTO event) {
-        groupEventAsStreamOrBatch(event);
+    public GroupedFeedProcessorEventAggregate addEvent(ProvenanceEventRecordDTO event, ProvenanceEventStats stats) {
+        groupEventAsStreamOrBatch(event, stats);
         lastSystemTime = DateTime.now();
         lastEventTime = event.getEventTime();
         lastEvent = event;
         return this;
     }
 
+    private String lastStreamEventMapKey(ProvenanceEventRecordDTO event) {
+        return event.getJobFlowFileId() + "_" + event.getEventType() + "_" + event.isEndOfJob() + "_" + event.isStartOfJob();
+    }
 
     private void movePotentialStreamToBatch() {
-        markFirstEventsAsBatch(potentialStreamEvents);
-        jmsEvents.addAll(potentialStreamEvents);
-        batchCount.addAndGet(potentialStreamEvents.size());
-        potentialStreamEvents.clear();
+        if (!potentialStreamEvents.isEmpty()) {
+            log.info("Marking {} as batch ", potentialStreamEvents.size());
+            markFirstEventsAsBatch(potentialStreamEvents);
+            jmsEvents.addAll(potentialStreamEvents);
+            batchCount.addAndGet(potentialStreamEvents.size());
+            potentialStreamEvents.clear();
+        }
     }
 
     private void movePotentialStreamToStream() {
-        streamEvents.addAll(potentialStreamEvents);
-        streamingCount.addAndGet(potentialStreamEvents.size());
-        potentialStreamEvents.clear();
+        if (!potentialStreamEvents.isEmpty()) {
+            potentialStreamEvents.stream().forEach(e -> {
+                e.setStream(true);
+                if (e.isStartOfJob()) {
+                    e.getFlowFile().getRootFlowFile().setFirstEventType(ActiveFlowFile.FIRST_EVENT_TYPE.STREAM);
+                }
+                lastStreamEventByJob.put(lastStreamEventMapKey(e), e);
+            });
+            streamEvents.addAll(potentialStreamEvents);
+            streamingCount.addAndGet(potentialStreamEvents.size());
+            potentialStreamEvents.clear();
+        }
     }
 
-    private void groupEventAsStreamOrBatch(ProvenanceEventRecordDTO event) {
+    private void moveToStream(ProvenanceEventRecordDTO event) {
+        event.setStream(true);
+        if (event.isStartOfJob()) {
+            event.getFlowFile().getRootFlowFile().setFirstEventType(ActiveFlowFile.FIRST_EVENT_TYPE.STREAM);
+        }
+        lastStreamEventByJob.put(lastStreamEventMapKey(event), event);
+        streamEvents.add(event);
+        streamingCount.incrementAndGet();
+    }
+
+
+    private void groupEventAsStreamOrBatch(ProvenanceEventRecordDTO event, ProvenanceEventStats stats) {
         lock.lock();
         try {
             if (lastEventTime == null) {
                 lastEventTime = event.getEventTime();
             }
             if (ProvenanceEventUtil.isCompletionEvent(event)) {
-
-                //if this event time is before the allotted time between events check for streaming case
                 eventCount.incrementAndGet();
+                checkAndMarkAsEndOfJob(event, stats);
+                //if the event is not the first event, but the first event is a Stream then move this to a stream
+                if (ActiveFlowFile.FIRST_EVENT_TYPE.STREAM.equals(event.getFlowFile().getRootFlowFile().getFirstEventType())) {
+                    moveToStream(event);
+
+                } else {
                 if (event.getEventTime().isBefore(lastEventTime.plus(allowedMillisBetweenEvents))) {
                     if (tempStreamingCount.incrementAndGet() >= numberOfEventsThatMakeAStream) {
-                        //  log.info("Detected a Stream for Feed/Processsor {}/{}.  {} event ", feedName, processorId, event);
-                        //move potential stream events to stream
                         movePotentialStreamToStream();
-                        //do anythign with streaming???
-                        streamEvents.add(event);
-
+                        moveToStream(event);
+                        //checkAndAddJobCompletionEvents(event,stats,streamEvents);
                     } else {
                         potentialStreamEvents.add(event);
+                        // checkAndAddJobCompletionEvents(event,stats,potentialStreamEvents);
+
                     }
                 } else {
                     potentialStreamEvents.add(event);
+                    //  checkAndAddJobCompletionEvents(event,stats,potentialStreamEvents);
                     /// no longer a stream event
                     movePotentialStreamToBatch();
                     tempStreamingCount.set(0);
+                }
                 }
             } else {
                 log.info("Non completion event {} ", event);
@@ -128,17 +163,39 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
         }
     }
 
+    private void checkAndMarkAsEndOfJob(ProvenanceEventRecordDTO event, ProvenanceEventStats stats) {
+        if (stats.getJobsFinished() == 1L && !event.getFlowFile().isRootFlowFile()) {
+            log.info("Marking {} as the end of the job for {}.  is already end of job? {} ", event.getEventId(), event.getFlowFile().getRootFlowFile().getId(), event.isEndOfJob());
+            event.setIsEndOfJob(true);
+        }
+    }
+
+    private void checkAndAddJobCompletionEvents(ProvenanceEventRecordDTO event, ProvenanceEventStats stats, List<ProvenanceEventRecordDTO> list) {
+        //if the event ended the job, but it is not the root flow file then an additional event needs to be sent off to the jms queue indicating the job is complete
+        if (stats.getJobsFinished() == 1L && !event.getFlowFile().isRootFlowFile()) {
+            event.setIsEndOfJob(true);
+            // event.getFlowFile().getRootFlowFile().getLastEvent().setIsEndOfJob(true);
+            //  list.add(event.getFlowFile().getRootFlowFile().getLastEvent());
+            log.info("Adding the additional Completion Event {}  completing {} Root type: {} ", event.getFlowFile().getRootFlowFile().getLastEvent().getEventId(),
+                     event.getFlowFile().getRootFlowFile().getId(), event.getFlowFile().getRootFlowFile().getFirstEventType());
+        }
+    }
+
     private List<ProvenanceEventRecordDTO> addStreamingEventsWhoseFirstEventWasABatchToQueue() {
-        List<ProvenanceEventRecordDTO> events = streamEvents.stream().filter(e -> e.getFlowFile().getRootFlowFile().isFirstEventBatch()).collect(Collectors.toList());
+        // each job does not need all events.  they just need the start and ending events in this batch relative to the jobflowfileid
+
+        //  List<ProvenanceEventRecordDTO> events = streamEvents.stream().filter(e -> ActiveFlowFile.FIRST_EVENT_TYPE.BATCH.equals(e.getFlowFile().getRootFlowFile().getFirstEventType())).collect(Collectors.toList());
+        List<ProvenanceEventRecordDTO> events = lastStreamEventByJob.values().stream().filter(
+            e -> ActiveFlowFile.FIRST_EVENT_TYPE.BATCH.equals(e.getFlowFile().getRootFlowFile().getFirstEventType())).collect(Collectors.toList());
         if (events != null && !events.isEmpty()) {
             jmsEvents.addAll(events);
+            log.info("Adding {} events for feed/processor {}/{}({}) since they originated from a BATCH event ", events.size(), feedName, processorName, processorId);
         }
-        log.info("Adding {} events since they originated from a BATCH event ", events.size());
         return events;
     }
 
     private void markFirstEventsAsBatch(List<ProvenanceEventRecordDTO> events) {
-        events.stream().filter(e -> e.isStartOfJob()).map(e -> e.getFlowFile().getRootFlowFile()).forEach(ff -> ff.setIsFirstEventBatch(true));
+        events.stream().filter(e -> e.isStartOfJob()).map(e -> e.getFlowFile().getRootFlowFile()).forEach(ff -> ff.setFirstEventType(ActiveFlowFile.FIRST_EVENT_TYPE.BATCH));
     }
 
     private void printList(List<ProvenanceEventRecordDTO> list, String title) {
@@ -159,10 +216,13 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
             //if the First Event was a Batch event we should pass this event through so it gets reconciled in the Ops Manager
             addStreamingEventsWhoseFirstEventWasABatchToQueue();
             //copy and clear
+            log.info("copy and clear {}, Events: {}  ", jmsEvents.size(), StringUtils.join(jmsEvents.stream().map(e -> e.getEventId()).collect(Collectors.toList()), ","));
+
             events = new ArrayList<>(jmsEvents);
             jmsEvents.clear();
             //add in any Streaming events to the copied events array
             streamEvents.clear();
+            lastStreamEventByJob.clear();
         } finally {
             lock.unlock();
         }
@@ -172,12 +232,18 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
     }
 
 
+
     public void add(ProvenanceEventStats stats, ProvenanceEventRecordDTO event) {
-        addEvent(event);
+        if (event.getComponentName() != null && processorName == null) {
+            processorName = event.getComponentName();
+        }
+        addEvent(event, stats);
         addEventStats(stats);
+
+
     }
 
-    public GroupedFeedProcessorEventAggregate addEventStats(ProvenanceEventStats stats) {
+    private GroupedFeedProcessorEventAggregate addEventStats(ProvenanceEventStats stats) {
         if (stats != null) {
             this.stats.add(stats);
         }
@@ -227,7 +293,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
 
 
     public String getSummary() {
-        return "";
+        return stats.toString();
     }
 
     @Override

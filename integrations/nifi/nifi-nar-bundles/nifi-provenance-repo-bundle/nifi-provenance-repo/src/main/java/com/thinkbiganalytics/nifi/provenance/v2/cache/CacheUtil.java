@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.nifi.provenance.v2.cache;
 
+import com.thinkbiganalytics.nifi.provenance.ProvenanceEventProcessingException;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
 import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
@@ -7,6 +8,7 @@ import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileGuavaCache;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileMapDbCache;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,11 +70,13 @@ public class CacheUtil {
         //This indicates the start of a Job.
         if (ProvenanceEventUtil.isFirstEvent(event) && (event.getParentUuids() == null || (event.getParentUuids() != null && event.getParentUuids().isEmpty()))) {
             flowFile.setFirstEvent(event);
+            log.info("Marking {} as root file from event type {} ", flowFile.getId(), event.getEventType());
             flowFile.markAsRootFlowFile();
             event.setIsStartOfJob(true);
             startJobCounter.incrementAndGet();;
             modified.add(flowFile);
         }
+
 
         //Build the graph of parent/child flow files
         if (event.getParentUuids() != null && !event.getParentUuids().isEmpty()) {
@@ -80,6 +84,9 @@ public class CacheUtil {
                 if (!flowFile.getId().equals(parent)) {
                     ActiveFlowFile parentFlowFile = flowFile.addParent(flowFileCache.getEntry(parent));
                     parentFlowFile.addChild(flowFile);
+                    if (!flowFile.isRootFlowFile()) {
+                        flowFile.getRootFlowFile().addRootFileActiveChild(flowFile.getId());
+                    }
                     modified.add(flowFile);
                     modified.add(parentFlowFile);
                 }
@@ -89,25 +96,39 @@ public class CacheUtil {
             for (String child : event.getChildUuids()) {
                 ActiveFlowFile childFlowFile = flowFile.addChild(flowFileCache.getEntry(child));
                 childFlowFile.addParent(flowFile);
+                if (!flowFile.isRootFlowFile()) {
+                    flowFile.getRootFlowFile().addRootFileActiveChild(childFlowFile.getId());
+                }
                 modified.add(flowFile);
                 modified.add(childFlowFile);
             }
         }
+        if (flowFile.getRootFlowFile() != null && StringUtils.isNotBlank(flowFile.getRootFlowFile().getFeedProcessGroupId())) {
+            provenanceFeedLookup.ensureProcessorIsInCache(flowFile.getRootFlowFile().getFeedProcessGroupId(), event.getComponentId());
+        }
+        event.setComponentName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
         //assign the feed info for quick lookup on the flow file?
         boolean assignedFeedInfo = provenanceFeedLookup.assignFeedInformationToFlowFile(flowFile);
         if (!assignedFeedInfo && !flowFile.hasFeedInformationAssigned()) {
-            log.error("Unable to assign Feed Info to flow file {} for event {} ", flowFile.getId(), event);
+            log.error("Unable to assign Feed Info to flow file {}, root: {}, for event {} ", flowFile.getId(), flowFile.getRootFlowFile(), event);
         } else {
             event.setFeedName(flowFile.getFeedName());
             event.setFeedProcessGroupId(flowFile.getFeedProcessGroupId());
         }
+        //if we dont have a root flow file assigned the we cant proceeed... error out
+        //TODO error out
+        if (flowFile.getRootFlowFile() == null) {
+            throw new ProvenanceEventProcessingException("Unable to find Root Flow File for FlowFile: " + flowFile + " and Event " + event);
+        }
+
+
         event.setJobFlowFileId(flowFile.getRootFlowFile().getId());
         event.setJobEventId(flowFile.getRootFlowFile().getFirstEvent().getEventId());
-        event.setProcessorName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
 
-        //If the event is the final event for the processor then add it to the flow file
         if (ProvenanceEventUtil.isCompletionEvent(event)) {
-            flowFile.addCompletedEvent(event);
+            flowFile.addCompletionEvent(event);
+        } else {
+            log.info("Non Completition event for {}, {}", event.getEventType(), event);
         }
         //update the internal counters
         if (event.isEndingFlowFileEvent() && flowFile.getRootFlowFile().isFlowComplete()) {

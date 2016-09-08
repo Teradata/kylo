@@ -4,6 +4,8 @@ import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventRecordDTO
 
 import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,6 +24,8 @@ import java.util.stream.Collectors;
  */
 public class ActiveFlowFile {
 
+    private static final Logger log = LoggerFactory.getLogger(ActiveFlowFile.class);
+
     /**
      * FlowFile UUID
      */
@@ -35,12 +39,22 @@ public class ActiveFlowFile {
 
     private Set<String> completedProcessorIds;
 
+    /**
+     * Events that match the ProvenanceEventUtil.isCompletionEvent CLONE, ROUTE, SEND eventTypes are events which generate new flow files and are not to be processed as completion of a Processor
+     */
     private transient List<ProvenanceEventRecordDTO> completedEvents;
+
+    /**
+     * Store all events regardless of eventType
+     */
+    private transient List<ProvenanceEventRecordDTO> allEvents;
 
 
     private transient Map<String, List<ProvenanceEventRecordDTO>> completedEventsByProcessorId = new ConcurrentHashMap<>();
 
     private ProvenanceEventRecordDTO firstEvent;
+
+    private transient ProvenanceEventRecordDTO lastEvent;
 
     private ActiveFlowFile rootFlowFile;
 
@@ -48,7 +62,7 @@ public class ActiveFlowFile {
 
     private DateTime timeCompleted;
 
-    private boolean isFirstEventBatch;
+    private FIRST_EVENT_TYPE firstEventType = FIRST_EVENT_TYPE.UNKNOWN;
 
     /**
      * marker to determine if the Flow has Received a DROP event.
@@ -61,17 +75,32 @@ public class ActiveFlowFile {
 
     private boolean isRootFlowFile = false;
 
+    private boolean flowFileCompletionStatsCollected = false;
+
 
     //Information gained from walking the Nifi Flow Graph
     private String feedName;
 
+    private Set<String> rootFlowFileActiveChildren = new HashSet<>();
 
-    public boolean isFirstEventBatch() {
-        return isFirstEventBatch;
+    public enum FIRST_EVENT_TYPE {
+        BATCH, STREAM, UNKNOWN;
     }
 
-    public void setIsFirstEventBatch(boolean isFirstEventBatch) {
-        this.isFirstEventBatch = isFirstEventBatch;
+    public FIRST_EVENT_TYPE getFirstEventType() {
+        return firstEventType;
+    }
+
+    public void setFirstEventType(FIRST_EVENT_TYPE firstEventType) {
+        this.firstEventType = firstEventType;
+    }
+
+    public boolean isBatch() {
+        return getFirstEventType().equals(FIRST_EVENT_TYPE.BATCH);
+    }
+
+    public boolean isStream() {
+        return getFirstEventType().equals(FIRST_EVENT_TYPE.STREAM);
     }
 
     public void assignFeedInformation(String feedName, String feedProcessGroupId) {
@@ -121,16 +150,6 @@ public class ActiveFlowFile {
     }
 
 
-    /**
-     * Add and return the parent
-     */
-
-    public ActiveFlowFile addParent(ActiveFlowFile flowFile) {
-        if (!flowFile.equals(this)) {
-            getParents().add(flowFile);
-        }
-        return flowFile;
-    }
 
 
     public ActiveFlowFile getRootFlowFile() {
@@ -159,6 +178,16 @@ public class ActiveFlowFile {
     }
 
 
+    /**
+     * Add and return the parent
+     */
+
+    public ActiveFlowFile addParent(ActiveFlowFile flowFile) {
+        if (!flowFile.equals(this)) {
+            getParents().add(flowFile);
+        }
+        return flowFile;
+    }
 
 
     /**
@@ -237,9 +266,11 @@ public class ActiveFlowFile {
 
 
     public void markAsRootFlowFile() {
-
         this.isRootFlowFile = true;
         this.rootFlowFile = this;
+        if (this.rootFlowFileActiveChildren == null) {
+            rootFlowFileActiveChildren = new HashSet<>();
+        }
     }
 
 
@@ -275,6 +306,13 @@ public class ActiveFlowFile {
         return id;
     }
 
+    public boolean isFlowFileCompletionStatsCollected() {
+        return flowFileCompletionStatsCollected;
+    }
+
+    public void setFlowFileCompletionStatsCollected(boolean flowFileCompletionStatsCollected) {
+        this.flowFileCompletionStatsCollected = flowFileCompletionStatsCollected;
+    }
 
     public boolean isStartOfCurrentFlowFile(ProvenanceEventRecordDTO event) {
         Integer index = getCompletedEvents().indexOf(event);
@@ -283,45 +321,40 @@ public class ActiveFlowFile {
 
     private ProvenanceEventRecordDTO getPreviousEvent(ProvenanceEventRecordDTO event) {
         if (event.getPreviousEvent() == null) {
-            Integer index = getCompletedEvents().indexOf(event);
-            if (index > 0) {
-                event.setPreviousEvent(getCompletedEvents().get(index - 1));
-            } else {
-                //get parent flow file for this event
-                if (getParents() != null && !getParents().isEmpty()) {
-                    List<ProvenanceEventRecordDTO> previousEvents = getParents().stream()
-                        .filter(flowFile -> event.getParentFlowFileIds().contains(flowFile.getId()))
-                        .flatMap(flow -> flow.getCompletedEvents().stream()).sorted(new ProvenanceEventRecordDTOComparator().reversed())
-                        .collect(Collectors.toList());
-                    if (previousEvents != null && !previousEvents.isEmpty()) {
-                        event.setPreviousEvent(previousEvents.get(0));
-                    }
-                }
-            }
+            setPreviousEvent(event);
         }
         return event.getPreviousEvent();
     }
 
-    public List<ProvenanceEventRecordDTO> getPreviousEvents(ProvenanceEventRecordDTO event) {
-        List<ProvenanceEventRecordDTO> previousEvents = new ArrayList<>();
-        Integer index = getCompletedEvents().indexOf(event);
-        if (index > 0) {
-            previousEvents.add(getCompletedEvents().get(index - 1));
-        } else {
-            //get parent flow file for this event
-            if (getParents() != null && !getParents().isEmpty()) {
-                List<ProvenanceEventRecordDTO> previousFlowFileEvents = getParents().stream()
-                    .filter(flowFile -> event.getParentFlowFileIds().contains(flowFile.getId()))
-                    .flatMap(flow -> flow.getCompletedEvents().stream()).sorted(new ProvenanceEventRecordDTOComparator().reversed())
-                    .collect(Collectors.toList());
-                if (previousFlowFileEvents != null && !previousFlowFileEvents.isEmpty()) {
-                    previousEvents.addAll(previousEvents);
-                }
+    /**
+     * set the Previous Event to the prev (Completion Event. @see ProvenanceEventUtil.isCompletionEvent Parent/children are added to non completion events. We need to add the relationships
+     */
+    public void setPreviousEvent(ProvenanceEventRecordDTO event) {
+        if (event.getPreviousEvent() == null) {
+            Integer index = getCompletedEvents().indexOf(event);
+            if (index > 0) {
+                    event.setPreviousEvent(getCompletedEvents().get(index - 1));
+            }
+            if (event.getPreviousEvent() == null && getParents() != null && !getParents().isEmpty()) {
+                List<ProvenanceEventRecordDTO> previousEvents = getParents().stream()
+                        .filter(flowFile -> event.getParentFlowFileIds().contains(flowFile.getId()))
+                        .flatMap(flow -> flow.getCompletedEvents().stream()).sorted(new ProvenanceEventRecordDTOComparator().reversed())
+                        .collect(Collectors.toList());
+                    if (previousEvents != null && !previousEvents.isEmpty()) {
+                        ProvenanceEventRecordDTO previousEvent = previousEvents.get(0);
+                        event.setPreviousEvent(previousEvent);
+                        if (event.getParentUuids() == null && event.getParentUuids().isEmpty()) {
+                            event.setParentUuids(getParents().stream().map(ff -> ff.getId()).collect(Collectors.toList()));
+                            log.info("Assigned Parent Flow File ids as {}, to event {} ", event.getParentUuids(), event);
+                            //set children?
+                            //previousEvents.addChild(event)
+                        }
+                        previousEvent.addChildUuid(this.getId());
+                    }
             }
         }
-
-        return previousEvents;
     }
+
 
     private Long calculateEventDuration(ProvenanceEventRecordDTO event) {
 
@@ -329,6 +362,10 @@ public class ActiveFlowFile {
         ProvenanceEventRecordDTO prev = getPreviousEvent(event);
         if (prev != null) {
             long dur = event.getEventTime().getMillis() - prev.getEventTime().getMillis();
+            if(dur <0){
+                log.warn("The Duration for event {} is <0.  prev event {}.  dur: {} ", event, prev, dur);
+                dur = 0L;
+            }
             event.setEventDuration(dur);
             return dur;
         } else if (event.getEventDuration() == null || event.getEventDuration() < 0L) {
@@ -395,10 +432,11 @@ public class ActiveFlowFile {
         return null;
     }
 
-    public void addCompletedEvent(ProvenanceEventRecordDTO event) {
+    public void addCompletionEvent(ProvenanceEventRecordDTO event) {
         getCompletedEvents().add(event);
         getCompletedProcessorIds().add(event.getComponentId());
         completedEventsByProcessorId.computeIfAbsent(event.getComponentId(), (processorId) -> new ArrayList<>()).add(event);
+        setPreviousEvent(event);
         calculateEventDuration(event);
         checkAndMarkIfFlowFileIsComplete(event);
     }
@@ -407,6 +445,10 @@ public class ActiveFlowFile {
     public void checkAndMarkIfFlowFileIsComplete(ProvenanceEventRecordDTO event) {
         if ("DROP".equalsIgnoreCase(event.getEventType())) {
             currentFlowFileComplete = true;
+            log.info("Marking flow file {} as complete for event {}/{} with root file: {} ", this.getId(), event.getEventId(), event.getEventType(),
+                     (getRootFlowFile() != null ? getRootFlowFile().getId() + "" : "null root"));
+            lastEvent = event;
+            getRootFlowFile().removeRootFileActiveChild(this.getId());
         }
     }
 
@@ -417,6 +459,39 @@ public class ActiveFlowFile {
 
     public void setCurrentFlowFileComplete(boolean currentFlowFileComplete) {
         this.currentFlowFileComplete = currentFlowFileComplete;
+    }
+
+    public ProvenanceEventRecordDTO getLastEvent() {
+        return lastEvent;
+    }
+
+    public void addRootFileActiveChild(String flowFileId) {
+        if (this.isRootFlowFile()) {
+            getRootFlowFileActiveChildren().add(flowFileId);
+            log.info("adding active child {} to root {}. size: {} ", flowFileId, this.getId(), getRootFlowFileActiveChildren().size());
+        }
+    }
+
+    public void removeRootFileActiveChild(String flowFileId) {
+        if (this.isRootFlowFile()) {
+            getRootFlowFileActiveChildren().remove(flowFileId);
+            log.info("removing active child {} from root {}. size: {} ", flowFileId, this.getId(), getRootFlowFileActiveChildren().size());
+        }
+    }
+
+    public boolean hasActiveRootChildren() {
+        return this.isRootFlowFile() && !getRootFlowFileActiveChildren().isEmpty();
+    }
+
+    public Set<String> getRootFlowFileActiveChildren() {
+        if (rootFlowFileActiveChildren == null) {
+            rootFlowFileActiveChildren = new HashSet<>();
+        }
+        return rootFlowFileActiveChildren;
+    }
+
+    public void setRootFlowFileActiveChildren(Set<String> rootFlowFileActiveChildren) {
+        this.rootFlowFileActiveChildren = rootFlowFileActiveChildren;
     }
 
     /**
@@ -433,11 +508,20 @@ public class ActiveFlowFile {
             for (ActiveFlowFile child : directChildren) {
                 complete &= child.isCurrentFlowFileComplete();
                 if (!complete) {
+                    log.info("**** Failed isFlowComplete for {} because child was not complete: {} ", this.getId(), child.getId());
+                    if (isRootFlowFile()) {
+                        log.info("Root flow failed completion for {} with active children of {} ", getId(), getRootFlowFileActiveChildren().size());
+                    }
                     break;
                 }
             }
         }
+        if(complete && isRootFlowFile()){
+            complete = !hasActiveRootChildren();
+            log.info(" isComplete for root file {} = {} with activechildren of {} ", getId(), complete, getRootFlowFileActiveChildren().size());
+        }
         if (complete && timeCompleted == null) {
+           // log.info("****** COMPLETING FLOW FILE {} ",this);
             timeCompleted = new DateTime();
         }
         return complete;
@@ -481,6 +565,11 @@ public class ActiveFlowFile {
         for (ActiveFlowFile child : getChildren()) {
             IdReferenceFlowFile childIdRef = child.toIdReferenceFlowFile();
             idReferenceFlowFile.addChildId(childIdRef.getId());
+        }
+
+        if(getRootFlowFile() != null) {
+            Long firstEventId = getRootFlowFile().getFirstEvent().getEventId();
+            idReferenceFlowFile.setRootFlowFileFirstEventId(firstEventId);
         }
         return idReferenceFlowFile;
 

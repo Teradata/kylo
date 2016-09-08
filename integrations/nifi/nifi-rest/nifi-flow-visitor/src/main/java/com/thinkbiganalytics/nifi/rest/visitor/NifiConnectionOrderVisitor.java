@@ -212,6 +212,7 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                 if (passThroughConnections != null) {
                     for (ConnectionDTO dto : passThroughConnections) {
                         ConnectionDTO newConnection = new ConnectionDTO();
+                        newConnection.setId(connection.getSource().getId());
                         newConnection.setSource(connection.getSource());
                         newConnection.setDestination(dto.getDestination());
                         List<NifiVisitableProcessor> destinations  = getDestinationProcessors(newConnection, getSource);
@@ -281,6 +282,7 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
                     for(ConnectionDTO dto: passThroughConnections){
                         ConnectionDTO newConnection = new ConnectionDTO();
                         newConnection.setSource(dto.getSource());
+                        newConnection.setId(connection.getSource().getId());
                         newConnection.setDestination(connection.getDestination());
                         visitConnection(new NifiVisitableConnection(currentProcessGroup, newConnection));
                     }

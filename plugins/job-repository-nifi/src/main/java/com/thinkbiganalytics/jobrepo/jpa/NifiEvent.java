@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.jobrepo.jpa;
 
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -47,9 +48,11 @@ public class NifiEvent {
     private Long fileSizeBytes;
 
     @Column(name = "PARENT_FLOW_FILE_IDS")
+    @Type(type = "com.thinkbiganalytics.jobrepo.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "255")})
     private String parentFlowFileIds;
 
     @Column(name = "CHILD_FLOW_FILE_IDS")
+    @Type(type = "com.thinkbiganalytics.jobrepo.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "255")})
     private String childFlowFileIds;
 
     @Column(name = "ATTRIBUTES_JSON")

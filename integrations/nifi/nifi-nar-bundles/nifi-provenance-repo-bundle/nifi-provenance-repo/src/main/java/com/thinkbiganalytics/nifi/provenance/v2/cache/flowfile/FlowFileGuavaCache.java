@@ -105,6 +105,7 @@ public class FlowFileGuavaCache {
             ff = (ActiveFlowFile) cache.getIfPresent(flowFileId);
         }
         if (ff == null) {
+            log.info("Creating new flow file {} ", flowFileId);
             ff = new ActiveFlowFile(flowFileId);
         } else {
             log.info("LOADED FlowFile from cached id map {} ", ff);
@@ -147,26 +148,34 @@ public class FlowFileGuavaCache {
     }
 
     public void invalidate(ActiveFlowFile flowFile) {
-        //EventMapDbCache.instance().expire(flowFile);
-        FlowFileMapDbCache.instance().expire(flowFile);
-        cache.invalidate(flowFile.getId());
-        //also invalidate all children
-        flowFile.getChildren().forEach(child -> invalidate(child));
+        if (flowFile.getRootFlowFile().isFlowComplete()) {
+            //EventMapDbCache.instance().expire(flowFile);
+            FlowFileMapDbCache.instance().expire(flowFile);
+            cache.invalidate(flowFile.getId());
+            //also invalidate all children
+            flowFile.getChildren().forEach(child -> invalidate(child));
+        } else {
+            //   log.info("skipping invlidation for {} ",flowFile.getId());
+        }
     }
 
 
     public void expire() {
-        long start = System.currentTimeMillis();
-        List<ActiveFlowFile> rootFiles = getCompletedRootFlowFiles();
-        if (!rootFiles.isEmpty()) {
-            log.info("Attempt to expire {} root flow files", rootFiles.size());
-            for (ActiveFlowFile root : rootFiles) {
-                invalidate(root);
+        try {
+            long start = System.currentTimeMillis();
+            log.info("Expiring root flow files");
+            List<ActiveFlowFile> rootFiles = getCompletedRootFlowFiles();
+            if (!rootFiles.isEmpty()) {
+                for (ActiveFlowFile root : rootFiles) {
+                    invalidate(root);
+                }
+                long stop = System.currentTimeMillis();
+                if (rootFiles.size() > 0) {
+                    log.info("Time to expire {} flowfiles {} ms. Root Flow Files left in cache: {} ", rootFiles.size(), (stop - start), getRootFlowFiles().size());
+                }
             }
-            long stop = System.currentTimeMillis();
-            if (rootFiles.size() > 0) {
-                log.info("Time to expire {} flowfiles {} ms. Root Flow Files left in cache: {} ", rootFiles.size(), (stop - start), getRootFlowFiles().size());
-            }
+        } catch (Exception e) {
+            log.error("Error attempting to invalidate FlowFileGuava cache {}, {}", e.getMessage(), e);
         }
     }
 

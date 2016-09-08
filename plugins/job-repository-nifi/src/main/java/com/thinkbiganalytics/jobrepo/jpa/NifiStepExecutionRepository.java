@@ -20,4 +20,15 @@ public interface NifiStepExecutionRepository extends JpaRepository<NifiStepExecu
     List<NifiStepExecution> findStepsInJobThatNeedToBeFailed(@Param("jobExecutionId") Long jobExecutionId);
 
 
+    @Query(value = "select step from NifiStepExecution as step "
+                   + "join NifiEventStepExecution as nifiEventStep on nifiEventStep.stepExecution.stepExecutionId = step.stepExecutionId  "
+                   + "where nifiEventStep.eventId = :eventId and nifiEventStep.flowFileId = :flowFileId")
+    NifiStepExecution findByEventAndFlowFile(@Param("eventId") Long eventId, @Param("flowFileId") String flowFileId);
+
+
+    @Query(value = "select step from NifiStepExecution as step "
+                   + "join NifiEventStepExecution as nifiEventStep on nifiEventStep.stepExecution.stepExecutionId = step.stepExecutionId  "
+                   + "where nifiEventStep.componentId = :componentId and nifiEventStep.jobFlowFileId = :flowFileId")
+    NifiStepExecution findByProcessorAndJobFlowFile(@Param("componentId") String processorId, @Param("flowFileId") String flowFileId);
+
 }

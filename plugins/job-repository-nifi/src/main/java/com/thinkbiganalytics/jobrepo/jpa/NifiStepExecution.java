@@ -4,7 +4,10 @@ import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -94,7 +97,7 @@ public class NifiStepExecution implements Serializable {
 
 
     @OneToMany(targetEntity = NifiStepExecutionContext.class, mappedBy = "stepExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<NifiStepExecutionContext> stepExecutionContext;
+    private List<NifiStepExecutionContext> stepExecutionContext = new ArrayList<>();
 
     @OneToOne(targetEntity = NifiEventStepExecution.class, mappedBy = "stepExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     private NifiEventStepExecution nifiEventStepExecution;
@@ -166,6 +169,24 @@ public class NifiStepExecution implements Serializable {
 
     public void setStepExecutionContext(List<NifiStepExecutionContext> stepExecutionContext) {
         this.stepExecutionContext = stepExecutionContext;
+    }
+
+    public void addStepExecutionContext(NifiStepExecutionContext context) {
+        if (getStepExecutionContext().contains(context)) {
+            getStepExecutionContext().remove(context);
+        }
+        getStepExecutionContext().add(context);
+    }
+
+    public Map<String, String> getStepExecutionContextAsMap() {
+        if (!getStepExecutionContext().isEmpty()) {
+            Map<String, String> map = new HashMap<>();
+            getStepExecutionContext().forEach(ctx -> {
+                map.put(ctx.getStepExecutionContextPK().getKeyName(), ctx.getStringVal());
+            });
+            return map;
+        }
+        return null;
     }
 
     public ExecutionConstants.ExitCode getExitCode() {

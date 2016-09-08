@@ -34,6 +34,12 @@ public class NifiEventStepExecution implements Serializable {
     @Column(name = "EVENT_ID", insertable = false, updatable = false)
     private Long eventId;
 
+    @Column(name = "COMPONENT_ID")
+    private String componentId;
+
+    @Column(name = "JOB_FLOW_FILE_ID")
+    private String jobFlowFileId;
+
     @Column(name = "FLOW_FILE_ID", insertable = false, updatable = false)
     private String flowFileId;
 
@@ -64,6 +70,22 @@ public class NifiEventStepExecution implements Serializable {
 
     public String getFlowFileId() {
         return flowFileId;
+    }
+
+    public String getComponentId() {
+        return componentId;
+    }
+
+    public void setComponentId(String componentId) {
+        this.componentId = componentId;
+    }
+
+    public String getJobFlowFileId() {
+        return jobFlowFileId;
+    }
+
+    public void setJobFlowFileId(String jobFlowFileId) {
+        this.jobFlowFileId = jobFlowFileId;
     }
 
     @Embeddable

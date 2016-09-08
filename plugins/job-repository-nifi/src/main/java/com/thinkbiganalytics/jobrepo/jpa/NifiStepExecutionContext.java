@@ -36,6 +36,9 @@ public class NifiStepExecutionContext extends NifiExecutionContextValues {
     private NifiStepExecution stepExecution;
 
 
+    @Column(name = "KEY_NAME", insertable = false, updatable = false)
+    private String keyName;
+
     public NifiStepExecutionContext() {
 
     }
@@ -66,6 +69,10 @@ public class NifiStepExecutionContext extends NifiExecutionContextValues {
             this.jobExecutionId = jobExecutionId;
             this.stepExecutionId = stepExecutionId;
             this.keyName = keyName;
+        }
+
+        public String getKeyName() {
+            return keyName;
         }
 
         @Override
@@ -120,6 +127,10 @@ public class NifiStepExecutionContext extends NifiExecutionContextValues {
 
     public void setExecutionContextType(String executionContextType) {
         this.executionContextType = executionContextType;
+    }
+
+    public String getKeyName() {
+        return keyName;
     }
 
     @Override
