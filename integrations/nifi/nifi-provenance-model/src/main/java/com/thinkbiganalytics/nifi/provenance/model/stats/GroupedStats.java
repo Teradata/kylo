@@ -87,6 +87,14 @@ public class GroupedStats extends BaseStatistics implements Serializable {
         return groupKey;
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("GroupedStats{");
+        sb.append("jobsFinished=").append(getJobsFinished());
+        sb.append('}');
+        return sb.toString();
+    }
+
     // public List<ProvenanceEventStats> getEventStatsList() {
     //      return eventStatsList;
     //  }

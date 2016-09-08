@@ -83,4 +83,14 @@ public class AggregatedProcessorStatistics implements Serializable {
     public Long getTotalEvents() {
         return totalEvents;
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("AggregatedProcessorStatistics{");
+        sb.append("processorId='").append(processorId).append('\'');
+        sb.append(", processorName='").append(processorName).append('\'');
+        sb.append(", stats=").append(stats);
+        sb.append('}');
+        return sb.toString();
+    }
 }
