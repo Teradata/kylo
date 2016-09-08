@@ -1,14 +1,17 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.thinkbiganalytics.datalake</groupId>
-    <artifactId>thinkbig-services</artifactId>
-    <version>0.4.0-SNAPSHOT</version>
-  </parent>
-  <artifactId>security-service</artifactId>
-  <packaging>pom</packaging>
-  <modules>
-      <module>thinkbig-security-controller</module>
-      <module>thinkbig-security-rest-model</module>
-  </modules>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>thinkbig-security-service</artifactId>
+    <parent>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>thinkbig-services</artifactId>
+        <version>0.4.0-SNAPSHOT</version>
+    </parent>
+    <packaging>pom</packaging>
+    
+    <modules>
+        <module>security-controller</module>
+        <module>security-rest-model</module>
+    </modules>
 </project>
