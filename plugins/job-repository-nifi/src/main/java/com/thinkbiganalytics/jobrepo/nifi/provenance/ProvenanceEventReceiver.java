@@ -152,8 +152,10 @@ public class ProvenanceEventReceiver implements ProvenanceEventJobExecutionStart
     }
 
 
-    @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "5-25")
+    @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
+        //Group by Job flow file id and then multithread it?
+
         events.getEvents().stream().sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).forEach(dto -> receiveEvent(dto));
     }
 

@@ -56,14 +56,11 @@ public class ActiveFlowFile {
 
     private transient ProvenanceEventRecordDTO lastEvent;
 
-    private ActiveFlowFile rootFlowFile;
+    private RootFlowFile rootFlowFile;
 
     private AtomicLong completedEndingProcessors = new AtomicLong();
 
     private DateTime timeCompleted;
-
-    private FIRST_EVENT_TYPE firstEventType = FIRST_EVENT_TYPE.UNKNOWN;
-
     /**
      * marker to determine if the Flow has Received a DROP event.
      */
@@ -81,27 +78,7 @@ public class ActiveFlowFile {
     //Information gained from walking the Nifi Flow Graph
     private String feedName;
 
-    private Set<String> rootFlowFileActiveChildren = new HashSet<>();
 
-    public enum FIRST_EVENT_TYPE {
-        BATCH, STREAM, UNKNOWN;
-    }
-
-    public FIRST_EVENT_TYPE getFirstEventType() {
-        return firstEventType;
-    }
-
-    public void setFirstEventType(FIRST_EVENT_TYPE firstEventType) {
-        this.firstEventType = firstEventType;
-    }
-
-    public boolean isBatch() {
-        return getFirstEventType().equals(FIRST_EVENT_TYPE.BATCH);
-    }
-
-    public boolean isStream() {
-        return getFirstEventType().equals(FIRST_EVENT_TYPE.STREAM);
-    }
 
     public void assignFeedInformation(String feedName, String feedProcessGroupId) {
         this.feedName = feedName;
@@ -150,16 +127,17 @@ public class ActiveFlowFile {
     }
 
 
-
-
-    public ActiveFlowFile getRootFlowFile() {
-        ActiveFlowFile root = null;
+    public RootFlowFile getRootFlowFile() {
+        RootFlowFile root = null;
         //if the pointer to the root file is already set, short circuity the check and return
         if (this.rootFlowFile != null) {
             return this.rootFlowFile;
         }
         if (isRootFlowFile()) {
-            root = this;
+            //shouldnt get here.. but just in case
+            log.info("marking root flow in getRootFlowFile for {} ", this.getId());
+            markAsRootFlowFile();
+            root = this.rootFlowFile;
         } else {
             if (hasParents()) {
                 for (ActiveFlowFile parent : getParents()) {
@@ -267,10 +245,7 @@ public class ActiveFlowFile {
 
     public void markAsRootFlowFile() {
         this.isRootFlowFile = true;
-        this.rootFlowFile = this;
-        if (this.rootFlowFileActiveChildren == null) {
-            rootFlowFileActiveChildren = new HashSet<>();
-        }
+        this.rootFlowFile = new RootFlowFile(this);
     }
 
 
@@ -465,35 +440,6 @@ public class ActiveFlowFile {
         return lastEvent;
     }
 
-    public void addRootFileActiveChild(String flowFileId) {
-        if (this.isRootFlowFile()) {
-            getRootFlowFileActiveChildren().add(flowFileId);
-            log.info("adding active child {} to root {}. size: {} ", flowFileId, this.getId(), getRootFlowFileActiveChildren().size());
-        }
-    }
-
-    public void removeRootFileActiveChild(String flowFileId) {
-        if (this.isRootFlowFile()) {
-            getRootFlowFileActiveChildren().remove(flowFileId);
-            log.info("removing active child {} from root {}. size: {} ", flowFileId, this.getId(), getRootFlowFileActiveChildren().size());
-        }
-    }
-
-    public boolean hasActiveRootChildren() {
-        return this.isRootFlowFile() && !getRootFlowFileActiveChildren().isEmpty();
-    }
-
-    public Set<String> getRootFlowFileActiveChildren() {
-        if (rootFlowFileActiveChildren == null) {
-            rootFlowFileActiveChildren = new HashSet<>();
-        }
-        return rootFlowFileActiveChildren;
-    }
-
-    public void setRootFlowFileActiveChildren(Set<String> rootFlowFileActiveChildren) {
-        this.rootFlowFileActiveChildren = rootFlowFileActiveChildren;
-    }
-
     /**
      * Walks the graph of this flow and all children to see if there is a DROP event associated with each and every flow file
      */
@@ -510,15 +456,15 @@ public class ActiveFlowFile {
                 if (!complete) {
                     log.info("**** Failed isFlowComplete for {} because child was not complete: {} ", this.getId(), child.getId());
                     if (isRootFlowFile()) {
-                        log.info("Root flow failed completion for {} with active children of {} ", getId(), getRootFlowFileActiveChildren().size());
+                        log.info("Root flow failed completion for {} with active children of {} ", getId(), this.getRootFlowFile().getRootFlowFileActiveChildren().size());
                     }
                     break;
                 }
             }
         }
         if(complete && isRootFlowFile()){
-            complete = !hasActiveRootChildren();
-            log.info(" isComplete for root file {} = {} with activechildren of {} ", getId(), complete, getRootFlowFileActiveChildren().size());
+            complete = !this.getRootFlowFile().hasActiveRootChildren();
+            log.info(" isComplete for root file {} = {} with activechildren of {} ", getId(), complete, this.getRootFlowFile().getRootFlowFileActiveChildren().size());
         }
         if (complete && timeCompleted == null) {
            // log.info("****** COMPLETING FLOW FILE {} ",this);
