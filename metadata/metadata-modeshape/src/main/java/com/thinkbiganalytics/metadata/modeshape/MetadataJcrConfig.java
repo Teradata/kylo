@@ -5,7 +5,6 @@ package com.thinkbiganalytics.metadata.modeshape;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -55,6 +54,13 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
  */
 @Configuration
 public class MetadataJcrConfig {
+    
+    @Bean
+    public UserProvider userProvider() {
+        // TODO consider moving this to its own configuration, and perhaps the whole user management 
+        // to a separate module than the metadata one.
+        return new JcrUserProvider();
+    }
     
     @Bean
     public ExtensibleTypeProvider extensibleTypeProvider() {
@@ -182,16 +188,9 @@ public class MetadataJcrConfig {
         return new MetadataJcrConfigurator(postConfigActions);
     }
 
-    @Bean
     /**
-     * Gets the {@link UserProvider} backed by the JCR repository.
-     *
-     * @return the JCR user provider
+     * Guarantees that at least one action exists, otherwise the list injection above will fail.
      */
-    public UserProvider userProvider() {
-        return new JcrUserProvider();
-    }
-
     @Bean
     protected PostMetadataConfigAction dummyAction() {
         return new PostMetadataConfigAction() {

@@ -1,9 +1,13 @@
 package com.thinkbiganalytics.metadata.api.user;
 
 import java.io.Serializable;
+import java.security.Principal;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+
+import com.thinkbiganalytics.security.GroupPrincipal;
 
 /**
  * Metadata for a user principal.
@@ -91,4 +95,17 @@ public interface User {
      * @param enabled {@code true} if the user may login, or {@code false} otherwise
      */
     void setEnabled(boolean enabled);
+    
+    /**
+     * @return the principal representing this user
+     */
+    Principal getPrincipal();
+    
+    /**
+     * Collects a set of all group principals, both direct membership and transitive membership, 
+     * associated with this user.
+     * @return the set of group principals
+     */
+    @Nonnull
+    Set<GroupPrincipal> getGroupPrincipals();
 }

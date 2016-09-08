@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.api.BaseProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
@@ -7,19 +8,24 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrQueryUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.user.JcrUserGroup;
 
+import org.apache.commons.lang3.reflect.ConstructorUtils;
 import org.modeshape.jcr.api.JcrTools;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.NodeIterator;
+import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.nodetype.NodeType;
@@ -154,8 +160,12 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
 
     protected T constructEntity(Node node) {
         @SuppressWarnings("unchecked")
-        T entity = (T) JcrUtil.createJcrObject(node, getJcrEntityClass(node));
+        T entity = (T) constructEntity(node, getJcrEntityClass(node));
         return entity;
+    }
+    
+    protected <T extends JcrObject> T constructEntity(Node node, Class<T> entityClass) {
+        return JcrUtil.createJcrObject(node, entityClass);
     }
 
     public List<T> findWithExplainPlan(String queryExpression) {
@@ -173,20 +183,7 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
     }
 
     public List<Node> findNodes(String query) {
-        List<Node> entities = new ArrayList<>();
-        try {
-            QueryResult result = JcrQueryUtil.query(getSession(), query);
-            if (result != null) {
-                NodeIterator nodeIterator = result.getNodes();
-                while (nodeIterator.hasNext()) {
-                    Node node = nodeIterator.nextNode();
-                    entities.add(node);
-                }
-            }
-            return entities;
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
-        }
+        return Lists.newArrayList(findIterableNodes(query));
     }
 
     public List<T> find(String query) {
@@ -206,6 +203,22 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
             throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
         }
     }
+    
+    public <D, R> Iterable<D> findIterable(String query, Class<D> domainClass, Class<R> resultClass) {
+        return () -> {
+            return StreamSupport.stream(findIterableNodes(query).spliterator(), false)
+                            .map(node -> { 
+                                try {
+                                    @SuppressWarnings("unchecked")
+                                    D entity = (D) ConstructorUtils.invokeConstructor(resultClass, node);
+                                    return entity;
+                                } catch (Exception e) {
+                                    throw new MetadataRepositoryException("Failed to create entity: " + resultClass, e);
+                                }
+                            })
+                            .iterator();
+        };
+    }
 
     public T findFirst(String query) {
         try {
@@ -215,6 +228,23 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
                 if (nodeIterator.hasNext()) {
                     Node node = nodeIterator.nextNode();
                     T entity = constructEntity(node);
+                    return entity;
+                }
+            }
+            return null;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to findAll for Type : " + getNodeType(getJcrEntityClass()), e);
+        }
+    }
+    
+    public <T extends JcrObject> T findFirst(String query, Class<T> resultClass) {
+        try {
+            QueryResult result = JcrQueryUtil.query(getSession(), query);
+            if (result != null) {
+                NodeIterator nodeIterator = result.getNodes();
+                if (nodeIterator.hasNext()) {
+                    Node node = nodeIterator.nextNode();
+                    T entity = constructEntity(node, resultClass);
                     return entity;
                 }
             }
@@ -270,5 +300,18 @@ public abstract class BaseJcrProvider<T, PK extends Serializable> implements Bas
         delete(item);
     }
 
+
+    public Iterable<Node> findIterableNodes(String query) {
+        return () -> {
+            try {
+                QueryResult result = JcrQueryUtil.query(getSession(), query);
+                @SuppressWarnings("unchecked")
+                Iterator<Node> itr = (Iterator<Node>) result.getNodes();
+                return itr;
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failure executing query: " + query, e);
+            }
+        };
+    }
 
 }

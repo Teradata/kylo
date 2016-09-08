@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
+ * Defines and resolves security-related paths within the JCR repository.
  *
  * @author Sean Felten
  */

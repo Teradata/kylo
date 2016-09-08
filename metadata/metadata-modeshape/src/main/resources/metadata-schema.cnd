@@ -30,8 +30,6 @@
  *                      allowableAction*
  *              "services"
  *                  allowableAction*
- *              "users"
- *                  user*
  */
 <jcr = 'http://www.jcp.org/jcr/1.0'>
 <nt='http://www.jcp.org/jcr/nt/1.0'>
@@ -240,10 +238,3 @@
     - tba:message (STRING) 
     - tba:result (STRING) mandatory
     + tba:resource (nt:resource) 
-
-[tba:user] > tba:extensibleEntity, mix:referenceable
-    - tba:displayName (STRING)
-    - tba:email (STRING)
-    - tba:enabled (BOOLEAN)
-    - tba:password (STRING)
-    - tba:systemName (STRING) mandatory

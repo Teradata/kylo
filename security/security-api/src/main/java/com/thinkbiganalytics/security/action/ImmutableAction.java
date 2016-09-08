@@ -43,7 +43,7 @@ public class ImmutableAction implements Action {
         list.add(this);
         
         this.systemName = systemName;
-        this.hierarchy = Collections.unmodifiableList(list);
+        this.hierarchy = Collections.unmodifiableList(new ArrayList<>(list));
         this.hash = this.hierarchy.stream() 
                         .map(a -> a.getSystemName())
                         .collect(Collectors.toList())

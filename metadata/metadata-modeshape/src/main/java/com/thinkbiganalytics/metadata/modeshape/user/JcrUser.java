@@ -1,16 +1,21 @@
 package com.thinkbiganalytics.metadata.modeshape.user;
 
-import com.thinkbiganalytics.metadata.api.user.User;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-
 import java.io.Serializable;
+import java.security.Principal;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
+
+import com.thinkbiganalytics.metadata.api.user.User;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  * A {@link User} stored in a JCR repository.
@@ -28,6 +33,7 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
 
     /** Name of the {@code enabled} property */
     private static final String ENABLED = "tba:enabled";
+    private static final String FULL_NAME = "tba:fullName";
 
     /** Name of the {@code password} property */
     private static final String PASSWORD = "tba:password";
@@ -75,7 +81,7 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
 
     @Override
     public boolean isEnabled() {
-        return getProperty(ENABLED, false);
+        return getProperty(ENABLED, true);
     }
 
     @Override
@@ -92,6 +98,28 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
     @Override
     public void setPassword(@Nullable final String password) {
         setProperty(PASSWORD, password);
+    }
+
+    @Override
+    public String getSystemName() {
+        return JcrPropertyUtil.getName(this.node);
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.user.User#getPrincipal()
+     */
+    @Override
+    public Principal getPrincipal() {
+        return new UsernamePrincipal(getSystemName());
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.user.User#getGroupPrincipals()
+     */
+    @Override
+    public Set<GroupPrincipal> getGroupPrincipals() {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     /**

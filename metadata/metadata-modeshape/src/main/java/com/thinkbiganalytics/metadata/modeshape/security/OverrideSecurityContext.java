@@ -41,11 +41,13 @@ public class OverrideSecurityContext implements SecurityContext {
     }
 
     public boolean matches(String roleName, Principal principal) {
-        if (principal instanceof Group) {
+        if (principal.getName().equals(roleName)) {
+            return true;
+        } else if (principal instanceof Group) {
             Group group = (Group) principal;
             return Collections.list(group.members()).stream().anyMatch((p) -> matches(roleName, p));
         } else {
-            return principal.getName().equals(roleName);
+            return false;
         }
     }
 }

@@ -117,6 +117,16 @@ public class JcrMetadataAccess implements MetadataAccess {
     public <R> R commit(Command<R> cmd, Principal... principals) {
         return commit(createCredentials(principals), cmd);
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.MetadataAccess#commit(java.lang.Runnable, java.security.Principal[])
+     */
+    public void commit(Runnable runner, Principal... principals) {
+        commit(() -> {
+            runner.run();
+            return null;
+        }, principals);
+    }
 
     public <R> R commit(Credentials creds, Command<R> cmd) {
         Session session = activeSession.get();
@@ -177,6 +187,15 @@ public class JcrMetadataAccess implements MetadataAccess {
         return read(createCredentials(principals), cmd);
     }
 
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.MetadataAccess#read(java.lang.Runnable, java.security.Principal[])
+     */
+    public void read(Runnable runner, Principal... principals) {
+        read(() -> {
+            runner.run();
+            return null;
+        }, principals);
+    }
 
     public <R> R read(Credentials creds, Command<R> cmd) {
         Session session = activeSession.get();

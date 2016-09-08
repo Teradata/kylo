@@ -471,8 +471,9 @@ public class JcrPropertyUtil {
                         } catch (RepositoryException e) {
                             throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
                         }
+                    } else {
+                        return v;
                     }
-                    return v;
                 }).collect(Collectors.toSet());
             } else {
                 values = new HashSet<>();
@@ -487,20 +488,6 @@ public class JcrPropertyUtil {
                 Property property = node.setProperty(name, (Value[]) values.stream().toArray(size -> new Value[size]));
             }
 
-            /**
-             * .map(v -> {
-             if (v instanceof Node && PropertyType.REFERENCE == v.getType() && weakReference) {
-             JcrValue vv = (JcrValue) v;
-             Node n = (Node) v;
-             try {
-             return n.getSession().getValueFactory().createValue(n, true);
-             } catch (RepositoryException e) {
-             throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
-             }
-             }
-             return v;
-             })
-             */
             return result;
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to add to set property: " + name + "->" + value, e);
@@ -894,6 +881,14 @@ public class JcrPropertyUtil {
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to copy property \"" + name + "\" from node " + src + " to " + dest, e);
+        }
+    }
+    
+    public static Node getParent(Property prop) {
+        try {
+            return prop.getParent();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get the parent node of the property: " + prop, e);
         }
     }
 

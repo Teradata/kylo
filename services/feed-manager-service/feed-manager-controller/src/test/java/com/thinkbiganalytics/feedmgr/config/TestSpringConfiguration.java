@@ -133,6 +133,16 @@ public class TestSpringConfiguration {
             public <R> R read(Command<R> cmd, Principal... principals) {
                 return cmd.execute();
             }
+
+            @Override
+            public void commit(Runnable cmd, Principal... principals) {
+                cmd.run();
+            }
+
+            @Override
+            public void read(Runnable cmd, Principal... principals) {
+                cmd.run();
+            }
         };
     }
 
