@@ -203,7 +203,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
                     throw new UserAlreadyExistsException(username);
                 }
             } else {
-                return JcrUtil.getJcrObject(usersNode, username, JcrUser.class);
+                return JcrUtil.getOrCreateNode(usersNode, username, JcrUser.NODE_TYPE, JcrUser.class);
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed attempting to create a new user with name: " + username, e);

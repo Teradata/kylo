@@ -42,8 +42,8 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             
             return types.size();
         });
-        // Category + Datasource + Feed + FeedSLA + HiveTableDatasource + Metric + Sla + SlaActionConfiguration + SlaCheck + User = 10
-        assertThat(size).isEqualTo(10);
+        // Category + Datasource + Feed + FeedSLA + HiveTableDatasource + Metric + Sla + SlaActionConfiguration + SlaCheck + User + UserGroup = 11
+        assertThat(size).isEqualTo(11);
     }
 
     @Test(dependsOnMethods="testGetAllDefaultTypes")
@@ -123,8 +123,8 @@ public class JcrExtensibleProvidersTest extends AbstractTestNGSpringContextTests
             return types.size();
         });
         
-        // 10 + Person + Employee = 12
-        assertThat(size).isEqualTo(12);
+        // 11 + Person + Employee = 13
+        assertThat(size).isEqualTo(13);
     }
     
     @Test(dependsOnMethods="testCreatePersonType")
