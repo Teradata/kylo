@@ -26,7 +26,7 @@
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-nifi-flow-rest-client</artifactId>
+            <artifactId>thinkbig-nifi-flow-rest-client-spring</artifactId>
             <version>${project.version}</version>
         </dependency>
 
