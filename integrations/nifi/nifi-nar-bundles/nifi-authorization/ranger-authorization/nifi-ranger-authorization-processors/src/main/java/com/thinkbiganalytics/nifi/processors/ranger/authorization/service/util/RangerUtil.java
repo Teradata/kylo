@@ -20,7 +20,7 @@ public class RangerUtil
 {
 
 	public static Logger logger = LoggerFactory.getLogger(RangerUtil.class);
-	
+
 	private static String HDFS_REPOSITORY_TYPE ="hdfs";
 	private static String HIVE_REPOSITORY_TYPE ="hive";
 	private static String IsEnable ="true";
@@ -39,7 +39,7 @@ public class RangerUtil
 	public HDFSPolicy getHDFSCreatePolicyJson(String group_list, String permission_level, String category_name, String feed_name, String hdfs_permission_list, String hdfs_reposiroty_name)
 	{
 		logger.info("Start of getHDFSCreatePolicyJson");
-		
+
 		HDFSPolicy policy = new HDFSPolicy();
 
 		//Add remove users/groups/permissions to test createPolicy function
@@ -69,7 +69,7 @@ public class RangerUtil
 		policy.setIsAuditEnabled(IsAuditable);
 		policy.setGroups(Grouparraylist);
 		policy.setPermissions(HDFSPermissionarraylist);
-		
+
 		logger.info("End of getHDFSCreatePolicyJson");
 		return policy;
 
@@ -101,14 +101,14 @@ public class RangerUtil
 
 	public SearchPolicy getSearchPolicyJson(String policyName, String repositoryType)
 	{
-		
+
 		logger.info("Start of Search Policy  - Check If Policy Exits");
 		SearchPolicy search = new SearchPolicy();
 		search.setRepositoryType(repositoryType);
 		search.setPolicyName(policyName);
 		search.setEnabled(true);
 		logger.info("End of Search Policy  - Check If Policy Exits");
-		
+
 		return search;
 	}
 
@@ -127,7 +127,7 @@ public class RangerUtil
 	public HivePolicy getHIVECreatePolicyJson(String group_list, String permission_level, String category_name,
 			String feed_name, String hive_permission_list, String hive_reposiroty_name) {
 		// TODO Auto-generated method stub
-		
+
 		logger.info("Start of getHIVECreatePolicyJson  - Contruct Hive Policy");
 		HivePolicy hivePolicy = new HivePolicy();
 
@@ -142,7 +142,7 @@ public class RangerUtil
 
 		//Covert array string to array list.
 		List<String> hive_permission_list_LIST = Arrays.asList(hive_permission_list.split("\\s*,\\s*"));
-	
+
 		@SuppressWarnings({ "rawtypes", "unchecked" })
 		ArrayList permListHive = new ArrayList(hive_permission_list_LIST);
 
@@ -162,9 +162,9 @@ public class RangerUtil
 		hivePolicy.setIsAuditEnabled(IsAuditable);
 		hivePolicy.setGroupList(groupListHive);
 		hivePolicy.setPermList(permListHive);
-		
+
 		logger.info("End of getHIVECreatePolicyJson  - Contruct Hive Policy");
-		
+
 		return hivePolicy;
 	}
 
@@ -189,7 +189,7 @@ public class RangerUtil
 	}
 
 	public boolean checkIfPolicyExists(RangerRestClient rangerClientObject, String category_name, String feed_name, String permission_level, String repositoryType)  throws RangerRestClientException{
-		
+
 		logger.info("Start of check if policy exists");
 		String policy_serach_criteria  = NIFI+category_name+"_"+feed_name+"_"+permission_level;
 		SearchPolicy  searchPolicyObj = getSearchPolicyJson(policy_serach_criteria,repositoryType);

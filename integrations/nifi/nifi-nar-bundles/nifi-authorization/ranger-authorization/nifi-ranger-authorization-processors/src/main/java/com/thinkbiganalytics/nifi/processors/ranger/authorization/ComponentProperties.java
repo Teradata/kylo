@@ -88,5 +88,5 @@ public interface ComponentProperties {
 			.addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
 			.build();
 
-	
+
 }

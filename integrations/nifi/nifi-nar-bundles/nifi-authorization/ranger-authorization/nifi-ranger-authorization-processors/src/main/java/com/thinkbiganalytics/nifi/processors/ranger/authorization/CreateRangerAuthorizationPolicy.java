@@ -47,6 +47,7 @@ import com.thinkbiganalytics.nifi.processors.ranger.authorization.service.util.R
 @SeeAlso({})
 @ReadsAttributes({@ReadsAttribute(attribute="", description="")})
 @WritesAttributes({@WritesAttribute(attribute="", description="")})
+
 public class CreateRangerAuthorizationPolicy extends AbstractProcessor  {
 
 	private static final String HDFS_REPOSITORY_TYPE="hdfs";
