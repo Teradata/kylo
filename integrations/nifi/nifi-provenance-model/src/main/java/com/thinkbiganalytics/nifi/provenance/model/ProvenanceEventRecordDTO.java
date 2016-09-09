@@ -543,16 +543,14 @@ public class ProvenanceEventRecordDTO implements Serializable {
     public String toString() {
         final StringBuilder sb = new StringBuilder("ProvenanceEventRecordDTO{");
         sb.append("eventId=").append(getEventId());
-        sb.append("processorName=").append(getComponentName());
-        sb.append("componentId=").append(getComponentId());
-        sb.append(", flowFile=").append(getFlowFileUuid()).append("(").append(flowFile != null).append(")");
-        sb.append(", parentUUIDs=").append(getParentUuids() != null ? getParentUuids().size() : "NULL");
-        sb.append(",previous=").append(getPreviousEventId());
+        sb.append(", processorName=").append(getComponentName());
+        sb.append(", componentId=").append(getComponentId());
+        sb.append(", flowFile=").append(getFlowFileUuid());
+        sb.append(", previous=").append(getPreviousEventId());
         sb.append(", eventType=").append(getEventType());
         sb.append(", eventDetails=").append(getDetails());
-        sb.append(", eventDuration=").append(getEventDuration());
-        sb.append(", eventTime=").append(getEventTime());
-        sb.append(", sourceQueueId=").append(getSourceConnectionIdentifier());
+        sb.append(", jobFlowFile=").append(getJobFlowFileId());
+        sb.append(", isEndOfJob=").append(isEndOfJob());
         sb.append('}');
         return sb.toString();
     }

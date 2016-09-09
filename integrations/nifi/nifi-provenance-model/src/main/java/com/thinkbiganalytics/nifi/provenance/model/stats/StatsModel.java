@@ -2,6 +2,7 @@ package com.thinkbiganalytics.nifi.provenance.model.stats;
 
 import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.model.RootFlowFile;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,7 +47,7 @@ public class StatsModel {
      */
     public static ProvenanceEventStats newJobCompletionProvenanceEventStats(String feedName, ProvenanceEventRecordDTO event) {
         ProvenanceEventStats stats = null;
-        ActiveFlowFile rootFlowFile = event.getFlowFile().getRootFlowFile();
+        RootFlowFile rootFlowFile = event.getFlowFile().getRootFlowFile();
         if (!rootFlowFile.isFlowFileCompletionStatsCollected() && (event.isEndingFlowFileEvent() && rootFlowFile != null && rootFlowFile.isFlowComplete())) {
             rootFlowFile.setFlowFileCompletionStatsCollected(true);
             stats = new ProvenanceEventStats(feedName);
@@ -60,7 +61,7 @@ public class StatsModel {
             stats.setRootFlowFileId(rootFlowFile != null ? rootFlowFile.getId() : null);
             stats.setRootProcessGroupId((rootFlowFile != null && rootFlowFile.hasFeedInformationAssigned()) ? rootFlowFile.getFeedProcessGroupId() : null);
             stats.setJobsFinished(1L);
-            event.setIsEndOfJob(true);
+            setCompletionJobStats(rootFlowFile, event, stats);
             log.info("New Completion job stats finished? {} for root: {} eventType: {} ", stats.getJobsFinished(), rootFlowFile.getId(), event.getEventType());
         }
         return stats;
@@ -71,7 +72,7 @@ public class StatsModel {
      * Convert the Event into a Stats model
      */
     public static ProvenanceEventStats toProvenanceEventStats(String feedName, ProvenanceEventRecordDTO event) {
-        ActiveFlowFile rootFlowFile = event.getFlowFile().getRootFlowFile();
+        RootFlowFile rootFlowFile = event.getFlowFile().getRootFlowFile();
 
         ProvenanceEventStats stats = new ProvenanceEventStats(feedName);
         stats.setTotalCount(1L);
@@ -100,29 +101,35 @@ public class StatsModel {
         }
 
         if (stats.getJobsFinished() == 1L) {
-            rootFlowFile.setFlowFileCompletionStatsCollected(true);
-            log.info("Finishing Job for flowfile: {} with eventtype: {}.  ", event.getFlowFile(), event.getEventType());
-            event.setIsEndOfJob(true);
-            Long jobTime = null;
-            ProvenanceEventRecordDTO firstEvent = rootFlowFile.getFirstEvent() != null ? rootFlowFile.getFirstEvent() : event.getFlowFile().getFirstEvent();
-            if (firstEvent != null) {
-                jobTime = event.getEventTime().getMillis() - firstEvent.getEventTime().getMillis();
-                stats.setJobDuration(jobTime);
-            }
-
-            Set<ProvenanceEventRecordDTO> failedEvents = event.getFlowFile().getRootFlowFile().getFailedEvents(true);
-            if (failedEvents != null && !failedEvents.isEmpty()) {
-                stats.setJobsFailed(1L);
-            } else {
-                if (jobTime != null) {
-                    stats.setSuccessfulJobDuration(jobTime);
-                }
-            }
-
-
+            setCompletionJobStats(rootFlowFile, event, stats);
         }
 
         return stats;
+    }
+
+    private static void setCompletionJobStats(RootFlowFile rootFlowFile, ProvenanceEventRecordDTO event, ProvenanceEventStats stats) {
+        rootFlowFile.setFlowFileCompletionStatsCollected(true);
+        log.info("Finishing Job for flowfile: {} with eventtype: {}.  ", event.getFlowFile(), event.getEventType());
+        event.setIsEndOfJob(true);
+        Long jobTime = calculateJobDuration(rootFlowFile, event);
+        stats.setJobDuration(jobTime);
+        Set<ProvenanceEventRecordDTO> failedEvents = rootFlowFile.getFailedEvents(true);
+        if (failedEvents != null && !failedEvents.isEmpty()) {
+            stats.setJobsFailed(1L);
+        } else {
+            if (jobTime != null) {
+                stats.setSuccessfulJobDuration(jobTime);
+            }
+        }
+    }
+
+    private static Long calculateJobDuration(RootFlowFile rootFlowFile, ProvenanceEventRecordDTO event) {
+        Long jobTime = null;
+        ProvenanceEventRecordDTO firstEvent = rootFlowFile.getFirstEvent() != null ? rootFlowFile.getFirstEvent() : event.getFlowFile().getFirstEvent();
+        if (firstEvent != null) {
+            jobTime = event.getEventTime().getMillis() - firstEvent.getEventTime().getMillis();
+        }
+        return jobTime;
     }
 
 

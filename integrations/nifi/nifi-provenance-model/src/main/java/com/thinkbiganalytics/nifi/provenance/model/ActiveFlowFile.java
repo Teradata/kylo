@@ -72,6 +72,7 @@ public class ActiveFlowFile {
 
     private boolean isRootFlowFile = false;
 
+    //TODO make AtomicBoolean ??
     private boolean flowFileCompletionStatsCollected = false;
 
 

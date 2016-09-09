@@ -28,7 +28,6 @@ public class GroupedStats extends BaseStatistics implements Serializable {
 
     public void add(ProvenanceEventStats stats) {
         this.bytesIn += stats.getBytesIn();
-        this.bytesIn += stats.getBytesIn();
         this.bytesOut += stats.getBytesOut();
         this.duration += stats.getDuration();
         this.processorsFailed += stats.getProcessorsFailed();

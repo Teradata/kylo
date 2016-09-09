@@ -50,7 +50,16 @@ public class ProvenanceEventStatisticsRestController {
     @Produces({MediaType.APPLICATION_JSON})
     public Response findStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") ProvenanceEventSummaryStatsProvider.TimeFrame timeframe) {
 
-        List<? extends ProvenanceEventSummaryStats> list = statsProvider.findForFeedGroupedByProcessor(feedName, timeframe); //statsProvider.findForFeed(feedName,null,null);
+        List<? extends ProvenanceEventSummaryStats> list = statsProvider.findForFeedProcessorStatistics(feedName, timeframe);
+        List<com.thinkbiganalytics.jobrepo.repository.rest.model.ProvenanceEventSummaryStats> model = ProvenanceEventSummaryStatTransform.toModel(list);
+        return Response.ok(model).build();
+    }
+    @GET
+    @Path("/{feedName}/{timeframe}")
+    @Produces({MediaType.APPLICATION_JSON})
+    public Response findFeedStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") ProvenanceEventSummaryStatsProvider.TimeFrame timeframe) {
+
+        List<? extends ProvenanceEventSummaryStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, timeframe);
         List<com.thinkbiganalytics.jobrepo.repository.rest.model.ProvenanceEventSummaryStats> model = ProvenanceEventSummaryStatTransform.toModel(list);
         return Response.ok(model).build();
     }

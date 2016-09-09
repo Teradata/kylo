@@ -49,7 +49,9 @@ public class NifiEventProvider {
         nifiEvent.setParentFlowFileIds(StringUtils.join(eventRecordDTO.getParentFlowFileIds(), ","));
         nifiEvent.setChildFlowFileIds(StringUtils.join(eventRecordDTO.getChildUuids(), ","));
         nifiEvent.setJobFlowFileId(eventRecordDTO.getJobFlowFileId());
-
+        nifiEvent.setIsStartOfJob(eventRecordDTO.isStartOfJob());
+        nifiEvent.setIsEndOfJob(eventRecordDTO.isEndOfJob());
+        nifiEvent.setSourceConnectionId(eventRecordDTO.getSourceConnectionIdentifier());
         String attributesJSON = ObjectMapperSerializer.serialize(eventRecordDTO.getAttributes());
         nifiEvent.setAttributesJson(attributesJSON);
         return nifiEvent;
