@@ -25,33 +25,33 @@ public interface MetadataAccess {
     public static final Principal ADMIN = new GroupPrincipal("admin");
     
     /**
-     * Executes the {@link Command} and commits any changes using credentials derived by the provided principals.
+     * Executes the {@link MetadataCommand} and commits any changes using credentials derived by the provided principals.
      * If no principals are provided then the commmand will execute using credentials derived from the current 
      * security context.
      * @param cmd the command to execute
      * @param princials one or more principals, or none to use the current security context
      * @return the result returned from the command
      */
-    <R> R commit(Command<R> cmd, Principal... principals);
+    <R> R commit(MetadataCommand<R> cmd, Principal... principals);
     
     /**
      * Executes the {@link Runnable} and commits any changes using credentials derived by the provided principals.
      * If no principals are provided then the runnable will execute using credentials derived from the current 
      * security context.
-     * @param cmd the command to execute
+     * @param action the command to execute
      * @param princials one or more principals, or none to use the current security context
      */
-    void commit(Runnable cmd, Principal... principals);
+    void commit(MetadataAction action, Principal... principals);
 
     /**
-     * Executes the {@link Command} in a read-only context using credentials derived by the provided principals.
+     * Executes the {@link MetadataCommand} in a read-only context using credentials derived by the provided principals.
      * If no principals are provided then the commmand will execute using credentials derived from the current 
      * security context.
      * @param cmd the command to execute
      * @param princials one or more principals, or none to use the current security context
      * @return the result returned from the command
      */
-    <R> R read(Command<R> cmd, Principal... principals);
+    <R> R read(MetadataCommand<R> cmd, Principal... principals);
 
     /**
      * Executes the {@link Runnable} in a read-only context using credentials derived by the provided principals.
@@ -60,5 +60,5 @@ public interface MetadataAccess {
      * @param cmd the command to execute
      * @param princials one or more principals, or none to use the current security context
      */
-    void read(Runnable cmd, Principal... principals);
+    void read(MetadataAction cmd, Principal... principals);
 }

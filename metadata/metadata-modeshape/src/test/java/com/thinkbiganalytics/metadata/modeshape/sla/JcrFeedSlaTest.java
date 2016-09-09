@@ -16,7 +16,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testng.Assert;
 
-import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
@@ -81,28 +80,20 @@ public class JcrFeedSlaTest {
 
     public JcrFeed.FeedId createFeed(final String categorySystemName, final String feedSystemName) {
 
-        Category category = metadata.commit(new AdminCredentials(), new Command<Category>() {
-            @Override
-            public Category execute() {
-                JcrCategory category = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
-                category.setDescription(categorySystemName + " desc");
-                category.setTitle(categorySystemName);
-                categoryProvider.update(category);
-                return category;
-            }
+        Category category = metadata.commit(new AdminCredentials(), () -> {
+            JcrCategory cat = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
+            cat.setDescription(categorySystemName + " desc");
+            cat.setTitle(categorySystemName);
+            categoryProvider.update(cat);
+            return cat;
         });
 
-        return metadata.commit(new AdminCredentials(), new Command<JcrFeed.FeedId>() {
-            @Override
-            public JcrFeed.FeedId execute() {
-
-                JcrCategory category = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
-
-                JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, feedSystemName + " desc");
-                feed.setTitle(feedSystemName);
-                return feed.getId();
-
-            }
+        return metadata.commit(new AdminCredentials(), () -> {
+            JcrCategory cat = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
+            JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, feedSystemName + " desc");
+            
+            feed.setTitle(feedSystemName);
+            return feed.getId();
         });
     }
 

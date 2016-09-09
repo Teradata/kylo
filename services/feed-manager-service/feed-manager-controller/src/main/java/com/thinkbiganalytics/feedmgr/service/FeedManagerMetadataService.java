@@ -1,5 +1,17 @@
 package com.thinkbiganalytics.feedmgr.service;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import javax.inject.Inject;
+
+import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
+import org.apache.nifi.web.api.entity.ProcessGroupEntity;
+
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -7,12 +19,10 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
-import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
-import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
@@ -23,18 +33,6 @@ import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
-
-import org.apache.nifi.web.api.dto.ConnectionDTO;
-import org.apache.nifi.web.api.dto.ProcessGroupDTO;
-import org.apache.nifi.web.api.entity.ProcessGroupEntity;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import javax.inject.Inject;
 
 public class FeedManagerMetadataService implements MetadataService {
 
@@ -84,21 +82,15 @@ public class FeedManagerMetadataService implements MetadataService {
     @Override
     //@Transactional(transactionManager = "metadataTransactionManager")
     public RegisteredTemplate getRegisteredTemplateWithAllProperties(final String templateId) {
-        return metadataAccess.read(new Command<RegisteredTemplate>() {
-            @Override
-            public RegisteredTemplate execute() {
-                return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
-            }
+        return metadataAccess.read(() -> {
+            return templateProvider.getRegisteredTemplateWithAllProperties(templateId);
         });
-
     }
 
     @Override
     public RegisteredTemplate getRegisteredTemplateForNifiProperties(final String nifiTemplateId, final String nifiTemplateName) {
-        return metadataAccess.read(new Command<RegisteredTemplate>() {
-            public RegisteredTemplate execute() {
-                return templateProvider.getRegisteredTemplateForNifiProperties(nifiTemplateId, nifiTemplateName);
-            }
+        return metadataAccess.read(() -> {
+            return templateProvider.getRegisteredTemplateForNifiProperties(nifiTemplateId, nifiTemplateName);
         });
     }
 
@@ -198,47 +190,37 @@ public class FeedManagerMetadataService implements MetadataService {
 
     //@Transactional(transactionManager = "metadataTransactionManager")
     public FeedSummary enableFeed(String feedId) {
-        return metadataAccess.commit(new Command<FeedSummary>() {
-            @Override
-            public FeedSummary execute() {
-                FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
-                if (!feedMetadata.getState().equals(Feed.State.ENABLED.name())) {
-                    FeedSummary feedSummary = feedProvider.enableFeed(feedId);
+        return metadataAccess.commit(() -> {
+            FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
+            if (!feedMetadata.getState().equals(Feed.State.ENABLED.name())) {
+                FeedSummary feedSummary = feedProvider.enableFeed(feedId);
 
-                    boolean updatedNifi = updateNifiFeedRunningStatus(feedSummary, Feed.State.ENABLED);
-                    if (!updatedNifi) {
-                        //rollback
-                        throw new RuntimeException("Unable to enable Feed " + feedId);
-                    }
-                    return feedSummary;
+                boolean updatedNifi = updateNifiFeedRunningStatus(feedSummary, Feed.State.ENABLED);
+                if (!updatedNifi) {
+                    //rollback
+                    throw new RuntimeException("Unable to enable Feed " + feedId);
                 }
-                return new FeedSummary(feedMetadata);
-
+                return feedSummary;
             }
+            return new FeedSummary(feedMetadata);
         });
 
     }
 
     //@Transactional(transactionManager = "metadataTransactionManager")
     public FeedSummary disableFeed(final String feedId) {
-        return metadataAccess.commit(new Command<FeedSummary>() {
-
-            @Override
-            public FeedSummary execute() {
-                FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
-                if (!feedMetadata.getState().equals(Feed.State.DISABLED.name())) {
-                    FeedSummary feedSummary = feedProvider.disableFeed(feedId);
-                    boolean updatedNifi = updateNifiFeedRunningStatus(feedSummary, Feed.State.DISABLED);
-                    if (!updatedNifi) {
-                        //rollback
-                        throw new RuntimeException("Unable to disable Feed " + feedId);
-                    }
-                    return feedSummary;
+        return metadataAccess.commit(() -> {
+            FeedMetadata feedMetadata = feedProvider.getFeedById(feedId);
+            if (!feedMetadata.getState().equals(Feed.State.DISABLED.name())) {
+                FeedSummary feedSummary = feedProvider.disableFeed(feedId);
+                boolean updatedNifi = updateNifiFeedRunningStatus(feedSummary, Feed.State.DISABLED);
+                if (!updatedNifi) {
+                    //rollback
+                    throw new RuntimeException("Unable to disable Feed " + feedId);
                 }
-                return new FeedSummary(feedMetadata);
+                return feedSummary;
             }
-
-
+            return new FeedSummary(feedMetadata);
         });
     }
 

@@ -20,7 +20,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.testng.Assert;
 
-import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -36,8 +35,6 @@ import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryPr
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrObject;
@@ -90,19 +87,16 @@ public class JcrPropertyTest {
 
     @Test
     public void testGetPropertyTypes() throws RepositoryException {
-        Map<String, FieldDescriptor.Type> propertyTypeMap = metadata.commit(new AdminCredentials(), new Command<Map<String, FieldDescriptor.Type>>() {
-            @Override
-            public Map<String, FieldDescriptor.Type> execute() {
-                ExtensibleType feedType = provider.getType("tba:feed");
-                Set<FieldDescriptor> fields = feedType.getFieldDescriptors();
-                Map<String, FieldDescriptor.Type> map = new HashMap<>();
+        Map<String, FieldDescriptor.Type> propertyTypeMap = metadata.commit(new AdminCredentials(), () -> {
+            ExtensibleType feedType = provider.getType("tba:feed");
+            Set<FieldDescriptor> fields = feedType.getFieldDescriptors();
+            Map<String, FieldDescriptor.Type> map = new HashMap<>();
 
-                for (FieldDescriptor field : fields) {
-                    map.put(field.getName(), field.getType());
-                }
-
-                return map;
+            for (FieldDescriptor field : fields) {
+                map.put(field.getName(), field.getType());
             }
+
+            return map;
         });
         log.info("Property Types {} ", propertyTypeMap);
 
@@ -115,136 +109,120 @@ public class JcrPropertyTest {
     @Test
     public void testFeed() {
         String categorySystemName = "my_category";
-        Category category = metadata.commit(new AdminCredentials(), new Command<Category>() {
-            @Override
-            public Category execute() {
-                JcrCategory category = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
-                category.setDescription("my category desc");
-                category.setTitle("my category");
-                categoryProvider.update(category);
-                return category;
-            }
+        Category category = metadata.commit(new AdminCredentials(), () -> {
+            JcrCategory cat = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
+            cat.setDescription("my category desc");
+            cat.setTitle("my category");
+            categoryProvider.update(cat);
+            return cat;
         });
 
-        final JcrFeed.FeedId createdFeedId = metadata.commit(new AdminCredentials(), new Command<JcrFeed.FeedId>() {
-            @Override
-            public JcrFeed.FeedId execute() {
+        final JcrFeed.FeedId createdFeedId = metadata.commit(new AdminCredentials(), () -> {
 
-                String categorySystemName = "my_category";
+            String sysName = "my_category";
 
-                JcrCategory category = (JcrCategory) categoryProvider.ensureCategory(categorySystemName);
-                category.setDescription("my category desc");
-                category.setTitle("my category");
-                categoryProvider.update(category);
+            JcrCategory cat = (JcrCategory) categoryProvider.ensureCategory(sysName);
+            cat.setDescription("my category desc");
+            cat.setTitle("my category");
+            categoryProvider.update(cat);
 
-                JcrHiveTableDatasource datasource1 = (JcrHiveTableDatasource) datasourceProvider.ensureDatasource("mysql.table1", "mysql table source 1", HiveTableDatasource.class);
-                datasource1.setDatabase("TEST");
-                datasource1.setTableName("TABLE1");
-                datasource1.setProperty(JcrDatasource.TYPE_NAME, "Database");
+            JcrHiveTableDatasource datasource1 = (JcrHiveTableDatasource) datasourceProvider.ensureDatasource("mysql.table1", "mysql table source 1", HiveTableDatasource.class);
+            datasource1.setDatabase("TEST");
+            datasource1.setTableName("TABLE1");
+            datasource1.setProperty(JcrDatasource.TYPE_NAME, "Database");
 
-                JcrDatasource datasource2 = (JcrHiveTableDatasource) datasourceProvider.ensureDatasource("mysql.table2", "mysql table source 2", HiveTableDatasource.class);
-                datasource1.setDatabase("TEST");
-                datasource1.setTableName("TABLE1");
-                datasource2.setProperty(JcrDatasource.TYPE_NAME, "Database");
+            JcrDatasource datasource2 = (JcrHiveTableDatasource) datasourceProvider.ensureDatasource("mysql.table2", "mysql table source 2", HiveTableDatasource.class);
+            datasource1.setDatabase("TEST");
+            datasource1.setTableName("TABLE1");
+            datasource2.setProperty(JcrDatasource.TYPE_NAME, "Database");
 
-                String feedSystemName = "my_feed";
+            String feedSystemName = "my_feed";
 //                JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, "my feed desc", datasource1.getId(), null);
-                JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(categorySystemName, feedSystemName, "my feed desc");
-                feedProvider.ensureFeedSource(feed.getId(), datasource1.getId());
-                feedProvider.ensureFeedSource(feed.getId(), datasource2.getId());
-                feed.setTitle("my feed");
-                feed.addTag("my tag");
-                feed.addTag("my second tag");
-                feed.addTag("feedTag");
+            JcrFeed feed = (JcrFeed) feedProvider.ensureFeed(sysName, feedSystemName, "my feed desc");
+            feedProvider.ensureFeedSource(feed.getId(), datasource1.getId());
+            feedProvider.ensureFeedSource(feed.getId(), datasource2.getId());
+            feed.setTitle("my feed");
+            feed.addTag("my tag");
+            feed.addTag("my second tag");
+            feed.addTag("feedTag");
 
-                Map<String, Object> otherProperties = new HashMap<String, Object>();
-                otherProperties.put("prop1", "my prop1");
-                otherProperties.put("prop2", "my prop2");
-                feed.setProperties(otherProperties);
+            Map<String, Object> otherProperties = new HashMap<String, Object>();
+            otherProperties.put("prop1", "my prop1");
+            otherProperties.put("prop2", "my prop2");
+            feed.setProperties(otherProperties);
 
-                return feed.getId();
-
-            }
+            return feed.getId();
         });
 
         //read and find feed verisons and ensure props
 
-        JcrFeed.FeedId readFeedId = metadata.read(new AdminCredentials(), new Command<JcrFeed.FeedId>() {
-            @Override
-            public JcrFeed.FeedId execute() {
-                Session s = null;
-                JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(createdFeedId);
-                int versions = printVersions(f);
-                Assert.assertTrue(versions > 1, "Expecting more than 1 version: jcr:rootVersion, 1.0");
+        JcrFeed.FeedId readFeedId = metadata.read(new AdminCredentials(), () -> {
+            Session s = null;
+            JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(createdFeedId);
+            int versions = printVersions(f);
+            Assert.assertTrue(versions > 1, "Expecting more than 1 version: jcr:rootVersion, 1.0");
 
-                @SuppressWarnings("unchecked")
-                List<? extends FeedSource> sources = f.getSources();
+            @SuppressWarnings("unchecked")
+            List<? extends FeedSource> sources = f.getSources();
 
-                // TODO: For some reason only one source gets saved even though 2 get registered.  This appears to happen
-                // only in this unit test for some reason.
+            // TODO: For some reason only one source gets saved even though 2 get registered.  This appears to happen
+            // only in this unit test for some reason.
 //                Assert.assertTrue(sources.size() > 1);
-                Assert.assertTrue(sources.size() > 0);
+            Assert.assertTrue(sources.size() > 0);
 
-                if (sources != null) {
-                    for (FeedSource source : sources) {
-                        Map<String, Object> dataSourceProperties = ((JcrDatasource) source.getDatasource()).getAllProperties();
-                        String type = (String) dataSourceProperties.get(JcrDatasource.TYPE_NAME);
-                        //assert the type of datasource matches what was created "Database"
-                        Assert.assertEquals(type, "Database");
-                    }
+            if (sources != null) {
+                for (FeedSource source : sources) {
+                    Map<String, Object> dataSourceProperties = ((JcrDatasource) source.getDatasource()).getAllProperties();
+                    String type = (String) dataSourceProperties.get(JcrDatasource.TYPE_NAME);
+                    //assert the type of datasource matches what was created "Database"
+                    Assert.assertEquals(type, "Database");
                 }
-                List<JcrObject> taggedObjects = tagProvider.findByTag("my tag");
-                //assert we got 1 feed back
-                Assert.assertEquals(1, taggedObjects.size());
-                return f.getId();
             }
+            List<JcrObject> taggedObjects = tagProvider.findByTag("my tag");
+            //assert we got 1 feed back
+            Assert.assertEquals(1, taggedObjects.size());
+            return f.getId();
         });
 
         //update the feed again
 
-        JcrFeed.FeedId updatedFeed = metadata.commit(new AdminCredentials(), new Command<JcrFeed.FeedId>() {
-            @Override
-            public JcrFeed.FeedId execute() {
-                JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(createdFeedId);
-                f.setDescription("My Feed Updated Description");
+        JcrFeed.FeedId updatedFeed = metadata.commit(new AdminCredentials(), () -> {
+            JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(createdFeedId);
+            f.setDescription("My Feed Updated Description");
 
-                Map<String, Object> otherProperties = new HashMap<String, Object>();
-                otherProperties.put("prop1", "my updated prop1");
-                f.setProperties(otherProperties);
+            Map<String, Object> otherProperties = new HashMap<String, Object>();
+            otherProperties.put("prop1", "my updated prop1");
+            f.setProperties(otherProperties);
 
-                ((JcrFeedProvider) feedProvider).update(f);
-                return f.getId();
-            }
+            ((JcrFeedProvider) feedProvider).update(f);
+            return f.getId();
         });
 
         //read it again and find the versions
-        readFeedId = metadata.read(new AdminCredentials(), new Command<JcrFeed.FeedId>() {
-            @Override
-            public JcrFeed.FeedId execute() {
-                JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(updatedFeed);
-                int versions = printVersions(f);
-                Assert.assertTrue(versions > 2, "Expecting more than 2 versions: jcr:rootVersion, 1.0, 1.1");
-                JcrFeed v1 = JcrVersionUtil.getVersionedNode(f, "1.0", JcrFeed.class);
-                JcrFeed v11 = JcrVersionUtil.getVersionedNode(f, "1.1", JcrFeed.class);
-                String v1Prop1 = v1.getProperty("prop1", String.class);
-                String v11Prop1 = v11.getProperty("prop1", String.class);
-                JcrFeed baseVersion = JcrVersionUtil.getVersionedNode(JcrVersionUtil.getBaseVersion(f.getNode()), JcrFeed.class);
+        readFeedId = metadata.read(new AdminCredentials(), () -> {
+            JcrFeed f = (JcrFeed) ((JcrFeedProvider) feedProvider).findById(updatedFeed);
+            int versions = printVersions(f);
+            Assert.assertTrue(versions > 2, "Expecting more than 2 versions: jcr:rootVersion, 1.0, 1.1");
+            JcrFeed v1 = JcrVersionUtil.getVersionedNode(f, "1.0", JcrFeed.class);
+            JcrFeed v11 = JcrVersionUtil.getVersionedNode(f, "1.1", JcrFeed.class);
+            String v1Prop1 = v1.getProperty("prop1", String.class);
+            String v11Prop1 = v11.getProperty("prop1", String.class);
+            JcrFeed baseVersion = JcrVersionUtil.getVersionedNode(JcrVersionUtil.getBaseVersion(f.getNode()), JcrFeed.class);
 
-                //Assert the Props get versioned
+            //Assert the Props get versioned
 
-                Assert.assertEquals(v1Prop1, "my prop1");
-                Assert.assertEquals(v11Prop1, "my updated prop1");
-                Assert.assertEquals(v1.getDescription(), "my feed desc");
-                Assert.assertEquals(v11.getDescription(), "My Feed Updated Description");
-                String v = v11.getVersionName();
-                Feed.ID v1Id = v1.getId();
-                Feed.ID v11Id = v11.getId();
-                Feed.ID baseId = baseVersion.getId();
-                //assert all ids are equal
-                Assert.assertEquals(v1Id, v11Id);
-                Assert.assertEquals(v1Id, baseId);
-                return f.getId();
-            }
+            Assert.assertEquals(v1Prop1, "my prop1");
+            Assert.assertEquals(v11Prop1, "my updated prop1");
+            Assert.assertEquals(v1.getDescription(), "my feed desc");
+            Assert.assertEquals(v11.getDescription(), "My Feed Updated Description");
+            String v = v11.getVersionName();
+            Feed.ID v1Id = v1.getId();
+            Feed.ID v11Id = v11.getId();
+            Feed.ID baseId = baseVersion.getId();
+            //assert all ids are equal
+            Assert.assertEquals(v1Id, v11Id);
+            Assert.assertEquals(v1Id, baseId);
+            return f.getId();
         });
 
 
@@ -271,32 +249,23 @@ public class JcrPropertyTest {
         //final String query = "select e.* from [tba:feed] as e  join [tba:category] c on e.[tba:category].[tba:systemName] = c.[tba:systemName] where  c.[tba:systemName] = $category ";
         final String query = "select e.* from [tba:feed] as e join [tba:category] as c on e.[tba:category] = c.[jcr:uuid]";
 
-        metadata.read(new AdminCredentials(), new Command<Object>() {
-            @Override
-            public Object execute() {
-
-                List<Node> feeds = ((JcrFeedProvider) feedProvider).findNodes(query);
-                return feeds;
-            }
+        metadata.read(new AdminCredentials(), () -> {
+            List<Node> feeds = ((JcrFeedProvider) feedProvider).findNodes(query);
         });
 
-        metadata.read(new AdminCredentials(), new Command<Object>() {
-            @Override
-            public Object execute() {
-                List<FeedManagerCategory> c = feedManagerCategoryProvider.findAll();
-                if (c != null) {
-                    for (FeedManagerCategory cat : c) {
-                        JcrFeedManagerCategory jcrFeedManagerCategory = (JcrFeedManagerCategory) cat;
-                        List<? extends Feed> categoryFeeds = jcrFeedManagerCategory.getFeeds();
-                        if (categoryFeeds != null) {
-                            for (Feed feed : categoryFeeds) {
-                                log.info("Feed for category {} is {}", cat.getName(), feed.getName());
-                            }
+        metadata.read(new AdminCredentials(), () -> {
+            List<FeedManagerCategory> c = feedManagerCategoryProvider.findAll();
+            if (c != null) {
+                for (FeedManagerCategory cat : c) {
+                    JcrFeedManagerCategory jcrFeedManagerCategory = (JcrFeedManagerCategory) cat;
+                    List<? extends Feed> categoryFeeds = jcrFeedManagerCategory.getFeeds();
+                    if (categoryFeeds != null) {
+                        for (Feed feed : categoryFeeds) {
+                            log.info("Feed for category {} is {}", cat.getName(), feed.getName());
                         }
-
                     }
+
                 }
-                return null;
             }
         });
 
@@ -304,15 +273,12 @@ public class JcrPropertyTest {
 
     @Test
     public void testFeedManager() {
-        FeedManagerFeed feed = metadata.read(new AdminCredentials(), new Command<FeedManagerFeed>() {
-            @Override
-            public FeedManagerFeed execute() {
-                List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
-                if (feeds != null) {
-                    return feeds.get(0);
-                }
-                return null;
+        FeedManagerFeed feed = metadata.read(new AdminCredentials(), () -> {
+            List<FeedManagerFeed> feeds = feedManagerFeedProvider.findAll();
+            if (feeds != null) {
+                return feeds.get(0);
             }
+            return null;
         });
 
     }
@@ -324,42 +290,33 @@ public class JcrPropertyTest {
         props.put("name", "An Old User");
         props.put("age", 140);
 
-        Map<String, Object> props2 = metadata.commit(new AdminCredentials(), new Command<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> execute() {
-                List<? extends Feed> feeds = feedProvider.getFeeds();
-                Feed feed = null;
-                //grab the first feed
-                if (feeds != null) {
-                    feed = feeds.get(0);
-                }
-                feedProvider.mergeFeedProperties(feed.getId(), props);
-                return feed.getProperties();
-
+        Map<String, Object> props2 = metadata.commit(new AdminCredentials(), () -> {
+            List<? extends Feed> feeds = feedProvider.getFeeds();
+            Feed feed = null;
+            //grab the first feed
+            if (feeds != null) {
+                feed = feeds.get(0);
             }
+            feedProvider.mergeFeedProperties(feed.getId(), props);
+            return feed.getProperties();
         });
         props.put("address", "Some road");
-        props2 = metadata.commit(new AdminCredentials(), new Command<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> execute() {
-                List<? extends Feed> feeds = feedProvider.getFeeds();
-                Feed feed = null;
-                //grab the first feed
-                if (feeds != null) {
-                    feed = feeds.get(0);
-                }
-
-                feedProvider.mergeFeedProperties(feed.getId(), props);
-                return feed.getProperties();
+        props2 = metadata.commit(new AdminCredentials(), () -> {
+            List<? extends Feed> feeds = feedProvider.getFeeds();
+            Feed feed = null;
+            //grab the first feed
+            if (feeds != null) {
+                feed = feeds.get(0);
             }
+
+            feedProvider.mergeFeedProperties(feed.getId(), props);
+            return feed.getProperties();
         });
         org.junit.Assert.assertEquals("Some road", props2.get("address"));
 
         //Now Replace
         props.remove("address");
-        props2 = metadata.commit(new AdminCredentials(), new Command<Map<String, Object>>() {
-            @Override
-            public Map<String, Object> execute() {
+        props2 = metadata.commit(new AdminCredentials(), () -> {
                 List<? extends Feed> feeds = feedProvider.getFeeds();
                 Feed feed = null;
                 //grab the first feed
@@ -368,8 +325,6 @@ public class JcrPropertyTest {
                 }
                 feedProvider.replaceProperties(feed.getId(), props);
                 return feed.getProperties();
-
-            }
         });
         Assert.assertNull(props2.get("address"));
 

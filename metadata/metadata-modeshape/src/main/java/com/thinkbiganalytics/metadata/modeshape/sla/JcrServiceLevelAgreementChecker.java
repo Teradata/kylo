@@ -17,7 +17,6 @@ import com.thinkbiganalytics.alerts.api.Alert;
 import com.thinkbiganalytics.alerts.api.Alert.Level;
 import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
-import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
@@ -62,49 +61,42 @@ public class JcrServiceLevelAgreementChecker implements ServiceLevelAgreementChe
     }
 
     public void checkAgreements() {
-        metadataAccess.read(new Command<Object>() {
-            @Override
-            public Object execute() {
-                List<? extends ServiceLevelAgreement> list = slaProvider.getAgreements();
+        metadataAccess.read(() -> {
+            List<? extends ServiceLevelAgreement> list = slaProvider.getAgreements();
 
-                LOG.info("Checking {} service level agreements", list.size());
+            LOG.info("Checking {} service level agreements", list.size());
 
-                for (ServiceLevelAgreement agreement : list) {
-                    checkAgreement(agreement);
-                }
-
-                LOG.info("Completed checking SLAs");
-                return null;
+            for (ServiceLevelAgreement agreement : list) {
+                checkAgreement(agreement);
             }
+
+            LOG.info("Completed checking SLAs");
         });
 
     }
 
     public void checkAgreement(ServiceLevelAgreement agreement) {
         if(agreement != null) {
-            Alert alert = metadataAccess.commit(new Command<Alert>() {
-                @Override
-                public Alert execute() {
-                    Alert alert = null;
-                    if (isAssessable(agreement)) {
-                        LOG.info("Assessing SLA: " + agreement.getName());
+            Alert alert = metadataAccess.commit(() -> {
+                Alert newAlert = null;
+                if (isAssessable(agreement)) {
+                    LOG.info("Assessing SLA: " + agreement.getName());
 
-                        try {
-                            ServiceLevelAssessment assessment = assessor.assess(agreement);
+                    try {
+                        ServiceLevelAssessment assessment = assessor.assess(agreement);
 
-                            if (assessment.getResult() != AssessmentResult.SUCCESS && shouldAlert(agreement, assessment)) {
-                                alert = alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE,
-                                                            Level.FATAL,
-                                                            "Violation of SLA: " + agreement.getName(), assessment.getId());
+                        if (assessment.getResult() != AssessmentResult.SUCCESS && shouldAlert(agreement, assessment)) {
+                            newAlert = alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE,
+                                                        Level.FATAL,
+                                                        "Violation of SLA: " + agreement.getName(), assessment.getId());
 
 
-                            }
-                        } catch (AssessorNotFoundException e) {
-                            LOG.info("SLA assessment failed.  Assessor Not found: {} - Exception: {}", agreement.getName(), e);
                         }
+                    } catch (AssessorNotFoundException e) {
+                        LOG.info("SLA assessment failed.  Assessor Not found: {} - Exception: {}", agreement.getName(), e);
                     }
-                    return alert;
                 }
+                return newAlert;
             });
             if (alert != null) {
                 // Record this assessment as the latest for this SLA.

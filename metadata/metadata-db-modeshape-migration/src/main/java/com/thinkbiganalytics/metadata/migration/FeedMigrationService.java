@@ -1,6 +1,9 @@
 package com.thinkbiganalytics.metadata.migration;
 
-import com.thinkbiganalytics.metadata.api.Command;
+import java.util.Map;
+
+import javax.inject.Inject;
+
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -17,10 +20,6 @@ import com.thinkbiganalytics.metadata.migration.template.TemplateDatabaseProvide
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategory;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeed;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplate;
-
-import java.util.Map;
-
-import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 6/15/16.
@@ -108,16 +107,10 @@ public class FeedMigrationService {
         if (databaseCategories != null && !databaseCategories.isEmpty()) {
 
             //1 create the categories
-            metadataAccess.commit(new Command<Object>() {
-                @Override
-                public Object execute() {
-
-                    for (FeedManagerCategory c : databaseCategories.values()) {
-                        JcrFeedManagerCategory jcrFeedManagerCategory = createJcrCategory(c);
-                        dataMigration.addJcrCategory(jcrFeedManagerCategory, c.getId());
-                    }
-
-                    return null;
+            metadataAccess.commit(() -> {
+                for (FeedManagerCategory c : databaseCategories.values()) {
+                    JcrFeedManagerCategory jcrFeedManagerCategory = createJcrCategory(c);
+                    dataMigration.addJcrCategory(jcrFeedManagerCategory, c.getId());
                 }
             });
         }
@@ -129,15 +122,10 @@ public class FeedMigrationService {
         databaseTemplates = templateDatabaseProvider.queryTemplatesAsMap();
         if (databaseTemplates != null && !databaseTemplates.isEmpty()) {
             //1 create the categories
-            metadataAccess.commit(new Command<Object>() {
-                @Override
-                public Object execute() {
-                    for (FeedManagerTemplate t : databaseTemplates.values()) {
-                        JcrFeedTemplate jcrTemplate = createJcrTemplate(t);
-                        dataMigration.addJcrTemplate(jcrTemplate, t.getId());
-                    }
-
-                    return null;
+            metadataAccess.commit(() -> {
+                for (FeedManagerTemplate t : databaseTemplates.values()) {
+                    JcrFeedTemplate jcrTemplate = createJcrTemplate(t);
+                    dataMigration.addJcrTemplate(jcrTemplate, t.getId());
                 }
             });
         }
@@ -148,15 +136,10 @@ public class FeedMigrationService {
         databaseFeeds = feedDatabaseProvider.queryFeedsAsMap();
         if (databaseFeeds != null && !databaseFeeds.isEmpty()) {
             //1 create the categories
-            metadataAccess.commit(new Command<Object>() {
-                @Override
-                public Object execute() {
-                    for (FeedManagerFeed t : databaseFeeds.values()) {
-                        JcrFeedManagerFeed jcrFeed = createJcrFeed((FeedManagerFeedDTO) t);
-                        dataMigration.addJcrFeed(jcrFeed, t.getId());
-                    }
-
-                    return null;
+            metadataAccess.commit(() -> {
+                for (FeedManagerFeed t : databaseFeeds.values()) {
+                    JcrFeedManagerFeed jcrFeed = createJcrFeed((FeedManagerFeedDTO) t);
+                    dataMigration.addJcrFeed(jcrFeed, t.getId());
                 }
             });
         }

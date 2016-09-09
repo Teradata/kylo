@@ -25,8 +25,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccessException;
+import com.thinkbiganalytics.metadata.api.MetadataAction;
+import com.thinkbiganalytics.metadata.api.MetadataCommand;
+import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.modeshape.security.OverrideCredentials;
 import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -111,25 +114,33 @@ public class JcrMetadataAccess implements MetadataAccess {
     }
     
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.MetadataAccess#commit(com.thinkbiganalytics.metadata.api.Command, java.security.Principal[])
+     * @see com.thinkbiganalytics.metadata.api.MetadataAccess#commit(com.thinkbiganalytics.metadata.api.MetadataCommand, java.security.Principal[])
      */
     @Override
-    public <R> R commit(Command<R> cmd, Principal... principals) {
+    public <R> R commit(MetadataCommand<R> cmd, Principal... principals) {
         return commit(createCredentials(principals), cmd);
     }
     
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.MetadataAccess#commit(java.lang.Runnable, java.security.Principal[])
      */
-    public void commit(Runnable runner, Principal... principals) {
+    public void commit(MetadataAction action, Principal... principals) {
         commit(() -> {
-            runner.run();
+            action.execute();
             return null;
         }, principals);
     }
+    
+    public void commit(Credentials creds, MetadataAction action) {
+        commit(creds, () -> {
+            action.execute();
+            return null;
+        });
+    }
 
-    public <R> R commit(Credentials creds, Command<R> cmd) {
+    public <R> R commit(Credentials creds, MetadataCommand<R> cmd) {
         Session session = activeSession.get();
+        
         if (session == null) {
             try {
                 activeSession.set(this.repository.login(creds));
@@ -157,12 +168,8 @@ public class JcrMetadataAccess implements MetadataAccess {
                     }
 
                     activeSession.get().refresh(false);
-                    // TODO Use a better exception
-                    if (e instanceof RuntimeException) {
-                        throw (RuntimeException) e;
-                    } else {
-                        throw new RuntimeException(e);
-                    }
+
+                    throw e;
                 } finally {
                     activeSession.get().logout();
                     activeSession.remove();
@@ -171,33 +178,45 @@ public class JcrMetadataAccess implements MetadataAccess {
             } catch (RuntimeException e) {
                 throw e;
             } catch (RepositoryException e) {
-                // TODO Use a better exception
-                throw new RuntimeException(e);
+                throw new MetadataAccessException("Failure accessing the metadata store", e);
+            } catch (Exception e) {
+                throw new MetadataExecutionException(e);
             }
         } else {
-            return cmd.execute();
+            try {
+                return cmd.execute();
+            } catch (Exception e) {
+                throw new MetadataExecutionException(e);
+            }
         }
     }
 
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.api.MetadataAccess#read(com.thinkbiganalytics.metadata.api.Command, java.security.Principal[])
+     * @see com.thinkbiganalytics.metadata.api.MetadataAccess#read(com.thinkbiganalytics.metadata.api.MetadataCommand, java.security.Principal[])
      */
     @Override
-    public <R> R read(Command<R> cmd, Principal... principals) {
+    public <R> R read(MetadataCommand<R> cmd, Principal... principals) {
         return read(createCredentials(principals), cmd);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.MetadataAccess#read(java.lang.Runnable, java.security.Principal[])
      */
-    public void read(Runnable runner, Principal... principals) {
+    public void read(MetadataAction action, Principal... principals) {
         read(() -> {
-            runner.run();
+            action.execute();
             return null;
         }, principals);
     }
+    
+    public void read(Credentials creds, MetadataAction action) {
+        read(creds, () -> {
+            action.execute();
+            return null;
+        });
+    }
 
-    public <R> R read(Credentials creds, Command<R> cmd) {
+    public <R> R read(Credentials creds, MetadataCommand<R> cmd) {
         Session session = activeSession.get();
         
         if (session == null) {
@@ -210,9 +229,6 @@ public class JcrMetadataAccess implements MetadataAccess {
                     txnMgr.begin();
                     
                     return cmd.execute();
-                } catch (SystemException | NotSupportedException e) {
-                    // TODO Use a better exception
-                    throw new RuntimeException(e);
                 } finally {
                     try {
                         txnMgr.rollback();
@@ -224,14 +240,19 @@ public class JcrMetadataAccess implements MetadataAccess {
                     activeSession.get().logout();
                     activeSession.remove();
                 }
+            } catch (SystemException | NotSupportedException | RepositoryException e) {
+                throw new MetadataAccessException("Failure accessing the metadata store", e);
             } catch (RuntimeException e) {
                 throw e;
-            } catch (RepositoryException e) {
-                // TODO Use a better exception
-                throw new RuntimeException(e);
+            } catch (Exception e) {
+                throw new MetadataExecutionException(e);
             }
         } else {
-            return cmd.execute();
+            try {
+                return cmd.execute();
+            } catch (Exception e) {
+                throw new MetadataExecutionException(e);
+            }
         }
     }
 
