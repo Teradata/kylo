@@ -48,26 +48,22 @@ public class NifiJobExecutionProvider {
 
     private NifiFailedEventRepository nifiFailedEventRepository;
 
-    private NifiEventJobExecutionRepository nifiEventJobExecutionRepository;
-
     private NifiStepExecutionRepository nifiStepExecutionRepository;
 
-    private NifiEventStepExecutionRepository nifiEventStepExecutionRepository;
+
+    private boolean isWriteExecutionContext = true;
 
 
     @Autowired
     public NifiJobExecutionProvider(NifiJobExecutionRepository jobExecutionRepository, NifiJobInstanceRepository jobInstanceRepository, NifiFailedEventRepository nifiFailedEventRepository,
-                                    NifiJobParametersRepository nifiJobParametersRepository, NifiEventJobExecutionRepository nifiEventJobExecutionRepository,
-                                    NifiStepExecutionRepository nifiStepExecutionRepository,
-                                    NifiEventStepExecutionRepository nifiEventStepExecutionRepository) {
+                                    NifiJobParametersRepository nifiJobParametersRepository,
+                                    NifiStepExecutionRepository nifiStepExecutionRepository) {
 
         this.jobExecutionRepository = jobExecutionRepository;
         this.jobInstanceRepository = jobInstanceRepository;
         this.nifiFailedEventRepository = nifiFailedEventRepository;
         this.nifiJobParametersRepository = nifiJobParametersRepository;
-        this.nifiEventJobExecutionRepository = nifiEventJobExecutionRepository;
         this.nifiStepExecutionRepository = nifiStepExecutionRepository;
-        this.nifiEventStepExecutionRepository = nifiEventStepExecutionRepository;
 
     }
 
@@ -164,18 +160,18 @@ public class NifiJobExecutionProvider {
                 jobExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
                 log.info("Completing JOB EXECUTION with id of: {} ff: {} ", jobExecution.getJobExecutionId(), event.getJobFlowFileId());
                 //add in execution contexts
-                List<NifiJobExecutionContext> jobExecutionContextList = new ArrayList<>();
-                Map<String, String> allAttrs = event.getAttributeMap();
-                if (allAttrs != null && !allAttrs.isEmpty()) {
-                    for (Map.Entry<String, String> entry : allAttrs.entrySet()) {
-                        NifiJobExecutionContext executionContext = new NifiJobExecutionContext(jobExecution, entry.getKey());
-                        executionContext.setStringVal(entry.getValue());
-                        jobExecution.addJobExecutionContext(executionContext);
-                        // jobExecutionContextList.add(executionContext);
+                if (isWriteExecutionContext) {
+                    List<NifiJobExecutionContext> jobExecutionContextList = new ArrayList<>();
+                    Map<String, String> allAttrs = event.getAttributeMap();
+                    if (allAttrs != null && !allAttrs.isEmpty()) {
+                        for (Map.Entry<String, String> entry : allAttrs.entrySet()) {
+                            NifiJobExecutionContext executionContext = new NifiJobExecutionContext(jobExecution, entry.getKey());
+                            executionContext.setStringVal(entry.getValue());
+                            jobExecution.addJobExecutionContext(executionContext);
+                        }
+                        //also persist to spring batch tables
+                        batchExecutionContextProvider.saveJobExecutionContext(jobExecution.getJobExecutionId(), allAttrs);
                     }
-                    //jobExecution.setJobExecutionContext(jobExecutionContextList);
-                    //also persist to spring batch tables
-                    batchExecutionContextProvider.saveJobExecutionContext(jobExecution.getJobExecutionId(), allAttrs);
                 }
                 if (jobExecution.isFailed()) {
                     failedJob(jobExecution);
@@ -246,19 +242,22 @@ public class NifiJobExecutionProvider {
             }
 
             //add in execution contexts
-            List<NifiStepExecutionContext> stepExecutionContextList = new ArrayList<>();
             Map<String, String> updatedAttrs = event.getUpdatedAttributes();
-            if (updatedAttrs != null && !updatedAttrs.isEmpty()) {
-                for (Map.Entry<String, String> entry : updatedAttrs.entrySet()) {
-                    NifiStepExecutionContext stepExecutionContext = new NifiStepExecutionContext(stepExecution, entry.getKey());
-                    stepExecutionContext.setStringVal(entry.getValue());
-                    stepExecutionContextList.add(stepExecutionContext);
+            if (isWriteExecutionContext) {
+                List<NifiStepExecutionContext> stepExecutionContextList = new ArrayList<>();
+                if (updatedAttrs != null && !updatedAttrs.isEmpty()) {
+                    for (Map.Entry<String, String> entry : updatedAttrs.entrySet()) {
+                        NifiStepExecutionContext stepExecutionContext = new NifiStepExecutionContext(stepExecution, entry.getKey());
+                        stepExecutionContext.setStringVal(entry.getValue());
+                        stepExecutionContextList.add(stepExecutionContext);
+                    }
+
+
                 }
+                stepExecution.setStepExecutionContext(stepExecutionContextList);
 
 
             }
-            stepExecution.setStepExecutionContext(stepExecutionContextList);
-
             NifiEventStepExecution eventStepExecution = new NifiEventStepExecution(jobExecution, stepExecution, event.getEventId(), event.getJobFlowFileId());
             eventStepExecution.setComponentId(event.getComponentId());
             eventStepExecution.setJobFlowFileId(event.getJobFlowFileId());
@@ -266,9 +265,11 @@ public class NifiJobExecutionProvider {
 
             stepExecution = nifiStepExecutionRepository.save(stepExecution);
             jobExecution.getStepExecutions().add(stepExecution);
+            if (isWriteExecutionContext) {
+                //also persist to spring batch tables
+                batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), updatedAttrs);
+            }
 
-            //also persist to spring batch tables
-            batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), updatedAttrs);
             return stepExecution;
 
         } else {
@@ -284,7 +285,6 @@ public class NifiJobExecutionProvider {
                 stepExecution.addStepExecutionContext(stepExecutionContext);
             }
 
-            //?? is this save needed?
             stepExecution = nifiStepExecutionRepository.save(stepExecution);
 
             //also persist to spring batch tables

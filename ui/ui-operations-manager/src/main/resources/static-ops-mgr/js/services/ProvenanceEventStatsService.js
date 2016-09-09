@@ -21,6 +21,20 @@ angular.module(MODULE_OPERATIONS).factory('ProvenanceEventStatsService', functio
             var promise = $http.get(RestUrlService.PROCESSOR_DURATION_FOR_FEED(feedName, timeFrame));
             promise.then(successFn, errorFn);
             return promise;
+        },
+        getFeedStatisticsOverTime: function (feedName, timeFrame) {
+            var self = this;
+
+            var successFn = function (response) {
+
+            }
+            var errorFn = function (err) {
+                self.loading = false;
+
+            }
+            var promise = $http.get(RestUrlService.FEED_STATISTICS_OVER_TIME(feedName, timeFrame));
+            promise.then(successFn, errorFn);
+            return promise;
         }
 
     }

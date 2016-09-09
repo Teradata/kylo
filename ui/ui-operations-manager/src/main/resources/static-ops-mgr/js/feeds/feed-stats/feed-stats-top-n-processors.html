@@ -40,7 +40,20 @@
           <span class="md-caption">Avg Job Duration (sec)</span>
         </div>
       </div>
-      <nvd3 flex options="vm.processorDurationChartOptions" data="vm.processorDurationChartData" api="vm.chartApi"></nvd3>
+
+      <md-input-container class="md-block layout-padding-top-bottom">
+        <label class="md-container-ignore label-small layout-padding-top">Time Frame</label>
+        <md-select ng-model="vm.selectedProcessorStatisticFunction" ng-change="vm.onProcessorChartFunctionChanged()" aria-label="Rule Type">
+          <md-option value="{{opt}}" ng-repeat="opt in vm.processorStatsFunctions">{{ opt }}</md-option>
+        </md-select>
+      </md-input-container>
+      <div>Sum {{vm.selectedProcessorStatisticFunction}} is {{vm.totalProcessorSelectedFunctionValue}}</div>
+      <nvd3 flex options="vm.processorDurationChartOptions" data="vm.processorDurationChartData" api="vm.chartApi" config="{deepWatchOptions:true}"></nvd3>
+
+      <nvd3 options="vm.feedChartOptions" data="vm.feedChartData" api="vm.feedChartApi"></nvd3>
+
+      <nvd3 options="vm.feedBytesChartOptions" data="vm.feedBytesChartData" api="vm.feedBytesChartApi"></nvd3>
+
     </div>
     <div ng-if="!vm.dataLoaded" class="kpi-loading">
       <md-progress-circular md-mode="indeterminate" md-diameter="96"></md-progress-circular>

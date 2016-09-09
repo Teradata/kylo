@@ -11,9 +11,11 @@ import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReentrantLock;
@@ -38,7 +40,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
 
 
     private List<ProvenanceEventRecordDTO> potentialStreamEvents = new ArrayList<>();
-    private List<ProvenanceEventRecordDTO> jmsEvents = new ArrayList<>();
+    private Set<ProvenanceEventRecordDTO> jmsEvents = new HashSet<>();
     private List<ProvenanceEventRecordDTO> streamEvents = new ArrayList<>();
     private Map<String, ProvenanceEventRecordDTO> lastStreamEventByJob = new ConcurrentHashMap<>();
 
@@ -83,8 +85,18 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
         return this;
     }
 
+    public boolean addRootFlowFileCompletionEvent(ProvenanceEventRecordDTO event) {
+        if (!lastStreamEventByJob.containsKey(lastStreamEventMapKey(event))) {
+            groupEventAsStreamOrBatch(event, true);
+            log.info("adding completion event to queue for {} , {} ff: {}, rff: {}  ", event, event.getEventId(), event.getFlowFileUuid(), event.getJobFlowFileId());
+
+            return true;
+        }
+        return false;
+    }
+
     private String lastStreamEventMapKey(ProvenanceEventRecordDTO event) {
-        return event.getJobFlowFileId() + "_" + event.getEventType() + "_" + event.isEndOfJob() + "_" + event.isStartOfJob();
+        return event.getJobFlowFileId() + "_" + event.getEventType() + "_" + event.isEndOfJob() + "_" + event.isStartOfJob() + "_" + event.getComponentId();
     }
 
     private void movePotentialStreamToBatch() {
@@ -124,6 +136,11 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
 
 
     private void groupEventAsStreamOrBatch(ProvenanceEventRecordDTO event, ProvenanceEventStats stats) {
+
+        groupEventAsStreamOrBatch(event, (stats.getJobsFinished() == 1L));
+    }
+
+    private void groupEventAsStreamOrBatch(ProvenanceEventRecordDTO event, boolean isRootFLowFileFinished) {
         lock.lock();
         try {
             if (lastEventTime == null) {
@@ -131,29 +148,29 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
             }
             if (ProvenanceEventUtil.isCompletionEvent(event)) {
                 eventCount.incrementAndGet();
-                checkAndMarkAsEndOfJob(event, stats);
+                checkAndMarkAsEndOfJob(event, isRootFLowFileFinished);
                 //if the event is not the first event, but the first event is a Stream then move this to a stream
                 if (RootFlowFile.FIRST_EVENT_TYPE.STREAM.equals(event.getFlowFile().getRootFlowFile().getFirstEventType())) {
                     moveToStream(event);
 
                 } else {
-                if (event.getEventTime().isBefore(lastEventTime.plus(allowedMillisBetweenEvents))) {
-                    if (tempStreamingCount.incrementAndGet() >= numberOfEventsThatMakeAStream) {
-                        movePotentialStreamToStream();
-                        moveToStream(event);
-                        //checkAndAddJobCompletionEvents(event,stats,streamEvents);
+                    if (event.getEventTime().isBefore(lastEventTime.plus(allowedMillisBetweenEvents))) {
+                        if (tempStreamingCount.incrementAndGet() >= numberOfEventsThatMakeAStream) {
+                            movePotentialStreamToStream();
+                            moveToStream(event);
+                            //checkAndAddJobCompletionEvents(event,stats,streamEvents);
+                        } else {
+                            potentialStreamEvents.add(event);
+                            // checkAndAddJobCompletionEvents(event,stats,potentialStreamEvents);
+
+                        }
                     } else {
                         potentialStreamEvents.add(event);
-                        // checkAndAddJobCompletionEvents(event,stats,potentialStreamEvents);
-
+                        //  checkAndAddJobCompletionEvents(event,stats,potentialStreamEvents);
+                        /// no longer a stream event
+                        movePotentialStreamToBatch();
+                        tempStreamingCount.set(0);
                     }
-                } else {
-                    potentialStreamEvents.add(event);
-                    //  checkAndAddJobCompletionEvents(event,stats,potentialStreamEvents);
-                    /// no longer a stream event
-                    movePotentialStreamToBatch();
-                    tempStreamingCount.set(0);
-                }
                 }
             } else {
                 log.info("Non completion event {} ", event);
@@ -163,21 +180,16 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
         }
     }
 
+
+
     private void checkAndMarkAsEndOfJob(ProvenanceEventRecordDTO event, ProvenanceEventStats stats) {
-        if (stats.getJobsFinished() == 1L && !event.getFlowFile().isRootFlowFile()) {
-            log.info("Marking {} as the end of the job for {}.  is already end of job? {} ", event.getEventId(), event.getFlowFile().getRootFlowFile().getId(), event.isEndOfJob());
-            event.setIsEndOfJob(true);
-        }
+        checkAndMarkAsEndOfJob(event, stats.getJobsFinished() == 1L);
     }
 
-    private void checkAndAddJobCompletionEvents(ProvenanceEventRecordDTO event, ProvenanceEventStats stats, List<ProvenanceEventRecordDTO> list) {
-        //if the event ended the job, but it is not the root flow file then an additional event needs to be sent off to the jms queue indicating the job is complete
-        if (stats.getJobsFinished() == 1L && !event.getFlowFile().isRootFlowFile()) {
+    private void checkAndMarkAsEndOfJob(ProvenanceEventRecordDTO event, boolean jobFinished) {
+        if (jobFinished && !event.getFlowFile().isRootFlowFile()) {
+            log.info("Marking {} as the end of the job for {}.  is already end of job? {} ", event.getEventId(), event.getFlowFile().getRootFlowFile().getId(), event.isEndOfJob());
             event.setIsEndOfJob(true);
-            // event.getFlowFile().getRootFlowFile().getLastEvent().setIsEndOfJob(true);
-            //  list.add(event.getFlowFile().getRootFlowFile().getLastEvent());
-            log.info("Adding the additional Completion Event {}  completing {} Root type: {} ", event.getFlowFile().getRootFlowFile().getLastEvent().getEventId(),
-                     event.getFlowFile().getRootFlowFile().getId(), event.getFlowFile().getRootFlowFile().getFirstEventType());
         }
     }
 

@@ -1,12 +1,13 @@
 package com.thinkbiganalytics.nifi.provenance;
 
+import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.GroupedFeedProcessorEventAggregate;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
+import com.thinkbiganalytics.nifi.provenance.model.stats.StatsModel;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.CacheUtil;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.stats.ProvenanceStatsCalculator;
 import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventActiveMqWriter;
-import com.thinkbiganalytics.util.SpringApplicationContext;
 
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
@@ -15,6 +16,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,6 +64,9 @@ public class ProvenanceEventAggregator {
 
     @Autowired
     ProvenanceStatsCalculator statsCalculator;
+
+    @Autowired
+    CacheUtil cacheUtil;
 
 
     Map<String, GroupedFeedProcessorEventAggregate> eventsToAggregate = new ConcurrentHashMap<>();
@@ -113,9 +119,7 @@ public class ProvenanceEventAggregator {
     public void prepareAndAdd(ProvenanceEventRecordDTO event) {
         try {
             log.info("Process Event {} ", event);
-            CacheUtil cacheUtil = (CacheUtil) SpringApplicationContext.getInstance().getBean("cacheUtil");
             cacheUtil.cacheAndBuildFlowFileGraph(event);
-
 
             //send the event off for stats processing to the threadpool.  order does not matter thus they can be in an number of threads
             // eventStatisticsExecutor.execute(new StatisticsProvenanceEventConsumer(event));
@@ -123,6 +127,15 @@ public class ProvenanceEventAggregator {
 
             //add to delayed queue for processing
             aggregateEvent(event, stats);
+
+            // check to see if the parents should be finished
+            if (event.isEndingFlowFileEvent()) {
+                Set<ProvenanceEventRecordDTO> completedRootFlowFileEvents = completeStatsForParentFlowFiles(event);
+                if (completedRootFlowFileEvents != null) {
+                    completedRootFlowFileEvents(completedRootFlowFileEvents);
+                }
+            }
+
             //if failure detected group and send off to separate queue
             collectFailureEvents(event);
 
@@ -131,6 +144,52 @@ public class ProvenanceEventAggregator {
             log.error("ERROR PROCESSING EVENT! {}.  ERROR: {} ", event, e.getMessage(), e);
         }
 
+    }
+
+    /**
+     * get list of EventStats marking the flowfile as complete for the direct parent flowfiles if the child is complete and the parent is complete
+     */
+    public Set<ProvenanceEventRecordDTO> completeStatsForParentFlowFiles(ProvenanceEventRecordDTO event) {
+
+        ActiveFlowFile rootFlowFile = event.getFlowFile().getRootFlowFile();
+        log.info("try to complete parents for {}, root: {},  parents: {} ", event.getFlowFile().getId(), rootFlowFile.getId(), event.getFlowFile().getParents().size());
+
+        if (event.isEndingFlowFileEvent() && event.getFlowFile().hasParents()) {
+            log.info("Attempt to complete all {} parent Job flow files that are complete", event.getFlowFile().getParents().size());
+            List<ProvenanceEventStats> list = new ArrayList<>();
+            Set<ProvenanceEventRecordDTO> eventList = new HashSet<>();
+            event.getFlowFile().getParents().stream().filter(parent -> parent.isCurrentFlowFileComplete()).forEach(parent -> {
+                ProvenanceEventRecordDTO lastFlowFileEvent = parent.getLastEvent();
+                log.info("Completing ff {}, {} ", event.getFlowFile().getRootFlowFile().getId(), event.getFlowFile().getRootFlowFile().isFlowFileCompletionStatsCollected());
+                ProvenanceEventStats stats = StatsModel.newJobCompletionProvenanceEventStats(event.getFeedName(), lastFlowFileEvent);
+                if (stats != null) {
+                    list.add(stats);
+                    eventList.add(lastFlowFileEvent);
+
+                }
+            });
+            if (!list.isEmpty()) {
+                statsCalculator.addStats(list);
+            }
+            return eventList;
+        }
+        return null;
+
+    }
+
+    private void completedRootFlowFileEvents(Set<ProvenanceEventRecordDTO> completedEvents) {
+        for (ProvenanceEventRecordDTO event : completedEvents) {
+
+            if (event != null) {
+                eventsToAggregate.computeIfAbsent(mapKey(event), mapKey -> new GroupedFeedProcessorEventAggregate(event.getFeedName(),
+                                                                                                                  event
+                                                                                                                      .getComponentId(), configuration.getMaxTimeBetweenEventsMillis(),
+                                                                                                                  configuration.getNumberOfEventsToConsiderAStream())).addRootFlowFileCompletionEvent(
+                    event);
+            }
+
+
+        }
     }
 
     public void collectFailureEvents(ProvenanceEventRecordDTO event) {

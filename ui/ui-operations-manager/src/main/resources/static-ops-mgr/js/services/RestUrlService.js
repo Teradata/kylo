@@ -81,6 +81,10 @@ this.SERVICES_URL = "/proxy/v1/service-monitor/";
         return self.STATS_BASE + "/" + feedName + "/processor-duration/" + timeInterval;
     }
 
+    this.FEED_STATISTICS_OVER_TIME = function (feedName, timeInterval) {
+        return self.STATS_BASE + "/" + feedName + "/" + timeInterval;
+    }
+
     this.PROVENANCE_EVENT_TIME_FRAME_OPTIONS = this.STATS_BASE + "/time-frame-options";
 
 });

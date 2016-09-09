@@ -70,6 +70,14 @@ public class NifiEvent {
     @Column(name = "JOB_FLOW_FILE_ID")
     private String jobFlowFileId;
 
+    @Column(name = "IS_START_OF_JOB", length = 1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean isStartOfJob;
+
+    @Column(name = "IS_END_OF_JOB", length = 1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean isEndOfJob;
+
     public NifiEvent() {
 
     }
@@ -267,5 +275,21 @@ public class NifiEvent {
 
     public void setJobFlowFileId(String jobFlowFileId) {
         this.jobFlowFileId = jobFlowFileId;
+    }
+
+    public boolean isStartOfJob() {
+        return isStartOfJob;
+    }
+
+    public void setIsStartOfJob(boolean isStartOfJob) {
+        this.isStartOfJob = isStartOfJob;
+    }
+
+    public boolean isEndOfJob() {
+        return isEndOfJob;
+    }
+
+    public void setIsEndOfJob(boolean isEndOfJob) {
+        this.isEndOfJob = isEndOfJob;
     }
 }

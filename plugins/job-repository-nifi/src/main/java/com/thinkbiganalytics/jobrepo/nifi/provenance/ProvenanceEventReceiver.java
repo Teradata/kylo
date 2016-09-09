@@ -162,7 +162,7 @@ public class ProvenanceEventReceiver implements ProvenanceEventJobExecutionStart
 
     public void receiveEvent(ProvenanceEventRecordDTO dto) {
         Long eventId = dto.getEventId();
-        log.info("Received ProvenanceEvent {}", dto);
+        log.info("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}", dto, dto.isEndOfJob(), dto.isEndingFlowFileEvent());
 
         NifiStepExecution stepExecution = operationalMetadataAccess.commit(() -> {
             NifiEvent e = nifiEventProvider.create(dto);

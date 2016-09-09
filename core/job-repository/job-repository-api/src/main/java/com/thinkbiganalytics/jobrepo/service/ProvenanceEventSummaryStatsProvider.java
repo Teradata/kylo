@@ -13,7 +13,8 @@ public interface ProvenanceEventSummaryStatsProvider {
 
     public static enum TimeFrame {
 
-        TEN_MIN(new Long(1000 * 60 * 10), "Last 10 Minutes"), THIRTY_MIN(new Long(1000 * 60 * 30), "Last 30 Minutes"), HOUR(new Long(1000 * 60 * 60), "Last Hour"),
+        FIVE_MIN(new Long(1000 * 60 * 5), "Last 5 Minutes"), TEN_MIN(new Long(1000 * 60 * 10), "Last 10 Minutes"), THIRTY_MIN(new Long(1000 * 60 * 30), "Last 30 Minutes"),
+        HOUR(new Long(1000 * 60 * 60), "Last Hour"),
         THREE_HOUR(HOUR.millis * 3, "Last 3 Hours"), FIVE_HOUR(HOUR.millis * 5, "Last 5 Hours"), TEN_HOUR(HOUR.millis * 10, "Last 10 Hours"),
         DAY(HOUR.millis * 24, " Last Day"), WEEK(DAY.millis * 7, "Last Week"), MONTH(DAY.millis * 30, " Last Month"), YEAR(DAY.millis * 365, "Last Year");
 
@@ -44,7 +45,13 @@ public interface ProvenanceEventSummaryStatsProvider {
 
     List<? extends ProvenanceEventSummaryStats> findForFeed(String feedName, DateTime start, DateTime end);
 
-    List<? extends ProvenanceEventSummaryStats> findForFeedGroupedByProcessor(String feedName, DateTime start, DateTime end);
+    List<? extends ProvenanceEventSummaryStats> findForFeedProcessorStatistics(String feedName, DateTime start, DateTime end);
 
-    List<? extends ProvenanceEventSummaryStats> findForFeedGroupedByProcessor(String feedName, TimeFrame timeFrame);
+    List<? extends ProvenanceEventSummaryStats> findForFeedProcessorStatistics(String feedName, TimeFrame timeFrame);
+
+    List<? extends ProvenanceEventSummaryStats> findForFeedStatisticsGroupedByTime(String feedName, DateTime start, DateTime end);
+
+    List<? extends ProvenanceEventSummaryStats> findForFeedStatisticsGroupedByTime(String feedName, TimeFrame timeFrame);
+
+
 }

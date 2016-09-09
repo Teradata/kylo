@@ -1,8 +1,8 @@
-angular.module(MODULE_OPERATIONS).service('ChartJobStatusService', function (IconService) {
+angular.module(MODULE_OPERATIONS).service('ChartJobStatusService', function (IconService, Nvd3ChartService) {
 
     var self = this;
     this.renderEndUpdated = {};
-
+    /*
     this.toChartData = function(jobStatusCountResponse) {
         var statusMap = {}
 
@@ -42,6 +42,12 @@ angular.module(MODULE_OPERATIONS).service('ChartJobStatusService', function (Ico
         }
         return data;
     }
+     */
+    this.toChartData = function (jobStatusCountResponse) {
+        return Nvd3ChartService.toLineChartData(jobStatusCountResponse, [{label: 'status', value: 'count'}], 'date', IconService.colorForJobStatus);
+    }
+
+
 
 
 
