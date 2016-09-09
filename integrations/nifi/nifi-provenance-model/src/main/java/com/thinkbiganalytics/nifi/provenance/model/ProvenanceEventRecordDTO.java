@@ -17,24 +17,31 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 
 /**
  * Created by sr186054 on 2/24/16.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRecordDTO>, Serializable {
+public class ProvenanceEventRecordDTO implements Serializable {
 
-    private String feedName;
+    private transient AtomicBoolean processed = new AtomicBoolean(false);
 
-    private ProvenanceEventRecordDTO previousEvent;
+    private boolean isStartOfJob;
+
+    private boolean isEndOfJob;
+
+    private transient ProvenanceEventRecordDTO previousEvent;
+
     private Long previousEventId;
+    private String previousFlowfileId;
+    private DateTime previousEventTime;
 
     private String id;
     private Long eventId;
     private DateTime eventTime;
     private Long eventDuration;
-    private Long lineageDuration;
     private String eventType;
     private String flowFileUuid;
     private String fileSize;
@@ -45,46 +52,61 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
     private String componentId;
     private String componentType;
     private String componentName;
-    private String sourceSystemFlowFileId;
-    private String alternateIdentifierUri;
     private transient Collection<ProvenanceEventAttributeDTO> attributes;
     private List<String> parentUuids;
     private List<String> childUuids;
-    private String transitUri;
-    private String relationship;
     private String details;
-    private Boolean contentEqual;
-    private Boolean inputContentAvailable;
-    private String inputContentClaimSection;
-    private String inputContentClaimContainer;
-    private String inputContentClaimIdentifier;
-    private Long inputContentClaimOffset;
-    private String inputContentClaimFileSize;
-    private Long inputContentClaimFileSizeBytes;
-    private Boolean outputContentAvailable;
-    private String outputContentClaimSection;
-    private String outputContentClaimContainer;
-    private String outputContentClaimIdentifier;
-    private Long outputContentClaimOffset;
-    private String outputContentClaimFileSize;
-    private Long outputContentClaimFileSizeBytes;
-    private Boolean replayAvailable;
-    private String replayExplanation;
+
     private String sourceConnectionIdentifier;
 
+    private Long inputContentClaimFileSizeBytes;
+    private String inputContentClaimFileSize;
+    private Long outputContentClaimFileSizeBytes;
+    private String outputContentClaimFileSize;
 
-    private transient FlowFile flowFile;
+
+    private boolean isFailure;
+
+    /**
+     * set when the aggregator is determining if the flow of events indicate a stream (rapid fire)
+     */
+    private boolean stream;
+
+    /**
+     * The flow file id the corresponds to the parent /starting event
+     */
+    private String jobFlowFileId;
+
+    /**
+     * The Id that corresponds to the first event that started the job
+     */
+    private Long jobEventId;
+
+    //flow information  the following are set via looking at the rest api graph of events
+
+    /**
+     * The Feed name  {category}.{feed}
+     */
+    private String feedName;
+    /**
+     * The processgroup that is holding the flow for this feed
+     */
+    private String feedProcessGroupId;
+
+    private transient ActiveFlowFile flowFile;
+
+    private String batchId;
 
     public ProvenanceEventRecordDTO() {
 
 
     }
 
-    public FlowFile getFlowFile() {
+    public ActiveFlowFile getFlowFile() {
         return flowFile;
     }
 
-    public void setFlowFile(FlowFile flowFile) {
+    public void setFlowFile(ActiveFlowFile flowFile) {
         this.flowFile = flowFile;
     }
 
@@ -96,9 +118,10 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
         this.feedName = feedName;
     }
 
-    public boolean isFailure() {
-        return ProvenanceEventUtil.isFailure(this);
+    public boolean isTerminatedByFailureRelationship() {
+        return ProvenanceEventUtil.isTerminatedByFailureRelationship(this);
     }
+
 
 
     public boolean isEndingFlowFileEvent() {
@@ -106,10 +129,10 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
     }
 
     @JsonProperty("updatedAttributes")
-    private Map<String, Object> updatedAttributes;
+    private Map<String, String> updatedAttributes;
 
     @JsonProperty("previousAttributes")
-    private Map<String, Object> previousAttributes;
+    private Map<String, String> previousAttributes;
 
 
     @JsonIgnore
@@ -145,22 +168,22 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
 
 
     @JsonProperty("updatedAttributes")
-    public Map<String, Object> getUpdatedAttributes() {
+    public Map<String, String> getUpdatedAttributes() {
         return updatedAttributes;
     }
 
     @JsonProperty("updatedAttributes")
-    public void setUpdatedAttributes(Map<String, Object> updatedAttributes) {
+    public void setUpdatedAttributes(Map<String, String> updatedAttributes) {
         this.updatedAttributes = updatedAttributes;
     }
 
     @JsonProperty("previousAttributes")
-    public Map<String, Object> getPreviousAttributes() {
+    public Map<String, String> getPreviousAttributes() {
         return previousAttributes;
     }
 
     @JsonProperty("previousAttributes")
-    public void setPreviousAttributes(Map<String, Object> previousAttributes) {
+    public void setPreviousAttributes(Map<String, String> previousAttributes) {
         this.previousAttributes = previousAttributes;
     }
 
@@ -199,14 +222,6 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
 
     public void setEventDuration(Long eventDuration) {
         this.eventDuration = eventDuration;
-    }
-
-    public Long getLineageDuration() {
-        return lineageDuration;
-    }
-
-    public void setLineageDuration(Long lineageDuration) {
-        this.lineageDuration = lineageDuration;
     }
 
     public String getEventType() {
@@ -289,22 +304,6 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
         this.componentName = componentName;
     }
 
-    public String getSourceSystemFlowFileId() {
-        return sourceSystemFlowFileId;
-    }
-
-    public void setSourceSystemFlowFileId(String sourceSystemFlowFileId) {
-        this.sourceSystemFlowFileId = sourceSystemFlowFileId;
-    }
-
-    public String getAlternateIdentifierUri() {
-        return alternateIdentifierUri;
-    }
-
-    public void setAlternateIdentifierUri(String alternateIdentifierUri) {
-        this.alternateIdentifierUri = alternateIdentifierUri;
-    }
-
     public Collection<ProvenanceEventAttributeDTO> getAttributes() {
         if (attributes == null) {
             attributes = new ArrayList<>();
@@ -333,20 +332,13 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
         this.childUuids = childUuids;
     }
 
-    public String getTransitUri() {
-        return transitUri;
-    }
-
-    public void setTransitUri(String transitUri) {
-        this.transitUri = transitUri;
-    }
-
-    public String getRelationship() {
-        return relationship;
-    }
-
-    public void setRelationship(String relationship) {
-        this.relationship = relationship;
+    public void addChildUuid(String childFlowFileId) {
+        if (childUuids == null) {
+            childUuids = new ArrayList<>();
+        }
+        if (!childUuids.contains(childFlowFileId)) {
+            childUuids.add(childFlowFileId);
+        }
     }
 
     public String getDetails() {
@@ -356,144 +348,6 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
     public void setDetails(String details) {
         this.details = details;
     }
-
-    public Boolean getContentEqual() {
-        return contentEqual;
-    }
-
-    public void setContentEqual(Boolean contentEqual) {
-        this.contentEqual = contentEqual;
-    }
-
-    public Boolean getInputContentAvailable() {
-        return inputContentAvailable;
-    }
-
-    public void setInputContentAvailable(Boolean inputContentAvailable) {
-        this.inputContentAvailable = inputContentAvailable;
-    }
-
-    public String getInputContentClaimSection() {
-        return inputContentClaimSection;
-    }
-
-    public void setInputContentClaimSection(String inputContentClaimSection) {
-        this.inputContentClaimSection = inputContentClaimSection;
-    }
-
-    public String getInputContentClaimContainer() {
-        return inputContentClaimContainer;
-    }
-
-    public void setInputContentClaimContainer(String inputContentClaimContainer) {
-        this.inputContentClaimContainer = inputContentClaimContainer;
-    }
-
-    public String getInputContentClaimIdentifier() {
-        return inputContentClaimIdentifier;
-    }
-
-    public void setInputContentClaimIdentifier(String inputContentClaimIdentifier) {
-        this.inputContentClaimIdentifier = inputContentClaimIdentifier;
-    }
-
-    public Long getInputContentClaimOffset() {
-        return inputContentClaimOffset;
-    }
-
-    public void setInputContentClaimOffset(Long inputContentClaimOffset) {
-        this.inputContentClaimOffset = inputContentClaimOffset;
-    }
-
-    public String getInputContentClaimFileSize() {
-        return inputContentClaimFileSize;
-    }
-
-    public void setInputContentClaimFileSize(String inputContentClaimFileSize) {
-        this.inputContentClaimFileSize = inputContentClaimFileSize;
-    }
-
-    public Long getInputContentClaimFileSizeBytes() {
-        return inputContentClaimFileSizeBytes;
-    }
-
-    public void setInputContentClaimFileSizeBytes(Long inputContentClaimFileSizeBytes) {
-        this.inputContentClaimFileSizeBytes = inputContentClaimFileSizeBytes;
-    }
-
-    public Boolean getOutputContentAvailable() {
-        return outputContentAvailable;
-    }
-
-    public void setOutputContentAvailable(Boolean outputContentAvailable) {
-        this.outputContentAvailable = outputContentAvailable;
-    }
-
-    public String getOutputContentClaimSection() {
-        return outputContentClaimSection;
-    }
-
-    public void setOutputContentClaimSection(String outputContentClaimSection) {
-        this.outputContentClaimSection = outputContentClaimSection;
-    }
-
-    public String getOutputContentClaimContainer() {
-        return outputContentClaimContainer;
-    }
-
-    public void setOutputContentClaimContainer(String outputContentClaimContainer) {
-        this.outputContentClaimContainer = outputContentClaimContainer;
-    }
-
-    public String getOutputContentClaimIdentifier() {
-        return outputContentClaimIdentifier;
-    }
-
-    public void setOutputContentClaimIdentifier(String outputContentClaimIdentifier) {
-        this.outputContentClaimIdentifier = outputContentClaimIdentifier;
-    }
-
-    public Long getOutputContentClaimOffset() {
-        return outputContentClaimOffset;
-    }
-
-    public void setOutputContentClaimOffset(Long outputContentClaimOffset) {
-        this.outputContentClaimOffset = outputContentClaimOffset;
-    }
-
-    public String getOutputContentClaimFileSize() {
-        return outputContentClaimFileSize;
-    }
-
-    public void setOutputContentClaimFileSize(String outputContentClaimFileSize) {
-        this.outputContentClaimFileSize = outputContentClaimFileSize;
-    }
-
-    public Long getOutputContentClaimFileSizeBytes() {
-        return outputContentClaimFileSizeBytes;
-    }
-
-    public void setOutputContentClaimFileSizeBytes(Long outputContentClaimFileSizeBytes) {
-        this.outputContentClaimFileSizeBytes = outputContentClaimFileSizeBytes;
-    }
-
-    public Boolean getReplayAvailable() {
-        return replayAvailable;
-    }
-
-    public void setReplayAvailable(Boolean replayAvailable) {
-        this.replayAvailable = replayAvailable;
-    }
-
-    public String getReplayExplanation() {
-        return replayExplanation;
-    }
-
-    public void setReplayExplanation(String replayExplanation) {
-        this.replayExplanation = replayExplanation;
-    }
-
-
 
     public boolean isStartOfCurrentFlowFile() {
         Integer index = flowFile.getCompletedEvents().indexOf(this);
@@ -507,26 +361,39 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
     public void setPreviousEvent(ProvenanceEventRecordDTO previousEvent) {
         this.previousEventId = previousEvent.getEventId();
         this.previousEvent = previousEvent;
+        this.previousEventTime = previousEvent.getEventTime();
+        this.previousFlowfileId = previousEvent.getFlowFileUuid();
     }
 
     public Long getPreviousEventId() {
         if (previousEventId == null && previousEvent != null) {
-            return previousEvent.getEventId();
+            this.previousEventId = previousEvent.getEventId();
         }
         return previousEventId;
     }
 
-    @Override
+    public DateTime getPreviousEventTime() {
+        if (previousEventTime == null && previousEvent != null) {
+            this.previousEventTime = previousEvent.getEventTime();
+        }
+        return previousEventTime;
+    }
+
+    public String getPreviousFlowfileId() {
+        if (previousFlowfileId == null && previousEvent != null) {
+            this.previousFlowfileId = previousEvent.getFlowFileUuid();
+        }
+        return previousFlowfileId;
+    }
+
     public DateTime getEventTime() {
         return eventTime;
     }
 
-    @Override
     public void setEventTime(DateTime eventTime) {
         this.eventTime = eventTime;
     }
 
-    @Override
     public Set<String> getParentFlowFileIds() {
         if (getParentUuids() != null) {
             return new HashSet<>(this.getParentUuids());
@@ -534,13 +401,118 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
         return new HashSet<>();
     }
 
-    @Override
     public void setParentFlowFileIds(Set<String> parentFlowFileIds) {
         if (parentFlowFileIds != null) {
             this.setParentUuids(new ArrayList<>(parentFlowFileIds));
         } else {
             this.setParentUuids(null);
         }
+    }
+
+
+    public Long getInputContentClaimFileSizeBytes() {
+        return inputContentClaimFileSizeBytes;
+    }
+
+    public void setInputContentClaimFileSizeBytes(Long inputContentClaimFileSizeBytes) {
+        this.inputContentClaimFileSizeBytes = inputContentClaimFileSizeBytes;
+    }
+
+    public String getInputContentClaimFileSize() {
+        return inputContentClaimFileSize;
+    }
+
+    public void setInputContentClaimFileSize(String inputContentClaimFileSize) {
+        this.inputContentClaimFileSize = inputContentClaimFileSize;
+    }
+
+    public Long getOutputContentClaimFileSizeBytes() {
+        return outputContentClaimFileSizeBytes;
+    }
+
+    public void setOutputContentClaimFileSizeBytes(Long outputContentClaimFileSizeBytes) {
+        this.outputContentClaimFileSizeBytes = outputContentClaimFileSizeBytes;
+    }
+
+    public String getOutputContentClaimFileSize() {
+        return outputContentClaimFileSize;
+    }
+
+    public void setOutputContentClaimFileSize(String outputContentClaimFileSize) {
+        this.outputContentClaimFileSize = outputContentClaimFileSize;
+    }
+
+    public boolean isStream() {
+        return stream;
+    }
+
+    public void setStream(boolean stream) {
+        this.stream = stream;
+    }
+
+
+    public AtomicBoolean getProcessed() {
+        return processed;
+    }
+
+    public String getFeedProcessGroupId() {
+        return feedProcessGroupId;
+    }
+
+    public void setFeedProcessGroupId(String feedProcessGroupId) {
+        this.feedProcessGroupId = feedProcessGroupId;
+    }
+
+
+    public String getJobFlowFileId() {
+        return jobFlowFileId;
+    }
+
+    public void setJobFlowFileId(String jobFlowFileId) {
+        this.jobFlowFileId = jobFlowFileId;
+    }
+
+
+    public Long getJobEventId() {
+        return jobEventId;
+    }
+
+    public void setJobEventId(Long jobEventId) {
+        this.jobEventId = jobEventId;
+    }
+
+    public boolean isStartOfJob() {
+        return isStartOfJob;
+    }
+
+    public void setIsStartOfJob(boolean isStartOfJob) {
+        this.isStartOfJob = isStartOfJob;
+    }
+
+    public void setIsFailure(boolean isFailure) {
+        this.isFailure = isFailure;
+    }
+
+    public boolean isFailure() {
+        return isFailure;
+    }
+
+
+    public boolean isEndOfJob() {
+        return isEndOfJob;
+    }
+
+    public void setIsEndOfJob(boolean isEndOfJob) {
+        this.isEndOfJob = isEndOfJob;
+    }
+
+
+    public String getBatchId() {
+        return batchId;
+    }
+
+    public void setBatchId(String batchId) {
+        this.batchId = batchId;
     }
 
     @Override
@@ -571,18 +543,16 @@ public class ProvenanceEventRecordDTO implements FlowFileEvent<ProvenanceEventRe
     public String toString() {
         final StringBuilder sb = new StringBuilder("ProvenanceEventRecordDTO{");
         sb.append("eventId=").append(getEventId());
-        sb.append("componentId=").append(getComponentId());
-        sb.append(", flowFile=").append(getFlowFileUuid()).append("(").append(flowFile != null).append(")");
-        sb.append(", parentUUIDs=").append(getParentUuids() != null ? getParentUuids().size() : "NULL");
-        sb.append(",previous=").append(getPreviousEventId());
-        sb.append(", eventComponentId=").append(getComponentId());
-        sb.append(", eventRelationship=").append(getRelationship());
+        sb.append(", processorName=").append(getComponentName());
+        sb.append(", componentId=").append(getComponentId());
+        sb.append(", flowFile=").append(getFlowFileUuid());
+        sb.append(", previous=").append(getPreviousEventId());
         sb.append(", eventType=").append(getEventType());
         sb.append(", eventDetails=").append(getDetails());
-        sb.append(", eventDuration=").append(getEventDuration());
-        sb.append(", eventTime=").append(getEventTime());
+        sb.append(", isEndOfJob=").append(isEndOfJob());
         sb.append('}');
         return sb.toString();
     }
+
 
 }
