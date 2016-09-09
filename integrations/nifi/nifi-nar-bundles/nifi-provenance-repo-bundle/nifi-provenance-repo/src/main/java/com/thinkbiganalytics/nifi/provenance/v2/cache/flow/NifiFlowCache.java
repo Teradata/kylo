@@ -265,10 +265,6 @@ public class NifiFlowCache {
         return flow;
     }
 
-    public void setNifiFlowClient(NifiFlowClient nifiFlowClient) {
-        this.nifiFlowClient = nifiFlowClient;
-    }
-
 
     private void initConnectionCheckTimerThread(int start, int interval, int waitCount) {
 

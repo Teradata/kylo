@@ -22,10 +22,6 @@ public class ProvenanceEventStats extends BaseStatistics {
 
     }
 
-    public ProvenanceEventStats() {
-
-    }
-
     public ProvenanceEventStats(String feedName) {
         this.feedName = feedName;
     }
@@ -102,31 +98,6 @@ public class ProvenanceEventStats extends BaseStatistics {
 
     public void setProcessorName(String processorName) {
         this.processorName = processorName;
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
-
-        ProvenanceEventStats that = (ProvenanceEventStats) o;
-
-        if (eventId != null ? !eventId.equals(that.eventId) : that.eventId != null) {
-            return false;
-        }
-        return !(flowFileId != null ? !flowFileId.equals(that.flowFileId) : that.flowFileId != null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = eventId != null ? eventId.hashCode() : 0;
-        result = 31 * result + (flowFileId != null ? flowFileId.hashCode() : 0);
-        return result;
     }
 
     @Override
