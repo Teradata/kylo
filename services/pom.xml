@@ -20,5 +20,6 @@
         <module>feed-manager-service</module>
         <module>service-app</module>
         <module>security-service</module>
+      <module>../schema-discovery-service</module>
     </modules>
 </project>
