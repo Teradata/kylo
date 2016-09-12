@@ -1,13 +1,15 @@
-package com.thinkbiganalytics.jobrepo.jpa;
+package com.thinkbiganalytics.jobrepo.jpa.model;
+
+import com.thinkbiganalytics.jobrepo.jpa.ExecutionConstants;
 
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -96,10 +98,11 @@ public class NifiStepExecution implements Serializable {
     private NifiJobExecution jobExecution;
 
 
-    @OneToMany(targetEntity = NifiStepExecutionContext.class, mappedBy = "stepExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<NifiStepExecutionContext> stepExecutionContext = new ArrayList<>();
+    @OneToMany(targetEntity = BatchStepExecutionContextValues.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "STEP_EXECUTION_ID", referencedColumnName = "STEP_EXECUTION_ID")
+    private Set<BatchStepExecutionContextValues> stepExecutionContext = new HashSet<>();
 
-    @OneToOne(targetEntity = NifiEventStepExecution.class, mappedBy = "stepExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToOne(targetEntity = NifiEventStepExecution.class, mappedBy = "stepExecution", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private NifiEventStepExecution nifiEventStepExecution;
 
 
@@ -163,15 +166,18 @@ public class NifiStepExecution implements Serializable {
         this.jobExecution = jobExecution;
     }
 
-    public List<NifiStepExecutionContext> getStepExecutionContext() {
+    public Set<BatchStepExecutionContextValues> getStepExecutionContext() {
         return stepExecutionContext;
     }
 
-    public void setStepExecutionContext(List<NifiStepExecutionContext> stepExecutionContext) {
-        this.stepExecutionContext = stepExecutionContext;
+    public void setStepExecutionContext(Set<BatchStepExecutionContextValues> stepExecutionContext) {
+        this.stepExecutionContext.clear();
+        if (this.stepExecutionContext != null) {
+            this.stepExecutionContext.addAll(stepExecutionContext);
+        }
     }
 
-    public void addStepExecutionContext(NifiStepExecutionContext context) {
+    public void addStepExecutionContext(BatchStepExecutionContextValues context) {
         if (getStepExecutionContext().contains(context)) {
             getStepExecutionContext().remove(context);
         }
@@ -182,7 +188,7 @@ public class NifiStepExecution implements Serializable {
         if (!getStepExecutionContext().isEmpty()) {
             Map<String, String> map = new HashMap<>();
             getStepExecutionContext().forEach(ctx -> {
-                map.put(ctx.getStepExecutionContextPK().getKeyName(), ctx.getStringVal());
+                map.put(ctx.getKeyName(), ctx.getStringVal());
             });
             return map;
         }
@@ -242,12 +248,17 @@ public class NifiStepExecution implements Serializable {
 
         NifiStepExecution that = (NifiStepExecution) o;
 
-        return stepExecutionId.equals(that.stepExecutionId);
+        if (stepExecutionId != null ? !stepExecutionId.equals(that.stepExecutionId) : that.stepExecutionId != null) {
+            return false;
+        }
+        return !(jobExecution != null ? !jobExecution.equals(that.jobExecution) : that.jobExecution != null);
 
     }
 
     @Override
     public int hashCode() {
-        return stepExecutionId.hashCode();
+        int result = stepExecutionId != null ? stepExecutionId.hashCode() : 0;
+        result = 31 * result + (jobExecution != null ? jobExecution.hashCode() : 0);
+        return result;
     }
 }

@@ -2,7 +2,20 @@ package com.thinkbiganalytics.jobrepo.jpa;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
+import com.thinkbiganalytics.jobrepo.jpa.model.BatchJobExecutionContextValues;
+import com.thinkbiganalytics.jobrepo.jpa.model.BatchStepExecutionContextValues;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiEvent;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiEventJobExecution;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiEventStepExecution;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiJobExecution;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiJobExecutionParameters;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiJobInstance;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiRelatedRootFlowFiles;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiStepExecution;
 import com.thinkbiganalytics.jobrepo.nifi.support.DateTimeUtil;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.joda.time.DateTime;
@@ -17,8 +30,13 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.inject.Inject;
 
 /**
  * Created by sr186054 on 8/31/16.
@@ -44,11 +62,16 @@ public class NifiJobExecutionProvider {
 
     private NifiJobInstanceRepository jobInstanceRepository;
 
-    private NifiJobParametersRepository nifiJobParametersRepository;
-
     private NifiFailedEventRepository nifiFailedEventRepository;
 
     private NifiStepExecutionRepository nifiStepExecutionRepository;
+
+    private NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository;
+
+    private NifiEventJobExecutionRepository nifiEventJobExecutionRepository;
+
+    @Inject
+    private MetadataEventService eventService;
 
 
     private boolean isWriteExecutionContext = true;
@@ -56,14 +79,16 @@ public class NifiJobExecutionProvider {
 
     @Autowired
     public NifiJobExecutionProvider(NifiJobExecutionRepository jobExecutionRepository, NifiJobInstanceRepository jobInstanceRepository, NifiFailedEventRepository nifiFailedEventRepository,
-                                    NifiJobParametersRepository nifiJobParametersRepository,
-                                    NifiStepExecutionRepository nifiStepExecutionRepository) {
+                                    NifiStepExecutionRepository nifiStepExecutionRepository,
+                                    NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository,
+                                    NifiEventJobExecutionRepository nifiEventJobExecutionRepository) {
 
         this.jobExecutionRepository = jobExecutionRepository;
         this.jobInstanceRepository = jobInstanceRepository;
         this.nifiFailedEventRepository = nifiFailedEventRepository;
-        this.nifiJobParametersRepository = nifiJobParametersRepository;
         this.nifiStepExecutionRepository = nifiStepExecutionRepository;
+        this.relatedRootFlowFilesRepository = relatedRootFlowFilesRepository;
+        this.nifiEventJobExecutionRepository = nifiEventJobExecutionRepository;
 
     }
 
@@ -95,7 +120,7 @@ public class NifiJobExecutionProvider {
     }
 
 
-    public NifiJobExecution createJobExecution(NifiJobInstance jobInstance, ProvenanceEventRecordDTO event) {
+    private NifiJobExecution createJobExecution(NifiJobInstance jobInstance, ProvenanceEventRecordDTO event) {
 
         NifiJobExecution jobExecution = new NifiJobExecution();
         jobExecution.setJobInstance(jobInstance);
@@ -119,7 +144,7 @@ public class NifiJobExecutionProvider {
         jobParameters.put(FeedConstants.PARAM__FEED_IS_PARENT, "true");
 
         //save the params
-        List<NifiJobExecutionParameters> jobExecutionParametersList = new ArrayList<>();
+        Set<NifiJobExecutionParameters> jobExecutionParametersList = new HashSet<>();
         for (Map.Entry<String, Object> entry : jobParameters.entrySet()) {
             NifiJobExecutionParameters jobExecutionParameters = jobExecution.addParameter(entry.getKey(), entry.getValue());
             jobExecutionParametersList.add(jobExecutionParameters);
@@ -130,73 +155,102 @@ public class NifiJobExecutionProvider {
         return this.jobExecutionRepository.save(jobExecution);
     }
 
-    public NifiJobExecution createNewJobExecution(ProvenanceEventRecordDTO event) {
+    private NifiJobExecution createNewJobExecution(ProvenanceEventRecordDTO event) {
         NifiJobInstance jobInstance = createJobInstance(event);
         NifiJobExecution jobExecution = createJobExecution(jobInstance, event);
 
         return jobExecution;
     }
 
+    /**
+     * if a event is a Merge (JOIN event) that merges other Root flow files (other JobExecutions) it will contain this relationship. These files need to be related together to determine when the final
+     * job is complete.
+     */
+    private void checkAndRelateJobs(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
+        if (event.getRelatedRootFlowFiles() != null && !event.getRelatedRootFlowFiles().isEmpty()) {
+            //relate the files together
+            List<NifiRelatedRootFlowFiles> relatedRootFlowFiles = new ArrayList<>();
+            String relationId = UUID.randomUUID().toString();
+            for (String flowFile : event.getRelatedRootFlowFiles()) {
+                NifiRelatedRootFlowFiles nifiRelatedRootFlowFile = new NifiRelatedRootFlowFiles(nifiEvent, flowFile, relationId);
+                relatedRootFlowFiles.add(nifiRelatedRootFlowFile);
+            }
+            relatedRootFlowFilesRepository.save(relatedRootFlowFiles);
+        }
+    }
 
-    public NifiStepExecution save(ProvenanceEventRecordDTO event) {
+    /**
+     * When the job is complete determine its status, write out exection context, and determine if all related jobs are complete
+     * @param event
+     * @param jobExecution
+     */
+    private void finishJob(ProvenanceEventRecordDTO event, NifiJobExecution jobExecution) {
+        ///END OF THE JOB... fail or complete the job?
+        log.info("Finishing Job: {}", jobExecution.getJobExecutionId());
+        ensureFailureSteps(jobExecution);
+        jobExecution.completeOrFailJob();
+        jobExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+        log.info("Completing JOB EXECUTION with id of: {} ff: {} ", jobExecution.getJobExecutionId(), event.getJobFlowFileId());
+        //add in execution contexts
+        Set<BatchJobExecutionContextValues> jobExecutionContext = new HashSet<>();
+        Map<String, String> allAttrs = event.getAttributeMap();
+        if (allAttrs != null && !allAttrs.isEmpty()) {
+            for (Map.Entry<String, String> entry : allAttrs.entrySet()) {
+                BatchJobExecutionContextValues executionContext = new BatchJobExecutionContextValues(jobExecution, entry.getKey());
+                executionContext.setStringVal(entry.getValue());
+                jobExecutionContext.add(executionContext);
+            }
+            jobExecution.setJobExecutionContext(jobExecutionContext);
+            //also persist to spring batch tables
+            batchExecutionContextProvider.saveJobExecutionContext(jobExecution.getJobExecutionId(), allAttrs);
+        }
+
+        //Check related jobs
+        if(jobExecutionRepository.hasRelatedJobs(jobExecution.getJobExecutionId())) {
+            boolean isComplete = !jobExecutionRepository.hasRunningRelatedJobs(jobExecution.getJobExecutionId());
+
+            if (isComplete) {
+                boolean hasFailures = jobExecutionRepository.hasRelatedJobFailures(jobExecution.getJobExecutionId());
+                if (jobExecution.isFailed() || hasFailures) {
+                    failedJob(event.getFeedName(), jobExecution);
+                    log.info("FINISHED AND FAILED JOB with relation {} ", jobExecution.getJobExecutionId());
+                } else {
+                    successfulJob(event.getFeedName(), jobExecution);
+                    log.info("FINISHED JOB with relation {} ", jobExecution.getJobExecutionId());
+                }
+            }
+        } else {
+            if (jobExecution.isFailed()) {
+                failedJob(event.getFeedName(), jobExecution);
+            } else if (jobExecution.isSuccess()) {
+                successfulJob(event.getFeedName(), jobExecution);
+            }
+        }
+
+    }
+
+
+    public NifiStepExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
         //find the JobExecution for the event if it exists, otherwise create one
         NifiJobExecution jobExecution = jobExecutionRepository.findByEventAndFlowFile(event.getJobEventId(), event.getJobFlowFileId());
         if (jobExecution == null && event.isStartOfJob()) {
+            log.info("New JOB for {}, {}", event, event.getJobFlowFileId());
             jobExecution = createNewJobExecution(event);
+        } else {
+            log.info("use existing JOB for {}, {}", event, event.getJobFlowFileId());
         }
-
         if (jobExecution != null) {
-
-            NifiStepExecution stepExecution = createStepExecution(jobExecution, event);
-            if (stepExecution != null) {
-                //if the attrs coming in change the type to a CHECK job then update the entity
-                updateJobType(jobExecution, event);
-            }
+            log.info("use JOB for {}, {}", jobExecution.getJobExecutionId(), event.getEventId());
+            checkAndRelateJobs(event, nifiEvent);
+            createStepExecution(jobExecution, event);
             if (event.isEndOfJob()) {
-
-                ///END OF THE JOB... fail or complete the job?
-                ensureFailureSteps(jobExecution);
-                jobExecution.completeOrFailJob();
-                jobExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
-                log.info("Completing JOB EXECUTION with id of: {} ff: {} ", jobExecution.getJobExecutionId(), event.getJobFlowFileId());
-                //add in execution contexts
-                if (isWriteExecutionContext) {
-                    List<NifiJobExecutionContext> jobExecutionContextList = new ArrayList<>();
-                    Map<String, String> allAttrs = event.getAttributeMap();
-                    if (allAttrs != null && !allAttrs.isEmpty()) {
-                        for (Map.Entry<String, String> entry : allAttrs.entrySet()) {
-                            NifiJobExecutionContext executionContext = new NifiJobExecutionContext(jobExecution, entry.getKey());
-                            executionContext.setStringVal(entry.getValue());
-                            jobExecution.addJobExecutionContext(executionContext);
-                        }
-                        //also persist to spring batch tables
-                        batchExecutionContextProvider.saveJobExecutionContext(jobExecution.getJobExecutionId(), allAttrs);
-                    }
-                }
-                if (jobExecution.isFailed()) {
-                    failedJob(jobExecution);
-                } else if (jobExecution.isSuccess()) {
-                    successfulJob(jobExecution);
-                }
-
+                finishJob(event, jobExecution);
             }
-
-
-
-
-
             this.jobExecutionRepository.save(jobExecution);
         }
         return null;
     }
 
-    private void failedJob(NifiJobExecution jobExecution) {
-
-    }
-
-    private void successfulJob(NifiJobExecution jobExecution) {
-
-    }
 
     /**
      * We get Nifi Events after a step has executed. If a flow takes some time we might not initially get the event that the given step has failed when we write the StepExecution record. This should
@@ -221,79 +275,79 @@ public class NifiJobExecutionProvider {
         //only create the step if it doesnt exist yet for this event
         NifiStepExecution stepExecution = nifiStepExecutionRepository.findByProcessorAndJobFlowFile(event.getComponentId(), event.getJobFlowFileId());
         if (stepExecution == null) {
+
             stepExecution = new NifiStepExecution();
             stepExecution.setJobExecution(jobExecution);
             stepExecution.setStartTime(
                 event.getPreviousEventTime() != null ? DateTimeUtil.convertToUTC(event.getPreviousEventTime())
                                                      : DateTimeUtil.convertToUTC((event.getEventTime().minus(event.getEventDuration()))));
             stepExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+            stepExecution.setStepName(event.getComponentName());
+            log.info("New Step Execution {} on Job: {} using event {} ", stepExecution.getStepName(), jobExecution, event);
+
             //Attempt to find the Failure by looking at the event failure flag or the existence of the NifiFailedEvent in the FailedEvent table.
             // When job completes an additional pass is done to update any steps that need to be failed.
-            stepExecution.setStepName(event.getComponentName());
             boolean failure = event.isFailure();
-            if (!failure) {
+           /* if (!failure) {
                 NifiFailedEvent failedEvent = nifiFailedEventRepository.findOne(new NifiFailedEvent.NiFiFailedEventPK(event.getEventId(), event.getFlowFileUuid()));
                 failure = failedEvent != null;
             }
+            */
             if (failure) {
                 stepExecution.failStep();
             } else {
                 stepExecution.completeStep();
             }
-
             //add in execution contexts
-            Map<String, String> updatedAttrs = event.getUpdatedAttributes();
-            if (isWriteExecutionContext) {
-                List<NifiStepExecutionContext> stepExecutionContextList = new ArrayList<>();
-                if (updatedAttrs != null && !updatedAttrs.isEmpty()) {
-                    for (Map.Entry<String, String> entry : updatedAttrs.entrySet()) {
-                        NifiStepExecutionContext stepExecutionContext = new NifiStepExecutionContext(stepExecution, entry.getKey());
-                        stepExecutionContext.setStringVal(entry.getValue());
-                        stepExecutionContextList.add(stepExecutionContext);
-                    }
+            assignStepExecutionContextMap(event, stepExecution);
 
-
-                }
-                stepExecution.setStepExecutionContext(stepExecutionContextList);
-
-
-            }
+            //Attach the NifiEvent object to this StepExecution
             NifiEventStepExecution eventStepExecution = new NifiEventStepExecution(jobExecution, stepExecution, event.getEventId(), event.getJobFlowFileId());
             eventStepExecution.setComponentId(event.getComponentId());
             eventStepExecution.setJobFlowFileId(event.getJobFlowFileId());
             stepExecution.setNifiEventStepExecution(eventStepExecution);
 
-            stepExecution = nifiStepExecutionRepository.save(stepExecution);
             jobExecution.getStepExecutions().add(stepExecution);
-            if (isWriteExecutionContext) {
-                //also persist to spring batch tables
-                batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), updatedAttrs);
-            }
+            stepExecution =  nifiStepExecutionRepository.save(stepExecution);
+            //also persist to spring batch tables
+            //TODO to be removed in next release as Spring batch is removed
+            batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), event.getUpdatedAttributes());
 
-            return stepExecution;
 
         } else {
             //update it
-            Map<String, String> contextMap = new HashMap<>();
-            String eventTimes = (event.getPreviousEventTime() != null ? DateTimeUtil.convertToUTC(event.getPreviousEventTime()).toString()
-                                                                      : DateTimeUtil.convertToUTC((event.getEventTime().minus(event.getEventDuration()))).toString()) + " - " + event.getEventTime()
-                                    .toString();
-            contextMap.put("Event - " + event.getEventId(), eventTimes);
-            for (Map.Entry<String, String> entry : contextMap.entrySet()) {
-                NifiStepExecutionContext stepExecutionContext = new NifiStepExecutionContext(stepExecution, entry.getKey());
-                stepExecutionContext.setStringVal(entry.getValue());
-                stepExecution.addStepExecutionContext(stepExecutionContext);
-            }
+            log.info("Existing Step Execution {} ", stepExecution.getStepExecutionId());
+            //updat executionContext
+            assignStepExecutionContextMap(event, stepExecution);
+            //update end time??
 
             stepExecution = nifiStepExecutionRepository.save(stepExecution);
-
             //also persist to spring batch tables
+            //TODO to be removed in next release as Spring batch is removed
             batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), stepExecution.getStepExecutionContextAsMap());
 
 
         }
+
+        if (stepExecution != null) {
+            //if the attrs coming in change the type to a CHECK job then update the entity
+            updateJobType(jobExecution, event);
+        }
         return stepExecution;
 
+    }
+
+    private void assignStepExecutionContextMap(ProvenanceEventRecordDTO event, NifiStepExecution stepExecution) {
+        Map<String, String> updatedAttrs = event.getUpdatedAttributes();
+        Set<BatchStepExecutionContextValues> stepExecutionContextList = new HashSet<>();
+        if (updatedAttrs != null && !updatedAttrs.isEmpty()) {
+            for (Map.Entry<String, String> entry : updatedAttrs.entrySet()) {
+                BatchStepExecutionContextValues stepExecutionContext = new BatchStepExecutionContextValues(stepExecution, entry.getKey());
+                stepExecutionContext.setStringVal(entry.getValue());
+                stepExecutionContextList.add(stepExecutionContext);
+            }
+        }
+        stepExecution.setStepExecutionContext(stepExecutionContextList);
     }
 
 
@@ -309,4 +363,25 @@ public class NifiJobExecutionProvider {
             }
         }
     }
+
+
+    /**
+     * Called when a Job and all related jobs complete but contain a failure.
+     * @param feedName
+     * @param jobExecution
+     */
+    private void failedJob(String feedName, NifiJobExecution jobExecution) {
+        FeedOperation.State state = FeedOperation.State.FAILURE;
+        this.eventService.notify(new FeedOperationStatusEvent(feedName, null, state, "Failed Job"));
+    }
+
+    /**
+     * Called when a Job and all related jobs complete but contain a failure.
+     */
+    private void successfulJob(String feedName, NifiJobExecution jobExecution) {
+        FeedOperation.State state = FeedOperation.State.SUCCESS;
+        this.eventService.notify(new FeedOperationStatusEvent(feedName, null, state, ""));
+    }
+
+
 }

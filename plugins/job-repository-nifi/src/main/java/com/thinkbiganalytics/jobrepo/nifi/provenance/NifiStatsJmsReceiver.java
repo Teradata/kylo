@@ -3,7 +3,7 @@ package com.thinkbiganalytics.jobrepo.nifi.provenance;
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
 import com.thinkbiganalytics.jobrepo.config.OperationalMetadataAccess;
 import com.thinkbiganalytics.jobrepo.jpa.NifiEventStatisticsProvider;
-import com.thinkbiganalytics.jobrepo.jpa.NifiEventSummaryStats;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiEventSummaryStats;
 import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;

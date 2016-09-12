@@ -1,4 +1,6 @@
-package com.thinkbiganalytics.jobrepo.jpa;
+package com.thinkbiganalytics.jobrepo.jpa.model;
+
+import com.thinkbiganalytics.jobrepo.jpa.ExecutionConstants;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;

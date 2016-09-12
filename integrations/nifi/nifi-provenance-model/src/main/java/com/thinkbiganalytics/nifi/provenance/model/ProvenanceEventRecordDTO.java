@@ -64,6 +64,8 @@ public class ProvenanceEventRecordDTO implements Serializable {
     private Long outputContentClaimFileSizeBytes;
     private String outputContentClaimFileSize;
 
+    private Set<String>relatedRootFlowFiles;
+
 
     private boolean isFailure;
 
@@ -513,6 +515,18 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     public void setBatchId(String batchId) {
         this.batchId = batchId;
+    }
+
+    private void addRelatedRootFlowFile(String rootFlowFileId){
+
+    }
+
+    public Set<String> getRelatedRootFlowFiles() {
+        return relatedRootFlowFiles;
+    }
+
+    public void setRelatedRootFlowFiles(Set<String> relatedRootFlowFiles) {
+        this.relatedRootFlowFiles = relatedRootFlowFiles;
     }
 
     @Override

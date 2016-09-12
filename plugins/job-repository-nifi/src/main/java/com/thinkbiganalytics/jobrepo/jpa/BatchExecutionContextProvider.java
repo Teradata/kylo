@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.jobrepo.jpa;
 
+import com.thinkbiganalytics.jobrepo.jpa.model.BatchJobExecutionContext;
+import com.thinkbiganalytics.jobrepo.jpa.model.BatchStepExecutionContext;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -11,6 +14,9 @@ import java.util.Map;
 @Service
 public class BatchExecutionContextProvider {
 
+    public BatchExecutionContextProvider() {
+
+    }
 
     @Autowired
     ExecutionContextSerializationHelper exectionContextSerializationHelper;

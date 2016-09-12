@@ -1,14 +1,15 @@
-package com.thinkbiganalytics.jobrepo.jpa;
+package com.thinkbiganalytics.jobrepo.jpa.model;
 
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
+import com.thinkbiganalytics.jobrepo.jpa.ExecutionConstants;
 
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -98,18 +99,23 @@ public class NifiJobExecution {
     @JoinColumn(name = "JOB_INSTANCE_ID", nullable = false, insertable = true, updatable = true)
     private NifiJobInstance jobInstance;
 
-    @OneToMany(targetEntity = NifiJobExecutionParameters.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<NifiJobExecutionParameters> jobParameters;
+    @OneToMany(targetEntity = NifiJobExecutionParameters.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Fetch(FetchMode.JOIN)
+    @JoinColumn(name = "JOB_EXECUTION_ID", referencedColumnName = "JOB_EXECUTION_ID")
+    private Set<NifiJobExecutionParameters> jobParameters;
 
 
     @OneToMany(targetEntity = NifiStepExecution.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @Fetch(FetchMode.JOIN)
     private Set<NifiStepExecution> stepExecutions = new HashSet<>();
 
-    @OneToMany(targetEntity = NifiJobExecutionContext.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private List<NifiJobExecutionContext> jobExecutionContext = new ArrayList<>();
+    @OneToMany(targetEntity = BatchJobExecutionContextValues.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name = "JOB_EXECUTION_ID", referencedColumnName = "JOB_EXECUTION_ID")
+    private Set<BatchJobExecutionContextValues> jobExecutionContext = new HashSet<>();
 
 
     @OneToOne(targetEntity = NifiEventJobExecution.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @Fetch(FetchMode.JOIN)
     private NifiEventJobExecution nifiEventJobExecution;
 
 
@@ -201,11 +207,11 @@ public class NifiJobExecution {
     }
 
 
-    public List<NifiJobExecutionParameters> getJobParameters() {
+    public Set<NifiJobExecutionParameters> getJobParameters() {
         return jobParameters;
     }
 
-    public void setJobParameters(List<NifiJobExecutionParameters> jobParameters) {
+    public void setJobParameters(Set<NifiJobExecutionParameters> jobParameters) {
         this.jobParameters = jobParameters;
     }
 
@@ -218,20 +224,18 @@ public class NifiJobExecution {
         this.stepExecutions = stepExecutions;
     }
 
-    public List<NifiJobExecutionContext> getJobExecutionContext() {
+    public Set<BatchJobExecutionContextValues> getJobExecutionContext() {
         return jobExecutionContext;
     }
 
-    public void setJobExecutionContext(List<NifiJobExecutionContext> jobExecutionContext) {
+    public void setJobExecutionContext(Set<BatchJobExecutionContextValues> jobExecutionContext) {
+        this.jobExecutionContext.clear();
         if (this.jobExecutionContext != null) {
-            this.jobExecutionContext.clear();
             this.jobExecutionContext.addAll(jobExecutionContext);
-        } else {
-            this.jobExecutionContext = jobExecutionContext;
         }
     }
 
-    public void addJobExecutionContext(NifiJobExecutionContext context) {
+    public void addJobExecutionContext(BatchJobExecutionContextValues context) {
         if (getJobExecutionContext().contains(context)) {
             getJobExecutionContext().remove(context);
         }
@@ -242,7 +246,7 @@ public class NifiJobExecution {
         if (!getJobExecutionContext().isEmpty()) {
             Map<String, String> map = new HashMap<>();
             getJobExecutionContext().forEach(ctx -> {
-                map.put(ctx.getJobExecutionContextPK().getKeyName(), ctx.getStringVal());
+                map.put(ctx.getKeyName(), ctx.getStringVal());
             });
             return map;
         }

@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.jobrepo.jpa;
+package com.thinkbiganalytics.jobrepo.jpa.model;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -78,8 +78,15 @@ public class NifiEvent {
     @org.hibernate.annotations.Type(type = "yes_no")
     private boolean isEndOfJob;
 
+    @Column(name = "EVENT_ID", insertable = false, updatable = false)
+    private Long eventId;
+
     public NifiEvent() {
 
+    }
+
+    public NifiEvent(Long eventId, String flowfileId) {
+        this.eventPK = new NiFiEventPK(eventId, flowfileId);
     }
 
     public NifiEvent(NiFiEventPK eventPK) {

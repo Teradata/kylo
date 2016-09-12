@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.jobrepo.jpa;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiEvent;
 import com.thinkbiganalytics.json.ObjectMapperSerializer;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 

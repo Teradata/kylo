@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.jobrepo.jpa;
+package com.thinkbiganalytics.jobrepo.jpa.model;
 
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
@@ -13,12 +13,12 @@ import javax.persistence.Table;
  * Created by sr186054 on 9/1/16.
  */
 @Entity
-@Table(name = "BATCH_JOB_EXECUTION_CONTEXT")
-public class BatchJobExecutionContext {
+@Table(name = "BATCH_STEP_EXECUTION_CONTEXT")
+public class BatchStepExecutionContext {
 
     @Id
-    @Column(name = "JOB_EXECUTION_ID")
-    private Long jobExecutionId;
+    @Column(name = "STEP_EXECUTION_ID")
+    private Long stepExecutionId;
 
 
     @Column(name = "SHORT_CONTEXT")
@@ -29,12 +29,13 @@ public class BatchJobExecutionContext {
     @Column(name = "SERIALIZED_CONTEXT")
     public String serializedContext;
 
-    public Long getJobExecutionId() {
-        return jobExecutionId;
+
+    public Long getStepExecutionId() {
+        return stepExecutionId;
     }
 
-    public void setJobExecutionId(Long jobExecutionId) {
-        this.jobExecutionId = jobExecutionId;
+    public void setStepExecutionId(Long stepExecutionId) {
+        this.stepExecutionId = stepExecutionId;
     }
 
     public String getShortContext() {

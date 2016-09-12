@@ -2,12 +2,8 @@ package com.thinkbiganalytics.jobrepo.nifi.config;
 
 
 import com.thinkbiganalytics.jobrepo.jpa.ExecutionContextSerializationHelper;
-import com.thinkbiganalytics.jobrepo.nifi.provenance.FlowFileEventProvider;
-import com.thinkbiganalytics.jobrepo.nifi.provenance.InMemoryFlowFileEventProvider;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.NifiFailureEventJmsReceiver;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.NifiStatsJmsReceiver;
-import com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventApplicationStartupListener;
-import com.thinkbiganalytics.jobrepo.repository.dao.NifJobRepositoryFactoryBean;
 
 import org.springframework.batch.core.repository.ExecutionContextSerializer;
 import org.springframework.batch.core.repository.dao.XStreamExecutionContextStringSerializer;
@@ -42,25 +38,6 @@ public class DatabaseConfig {
     @Qualifier("transactionManager")
     private PlatformTransactionManager transactionManager;
 
-
-    @Bean(name = "nifiJobRepository")
-    public NifJobRepositoryFactoryBean nifiJobRepository(@Qualifier("dataSource") DataSource dataSource) {
-        NifJobRepositoryFactoryBean repository = new NifJobRepositoryFactoryBean();
-        repository.setDataSource(dataSource);
-        // PlatformTransactionManager transactionManager = new DataSourceTransactionManager(dataSource);
-        repository.setTransactionManager(transactionManager);
-        return repository;
-    }
-
-    @Bean(name = "FlowFileEventProvider")
-    public FlowFileEventProvider flowFileEventProvider() {
-        return new InMemoryFlowFileEventProvider();
-    }
-
-    @Bean
-    public ProvenanceEventApplicationStartupListener provenanceEventStartupListener() {
-        return new ProvenanceEventApplicationStartupListener();
-    }
 
 
 
