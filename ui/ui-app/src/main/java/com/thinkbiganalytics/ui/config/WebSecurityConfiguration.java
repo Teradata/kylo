@@ -16,7 +16,7 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 
 import com.thinkbiganalytics.auth.AuthServiceAuthenticationProvider;
 import com.thinkbiganalytics.auth.AuthenticationService;
-import com.thinkbiganalytics.auth.jaas.JaasAuthConfig;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 /**
  *Form Based Auth with Spring Security.

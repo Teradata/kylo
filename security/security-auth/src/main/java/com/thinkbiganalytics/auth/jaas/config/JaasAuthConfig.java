@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.auth.jaas;
+package com.thinkbiganalytics.auth.jaas.config;
 
 import java.util.List;
 import java.util.Map;
@@ -23,7 +23,8 @@ import org.springframework.security.authentication.jaas.memory.InMemoryConfigura
 import com.thinkbiganalytics.auth.DefaultPrincipalAuthorityGranter;
 import com.thinkbiganalytics.auth.RolePrincipalAuthorityGranter;
 import com.thinkbiganalytics.auth.UserRoleAuthorityGranter;
-import com.thinkbiganalytics.auth.jaas.config.DefaultLoginConfigurationBuilder;
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 
 /**
  *

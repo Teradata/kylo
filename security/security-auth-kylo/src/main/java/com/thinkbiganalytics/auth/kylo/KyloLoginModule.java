@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.auth.db;
+package com.thinkbiganalytics.auth.kylo;
 
 import java.security.Principal;
 import java.util.HashSet;
@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import javax.security.auth.Subject;
 import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
@@ -56,10 +55,6 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
     /** Metadata user provider */
     private UserProvider userProvider;
     
-    /** Metadata user */
-    @Nullable
-    private User.ID userId;
-    
     private Set<Principal> principals = new HashSet<>();
     
 
@@ -103,15 +98,16 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
         }
 
         // Authenticate user
-        this.userId = metadata.read(() -> {
+        metadata.read(() -> {
             Optional<User> user = userProvider.findUserBySystemName(nameCallback.getName());
             
             if (user.isPresent()) {
-                if (! requirePassword && passwordEncoder.matches(new String(passwordCallback.getPassword()), user.get().getPassword())) {
-                    throw new CredentialException("The username and/or credentials do not match");
+                if (requirePassword && passwordEncoder.matches(new String(passwordCallback.getPassword()), user.get().getPassword())) {
+                    throw new CredentialException("The username and/or password do not match any account");
                 }
                 
-                return user.get().getId();
+                this.principals.add(user.get().getPrincipal());
+                this.principals.addAll(user.get().getAllGroupPrincipals());
             } else {
                 throw new AccountNotFoundException("No account exists with name name \"" + nameCallback.getName() + "\"");
             }
@@ -122,19 +118,8 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
 
     @Override
     protected boolean doCommit() throws Exception {
-        return metadata.read(() -> {
-            Optional<User> user = this.userProvider.findUserById(userId);
-            
-            if (user.isPresent()) {
-                this.principals.add(user.get().getPrincipal());
-                this.principals.addAll(user.get().getAllGroupPrincipals());
-                getSubject().getPrincipals().addAll(this.principals);
-                return true;
-            } else {
-                // In the unlikely event that the user was deleted at the last second...
-                throw new AccountNotFoundException("The user account no longer exists");
-            }
-        }, MetadataAccess.SERVICE);
+        getSubject().getPrincipals().addAll(this.principals);
+        return true;
     }
 
     @Override

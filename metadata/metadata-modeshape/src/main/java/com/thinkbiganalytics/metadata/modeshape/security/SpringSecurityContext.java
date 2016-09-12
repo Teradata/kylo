@@ -2,12 +2,11 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 
 import java.security.Principal;
 import java.security.acl.Group;
-import java.util.Enumeration;
+import java.util.Collections;
 
 import org.modeshape.jcr.security.SecurityContext;
 import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 
 /**
  * A security context that is in effect when an operation is being executed with 
@@ -34,40 +33,35 @@ public class SpringSecurityContext implements SecurityContext {
 
     @Override
     public boolean hasRole(String roleName) {
-        for (GrantedAuthority grant : this.authentication.getAuthorities()) {
-            // If this is a JaasGrantedAuthority then we will test against its principal.
+        return this.authentication.getAuthorities().stream().anyMatch(grant -> {
             if (grant instanceof JaasGrantedAuthority) {
                 JaasGrantedAuthority jaasGrant = (JaasGrantedAuthority) grant;
 
-                if (roleName.equals(jaasGrant.getPrincipal().getName())) {
-                    return true;
-                }
-
-                // If this is a group principal then we will test against each of its embedded member principals.
-                if (jaasGrant.getPrincipal() instanceof Group) {
-                    Group group = (Group) jaasGrant.getPrincipal();
-                    Enumeration<? extends Principal> members = group.members();
-                    
-                    while (members.hasMoreElements()) {
-                        Principal principal = (Principal) members.nextElement();
-                        
-                        if (roleName.equals(principal.getName())) {
-                            return true;
-                        }
-                    }
-                }
+                return matches(roleName, jaasGrant.getPrincipal());
             } else {
                 if (roleName.equals(grant.getAuthority())) {
                     return true;
+                } else {
+                    return false;
                 }
             }
-        }
-
-        return false;
+        });
     }
 
     @Override
     public void logout() {
         // Ignored
     }
+
+    private boolean matches(String roleName, Principal principal) {
+        if (principal.getName().equals(roleName)) {
+            return true;
+        } else if (principal instanceof Group) {
+            Group group = (Group) principal;
+            return Collections.list(group.members()).stream().anyMatch((p) -> matches(roleName, p));
+        } else {
+            return false;
+        }
+    }
+
 }

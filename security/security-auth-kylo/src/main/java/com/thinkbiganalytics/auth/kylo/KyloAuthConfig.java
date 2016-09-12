@@ -1,4 +1,7 @@
-package com.thinkbiganalytics.auth.db;
+package com.thinkbiganalytics.auth.kylo;
+
+import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -10,18 +13,20 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.thinkbiganalytics.auth.jaas.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.user.User;
+import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
 
 /**
  * Spring configuration for the Metadata Login Module.
  */
 @Configuration
-@Profile("auth-user")
+@Profile("auth-kylo")
 public class KyloAuthConfig {
 
     @Inject
@@ -45,9 +50,9 @@ public class KyloAuthConfig {
      * @param builder the login configuration builder
      * @return the services login configuration
      */
-    @Bean(name = "servicesDatabaseLoginConfiguration")
+    @Bean(name = "servicesKyloLoginConfiguration")
     @Nonnull
-    public LoginConfiguration servicesMetadataLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
+    public LoginConfiguration servicesKyloLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
         return builder
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(KyloLoginModule.class)
@@ -61,14 +66,14 @@ public class KyloAuthConfig {
     }
 
     /**
-     * Creates a new UI login configuration using the Metadata Login Module.
+     * Creates a new UI login configuration using the Kylo Login Module.
      *
      * @param builder the login configuration builder
      * @return the UI login configuration
      */
-    @Bean(name = "uiDatabaseLoginConfiguration")
+    @Bean(name = "uiKyloLoginConfiguration")
     @Nonnull
-    public LoginConfiguration uiMetadataLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
+    public LoginConfiguration uiKyloLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
         return builder
                 .loginModule(JaasAuthConfig.JAAS_UI)
                     .moduleClass(KyloLoginModule.class)
@@ -85,11 +90,24 @@ public class KyloAuthConfig {
     public PostMetadataConfigAction addDefaultUsersAction() {
         return () -> {
             metadata.commit(() -> {
-                this.userProvider.ensureGroup("admin");
+                Optional<User> dlOption = this.userProvider.findUserBySystemName("dladmin");
+                User dladmin = null;
+                
+                if (dlOption.isPresent()) {
+                    dladmin = dlOption.get();
+                } else {
+                    dladmin = this.userProvider.ensureUser("dladmin");
+                    dladmin.setPassword(this.passwordEncoder.encode("thinkbig"));
+                    dladmin.setDisplayName("Data Lake Administrator");
+                }
+                
                 this.userProvider.ensureGroup("user");
                 this.userProvider.ensureGroup("operations");
                 this.userProvider.ensureGroup("designer");
                 this.userProvider.ensureGroup("analyst");
+                
+                UserGroup adminGroup = this.userProvider.ensureGroup("admin");
+                adminGroup.addUser(dladmin);
             }, MetadataAccess.SERVICE);
         };
     }

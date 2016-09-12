@@ -10,9 +10,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.authentication.jaas.AuthorityGranter;
 
-import com.thinkbiganalytics.auth.jaas.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 import com.thinkbiganalytics.metadata.modeshape.common.SecurityPaths;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedModuleActionsProvider;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrModuleActionsBuilder;

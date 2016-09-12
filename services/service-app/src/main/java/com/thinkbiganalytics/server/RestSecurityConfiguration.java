@@ -10,7 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 
-import com.thinkbiganalytics.auth.jaas.JaasAuthConfig;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 /**
  */

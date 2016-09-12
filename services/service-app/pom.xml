@@ -80,6 +80,11 @@
             <artifactId>thinkbig-security-auth-file</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-security-auth-kylo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
