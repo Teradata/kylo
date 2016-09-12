@@ -140,7 +140,7 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
     @Override
     public Set<GroupPrincipal> getAllGroupPrincipals() {
         return streamAllContainingGroups()
-                        .map(group -> group.getPrincial())
+                        .map(group -> group.getRootPrincial())
                         .collect(Collectors.toSet());
     }
     

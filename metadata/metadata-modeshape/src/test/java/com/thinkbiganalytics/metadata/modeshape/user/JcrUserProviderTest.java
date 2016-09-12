@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
@@ -268,22 +267,9 @@ public class JcrUserProviderTest extends AbstractTestNGSpringContextTests {
             User user2 = this.provider.findUserBySystemName("user2").get();
             User user3 = this.provider.findUserBySystemName("user3").get();
             
-            assertThat(user1.getAllGroupPrincipals()).hasSize(1).contains(new GroupPrincipal("groupA", 
-                                                                                             new GroupPrincipal("groupB"), 
-                                                                                             new GroupPrincipal("groupC", 
-                                                                                                                new GroupPrincipal("groupD"))));
-            assertThat(user2.getAllGroupPrincipals()).hasSize(2).contains(new GroupPrincipal("groupA", 
-                                                                                             new GroupPrincipal("groupB"), 
-                                                                                             new GroupPrincipal("groupC", 
-                                                                                                                new GroupPrincipal("groupD"))),
-                                                                          new GroupPrincipal("groupB"));
-            assertThat(user3.getAllGroupPrincipals()).hasSize(3).contains(new GroupPrincipal("groupA", 
-                                                                                             new GroupPrincipal("groupB"), 
-                                                                                             new GroupPrincipal("groupC", 
-                                                                                                                new GroupPrincipal("groupD"))),
-                                                                          new GroupPrincipal("groupC", 
-                                                                                             new GroupPrincipal("groupD")),
-                                                                          new GroupPrincipal("groupD"));
+            assertThat(user1.getAllGroupPrincipals()).hasSize(1).contains(new GroupPrincipal("groupA"));
+            assertThat(user2.getAllGroupPrincipals()).hasSize(2).contains(new GroupPrincipal("groupA"), new GroupPrincipal("groupB"));
+            assertThat(user3.getAllGroupPrincipals()).hasSize(3).contains(new GroupPrincipal("groupA"), new GroupPrincipal("groupC"), new GroupPrincipal("groupD"));
         });
     }    
 }

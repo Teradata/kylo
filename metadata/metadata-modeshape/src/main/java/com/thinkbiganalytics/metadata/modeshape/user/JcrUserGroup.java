@@ -182,14 +182,14 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
         
         return new GroupPrincipal(getSystemName(), members);
     }
-//    public GroupPrincipal getPrincial() {
-//        Set<Principal> members = StreamSupport.stream(getGroups().spliterator(), false)
-//                        .flatMap(group -> StreamSupport.stream(group.getGroups().spliterator(), false))
-//                        .map(g -> g.getPrincial())
-//                        .collect(Collectors.toSet());
-//        
-//        return new GroupPrincipal(getSystemName(), members);
-//    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.user.UserGroup#getRootPrincial()
+     */
+    @Override
+    public GroupPrincipal getRootPrincial() {
+        return new GroupPrincipal(getSystemName());
+    }
     
     private <C, J> Iterable<C> iterateReferances(String nodeType, Class<C> modelClass, Class<J> jcrClass) {
         return () -> {

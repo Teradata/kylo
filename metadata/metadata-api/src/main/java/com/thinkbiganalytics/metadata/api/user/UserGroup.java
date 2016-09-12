@@ -138,7 +138,12 @@ public interface UserGroup {
     boolean removeGroup(@Nonnull UserGroup group);
 
     /**
-     * @return the principal associated with this group
+     * @return the full group principal (i.e. containing member principals) associated with this group
      */
     GroupPrincipal getPrincial();
+    
+    /**
+     * @return the group root principal (i.e. for the group only without member principals) associated with this group
+     */
+    GroupPrincipal getRootPrincial();
 }
