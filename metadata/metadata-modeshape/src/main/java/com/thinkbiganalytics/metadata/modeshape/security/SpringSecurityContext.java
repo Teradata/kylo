@@ -38,7 +38,11 @@ public class SpringSecurityContext implements SecurityContext {
             // If this is a JaasGrantedAuthority then we will test against its principal.
             if (grant instanceof JaasGrantedAuthority) {
                 JaasGrantedAuthority jaasGrant = (JaasGrantedAuthority) grant;
-                
+
+                if (roleName.equals(jaasGrant.getPrincipal().getName())) {
+                    return true;
+                }
+
                 // If this is a group principal then we will test against each of its embedded member principals.
                 if (jaasGrant.getPrincipal() instanceof Group) {
                     Group group = (Group) jaasGrant.getPrincipal();
@@ -50,10 +54,6 @@ public class SpringSecurityContext implements SecurityContext {
                         if (roleName.equals(principal.getName())) {
                             return true;
                         }
-                    }
-                } else {
-                    if (roleName.equals(jaasGrant.getPrincipal().getName())) {
-                        return true;
                     }
                 }
             } else {
