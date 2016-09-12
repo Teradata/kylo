@@ -29,3 +29,4 @@
     - tba:password (STRING)
 
 [tba:userGroup] > tba:extensibleEntity, mix:title, tba:userGroupable, mix:referenceable
+    - tba:enabled (BOOLEAN) = 'true' autocreated mandatory

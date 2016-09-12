@@ -3,6 +3,8 @@ package com.thinkbiganalytics.metadata.modeshape.user;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -10,10 +12,12 @@ import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 
 import com.thinkbiganalytics.metadata.api.user.User;
+import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
@@ -33,7 +37,6 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
 
     /** Name of the {@code enabled} property */
     private static final String ENABLED = "tba:enabled";
-    private static final String FULL_NAME = "tba:fullName";
 
     /** Name of the {@code password} property */
     private static final String PASSWORD = "tba:password";
@@ -106,6 +109,24 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
     }
     
     /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.user.User#getAllContainingGroups()
+     */
+    @Override
+    public Set<UserGroup> getAllContainingGroups() {
+        return streamAllContainingGroups().collect(Collectors.toSet());
+    }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.user.User#getContainingGroups()
+     */
+    @Override
+    public Set<UserGroup> getContainingGroups() {
+        return JcrPropertyUtil.<Node>getSetProperty(this.node, JcrUserGroup.GROUPS).stream()
+                        .map(node -> (UserGroup) JcrUtil.toJcrObject(node, JcrUserGroup.NODE_TYPE, JcrUserGroup.class))
+                        .collect(Collectors.toSet());
+    }
+    
+    /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.User#getPrincipal()
      */
     @Override
@@ -117,9 +138,17 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
      * @see com.thinkbiganalytics.metadata.api.user.User#getGroupPrincipals()
      */
     @Override
-    public Set<GroupPrincipal> getGroupPrincipals() {
-        // TODO Auto-generated method stub
-        return null;
+    public Set<GroupPrincipal> getAllGroupPrincipals() {
+        return streamAllContainingGroups()
+                        .map(group -> group.getPrincial())
+                        .collect(Collectors.toSet());
+    }
+    
+    private Stream<UserGroup> streamAllContainingGroups() {
+        Set<UserGroup> groups = getContainingGroups();
+        
+        return Stream.concat(groups.stream(), 
+                             groups.stream().flatMap(group -> group.getAllContainingGroups().stream()));
     }
 
     /**

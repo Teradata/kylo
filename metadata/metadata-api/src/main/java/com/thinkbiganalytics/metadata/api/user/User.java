@@ -91,10 +91,18 @@ public interface User {
 
     /**
      * Enables or disables access to Kylo for this user.
-     *
-     * @param enabled {@code true} if the user may login, or {@code false} otherwise
      */
     void setEnabled(boolean enabled);
+    
+    /**
+     * @return all of the groups of which this user is a direct member
+     */
+    Set<UserGroup> getContainingGroups();
+    
+    /**
+     * @return all of the groups of which this user is a member; both directly and transitively.
+     */
+    Set<UserGroup> getAllContainingGroups();
     
     /**
      * @return the principal representing this user
@@ -107,5 +115,5 @@ public interface User {
      * @return the set of group principals
      */
     @Nonnull
-    Set<GroupPrincipal> getGroupPrincipals();
+    Set<GroupPrincipal> getAllGroupPrincipals();
 }

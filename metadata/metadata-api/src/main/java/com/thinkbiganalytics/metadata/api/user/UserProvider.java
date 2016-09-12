@@ -53,6 +53,9 @@ public interface UserProvider {
     Iterable<User> findUsers();
     
     @Nonnull
+    UserGroup ensureGroup(@Nonnull String groupName);
+    
+    @Nonnull
     UserGroup createGroup(@Nonnull String groupName);
 
     @Nonnull

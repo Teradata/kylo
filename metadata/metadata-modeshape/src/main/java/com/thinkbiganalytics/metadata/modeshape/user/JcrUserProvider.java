@@ -167,27 +167,43 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
         String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "]";
         return findIterable(query, UserGroup.class, JcrUserGroup.class);
     }
+    
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.user.UserProvider#ensureGroup(java.lang.String)
+     */
+    @Override
+    public UserGroup ensureGroup(String groupName) {
+        return createGroup(groupName, true);
+    }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#createGroup(java.lang.String)
      */
     @Override
     public UserGroup createGroup(String groupName) {
+        return createGroup(groupName, false);
+    }
+
+    private UserGroup createGroup(String groupName, boolean ensure) {
         Session session = getSession();
         String groupPath = UsersPaths.groupPath(groupName).toString();
         
         try {
+            Node groupsNode = session.getRootNode().getNode(UsersPaths.GROUPS.toString());
+            
             if (session.getRootNode().hasNode(groupPath)) {
-                throw new GroupAlreadyExistsException(groupName);
+                if (ensure) {
+                    return JcrUtil.getJcrObject(groupsNode, groupName, JcrUserGroup.class);
+                } else {
+                    throw new GroupAlreadyExistsException(groupName);
+                }
             } else {
-                Node groupsNode = session.getRootNode().getNode(UsersPaths.GROUPS.toString());
                 return JcrUtil.getOrCreateNode(groupsNode, groupName, JcrUserGroup.NODE_TYPE, JcrUserGroup.class);
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed attempting to create a new group with name: " + groupName, e);
         }
     }
-
     
     private User createUser(String username, boolean ensure) {
         Session session = getSession();

@@ -4,9 +4,12 @@
 package com.thinkbiganalytics.metadata.api.user;
 
 import java.io.Serializable;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
+
+import com.thinkbiganalytics.security.GroupPrincipal;
 
 /**
  * Represents a group of users and/or other groups of users.
@@ -56,6 +59,18 @@ public interface UserGroup {
     void setDescription(String descr);
 
     /**
+     * Indicates that the group is available to be assigned users.
+     *
+     * @return {@code true} if the group is enabled, or {@code false} otherwise
+     */
+    boolean isEnabled();
+
+    /**
+     * Enables or disables whether the group is available to be assigned users.
+     */
+    void setEnabled(boolean enabled);
+
+    /**
      * @return the users that are direct members of this group
      */
     @Nonnull
@@ -90,6 +105,17 @@ public interface UserGroup {
     Iterable<UserGroup> getGroups();
     
     /**
+     * @return an set of all groups of which this group is a direct member
+     */
+    @Nonnull
+    Set<UserGroup> getContainingGroups();
+    
+    /**
+     * @return all of the groups of which this group is a member; both directly and transitively.
+     */
+    Set<UserGroup> getAllContainingGroups();
+
+    /**
      * Streams all groups transitively from the member groups this group
      * in a depth-first order.
      * @return an stream of all groups contained in this group
@@ -110,4 +136,9 @@ public interface UserGroup {
      * @return true if the group was a member of the group, otherwise false
      */
     boolean removeGroup(@Nonnull UserGroup group);
+
+    /**
+     * @return the principal associated with this group
+     */
+    GroupPrincipal getPrincial();
 }

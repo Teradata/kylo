@@ -1,7 +1,10 @@
 package com.thinkbiganalytics.auth.db;
 
+import java.security.Principal;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,10 +23,12 @@ import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserProvider;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
- * A login module that authorizes users using the metadata store.
+ * A login module that authenticates users using the Kylo user store.  By default
+ * a user is authenticated only if a user with the provided username exits in
+ * the store.  It may also be configured to validate a provided password against the
+ * one associated with the username in the store as well.
  */
 public class KyloLoginModule extends AbstractLoginModule implements LoginModule {
 
@@ -37,7 +42,7 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
     public static final String USER_PROVIDER = "userProvider";
     
     /** Option that indicates whether password authentication is required */
-    public static final String AUTH_PASSWORKD = "authPassword";
+    public static final String REQUIRE_PASSWORD = "requirePassword";
 
     /** Metadata store */
     private MetadataAccess metadata;
@@ -45,14 +50,18 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
     /** Password encoder */
     private PasswordEncoder passwordEncoder;
     
-    private boolean authPassword = false;
+    /** Whether to required password validation for authentication */
+    private boolean requirePassword = false;
 
     /** Metadata user provider */
     private UserProvider userProvider;
     
     /** Metadata user */
     @Nullable
-    private UsernamePrincipal userPrincipal;
+    private User.ID userId;
+    
+    private Set<Principal> principals = new HashSet<>();
+    
 
     @Override
     public void initialize(@Nonnull final Subject subject, @Nonnull final CallbackHandler callbackHandler, @Nonnull final Map<String, ?> sharedState, @Nonnull final Map<String, ?> options) {
@@ -76,8 +85,8 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
             throw new IllegalArgumentException("The \"" + USER_PROVIDER + "\" option is required");
         }
         
-        if (options.containsKey(AUTH_PASSWORKD)) {
-            authPassword = (Boolean) options.get(AUTH_PASSWORKD);
+        if (options.containsKey(REQUIRE_PASSWORD)) {
+            requirePassword = (Boolean) options.get(REQUIRE_PASSWORD);
         }
     }
 
@@ -87,71 +96,55 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
         final NameCallback nameCallback = new NameCallback("Username: ");
         final PasswordCallback passwordCallback = new PasswordCallback("Password: ", false);
         
-        if (authPassword) {
+        if (requirePassword) {
             handle(nameCallback, passwordCallback);
         } else {
             handle(nameCallback);
         }
 
         // Authenticate user
-        this.userPrincipal = metadata.read(() -> {
+        this.userId = metadata.read(() -> {
             Optional<User> user = userProvider.findUserBySystemName(nameCallback.getName());
             
             if (user.isPresent()) {
-                if (! authPassword && passwordEncoder.matches(new String(passwordCallback.getPassword()), user.get().getPassword())) {
+                if (! requirePassword && passwordEncoder.matches(new String(passwordCallback.getPassword()), user.get().getPassword())) {
                     throw new CredentialException("The username and/or credentials do not match");
                 }
                 
-                return new UsernamePrincipal(user.get().getSystemName());
+                return user.get().getId();
             } else {
-                throw new AccountNotFoundException("No account exists with name name \"" + nameCallback.getName() + "\"")
+                throw new AccountNotFoundException("No account exists with name name \"" + nameCallback.getName() + "\"");
             }
         }, MetadataAccess.SERVICE);
         
-//        final Future<UsernamePrincipal> principalFuture = metadata.read(() -> {
-//            final SettableFuture<UsernamePrincipal> result = SettableFuture.create();
-//            final Optional<User> user = userProvider.findUserBySystemName(nameCallback.getName());
-//            if (!user.isPresent()) {
-//                result.setException(new AccountNotFoundException());
-//            } else if (!user.get().isEnabled()) {
-//                result.setException(new AccountException("The account has been disabled."));
-//            } else if (!passwordEncoder.matches(new String(passwordCallback.getPassword()), user.get().getPassword())) {
-//                result.setException(new FailedLoginException());
-//            } else {
-//                result.set(new UsernamePrincipal(user.get().getSystemName()));
-//            }
-//            return result;
-//        });
-
-        // Get userPrincipal
-//        try {
-//            userPrincipal = principalFuture.get();
-//            return true;
-//        } catch (CancellationException e) {
-//            throw newLoginException(e);
-//        } catch (ExecutionException e) {
-//            Throwables.propagateIfInstanceOf(e.getCause(), LoginException.class);
-//            throw newLoginException(e);
-//        } catch (InterruptedException e) {
-//            Thread.currentThread().interrupt();
-//            throw newLoginException(e);
-//        }
-    }
-
-    @Override
-    protected boolean doCommit() throws Exception {
-        getSubject().getPrincipals().add(userPrincipal);
         return true;
     }
 
     @Override
+    protected boolean doCommit() throws Exception {
+        return metadata.read(() -> {
+            Optional<User> user = this.userProvider.findUserById(userId);
+            
+            if (user.isPresent()) {
+                this.principals.add(user.get().getPrincipal());
+                this.principals.addAll(user.get().getAllGroupPrincipals());
+                getSubject().getPrincipals().addAll(this.principals);
+                return true;
+            } else {
+                // In the unlikely event that the user was deleted at the last second...
+                throw new AccountNotFoundException("The user account no longer exists");
+            }
+        }, MetadataAccess.SERVICE);
+    }
+
+    @Override
     protected boolean doAbort() throws Exception {
-        return logout();
+        return doLogout();
     }
 
     @Override
     protected boolean doLogout() throws Exception {
-        getSubject().getPrincipals().remove(userPrincipal);
+        getSubject().getPrincipals().removeAll(this.principals);
         return true;
     }
 

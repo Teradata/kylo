@@ -6,6 +6,7 @@ package com.thinkbiganalytics.security;
 import java.security.Principal;
 import java.security.acl.Group;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -26,9 +27,13 @@ public class GroupPrincipal extends BasePrincipal implements Group {
     private final int hash; // Since this is immutable it only has to be calculated once.
 
     public GroupPrincipal(String name, Principal... members) {
+        this(name, new HashSet<>(Arrays.asList(members)));
+    }
+    
+    public GroupPrincipal(String name, Set<Principal> members) {
         super(name);
-        this.members = Collections.unmodifiableSet(new HashSet<>(Arrays.asList(members)));
-        this.hash = super.hashCode() ^ Objects.hash((Object[]) members);
+        this.members = Collections.unmodifiableSet(new HashSet<>(members));
+        this.hash = super.hashCode() ^ members.hashCode();
     }
 
     /* (non-Javadoc)

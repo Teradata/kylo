@@ -181,6 +181,23 @@ public class JcrUtil {
 
     }
     
+    public static <T extends JcrObject> T toJcrObject(Node node, String nodeType, Class<T> type) {
+        return toJcrObject(node, nodeType, new DefaultObjectTypeResolver<T>(type));
+    }
+    
+    public static <T extends JcrObject> T toJcrObject(Node node, String nodeType, JcrObjectTypeResolver<T> typeResolver) {
+        try {
+            if (nodeType == null || node.isNodeType(nodeType)) {
+                T entity = ConstructorUtils.invokeConstructor(typeResolver.resolve(node), node);
+                return entity;
+            } else {
+                throw new MetadataRepositoryException("Unable to instanciate object of node type: " + nodeType);
+            }
+        } catch (NoSuchMethodException | IllegalAccessException | InvocationTargetException | InstantiationException | RepositoryException e) {
+            throw new MetadataRepositoryException("Unable to instanciate object from node: " + node, e);
+        }
+    }
+    
     /**
      * get All Child nodes under a parentNode and create the wrapped JCRObject.
      */

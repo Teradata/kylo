@@ -1,19 +1,21 @@
 package com.thinkbiganalytics.auth.db;
 
-import com.thinkbiganalytics.auth.jaas.JaasAuthConfig;
-import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
-import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.user.UserProvider;
+import javax.annotation.Nonnull;
+import javax.inject.Inject;
+import javax.security.auth.login.AppConfigurationEntry;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import javax.annotation.Nonnull;
-import javax.inject.Inject;
-import javax.security.auth.login.AppConfigurationEntry;
+import com.thinkbiganalytics.auth.jaas.JaasAuthConfig;
+import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
+import com.thinkbiganalytics.metadata.api.user.UserProvider;
 
 /**
  * Spring configuration for the Metadata Login Module.
@@ -23,13 +25,19 @@ import javax.security.auth.login.AppConfigurationEntry;
 public class KyloAuthConfig {
 
     @Inject
-    MetadataAccess metadataAccess;
+    private MetadataAccess metadataAccess;
 
     @Inject
-    PasswordEncoder passwordEncoder;
+    private PasswordEncoder passwordEncoder;
 
     @Inject
-    UserProvider userProvider;
+    private UserProvider userProvider;
+    
+    @Inject
+    private MetadataAccess metadata;
+    
+    @Value("${auth.kylo.password.required:false}")
+    private boolean authPassword;
 
     /**
      * Creates a new services login configuration using the Metadata Login Module.
@@ -47,6 +55,7 @@ public class KyloAuthConfig {
                     .option(KyloLoginModule.METADATA_ACCESS, metadataAccess)
                     .option(KyloLoginModule.PASSWORD_ENCODER, passwordEncoder)
                     .option(KyloLoginModule.USER_PROVIDER, userProvider)
+                    .option(KyloLoginModule.REQUIRE_PASSWORD, this.authPassword)
                     .add()
                 .build();
     }
@@ -67,7 +76,21 @@ public class KyloAuthConfig {
                     .option(KyloLoginModule.METADATA_ACCESS, metadataAccess)
                     .option(KyloLoginModule.PASSWORD_ENCODER, passwordEncoder)
                     .option(KyloLoginModule.USER_PROVIDER, userProvider)
+                    .option(KyloLoginModule.REQUIRE_PASSWORD, this.authPassword)
                     .add()
                 .build();
+    }
+    
+    @Bean
+    public PostMetadataConfigAction addDefaultUsersAction() {
+        return () -> {
+            metadata.commit(() -> {
+                this.userProvider.ensureGroup("admin");
+                this.userProvider.ensureGroup("user");
+                this.userProvider.ensureGroup("operations");
+                this.userProvider.ensureGroup("designer");
+                this.userProvider.ensureGroup("analyst");
+            }, MetadataAccess.SERVICE);
+        };
     }
 }

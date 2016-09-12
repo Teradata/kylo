@@ -551,8 +551,8 @@ public class JcrPropertyUtil {
             }
 
             if (node.hasProperty(name)) {
-                Set<Node> result = new HashSet<Node>((List<Node>) getProperty(node, name));
-                return (Set<T>) result;
+                Set<T> result = new HashSet<T>((Collection<T>) getProperty(node, name));
+                return result;
             } else {
                 return Collections.emptySet();
             }
