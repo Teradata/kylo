@@ -31,12 +31,38 @@ angular.module(MODULE_FEED_MGR).factory("UserService", function($http, RestUrlSe
 
     angular.extend(UserService.prototype, {
         /**
+         * Deletes the user with the specified system name.
+         *
+         * @param {string} userId the system name
+         * @returns {Promise} for when the user is deleted
+         */
+        deleteUser: function(userId) {
+            return $http({
+                method: "DELETE",
+                url: RestUrlService.SECURITY_USERS_URL + "/" + userId
+            });
+        },
+
+        /**
          * Gets metadata on all groups.
          *
-         * @returns {Array.<GroupPrincipal>} the groups
+         * @returns {Promise} with the list of groups
          */
         getGroups: function() {
             return $http.get(RestUrlService.SECURITY_GROUPS_URL)
+                    .then(function(response) {
+                        return response.data;
+                    });
+        },
+
+        /**
+         * Gets metadata for the specified user.
+         *
+         * @param {string} userId the system name
+         * @returns {UserPrincipal} the user
+         */
+        getUser: function(userId) {
+            return $http.get(RestUrlService.SECURITY_USERS_URL + "/" + userId)
                     .then(function(response) {
                         return response.data;
                     });
@@ -52,6 +78,22 @@ angular.module(MODULE_FEED_MGR).factory("UserService", function($http, RestUrlSe
                     .then(function(response) {
                         return response.data;
                     });
+        },
+
+        /**
+         * Saves the specified user.
+         *
+         * @param {UserPrincipal} user the user
+         */
+        saveUser: function(user) {
+            return $http({
+                data: angular.toJson(user),
+                headers: {"Content-Type": "application/json; charset=UTF-8"},
+                method: "POST",
+                url: RestUrlService.SECURITY_USERS_URL
+            }).then(function() {
+                return user;
+            });
         }
     });
 

@@ -346,6 +346,20 @@ app.config(function($stateProvider,$urlRouterProvider) {
             breadcrumbRoot: true,
             displayName: "Users"
         }
+    }).state("user-details", {
+        url: "/user-details/{userId}",
+        params: {
+            userId: null
+        },
+        views: {
+            "content": {
+                templateUrl: "js/user-details/user-details.html"
+            }
+        },
+        data: {
+            breadcrumbRoot: false,
+            displayName: "User Details"
+        }
     })
 });
 

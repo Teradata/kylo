@@ -85,6 +85,15 @@ angular.module(MODULE_FEED_MGR).service('StateService', function ($state) {
      * Navigates to the Users page.
      */
     this.navigateToUsers = function() {
-        $state.go('users');
+        $state.go("users");
+    };
+
+    /**
+     * Navigates to the User Details page.
+     *
+     * @param {string} [opt_userId] the system name of the user
+     */
+    this.navigateToUserDetails = function(opt_userId) {
+        $state.go("user-details", {userId: opt_userId});
     };
 });

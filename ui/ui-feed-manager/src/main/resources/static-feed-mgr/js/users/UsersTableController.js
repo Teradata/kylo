@@ -70,8 +70,8 @@
          * @type {*}
          */
         self.sortOptions = (function() {
-            var fields = {"Display Name": "name", "Email Address": "email", "State": "enabled", "Groups": "groups"};
-            var sortOptions = TableOptionsService.newSortOptions(PAGE_NAME, fields, "name", "asc");
+            var fields = {"Display Name": "displayName", "Email Address": "email", "State": "enabled", "Groups": "groups"};
+            var sortOptions = TableOptionsService.newSortOptions(PAGE_NAME, fields, "displayName", "asc");
             var currentOption = TableOptionsService.getCurrentSort(PAGE_NAME);
             if (currentOption) {
                 TableOptionsService.saveSortOption(PAGE_NAME, currentOption)
