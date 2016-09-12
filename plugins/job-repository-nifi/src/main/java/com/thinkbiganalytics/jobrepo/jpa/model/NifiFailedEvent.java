@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.jobrepo.jpa;
+package com.thinkbiganalytics.jobrepo.jpa.model;
 
 import com.thinkbiganalytics.jobrepo.model.FailedProvenanceEvent;
 
@@ -99,6 +99,31 @@ public class NifiFailedEvent implements FailedProvenanceEvent {
 
         public void setFlowFileId(String flowFileId) {
             this.flowFileId = flowFileId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (o == null || getClass() != o.getClass()) {
+                return false;
+            }
+
+            NiFiFailedEventPK that = (NiFiFailedEventPK) o;
+
+            if (eventId != null ? !eventId.equals(that.eventId) : that.eventId != null) {
+                return false;
+            }
+            return !(flowFileId != null ? !flowFileId.equals(that.flowFileId) : that.flowFileId != null);
+
+        }
+
+        @Override
+        public int hashCode() {
+            int result = eventId != null ? eventId.hashCode() : 0;
+            result = 31 * result + (flowFileId != null ? flowFileId.hashCode() : 0);
+            return result;
         }
     }
 

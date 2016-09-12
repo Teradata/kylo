@@ -5,6 +5,8 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiEventSummaryStats;
+import com.thinkbiganalytics.jobrepo.jpa.model.QNifiEventSummaryStats;
 import com.thinkbiganalytics.jobrepo.model.ProvenanceEventSummaryStats;
 import com.thinkbiganalytics.jobrepo.service.ProvenanceEventSummaryStatsProvider;
 

@@ -1,7 +1,6 @@
-package com.thinkbiganalytics.jobrepo.jpa;
+package com.thinkbiganalytics.jobrepo.jpa.model;
 
 import com.thinkbiganalytics.jobrepo.model.ProvenanceEventSummaryStats;
-import com.thinkbiganalytics.jobrepo.support.AggregationUtil;
 
 import org.hibernate.annotations.GenericGenerator;
 import org.hibernate.annotations.Type;
@@ -298,10 +297,6 @@ public class NifiEventSummaryStats implements ProvenanceEventSummaryStats {
 
     public void setResultSetCount(Long resultSetCount) {
         this.resultSetCount = resultSetCount;
-    }
-
-    public Double averageDuration() {
-        return AggregationUtil.avg(duration, this.totalCount);
     }
 
 

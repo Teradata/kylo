@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.jobrepo.jpa;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiFailedEvent;
 import com.thinkbiganalytics.jobrepo.model.FailedProvenanceEvent;
 import com.thinkbiganalytics.jobrepo.service.FailedProvenanceEventProvider;
 

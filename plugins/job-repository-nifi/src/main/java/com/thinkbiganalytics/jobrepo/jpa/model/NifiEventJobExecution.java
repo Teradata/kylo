@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.jobrepo.jpa;
+package com.thinkbiganalytics.jobrepo.jpa.model;
 
 import java.io.Serializable;
 
@@ -13,6 +13,10 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
 /**
+ *
+ * Maps the NiFi Provenance Event to the BATCH_JOB_EXECUTION (BatchJobExecution)
+ *
+ *
  * Created by sr186054 on 9/1/16.
  */
 @Entity
@@ -32,6 +36,7 @@ public class NifiEventJobExecution implements Serializable {
 
     @Column(name = "FLOW_FILE_UUID", insertable = false, updatable = false)
     private String flowFileId;
+
 
     public NifiEventJobExecution() {
 

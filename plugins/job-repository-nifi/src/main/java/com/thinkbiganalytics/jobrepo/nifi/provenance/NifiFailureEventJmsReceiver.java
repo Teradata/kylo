@@ -3,10 +3,9 @@ package com.thinkbiganalytics.jobrepo.nifi.provenance;
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
 import com.thinkbiganalytics.jobrepo.config.OperationalMetadataAccess;
 import com.thinkbiganalytics.jobrepo.jpa.NifiEventStatisticsProvider;
-import com.thinkbiganalytics.jobrepo.jpa.NifiFailedEvent;
 import com.thinkbiganalytics.jobrepo.jpa.NifiFailedProvenanceEventProvider;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiFailedEvent;
 import com.thinkbiganalytics.jobrepo.model.FailedProvenanceEvent;
-import com.thinkbiganalytics.jobrepo.nifi.flow.NifiFlowCache;
 import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
@@ -22,9 +21,6 @@ import javax.inject.Inject;
  * Created by sr186054 on 8/17/16.
  */
 public class NifiFailureEventJmsReceiver {
-
-    @Inject
-    NifiFlowCache nifiFlowCache;
 
 
     @Inject

@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.jobrepo.jpa;
 
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiEventSummaryStats;
+
 import org.joda.time.DateTime;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;

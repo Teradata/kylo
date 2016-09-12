@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.jobrepo.jpa;
+package com.thinkbiganalytics.jobrepo.jpa.model;
 
 import java.util.ArrayList;
 import java.util.List;

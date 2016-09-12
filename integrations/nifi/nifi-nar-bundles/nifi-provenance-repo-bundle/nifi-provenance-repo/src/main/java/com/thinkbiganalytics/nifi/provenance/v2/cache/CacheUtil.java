@@ -77,12 +77,19 @@ public class CacheUtil {
             modified.add(flowFile);
         }
 
+        //Track any related Parents that are root flow files and link the jobs together
+        //anything in this list should be linked together
+        Set<String> relatedRootFlowFiles = new HashSet<>();
 
         //Build the graph of parent/child flow files
         if (event.getParentUuids() != null && !event.getParentUuids().isEmpty()) {
+
             for (String parent : event.getParentUuids()) {
                 if (!flowFile.getId().equals(parent)) {
                     ActiveFlowFile parentFlowFile = flowFile.addParent(flowFileCache.getEntry(parent));
+                    if(parentFlowFile.isRootFlowFile()){
+                        relatedRootFlowFiles.add(parentFlowFile.getId());
+                    }
                     parentFlowFile.addChild(flowFile);
                     if (!flowFile.isRootFlowFile()) {
                         flowFile.getRootFlowFile().addRootFileActiveChild(flowFile.getId());
@@ -103,6 +110,10 @@ public class CacheUtil {
                 modified.add(childFlowFile);
             }
         }
+        //link the root files if they exist
+        //This events Root Flow file is related to these other root flow files
+        event.setRelatedRootFlowFiles(relatedRootFlowFiles);
+
         if (flowFile.getRootFlowFile() != null && StringUtils.isNotBlank(flowFile.getRootFlowFile().getFeedProcessGroupId())) {
             provenanceFeedLookup.ensureProcessorIsInCache(flowFile.getRootFlowFile().getFeedProcessGroupId(), event.getComponentId());
         }
