@@ -10,7 +10,6 @@ import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;
 import org.apache.nifi.provenance.StandardProvenanceEventRecord;
 import org.junit.Before;
-import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.MockitoAnnotations;
 import org.slf4j.Logger;
@@ -386,8 +385,7 @@ public class TestProvenanceFlow {
     }
 
 
-
-    @Test
+    // @Test
     public void testStream() {
         //A Stream is when there are 5 or more events spaced less than 1 sec apart coming in for a Processor for a Flow tied to a Feed
         TestProducer producer = new TestProducer(1L, 1000000, new StreamConfiguration.Builder().maxTimeBetweenEvents(3000L).numberOfEventsForStream(5).build());
@@ -404,7 +402,7 @@ public class TestProvenanceFlow {
 
     }
 
-    @Test
+    // @Test
     public void testBatch() {
         //A Stream is when there are 5 or more events spaced less than 1 sec apart coming in for a Processor for a Flow tied to a Feed
         TestProducer producer = new TestProducer(500L, 10,new StreamConfiguration.Builder().maxTimeBetweenEvents(1000L).numberOfEventsForStream(5).build());
