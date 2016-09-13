@@ -1,6 +1,7 @@
 #!/bin/bash
 #Note: edit /etc/default/activemq to change Java memory parameters
 
+ACTIVEMQ_VERSION=5.13.4
 offline=false
 working_dir=$2
 
@@ -19,21 +20,21 @@ cd /opt/activemq
 
 if [ $offline = true ]
 then
-    cp $working_dir/activemq/apache-activemq-5.13.3-bin.tar.gz .
+    cp $working_dir/activemq/apache-activemq-${ACTIVEMQ_VERSION}-bin.tar.gz .
 else
     echo "Download activemq and install"
-    curl -O http://ftp.wayne.edu/apache//activemq/5.13.3/apache-activemq-5.13.3-bin.tar.gz
+    curl -O http://ftp.wayne.edu/apache/activemq/${ACTIVEMQ_VERSION}/apache-activemq-${ACTIVEMQ_VERSION}-bin.zip
 fi
 
-if ! [ -f apache-activemq-5.13.3-bin.tar.gz ]
+if ! [ -f apache-activemq-${ACTIVEMQ_VERSION}-bin.zip ]
 then
     echo "Installation file not found.. exiting"
     exit 1
 fi
 
-tar -xvf apache-activemq-5.13.3-bin.tar.gz
-rm -f apache-activemq-5.13.3-bin.tar.gz
-ln -s apache-activemq-5.13.3 current
+unzip apache-activemq-${ACTIVEMQ_VERSION}-bin.zip
+rm -f apache-activemq-${ACTIVEMQ_VERSION}-bin.zip
+ln -s apache-activemq-${ACTIVEMQ_VERSION} current
 
 echo "Installing as a service"
 # http://activemq.apache.org/unix-shell-script.html
