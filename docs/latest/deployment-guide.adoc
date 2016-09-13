@@ -62,6 +62,18 @@ If you already have Java 8 installed in a different location you will have the o
 NOTE: When installing the RPM the applications are defaulted to use the /opt/java/current location. This default saves a step for developers so that they can uninstall and re-install
 the RPM without having to run any other scripts.
 
+==== Linux Users
+If you will be creating Linux users as part of the install the commands will be documented.
+If using an external user management system for adding users to a linux box you must have
+those users created before installing the Kylo stack. You will need a user/group called
+
+* activemq
+* elasticsearch
+* thinkbig
+* nifi
+
+Note: Those exact names are required (note the lowercase)
+
 == Installation
 There are 3 procedures you can follow to deploy the solution. In a test and production environment you will likely want to follow the manual installation guide as it has more
 detailed instructions on how to install each individual component. For local development and 1 node development boxes you can leverage the setup wizard procedure to quickly bootstrap
@@ -88,6 +100,28 @@ the resources to install a Cloudera cluster
 link:./deployment/cloudera-docker-sandbox.adoc[Cloudera EC2 Docker Sandbox Deployment Guide ]
 
 == Configuration
+
+=== Kerberos
+
+    If you are installing Kylo on a kerberos cluster you will need to configure the applications before certain features will work
+
+==== Optional: Configure Kerberos For Your Local HDP Sandbox
+
+    This guide will help you enabled kerberos for your local development sandbox for development and testing
+
+link:./security/kerberos/kerberos-installation-example-hdp-2.4.adoc[HDP 2.4 Sandbox Kerberos Setup Example]
+
+==== Step 1: Configure Kerberos for NiFi
+
+    Some additional configuration is required for allowing the NiFi components to work with a Kerberos cluster.
+
+link:./security/kerberos/nifi-configuration-kerboros-cluster.adoc[Configure NiFi for Kerberos]
+
+==== Step 2: Configure Kerberos for Kylo Applications
+
+    Additional configuration is required for allowing some features in the Kylo applications to work with a Kerberos cluster
+
+link:./security/kerberos/kylo-configuration-kerberos-cluster.adoc[Configure Kylo for Kerberos]
 
 === Configuration Files
 

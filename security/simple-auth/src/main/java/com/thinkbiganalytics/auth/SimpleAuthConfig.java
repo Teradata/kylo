@@ -6,9 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
-import com.thinkbiganalytics.auth.jaas.JaasAuthConfig;
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
+import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 /**
  * Generic Auth Service Configuration for installing a login module to authenticate using an AuthenticationService.

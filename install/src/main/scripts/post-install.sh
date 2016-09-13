@@ -38,8 +38,8 @@ cat << EOF > /etc/init.d/thinkbig-ui
 # description: thinkbig-ui
 # processname: thinkbig-ui
 RUN_AS_USER=thinkbig
-case "\$1" in
-start)
+
+start() {
     if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
       then
         echo Already running.
@@ -47,8 +47,9 @@ start)
         echo Starting thinkbig-ui ...
         su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-ui/bin/run-thinkbig-ui.sh"
     fi
-  ;;
-stop)
+}
+
+stop() {
     if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
       then
         echo Stopping thinkbig-ui ...
@@ -56,8 +57,9 @@ stop)
       else
         echo Already stopped.
     fi
-        ;;
-    status)
+}
+
+status() {
     if pgrep -f $pgrepMarkerThinkbigUi >/dev/null 2>&1
       then
           echo Running.  Here are the related processes:
@@ -65,7 +67,25 @@ stop)
       else
         echo Stopped.
     fi
-        ;;
+}
+
+case "\$1" in
+    start)
+        start
+    ;;
+    stop)
+        stop
+    ;;
+    status)
+        status
+    ;;
+    restart)
+       echo "Restarting thinkbig-ui"
+       stop
+       sleep 2
+       start
+       echo "thinkbig-ui started"
+    ;;
 esac
 exit 0
 EOF
@@ -113,8 +133,8 @@ cat << EOF > /etc/init.d/thinkbig-services
 # description: thinkbig-services
 # processname: thinkbig-services
 RUN_AS_USER=thinkbig
-case "\$1" in
-start)
+
+start() {
     if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
       then
         echo Already running.
@@ -122,8 +142,9 @@ start)
         echo Starting thinkbig-services ...
         su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-services/bin/run-thinkbig-services.sh"
     fi
-  ;;
-stop)
+}
+
+stop() {
     if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
       then
         echo Stopping thinkbig-services ...
@@ -131,8 +152,9 @@ stop)
       else
         echo Already stopped.
     fi
-        ;;
-    status)
+}
+
+status() {
     if pgrep -f $pgrepMarkerThinkbigServices >/dev/null 2>&1
       then
           echo Running.  Here are the related processes:
@@ -140,7 +162,25 @@ stop)
       else
         echo Stopped.
     fi
-        ;;
+}
+
+case "\$1" in
+    start)
+        start
+    ;;
+    stop)
+        stop
+    ;;
+    status)
+        status
+    ;;
+    restart)
+       echo "Restarting thinkbig-services"
+       stop
+       sleep 2
+       start
+       echo "thinkbig-services started"
+    ;;
 esac
 exit 0
 EOF
@@ -180,8 +220,8 @@ cat << EOF > /etc/init.d/thinkbig-spark-shell
 stdout_log="/var/log/thinkbig-spark-shell/thinkbig-spark-shell.log"
 stderr_log="/var/log/thinkbig-spark-shell/thinkbig-spark-shell.err"
 RUN_AS_USER=thinkbig
-case "\$1" in
-start)
+
+start() {
     if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
       then
         echo Already running.
@@ -189,8 +229,9 @@ start)
         echo Starting thinkbig-spark-shell ...
         su - \$RUN_AS_USER -c "$rpmInstallDir/thinkbig-spark-shell/bin/run-thinkbig-spark-shell.sh" >> "\$stdout_log" 2>> "\$stderr_log" &
     fi
-  ;;
-stop)
+}
+
+stop() {
     if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
       then
         echo Stopping thinkbig-spark-shell ...
@@ -198,16 +239,35 @@ stop)
       else
         echo Already stopped.
     fi
-        ;;
-    status)
+}
+
+status() {
     if pgrep -f /thinkbig-spark-shell/ >/dev/null 2>&1
       then
           echo Running.  Here are the related processes:
           pgrep -lf /thinkbig-spark-shell/
-      else
+      elsecd
         echo Stopped.
     fi
-        ;;
+}
+
+case "\$1" in
+    start)
+        start
+    ;;
+    stop)
+        stop
+    ;;
+    status)
+        status
+    ;;
+    restart)
+       echo "Restarting thinkbig-spark-shell"
+       stop
+       sleep 2
+       start
+       echo "thinkbig-spark-shell started"
+    ;;
 esac
 exit 0
 EOF

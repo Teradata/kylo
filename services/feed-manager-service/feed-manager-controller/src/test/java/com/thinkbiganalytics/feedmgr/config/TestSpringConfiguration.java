@@ -1,5 +1,15 @@
 package com.thinkbiganalytics.feedmgr.config;
 
+import java.security.Principal;
+
+import javax.jcr.Credentials;
+import javax.jcr.Repository;
+
+import org.mockito.Mockito;
+import org.modeshape.jcr.api.txn.TransactionManagerLookup;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
@@ -9,8 +19,10 @@ import com.thinkbiganalytics.feedmgr.service.feed.InMemoryFeedManagerFeedService
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.InMemoryFeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
-import com.thinkbiganalytics.metadata.api.Command;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAction;
+import com.thinkbiganalytics.metadata.api.MetadataCommand;
+import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
@@ -24,16 +36,6 @@ import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.security.AccessController;
-
-import org.mockito.Mockito;
-import org.modeshape.jcr.api.txn.TransactionManagerLookup;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import java.security.Principal;
-
-import javax.jcr.Credentials;
-import javax.jcr.Repository;
 
 /**
  * Created by sr186054 on 7/21/16.
@@ -98,23 +100,39 @@ public class TestSpringConfiguration {
         // Transaction behavior not enforced in memory-only mode;
         return new JcrMetadataAccess() {
             @Override
-            public <R> R commit(Command<R> cmd, Principal... principals) {
-                return cmd.execute();
+            public <R> R commit(MetadataCommand<R> cmd, Principal... principals) {
+                try {
+                    return cmd.execute();
+                } catch (Exception e) {
+                    throw new MetadataExecutionException(e);
+                }
             }
 
             @Override
-            public <R> R read(Command<R> cmd, Principal... principals) {
-                return cmd.execute();
+            public <R> R read(MetadataCommand<R> cmd, Principal... principals) {
+                try {
+                    return cmd.execute();
+                } catch (Exception e) {
+                    throw new MetadataExecutionException(e);
+                }
             }
 
             @Override
-            public <R> R commit(Credentials creds, Command<R> cmd) {
-                return cmd.execute();
+            public <R> R commit(Credentials creds, MetadataCommand<R> cmd) {
+                try {
+                    return cmd.execute();
+                } catch (Exception e) {
+                    throw new MetadataExecutionException(e);
+                }
             }
 
             @Override
-            public <R> R read(Credentials creds, Command<R> cmd) {
-                return cmd.execute();
+            public <R> R read(Credentials creds, MetadataCommand<R> cmd) {
+                try {
+                    return cmd.execute();
+                } catch (Exception e) {
+                    throw new MetadataExecutionException(e);
+                }
             }
         };
     }
@@ -125,13 +143,39 @@ public class TestSpringConfiguration {
         // Transaction behavior not enforced in memory-only mode;
         return new MetadataAccess() {
             @Override
-            public <R> R commit(Command<R> cmd, Principal... principals) {
-                return cmd.execute();
+            public <R> R commit(MetadataCommand<R> cmd, Principal... principals) {
+                try {
+                    return cmd.execute();
+                } catch (Exception e) {
+                    throw new MetadataExecutionException(e);
+                }
             }
 
             @Override
-            public <R> R read(Command<R> cmd, Principal... principals) {
-                return cmd.execute();
+            public <R> R read(MetadataCommand<R> cmd, Principal... principals) {
+                try {
+                    return cmd.execute();
+                } catch (Exception e) {
+                    throw new MetadataExecutionException(e);
+                }
+            }
+
+            @Override
+            public void commit(MetadataAction action, Principal... principals) {
+                try {
+                    action.execute();
+                } catch (Exception e) {
+                    throw new MetadataExecutionException(e);
+                }
+            }
+
+            @Override
+            public void read(MetadataAction cmd, Principal... principals) {
+                try {
+                    cmd.execute();
+                } catch (Exception e) {
+                    throw new MetadataExecutionException(e);
+                }
             }
         };
     }

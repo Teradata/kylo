@@ -1,22 +1,5 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
-import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
-import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
-import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
-import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
-import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
-import com.thinkbiganalytics.feedmgr.service.MetadataService;
-import com.thinkbiganalytics.json.ObjectMapperSerializer;
-import com.thinkbiganalytics.metadata.api.Command;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.security.AccessController;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -26,6 +9,22 @@ import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
 import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.feedmgr.service.ExportImportTemplateService;
+import com.thinkbiganalytics.feedmgr.service.MetadataService;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.security.AccessController;
 
 /**
  * Created by sr186054 on 5/6/16.
@@ -232,26 +231,22 @@ public class ExportImportFeedService {
             ImportFeed feed = readFeedJson(fileName, content);
             feed.setTemplate(template);
             //now that we have the Feed object we need to create the instance of the feed
-            NifiFeed nifiFeed = metadataAccess.commit(new Command<NifiFeed>() {
-                @Override
-                public NifiFeed execute() {
-                    FeedMetadata metadata = ObjectMapperSerializer.deserialize(feed.getFeedJson(), FeedMetadata.class);
-                    //reassign the templateId to the newly registered template id
-                    metadata.setTemplateId(template.getTemplateId());
-                    if (metadata.getRegisteredTemplate() != null) {
-                        metadata.getRegisteredTemplate().setNifiTemplateId(template.getNifiTemplateId());
-                        metadata.getRegisteredTemplate().setId(template.getTemplateId());
-                    }
-                    //get/create category
-                    FeedCategory category = metadataService.getCategoryBySystemName(metadata.getCategory().getSystemName());
-                    if (category == null) {
-                        metadataService.saveCategory(metadata.getCategory());
-                    } else {
-                        metadata.setCategory(category);
-                    }
-                    NifiFeed feed = metadataService.createFeed(metadata);
-                    return feed;
+            NifiFeed nifiFeed = metadataAccess.commit(() -> {
+                FeedMetadata metadata = ObjectMapperSerializer.deserialize(feed.getFeedJson(), FeedMetadata.class);
+                //reassign the templateId to the newly registered template id
+                metadata.setTemplateId(template.getTemplateId());
+                if (metadata.getRegisteredTemplate() != null) {
+                    metadata.getRegisteredTemplate().setNifiTemplateId(template.getNifiTemplateId());
+                    metadata.getRegisteredTemplate().setId(template.getTemplateId());
                 }
+                //get/create category
+                FeedCategory category = metadataService.getCategoryBySystemName(metadata.getCategory().getSystemName());
+                if (category == null) {
+                    metadataService.saveCategory(metadata.getCategory());
+                } else {
+                    metadata.setCategory(category);
+                }
+                return metadataService.createFeed(metadata);
             });
             if (nifiFeed != null) {
                 feed.setFeedName(nifiFeed.getFeedMetadata().getCategoryAndFeedName());

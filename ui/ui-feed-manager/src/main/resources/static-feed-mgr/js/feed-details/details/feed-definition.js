@@ -59,6 +59,7 @@
             copy.systemFeedName = self.editModel.systemFeedName;
             copy.description = self.editModel.description;
             copy.templateId = self.editModel.templateId;
+            copy.userProperties = null;
 
             FeedService.saveFeedModel(copy).then(function (response) {
                 FeedService.hideFeedSavingDialog();

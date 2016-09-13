@@ -19,5 +19,6 @@
         <module>job-repository</module>
         <module>service-monitor</module>
         <module>classname-change</module>
+        <module>kerberos</module>
     </modules>
 </project>

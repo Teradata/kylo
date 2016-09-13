@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.spark.service;
 
 import com.google.common.collect.ImmutableList;
+import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.spark.metadata.TransformRequest;
 import com.thinkbiganalytics.spark.metadata.TransformResponse;
 import com.thinkbiganalytics.spark.repl.ScriptEngine;
@@ -12,6 +13,8 @@ import org.apache.spark.sql.Row;
 import org.apache.spark.sql.RowFactory;
 import org.apache.spark.sql.SQLContext;
 import org.junit.Assert;
+import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
@@ -23,6 +26,14 @@ import java.util.concurrent.Callable;
 import scala.tools.nsc.interpreter.NamedParam;
 
 public class TransformServiceTest {
+
+    private KerberosTicketConfiguration kerberosTicketConfiguration;
+
+    @Before
+    public void setup() {
+        kerberosTicketConfiguration = new KerberosTicketConfiguration();
+        kerberosTicketConfiguration.setKerberosEnabled(false);
+    }
 
     /** Verify executing a transformation request. */
     @Test
@@ -51,7 +62,7 @@ public class TransformServiceTest {
         TransformRequest request = new TransformRequest();
         request.setScript("sqlContext.range(1,10)");
 
-        TransformService service = new TransformService(engine);
+        TransformService service = new TransformService(engine, kerberosTicketConfiguration);
         service.startAsync();
         service.awaitRunning();
 
@@ -98,7 +109,7 @@ public class TransformServiceTest {
         Mockito.when(engine.getSQLContext()).thenReturn(context);
 
         // Verify start-up
-        TransformService service = new TransformService(engine);
+        TransformService service = new TransformService(engine, kerberosTicketConfiguration);
         service.startUp();
 
         Mockito.verify(context).sql("CREATE DATABASE IF NOT EXISTS `spark_shell_temp`");
@@ -122,7 +133,7 @@ public class TransformServiceTest {
         // Test converting request to script
         String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script1.scala"), "UTF-8");
 
-        TransformService service = new TransformService(engine);
+        TransformService service = new TransformService(engine, kerberosTicketConfiguration);
         Assert.assertEquals(expected, service.toScript(request));
     }
 
@@ -141,7 +152,7 @@ public class TransformServiceTest {
         // Test converting request to script
         String expected = IOUtils.toString(getClass().getResourceAsStream("transform-service-script2.scala"), "UTF-8");
 
-        TransformService service = new TransformService(Mockito.mock(ScriptEngine.class));
+        TransformService service = new TransformService(Mockito.mock(ScriptEngine.class), kerberosTicketConfiguration);
         Assert.assertEquals(expected, service.toScript(request));
     }
 }

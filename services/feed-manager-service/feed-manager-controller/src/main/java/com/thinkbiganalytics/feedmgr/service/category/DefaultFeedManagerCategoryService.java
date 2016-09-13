@@ -5,7 +5,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
-import com.thinkbiganalytics.metadata.api.Command;
+import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
@@ -39,7 +39,7 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
 
     @Override
     public Collection<FeedCategory> getCategories() {
-        return metadataAccess.read((Command<Collection<FeedCategory>>) () -> {
+        return metadataAccess.read((MetadataCommand<Collection<FeedCategory>>) () -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_CATEGORIES);
 
             List<FeedManagerCategory> domainCategories = categoryProvider.findAll();

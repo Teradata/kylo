@@ -5,7 +5,6 @@ package com.thinkbiganalytics.metadata.modeshape;
 
 import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,6 +22,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplatePr
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
+import com.thinkbiganalytics.metadata.api.user.UserProvider;
 import com.thinkbiganalytics.metadata.core.op.InMemoryDataOperationsProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategoryProvider;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrFeedManagerCategoryProvider;
@@ -42,6 +42,7 @@ import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAssessmentPro
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAssessor;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
+import com.thinkbiganalytics.metadata.modeshape.user.JcrUserProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
@@ -53,6 +54,13 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
  */
 @Configuration
 public class MetadataJcrConfig {
+    
+    @Bean
+    public UserProvider userProvider() {
+        // TODO consider moving this to its own configuration, and perhaps the whole user management 
+        // to a separate module than the metadata one.
+        return new JcrUserProvider();
+    }
     
     @Bean
     public ExtensibleTypeProvider extensibleTypeProvider() {
@@ -180,6 +188,9 @@ public class MetadataJcrConfig {
         return new MetadataJcrConfigurator(postConfigActions);
     }
 
+    /**
+     * Guarantees that at least one action exists, otherwise the list injection above will fail.
+     */
     @Bean
     protected PostMetadataConfigAction dummyAction() {
         return new PostMetadataConfigAction() {

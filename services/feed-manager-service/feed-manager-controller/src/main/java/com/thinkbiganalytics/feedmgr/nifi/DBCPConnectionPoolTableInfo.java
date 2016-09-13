@@ -2,6 +2,7 @@ package com.thinkbiganalytics.feedmgr.nifi;
 
 import com.thinkbiganalytics.db.PoolingDataSourceService;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.schema.DBSchemaParser;
 
@@ -10,11 +11,13 @@ import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Map;
 
+import javax.inject.Inject;
 import javax.sql.DataSource;
 
 /**
@@ -30,6 +33,10 @@ public class DBCPConnectionPoolTableInfo {
 
     @Autowired
     NifiRestClient nifiRestClient;
+
+    @Inject
+    @Qualifier("kerberosHiveConfiguration")
+    private KerberosTicketConfiguration kerberosHiveConfiguration;
 
     public List<String> getTableNamesForControllerService(String serviceId, String serviceName, String schema) {
      ControllerServiceDTO controllerService = getControllerService(serviceId,serviceName);
@@ -52,7 +59,7 @@ public class DBCPConnectionPoolTableInfo {
              }
              log.info("Search For Tables against Controller Service: {} ({}) with uri of {}.  ",controllerService.getName(),controllerService.getId(),uri);
              DataSource dataSource = PoolingDataSourceService.getDataSource(uri, user, password);
-             DBSchemaParser schemaParser = new DBSchemaParser(dataSource);
+             DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
              return schemaParser.listTables(schema);
          }
      }
@@ -84,7 +91,7 @@ return controllerService;
                 String password = properties.get("Password");
                 log.info("describing Table {}.{} against Controller Service: {} ({}) with uri of {} ",schema,tableName,controllerService.getName(),controllerService.getId(),uri);
                 DataSource dataSource = PoolingDataSourceService.getDataSource(uri, user, password);
-                DBSchemaParser schemaParser = new DBSchemaParser(dataSource);
+                DBSchemaParser schemaParser = new DBSchemaParser(dataSource, kerberosHiveConfiguration);
                 return schemaParser.describeTable(schema, tableName);
             }
         }else {

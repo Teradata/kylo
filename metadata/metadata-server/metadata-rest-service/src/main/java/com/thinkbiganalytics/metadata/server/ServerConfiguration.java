@@ -11,8 +11,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 
-import com.thinkbiganalytics.metadata.api.Command;
+import com.thinkbiganalytics.metadata.api.MetadataCommand;
+import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
@@ -71,13 +73,39 @@ public class ServerConfiguration {
         // Transaction behavior not enforced in memory-only mode;
         return new MetadataAccess() {
             @Override
-            public <R> R commit(Command<R> cmd, Principal... principals) {
-                return cmd.execute();
+            public <R> R commit(MetadataCommand<R> cmd, Principal... principals) {
+                try {
+                    return cmd.execute();
+                } catch (Exception e) {
+                    throw new MetadataExecutionException(e);
+                }
             }
 
             @Override
-            public <R> R read(Command<R> cmd, Principal... principals) {
-                return cmd.execute();
+            public <R> R read(MetadataCommand<R> cmd, Principal... principals) {
+                try {
+                    return cmd.execute();
+                } catch (Exception e) {
+                    throw new MetadataExecutionException(e);
+                }
+            }
+
+            @Override
+            public void commit(MetadataAction action, Principal... principals) {
+                try {
+                    action.execute();
+                } catch (Exception e) {
+                    throw new MetadataExecutionException(e);
+                }
+            }
+
+            @Override
+            public void read(MetadataAction cmd, Principal... principals) {
+                try {
+                    cmd.execute();
+                } catch (Exception e) {
+                    throw new MetadataExecutionException(e);
+                }
             }
         };
     }

@@ -6,10 +6,16 @@ package com.thinkbiganalytics.schema;
 
 import com.thinkbiganalytics.db.model.schema.Field;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
+import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+import com.thinkbiganalytics.kerberos.KerberosTicketGenerator;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,11 +28,14 @@ import java.util.Vector;
 import javax.sql.DataSource;
 
 public class DBSchemaParser {
+    private static final Logger log = LoggerFactory.getLogger(DBSchemaParser.class);
 
     private DataSource ds;
+    private KerberosTicketConfiguration kerberosTicketConfiguration;
 
-    public DBSchemaParser(DataSource ds) {
+    public DBSchemaParser(DataSource ds, KerberosTicketConfiguration kerberosTicketConfiguration) {
         this.ds = ds;
+        this.kerberosTicketConfiguration = kerberosTicketConfiguration;
     }
 
     public List<String> listSchemas() {
@@ -41,6 +50,29 @@ public class DBSchemaParser {
         } catch (SQLException e) {
             throw new RuntimeException("Unable to list schemas", e);
         }
+    }
+
+    private Connection getConnectionWithKerberos() {
+        log.info("Initializing the Kerberos Ticket for hive connection");
+        Connection conn = null;
+        UserGroupInformation userGroupInformation;
+        try {
+            KerberosTicketGenerator t = new KerberosTicketGenerator();
+            userGroupInformation = t.generateKerberosTicket(kerberosTicketConfiguration);
+            conn = userGroupInformation.doAs(new PrivilegedExceptionAction<Connection>() {
+                @Override
+                public Connection run() throws Exception {
+
+                    return ds.getConnection();
+                }
+            });
+            log.info("Successfully got a datasource connection !!!!!");
+        } catch (Exception e) {
+            log.error("Error with kerberos authentication jeremy");
+
+            throw new RuntimeException(e);
+        }
+        return conn;
     }
 
     public List<String> listCatalogs() {
@@ -114,9 +146,17 @@ public class DBSchemaParser {
         Validate.isTrue(!StringUtils.isEmpty(table), "Table expected");
 
         TableSchema tableSchema = null;
-        try (Connection conn = ds.getConnection()) {
+        Connection conn = null;
+        ResultSet result = null;
+        try {
+            if(kerberosTicketConfiguration.isKerberosEnabled()) {
+                conn = getConnectionWithKerberos();
+            }
+            else {
+                conn = ds.getConnection();
+            }
 
-            ResultSet result = getTables(conn, schema, table);
+            result = getTables(conn, schema, table);
             while (result.next()) {
                 String tableName = result.getString(3);
                 if (table.equalsIgnoreCase(tableName)) {
@@ -132,6 +172,18 @@ public class DBSchemaParser {
             return null;
         } catch (SQLException e) {
             throw new RuntimeException("Unable to describe table [" + table + "]", e);
+        }
+        finally {
+            if(conn != null) {
+                try {
+                    conn.close();
+                } catch(Throwable t) {}
+            }
+            if(result != null) {
+                try {
+                    result.close();
+                } catch(Throwable t) {}
+            }
         }
     }
 

@@ -80,6 +80,11 @@
             <artifactId>thinkbig-security-auth-file</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-security-auth-kylo</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -171,6 +176,13 @@
                     <groupId>org.mortbay.jetty</groupId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <!-- Kerberos Ticket Renewer -->
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-kerberos-core</artifactId>
+            <version>0.4.0-SNAPSHOT</version>
         </dependency>
 
         <!-- Swagger -->

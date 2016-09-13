@@ -156,6 +156,14 @@ public class MetadataJcrConfigurator {
             session.getRootNode().addNode("metadata", "tba:metadataFolder");
         }
         
+        if (! session.getRootNode().hasNode("users")) {
+            session.getRootNode().addNode("users", "tba:usersFolder");
+        }
+        
+        if (! session.getRootNode().hasNode("groups")) {
+            session.getRootNode().addNode("groups", "tba:groupsFolder");
+        }
+        
         // TODO Temporary to cleanup schemas which had the category folder auto-created.
         if (session.getRootNode().hasNode("metadata/feeds/category")) {
             session.getRootNode().getNode("metadata/feeds/category").remove();

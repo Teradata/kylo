@@ -1,6 +1,6 @@
 {
     "name" : "metadata-repository",
-    "node-types" : ["metadata-schema.cnd"],
+    "node-types" : ["metadata-schema.cnd", "users-schema.cnd"],
     "workspaces" : {
         "predefined" : ["metadata"],
         "default" : "default",
@@ -14,19 +14,18 @@
         "providers" : [
             {
                 "name" : "Test Provider",
-                "classname" : "com.thinkbiganalytics.metadata.modeshape.TestAuthenticationProvider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.TestAuthenticationProvider"
             },
             {
                 "name" : "Override Provider",
-                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.OverrideAuthenticationProvider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.OverrideAuthenticationProvider"
             },
             {
                 "name" : "DB Admin Provider",
-                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.AdminAuthenticationProvider",
+                "classname" : "com.thinkbiganalytics.metadata.modeshape.security.AdminAuthenticationProvider"
             }
         ]
     },
-    "node-types" : ["metadata-schema.cnd"],
     "storage" : {
         "persistence" : {
             "type" : "db",

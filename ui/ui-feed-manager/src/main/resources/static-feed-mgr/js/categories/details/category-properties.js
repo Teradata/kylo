@@ -10,6 +10,16 @@
         var self = this;
 
         /**
+         * Indicates if the edit icon is visible.
+         * @type {boolean} {@code true} if the edit icon is visible, or {@code false} if hidden
+         */
+        self.allowEdit = false;
+        $scope.$watch(
+                function() { return CategoriesService.model.id; },
+                function(newValue) { self.allowEdit = angular.isString(newValue); }
+        );
+
+        /**
          * Category data used in "edit" mode.
          * @type {CategoryModel}
          */
@@ -19,7 +29,7 @@
          * Indicates if the view is in "edit" mode.
          * @type {boolean} {@code true} if in "edit" mode or {@code false} if in "normal" mode
          */
-        self.isEditable = !angular.isString(CategoriesService.model.id);
+        self.isEditable = false;
 
         /**
          * Indicates if the properties are valid and can be saved.
@@ -53,7 +63,7 @@
                 CategoriesService.reload();
                 $mdToast.show(
                     $mdToast.simple()
-                        .textContent('Saved the Category')
+                        .textContent("Saved the Category")
                         .hideDelay(3000)
                 );
             });
@@ -71,10 +81,10 @@
             controllerAs: 'vm',
             restrict: "E",
             scope: {},
-            templateUrl: 'js/categories/details/category-properties.html'
+            templateUrl: "js/categories/details/category-properties.html"
         };
     }
 
-    angular.module(MODULE_FEED_MGR).controller('CategoryPropertiesController', CategoryPropertiesController);
-    angular.module(MODULE_FEED_MGR).directive('thinkbigCategoryProperties', thinkbigCategoryProperties);
+    angular.module(MODULE_FEED_MGR).controller("CategoryPropertiesController", CategoryPropertiesController);
+    angular.module(MODULE_FEED_MGR).directive("thinkbigCategoryProperties", thinkbigCategoryProperties);
 })();

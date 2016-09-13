@@ -12,7 +12,8 @@ import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.api.AlertResponder;
 import com.thinkbiganalytics.alerts.api.AlertResponse;
 import com.thinkbiganalytics.alerts.sla.AssessmentAlerts;
-import com.thinkbiganalytics.metadata.api.Command;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.sla.alerts.ServiceLevelAgreementActionUtil;
@@ -60,41 +61,35 @@ public class JcrServiceLevelAgreementActionAlertResponderFactory implements Aler
     }
 
     private void handleViolation(Alert alert) {
-        metadataAccess.read(new AdminCredentials(),new Command<Object>() {
-            @Override
-            public Object execute() {
-                ServiceLevelAssessment.ID assessmentId = alert.getContent();
-                ServiceLevelAssessment assessment = assessmentProvider.findServiceLevelAssessment(assessmentId);
-                ServiceLevelAgreement agreement = assessment.getAgreement();
-                if (agreement.getSlaChecks() != null) {
-                    for (ServiceLevelAgreementCheck check : agreement.getSlaChecks()) {
-                        for (ServiceLevelAgreementActionConfiguration configuration : ((JcrServiceLevelAgreementCheck)check).getActionConfigurations(true)) {
-                            List<Class<? extends ServiceLevelAgreementAction>> responders = configuration.getActionClasses();
-                            if (responders != null) {
-                                //first check to see if there is a Spring Bean configured for this class type... if so call that
-                                for (Class<? extends ServiceLevelAgreementAction> responderClass : responders) {
-                                    ServiceLevelAgreementAction action = ServiceLevelAgreementActionUtil.instantiate(responderClass);
-                                    if (action != null) {
-                                        //reassign the content of the alert to the ServiceLevelAssessment
-                                        //validate the action is ok
-                                        ServiceLevelAgreementActionValidation validation = ServiceLevelAgreementActionUtil.validateConfiguration(action);
-                                        if (validation.isValid()) {
-                                            action.respond(configuration, assessment, alert);
-                                        } else {
-                                            log.error("Unable to invoke SLA ImmutableAction {} while assessing {} due to Configuration error: {}.  Please fix.", action.getClass(), agreement.getName(),
-                                                      validation.getValidationMessage());
-                                        }
+        metadataAccess.read(() -> {
+            ServiceLevelAssessment.ID assessmentId = alert.getContent();
+            ServiceLevelAssessment assessment = assessmentProvider.findServiceLevelAssessment(assessmentId);
+            ServiceLevelAgreement agreement = assessment.getAgreement();
+            if (agreement.getSlaChecks() != null) {
+                for (ServiceLevelAgreementCheck check : agreement.getSlaChecks()) {
+                    for (ServiceLevelAgreementActionConfiguration configuration : ((JcrServiceLevelAgreementCheck)check).getActionConfigurations(true)) {
+                        List<Class<? extends ServiceLevelAgreementAction>> responders = configuration.getActionClasses();
+                        if (responders != null) {
+                            //first check to see if there is a Spring Bean configured for this class type... if so call that
+                            for (Class<? extends ServiceLevelAgreementAction> responderClass : responders) {
+                                ServiceLevelAgreementAction action = ServiceLevelAgreementActionUtil.instantiate(responderClass);
+                                if (action != null) {
+                                    //reassign the content of the alert to the ServiceLevelAssessment
+                                    //validate the action is ok
+                                    ServiceLevelAgreementActionValidation validation = ServiceLevelAgreementActionUtil.validateConfiguration(action);
+                                    if (validation.isValid()) {
+                                        action.respond(configuration, assessment, alert);
+                                    } else {
+                                        log.error("Unable to invoke SLA ImmutableAction {} while assessing {} due to Configuration error: {}.  Please fix.", action.getClass(), agreement.getName(),
+                                                  validation.getValidationMessage());
                                     }
                                 }
                             }
                         }
                     }
                 }
-                return null;
             }
-
-
-        });
+        }, MetadataAccess.SERVICE);
     }
 
 

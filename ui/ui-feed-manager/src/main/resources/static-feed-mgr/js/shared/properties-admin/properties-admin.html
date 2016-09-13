@@ -1,0 +1,21 @@
+<md-list layout-fill class="list-item-table list-condensed">
+    <md-list-item>
+        <div layout="row" layout-fill>
+            <div flex="50" class="md-list-item-text hint">Name</div>
+            <div flex="40" class="md-list-item-text hint">System Name</div>
+            <div flex="10" class="md-list-item-text hint">Required</div>
+        </div>
+    </md-list-item>
+    <md-list-item ng-repeat="field in fieldList">
+        <div layout="row" layout-fill>
+            <div layout="column" flex="50" class="md-list-item-text">
+                <span>{{field.displayName}}</span>
+                <span class="hint">{{field.description}}</span>
+            </div>
+            <div flex="40" class="md-list-item-text ">{{field.systemName}}</div>
+            <div flex="10" class="md-list-item-text ">
+                <ng-md-icon ng-if="field.required" icon="check"></ng-md-icon>
+            </div>
+        </div>
+    </md-list-item>
+</md-list>

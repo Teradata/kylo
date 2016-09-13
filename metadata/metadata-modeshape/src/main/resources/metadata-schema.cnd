@@ -12,7 +12,7 @@
  *             template
  *          "sla"
  *              sla*
-                slaAssessment*
+ *              slaAssessment*
  *          "extensions"
  *              "types"
  *                  typeDescriptor
@@ -82,6 +82,7 @@
 [tba:securityFolder] > nt:folder
     + prototypes (tba:prototypesFolder) = tba:prototypesFolder autocreated mandatory
     + services (tba:allowedActions) = tba:allowedActions autocreated mandatory
+    + users (tba:usersFolder) = tba:usersFolder autocreated mandatory
 
 [tba:prototypesFolder] > nt:folder
     + services (tba:allowedActions) = tba:allowedActions autocreated mandatory
@@ -96,9 +97,10 @@
     + * (tba:allowableAction)
 
 [tba:allowableAction] > nt:hierarchyNode, mix:title
-    + * (tba:allowableAction) 
+    + * (tba:allowableAction)
 
-
+[tba:usersFolder] > nt:folder
+    + * (tba:user)
 
 /* -=-=-=-=-=--=-=-  Predefined types  -=-=-=-=-=-=-=-=- */
 
@@ -236,6 +238,3 @@
     - tba:message (STRING) 
     - tba:result (STRING) mandatory
     + tba:resource (nt:resource) 
-
-[tba:user] > tba:extensibleEntity
-    - tba:enabled (BOOLEAN)

@@ -1,30 +1,5 @@
 package com.thinkbiganalytics.feedmgr.service;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
-import com.thinkbiganalytics.feedmgr.nifi.NifiControllerServiceProperties;
-import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
-import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
-import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
-import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
-import com.thinkbiganalytics.json.ObjectMapperSerializer;
-import com.thinkbiganalytics.metadata.api.Command;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessorDTO;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.xml.sax.SAXException;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -39,6 +14,30 @@ import java.util.zip.ZipOutputStream;
 import javax.inject.Inject;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.xml.sax.SAXException;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.feedmgr.nifi.NifiControllerServiceProperties;
+import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
+import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
+import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.NifiProcessorDTO;
 
 /**
  * Created by sr186054 on 5/6/16.
@@ -494,25 +493,22 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
 
     //@Transactional(transactionManager = "metadataTransactionManager")
     public ImportTemplate importTemplate(final String fileName, final InputStream inputStream, ImportOptions importOptions) {
-        return metadataAccess.commit(new Command<ImportTemplate>() {
-            @Override
-            public ImportTemplate execute() {
-                ImportTemplate template = null;
-                if (!isValidFileImport(fileName)) {
-                    throw new UnsupportedOperationException("Unable to import " + fileName + ".  The file must be a zip file or a Nifi Template xml file");
-                }
-
-                try {
-                    if (fileName.endsWith(".zip")) {
-                        template = importZip(fileName, inputStream, importOptions); //dont allow exported reusable flows to become registered templates
-                    } else if (fileName.endsWith(".xml")) {
-                        template = importNifiTemplate(fileName, inputStream, importOptions.isOverwrite(),importOptions.isCreateReusableFlow());
-                    }
-                } catch (IOException e) {
-                    throw new UnsupportedOperationException("Error importing template  " + fileName + ".  " + e.getMessage());
-                }
-                return template;
+        return metadataAccess.commit(() -> {
+            ImportTemplate template = null;
+            if (!isValidFileImport(fileName)) {
+                throw new UnsupportedOperationException("Unable to import " + fileName + ".  The file must be a zip file or a Nifi Template xml file");
             }
+
+            try {
+                if (fileName.endsWith(".zip")) {
+                    template = importZip(fileName, inputStream, importOptions); //dont allow exported reusable flows to become registered templates
+                } else if (fileName.endsWith(".xml")) {
+                    template = importNifiTemplate(fileName, inputStream, importOptions.isOverwrite(),importOptions.isCreateReusableFlow());
+                }
+            } catch (IOException e) {
+                throw new UnsupportedOperationException("Error importing template  " + fileName + ".  " + e.getMessage());
+            }
+            return template;
         });
     }
 

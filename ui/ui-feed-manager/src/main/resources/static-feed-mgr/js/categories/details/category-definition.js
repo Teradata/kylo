@@ -89,6 +89,7 @@
             model.description = self.editModel.description;
             model.icon = self.editModel.icon;
             model.iconColor = self.editModel.iconColor;
+            model.userProperties = null;
 
             CategoriesService.save(model).then(function(response) {
                 CategoriesService.reload();

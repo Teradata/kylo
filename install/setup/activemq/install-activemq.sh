@@ -14,8 +14,8 @@ then
     fi
 fi
 
-echo "Create activemq user and create /opt/activemq directory"
-useradd -m activemq -d /opt/activemq
+echo "Create the /opt/activemq directory"
+mkdir /opt/activemq
 cd /opt/activemq
 
 if [ $offline = true ]
@@ -39,7 +39,7 @@ ln -s apache-activemq-${ACTIVEMQ_VERSION} current
 echo "Installing as a service"
 # http://activemq.apache.org/unix-shell-script.html
 
-chown -R activemq:users /opt/activemq
+chown -R activemq:activemq /opt/activemq
 cp /opt/activemq/current/bin/env /etc/default/activemq
 sed -i '~s/^ACTIVEMQ_USER=""/ACTIVEMQ_USER="activemq"/' /etc/default/activemq
 chmod 644 /etc/default/activemq

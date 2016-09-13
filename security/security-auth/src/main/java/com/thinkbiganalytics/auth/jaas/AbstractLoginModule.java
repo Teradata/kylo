@@ -185,4 +185,19 @@ public abstract class AbstractLoginModule implements LoginModule {
             throw new LoginException("Login failure attempting to retrieve required login information: " + e.getMessage());
         }
     }
+    
+    protected void failLogin(String message) throws LoginException {
+        failLogin(message, null);
+    }
+    
+    protected void failLogin(String message, Throwable throwable) throws LoginException {
+        if (throwable != null) {
+            log.error("Login failure: " + message, throwable);
+            throw new LoginException("Login failure: " + message + " - " + throwable.getMessage());
+        } else {
+            log.error("Login failure: " + message);
+            throw new LoginException("Login failure: " + message);
+        }
+        
+    }
 }
