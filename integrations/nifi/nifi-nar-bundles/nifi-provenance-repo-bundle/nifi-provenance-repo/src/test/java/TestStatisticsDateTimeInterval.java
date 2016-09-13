@@ -2,7 +2,6 @@ import com.thinkbiganalytics.nifi.provenance.TestMaps;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.stats.DateTimeInterval;
 
 import org.joda.time.DateTime;
-import org.junit.Test;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -14,7 +13,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public class TestStatisticsDateTimeInterval {
 
 
-    @Test
+    //@Test
     public void testTimeInterval() {
         DateTime now = DateTime.now();
 
@@ -31,7 +30,7 @@ public class TestStatisticsDateTimeInterval {
     }
 
 
-    @Test
+    // @Test
     public void testName() throws Exception {
 
         final Map<String, String> m1 = new ConcurrentHashMap<String, String>();
