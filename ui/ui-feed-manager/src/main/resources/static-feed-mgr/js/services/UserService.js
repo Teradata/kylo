@@ -14,6 +14,7 @@
  *
  * @typedef {Object} GroupPrincipal
  * @property {string} description a human-readable summary
+ * @property {number} memberCount number of users and groups within the group
  * @property {string} systemName unique name
  * @property {string} title human-readable name
  */

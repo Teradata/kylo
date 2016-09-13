@@ -82,6 +82,15 @@ angular.module(MODULE_FEED_MGR).service('StateService', function ($state) {
     }
 
     /**
+     * Navigates to the Group Details page.
+     *
+     * @param {string} [opt_groupId] the system name of the group
+     */
+    this.navigateToGroupDetails = function(opt_groupId) {
+        $state.go("group-details", {groupId: opt_groupId});
+    };
+
+    /**
      * Navigates to the Users page.
      */
     this.navigateToUsers = function() {
