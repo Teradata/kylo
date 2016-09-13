@@ -10,12 +10,12 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>simple-auth</module>
         <module>oauth-server</module>
+        <module>security-api</module>
         <module>security-auth</module>
+        <module>security-auth-simple</module>
         <module>security-auth-file</module>
         <module>security-auth-kylo</module>
-        <module>security-api</module>
     </modules>
 
     <dependencies>
