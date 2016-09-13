@@ -24,7 +24,6 @@ import org.apache.nifi.web.api.entity.BulletinBoardEntity;
 import org.apache.nifi.web.api.entity.ControllerServicesEntity;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
 import org.junit.Before;
-import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -224,7 +223,7 @@ public class NifiRestTest {
     }
 
 
-    @Test
+    //@Test
     public void testOrder() throws Exception {
         NifiVisitableProcessGroup g = restClient.getFlowOrder("7f836b40-e79d-4964-8cb7-0bd34264998d");
         NifiFlowProcessGroup flow = new NifiFlowBuilder().build(g);
