@@ -49,7 +49,7 @@ public class TestMaps {
         this.configuration = new StreamConfiguration.Builder().processDelay(10000).jmsBatchDelay(10000).build();
         this.previousCollectionTime = DateTime.now();
         this.nextCollectionTime = new AtomicReference<>(previousCollectionTime.plus(configuration.getProcessDelay()));
-        initCheckAndSendTimer();
+        // initCheckAndSendTimer();
 /*
         int maxThreads = 1;
         eventStatisticsExecutor =
