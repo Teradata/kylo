@@ -9,9 +9,13 @@ import org.mapdb.HTreeMap;
 import org.mapdb.Serializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+
+import javax.annotation.PostConstruct;
 
 
 /**
@@ -22,6 +26,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Created by sr186054 on 8/19/16.
  */
+@Component
 public class FlowFileMapDbCache {
 
     private static final Logger log = LoggerFactory.getLogger(FlowFileMapDbCache.class);
@@ -33,14 +38,24 @@ public class FlowFileMapDbCache {
 
     private DB db;
 
-    private final ConcurrentMap<String, IdReferenceFlowFile> idReferenceFlowFileHTreeMap;
+    private  ConcurrentMap<String, IdReferenceFlowFile> idReferenceFlowFileHTreeMap;
 
 
+    @Value("${thinkbig.provenance.cache.flowfile.persistence.days:3}")
     private int expireAfterNumber = 3;
+
     private TimeUnit expireAfterUnit = TimeUnit.DAYS;
 
     public FlowFileMapDbCache() {
 
+
+
+
+    }
+
+    @PostConstruct
+    private void init(){
+        log.info("Initialize FlowFileMapDbCache cache, keeping running flowfiles for {} days",expireAfterNumber);
         db = DBMaker.fileDB("flowfile-cache.db").fileMmapEnable()
             .fileMmapEnableIfSupported() // Only enable mmap on supported platforms
             .fileMmapPreclearDisable()   // Make mmap file faster
@@ -55,13 +70,11 @@ public class FlowFileMapDbCache {
                                                                                                                                                                     expireAfterUnit)
                 .createOrOpen();
 
-        log.info("CREATED NEW flowFileFeedProcessGroupCache cache with starting size of: {} ", idReferenceFlowFileHTreeMap.size());
-
-
+        log.info("CREATED NEW FlowFileMapDbCache cache with starting size of: {} ", idReferenceFlowFileHTreeMap.size());
     }
 
     public void assignFeedInformation(ActiveFlowFile flowFile) {
-        if (false && !flowFile.hasFeedInformationAssigned()) {
+        if (!flowFile.hasFeedInformationAssigned()) {
             IdReferenceFlowFile ff = idReferenceFlowFileHTreeMap.get(flowFile.getId());
             if (ff != null) {
                 String feedName = ff.getFeedName();

@@ -5,10 +5,10 @@ import com.querydsl.core.types.Predicate;
 import com.querydsl.core.types.Projections;
 import com.querydsl.jpa.impl.JPAQuery;
 import com.querydsl.jpa.impl.JPAQueryFactory;
-import com.thinkbiganalytics.jobrepo.jpa.model.NifiEventSummaryStats;
-import com.thinkbiganalytics.jobrepo.jpa.model.QNifiEventSummaryStats;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiFeedProcessorStats;
+import com.thinkbiganalytics.jobrepo.jpa.model.QNifiFeedProcessorStats;
 import com.thinkbiganalytics.jobrepo.model.ProvenanceEventSummaryStats;
-import com.thinkbiganalytics.jobrepo.service.ProvenanceEventSummaryStatsProvider;
+import com.thinkbiganalytics.jobrepo.service.ProvenanceEventStatisticsProvider;
 
 import org.joda.time.DateTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,22 +20,22 @@ import java.util.List;
  * Created by sr186054 on 8/17/16.
  */
 @Service
-public class NifiEventStatisticsProvider implements ProvenanceEventSummaryStatsProvider {
+public class NifiFeedProcessorStatisticsProvider implements ProvenanceEventStatisticsProvider {
 
     @Autowired
     private JPAQueryFactory factory;
 
-    private NifiEventStatisticsRepository statisticsRepository;
+    private NifiFeedProcessorStatisticsRepository statisticsRepository;
 
     @Autowired
-    public NifiEventStatisticsProvider(NifiEventStatisticsRepository repository) {
+    public NifiFeedProcessorStatisticsProvider(NifiFeedProcessorStatisticsRepository repository) {
         this.statisticsRepository = repository;
     }
 
 
     @Override
     public ProvenanceEventSummaryStats create(ProvenanceEventSummaryStats t) {
-        return statisticsRepository.save((NifiEventSummaryStats) t);
+        return statisticsRepository.save((NifiFeedProcessorStats) t);
     }
 
     public List<? extends ProvenanceEventSummaryStats> findForFeedProcessorStatistics(String feedName, TimeFrame timeFrame) {
@@ -56,7 +56,7 @@ public class NifiEventStatisticsProvider implements ProvenanceEventSummaryStatsP
 
 
     private Predicate withinDateTime(DateTime start, DateTime end) {
-        QNifiEventSummaryStats stats = QNifiEventSummaryStats.nifiEventSummaryStats;
+        QNifiFeedProcessorStats stats = QNifiFeedProcessorStats.nifiFeedProcessorStats;
         Predicate p = null;
 
         if (start == null && end == null) {
@@ -75,8 +75,8 @@ public class NifiEventStatisticsProvider implements ProvenanceEventSummaryStatsP
 
     @Override
     public List<? extends ProvenanceEventSummaryStats> findForFeed(String feedName, DateTime start, DateTime end) {
-        QNifiEventSummaryStats stats = QNifiEventSummaryStats.nifiEventSummaryStats;
-        Iterable<NifiEventSummaryStats> result = statisticsRepository.findAll(stats.feedName.eq(feedName).and(withinDateTime(start, end)));
+        QNifiFeedProcessorStats stats = QNifiFeedProcessorStats.nifiFeedProcessorStats;
+        Iterable<NifiFeedProcessorStats> result = statisticsRepository.findAll(stats.feedName.eq(feedName).and(withinDateTime(start, end)));
         if (result != null) {
             return Lists.newArrayList(result);
         }
@@ -86,10 +86,10 @@ public class NifiEventStatisticsProvider implements ProvenanceEventSummaryStatsP
 
     @Override
     public List<? extends ProvenanceEventSummaryStats> findForFeedProcessorStatistics(String feedName, DateTime start, DateTime end) {
-        QNifiEventSummaryStats stats = QNifiEventSummaryStats.nifiEventSummaryStats;
+        QNifiFeedProcessorStats stats = QNifiFeedProcessorStats.nifiFeedProcessorStats;
         JPAQuery
             query = factory.select(
-            Projections.bean(NifiEventSummaryStats.class,
+            Projections.bean(NifiFeedProcessorStats.class,
                              stats.feedName, stats.processorId, stats.processorName,
                              stats.bytesIn.sum().as("bytesIn"), stats.bytesOut.sum().as("bytesOut"), stats.duration.sum().as("duration"),
                              stats.jobsStarted.sum().as("jobsStarted"), stats.jobsFinished.sum().as("jobsFinished"), stats.jobDuration.sum().as("jobDuration"),
@@ -104,14 +104,14 @@ public class NifiEventStatisticsProvider implements ProvenanceEventSummaryStatsP
             .groupBy(stats.feedName, stats.processorId, stats.processorName)
             .orderBy(stats.processorName.asc());
 
-        return (List<NifiEventSummaryStats>) query.fetch();
+        return (List<NifiFeedProcessorStats>) query.fetch();
     }
 
     public List<? extends ProvenanceEventSummaryStats> findForFeedStatisticsGroupedByTime(String feedName, DateTime start, DateTime end) {
-        QNifiEventSummaryStats stats = QNifiEventSummaryStats.nifiEventSummaryStats;
+        QNifiFeedProcessorStats stats = QNifiFeedProcessorStats.nifiFeedProcessorStats;
         JPAQuery
             query = factory.select(
-            Projections.bean(NifiEventSummaryStats.class,
+            Projections.bean(NifiFeedProcessorStats.class,
                              stats.feedName,
                              stats.bytesIn.sum().as("bytesIn"), stats.bytesOut.sum().as("bytesOut"), stats.duration.sum().as("duration"),
                              stats.jobsStarted.sum().as("jobsStarted"), stats.jobsFinished.sum().as("jobsFinished"), stats.jobDuration.sum().as("jobDuration"),
@@ -128,6 +128,6 @@ public class NifiEventStatisticsProvider implements ProvenanceEventSummaryStatsP
             .groupBy(stats.feedName, stats.maxEventTime)
             .orderBy(stats.maxEventTime.asc());
 
-        return (List<NifiEventSummaryStats>) query.fetch();
+        return (List<NifiFeedProcessorStats>) query.fetch();
     }
 }

@@ -119,10 +119,16 @@ public class ProvenanceEventReceiver {
         Set<String> newJobs = new HashSet<>();
 
         events.getEvents().stream().sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).forEach(e -> {
-            if (!jobEventMap.containsKey(e.getJobFlowFileId())) {
-                newJobs.add(e.getJobFlowFileId());
+            if (e.isBatchJob()) {
+                if (!jobEventMap.containsKey(e.getJobFlowFileId())) {
+                    newJobs.add(e.getJobFlowFileId());
+                }
+                jobEventMap.computeIfAbsent(e.getJobFlowFileId(), (id) -> new ConcurrentLinkedQueue()).add(e);
             }
-            jobEventMap.computeIfAbsent(e.getJobFlowFileId(), (id) -> new ConcurrentLinkedQueue()).add(e);
+
+            if (e.isFinalJobEvent()) {
+                notifyJobFinished(e);
+            }
         });
 
         if (newJobs != null) {
@@ -176,6 +182,13 @@ public class ProvenanceEventReceiver {
            if(event.isBatchJob()) {
                nifiJobExecutionProvider.save(event, nifiEvent);
            }
+
+        return nifiEvent;
+
+
+    }
+
+    private void notifyJobFinished(ProvenanceEventRecordDTO event) {
         if (event.isFinalJobEvent()) {
             String mapKey = triggeredEventsKey(event);
             String alreadyTriggered = completedJobEvents.getIfPresent(mapKey);
@@ -189,10 +202,6 @@ public class ProvenanceEventReceiver {
                 }
             }
         }
-
-        return nifiEvent;
-
-
     }
 
 

@@ -2,8 +2,8 @@ package com.thinkbiganalytics.jobrepo.nifi.provenance;
 
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
 import com.thinkbiganalytics.jobrepo.config.OperationalMetadataAccess;
-import com.thinkbiganalytics.jobrepo.jpa.NifiEventStatisticsProvider;
-import com.thinkbiganalytics.jobrepo.jpa.model.NifiEventSummaryStats;
+import com.thinkbiganalytics.jobrepo.jpa.NifiFeedProcessorStatisticsProvider;
+import com.thinkbiganalytics.jobrepo.jpa.model.NifiFeedProcessorStats;
 import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.GroupedStats;
@@ -22,7 +22,7 @@ public class NifiStatsJmsReceiver {
 
 
     @Inject
-    private NifiEventStatisticsProvider nifiEventStatisticsProvider;
+    private NifiFeedProcessorStatisticsProvider nifiEventStatisticsProvider;
 
     @Inject
     private OperationalMetadataAccess operationalMetadataAccess;
@@ -32,8 +32,8 @@ public class NifiStatsJmsReceiver {
     public void receiveTopic(AggregatedFeedProcessorStatisticsHolder stats) {
 
         operationalMetadataAccess.commit(() -> {
-            List<NifiEventSummaryStats> summaryStats = createSummaryStats(stats);
-            for (NifiEventSummaryStats stat : summaryStats) {
+            List<NifiFeedProcessorStats> summaryStats = createSummaryStats(stats);
+            for (NifiFeedProcessorStats stat : summaryStats) {
                 nifiEventStatisticsProvider.create(stat);
             }
             return summaryStats;
@@ -41,44 +41,44 @@ public class NifiStatsJmsReceiver {
 
     }
 
-    private List<NifiEventSummaryStats> createSummaryStats(AggregatedFeedProcessorStatisticsHolder holder) {
-        List<NifiEventSummaryStats> nifiEventSummaryStatsList = new ArrayList<>();
+    private List<NifiFeedProcessorStats> createSummaryStats(AggregatedFeedProcessorStatisticsHolder holder) {
+        List<NifiFeedProcessorStats> nifiFeedProcessorStatsList = new ArrayList<>();
         holder.getFeedStatistics().values().stream().forEach(feedProcessorStats ->
                                        {
                                            String feedName = feedProcessorStats.getFeedName();
                                            feedProcessorStats.getProcessorStats().values().forEach(processorStats ->
                                                                                                    {
-                                                                                                       NifiEventSummaryStats nifiEventSummaryStats = toSummaryStats(processorStats.getStats());
-                                                                                                       nifiEventSummaryStats.setFeedName(feedName);
-                                                                                                       nifiEventSummaryStats.setProcessorId(processorStats.getProcessorId());
-                                                                                                       nifiEventSummaryStats.setProcessorName(processorStats.getProcessorName());
-                                                                                                       nifiEventSummaryStats.setFeedProcessGroupId(feedProcessorStats.getProcessGroup());
-                                                                                                       nifiEventSummaryStatsList.add(nifiEventSummaryStats);
+                                                                                                       NifiFeedProcessorStats nifiFeedProcessorStats = toSummaryStats(processorStats.getStats());
+                                                                                                       nifiFeedProcessorStats.setFeedName(feedName);
+                                                                                                       nifiFeedProcessorStats.setProcessorId(processorStats.getProcessorId());
+                                                                                                       nifiFeedProcessorStats.setProcessorName(processorStats.getProcessorName());
+                                                                                                       nifiFeedProcessorStats.setFeedProcessGroupId(feedProcessorStats.getProcessGroup());
+                                                                                                       nifiFeedProcessorStatsList.add(nifiFeedProcessorStats);
                                                                                                    });
 
                                        });
-        return nifiEventSummaryStatsList;
+        return nifiFeedProcessorStatsList;
 
     }
 
-    private NifiEventSummaryStats toSummaryStats(GroupedStats groupedStats) {
-        NifiEventSummaryStats nifiEventSummaryStats = new NifiEventSummaryStats();
-        nifiEventSummaryStats.setTotalCount(groupedStats.getTotalCount());
-        nifiEventSummaryStats.setFlowFilesFinished(groupedStats.getFlowFilesFinished());
-        nifiEventSummaryStats.setFlowFilesStarted(groupedStats.getFlowFilesStarted());
-        nifiEventSummaryStats.setCollectionId(groupedStats.getGroupKey());
-        nifiEventSummaryStats.setBytesIn(groupedStats.getBytesIn());
-        nifiEventSummaryStats.setBytesOut(groupedStats.getBytesOut());
-        nifiEventSummaryStats.setDuration(groupedStats.getDuration());
-        nifiEventSummaryStats.setJobsFinished(groupedStats.getJobsFinished());
-        nifiEventSummaryStats.setJobsStarted(groupedStats.getJobsStarted());
-        nifiEventSummaryStats.setProcessorsFailed(groupedStats.getProcessorsFailed());
-        nifiEventSummaryStats.setCollectionTime(groupedStats.getTime());
-        nifiEventSummaryStats.setMinEventTime(groupedStats.getMinTime());
-        nifiEventSummaryStats.setMaxEventTime(groupedStats.getMaxTime());
-        nifiEventSummaryStats.setJobsFailed(groupedStats.getJobsFailed());
-        nifiEventSummaryStats.setSuccessfulJobDuration(groupedStats.getSuccessfulJobDuration());
-        nifiEventSummaryStats.setJobDuration(groupedStats.getJobDuration());
-        return nifiEventSummaryStats;
+    private NifiFeedProcessorStats toSummaryStats(GroupedStats groupedStats) {
+        NifiFeedProcessorStats nifiFeedProcessorStats = new NifiFeedProcessorStats();
+        nifiFeedProcessorStats.setTotalCount(groupedStats.getTotalCount());
+        nifiFeedProcessorStats.setFlowFilesFinished(groupedStats.getFlowFilesFinished());
+        nifiFeedProcessorStats.setFlowFilesStarted(groupedStats.getFlowFilesStarted());
+        nifiFeedProcessorStats.setCollectionId(groupedStats.getGroupKey());
+        nifiFeedProcessorStats.setBytesIn(groupedStats.getBytesIn());
+        nifiFeedProcessorStats.setBytesOut(groupedStats.getBytesOut());
+        nifiFeedProcessorStats.setDuration(groupedStats.getDuration());
+        nifiFeedProcessorStats.setJobsFinished(groupedStats.getJobsFinished());
+        nifiFeedProcessorStats.setJobsStarted(groupedStats.getJobsStarted());
+        nifiFeedProcessorStats.setProcessorsFailed(groupedStats.getProcessorsFailed());
+        nifiFeedProcessorStats.setCollectionTime(groupedStats.getTime());
+        nifiFeedProcessorStats.setMinEventTime(groupedStats.getMinTime());
+        nifiFeedProcessorStats.setMaxEventTime(groupedStats.getMaxTime());
+        nifiFeedProcessorStats.setJobsFailed(groupedStats.getJobsFailed());
+        nifiFeedProcessorStats.setSuccessfulJobDuration(groupedStats.getSuccessfulJobDuration());
+        nifiFeedProcessorStats.setJobDuration(groupedStats.getJobDuration());
+        return nifiFeedProcessorStats;
     }
 }

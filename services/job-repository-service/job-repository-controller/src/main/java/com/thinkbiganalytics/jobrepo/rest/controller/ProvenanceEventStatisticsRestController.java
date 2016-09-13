@@ -3,7 +3,7 @@ package com.thinkbiganalytics.jobrepo.rest.controller;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.jobrepo.model.ProvenanceEventSummaryStats;
 import com.thinkbiganalytics.jobrepo.rest.model.ProvenanceEventSummaryStatTransform;
-import com.thinkbiganalytics.jobrepo.service.ProvenanceEventSummaryStatsProvider;
+import com.thinkbiganalytics.jobrepo.service.ProvenanceEventStatisticsProvider;
 import com.thinkbiganalytics.rest.model.LabelValue;
 
 import org.joda.time.DateTime;
@@ -31,9 +31,9 @@ public class ProvenanceEventStatisticsRestController {
 
 
     @Autowired
-    private ProvenanceEventSummaryStatsProvider statsProvider;
+    private ProvenanceEventStatisticsProvider statsProvider;
 
-    private static final String DEFAULT_TIMEFRAME = ProvenanceEventSummaryStatsProvider.TimeFrame.HOUR.name();
+    private static final String DEFAULT_TIMEFRAME = ProvenanceEventStatisticsProvider.TimeFrame.HOUR.name();
 
 
     @GET
@@ -48,7 +48,7 @@ public class ProvenanceEventStatisticsRestController {
     @GET
     @Path("/{feedName}/processor-duration/{timeframe}")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response findStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") ProvenanceEventSummaryStatsProvider.TimeFrame timeframe) {
+    public Response findStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") ProvenanceEventStatisticsProvider.TimeFrame timeframe) {
 
         List<? extends ProvenanceEventSummaryStats> list = statsProvider.findForFeedProcessorStatistics(feedName, timeframe);
         List<com.thinkbiganalytics.jobrepo.repository.rest.model.ProvenanceEventSummaryStats> model = ProvenanceEventSummaryStatTransform.toModel(list);
@@ -57,7 +57,7 @@ public class ProvenanceEventStatisticsRestController {
     @GET
     @Path("/{feedName}/{timeframe}")
     @Produces({MediaType.APPLICATION_JSON})
-    public Response findFeedStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") ProvenanceEventSummaryStatsProvider.TimeFrame timeframe) {
+    public Response findFeedStats(@PathParam("feedName") String feedName, @PathParam("timeframe") @DefaultValue("HOUR") ProvenanceEventStatisticsProvider.TimeFrame timeframe) {
 
         List<? extends ProvenanceEventSummaryStats> list = statsProvider.findForFeedStatisticsGroupedByTime(feedName, timeframe);
         List<com.thinkbiganalytics.jobrepo.repository.rest.model.ProvenanceEventSummaryStats> model = ProvenanceEventSummaryStatTransform.toModel(list);
@@ -70,7 +70,7 @@ public class ProvenanceEventStatisticsRestController {
     public Response getTimeFrameOptions() {
         List<LabelValue>
             vals =
-            Lists.newArrayList(ProvenanceEventSummaryStatsProvider.TimeFrame.values()).stream().map(timeFrame -> new LabelValue(timeFrame.getDisplayName(), timeFrame.name())).collect(
+            Lists.newArrayList(ProvenanceEventStatisticsProvider.TimeFrame.values()).stream().map(timeFrame -> new LabelValue(timeFrame.getDisplayName(), timeFrame.name())).collect(
                 Collectors.toList());
         return Response.ok(vals).build();
     }

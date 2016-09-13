@@ -11,8 +11,12 @@ import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
 import com.thinkbiganalytics.util.SpringApplicationContext;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
@@ -33,15 +37,26 @@ import java.util.stream.Collectors;
  *
  * Created by sr186054 on 8/11/16.
  */
+@Component
 public class FlowFileGuavaCache {
 
     private static final Logger log = LoggerFactory.getLogger(FlowFileGuavaCache.class);
 
+    @Value("${thinkbig.provenance.flowfile.cache.expire.seconds:10}")
+    private Integer expireTimerCheckSeconds = 10;
 
-    private static FlowFileGuavaCache instance = new FlowFileGuavaCache();
+    @Autowired
+    FlowFileMapDbCache flowFileMapDbCache;
+
+    @Autowired
+    NifiFlowCache nifiFlowCache;
+
+
+    @Autowired
+    CacheUtil cacheUtil;
 
     public static FlowFileGuavaCache instance() {
-        return instance;
+        return (FlowFileGuavaCache) SpringApplicationContext.getInstance().getBean("flowFileGuavaCache");
     }
 
     private final LoadingCache<String, ActiveFlowFile> cache;
@@ -55,8 +70,10 @@ public class FlowFileGuavaCache {
 
                                                               }
         );
+        log.info("Created new FlowFileGuavaCache running timer every {} seconds to check and expire finished flow files", expireTimerCheckSeconds);
         initTimerThread();
     }
+
 
     /**
      * Load the FlowFile from the saved "IdReference MapDB " or creates a new FlowFile object
@@ -79,7 +96,7 @@ public class FlowFileGuavaCache {
             for (String childId : parentFlowFile.getChildIds()) {
                 ActiveFlowFile child = cache.getIfPresent(childId);
                 if (child == null) {
-                    IdReferenceFlowFile idReferenceFlowFile = FlowFileMapDbCache.instance().getCachedFlowFile(childId);
+                    IdReferenceFlowFile idReferenceFlowFile = flowFileMapDbCache.getCachedFlowFile(childId);
                     child = loadGraph(idReferenceFlowFile);
                     parent.addChild(child);
                     child.addParent(parent);
@@ -92,20 +109,19 @@ public class FlowFileGuavaCache {
 
     private ActiveFlowFile loadFromCache(String flowFileId) {
         ActiveFlowFile ff = null;
-        IdReferenceFlowFile idReferenceFlowFile = FlowFileMapDbCache.instance().getCachedFlowFile(flowFileId);
+        IdReferenceFlowFile idReferenceFlowFile = flowFileMapDbCache.getCachedFlowFile(flowFileId);
         if (idReferenceFlowFile != null) {
             //try to get the root file and build the graph and then return this ff
             if (StringUtils.isNotBlank(idReferenceFlowFile.getRootFlowFileId())) {
                 ActiveFlowFile rootFile = cache.getIfPresent(idReferenceFlowFile.getRootFlowFileId());
                 if (rootFile == null) {
-                    IdReferenceFlowFile root = FlowFileMapDbCache.instance().getCachedFlowFile(idReferenceFlowFile.getRootFlowFileId());
+                    IdReferenceFlowFile root = flowFileMapDbCache.getCachedFlowFile(idReferenceFlowFile.getRootFlowFileId());
                     loadGraph(root);
                 }
             }
             ff = (ActiveFlowFile) cache.getIfPresent(flowFileId);
         }
         if (ff == null) {
-            log.info("Creating new flow file {} ", flowFileId);
             ff = new ActiveFlowFile(flowFileId);
         } else {
             log.info("LOADED FlowFile from cached id map {} ", ff);
@@ -123,7 +139,11 @@ public class FlowFileGuavaCache {
     }
 
     public List<ActiveFlowFile> getCompletedRootFlowFiles() {
-        return cache.asMap().values().stream().filter(flowFile -> (flowFile.isRootFlowFile() && flowFile.isFlowComplete())).collect(Collectors.toList());
+        int backoffSeconds = 60;
+        DateTime completeTime = DateTime.now().minusSeconds(backoffSeconds);
+        //hold onto any completed flow files for xx seconds after they are complete before removing from cache
+        return cache.asMap().values().stream().filter(flowFile -> (flowFile.isRootFlowFile() && flowFile.isFlowComplete() && completeTime.isAfter(flowFile.getTimeCompleted()))).collect(
+            Collectors.toList());
     }
 
     public CacheStats stats() {
@@ -131,18 +151,11 @@ public class FlowFileGuavaCache {
     }
 
     public void printSummary() {
-        long start = System.currentTimeMillis();
         Map<String, ActiveFlowFile> map = cache.asMap();
         List<ActiveFlowFile> rootFiles = getRootFlowFiles();
-        CacheUtil cacheUtil = (CacheUtil) SpringApplicationContext.getInstance().getBean("cacheUtil");
         cacheUtil.logStats();
-
-        NifiFlowCache nifiFlowCache = (NifiFlowCache) SpringApplicationContext.getInstance().getBean("nifiFlowCache");
-
         log.info("FLOW FILE Cache Size: {} , root files {}, processorNameMapSize: {} ", map.size(), rootFiles.size(), nifiFlowCache.processorNameMapSize());
-        long stop = System.currentTimeMillis();
-        log.info("Time to get cache summary {} ms ", (stop - start));
-        FlowFileMapDbCache.instance().summary();
+        flowFileMapDbCache.summary();
 
 
     }
@@ -150,12 +163,10 @@ public class FlowFileGuavaCache {
     public void invalidate(ActiveFlowFile flowFile) {
         if (flowFile.getRootFlowFile().isFlowComplete()) {
             //EventMapDbCache.instance().expire(flowFile);
-            FlowFileMapDbCache.instance().expire(flowFile);
+            flowFileMapDbCache.expire(flowFile);
             cache.invalidate(flowFile.getId());
             //also invalidate all children
             flowFile.getChildren().forEach(child -> invalidate(child));
-        } else {
-            //   log.info("skipping invlidation for {} ",flowFile.getId());
         }
     }
 
@@ -163,7 +174,6 @@ public class FlowFileGuavaCache {
     public void expire() {
         try {
             long start = System.currentTimeMillis();
-            log.info("Expiring root flow files");
             List<ActiveFlowFile> rootFiles = getCompletedRootFlowFiles();
             if (!rootFiles.isEmpty()) {
                 for (ActiveFlowFile root : rootFiles) {
@@ -174,6 +184,7 @@ public class FlowFileGuavaCache {
                     log.info("Time to expire {} flowfiles {} ms. Root Flow Files left in cache: {} ", rootFiles.size(), (stop - start), getRootFlowFiles().size());
                 }
             }
+            printSummary();
         } catch (Exception e) {
             log.error("Error attempting to invalidate FlowFileGuava cache {}, {}", e.getMessage(), e);
         }
@@ -184,8 +195,7 @@ public class FlowFileGuavaCache {
             .newSingleThreadScheduledExecutor();
         service.scheduleAtFixedRate(() -> {
             expire();
-            FlowFileGuavaCache.instance().printSummary();
-        }, 10, 10, TimeUnit.SECONDS);
+        }, expireTimerCheckSeconds, expireTimerCheckSeconds, TimeUnit.SECONDS);
 
 
     }

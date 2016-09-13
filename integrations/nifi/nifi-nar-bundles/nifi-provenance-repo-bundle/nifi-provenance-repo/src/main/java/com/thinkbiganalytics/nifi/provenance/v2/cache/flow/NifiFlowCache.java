@@ -32,7 +32,7 @@ import javax.annotation.PostConstruct;
 
 /**
  * Created by sr186054 on 8/11/16. Cache of the Nifi Flow graph
- * TODO Block and loadAll upon startup
+
  */
 @Component
 public class NifiFlowCache {
@@ -224,7 +224,6 @@ public class NifiFlowCache {
             }
         } catch (ExecutionException e) {
             log.error("Unable to getProcessor for group {} and id {}. {} - {} ", feedProcessGroupId, processorId, e.getMessage(), e);
-            //TODO LOG AND THROW RUNTIME
         }
         return null;
     }

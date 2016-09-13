@@ -5,6 +5,7 @@ import com.thinkbiganalytics.nifi.provenance.model.GroupedFeedProcessorEventAggr
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.StatsModel;
+import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.CacheUtil;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.stats.ProvenanceStatsCalculator;
 import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventActiveMqWriter;
@@ -125,6 +126,11 @@ public class ProvenanceEventAggregator {
      */
     public void prepareAndAdd(ProvenanceEventRecordDTO event) {
         try {
+
+            if (ProvenanceEventUtil.isDropFlowFilesEvent(event)) {
+                log.info("DROPPING FLOW FILES!! {}", event);
+                return;
+            }
             log.info("Process Event {} ", event);
             cacheUtil.cacheAndBuildFlowFileGraph(event);
 
@@ -143,7 +149,6 @@ public class ProvenanceEventAggregator {
             if (event.isEndingFlowFileEvent()) {
                 Set<ProvenanceEventRecordDTO> completedRootFlowFileEvents = completeStatsForParentFlowFiles(event);
                 if (completedRootFlowFileEvents != null) {
-                    log.info("Completed Root flow file events: {} ", eventsToString(completedRootFlowFileEvents));
                     completedRootFlowFileEvents(completedRootFlowFileEvents);
                 }
 
@@ -170,7 +175,7 @@ public class ProvenanceEventAggregator {
     public Set<ProvenanceEventRecordDTO> completeStatsForParentFlowFiles(ProvenanceEventRecordDTO event) {
 
         ActiveFlowFile rootFlowFile = event.getFlowFile().getRootFlowFile();
-        log.info("try to complete parents for {}, root: {},  parents: {} ", event.getFlowFile().getId(), rootFlowFile.getId(), event.getFlowFile().getParents().size());
+        //  log.info("try to complete parents for {}, root: {},  parents: {} ", event.getFlowFile().getId(), rootFlowFile.getId(), event.getFlowFile().getParents().size());
 
         if (event.isEndingFlowFileEvent() && event.getFlowFile().hasParents()) {
             log.info("Attempt to complete all {} parent Job flow files that are complete", event.getFlowFile().getParents().size());
@@ -178,8 +183,6 @@ public class ProvenanceEventAggregator {
             Set<ProvenanceEventRecordDTO> eventList = new HashSet<>();
             event.getFlowFile().getParents().stream().filter(parent -> parent.isCurrentFlowFileComplete()).forEach(parent -> {
                 ProvenanceEventRecordDTO lastFlowFileEvent = parent.getLastEvent();
-                log.info("Completing root ff:{}, stats collected: {}.   lastFlowFileEvent: {}  ", event.getFlowFile().getRootFlowFile().getId(),
-                         event.getFlowFile().getRootFlowFile().getFlowFileCompletionStatsCollected(), lastFlowFileEvent);
                 ProvenanceEventStats stats = StatsModel.newJobCompletionProvenanceEventStats(event.getFeedName(), lastFlowFileEvent);
                 if (stats != null) {
                     list.add(stats);
@@ -223,7 +226,6 @@ public class ProvenanceEventAggregator {
                                      if (!failedEvent.isFailure()) {
                                          failedEvent.setIsFailure(true);
                                          failedEvent.getFlowFile().getRootFlowFile().addFailedEvent(failedEvent);
-                                         log.info("Failed Event Detected for {} ", failedEvent);
                                          eventsJmsQueue.offer(failedEvent);
                                          ProvenanceEventStats failedEventStats = provenanceFeedLookup.failureEventStats(failedEvent);
                                          statsCalculator.addFailureStats(failedEventStats);
@@ -240,7 +242,9 @@ public class ProvenanceEventAggregator {
     public void collectCompletionEvents(ProvenanceEventRecordDTO event) {
         if (event.isEndOfJob()) {
             event.setIsFinalJobEvent(true);
-            event.setIsBatchJob(event.getFlowFile().getRootFlowFile().isBatch());
+            if (event.getFlowFile() != null && event.getFlowFile().getRootFlowFile() != null) {
+                event.setIsBatchJob(event.getFlowFile().getRootFlowFile().isBatch());
+            }
             eventsJmsQueue.offer(event);
         }
     }
@@ -279,7 +283,6 @@ public class ProvenanceEventAggregator {
      * caches
      */
     private void initCheckAndSendTimer() {
-        log.info("*** STARTING PRODUCER timer");
         long millis = this.configuration.getProcessDelay();
         ScheduledExecutorService service = Executors
             .newSingleThreadScheduledExecutor();

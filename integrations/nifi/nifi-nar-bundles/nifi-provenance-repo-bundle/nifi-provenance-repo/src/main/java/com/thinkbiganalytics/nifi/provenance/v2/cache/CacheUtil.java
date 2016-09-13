@@ -31,26 +31,23 @@ public class CacheUtil {
     private static final Logger log = LoggerFactory.getLogger(CacheUtil.class);
 
     @Autowired
-        ProvenanceFeedLookup provenanceFeedLookup;
+    ProvenanceFeedLookup provenanceFeedLookup;
 
+    @Autowired
+    FlowFileGuavaCache flowFileGuavaCache;
+
+    @Autowired
+    FlowFileMapDbCache flowFileMapDbCache;
 
     // internal counters for general stats
-    AtomicLong startJobCounter = new AtomicLong(0L);
-    AtomicLong finishedJobCounter = new AtomicLong(0L);
     AtomicLong eventCounter = new AtomicLong(0L);
-
-    //private static CacheUtil instance = new CacheUtil();
-    //public static CacheUtil instance() {
-    //    return instance;
-   // }
 
     private CacheUtil() {
 
     }
 
     public void logStats() {
-        log.info("Processed {} events.  Started Jobs {}, Finished Jobs: {}, Active Jobs: {}. ", eventCounter.get(), startJobCounter.get(), finishedJobCounter.get(),
-                 (startJobCounter.get()-finishedJobCounter.get()));
+        log.info("Processed {} events.  ", eventCounter.get());
     }
 
     /**
@@ -61,7 +58,7 @@ public class CacheUtil {
     public void cacheAndBuildFlowFileGraph(ProvenanceEventRecordDTO event) {
 
         // Get the FlowFile from the Cache.  It is LoadingCache so if the file is new the Cache will create it
-        FlowFileGuavaCache flowFileCache = FlowFileGuavaCache.instance();
+        FlowFileGuavaCache flowFileCache = flowFileGuavaCache;
         ActiveFlowFile flowFile = flowFileCache.getEntry(event.getFlowFileUuid());
         event.setFlowFile(flowFile);
 
@@ -75,7 +72,6 @@ public class CacheUtil {
             log.info("Marking {} as root file from event type {} ", flowFile.getId(), event.getEventType());
             flowFile.markAsRootFlowFile();
             event.setIsStartOfJob(true);
-            startJobCounter.incrementAndGet();;
             modified.add(flowFile);
         }
 
@@ -136,8 +132,7 @@ public class CacheUtil {
             event.setFeedName(flowFile.getFeedName());
             event.setFeedProcessGroupId(flowFile.getFeedProcessGroupId());
         }
-        //if we dont have a root flow file assigned the we cant proceeed... error out
-        //TODO error out
+        //if we dont have a root flow file assigned the we cant proceed... error out
         if (flowFile.getRootFlowFile() == null) {
             throw new ProvenanceEventProcessingException("Unable to find Root Flow File for FlowFile: " + flowFile + " and Event " + event);
         }
@@ -148,18 +143,13 @@ public class CacheUtil {
 
         if (ProvenanceEventUtil.isCompletionEvent(event)) {
             flowFile.addCompletionEvent(event);
-        } else {
-            log.info("Non Completition event for {}, {}", event.getEventType(), event);
         }
-        //update the internal counters
-        if (event.isEndingFlowFileEvent() && flowFile.getRootFlowFile().isFlowComplete()) {
-             finishedJobCounter.incrementAndGet();
-        }
+
 
         eventCounter.incrementAndGet();
         //persist the files to disk
         for (ActiveFlowFile modifiedFlowFile : modified) {
-            FlowFileMapDbCache.instance().cacheFlowFile(modifiedFlowFile);
+            flowFileMapDbCache.cacheFlowFile(modifiedFlowFile);
         }
 
     }
