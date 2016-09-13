@@ -37,17 +37,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-nifi-flow-rest-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-nifi-flow-rest-client</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
 
         <dependency>
