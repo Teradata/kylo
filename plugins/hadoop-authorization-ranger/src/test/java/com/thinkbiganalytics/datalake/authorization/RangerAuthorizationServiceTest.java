@@ -3,7 +3,6 @@ package com.thinkbiganalytics.datalake.authorization;
 import com.thinkbiganalytics.datalake.authorization.config.RangerConnection;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 import com.thinkbiganalytics.datalake.authorization.rest.model.RangerGroup;
-import com.thinkbiganalytics.datalake.authorization.rest.model.RangerGroups;
 
 import org.junit.Before;
 import org.junit.Ignore;
@@ -11,7 +10,7 @@ import org.junit.Test;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 
 /**
  * Created by Jeremy Merrifield on 9/12/16.
@@ -19,6 +18,7 @@ import static org.junit.Assert.*;
  * Integration Tests for interacting with Ranger
  */
 public class RangerAuthorizationServiceTest {
+
     private HadoopAuthorizationService rangerAuthorizationService;
 
     @Before
@@ -43,8 +43,8 @@ public class RangerAuthorizationServiceTest {
     @Test
     @Ignore
     public void getGetGroupByName() {
-	RangerGroup rangerGroup = (RangerGroup)rangerAuthorizationService.getGroupByName("root");
-	assertNotNull(rangerGroup);
+        RangerGroup rangerGroup = (RangerGroup) rangerAuthorizationService.getGroupByName("root");
+        assertNotNull(rangerGroup);
     }
 
     /**

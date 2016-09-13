@@ -10,7 +10,6 @@ import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import javax.ws.rs.client.WebTarget;
 
@@ -46,7 +45,6 @@ public class RangerRestClient extends JerseyRestClient {
             throw new RangerRestClientException("Unable to get policy .", e);
         }
     }*/
-
     public void createPolicy(JSONObject policy) {
         try {
             post("/public/api/policy/", policy, String.class);
@@ -137,7 +135,7 @@ public class RangerRestClient extends JerseyRestClient {
             String results = get("/xusers/groups", null, String.class);
             RangerGroups groupsFromJson = ObjectMapperSerializer.deserialize(results, RangerGroups.class);
             List<HadoopAuthorizationGroup> rangerGroups = new ArrayList<>();
-            for(RangerGroup rangerGroup: groupsFromJson.getvXGroups()) {
+            for (RangerGroup rangerGroup : groupsFromJson.getvXGroups()) {
                 rangerGroups.add(rangerGroup);
             }
             return rangerGroups;

@@ -6,6 +6,7 @@ import java.util.List;
  * Created by Jeremy Merrifield on 9/12/16.
  */
 public class RangerGroups {
+
     private int totalCount;
     private List<RangerGroup> vXGroups;
 

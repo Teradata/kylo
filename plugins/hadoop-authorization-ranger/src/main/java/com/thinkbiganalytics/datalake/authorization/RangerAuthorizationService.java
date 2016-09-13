@@ -2,15 +2,13 @@ package com.thinkbiganalytics.datalake.authorization;
 
 import com.thinkbiganalytics.datalake.authorization.config.RangerConnection;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
-import com.thinkbiganalytics.datalake.authorization.rest.model.RangerGroup;
-import com.thinkbiganalytics.datalake.authorization.rest.model.RangerGroups;
 import com.thinkbiganalytics.datalake.authorization.rest.client.RangerRestClient;
 import com.thinkbiganalytics.datalake.authorization.rest.client.RangerRestClientConfig;
+import com.thinkbiganalytics.datalake.authorization.rest.model.RangerGroup;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RangerAuthorizationService implements HadoopAuthorizationService {
@@ -25,7 +23,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
      */
 
     @Override
-    public void initialize(AuthorizationConfiguration config)  {
+    public void initialize(AuthorizationConfiguration config) {
         RangerConnection rangerConnHelper = (RangerConnection) config;
         RangerRestClientConfig rangerClientConfiguration = new RangerRestClientConfig(rangerConnHelper.getHostName(), rangerConnHelper.getUsername(), rangerConnHelper.getPassword());
         rangerClientConfiguration.setPort(rangerConnHelper.getPort());

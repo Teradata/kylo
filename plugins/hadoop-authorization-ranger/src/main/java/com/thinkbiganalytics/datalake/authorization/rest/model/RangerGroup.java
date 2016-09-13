@@ -2,12 +2,11 @@ package com.thinkbiganalytics.datalake.authorization.rest.model;
 
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 
-import org.joda.time.DateTime;
-
 /**
  * Created by Jeremy Merrifield on 9/12/16.
  */
 public class RangerGroup implements HadoopAuthorizationGroup {
+
     private String id;
     //private DateTime createDate;
     //private DateTime updateDate;
