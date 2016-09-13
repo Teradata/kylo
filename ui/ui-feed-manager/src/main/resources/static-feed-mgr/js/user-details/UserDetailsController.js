@@ -130,6 +130,7 @@
          * Deletes the current user.
          */
         self.onDelete = function() {
+            var name = (angular.isString(self.model.displayName) && self.model.displayName.length > 0) ? self.model.displayName : self.model.systemName;
             UserService.deleteUser(self.model.systemName)
                     .then(function() {
                         $mdToast.show(
