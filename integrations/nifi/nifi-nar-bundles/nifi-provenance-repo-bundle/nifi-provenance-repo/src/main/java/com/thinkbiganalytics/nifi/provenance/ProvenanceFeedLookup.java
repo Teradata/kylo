@@ -27,6 +27,9 @@ public class ProvenanceFeedLookup {
     @Autowired
     private NifiFlowCache nifiFlowCache;
 
+    @Autowired
+    FlowFileMapDbCache flowFileMapDbCache;
+
     private static final Logger log = LoggerFactory.getLogger(ProvenanceFeedLookup.class);
 
     public  String getFeedNameForEvent(ProvenanceEventRecordDTO event) {
@@ -77,7 +80,7 @@ public class ProvenanceFeedLookup {
     public boolean assignFeedInformationToFlowFile(ActiveFlowFile flowFile) {
         boolean assigned = false;
         //attempt to assign it from the cache first
-        FlowFileMapDbCache.instance().assignFeedInformation(flowFile);
+        flowFileMapDbCache.assignFeedInformation(flowFile);
         if (!flowFile.hasFeedInformationAssigned() && flowFile.getRootFlowFile() != null) {
             //check to see if any of the parents in this flow already have it assigned.. if so no need to look it up
             if (flowFile.getRootFlowFile().hasFeedInformationAssigned()) {

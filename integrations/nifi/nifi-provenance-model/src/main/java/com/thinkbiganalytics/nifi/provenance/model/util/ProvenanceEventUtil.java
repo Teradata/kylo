@@ -2,6 +2,8 @@ package com.thinkbiganalytics.nifi.provenance.model.util;
 
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
+import org.apache.commons.lang3.StringUtils;
+
 import java.util.Arrays;
 import java.util.Comparator;
 
@@ -11,6 +13,8 @@ import java.util.Comparator;
 public class ProvenanceEventUtil {
 
     public static final String AUTO_TERMINATED_FAILURE_RELATIONSHIP = "auto-terminated by failure relationship";
+
+    public static final String DROP_FLOW_FILES = "flowfile queue emptied";
 
     public static final String[] STARTING_EVENT_TYPES = {"RECEIVE","CREATE"};
 
@@ -56,6 +60,10 @@ public class ProvenanceEventUtil {
 
         return event.getDetails() != null && AUTO_TERMINATED_FAILURE_RELATIONSHIP.equalsIgnoreCase(event.getDetails());
 
+    }
+
+    public static boolean isDropFlowFilesEvent(ProvenanceEventRecordDTO event){
+        return (isEndingFlowFileEvent(event) && StringUtils.isNotBlank(event.getDetails()) && event.getDetails().toLowerCase().startsWith(DROP_FLOW_FILES));
     }
 
 }

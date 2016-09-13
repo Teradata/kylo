@@ -18,8 +18,8 @@ import javax.persistence.Transient;
  */
 
 @Entity
-@Table(name = "NIFI_EVENT_SUMMARY_STATS")
-public class NifiEventSummaryStats implements ProvenanceEventSummaryStats {
+@Table(name = "NIFI_FEED_PROCESSOR_STATS")
+public class NifiFeedProcessorStats implements ProvenanceEventSummaryStats {
 
     @Id
     @GeneratedValue(generator = "uuid")
@@ -88,14 +88,12 @@ public class NifiEventSummaryStats implements ProvenanceEventSummaryStats {
     protected Long resultSetCount;
 
 
-
-
-    public NifiEventSummaryStats(String feedName, String processorId) {
+    public NifiFeedProcessorStats(String feedName, String processorId) {
         this.feedName = feedName;
         this.processorId = processorId;
     }
 
-    public NifiEventSummaryStats() {
+    public NifiFeedProcessorStats() {
     }
 
     @Override

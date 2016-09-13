@@ -2,7 +2,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.thinkbiganalytics.nifi.flow.controller.NifiFlowClient;
 import com.thinkbiganalytics.nifi.provenance.StreamConfiguration;
-import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileGuavaCache;
 import com.thinkbiganalytics.nifi.provenance.v2.writer.ThinkbigProvenanceEventWriter;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
@@ -339,7 +338,7 @@ public class TestProvenanceFlow {
             }
             long end = System.currentTimeMillis();
             log.info("TOTAL TIME to process {}  = flows: {} ms.   Total counts: {}/{} ",finishedflows,(end-start),totalFinishedFlows.get(),totalStartedFlows.get());
-            FlowFileGuavaCache.instance().printSummary();
+
             finishedRuns.incrementAndGet();
         }
     }

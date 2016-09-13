@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * Created by sr186054 on 8/23/16.
  */
-public interface ProvenanceEventSummaryStatsProvider {
+public interface ProvenanceEventStatisticsProvider {
 
     public static enum TimeFrame {
 

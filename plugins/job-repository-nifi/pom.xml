@@ -192,6 +192,9 @@
               <outputDirectory>target/generated-sources/java</outputDirectory>
               <!-- com.querydsl.apt.hibernate.HibernateAnnotationProcessor -->
               <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
+              <options>
+                <querydsl.excludedClasses>com.thinkbiganalytics.jobrepo.jpa.model.NifiEvent,com.thinkbiganalytics.jobrepo.jpa.model.NifiRelatedRootFlowFiles</querydsl.excludedClasses>
+              </options>
             </configuration>
           </execution>
         </executions>

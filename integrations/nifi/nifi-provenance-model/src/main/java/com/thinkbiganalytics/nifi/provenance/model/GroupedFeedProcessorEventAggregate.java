@@ -89,7 +89,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
     public boolean addRootFlowFileCompletionEvent(ProvenanceEventRecordDTO event) {
         if (!lastStreamEventByJob.containsKey(lastStreamEventMapKey(event))) {
             groupEventAsStreamOrBatch(event, true);
-            log.info("adding completion event to queue for {} , {} ff: {}, rff: {}  ", event, event.getEventId(), event.getFlowFileUuid(), event.getJobFlowFileId());
+          //  log.info("adding completion event to queue for {} , {} ff: {}, rff: {}  ", event, event.getEventId(), event.getFlowFileUuid(), event.getJobFlowFileId());
             return true;
         }
         return false;
@@ -237,7 +237,9 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
             });
 
             //copy and clear
-            log.info("Sending {} Events to JMS Queue to be processed as Batch Job  ", jmsEvents.size());
+            if(!jmsEvents.isEmpty()) {
+                log.info("Sending {} Events to JMS Queue to be processed ", jmsEvents.size());
+            }
 
             events = new ArrayList<>(jmsEvents);
             jmsEvents.clear();
