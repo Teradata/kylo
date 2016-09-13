@@ -34,7 +34,7 @@ public class NifiEventJobExecution implements Serializable {
     @Column(name = "EVENT_ID", insertable = false, updatable = false)
     private Long eventId;
 
-    @Column(name = "FLOW_FILE_UUID", insertable = false, updatable = false)
+    @Column(name = "FLOW_FILE_ID", insertable = false, updatable = false)
     private String flowFileId;
 
 
@@ -57,7 +57,7 @@ public class NifiEventJobExecution implements Serializable {
         @Column(name = "EVENT_ID")
         private Long eventId;
 
-        @Column(name = "FLOW_FILE_UUID")
+        @Column(name = "FLOW_FILE_ID")
         private String flowFileId;
 
         public NifiEventJobExecutionPK() {
