@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>thinkbig-plugins</artifactId>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <version>0.3.0-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>thinkbig-hadoop-authorization-ranger</artifactId>
+
+  <dependencies>
+
+    <!-- ThinkBig Dependency -->
+    <dependency>
+      <artifactId>thinkbig-commons-rest-client</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>thinkbig-hadoop-authorization-core</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>thinkbig-commons-util</artifactId>
+      <version>0.3.0-SNAPSHOT</version>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+    </dependency>
+
+    <!-- Hadoop Dependency -->
+
+    <!--dependency>
+      <groupId>org.apache.hadoop</groupId>
+      <artifactId>hadoop-common</artifactId>
+      <version>${hadoop.version}</version>
+      <scope>provided</scope>
+      <exclusions>
+        <exclusion>
+          <artifactId>httpclient</artifactId>
+          <groupId>org.apache.httpcomponents</groupId>
+        </exclusion>
+        <exclusion>
+          <artifactId>jersey-core</artifactId>
+          <groupId>com.sun.jersey</groupId>
+        </exclusion>
+      </exclusions>
+    </dependency-->
+
+    <!--External Library -->
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>1.1</version>
+    </dependency>
+
+  </dependencies>
+
+</project>

@@ -20,5 +20,6 @@
         <module>service-monitor</module>
         <module>classname-change</module>
         <module>kerberos</module>
+        <module>hadoop-authorization</module>
     </modules>
 </project>

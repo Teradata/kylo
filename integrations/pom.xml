@@ -13,7 +13,6 @@
         <module>jira</module>
         <module>nifi</module>
         <module>spark</module>
-		<module>hadoop-authorization</module>
     </modules>
 
 </project>

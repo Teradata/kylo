@@ -28,7 +28,7 @@ public class MyProcessorTest {
 
     @Before
     public void init() {
-        testRunner = TestRunners.newTestRunner(MyProcessor.class);
+        //testRunner = TestRunners.newTestRunner(MyProcessor.class);
     }
 
     @Test
