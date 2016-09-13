@@ -48,21 +48,22 @@ public class StatsModel {
     public static ProvenanceEventStats newJobCompletionProvenanceEventStats(String feedName, ProvenanceEventRecordDTO event) {
         ProvenanceEventStats stats = null;
         RootFlowFile rootFlowFile = event.getFlowFile().getRootFlowFile();
-        if (!rootFlowFile.isFlowFileCompletionStatsCollected() && (event.isEndingFlowFileEvent() && rootFlowFile != null && rootFlowFile.isFlowComplete())) {
-            rootFlowFile.setFlowFileCompletionStatsCollected(true);
-            stats = new ProvenanceEventStats(feedName);
-            stats.setTotalCount(0L);
-            stats.setEventId(event.getEventId());
-            stats.setProcessorId(event.getComponentId());
-            stats.setProcessorName(event.getComponentName());
-            stats.setClusterNodeId(event.getClusterNodeId());
-            stats.setTime(event.getEventTime());
-            stats.setFlowFileId(event.getFlowFileUuid());
-            stats.setRootFlowFileId(rootFlowFile != null ? rootFlowFile.getId() : null);
-            stats.setRootProcessGroupId((rootFlowFile != null && rootFlowFile.hasFeedInformationAssigned()) ? rootFlowFile.getFeedProcessGroupId() : null);
-            stats.setJobsFinished(1L);
-            setCompletionJobStats(rootFlowFile, event, stats);
-            log.info("New Completion job stats finished? {} for root: {} eventType: {} ", stats.getJobsFinished(), rootFlowFile.getId(), event.getEventType());
+        if (event.isEndingFlowFileEvent() && rootFlowFile != null && rootFlowFile.isFlowComplete()) {
+            if(rootFlowFile.getFlowFileCompletionStatsCollected().compareAndSet(false,true)) {
+                stats = new ProvenanceEventStats(feedName);
+                stats.setTotalCount(0L);
+                stats.setEventId(event.getEventId());
+                stats.setProcessorId(event.getComponentId());
+                stats.setProcessorName(event.getComponentName());
+                stats.setClusterNodeId(event.getClusterNodeId());
+                stats.setTime(event.getEventTime());
+                stats.setFlowFileId(event.getFlowFileUuid());
+                stats.setRootFlowFileId(rootFlowFile != null ? rootFlowFile.getId() : null);
+                stats.setRootProcessGroupId((rootFlowFile != null && rootFlowFile.hasFeedInformationAssigned()) ? rootFlowFile.getFeedProcessGroupId() : null);
+                stats.setJobsFinished(1L);
+                setCompletionJobStats(rootFlowFile, event, stats);
+                log.info("New Completion job stats finished? {} for root: {} eventType: {} ", stats.getJobsFinished(), rootFlowFile.getId(), event.getEventType());
+            }
         }
         return stats;
     }
@@ -89,7 +90,13 @@ public class StatsModel {
         stats.setEventDetails(event.getDetails());
         stats.setRootProcessGroupId((rootFlowFile != null && rootFlowFile.hasFeedInformationAssigned()) ? rootFlowFile.getFeedProcessGroupId() : null);
         stats.setJobsStarted((event.getFlowFile().isRootFlowFile() && rootFlowFile.getFirstEvent() != null && event.equals(rootFlowFile.getFirstEvent())) ? 1L : 0L);
-        stats.setJobsFinished((event.isEndingFlowFileEvent() && rootFlowFile != null && rootFlowFile.isFlowComplete() && !rootFlowFile.isFlowFileCompletionStatsCollected()) ? 1L : 0L);
+
+        stats.setJobsFinished(0L);
+        if(event.isEndingFlowFileEvent() && rootFlowFile != null && rootFlowFile.isFlowComplete()){
+            if(rootFlowFile.getFlowFileCompletionStatsCollected().compareAndSet(false,true)){
+                stats.setJobsFinished(1L);
+            }
+        }
         stats.setFlowFilesStarted(event.isStartOfCurrentFlowFile() ? 1L : 0L);
         stats.setFlowFilesFinished(event.getFlowFile().isCurrentFlowFileComplete() ? 1L : 0L);
         if (event.isTerminatedByFailureRelationship()) {
@@ -108,7 +115,6 @@ public class StatsModel {
     }
 
     private static void setCompletionJobStats(RootFlowFile rootFlowFile, ProvenanceEventRecordDTO event, ProvenanceEventStats stats) {
-        rootFlowFile.setFlowFileCompletionStatsCollected(true);
         log.info("Finishing Job for flowfile: {} with eventtype: {}.  ", event.getFlowFile(), event.getEventType());
         event.setIsEndOfJob(true);
         Long jobTime = calculateJobDuration(rootFlowFile, event);

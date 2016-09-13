@@ -302,6 +302,10 @@ public class NifiJobExecution {
         return jobExecutionParameters;
     }
 
+    public boolean isFinished() {
+        return getEndTime() != null;
+    }
+
 
     public void setAsCheckDataJob(String feedNameReference) {
 

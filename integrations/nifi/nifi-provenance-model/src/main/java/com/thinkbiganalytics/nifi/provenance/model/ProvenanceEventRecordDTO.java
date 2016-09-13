@@ -28,14 +28,46 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     private transient AtomicBoolean processed = new AtomicBoolean(false);
 
+    /**
+     * Indicates the start of a Root Flow file
+     */
     private boolean isStartOfJob;
 
+    /**
+     * Indicates the end of a Root Flow File
+     */
     private boolean isEndOfJob;
 
+    /**
+     * indicates it is the final event in a root file or if the root file has child root flow files (as a result of a Merge) when this is true it is the final event for all of the root flow files
+     */
+    private boolean isFinalJobEvent;
+
+    /**
+     * inidcates if this is a Batch Root Flow file
+     */
+    private boolean isBatchJob;
+
+    /**
+     * Track all failures related to this jobFlowFileId if this is a finalJobEvent
+     */
+    private boolean hasFailedEvents;
+
+    /**
+     * The previous event that was captured before this one
+     */
     private transient ProvenanceEventRecordDTO previousEvent;
 
     private Long previousEventId;
+
+    /**
+     * The previous events flow file id
+     */
     private String previousFlowfileId;
+
+    /**
+     * the event Time of the previous event to help determine event duration
+     */
     private DateTime previousEventTime;
 
     private String id;
@@ -67,6 +99,9 @@ public class ProvenanceEventRecordDTO implements Serializable {
     private Set<String>relatedRootFlowFiles;
 
 
+    /**
+     * if this event came from a processor or connection that has the keyword "failure" or is "Auto terminated by Failure event"
+     */
     private boolean isFailure;
 
     /**
@@ -95,7 +130,11 @@ public class ProvenanceEventRecordDTO implements Serializable {
      */
     private String feedProcessGroupId;
 
+    /**
+     * the flow file and all of its relationships to other flow files/events
+     */
     private transient ActiveFlowFile flowFile;
+
 
     private String batchId;
 
@@ -527,6 +566,34 @@ public class ProvenanceEventRecordDTO implements Serializable {
 
     public void setRelatedRootFlowFiles(Set<String> relatedRootFlowFiles) {
         this.relatedRootFlowFiles = relatedRootFlowFiles;
+    }
+
+
+    public boolean isFinalJobEvent() {
+        return isFinalJobEvent;
+    }
+
+    public void setIsFinalJobEvent(boolean isFinalJobEvent) {
+        this.isFinalJobEvent = isFinalJobEvent;
+        if (this.isFinalJobEvent) {
+            this.hasFailedEvents = getFlowFile().getRootFlowFile().hasFailedEvents();
+        }
+    }
+
+    public boolean isHasFailedEvents() {
+        return hasFailedEvents;
+    }
+
+    public void setHasFailedEvents(boolean hasFailedEvents) {
+        this.hasFailedEvents = hasFailedEvents;
+    }
+
+    public boolean isBatchJob() {
+        return isBatchJob;
+    }
+
+    public void setIsBatchJob(boolean isBatchJob) {
+        this.isBatchJob = isBatchJob;
     }
 
     @Override

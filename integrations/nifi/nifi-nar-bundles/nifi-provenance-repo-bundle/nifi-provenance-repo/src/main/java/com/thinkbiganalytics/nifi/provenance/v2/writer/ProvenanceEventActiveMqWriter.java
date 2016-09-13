@@ -65,9 +65,9 @@ public class ProvenanceEventActiveMqWriter {
     }
 
 
-    public void writeFailedEvents(ProvenanceEventRecordDTOHolder failedEvents) {
+    public void writeEvents(ProvenanceEventRecordDTOHolder failedEvents) {
         logger.info("SENDING FAILURE Events to JMS {} ", failedEvents);
-        sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_FAILURE_QUEUE, failedEvents);
+        sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_QUEUE, failedEvents);
     }
 
     public void writeStats(AggregatedFeedProcessorStatisticsHolder stats) {
@@ -80,7 +80,7 @@ public class ProvenanceEventActiveMqWriter {
         }
     }
 
-    public void writeEvents(ProvenanceEventRecordDTOHolder events) {
+    public void writeBatchEvents(ProvenanceEventRecordDTOHolder events) {
         try {
             logger.info("SENDING Events to JMS {} ", events);
             sendJmsMessage.sendSerializedObjectToQueue(Queues.FEED_MANAGER_QUEUE, events);

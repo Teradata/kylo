@@ -7,6 +7,7 @@ import org.slf4j.LoggerFactory;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Created by sr186054 on 9/8/16.
@@ -42,6 +43,8 @@ public class RootFlowFile extends ActiveFlowFile {
     public boolean isStream() {
         return getFirstEventType().equals(FIRST_EVENT_TYPE.STREAM);
     }
+
+    private Set<RootFlowFile> relatedRootFlowFiles = new HashSet<>();
 
 
     public void addRootFileActiveChild(String flowFileId) {
@@ -180,14 +183,18 @@ public class RootFlowFile extends ActiveFlowFile {
         return flowFile.getFailedEvents(inclusive);
     }
 
+    public boolean hasFailedEvents() {
+        return !getFailedEvents(false).isEmpty();
+    }
+
     @Override
     public String getId() {
         return flowFile.getId();
     }
 
     @Override
-    public boolean isFlowFileCompletionStatsCollected() {
-        return flowFile.isFlowFileCompletionStatsCollected();
+    public AtomicBoolean getFlowFileCompletionStatsCollected() {
+        return flowFile.getFlowFileCompletionStatsCollected();
     }
 
     @Override
@@ -289,4 +296,33 @@ public class RootFlowFile extends ActiveFlowFile {
     public void findEventMatchingDestinationConnection(String connectionIdentifier) {
         flowFile.findEventMatchingDestinationConnection(connectionIdentifier);
     }
+
+
+    public Set<RootFlowFile> getRelatedRootFlowFiles() {
+        return relatedRootFlowFiles;
+    }
+
+    public void addRelatedRootFlowFiles(Set<RootFlowFile> rootFlowFiles) {
+        this.relatedRootFlowFiles.addAll(rootFlowFiles);
+    }
+
+    public void addRelatedRootFlowFile(RootFlowFile rootFlowFile) {
+        this.relatedRootFlowFiles.add(rootFlowFile);
+    }
+
+    public boolean areRelatedRootFlowFilesComplete() {
+        if (getRelatedRootFlowFiles() != null || getRelatedRootFlowFiles().isEmpty()) {
+            return true;
+        } else {
+            boolean allComplete = isFlowComplete();
+            if (allComplete) {
+                for (RootFlowFile rootFlowFile : getRelatedRootFlowFiles()) {
+                    allComplete &= !rootFlowFile.equals(this) && rootFlowFile.isFlowComplete();
+                }
+            }
+            return allComplete;
+
+        }
+    }
+
 }

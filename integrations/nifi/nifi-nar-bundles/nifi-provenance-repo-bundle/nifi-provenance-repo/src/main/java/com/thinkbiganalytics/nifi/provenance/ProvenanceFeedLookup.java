@@ -113,6 +113,7 @@ public class ProvenanceFeedLookup {
         ProvenanceEventRecordDTO connectedFailure = getFailureProvenanceEventFromConnectionRelationship(event);
         if (connectedFailure != null) {
             failureEvents.add(connectedFailure);
+            failureEvents.add(event);
         }
         return failureEvents;
     }

@@ -9,6 +9,7 @@ import com.thinkbiganalytics.nifi.provenance.v2.cache.CacheUtil;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.stats.ProvenanceStatsCalculator;
 import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventActiveMqWriter;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +47,16 @@ public class ProvenanceEventAggregator {
     @Autowired
     private StreamConfiguration configuration;
 
-    // Creates an instance of blocking queue using the DelayQueue.
+    /**
+     * This is the batch event jms queue
+     */
     private BlockingQueue<ProvenanceEventRecordDTO> jmsProcessingQueue;
 
 
-    private BlockingQueue<ProvenanceEventRecordDTO> failedEventsJmsQueue;
+    /**
+     * other queue for recording Failures and job completion regardless of batch or stream Needed for triggering when a feed is complete
+     */
+    private BlockingQueue<ProvenanceEventRecordDTO> eventsJmsQueue;
 
     /**
      * Reference to when to send the aggregated events found in the  statsByTime map.
@@ -76,17 +83,17 @@ public class ProvenanceEventAggregator {
                                      @Qualifier("provenanceEventActiveMqWriter") ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter) {
         super();
         this.jmsProcessingQueue = new LinkedBlockingQueue<>();
-        //batchup and send failed events off
-        this.failedEventsJmsQueue = new LinkedBlockingQueue<>();
+
+        this.eventsJmsQueue = new LinkedBlockingQueue<>();
         log.info("************** NEW ProvenanceEventAggregator for {} and activemq: {} ", configuration, provenanceEventActiveMqWriter);
         this.configuration = configuration;
         this.provenanceEventActiveMqWriter = provenanceEventActiveMqWriter;
         this.lastCollectionTime = DateTime.now();
 
-        Thread t = new Thread(new JmsBatchedProvenanceEventFeedConsumer(configuration, provenanceEventActiveMqWriter, this.jmsProcessingQueue));
+        Thread t = new Thread(new JmsBatchProvenanceEventFeedConsumer(configuration, provenanceEventActiveMqWriter, this.jmsProcessingQueue));
         t.start();
 
-        Thread t2 = new Thread(new JmsBatchedFailedProvenanceEventConsumer(configuration, provenanceEventActiveMqWriter, this.failedEventsJmsQueue));
+        Thread t2 = new Thread(new JmsImportantProvenanceEventConsumer(configuration, provenanceEventActiveMqWriter, this.eventsJmsQueue));
         t2.start();
 
         initCheckAndSendTimer();
@@ -125,25 +132,36 @@ public class ProvenanceEventAggregator {
             // eventStatisticsExecutor.execute(new StatisticsProvenanceEventConsumer(event));
             ProvenanceEventStats stats = statsCalculator.calculateStats(event);
 
+            //if failure detected group and send off to separate queue
+            collectFailureEvents(event);
+
             //add to delayed queue for processing
             aggregateEvent(event, stats);
+
 
             // check to see if the parents should be finished
             if (event.isEndingFlowFileEvent()) {
                 Set<ProvenanceEventRecordDTO> completedRootFlowFileEvents = completeStatsForParentFlowFiles(event);
                 if (completedRootFlowFileEvents != null) {
+                    log.info("Completed Root flow file events: {} ", eventsToString(completedRootFlowFileEvents));
                     completedRootFlowFileEvents(completedRootFlowFileEvents);
                 }
-            }
 
-            //if failure detected group and send off to separate queue
-            collectFailureEvents(event);
+                if (event.isEndOfJob() && event.getFlowFile().getRootFlowFile().areRelatedRootFlowFilesComplete()) {
+                    //trigger Complete event for event and flowfile
+                    collectCompletionEvents(event);
+                }
+            }
 
 
         } catch (Exception e) {
             log.error("ERROR PROCESSING EVENT! {}.  ERROR: {} ", event, e.getMessage(), e);
         }
 
+    }
+
+    private String eventsToString(Collection<ProvenanceEventRecordDTO> events) {
+        return StringUtils.join(events.stream().map(e -> e.getEventId()).collect(Collectors.toList()), ",");
     }
 
     /**
@@ -160,7 +178,8 @@ public class ProvenanceEventAggregator {
             Set<ProvenanceEventRecordDTO> eventList = new HashSet<>();
             event.getFlowFile().getParents().stream().filter(parent -> parent.isCurrentFlowFileComplete()).forEach(parent -> {
                 ProvenanceEventRecordDTO lastFlowFileEvent = parent.getLastEvent();
-                log.info("Completing ff {}, {} ", event.getFlowFile().getRootFlowFile().getId(), event.getFlowFile().getRootFlowFile().isFlowFileCompletionStatsCollected());
+                log.info("Completing root ff:{}, stats collected: {}.   lastFlowFileEvent: {}  ", event.getFlowFile().getRootFlowFile().getId(),
+                         event.getFlowFile().getRootFlowFile().getFlowFileCompletionStatsCollected(), lastFlowFileEvent);
                 ProvenanceEventStats stats = StatsModel.newJobCompletionProvenanceEventStats(event.getFeedName(), lastFlowFileEvent);
                 if (stats != null) {
                     list.add(stats);
@@ -192,6 +211,10 @@ public class ProvenanceEventAggregator {
         }
     }
 
+    /**
+     * send off all failures to ops mgr for recording
+     * @param event
+     */
     public void collectFailureEvents(ProvenanceEventRecordDTO event) {
         Set<ProvenanceEventRecordDTO> failedEvents = provenanceFeedLookup.getFailureEvents(event);
         if (failedEvents != null && !failedEvents.isEmpty()) {
@@ -199,12 +222,26 @@ public class ProvenanceEventAggregator {
                                  {
                                      if (!failedEvent.isFailure()) {
                                          failedEvent.setIsFailure(true);
+                                         failedEvent.getFlowFile().getRootFlowFile().addFailedEvent(failedEvent);
                                          log.info("Failed Event Detected for {} ", failedEvent);
-                                         failedEventsJmsQueue.offer(failedEvent);
+                                         eventsJmsQueue.offer(failedEvent);
                                          ProvenanceEventStats failedEventStats = provenanceFeedLookup.failureEventStats(failedEvent);
                                          statsCalculator.addFailureStats(failedEventStats);
                                      }
                                  });
+        }
+    }
+
+
+    /**
+     * Send off all final completion job events to ops manager for recording
+     * @param event
+     */
+    public void collectCompletionEvents(ProvenanceEventRecordDTO event) {
+        if (event.isEndOfJob()) {
+            event.setIsFinalJobEvent(true);
+            event.setIsBatchJob(event.getFlowFile().getRootFlowFile().isBatch());
+            eventsJmsQueue.offer(event);
         }
     }
 

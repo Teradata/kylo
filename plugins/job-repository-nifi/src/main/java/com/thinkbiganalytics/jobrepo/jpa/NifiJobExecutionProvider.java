@@ -13,9 +13,6 @@ import com.thinkbiganalytics.jobrepo.jpa.model.NifiJobInstance;
 import com.thinkbiganalytics.jobrepo.jpa.model.NifiRelatedRootFlowFiles;
 import com.thinkbiganalytics.jobrepo.jpa.model.NifiStepExecution;
 import com.thinkbiganalytics.jobrepo.nifi.support.DateTimeUtil;
-import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
-import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
-import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 import org.joda.time.DateTime;
@@ -36,8 +33,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-import javax.inject.Inject;
-
 /**
  * Created by sr186054 on 8/31/16.
  */
@@ -51,6 +46,10 @@ public class NifiJobExecutionProvider {
     public static final String NIFI_CATEGORY_PROPERTY = "category";
 
 
+    /**
+     * Used to serialize the ExecutionContext for JOB and STEPs This is needed for usage with the existing Spring Batch Apis; however, will be removed once the UI doesnt reference those tables
+     * anymore
+     */
     @Autowired
     private BatchExecutionContextProvider batchExecutionContextProvider;
 
@@ -62,33 +61,22 @@ public class NifiJobExecutionProvider {
 
     private NifiJobInstanceRepository jobInstanceRepository;
 
-    private NifiFailedEventRepository nifiFailedEventRepository;
 
     private NifiStepExecutionRepository nifiStepExecutionRepository;
 
     private NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository;
 
-    private NifiEventJobExecutionRepository nifiEventJobExecutionRepository;
-
-    @Inject
-    private MetadataEventService eventService;
-
-
-    private boolean isWriteExecutionContext = true;
-
 
     @Autowired
-    public NifiJobExecutionProvider(NifiJobExecutionRepository jobExecutionRepository, NifiJobInstanceRepository jobInstanceRepository, NifiFailedEventRepository nifiFailedEventRepository,
+    public NifiJobExecutionProvider(NifiJobExecutionRepository jobExecutionRepository, NifiJobInstanceRepository jobInstanceRepository,
                                     NifiStepExecutionRepository nifiStepExecutionRepository,
-                                    NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository,
-                                    NifiEventJobExecutionRepository nifiEventJobExecutionRepository) {
+                                    NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository
+    ) {
 
         this.jobExecutionRepository = jobExecutionRepository;
         this.jobInstanceRepository = jobInstanceRepository;
-        this.nifiFailedEventRepository = nifiFailedEventRepository;
         this.nifiStepExecutionRepository = nifiStepExecutionRepository;
         this.relatedRootFlowFilesRepository = relatedRootFlowFilesRepository;
-        this.nifiEventJobExecutionRepository = nifiEventJobExecutionRepository;
 
     }
 
@@ -100,9 +88,12 @@ public class NifiJobExecutionProvider {
         return this.jobInstanceRepository.save(jobInstance);
     }
 
-    private String jobKeyGenerator(ProvenanceEventRecordDTO t) {
+    /**
+     * Generate a Unique key for the Job Instance table This code is similar to what was used by Spring Batch
+     */
+    private String jobKeyGenerator(ProvenanceEventRecordDTO event) {
 
-        StringBuffer stringBuffer = new StringBuffer(t.getEventTime().getMillis() + "").append(t.getFlowFileUuid());
+        StringBuffer stringBuffer = new StringBuffer(event.getEventTime().getMillis() + "").append(event.getFlowFileUuid());
         MessageDigest digest1;
         try {
             digest1 = MessageDigest.getInstance("MD5");
@@ -185,47 +176,33 @@ public class NifiJobExecutionProvider {
      * @param jobExecution
      */
     private void finishJob(ProvenanceEventRecordDTO event, NifiJobExecution jobExecution) {
+
+
+
+        if(jobExecution.getJobExecutionId() == null) {
+            log.error("Warning execution id is null for ending event {} ", event);
+        }
+
         ///END OF THE JOB... fail or complete the job?
-        log.info("Finishing Job: {}", jobExecution.getJobExecutionId());
         ensureFailureSteps(jobExecution);
         jobExecution.completeOrFailJob();
         jobExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
-        log.info("Completing JOB EXECUTION with id of: {} ff: {} ", jobExecution.getJobExecutionId(), event.getJobFlowFileId());
+        log.info("Finishing Job: {} with a status of: {}", jobExecution.getJobExecutionId(), jobExecution.getStatus());
         //add in execution contexts
-        Set<BatchJobExecutionContextValues> jobExecutionContext = new HashSet<>();
         Map<String, String> allAttrs = event.getAttributeMap();
         if (allAttrs != null && !allAttrs.isEmpty()) {
             for (Map.Entry<String, String> entry : allAttrs.entrySet()) {
                 BatchJobExecutionContextValues executionContext = new BatchJobExecutionContextValues(jobExecution, entry.getKey());
                 executionContext.setStringVal(entry.getValue());
-                jobExecutionContext.add(executionContext);
+                jobExecution.addJobExecutionContext(executionContext);
             }
-            jobExecution.setJobExecutionContext(jobExecutionContext);
             //also persist to spring batch tables
             batchExecutionContextProvider.saveJobExecutionContext(jobExecution.getJobExecutionId(), allAttrs);
         }
 
-        //Check related jobs
-        if(jobExecutionRepository.hasRelatedJobs(jobExecution.getJobExecutionId())) {
-            boolean isComplete = !jobExecutionRepository.hasRunningRelatedJobs(jobExecution.getJobExecutionId());
-
-            if (isComplete) {
-                boolean hasFailures = jobExecutionRepository.hasRelatedJobFailures(jobExecution.getJobExecutionId());
-                if (jobExecution.isFailed() || hasFailures) {
-                    failedJob(event.getFeedName(), jobExecution);
-                    log.info("FINISHED AND FAILED JOB with relation {} ", jobExecution.getJobExecutionId());
-                } else {
-                    successfulJob(event.getFeedName(), jobExecution);
-                    log.info("FINISHED JOB with relation {} ", jobExecution.getJobExecutionId());
-                }
-            }
-        } else {
-            if (jobExecution.isFailed()) {
-                failedJob(event.getFeedName(), jobExecution);
-            } else if (jobExecution.isSuccess()) {
-                successfulJob(event.getFeedName(), jobExecution);
-            }
-        }
+        //If you want to know when a feed is truely finished along with any of its related feeds you can use this method below.
+        //commented out since the ProvenanceEventReceiver already handles it
+        //checkIfJobAndRelatedJobsAreFinished
 
     }
 
@@ -234,19 +211,24 @@ public class NifiJobExecutionProvider {
         //find the JobExecution for the event if it exists, otherwise create one
         NifiJobExecution jobExecution = jobExecutionRepository.findByEventAndFlowFile(event.getJobEventId(), event.getJobFlowFileId());
         if (jobExecution == null && event.isStartOfJob()) {
-            log.info("New JOB for {}, {}", event, event.getJobFlowFileId());
             jobExecution = createNewJobExecution(event);
-        } else {
-            log.info("use existing JOB for {}, {}", event, event.getJobFlowFileId());
         }
-        if (jobExecution != null) {
-            log.info("use JOB for {}, {}", jobExecution.getJobExecutionId(), event.getEventId());
+        //add in the stepExecutions
+        if (jobExecution != null && !jobExecution.isFinished()) {
             checkAndRelateJobs(event, nifiEvent);
             createStepExecution(jobExecution, event);
             if (event.isEndOfJob()) {
                 finishJob(event, jobExecution);
             }
             this.jobExecutionRepository.save(jobExecution);
+        }
+        else if (jobExecution != null && jobExecution.isFinished()) {
+            //ensure failures
+            boolean addedFailures = ensureFailureSteps(jobExecution);
+            if (addedFailures) {
+                jobExecution.completeOrFailJob();
+                this.jobExecutionRepository.save(jobExecution);
+            }
         }
         return null;
     }
@@ -256,7 +238,7 @@ public class NifiJobExecutionProvider {
      * We get Nifi Events after a step has executed. If a flow takes some time we might not initially get the event that the given step has failed when we write the StepExecution record. This should
      * be called when a Job Completes as it will verify all failures and then update the correct step status to reflect the failure if there is one.
      */
-    private void ensureFailureSteps(NifiJobExecution jobExecution) {
+    private boolean ensureFailureSteps(NifiJobExecution jobExecution) {
 
         //find all the Steps for this Job that have records in the Failure table for this job flow file
         List<NifiStepExecution> stepsNeedingToBeFailed = nifiStepExecutionRepository.findStepsInJobThatNeedToBeFailed(jobExecution.getJobExecutionId());
@@ -266,11 +248,13 @@ public class NifiJobExecutionProvider {
             }
             //save them
             nifiStepExecutionRepository.save(stepsNeedingToBeFailed);
+            return true;
         }
+        return false;
     }
 
 
-    public NifiStepExecution createStepExecution(NifiJobExecution jobExecution, ProvenanceEventRecordDTO event) {
+    private NifiStepExecution createStepExecution(NifiJobExecution jobExecution, ProvenanceEventRecordDTO event) {
 
         //only create the step if it doesnt exist yet for this event
         NifiStepExecution stepExecution = nifiStepExecutionRepository.findByProcessorAndJobFlowFile(event.getComponentId(), event.getJobFlowFileId());
@@ -285,14 +269,7 @@ public class NifiJobExecutionProvider {
             stepExecution.setStepName(event.getComponentName());
             log.info("New Step Execution {} on Job: {} using event {} ", stepExecution.getStepName(), jobExecution, event);
 
-            //Attempt to find the Failure by looking at the event failure flag or the existence of the NifiFailedEvent in the FailedEvent table.
-            // When job completes an additional pass is done to update any steps that need to be failed.
             boolean failure = event.isFailure();
-           /* if (!failure) {
-                NifiFailedEvent failedEvent = nifiFailedEventRepository.findOne(new NifiFailedEvent.NiFiFailedEventPK(event.getEventId(), event.getFlowFileUuid()));
-                failure = failedEvent != null;
-            }
-            */
             if (failure) {
                 stepExecution.failStep();
             } else {
@@ -310,23 +287,18 @@ public class NifiJobExecutionProvider {
             jobExecution.getStepExecutions().add(stepExecution);
             stepExecution =  nifiStepExecutionRepository.save(stepExecution);
             //also persist to spring batch tables
-            //TODO to be removed in next release as Spring batch is removed
+            //TODO to be removed in next release once Spring batch is completely removed.  Needed since the UI references this table
             batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), event.getUpdatedAttributes());
 
 
         } else {
             //update it
-            log.info("Existing Step Execution {} ", stepExecution.getStepExecutionId());
-            //updat executionContext
             assignStepExecutionContextMap(event, stepExecution);
-            //update end time??
 
             stepExecution = nifiStepExecutionRepository.save(stepExecution);
             //also persist to spring batch tables
-            //TODO to be removed in next release as Spring batch is removed
+            //TODO to be removed in next release once Spring batch is completely removed.  Needed since the UI references this table
             batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), stepExecution.getStepExecutionContextAsMap());
-
-
         }
 
         if (stepExecution != null) {
@@ -339,19 +311,23 @@ public class NifiJobExecutionProvider {
 
     private void assignStepExecutionContextMap(ProvenanceEventRecordDTO event, NifiStepExecution stepExecution) {
         Map<String, String> updatedAttrs = event.getUpdatedAttributes();
-        Set<BatchStepExecutionContextValues> stepExecutionContextList = new HashSet<>();
         if (updatedAttrs != null && !updatedAttrs.isEmpty()) {
             for (Map.Entry<String, String> entry : updatedAttrs.entrySet()) {
                 BatchStepExecutionContextValues stepExecutionContext = new BatchStepExecutionContextValues(stepExecution, entry.getKey());
                 stepExecutionContext.setStringVal(entry.getValue());
-                stepExecutionContextList.add(stepExecutionContext);
+                stepExecution.addStepExecutionContext(stepExecutionContext);
             }
         }
-        stepExecution.setStepExecutionContext(stepExecutionContextList);
     }
 
 
-    public void updateJobType(NifiJobExecution jobExecution, ProvenanceEventRecordDTO event) {
+    /**
+     * Sets the Job Execution params to either Check Data or Feed Jobs
+     *
+     * @param jobExecution
+     * @param event
+     */
+    private void updateJobType(NifiJobExecution jobExecution, ProvenanceEventRecordDTO event) {
 
         if (event.getUpdatedAttributes() != null && event.getUpdatedAttributes().containsKey(NIFI_JOB_TYPE_PROPERTY)) {
             String jobType = event.getUpdatedAttributes().get(NIFI_JOB_TYPE_PROPERTY);
@@ -366,22 +342,67 @@ public class NifiJobExecutionProvider {
 
 
     /**
-     * Called when a Job and all related jobs complete but contain a failure.
-     * @param feedName
+     * When a Job Finishes this will check if it has any relatedJobExecutions and allow you to get notified when the set of Jobs are complete
+     * Currently this is not needed as the ProvenanceEventReceiver already handles this event for both Batch and Streaming Jobs
+     * @see com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventReceiver#failedJob(ProvenanceEventRecordDTO)
+     * @see com.thinkbiganalytics.jobrepo.nifi.provenance.ProvenanceEventReceiver#successfulJob(ProvenanceEventRecordDTO)
      * @param jobExecution
      */
-    private void failedJob(String feedName, NifiJobExecution jobExecution) {
-        FeedOperation.State state = FeedOperation.State.FAILURE;
-        this.eventService.notify(new FeedOperationStatusEvent(feedName, null, state, "Failed Job"));
+    private void checkIfJobAndRelatedJobsAreFinished(NifiJobExecution jobExecution) {
+        //Check related jobs
+        if (jobExecutionRepository.hasRelatedJobs(jobExecution.getJobExecutionId())) {
+            boolean isComplete = !jobExecutionRepository.hasRunningRelatedJobs(jobExecution.getJobExecutionId());
+
+            if (isComplete) {
+                boolean hasFailures = jobExecutionRepository.hasRelatedJobFailures(jobExecution.getJobExecutionId());
+                if (jobExecution.isFailed() || hasFailures) {
+                    log.info("FINISHED AND FAILED JOB with relation {} ", jobExecution.getJobExecutionId());
+                } else {
+                    log.info("FINISHED JOB with relation {} ", jobExecution.getJobExecutionId());
+                }
+            }
+        } else {
+            if (jobExecution.isFailed()) {
+                log.info("Failed JobExecution");
+            } else if (jobExecution.isSuccess()) {
+                log.info("Completed Job Execution");
+            }
+        }
     }
+
 
     /**
-     * Called when a Job and all related jobs complete but contain a failure.
+     * Find the Job Execution by the Nifi EventId and JobFlowFileId
+     * @param eventId
+     * @param flowfileid
+     * @return
      */
-    private void successfulJob(String feedName, NifiJobExecution jobExecution) {
-        FeedOperation.State state = FeedOperation.State.SUCCESS;
-        this.eventService.notify(new FeedOperationStatusEvent(feedName, null, state, ""));
+    public NifiJobExecution findByEventAndFlowFile(Long eventId, String flowfileid) {
+        return jobExecutionRepository.findByEventAndFlowFile(eventId, flowfileid);
     }
 
+
+    public NifiJobExecution failStepsInJobThatNeedToBeFailed(NifiJobExecution jobExecution) {
+        List<NifiStepExecution> steps = nifiStepExecutionRepository.findStepsInJobThatNeedToBeFailed(jobExecution.getJobExecutionId());
+        if (steps != null && !steps.isEmpty()) {
+            log.info(" Second Fail Attempt for {}. {} steps ", jobExecution.getJobExecutionId(), steps.size());
+            for (NifiStepExecution step : steps) {
+                step.failStep();
+            }
+            jobExecution.completeOrFailJob();
+            jobExecutionRepository.save(jobExecution);
+        }
+
+        return jobExecution;
+    }
+
+
+    public NifiJobExecution findByJobExecutionId(Long jobExecutionId) {
+        return jobExecutionRepository.findOne(jobExecutionId);
+    }
+
+    public NifiJobExecution save(NifiJobExecution jobExecution) {
+        return jobExecutionRepository.save(jobExecution);
+    }
 
 }
