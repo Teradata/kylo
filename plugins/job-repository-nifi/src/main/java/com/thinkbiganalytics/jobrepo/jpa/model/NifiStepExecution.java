@@ -229,6 +229,10 @@ public class NifiStepExecution implements Serializable {
         setExitCode(ExecutionConstants.ExitCode.COMPLETED);
     }
 
+    public boolean isFinished() {
+        return getEndTime() != null;
+    }
+
     public NifiEventStepExecution getNifiEventStepExecution() {
         return nifiEventStepExecution;
     }

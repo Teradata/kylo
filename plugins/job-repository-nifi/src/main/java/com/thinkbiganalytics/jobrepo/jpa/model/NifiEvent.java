@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.jobrepo.jpa.model;
 
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
+
 import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
@@ -17,7 +19,7 @@ import javax.persistence.Table;
  */
 @Entity
 @Table(name = "NIFI_EVENT")
-public class NifiEvent {
+public class NifiEvent extends AbstractAuditedEntity {
 
     @EmbeddedId
     private NiFiEventPK eventPK;
@@ -78,8 +80,28 @@ public class NifiEvent {
     @org.hibernate.annotations.Type(type = "yes_no")
     private boolean isEndOfJob;
 
+    @Column(name = "IS_FAILURE", length = 1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean isFailure;
+
+    @Column(name = "IS_BATCH_JOB", length = 1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean isBatchJob;
+
+    @Column(name = "IS_FINAL_JOB_EVENT", length = 1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean isFinalJobEvent;
+
+    @Column(name = "HAS_FAILURE_EVENTS", length = 1)
+    @org.hibernate.annotations.Type(type = "yes_no")
+    private boolean hasFailureEvents;
+
     @Column(name = "EVENT_ID", insertable = false, updatable = false)
     private Long eventId;
+
+    @Column(name = "FLOW_FILE_ID", insertable = false, updatable = false)
+    private String flowFileId;
+
 
     public NifiEvent() {
 
@@ -298,5 +320,38 @@ public class NifiEvent {
 
     public void setIsEndOfJob(boolean isEndOfJob) {
         this.isEndOfJob = isEndOfJob;
+    }
+
+
+    public boolean isFailure() {
+        return isFailure;
+    }
+
+    public void setIsFailure(boolean isFailure) {
+        this.isFailure = isFailure;
+    }
+
+    public boolean isBatchJob() {
+        return isBatchJob;
+    }
+
+    public void setIsBatchJob(boolean isBatchJob) {
+        this.isBatchJob = isBatchJob;
+    }
+
+    public boolean isFinalJobEvent() {
+        return isFinalJobEvent;
+    }
+
+    public void setIsFinalJobEvent(boolean isFinalJobEvent) {
+        this.isFinalJobEvent = isFinalJobEvent;
+    }
+
+    public boolean isHasFailureEvents() {
+        return hasFailureEvents;
+    }
+
+    public void setHasFailureEvents(boolean hasFailureEvents) {
+        this.hasFailureEvents = hasFailureEvents;
     }
 }

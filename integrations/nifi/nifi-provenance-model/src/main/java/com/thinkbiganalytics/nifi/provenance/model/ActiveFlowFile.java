@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
@@ -72,7 +73,7 @@ public class ActiveFlowFile {
 
     private boolean isRootFlowFile = false;
 
-    private boolean flowFileCompletionStatsCollected = false;
+    private AtomicBoolean flowFileCompletionStatsCollected = new AtomicBoolean(false);
 
 
     //Information gained from walking the Nifi Flow Graph
@@ -281,12 +282,12 @@ public class ActiveFlowFile {
         return id;
     }
 
-    public boolean isFlowFileCompletionStatsCollected() {
+    public AtomicBoolean getFlowFileCompletionStatsCollected() {
         return flowFileCompletionStatsCollected;
     }
 
     public void setFlowFileCompletionStatsCollected(boolean flowFileCompletionStatsCollected) {
-        this.flowFileCompletionStatsCollected = flowFileCompletionStatsCollected;
+        this.flowFileCompletionStatsCollected.set(flowFileCompletionStatsCollected);
     }
 
     public boolean isStartOfCurrentFlowFile(ProvenanceEventRecordDTO event) {

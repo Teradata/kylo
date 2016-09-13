@@ -25,4 +25,8 @@ public class DateTimeUtil {
   public static Date getUTCTime() {
     return convertToUTC(new Date());
   }
+
+  public static DateTime getNowUTCTime() {
+    return convertToUTC(DateTime.now());
+  }
 }

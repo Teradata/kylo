@@ -16,16 +16,16 @@ import java.util.concurrent.BlockingQueue;
  *
  * Created by sr186054 on 8/14/16.
  */
-public class JmsBatchedProvenanceEventFeedConsumer extends BatchedQueue<ProvenanceEventRecordDTO> {
+public class JmsImportantProvenanceEventConsumer extends BatchedQueue<ProvenanceEventRecordDTO> {
 
-    private static final Logger log = LoggerFactory.getLogger(JmsBatchedFailedProvenanceEventConsumer.class);
+    private static final Logger log = LoggerFactory.getLogger(JmsImportantProvenanceEventConsumer.class);
 
     private StreamConfiguration configuration;
 
 
     private ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter;
 
-    public JmsBatchedProvenanceEventFeedConsumer(StreamConfiguration configuration, ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter, BlockingQueue<ProvenanceEventRecordDTO> queue
+    public JmsImportantProvenanceEventConsumer(StreamConfiguration configuration, ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter, BlockingQueue<ProvenanceEventRecordDTO> queue
     ) {
         super(configuration.getJmsBatchDelay(), queue);
         this.configuration = configuration;
@@ -35,17 +35,11 @@ public class JmsBatchedProvenanceEventFeedConsumer extends BatchedQueue<Provenan
     @Override
     public void processQueue(List<ProvenanceEventRecordDTO> elements) {
         if (elements != null) {
-            log.info("processQueue for {} Nifi Events ", elements.size());
-            //group by job and send just the leaf nodes with event graph
-            //    GroupEventsByJob groupEventsByJob = new GroupEventsByJob();
-            //   ProvenanceEventRecordDTOHolder eventRecordDTOHolder =groupEventsByJob.groupByJob(elements);
-            //provenanceEventActiveMqWriter.writeEvents(eventRecordDTOHolder);
-            ProvenanceEventRecordDTOHolder eventRecordDTOHolder = new ProvenanceEventRecordDTOHolder();
-            eventRecordDTOHolder.setEvents(elements);
-            provenanceEventActiveMqWriter.writeEvents(eventRecordDTOHolder);
+            ProvenanceEventRecordDTOHolder holder = new ProvenanceEventRecordDTOHolder();
+            holder.setEvents(elements);
+            provenanceEventActiveMqWriter.writeEvents(holder);
         }
     }
 
 
 }
-

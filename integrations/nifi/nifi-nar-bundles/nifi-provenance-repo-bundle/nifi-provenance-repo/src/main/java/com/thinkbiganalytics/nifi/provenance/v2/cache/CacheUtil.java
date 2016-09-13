@@ -1,9 +1,11 @@
 package com.thinkbiganalytics.nifi.provenance.v2.cache;
 
+import com.google.common.collect.Sets;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceEventProcessingException;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
 import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.model.RootFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileGuavaCache;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flowfile.FlowFileMapDbCache;
@@ -79,7 +81,8 @@ public class CacheUtil {
 
         //Track any related Parents that are root flow files and link the jobs together
         //anything in this list should be linked together
-        Set<String> relatedRootFlowFiles = new HashSet<>();
+        Set<String> relatedRootFlowFileIds = new HashSet<>();
+        Set<RootFlowFile> relatedRootFlowFiles = new HashSet<>();
 
         //Build the graph of parent/child flow files
         if (event.getParentUuids() != null && !event.getParentUuids().isEmpty()) {
@@ -88,7 +91,8 @@ public class CacheUtil {
                 if (!flowFile.getId().equals(parent)) {
                     ActiveFlowFile parentFlowFile = flowFile.addParent(flowFileCache.getEntry(parent));
                     if(parentFlowFile.isRootFlowFile()){
-                        relatedRootFlowFiles.add(parentFlowFile.getId());
+                        relatedRootFlowFileIds.add(parentFlowFile.getId());
+                        relatedRootFlowFiles.add(parentFlowFile.getRootFlowFile());
                     }
                     parentFlowFile.addChild(flowFile);
                     if (!flowFile.isRootFlowFile()) {
@@ -112,7 +116,13 @@ public class CacheUtil {
         }
         //link the root files if they exist
         //This events Root Flow file is related to these other root flow files
-        event.setRelatedRootFlowFiles(relatedRootFlowFiles);
+        event.setRelatedRootFlowFiles(relatedRootFlowFileIds);
+        if (!relatedRootFlowFiles.isEmpty()) {
+            relatedRootFlowFiles.forEach(rootFlowFile -> {
+                rootFlowFile.addRelatedRootFlowFiles(Sets.newHashSet(relatedRootFlowFiles));
+            });
+        }
+
 
         if (flowFile.getRootFlowFile() != null && StringUtils.isNotBlank(flowFile.getRootFlowFile().getFeedProcessGroupId())) {
             provenanceFeedLookup.ensureProcessorIsInCache(flowFile.getRootFlowFile().getFeedProcessGroupId(), event.getComponentId());

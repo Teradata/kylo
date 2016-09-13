@@ -55,6 +55,10 @@ public class NifiEventProvider {
         nifiEvent.setSourceConnectionId(eventRecordDTO.getSourceConnectionIdentifier());
         String attributesJSON = ObjectMapperSerializer.serialize(eventRecordDTO.getAttributes());
         nifiEvent.setAttributesJson(attributesJSON);
+        nifiEvent.setIsFinalJobEvent(eventRecordDTO.isFinalJobEvent());
+        nifiEvent.setIsFailure(eventRecordDTO.isFailure());
+        nifiEvent.setIsBatchJob(eventRecordDTO.isBatchJob());
+        nifiEvent.setHasFailureEvents(eventRecordDTO.isHasFailedEvents());
         return nifiEvent;
     }
 

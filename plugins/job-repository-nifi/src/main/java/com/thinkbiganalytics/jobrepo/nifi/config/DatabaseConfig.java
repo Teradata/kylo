@@ -2,7 +2,6 @@ package com.thinkbiganalytics.jobrepo.nifi.config;
 
 
 import com.thinkbiganalytics.jobrepo.jpa.ExecutionContextSerializationHelper;
-import com.thinkbiganalytics.jobrepo.nifi.provenance.NifiFailureEventJmsReceiver;
 import com.thinkbiganalytics.jobrepo.nifi.provenance.NifiStatsJmsReceiver;
 
 import org.springframework.batch.core.repository.ExecutionContextSerializer;
@@ -46,10 +45,6 @@ public class DatabaseConfig {
         return new NifiStatsJmsReceiver();
     }
 
-    @Bean
-    public NifiFailureEventJmsReceiver nifiFailureEventJmsReceiver() {
-        return new NifiFailureEventJmsReceiver();
-    }
 
     @Bean
     public ExecutionContextSerializer executionContextSerializer() throws Exception{

@@ -225,11 +225,6 @@
                     renderEnd: function () {
                         // fixChartWidth();
                     }
-                },
-                "zoom": {
-                    "enabled": true,
-                    "verticalOff": true,
-                    "unzoomEventType": "dblclick.zoom"
                 }
             },
             title: {
@@ -292,11 +287,6 @@
                     renderEnd: function () {
                         // fixChartWidth();
                     }
-                },
-                "zoom": {
-                    "enabled": true,
-                    "verticalOff": true,
-                    "unzoomEventType": "dblclick.zoom"
                 }
             },
             title: {
