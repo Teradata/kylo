@@ -71,7 +71,7 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-simple-auth</artifactId>
+            <artifactId>thinkbig-security-auth-simple</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
