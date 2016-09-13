@@ -372,6 +372,20 @@ app.config(function($stateProvider,$urlRouterProvider) {
             breadcrumbRoot: true,
             displayName: "Groups"
         }
+    }).state("group-details", {
+        url: "/group-details/{groupId}",
+        params: {
+            groupId: null
+        },
+        views: {
+            "content": {
+                templateUrl: "js/group-details/group-details.html"
+            }
+        },
+        data: {
+            breadcrumbRoot: false,
+            displayName: "Group Details"
+        }
     })
 });
 

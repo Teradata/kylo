@@ -13,10 +13,10 @@
  * Metadata for a user group in Kylo.
  *
  * @typedef {Object} GroupPrincipal
- * @property {string} description a human-readable summary
+ * @property {string|null} description a human-readable summary
  * @property {number} memberCount number of users and groups within the group
  * @property {string} systemName unique name
- * @property {string} title human-readable name
+ * @property {string|null} title human-readable name
  */
 
 angular.module(MODULE_FEED_MGR).factory("UserService", function($http, RestUrlService) {
@@ -32,6 +32,19 @@ angular.module(MODULE_FEED_MGR).factory("UserService", function($http, RestUrlSe
 
     angular.extend(UserService.prototype, {
         /**
+         * Deletes the group with the specified system name.
+         *
+         * @param {string} groupId the system name
+         * @returns {Promise} for when the group is deleted
+         */
+        deleteGroup: function(groupId) {
+            return $http({
+                method: "DELETE",
+                url: RestUrlService.SECURITY_GROUPS_URL + "/" + groupId
+            });
+        },
+
+        /**
          * Deletes the user with the specified system name.
          *
          * @param {string} userId the system name
@@ -42,6 +55,19 @@ angular.module(MODULE_FEED_MGR).factory("UserService", function($http, RestUrlSe
                 method: "DELETE",
                 url: RestUrlService.SECURITY_USERS_URL + "/" + userId
             });
+        },
+
+        /**
+         * Gets metadata for the specified group.
+         *
+         * @param {string} groupId the system name
+         * @returns {GroupPrincipal} the group
+         */
+        getGroup: function(groupId) {
+            return $http.get(RestUrlService.SECURITY_GROUPS_URL + "/" + groupId)
+                    .then(function(response) {
+                        return response.data;
+                    });
         },
 
         /**
@@ -82,9 +108,27 @@ angular.module(MODULE_FEED_MGR).factory("UserService", function($http, RestUrlSe
         },
 
         /**
+         * Saves the specified group.
+         *
+         * @param {GroupPrincipal} group the group
+         * @returns {Promise} for when the group is saved
+         */
+        saveGroup: function(group) {
+            return $http({
+                data: angular.toJson(group),
+                headers: {"Content-Type": "application/json; charset=UTF-8"},
+                method: "POST",
+                url: RestUrlService.SECURITY_GROUPS_URL
+            }).then(function() {
+                return group;
+            });
+        },
+
+        /**
          * Saves the specified user.
          *
          * @param {UserPrincipal} user the user
+         * @returns {Promise} for when the user is saved
          */
         saveUser: function(user) {
             return $http({
