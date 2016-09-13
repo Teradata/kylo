@@ -64,9 +64,9 @@ describe("VisualQueryColumnDelegate", function() {
         };
         var grid = {
             columns: [
-                {field: "username"},
-                {field: "col1"},
-                {field: "eventname"}
+                {field: "username", visible: true},
+                {field: "col1", visible: true},
+                {field: "eventname", visible: true}
             ]
         };
 
@@ -92,9 +92,9 @@ describe("VisualQueryColumnDelegate", function() {
         };
         var grid = {
             columns: [
-                {field: "username"},
-                {field: "col1"},
-                {field: "eventname"}
+                {field: "username", visible: true},
+                {field: "col1", visible: true},
+                {field: "eventname", visible: true}
             ]
         };
 

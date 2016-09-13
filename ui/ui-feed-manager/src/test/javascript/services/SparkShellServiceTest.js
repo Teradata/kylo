@@ -50,9 +50,6 @@ describe("SparkShellService", function() {
         var defs = service.getColumnDefs();
         expect(defs).toEqual({
             "!name": "columns",
-            "!define": {
-                "Column": {}
-            },
             "pricepaid": "Column",
             "commission": "Column",
             "qtysold": "Column"

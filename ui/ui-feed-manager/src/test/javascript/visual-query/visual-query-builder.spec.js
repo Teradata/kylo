@@ -138,10 +138,10 @@ describe("VisualQueryBuilderController", function () {
         connection.data.joinKeys = {};
 
         if (srcJoinKey !== null) {
-            connection.data.joinKeys.sourceKey = dstJoinKey;
+            connection.data.joinKeys.sourceKey = srcJoinKey;
         }
         if (dstJoinKey !== null) {
-            connection.data.joinKeys.destKey = srcJoinKey;
+            connection.data.joinKeys.destKey = dstJoinKey;
         }
 
         if (srcJoinKey !== null || dstJoinKey !== null) {
