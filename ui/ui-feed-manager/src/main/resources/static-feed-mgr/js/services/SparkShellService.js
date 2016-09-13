@@ -226,6 +226,15 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         },
 
         /**
+         * Gets the Spark script without sampling for the feed.
+         *
+         * @returns {string} the Spark script
+         */
+        getFeedScript: function() {
+            return this.getScript(null, null, false);
+        },
+
+        /**
          * Gets the schema fields for the the current transformation.
          *
          * @returns {Array.<SchemaField>|null} the schema fields or {@code null} if the transformation has not been applied
@@ -284,27 +293,29 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         /**
          * Gets the Spark script.
          *
-         * @param {number} [opt_start] the index of the first transformation
-         * @param {number} [opt_end] the index of the last transformation
+         * @param {number|null} [opt_start] the index of the first transformation
+         * @param {number|null} [opt_end] the index of the last transformation
+         * @param {boolean|null} [opt_sample] {@code false} to disable sampling
          * @returns {string} the Spark script
          */
-        getScript: function(opt_start, opt_end) {
-            // Determine start and end indexes
-            var start = (typeof(opt_start) !== "undefined") ? opt_start : 0;
-            var end = (typeof(opt_end) !== "undefined") ? opt_end + 1 : this.states_.length;
+        getScript: function(opt_start, opt_end, opt_sample) {
+            // Parse arguments
+            var start = angular.isNumber(opt_start) ? opt_start : 0;
+            var end = angular.isNumber(opt_end) ? opt_end + 1 : this.states_.length;
+            var sample = (angular.isUndefined(opt_sample) || opt_sample === null || opt_sample);
 
             // Build script
             var sparkScript = "import org.apache.spark.sql._\n";
 
             if (start === 0) {
                 sparkScript += "sqlContext.sql(\"" + this.source_ + "\")";
-                if (this.limitBeforeSample_ && this.limit_ > 0) {
+                if (sample && this.limitBeforeSample_ && this.limit_ > 0) {
                     sparkScript += ".limit(" + this.limit_ + ")";
                 }
-                if (this.sample_ > 0 && this.sample_ < 1) {
+                if (sample && this.sample_ > 0 && this.sample_ < 1) {
                     sparkScript += ".sample(false, " + this.sample_ + ")";
                 }
-                if (!this.limitBeforeSample_ && this.limit_ > 0) {
+                if (sample && !this.limitBeforeSample_ && this.limit_ > 0) {
                     sparkScript += ".limit(" + this.limit_ + ")";
                 }
             } else {

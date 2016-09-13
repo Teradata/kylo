@@ -551,7 +551,7 @@
 
             // Populate Feed Model from the Visual Query Model
             var feedModel = FeedService.createFeedModel;
-            feedModel.dataTransformation.dataTransformScript = self.sparkShellService.getScript();
+            feedModel.dataTransformation.dataTransformScript = self.sparkShellService.getFeedScript();
             feedModel.dataTransformation.states = self.sparkShellService.save();
 
             feedModel.table.existingTableName = "";

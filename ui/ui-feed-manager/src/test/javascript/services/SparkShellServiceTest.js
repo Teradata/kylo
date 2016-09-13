@@ -72,6 +72,30 @@ describe("SparkShellService", function() {
         expect(service.getColumnLabel("col1")).toBe("(pricepaid - commission)")
     });
 
+    // getFeedScript
+    it("should get a feed script", function() {
+        // Create service
+        var service = new SparkShellService("SELECT * FROM invalid");
+        service.states_[0].columns = [
+            {field: "pricepaid", hiveColumnLabel: "pricepaid"},
+            {field: "commission", hiveColumnLabel: "commission"},
+            {field: "qtysold", hiveColumnLabel: "qtysold"}
+        ];
+        service.setFunctionDefs({
+            "!define": {"Column": {"as": {"!spark": ".as(%s)", "!sparkType": "column"}}},
+            "divide": {"!spark": "%c.divide(%c)", "!sparkType": "column"},
+            "multiply": {"!spark": "%c.multiply(%c)", "!sparkType": "column"}
+        });
+
+        // Test script
+        var formula = "(divide(divide(commission, pricepaid), qtysold) * 100).as(\"overhead\")";
+        service.push(tern.parse(formula), {});
+        expect(service.getFeedScript()).toBe("import org.apache.spark.sql._\n" +
+                                         "sqlContext.sql(\"SELECT * FROM invalid\")" +
+                                         ".select(new Column(\"*\"), new Column(\"commission\").divide(new Column(\"pricepaid\"))" +
+                                         ".divide(new Column(\"qtysold\")).multiply(functions.lit(100)).as(\"overhead\"))");
+    });
+
     // getFields
     describe("get fields", function() {
         it("from applied transformation", function() {
