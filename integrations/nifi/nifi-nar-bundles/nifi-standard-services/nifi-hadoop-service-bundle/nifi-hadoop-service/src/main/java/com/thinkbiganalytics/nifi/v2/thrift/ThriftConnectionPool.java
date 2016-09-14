@@ -8,33 +8,7 @@ import com.thinkbiganalytics.nifi.security.SecurityUtil;
 
 import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.annotation.documentation.CapabilityDescription;
-import org.apache.nifi.annotation.documentation.Tags;
-import org.apache.nifi.annotation.lifecycle.OnDisabled;
-import org.apache.nifi.annotation.lifecycle.OnEnabled;
-import org.apache.nifi.components.PropertyDescriptor;
-import org.apache.nifi.controller.AbstractControllerService;
-import org.apache.nifi.controller.ConfigurationContext;
-import org.apache.nifi.processor.exception.ProcessException;
-import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.reporting.InitializationException;
-
-import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.commons.dbcp.BasicDataSource;
 import org.apache.hadoop.conf.Configuration;
-import org.apache.hadoop.security.UserGroupInformation;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.annotation.lifecycle.OnDisabled;
@@ -51,6 +25,19 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
 import org.apache.nifi.util.NiFiProperties;
+
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Implementation of for Database Connection Pooling Service. Apache DBCP is used for connection pooling functionality.
@@ -104,6 +91,15 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
             .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
             .build();
 
+    public static final PropertyDescriptor DB_VALIDATION_QUERY = new PropertyDescriptor.Builder()
+        .name("Validation Query")
+        .description("Query to be used when testing the Datasource. ")
+        .defaultValue("show tables 'test'")
+        .required(true)
+        .sensitive(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
+
     public static final PropertyDescriptor MAX_WAIT_TIME = new PropertyDescriptor.Builder()
             .name("Max Wait Time")
             .description("The maximum amount of time that the pool will wait (when there are no available connections) "
@@ -145,6 +141,7 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         .addValidator(kerberosConfigValidator())
         .build();
 
+
     private static final List<PropertyDescriptor> properties;
 
     static {
@@ -154,6 +151,7 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         props.add(DB_DRIVER_JAR_URL);
         props.add(DB_USER);
         props.add(DB_PASSWORD);
+        props.add(DB_VALIDATION_QUERY);
         props.add(MAX_WAIT_TIME);
         props.add(MAX_TOTAL_CONNECTIONS);
         props.add(HADOOP_CONFIGURATION_RESOURCES);
@@ -194,23 +192,16 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         this.hadoopConfiguraiton = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
         this.principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
         this.keytab = context.getProperty(KERBEROS_KEYTAB).getValue();
+        final String validationQuery = context.getProperty(DB_VALIDATION_QUERY).getValue();
 
-
-        dataSource = new BasicDataSource();
-        dataSource.setDriverClassName(drv);
-
-        // Optional driver URL, when exist, this URL will be used to locate driver jar file location
+        // Optional driver URL used to get DriverClassLoader, when exist, this URL will be used to locate driver jar file location
         final String urlString = context.getProperty(DB_DRIVER_JAR_URL).getValue();
-        dataSource.setDriverClassLoader(getDriverClassLoader(urlString, drv));
-
         final String dburl = context.getProperty(DATABASE_URL).getValue();
 
-        //dataSource.setMaxWait(maxWaitMillis);
-        //dataSource.setMaxActive(maxTotal);
-
-        dataSource.setUrl(dburl);
-        dataSource.setUsername(user);
-        dataSource.setPassword(passw);
+        dataSource =
+            new RefreshableDataSource.Builder().driverClassName(drv).url(dburl).username(user).password(passw).driverClassLoader(getDriverClassLoader(urlString, drv)).validationQuery(validationQuery)
+                .build();
+        getLogger().info("Created new ThirftConnectionPool with Refreshable Datasource for " + urlString);
     }
 
     /**
