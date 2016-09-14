@@ -12,6 +12,7 @@ import com.thinkbiganalytics.jobrepo.jpa.NifiEventProvider;
 import com.thinkbiganalytics.jobrepo.jpa.NifiJobExecutionProvider;
 import com.thinkbiganalytics.jobrepo.jpa.model.NifiEvent;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
 import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
@@ -219,7 +220,7 @@ public class ProvenanceEventReceiver {
     private void failedJob(ProvenanceEventRecordDTO event) {
         FeedOperation.State state = FeedOperation.State.FAILURE;
         log.info("FAILED JOB for Event {} ", event);
-        //this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, "Failed Job"));
+        this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, "Failed Job"));
     }
 
     /**
@@ -236,7 +237,7 @@ public class ProvenanceEventReceiver {
     private void successfulJob(ProvenanceEventRecordDTO event) {
         FeedOperation.State state = FeedOperation.State.SUCCESS;
         log.info("Success JOB for Event {} ", event);
-        // this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, ""));
+        this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, ""));
     }
 
 
