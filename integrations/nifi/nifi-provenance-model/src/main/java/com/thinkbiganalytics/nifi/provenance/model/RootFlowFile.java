@@ -37,7 +37,12 @@ public class RootFlowFile extends ActiveFlowFile {
     }
 
     public boolean isBatch() {
-        return getFirstEventType().equals(FIRST_EVENT_TYPE.BATCH);
+        boolean isBatch = false;
+        if (getFirstEventType() != null) {
+
+            isBatch = getFirstEventType().equals(FIRST_EVENT_TYPE.BATCH);
+        }
+        return isBatch;
     }
 
     public boolean isStream() {
