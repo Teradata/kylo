@@ -154,6 +154,10 @@ In addition, if you run the script to modify the NiFI JAVA_HOME variable you wil
 
     /opt/nifi/current/bin/nifi.sh
 
+=== S3 Support For Data Transformations
+
+Spark requires additional configuration in order to read Hive tables located in S3. Please see the https://wiki.thinkbiganalytics.com/display/RD/Accessing+S3+from+the+data+wrangler[Accessing S3 from the data wrangler] how-to article.
+
 == Starting and Stopping the Services Manually
 If you follow the instructions for the installations steps above all of the below applications will be set to startup automatically if you restart the server. In the Hortonworks sandbox
 the services for thinkbig and NiFI are set to start after all of the services managed by Ambari start up.
