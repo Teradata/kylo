@@ -1,7 +1,19 @@
 package com.thinkbiganalytics.metadata.modeshape.user;
 
+import com.thinkbiganalytics.metadata.api.user.User;
+import com.thinkbiganalytics.metadata.api.user.UserGroup;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.extension.JcrExtensiblePropertyCollection;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
+
 import java.io.Serializable;
 import java.security.Principal;
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -9,17 +21,8 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.jcr.Node;
+import javax.jcr.PropertyType;
 import javax.jcr.RepositoryException;
-
-import com.thinkbiganalytics.metadata.api.user.User;
-import com.thinkbiganalytics.metadata.api.user.UserGroup;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.security.GroupPrincipal;
-import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  * A {@link User} stored in a JCR repository.
@@ -37,6 +40,9 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
 
     /** Name of the {@code enabled} property */
     private static final String ENABLED = "tba:enabled";
+
+    /** Name of the {@code groups} property */
+    private static final String GROUPS = "tba:groups";
 
     /** Name of the {@code password} property */
     private static final String PASSWORD = "tba:password";
@@ -103,6 +109,7 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
         setProperty(PASSWORD, password);
     }
 
+    @Nonnull
     @Override
     public String getSystemName() {
         return JcrPropertyUtil.getName(this.node);
@@ -122,8 +129,9 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
     @Override
     public Set<UserGroup> getContainingGroups() {
         return JcrPropertyUtil.<Node>getSetProperty(this.node, JcrUserGroup.GROUPS).stream()
-                        .map(node -> (UserGroup) JcrUtil.toJcrObject(node, JcrUserGroup.NODE_TYPE, JcrUserGroup.class))
-                        .collect(Collectors.toSet());
+                .filter(node -> node != null)
+                .map(node -> (UserGroup) JcrUtil.toJcrObject(node, JcrUserGroup.NODE_TYPE, JcrUserGroup.class))
+                .collect(Collectors.toSet());
     }
     
     /* (non-Javadoc)
@@ -137,6 +145,7 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.User#getGroupPrincipals()
      */
+    @Nonnull
     @Override
     public Set<GroupPrincipal> getAllGroupPrincipals() {
         return streamAllContainingGroups()
@@ -149,6 +158,23 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
         
         return Stream.concat(groups.stream(), 
                              groups.stream().flatMap(group -> group.getAllContainingGroups().stream()));
+    }
+
+    @Nonnull
+    @Override
+    @SuppressWarnings("unchecked")
+    public Set<UserGroup> getGroups() {
+        return getContainingGroups();
+    }
+
+    @Override
+    public void setGroups(@Nonnull final Set<UserGroup> groups) {
+        final JcrExtensiblePropertyCollection collection = new JcrExtensiblePropertyCollection(PropertyType.WEAKREFERENCE, groups);
+        try {
+            JcrPropertyUtil.setProperties(node.getSession(), node, Collections.singletonMap(GROUPS, collection));
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to set groups", e);
+        }
     }
 
     /**

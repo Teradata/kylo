@@ -1,8 +1,20 @@
 package com.thinkbiganalytics.metadata.modeshape.user;
 
+import com.thinkbiganalytics.metadata.api.user.GroupAlreadyExistsException;
+import com.thinkbiganalytics.metadata.api.user.User;
+import com.thinkbiganalytics.metadata.api.user.UserAlreadyExistsException;
+import com.thinkbiganalytics.metadata.api.user.UserGroup;
+import com.thinkbiganalytics.metadata.api.user.UserGroup.ID;
+import com.thinkbiganalytics.metadata.api.user.UserProvider;
+import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
+import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
+import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.modeshape.common.UsersPaths;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+
+import org.apache.commons.lang.StringEscapeUtils;
+
 import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
@@ -10,20 +22,6 @@ import javax.jcr.ItemNotFoundException;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
-
-import org.apache.commons.lang.StringEscapeUtils;
-
-import com.thinkbiganalytics.metadata.api.user.GroupAlreadyExistsException;
-import com.thinkbiganalytics.metadata.api.user.User;
-import com.thinkbiganalytics.metadata.api.user.UserAlreadyExistsException;
-import com.thinkbiganalytics.metadata.api.user.UserGroup;
-import com.thinkbiganalytics.metadata.api.user.UserProvider;
-import com.thinkbiganalytics.metadata.api.user.UserGroup.ID;
-import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
-import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
-import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
-import com.thinkbiganalytics.metadata.modeshape.common.UsersPaths;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 
 /**
  * Provides access to {@link User} objects stored in a JCR repository.
@@ -70,7 +68,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#resolveUserId(java.io.Serializable)
      */
     @Override
-    public User.ID resolveUserId(Serializable id) {
+    public User.ID resolveUserId(@Nonnull Serializable id) {
         return new JcrUser.UserId(id);
     }
     
@@ -78,7 +76,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#resolveGroupId(java.io.Serializable)
      */
     @Override
-    public UserGroup.ID resolveGroupId(Serializable id) {
+    public UserGroup.ID resolveGroupId(@Nonnull Serializable id) {
         return new JcrUserGroup.UserGroupId(id);
     }
 
@@ -94,8 +92,9 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#findUserById(com.thinkbiganalytics.metadata.api.user.User.ID)
      */
+    @Nonnull
     @Override
-    public Optional<User> findUserById(User.ID id) {
+    public Optional<User> findUserById(@Nonnull User.ID id) {
         try {
             Node node = getSession().getNodeByIdentifier(id.toString());
             
@@ -115,6 +114,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#getUsers()
      */
+    @Nonnull
     @Override
     public Iterable<User> findUsers() {
         String query = "SELECT * FROM [" + JcrUser.NODE_TYPE + "]";
@@ -124,14 +124,16 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#createUser(java.lang.String)
      */
+    @Nonnull
     @Override
-    public User createUser(String username) {
+    public User createUser(@Nonnull String username) {
         return createUser(username, false);
     }
     
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#findGroupById(com.thinkbiganalytics.metadata.api.user.UserGroup.ID)
      */
+    @Nonnull
     @Override
     public Optional<UserGroup> findGroupById(ID id) {
         try {
@@ -153,15 +155,17 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#findGroupByName(java.lang.String)
      */
+    @Nonnull
     @Override
-    public Optional<UserGroup> findGroupByName(String groupName) {
+    public Optional<UserGroup> findGroupByName(@Nonnull String groupName) {
         final String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "] AS user WHERE NAME() = '" + StringEscapeUtils.escapeSql(groupName) + "'";
-        return Optional.ofNullable((UserGroup) findFirst(query, JcrUserGroup.class));
+        return Optional.ofNullable(findFirst(query, JcrUserGroup.class));
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#getGroups()
      */
+    @Nonnull
     @Override
     public Iterable<UserGroup> findGroups() {
         String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "]";
@@ -171,16 +175,18 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#ensureGroup(java.lang.String)
      */
+    @Nonnull
     @Override
-    public UserGroup ensureGroup(String groupName) {
+    public UserGroup ensureGroup(@Nonnull String groupName) {
         return createGroup(groupName, true);
     }
 
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#createGroup(java.lang.String)
      */
+    @Nonnull
     @Override
-    public UserGroup createGroup(String groupName) {
+    public UserGroup createGroup(@Nonnull String groupName) {
         return createGroup(groupName, false);
     }
 
@@ -190,7 +196,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
         
         try {
             Node groupsNode = session.getRootNode().getNode(UsersPaths.GROUPS.toString());
-            
+
             if (session.getRootNode().hasNode(groupPath)) {
                 if (ensure) {
                     return JcrUtil.getJcrObject(groupsNode, groupName, JcrUserGroup.class);
@@ -224,5 +230,27 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed attempting to create a new user with name: " + username, e);
         }
+    }
+
+    @Override
+    public void deleteGroup(@Nonnull final UserGroup group) {
+        delete(group);
+    }
+
+    @Override
+    public void deleteUser(@Nonnull final User user) {
+        delete(user);
+    }
+
+    @Nonnull
+    @Override
+    public UserGroup updateGroup(@Nonnull final UserGroup group) {
+        return (UserGroup)update(group);
+    }
+
+    @Nonnull
+    @Override
+    public User updateUser(@Nonnull final User user) {
+        return (User)update(user);
     }
 }

@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.metadata.modeshape.user;
 
 import java.io.Serializable;
@@ -52,6 +49,7 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity#getId()
      */
+    @Nonnull
     @Override
     public UserGroupId getId() {
         try {
@@ -64,6 +62,7 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrSystemEntity#getSystemName()
      */
+    @Nonnull
     @Override
     public String getSystemName() {
         return JcrPropertyUtil.getName(this.node);
@@ -88,6 +87,7 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserGroup#getUsers()
      */
+    @Nonnull
     @Override
     public Iterable<User> getUsers() {
         return iterateReferances(JcrUser.NODE_TYPE, User.class, JcrUser.class);
@@ -96,6 +96,7 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserGroup#streamAllUsers()
      */
+    @Nonnull
     public Stream<User> streamAllUsers() {
         return streamAllGroups().flatMap(g -> StreamSupport.stream(g.getUsers().spliterator(), false));
     }
@@ -104,7 +105,7 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
      * @see com.thinkbiganalytics.metadata.api.user.UserGroup#addUser(com.thinkbiganalytics.metadata.api.user.User)
      */
     @Override
-    public boolean addUser(User user) {
+    public boolean addUser(@Nonnull User user) {
         JcrUser jcrUser = (JcrUser) user;
         return JcrPropertyUtil.addToSetProperty(jcrUser.getNode(), GROUPS, this.node, true);
     }
@@ -113,7 +114,7 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
      * @see com.thinkbiganalytics.metadata.api.user.UserGroup#removeUser(com.thinkbiganalytics.metadata.api.user.User)
      */
     @Override
-    public boolean removeUser(User user) {
+    public boolean removeUser(@Nonnull User user) {
         JcrUser jcrUser = (JcrUser) user;
         return JcrPropertyUtil.removeFromSetProperty(jcrUser.getNode(), GROUPS, this.node);
     }
@@ -121,6 +122,7 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserGroup#getContainingGroups()
      */
+    @Nonnull
     @Override
     public Set<UserGroup> getContainingGroups() {
         return streamContainingGroupNodes(this.node)
@@ -141,6 +143,7 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserGroup#getGroups()
      */
+    @Nonnull
     @Override
     public Iterable<UserGroup> getGroups() {
         return iterateReferances(JcrUserGroup.NODE_TYPE, UserGroup.class, JcrUserGroup.class);
@@ -149,6 +152,7 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserGroup#streamAllGroups()
      */
+    @Nonnull
     public Stream<UserGroup> streamAllGroups() {
         return StreamSupport.stream(getGroups().spliterator(), false).flatMap(g -> g.streamAllGroups());
     }
@@ -157,7 +161,7 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
      * @see com.thinkbiganalytics.metadata.api.user.UserGroup#addGroup(com.thinkbiganalytics.metadata.api.user.UserGroup)
      */
     @Override
-    public boolean addGroup(UserGroup group) {
+    public boolean addGroup(@Nonnull UserGroup group) {
         JcrUserGroup jcrGrp = (JcrUserGroup) group;
         return JcrPropertyUtil.addToSetProperty(jcrGrp.getNode(), GROUPS, this.node, true);
     }
@@ -166,7 +170,7 @@ public class JcrUserGroup extends AbstractJcrAuditableSystemEntity implements Us
      * @see com.thinkbiganalytics.metadata.api.user.UserGroup#removeGroup(com.thinkbiganalytics.metadata.api.user.UserGroup)
      */
     @Override
-    public boolean removeGroup(UserGroup group) {
+    public boolean removeGroup(@Nonnull UserGroup group) {
         JcrUserGroup jcrGrp = (JcrUserGroup) group;
         return JcrPropertyUtil.removeFromSetProperty(jcrGrp.getNode(), GROUPS, this.node);
     }

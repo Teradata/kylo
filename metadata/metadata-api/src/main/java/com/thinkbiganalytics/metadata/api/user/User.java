@@ -1,13 +1,13 @@
 package com.thinkbiganalytics.metadata.api.user;
 
+import com.thinkbiganalytics.security.GroupPrincipal;
+
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
-import com.thinkbiganalytics.security.GroupPrincipal;
 
 /**
  * Metadata for a user principal.
@@ -93,22 +93,22 @@ public interface User {
      * Enables or disables access to Kylo for this user.
      */
     void setEnabled(boolean enabled);
-    
+
     /**
      * @return all of the groups of which this user is a direct member
      */
     Set<UserGroup> getContainingGroups();
-    
+
     /**
      * @return all of the groups of which this user is a member; both directly and transitively.
      */
     Set<UserGroup> getAllContainingGroups();
-    
+
     /**
      * @return the principal representing this user
      */
     Principal getPrincipal();
-    
+
     /**
      * Collects a set of all group principals, both direct membership and transitive membership, 
      * associated with this user.
@@ -116,4 +116,19 @@ public interface User {
      */
     @Nonnull
     Set<GroupPrincipal> getAllGroupPrincipals();
+
+    /**
+     * Gets the list of all groups this user belongs to.
+     *
+     * @return the user's groups
+     */
+    @Nonnull
+    Set<UserGroup> getGroups();
+
+    /**
+     * Sets the groups this user belongs to.
+     *
+     * @param groups the groups
+     */
+    void setGroups(@Nonnull Set<UserGroup> groups);
 }
