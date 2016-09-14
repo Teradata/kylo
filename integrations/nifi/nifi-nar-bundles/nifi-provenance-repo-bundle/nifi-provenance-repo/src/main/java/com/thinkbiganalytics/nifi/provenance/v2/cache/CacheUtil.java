@@ -131,6 +131,7 @@ public class CacheUtil {
         } else {
             event.setFeedName(flowFile.getFeedName());
             event.setFeedProcessGroupId(flowFile.getFeedProcessGroupId());
+            event.setComponentName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
         }
         //if we dont have a root flow file assigned the we cant proceed... error out
         if (flowFile.getRootFlowFile() == null) {
