@@ -10,9 +10,9 @@
                     <md-list-item class="md-secondary" dir-paginate="user in vm.users |orderBy:vm.paginationData.sort |filter:vm.filter |itemsPerPage:vm.paginationData.rowsPerPage"
                                   pagination-id="vm.pageName" ng-class="{disabled: !user.enabled}">
                         <div layout="row" layout-fill>
-                            <div flex="30" layout="column" class="item-column md-list-item-text" ng-click="vm.userDetails(user)" title="{{user.displayName}}">
-                                <span class="item-title" title="{{user.displayName}}">
-                                    {{user.displayName}}
+                            <div flex="30" layout="column" class="item-column md-list-item-text" ng-click="vm.userDetails(user)" title="{{vm.getDisplayName(user)}}">
+                                <span class="item-title" title="{{vm.getDisplayName(user)}}">
+                                    {{vm.getDisplayName(user)}}
                                 </span>
                                 <span class="column-title column-title-bottom">
                                     <span ng-if="!user.enabled">
@@ -60,7 +60,7 @@
                         <tr md-row
                             ng-repeat="user in vm.users |orderBy:vm.paginationData.sort |filter:vm.filter |limitTo:vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage"
                             ng-click="vm.userDetails(user)">
-                            <td md-cell>{{user.displayName}}</td>
+                            <td md-cell>{{vm.getDisplayName(user)}}</td>
                             <td md-cell>{{user.email}}</td>
                             <td md-cell>
                                 <span ng-class="{enabled: user.enabled, disabled: !user.enabled}">

@@ -10,8 +10,8 @@
                     <md-list-item class="md-secondary" dir-paginate="group in vm.groups |orderBy:vm.paginationData.sort |filter:vm.filter |itemsPerPage:vm.paginationData.rowsPerPage"
                                   pagination-id="vm.pageName">
                         <div layout="row" layout-fill>
-                            <div flex="30" layout="column" class="item-column md-list-item-text" ng-click="vm.groupDetails(group)" title="{{group.title}}">
-                                <span class="item-title" title="{{group.title}}">{{group.title}}</span>
+                            <div flex="30" layout="column" class="item-column md-list-item-text" ng-click="vm.groupDetails(group)" title="{{vm.getTitle(group)}}">
+                                <span class="item-title" title="{{vm.getTitle(group)}}">{{vm.getTitle(group)}}</span>
                                 <span class="column-title column-title-bottom">Title</span>
                             </div>
                             <div flex="50" layout="column" class="item-column md-list-item-text">
@@ -52,7 +52,7 @@
                         <tr md-row
                             ng-repeat="group in vm.groups |orderBy:vm.paginationData.sort |filter:vm.filter |limitTo:vm.paginationData.rowsPerPage: (vm.currentPage - 1) * vm.paginationData.rowsPerPage"
                             ng-click="vm.groupDetails(group)">
-                            <td md-cell>{{group.title}}</td>
+                            <td md-cell>{{vm.getTitle(group)}}</td>
                             <td md-cell>{{group.description}}</td>
                             <td md-cell>{{group.memberCount}}</td>
                         </tr>

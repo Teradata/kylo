@@ -86,6 +86,16 @@
         self.viewType = PaginationDataService.viewType(PAGE_NAME);
 
         /**
+         * Gets the title of the specified group. Defaults to the system name if the title is blank.
+         *
+         * @param group the group
+         * @returns {string} the title
+         */
+        self.getTitle = function(group) {
+            return (angular.isString(group.title) && group.title.length > 0) ? group.title : group.systemName;
+        };
+
+        /**
          * Navigates to the details page for the specified group.
          *
          * @param group the group

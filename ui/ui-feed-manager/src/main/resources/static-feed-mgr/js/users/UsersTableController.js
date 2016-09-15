@@ -92,6 +92,16 @@
         self.viewType = PaginationDataService.viewType(PAGE_NAME);
 
         /**
+         * Gets the display name of the specified user. Defaults to the system name if the display name is blank.
+         *
+         * @param user the user
+         * @returns {string} the display name
+         */
+        self.getDisplayName = function(user) {
+            return (angular.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
+        };
+
+        /**
          * Gets the title for each group the user belongs to.
          *
          * @param user the user
