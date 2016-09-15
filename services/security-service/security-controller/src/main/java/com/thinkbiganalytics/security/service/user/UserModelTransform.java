@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.security.service.user;
 
+import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.metadata.api.user.User;
 import com.thinkbiganalytics.metadata.api.user.UserGroup;
 import com.thinkbiganalytics.security.rest.model.GroupPrincipal;
@@ -25,6 +26,7 @@ public class UserModelTransform {
         return (UserGroup group) -> {
             final GroupPrincipal principal = new GroupPrincipal();
             principal.setDescription(group.getDescription());
+            principal.setMemberCount(Iterables.size(group.getGroups()) + Iterables.size(group.getUsers()));
             principal.setTitle(group.getTitle());
             principal.setSystemName(group.getSystemName());
             return principal;

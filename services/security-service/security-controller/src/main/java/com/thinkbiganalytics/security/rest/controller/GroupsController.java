@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.security.rest.controller;
 
 import com.thinkbiganalytics.security.rest.model.GroupPrincipal;
+import com.thinkbiganalytics.security.rest.model.UserPrincipal;
 import com.thinkbiganalytics.security.service.user.UserService;
 
 import org.springframework.stereotype.Component;
@@ -119,5 +120,27 @@ public class GroupsController {
     public Response getGroups() {
         final List<GroupPrincipal> groups = userService.getGroups();
         return Response.ok(groups).build();
+    }
+
+    /**
+     * Returns a list of all users in the specified group.
+     *
+     * @param groupId the system name of the group
+     * @return the list of users
+     * @throws NotFoundException if the group does not exist
+     */
+    @GET
+    @Path("{groupId}/users")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Returns a list of all users in the specified group.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "The list of users.", response = UserPrincipal.class, responseContainer = "List"),
+        @ApiResponse(code = 404, message = "The group was not found."),
+        @ApiResponse(code = 500, message = "There was a problem accessing the group.")
+    })
+    @Nonnull
+    public Response getUsers(@Nonnull @PathParam("groupId") final String groupId) {
+        final List<UserPrincipal> users = userService.getUsersByGroup(groupId).orElseThrow(NotFoundException::new);
+        return Response.ok(users).build();
     }
 }

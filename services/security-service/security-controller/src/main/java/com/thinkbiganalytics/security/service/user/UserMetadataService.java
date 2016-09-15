@@ -82,6 +82,17 @@ public class UserMetadataService implements UserService {
                         .collect(Collectors.toList()));
     }
 
+    @Nonnull
+    @Override
+    public Optional<List<UserPrincipal>> getUsersByGroup(@Nonnull final String groupId) {
+        return metadataAccess.read(() ->
+                userProvider.findGroupByName(groupId)
+                    .map(users -> StreamSupport.stream(users.getUsers().spliterator(), false)
+                         .map(UserModelTransform.toUserPrincipal())
+                         .collect(Collectors.toList())
+                    ));
+    }
+
     @Override
     public void updateGroup(@Nonnull final GroupPrincipal principal) {
         metadataAccess.commit(() -> {

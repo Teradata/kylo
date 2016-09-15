@@ -36,7 +36,13 @@
          * Group model for the read-only view.
          * @type {GroupPrincipal}
          */
-        self.model = {description: null, systemName: null, title: null};
+        self.model = {description: null, memberCount: 0, systemName: null, title: null};
+
+        /**
+         * Users in the group.
+         * @type {Array.<UserPrincipal>}
+         */
+        self.users = [];
 
         /**
          * Indicates if the group can be deleted. The main requirement is that the group exists.
@@ -45,6 +51,16 @@
          */
         self.canDelete = function() {
             return (self.model.systemName !== null);
+        };
+
+        /**
+         * Gets the display name of the specified user. Defaults to the system name if the display name is blank.
+         *
+         * @param user the user
+         * @returns {string} the display name
+         */
+        self.getUserName = function(user) {
+            return (angular.isString(user.displayName) && user.displayName.length > 0) ? user.displayName : user.systemName;
         };
 
         /**
@@ -97,6 +113,10 @@
                             self.model = group;
                             self.loading = false;
                         });
+                UserService.getUsersByGroup($stateParams.groupId)
+                        .then(function(users) {
+                            self.users = users;
+                        });
             } else {
                 self.onEdit();
                 self.isEditable = true;
@@ -113,6 +133,15 @@
                     .then(function() {
                         self.model = model;
                     });
+        };
+
+        /**
+         * Navigates to the details page for the specified user.
+         *
+         * @param user the user
+         */
+        self.onUserClick = function(user) {
+            StateService.navigateToUserDetails(user.systemName);
         };
 
         // Load the user details

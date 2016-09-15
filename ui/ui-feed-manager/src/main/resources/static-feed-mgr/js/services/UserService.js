@@ -108,6 +108,19 @@ angular.module(MODULE_FEED_MGR).factory("UserService", function($http, RestUrlSe
         },
 
         /**
+         * Gets metadata for all users in the specified group.
+         *
+         * @param groupId the system name of the group
+         * @returns {Array.<UserPrincipal>} the users
+         */
+        getUsersByGroup: function(groupId) {
+            return $http.get(RestUrlService.SECURITY_GROUPS_URL + "/" + groupId + "/users")
+                    .then(function(response) {
+                        return response.data;
+                    });
+        },
+
+        /**
          * Saves the specified group.
          *
          * @param {GroupPrincipal} group the group

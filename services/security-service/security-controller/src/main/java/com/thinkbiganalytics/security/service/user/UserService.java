@@ -64,6 +64,15 @@ public interface UserService {
     List<UserPrincipal> getUsers();
 
     /**
+     * Gets the list of users belonging to the specified group.
+     *
+     * @param groupId the system name of the group
+     * @return the users
+     */
+    @Nonnull
+    Optional<List<UserPrincipal>> getUsersByGroup(@Nonnull String groupId);
+
+    /**
      * Adds or updates the specified group.
      *
      * @param group the group
