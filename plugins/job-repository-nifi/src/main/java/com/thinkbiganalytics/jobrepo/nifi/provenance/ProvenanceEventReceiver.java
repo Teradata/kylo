@@ -1,7 +1,3 @@
-/*
- * Copyright (c) 2016.
- */
-
 package com.thinkbiganalytics.jobrepo.nifi.provenance;
 
 import com.google.common.cache.Cache;
@@ -41,12 +37,7 @@ import java.util.concurrent.TimeUnit;
 import javax.inject.Inject;
 
 /**
- * Created by sr186054 on 3/3/16.
- */
-
-
-/**
- * JMS Listener for NIFI Provenance Events.
+ * JMS Listener for NiFi Provenance Events.
  */
 @Component
 public class ProvenanceEventReceiver {
@@ -65,10 +56,8 @@ public class ProvenanceEventReceiver {
     @Inject
     private OperationalMetadataAccess operationalMetadataAccess;
 
-
     @Inject
     private MetadataEventService eventService;
-
 
     Cache<String, String> completedJobEvents = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
 
@@ -76,45 +65,33 @@ public class ProvenanceEventReceiver {
         return event.getJobFlowFileId() + "_" + event.getEventId();
     }
 
-
-    public ProvenanceEventReceiver() {
-
-    }
-
-
     /**
      * Process events coming from NiFi that are related to "BATCH Jobs. These will result in new JOB/STEPS to be created in Ops Manager with full provenance data
      */
     @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         addEventsToQueue(events);
-
     }
-
 
     /**
      * Process Failure Events or Ending Job Events
-     * @param events
      */
     @JmsListener(destination = Queues.PROVENANCE_EVENT_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
     public void receiveTopic(ProvenanceEventRecordDTOHolder events) {
         addEventsToQueue(events);
     }
 
-
     int maxThreads = 10;
     ExecutorService executorService =
-        new ThreadPoolExecutor(
-            maxThreads, // core thread pool size
-            maxThreads, // maximum thread pool size
-            10, // time to wait before resizing pool
-            TimeUnit.SECONDS,
-            new ArrayBlockingQueue<Runnable>(maxThreads, true),
-            new ThreadPoolExecutor.CallerRunsPolicy());
-
+            new ThreadPoolExecutor(
+                    maxThreads, // core thread pool size
+                    maxThreads, // maximum thread pool size
+                    10, // time to wait before resizing pool
+                    TimeUnit.SECONDS,
+                    new ArrayBlockingQueue<Runnable>(maxThreads, true),
+                    new ThreadPoolExecutor.CallerRunsPolicy());
 
     private Map<String, ConcurrentLinkedQueue<ProvenanceEventRecordDTO>> jobEventMap = new ConcurrentHashMap<>();
-
 
     private void addEventsToQueue(ProvenanceEventRecordDTOHolder events) {
         Set<String> newJobs = new HashSet<>();
@@ -140,7 +117,6 @@ public class ProvenanceEventReceiver {
         }
 
     }
-
 
     private class ProcessJobEventsTask implements Runnable {
 
@@ -175,18 +151,15 @@ public class ProvenanceEventReceiver {
         }
     }
 
-
     public NifiEvent receiveEvent(ProvenanceEventRecordDTO event) {
         log.info("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}", event, event.isEndOfJob(), event.isEndingFlowFileEvent());
 
-            NifiEvent nifiEvent = nifiEventProvider.create(event);
-           if(event.isBatchJob()) {
-               nifiJobExecutionProvider.save(event, nifiEvent);
-           }
+        NifiEvent nifiEvent = nifiEventProvider.create(event);
+        if (event.isBatchJob()) {
+            nifiJobExecutionProvider.save(event, nifiEvent);
+        }
 
         return nifiEvent;
-
-
     }
 
     private void notifyJobFinished(ProvenanceEventRecordDTO event) {
@@ -205,17 +178,15 @@ public class ProvenanceEventReceiver {
         }
     }
 
-
     /**
      * Triggered for both Batch and Streaming Feed Jobs when the Job and any related Jobs (as a result of a Merge of other Jobs are complete but have a failure in the flow<br/>
      * Example: <br/>
-     *  Job (FlowFile) 1,2,3 are all running<br/>
-     *  Job 1,2,3 get Merged<br/>
-     *  Job 1,2 finish<br/>
-     *  Job 3 finishes <br/>
+     * Job (FlowFile) 1,2,3 are all running<br/>
+     * Job 1,2,3 get Merged<br/>
+     * Job 1,2 finish<br/>
+     * Job 3 finishes <br/>
      *
-     *  This will fire when Job3 finishes indicating this entire flow is complete<br/>
-     * @param event
+     * This will fire when Job3 finishes indicating this entire flow is complete<br/>
      */
     private void failedJob(ProvenanceEventRecordDTO event) {
         FeedOperation.State state = FeedOperation.State.FAILURE;
@@ -226,19 +197,16 @@ public class ProvenanceEventReceiver {
     /**
      * Triggered for both Batch and Streaming Feed Jobs when the Job and any related Jobs (as a result of a Merge of other Jobs are complete<br/>
      * Example: <br/>
-     *  Job (FlowFile) 1,2,3 are all running<br/>
-     *  Job 1,2,3 get Merged<br/>
-     *  Job 1,2 finish<br/>
-     *  Job 3 finishes <br/>
+     * Job (FlowFile) 1,2,3 are all running<br/>
+     * Job 1,2,3 get Merged<br/>
+     * Job 1,2 finish<br/>
+     * Job 3 finishes <br/>
      *
-     *  This will fire when Job3 finishes indicating this entire flow is complete<br/>
-     * @param event
+     * This will fire when Job3 finishes indicating this entire flow is complete<br/>
      */
     private void successfulJob(ProvenanceEventRecordDTO event) {
         FeedOperation.State state = FeedOperation.State.SUCCESS;
         log.info("Success JOB for Event {} ", event);
         this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, ""));
     }
-
-
 }
