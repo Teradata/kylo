@@ -60,6 +60,7 @@
         <spring.version>4.2.5.RELEASE</spring.version>
         <spring.jpa.version>1.10.2.RELEASE</spring.jpa.version>
         <spring.security.version>4.1.1.RELEASE</spring.security.version>
+        <spring.ldap.version>2.0.2.RELEASE</spring.ldap.version>
         <assertj.version>3.4.1</assertj.version>
         <surefire.version>2.19.1</surefire.version>
         <org.reflections.version>0.9.9</org.reflections.version>

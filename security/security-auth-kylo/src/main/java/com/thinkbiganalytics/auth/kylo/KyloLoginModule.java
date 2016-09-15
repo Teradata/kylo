@@ -62,27 +62,10 @@ public class KyloLoginModule extends AbstractLoginModule implements LoginModule 
     public void initialize(@Nonnull final Subject subject, @Nonnull final CallbackHandler callbackHandler, @Nonnull final Map<String, ?> sharedState, @Nonnull final Map<String, ?> options) {
         super.initialize(subject, callbackHandler, sharedState, options);
 
-        if (options.containsKey(METADATA_ACCESS)) {
-            metadata = (MetadataAccess) options.get(METADATA_ACCESS);
-        } else {
-            throw new IllegalArgumentException("The \"" + METADATA_ACCESS + "\" option is required");
-        }
-
-        if (options.containsKey(PASSWORD_ENCODER)) {
-            passwordEncoder = (PasswordEncoder) options.get(PASSWORD_ENCODER);
-        } else {
-            throw new IllegalArgumentException("The \"" + PASSWORD_ENCODER + "\" option is required");
-        }
-
-        if (options.containsKey(USER_PROVIDER)) {
-            userProvider = (UserProvider) options.get(USER_PROVIDER);
-        } else {
-            throw new IllegalArgumentException("The \"" + USER_PROVIDER + "\" option is required");
-        }
-        
-        if (options.containsKey(REQUIRE_PASSWORD)) {
-            requirePassword = (Boolean) options.get(REQUIRE_PASSWORD);
-        }
+        metadata = (MetadataAccess) getOption(METADATA_ACCESS).orElseThrow(() -> new IllegalArgumentException("The \"" + METADATA_ACCESS + "\" option is required"));
+        passwordEncoder = (PasswordEncoder) getOption(PASSWORD_ENCODER).orElseThrow(() -> new IllegalArgumentException("The \"" + PASSWORD_ENCODER + "\" option is required"));
+        userProvider = (UserProvider) getOption(USER_PROVIDER).orElseThrow(() -> new IllegalArgumentException("The \"" + USER_PROVIDER + "\" option is required"));
+        requirePassword = (Boolean) getOption(REQUIRE_PASSWORD).orElse(false);
     }
 
     @Override

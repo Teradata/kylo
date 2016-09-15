@@ -4,7 +4,11 @@
 package com.thinkbiganalytics.auth.jaas;
 
 import java.io.IOException;
+import java.security.Principal;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.security.auth.Subject;
 import javax.security.auth.callback.Callback;
@@ -15,6 +19,9 @@ import javax.security.auth.spi.LoginModule;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.thinkbiganalytics.security.GroupPrincipal;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  *
@@ -30,6 +37,8 @@ public abstract class AbstractLoginModule implements LoginModule {
     private Map<String, ?> options;
     private boolean loginSucceeded = false;
     private boolean commitSucceeded = false;
+    private Principal userPrincipal;
+    private Set<Principal> principals = new HashSet<>();
 
     /* (non-Javadoc)
      * @see javax.security.auth.spi.LoginModule#initialize(javax.security.auth.Subject, javax.security.auth.callback.CallbackHandler, java.util.Map, java.util.Map)
@@ -142,14 +151,6 @@ public abstract class AbstractLoginModule implements LoginModule {
     protected abstract boolean doLogout() throws Exception;
 
     
-    protected Subject getSubject() {
-        return subject;
-    }
-
-    protected CallbackHandler getCallbackHandler() {
-        return callbackHandler;
-    }
-    
     public Map<String, ?> getSharedState() {
         return sharedState;
     }
@@ -174,6 +175,59 @@ public abstract class AbstractLoginModule implements LoginModule {
         this.commitSucceeded = commitSucceeded;
     }
 
+    protected Set<Principal> getPrincipals() {
+        return principals;
+    }
+    
+    protected Principal getUserPrincipal() {
+        return userPrincipal;
+    }
+    
+    protected void setUserPrincipal(Principal userPrincipal) {
+        this.userPrincipal = userPrincipal;
+        addPrincipal(this.userPrincipal);
+    }
+    
+    protected UsernamePrincipal addNewUserPrincipal(String username) {
+        UsernamePrincipal user = new UsernamePrincipal(username);
+        this.userPrincipal = user;
+        addPrincipal(user);
+        return user;
+    }
+    
+    protected boolean clearUserPrincipal() {
+        Principal principal = this.userPrincipal;
+        this.userPrincipal = null;
+        return principal != null ? removePrincipal(principal) : false;
+    }
+    
+    protected GroupPrincipal addNewGroupPrincipal(String name) {
+        GroupPrincipal group = new GroupPrincipal(name);
+        addPrincipal(group);
+        return group;
+    }
+    
+    protected boolean addPrincipal(Principal principal) {
+        return this.principals.add(principal);
+    }
+    
+    protected boolean removePrincipal(Principal principal) {
+        return this.principals.remove(principal);
+    }
+    
+    protected void clearAllPrincipals() {
+        this.userPrincipal = null;
+        this.principals.clear();
+    }
+    
+    protected Subject getSubject() {
+        return subject;
+    }
+
+    protected CallbackHandler getCallbackHandler() {
+        return callbackHandler;
+    }
+
     protected void handle(Callback... callbacks) throws LoginException {
         try {
             getCallbackHandler().handle(callbacks);
@@ -186,18 +240,8 @@ public abstract class AbstractLoginModule implements LoginModule {
         }
     }
     
-    protected void failLogin(String message) throws LoginException {
-        failLogin(message, null);
-    }
-    
-    protected void failLogin(String message, Throwable throwable) throws LoginException {
-        if (throwable != null) {
-            log.error("Login failure: " + message, throwable);
-            throw new LoginException("Login failure: " + message + " - " + throwable.getMessage());
-        } else {
-            log.error("Login failure: " + message);
-            throw new LoginException("Login failure: " + message);
-        }
-        
+    @SuppressWarnings("unchecked")
+    protected Optional<Object> getOption(String name) {
+            return Optional.ofNullable(this.options.get(name));
     }
 }
