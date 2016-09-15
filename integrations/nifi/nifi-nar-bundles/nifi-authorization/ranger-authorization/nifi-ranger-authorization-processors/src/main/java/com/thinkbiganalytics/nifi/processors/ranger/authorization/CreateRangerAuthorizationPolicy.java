@@ -36,9 +36,9 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 
-import com.thinkbiganalytics.datalake.ranger.domain.HDFSPolicy;
-import com.thinkbiganalytics.datalake.ranger.domain.HivePolicy;
-import com.thinkbiganalytics.datalake.ranger.rest.client.RangerRestClient;
+import com.thinkbiganalytics.datalake.authorization.model.HDFSPolicy;
+import com.thinkbiganalytics.datalake.authorization.model.HivePolicy;
+import com.thinkbiganalytics.datalake.authorization.rest.client.RangerRestClient;
 import com.thinkbiganalytics.nifi.authorization.ranger.service.RangerService;
 import com.thinkbiganalytics.nifi.processors.ranger.authorization.service.util.RangerUtil;
 

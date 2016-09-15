@@ -10,6 +10,7 @@ import org.json.simple.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.client.WebTarget;
 
@@ -71,14 +72,14 @@ public class RangerRestClient extends JerseyRestClient {
         }
     }*/
 
-    /*public String searchPolicies(Map<String, Object> searchCriteria) throws RangerRestClientException {
+    public String searchPolicies(Map<String, Object> searchCriteria) throws RangerRestClientException {
         try {
             return get("/public/api/policy/", searchCriteria, String.class);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             throw new RangerRestClientException("Unable to search policy.", e);
         }
-    }*/
+    }
 
     /*public String countPolicies() throws RangerRestClientException {
         try {

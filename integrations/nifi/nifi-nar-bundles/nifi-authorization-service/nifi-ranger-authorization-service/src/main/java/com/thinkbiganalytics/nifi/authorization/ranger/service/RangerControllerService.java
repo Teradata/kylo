@@ -3,6 +3,9 @@
  */
 package com.thinkbiganalytics.nifi.authorization.ranger.service;
 
+import com.thinkbiganalytics.datalake.authorization.rest.client.RangerRestClient;
+import com.thinkbiganalytics.datalake.authorization.rest.client.RangerRestClientConfig;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -17,9 +20,6 @@ import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
-
-import com.thinkbiganalytics.datalake.ranger.rest.client.RangerRestClient;
-import com.thinkbiganalytics.datalake.ranger.rest.client.RangerRestClientConfig;
 
 @Tags({ "ranger,athorization,thinkbig"})
 @CapabilityDescription("Ranger authorization service for PCNG.")

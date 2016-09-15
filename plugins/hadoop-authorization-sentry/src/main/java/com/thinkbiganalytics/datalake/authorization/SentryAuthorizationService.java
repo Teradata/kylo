@@ -1,7 +1,11 @@
 package com.thinkbiganalytics.datalake.authorization;
 
+import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
 
 /**
  * Sentry Authorization Service
@@ -17,7 +21,7 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
     static String KERBEROS_PRINCIPLE = "user@CDHTDAWS.COM";
     static String KERBEROS_KEYTAB = "/etc/security/keytabs/user.headless.keytab";
 
-    @Override
+    /*@Override
     public void initiateAuthorizationService(AuthorizationConfiguration config) throws SentryClientException {
 
         System.out.println("This is Sentry Authorization Service.");
@@ -35,6 +39,23 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
         sentryClient.executeAuthorization("CREATE ROLE developer");
         sentryClient.executeAuthorization("GRANT ROLE developer TO GROUP testsentry");
         sentryClient.executeAuthorization("GRANT ALL ON database test TO ROLE developer");
+    }*/
+
+    @Override
+    public void initialize(AuthorizationConfiguration config) {
+        throw new RuntimeException(("Implement me"));
+
+    }
+
+
+    @Override
+    public HadoopAuthorizationGroup getGroupByName(String groupName) {
+        return null;
+    }
+
+    @Override
+    public List<HadoopAuthorizationGroup> getAllGroups() {
+        return null;
     }
 
 }

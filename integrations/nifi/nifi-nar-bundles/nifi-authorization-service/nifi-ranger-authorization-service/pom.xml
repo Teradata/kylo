@@ -21,7 +21,12 @@
 
 		<dependency>
 			<groupId>com.thinkbiganalytics.datalake</groupId>
-			<artifactId>hadoop-authorization</artifactId>
+			<artifactId>thinkbig-hadoop-authorization-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+	  <dependency>
+	    <groupId>com.thinkbiganalytics.datalake</groupId>
+	    <artifactId>thinkbig-ranger-rest-client</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 

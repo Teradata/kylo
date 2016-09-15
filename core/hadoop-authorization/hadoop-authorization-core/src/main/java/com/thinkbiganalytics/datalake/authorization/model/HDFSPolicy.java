@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.datalake.authorization.rest.model;
+package com.thinkbiganalytics.datalake.authorization.model;
 
 
 import org.json.simple.JSONArray;

@@ -3,11 +3,12 @@
  */
 package com.thinkbiganalytics.nifi.authorization.ranger.service;
 
+import com.thinkbiganalytics.datalake.authorization.rest.client.RangerRestClient;
+
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.controller.ControllerService;
 
-import com.thinkbiganalytics.datalake.ranger.rest.client.RangerRestClient;
 
 @Tags({"ranger,athorization,thinkbig"})
 @CapabilityDescription("Ranger authorization service for PCNG.")

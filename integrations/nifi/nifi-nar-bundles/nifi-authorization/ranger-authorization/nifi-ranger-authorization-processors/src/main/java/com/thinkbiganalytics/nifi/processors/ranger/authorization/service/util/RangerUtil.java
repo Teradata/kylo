@@ -1,5 +1,11 @@
 package com.thinkbiganalytics.nifi.processors.ranger.authorization.service.util;
 
+import com.thinkbiganalytics.datalake.authorization.model.HDFSPolicy;
+import com.thinkbiganalytics.datalake.authorization.model.HivePolicy;
+import com.thinkbiganalytics.datalake.authorization.model.SearchPolicy;
+import com.thinkbiganalytics.datalake.authorization.rest.client.RangerRestClient;
+import com.thinkbiganalytics.datalake.authorization.rest.client.RangerRestClientException;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -9,12 +15,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.thinkbiganalytics.datalake.ranger.domain.HDFSPolicy;
-import com.thinkbiganalytics.datalake.ranger.domain.HivePolicy;
-import com.thinkbiganalytics.datalake.ranger.domain.SearchPolicy;
-import com.thinkbiganalytics.datalake.ranger.rest.client.RangerRestClient;
-import com.thinkbiganalytics.datalake.ranger.rest.client.RangerRestClientException;
 
 public class RangerUtil 
 {
@@ -188,7 +188,8 @@ public class RangerUtil
 		return final_table_PermissionList;
 	}
 
-	public boolean checkIfPolicyExists(RangerRestClient rangerClientObject, String category_name, String feed_name, String permission_level, String repositoryType)  throws RangerRestClientException{
+	public boolean checkIfPolicyExists(RangerRestClient rangerClientObject, String category_name, String feed_name, String permission_level, String repositoryType)  throws
+																					 RangerRestClientException {
 
 		logger.info("Start of check if policy exists");
 		String policy_serach_criteria  = NIFI+category_name+"_"+feed_name+"_"+permission_level;

@@ -9,6 +9,14 @@
   </parent>
   <modelVersion>4.0.0</modelVersion>
 
-  <artifactId>thinkbig-hadoop-authorization-api</artifactId>
+  <artifactId>thinkbig-hadoop-authorization-core</artifactId>
+
+  <dependencies>
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>1.1</version>
+    </dependency>
+  </dependencies>
 
 </project>

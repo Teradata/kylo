@@ -22,6 +22,6 @@
         <module>sla-email</module>
         <module>sla-jira</module>
         <module>hadoop-authorization-ranger</module>
-        <!--module>hadoop-authorization-sentry</module-->
+        <module>hadoop-authorization-sentry</module>
     </modules>
 </project>
