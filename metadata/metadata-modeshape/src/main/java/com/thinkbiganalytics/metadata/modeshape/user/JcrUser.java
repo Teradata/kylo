@@ -12,6 +12,8 @@ import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.security.Principal;
 import java.util.Collections;
 import java.util.Set;
@@ -28,6 +30,9 @@ import javax.jcr.RepositoryException;
  * A {@link User} stored in a JCR repository.
  */
 public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
+
+    /** Encoding for properties */
+    static final String ENCODING = "UTF-8";
 
     /** JCR node type for users */
     static final String NODE_TYPE = "tba:user";
@@ -112,9 +117,13 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
     @Nonnull
     @Override
     public String getSystemName() {
-        return JcrPropertyUtil.getName(this.node);
+        try {
+            return URLDecoder.decode(JcrPropertyUtil.getName(this.node), ENCODING);
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("Unsupported encoding for system name of user: " + this.node, e);
+        }
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.User#getAllContainingGroups()
      */
@@ -122,7 +131,7 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
     public Set<UserGroup> getAllContainingGroups() {
         return streamAllContainingGroups().collect(Collectors.toSet());
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.User#getContainingGroups()
      */
@@ -133,7 +142,7 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
                 .map(node -> (UserGroup) JcrUtil.toJcrObject(node, JcrUserGroup.NODE_TYPE, JcrUserGroup.class))
                 .collect(Collectors.toSet());
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.User#getPrincipal()
      */
@@ -152,11 +161,11 @@ public class JcrUser extends AbstractJcrAuditableSystemEntity implements User {
                         .map(group -> group.getRootPrincial())
                         .collect(Collectors.toSet());
     }
-    
+
     private Stream<UserGroup> streamAllContainingGroups() {
         Set<UserGroup> groups = getContainingGroups();
-        
-        return Stream.concat(groups.stream(), 
+
+        return Stream.concat(groups.stream(),
                              groups.stream().flatMap(group -> group.getAllContainingGroups().stream()));
     }
 

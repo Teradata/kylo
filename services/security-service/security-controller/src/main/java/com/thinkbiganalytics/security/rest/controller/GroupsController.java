@@ -6,10 +6,13 @@ import com.thinkbiganalytics.security.service.user.UserService;
 
 import org.springframework.stereotype.Component;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -75,7 +78,7 @@ public class GroupsController {
     })
     @Nonnull
     public Response deleteGroup(@Nonnull @PathParam("groupId") final String groupId) {
-        if (userService.deleteGroup(groupId)) {
+        if (userService.deleteGroup(decodeGroupId(groupId))) {
             return Response.noContent().build();
         } else {
             throw new NotFoundException();
@@ -100,7 +103,7 @@ public class GroupsController {
     })
     @Nonnull
     public Response getGroup(@Nonnull @PathParam("groupId") final String groupId) {
-        final GroupPrincipal group = userService.getGroup(groupId).orElseThrow(NotFoundException::new);
+        final GroupPrincipal group = userService.getGroup(decodeGroupId(groupId)).orElseThrow(NotFoundException::new);
         return Response.ok(group).build();
     }
 
@@ -140,7 +143,22 @@ public class GroupsController {
     })
     @Nonnull
     public Response getUsers(@Nonnull @PathParam("groupId") final String groupId) {
-        final List<UserPrincipal> users = userService.getUsersByGroup(groupId).orElseThrow(NotFoundException::new);
+        final List<UserPrincipal> users = userService.getUsersByGroup(decodeGroupId(groupId)).orElseThrow(NotFoundException::new);
         return Response.ok(users).build();
+    }
+
+    /**
+     * Decodes the specified group name. This should only be used on path parameters.
+     *
+     * @param groupId the path parameter
+     * @return the system name of the group
+     */
+    @Nonnull
+    private String decodeGroupId(@Nonnull final String groupId) {
+        try {
+            return URLDecoder.decode(groupId, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new BadRequestException("Only UTF-8 encoding is supported.");
+        }
     }
 }

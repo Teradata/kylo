@@ -5,10 +5,13 @@ import com.thinkbiganalytics.security.service.user.UserService;
 
 import org.springframework.stereotype.Component;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.List;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
+import javax.ws.rs.BadRequestException;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -74,7 +77,7 @@ public class UsersController {
     })
     @Nonnull
     public Response deleteUser(@Nonnull @PathParam("userId") final String userId) {
-        if (userService.deleteUser(userId)) {
+        if (userService.deleteUser(decodeUserId(userId))) {
             return Response.noContent().build();
         } else {
             throw new NotFoundException();
@@ -99,7 +102,7 @@ public class UsersController {
     })
     @Nonnull
     public Response getUser(@Nonnull @PathParam("userId") final String userId) {
-        final UserPrincipal user = userService.getUser(userId).orElseThrow(NotFoundException::new);
+        final UserPrincipal user = userService.getUser(decodeUserId(userId)).orElseThrow(NotFoundException::new);
         return Response.ok(user).build();
     }
 
@@ -119,5 +122,20 @@ public class UsersController {
     public Response getUsers() {
         final List<UserPrincipal> users = userService.getUsers();
         return Response.ok(users).build();
+    }
+
+    /**
+     * Decodes the specified user name. This should only be used on path parameters.
+     *
+     * @param userId the path parameter
+     * @return the system name of the user
+     */
+    @Nonnull
+    private String decodeUserId(@Nonnull final String userId) {
+        try {
+            return URLDecoder.decode(userId, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new BadRequestException("Only UTF-8 encoding is supported.");
+        }
     }
 }
