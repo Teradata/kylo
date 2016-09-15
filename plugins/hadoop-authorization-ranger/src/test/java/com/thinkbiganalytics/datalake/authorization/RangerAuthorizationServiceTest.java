@@ -34,7 +34,7 @@ public class RangerAuthorizationServiceTest {
     }
 
     @Test
-    //@Ignore
+    @Ignore
     public void testGetAllGroups() {
         List<HadoopAuthorizationGroup> groups = rangerAuthorizationService.getAllGroups();
         assertNotNull(groups);
