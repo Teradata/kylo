@@ -13,6 +13,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryPr
 import org.joda.time.DateTime;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -83,7 +84,7 @@ public class CategoryModelTransform {
             category.setUpdateDate(domainCategory.getModifiedTime() != null ? domainCategory.getModifiedTime().toDate() : null);
 
             // Transform user-defined fields and properties
-            category.setUserFields(UserPropertyTransform.toUserFields(categoryProvider.getFeedUserFields(domainCategory.getId())));
+            category.setUserFields(UserPropertyTransform.toUserFields(categoryProvider.getFeedUserFields(domainCategory.getId()).orElse(Collections.emptySet())));
             category.setUserProperties(UserPropertyTransform.toUserProperties(domainCategory.getUserProperties(), userFields));
 
             return category;

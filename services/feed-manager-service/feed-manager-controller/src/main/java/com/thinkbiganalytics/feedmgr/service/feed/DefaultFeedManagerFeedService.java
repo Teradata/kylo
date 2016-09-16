@@ -1,19 +1,21 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Sets;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
+import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
-import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
@@ -39,7 +41,9 @@ import org.apache.commons.lang3.StringUtils;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -87,7 +91,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     @Inject
     private AccessController accessController;
-    
+
     @Override
     public List<FeedMetadata> getReusableFeeds() {
         return null;
@@ -97,7 +101,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     public FeedMetadata getFeedByName(final String categoryName, final String feedName) {
         FeedMetadata feedMetadata = metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
-            
+
             FeedManagerFeed domainFeed = feedManagerFeedProvider.findBySystemName(categoryName, feedName);
             if (domainFeed != null) {
                 return feedModelTransform.domainToFeedMetadata(domainFeed);
@@ -111,7 +115,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     public FeedMetadata getFeedById(final String id) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
-            
+
             return getFeedById(id, false);
         });
 
@@ -121,7 +125,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     public FeedMetadata getFeedById(final String id, final boolean refreshTargetTableSchema) {
         return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
-            
+
             FeedMetadata feedMetadata = null;
             FeedManagerFeed.ID domainId = feedManagerFeedProvider.resolveId(id);
             FeedManagerFeed domainFeed = feedManagerFeedProvider.findById(domainId);
@@ -379,17 +383,33 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Nonnull
     @Override
     public Set<UserField> getUserFields() {
-        return metadataAccess.read(() -> { 
+        return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
-            return UserPropertyTransform.toUserFields(feedProvider.getUserFields()); 
+            return UserPropertyTransform.toUserFields(feedProvider.getUserFields());
+        });
+    }
+
+    @Nonnull
+    @Override
+    public Optional<Set<UserProperty>> getUserFields(@Nonnull final String categoryId) {
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
+
+            final Optional<Set<UserFieldDescriptor>> categoryUserFields = categoryProvider.getFeedUserFields(categoryProvider.resolveId(categoryId));
+            final Set<UserFieldDescriptor> globalUserFields = feedProvider.getUserFields();
+            if (categoryUserFields.isPresent()) {
+                return Optional.of(UserPropertyTransform.toUserProperties(Collections.emptyMap(), Sets.union(globalUserFields, categoryUserFields.get())));
+            } else {
+                return Optional.empty();
+            }
         });
     }
 
     @Override
     public void setUserFields(@Nonnull final Set<UserField> userFields) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
-        
+
         feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
     }
 }

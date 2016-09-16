@@ -3,6 +3,7 @@ package com.thinkbiganalytics.metadata.api.category;
 import com.thinkbiganalytics.metadata.api.BaseProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -39,11 +40,11 @@ public interface CategoryProvider<T extends Category> extends BaseProvider<T, Ca
      * Gets the user fields for all feeds within the specified category.
      *
      * @param categoryId the category id
-     * @return user field descriptors
+     * @return user field descriptors, if the category exists
      * @since 0.4.0
      */
     @Nonnull
-    Set<UserFieldDescriptor> getFeedUserFields(@Nonnull Category.ID categoryId);
+    Optional<Set<UserFieldDescriptor>> getFeedUserFields(@Nonnull Category.ID categoryId);
 
     /**
      * Sets the user fields for all feeds within the specified category.

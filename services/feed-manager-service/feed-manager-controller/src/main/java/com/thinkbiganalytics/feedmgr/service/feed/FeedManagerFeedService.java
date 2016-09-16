@@ -5,12 +5,14 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
+import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -78,6 +80,15 @@ public interface FeedManagerFeedService {
      */
     @Nonnull
     Set<UserField> getUserFields();
+
+    /**
+     * Gets the user-defined fields for feeds within the specified category.
+     *
+     * @param categoryId the category id
+     * @return the user-defined fields, if the category exists
+     */
+    @Nonnull
+    Optional<Set<UserProperty>> getUserFields(@Nonnull String categoryId);
 
     /**
      * Sets the user-defined fields for feeds.

@@ -9,6 +9,7 @@ import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 
 import java.io.Serializable;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -87,7 +88,7 @@ public class JcrFeedManagerCategoryProvider extends BaseJcrProvider<FeedManagerC
     @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    public Set<UserFieldDescriptor> getFeedUserFields(@Nonnull Category.ID categoryId) {
+    public Optional<Set<UserFieldDescriptor>> getFeedUserFields(@Nonnull Category.ID categoryId) {
         return categoryProvider.getFeedUserFields(categoryId);
     }
 

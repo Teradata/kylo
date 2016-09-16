@@ -9,6 +9,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
+import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
@@ -24,6 +25,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -285,6 +287,12 @@ public class InMemoryFeedManagerFeedService extends AbstractFeedManagerFeedServi
     @Override
     public Set<UserField> getUserFields() {
         return Collections.emptySet();
+    }
+
+    @Nonnull
+    @Override
+    public Optional<Set<UserProperty>> getUserFields(@Nonnull String categoryId) {
+        return Optional.of(Collections.emptySet());
     }
 
     @Override

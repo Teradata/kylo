@@ -7,8 +7,8 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
-import com.thinkbiganalytics.feedmgr.rest.model.UserField;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
+import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
@@ -16,12 +16,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
 
 /**
- * Created by sr186054 on 2/23/16.
+ * Provides access to category, feed, and template metadata.
  */
 @Service
 public interface MetadataService {
@@ -87,6 +88,15 @@ public interface MetadataService {
     void saveCategory(FeedCategory category);
 
     boolean deleteCategory(String categoryId) throws InvalidOperationException;
+
+    /**
+     * Gets the user-defined fields for all feeds within the specified category.
+     *
+     * @param categoryId the category id
+     * @return the user-defined fields, if the category exists
+     */
+    @Nonnull
+    Optional<Set<UserProperty>> getFeedUserFields(@Nonnull String categoryId);
 
     /**
      * Gets the user-defined fields for all categories and feeds.

@@ -3,6 +3,7 @@ package com.thinkbiganalytics.metadata.modeshape.category;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -110,9 +111,9 @@ public class JcrCategoryProvider extends BaseJcrProvider<Category, Category.ID> 
 
     @Nonnull
     @Override
-    public Set<UserFieldDescriptor> getFeedUserFields(@Nonnull final Category.ID categoryId) {
-        final Category category = findById(categoryId);
-        return JcrPropertyUtil.getUserFields(ExtensionsConstants.getUserCategoryFeed(category.getName()), extensibleTypeProvider);
+    public Optional<Set<UserFieldDescriptor>> getFeedUserFields(@Nonnull final Category.ID categoryId) {
+        return Optional.ofNullable(findById(categoryId))
+                .map(category -> JcrPropertyUtil.getUserFields(ExtensionsConstants.getUserCategoryFeed(category.getName()), extensibleTypeProvider));
     }
 
     @Override
