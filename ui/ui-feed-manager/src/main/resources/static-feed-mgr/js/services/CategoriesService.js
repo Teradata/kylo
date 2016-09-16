@@ -159,8 +159,19 @@ angular.module(MODULE_FEED_MGR).factory('CategoriesService', function ($q,$http,
          */
         newCategory:function(){
             return {id: null, name: null, description: null, icon: null, iconColor: null, userFields: [], userProperties: [], relatedFeedSummaries: []};
-        }
+        },
 
+        /**
+         * Gets the user fields for a new category.
+         *
+         * @returns {Promise} for the user fields
+         */
+        getUserFields: function() {
+            return $http.get(RestUrlService.GET_CATEGORY_USER_FIELD_URL)
+                    .then(function(response) {
+                        return response.data;
+                    });
+        }
     };
     data.init();
     return data;

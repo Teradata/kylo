@@ -16,7 +16,7 @@
          * Category data used in "edit" mode.
          * @type {CategoryModel}
          */
-        self.editModel = CategoriesService.newCategory();
+        self.editModel = angular.copy(CategoriesService.model);
 
         /**
          * Indicates if the view is in "edit" mode.
@@ -29,6 +29,12 @@
          * @type {CategoryModel}
          */
         self.model = CategoriesService.model;
+
+        /**
+         * Indicates if the model is valid and can be saved.
+         * @type {boolean} {@code true} if all properties are valid, or {@code false} otherwise
+         */
+        self.isValid = true;
 
         /**
          * Indicates if the category can be deleted.
@@ -89,7 +95,7 @@
             model.description = self.editModel.description;
             model.icon = self.editModel.icon;
             model.iconColor = self.editModel.iconColor;
-            model.userProperties = null;
+            model.userProperties = (self.model.id === null) ? self.editModel.userProperties : null;
 
             CategoriesService.save(model).then(function(response) {
                 CategoriesService.reload();

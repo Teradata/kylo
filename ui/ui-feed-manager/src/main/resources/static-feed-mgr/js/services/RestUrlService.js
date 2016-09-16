@@ -156,6 +156,12 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
         return self.CATEGORIES_URL + "/" + categoryId + "/user-fields";
     };
 
+    /**
+     * URL for retrieving the user fields for a new category.
+     * @type {string}
+     */
+    this.GET_CATEGORY_USER_FIELD_URL = self.CATEGORIES_URL + "/user-fields";
+
     // Endpoint for administration of user fields
     this.ADMIN_USER_FIELDS = self.ADMIN_BASE_URL + "/user-fields";
 

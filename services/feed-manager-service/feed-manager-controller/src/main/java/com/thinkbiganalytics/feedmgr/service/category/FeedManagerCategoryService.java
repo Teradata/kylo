@@ -3,6 +3,7 @@ package com.thinkbiganalytics.feedmgr.service.category;
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
+import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 
 import java.util.Collection;
 import java.util.Set;
@@ -31,6 +32,14 @@ public interface FeedManagerCategoryService {
      */
     @Nonnull
     Set<UserField> getUserFields();
+
+    /**
+     * Gets the user-defined fields for all categories.
+     *
+     * @return the user-defined fields
+     */
+    @Nonnull
+    Set<UserProperty> getUserProperties();
 
     /**
      * Sets the user-defined fields for all categories.

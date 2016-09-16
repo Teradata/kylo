@@ -7,6 +7,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategoryBuilder;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
+import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.FileObjectPersistence;
 
 import java.util.ArrayList;
@@ -145,6 +146,12 @@ public class InMemoryFeedManagerCategoryService implements FeedManagerCategorySe
     @Nonnull
     @Override
     public Set<UserField> getUserFields() {
+        return Collections.emptySet();
+    }
+
+    @Nonnull
+    @Override
+    public Set<UserProperty> getUserProperties() {
         return Collections.emptySet();
     }
 

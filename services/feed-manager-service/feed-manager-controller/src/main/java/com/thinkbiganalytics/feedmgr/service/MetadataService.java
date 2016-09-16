@@ -90,6 +90,14 @@ public interface MetadataService {
     boolean deleteCategory(String categoryId) throws InvalidOperationException;
 
     /**
+     * Gets the user-defined fields for all categories.
+     *
+     * @return the user-defined fields
+     */
+    @Nonnull
+    Set<UserProperty> getCategoryUserFields();
+
+    /**
      * Gets the user-defined fields for all feeds within the specified category.
      *
      * @param categoryId the category id

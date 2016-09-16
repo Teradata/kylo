@@ -329,6 +329,12 @@ public class FeedManagerMetadataService implements MetadataService {
 
     @Nonnull
     @Override
+    public Set<UserProperty> getCategoryUserFields() {
+        return categoryProvider.getUserProperties();
+    }
+
+    @Nonnull
+    @Override
     public Optional<Set<UserProperty>> getFeedUserFields(@Nonnull final String categoryId) {
         return feedProvider.getUserFields(categoryId);
     }

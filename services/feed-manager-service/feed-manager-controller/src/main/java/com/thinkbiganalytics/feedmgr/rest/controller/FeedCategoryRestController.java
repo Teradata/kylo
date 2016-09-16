@@ -79,6 +79,25 @@ public class FeedCategoryRestController {
     }
 
     /**
+     * Returns the user fields for categories.
+     *
+     * @return the user fields
+     */
+    @GET
+    @Path("user-fields")
+    @Produces(MediaType.APPLICATION_JSON)
+    @ApiOperation("Returns the user fields for categories.")
+    @ApiResponses({
+        @ApiResponse(code = 200, message = "Returns the user fields.", response = UserProperty.class, responseContainer = "List"),
+        @ApiResponse(code = 500, message = "There was a problem accessing the user fields.")
+    })
+    @Nonnull
+    public Response getCategoryUserFields() {
+        final Set<UserProperty> userFields = getMetadataService().getCategoryUserFields();
+        return Response.ok(userFields).build();
+    }
+
+    /**
      * Returns the user fields for feeds within the specified category.
      *
      * @param categoryId the category id
