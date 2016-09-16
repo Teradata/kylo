@@ -202,7 +202,7 @@ app.config(function($stateProvider,$urlRouterProvider) {
                 breadcrumbRoot:true,
                 displayName:'Service Level Agreements'
             }
-        }).state('categories',{
+    }).state('categories',{
         url:'/categories',
         params: {
         },
