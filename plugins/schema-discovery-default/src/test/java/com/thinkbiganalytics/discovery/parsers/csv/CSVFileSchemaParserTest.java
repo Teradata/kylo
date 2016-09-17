@@ -30,6 +30,17 @@ public class CSVFileSchemaParserTest {
     }
 
     @org.junit.Test
+    public void testEmbeddedCommas() throws Exception {
+        validateSchema1("col1,col2,col3\n\"Edoceo, Inc.\",Seattle,WA\nfoo,bar,fee");
+    }
+
+    @org.junit.Test
+    public void testEmbeddedCommasNoAutodetect() throws Exception {
+        parser.setAutoDetect(false);
+        validateSchema1("col1,col2,col3\n\"Edoceo, Inc.\",Seattle,WA\nfoo,bar,fee");
+    }
+
+    @org.junit.Test
     public void testDefaultCSVParse() throws Exception {
         validateSchema1("col1,col2,col3\nr1v1,r1v2,r1v3\nr2v1,r2v2,r2v3\n");
     }
@@ -97,6 +108,12 @@ public class CSVFileSchemaParserTest {
     public void testPipeDelim() throws Exception {
         parser.setAutoDetect(true);
         validateSchema2("MOCK_DATA.pipe.txt");
+    }
+
+    @org.junit.Test
+    public void testJunk() throws Exception {
+        parser.setAutoDetect(true);
+        validateSchema2("junk.txt");
     }
 
     private HiveTableSchema toHiveTableSchema(InputStream is) throws IOException {
