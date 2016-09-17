@@ -50,7 +50,7 @@ public class JcrActionTreeBuilder<P> extends JcrAbstractActionsBuilder implement
      */
     @Override
     public P add() {
-//        JcrAccessControlUtil.addPermissions(this.actionsNode, getManagementPrincipal(), Privilege.JCR_ALL);
+        JcrAccessControlUtil.addPermissions(this.actionsNode, getManagementPrincipal(), Privilege.JCR_ALL);
         return this.parentBuilder;
     }
 

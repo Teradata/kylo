@@ -23,7 +23,7 @@ public class SpringAuthenticationProvider implements AuthenticationProvider {
             Authentication auth = cred.getAuthentication();
 
             if (auth != null) {
-                return repositoryContext.with(new SpringSecurityContext(auth));
+                return repositoryContext.with(new SpringSecurityContext(auth, cred.getPrincipals()));
             }
         }
         

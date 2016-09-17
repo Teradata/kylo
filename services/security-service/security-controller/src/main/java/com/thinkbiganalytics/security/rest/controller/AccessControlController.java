@@ -4,7 +4,6 @@
 package com.thinkbiganalytics.security.rest.controller;
 
 import java.security.Principal;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
@@ -61,7 +60,8 @@ public class AccessControlController {
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
                             .map(this.actionsTransform.availableActionsToActionSet("services"))
-                            .<WebApplicationException>orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
+                            .orElseThrow(() -> new WebApplicationException("The available service actions were not found", 
+                                                                           Status.NOT_FOUND));
         });
     }
     
@@ -72,13 +72,14 @@ public class AccessControlController {
                                        @QueryParam("user") Set<String> userNames,
                                        @QueryParam("group") Set<String> groupNames) {
         Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
-        Set<Principal> roles = this.actionsTransform.toGroupPrincipals(userNames);
-        Principal[] principals = Stream.concat(users.stream(), roles.stream()).toArray((size) -> new Principal[size]);
+        Set<Principal> groups = this.actionsTransform.toGroupPrincipals(groupNames);
+        Principal[] principals = Stream.concat(users.stream(), groups.stream()).toArray((size) -> new Principal[size]);
                         
         return metadata.read(() -> {
             return actionsProvider.getAllowedActions(moduleName)
                             .map(this.actionsTransform.availableActionsToActionSet("services"))
-                            .<WebApplicationException>orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
+                            .orElseThrow(() -> new WebApplicationException("The available service actions were not found", 
+                                                                           Status.NOT_FOUND));
         }, principals);
     }
     
@@ -132,7 +133,8 @@ public class AccessControlController {
         return metadata.read(() -> {
             return actionsProvider.getAvailableActions(moduleName)
                             .map(this.actionsTransform.availableActionsToPermissionsChange(ChangeType.valueOf(changeType.toUpperCase()), moduleName, users, groups))
-                            .<WebApplicationException>orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
+                            .orElseThrow(() -> new WebApplicationException("The available service actions were not found", 
+                                                                           Status.NOT_FOUND));
         });
     }
 

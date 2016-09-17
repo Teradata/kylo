@@ -26,6 +26,8 @@ public interface FeedsAccessControl {
     
     public static final Action ACCESS_TEMPLATES = FEEDS_SUPPORT.subAction("accessTemplates");
     public static final Action EDIT_TEMPLATES = ACCESS_TEMPLATES.subAction("editTemplates");
+    public static final Action IMPORT_TEMPLATES = ACCESS_TEMPLATES.subAction("importTemplates");
+    public static final Action EXPORT_TEMPLATES = ACCESS_TEMPLATES.subAction("exportTemplates");
     public static final Action ADMIN_TEMPLATES = ACCESS_TEMPLATES.subAction("adminTemplates");
     
 }

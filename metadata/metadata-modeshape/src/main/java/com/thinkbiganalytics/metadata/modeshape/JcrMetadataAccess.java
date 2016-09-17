@@ -4,9 +4,12 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -30,6 +33,7 @@ import com.thinkbiganalytics.metadata.api.MetadataAccessException;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
+import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadOnlyPrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.OverrideCredentials;
 import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
@@ -262,9 +266,11 @@ public class JcrMetadataAccess implements MetadataAccess {
         
         if (principals.length == 0) {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            creds = new SpringAuthenticationCredentials(auth);
+            creds = new SpringAuthenticationCredentials(auth, ModeShapeReadOnlyPrincipal.INSTANCE);
         } else {
-            creds = OverrideCredentials.create(principals);
+            creds = OverrideCredentials.create(Stream.concat(Stream.of(ModeShapeReadOnlyPrincipal.INSTANCE), 
+                                                             Arrays.stream(principals))
+                                               .collect(Collectors.toSet()));
         }
         
         return creds;

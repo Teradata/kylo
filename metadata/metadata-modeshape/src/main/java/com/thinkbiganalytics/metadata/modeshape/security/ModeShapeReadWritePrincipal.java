@@ -8,6 +8,8 @@ package com.thinkbiganalytics.metadata.modeshape.security;
  * @author Sean Felten
  */
 public class ModeShapeReadWritePrincipal extends ModeShapePrincipal {
+    
+    public static final ModeShapeReadWritePrincipal INSTANCE = new ModeShapeReadWritePrincipal();
 
     /**
      * 

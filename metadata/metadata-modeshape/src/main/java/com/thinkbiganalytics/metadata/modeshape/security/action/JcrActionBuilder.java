@@ -67,7 +67,7 @@ public class JcrActionBuilder<P> extends JcrAbstractActionsBuilder implements Ac
      */
     @Override
     public P add() {
-//        JcrAccessControlUtil.addPermissions(this.actionNode, getManagementPrincipal(), Privilege.JCR_ALL);
+        JcrAccessControlUtil.addPermissions(this.actionNode, getManagementPrincipal(), Privilege.JCR_ALL);
         return this.parentBuilder;
     }
 
