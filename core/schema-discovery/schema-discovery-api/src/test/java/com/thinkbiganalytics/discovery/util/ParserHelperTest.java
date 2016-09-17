@@ -29,14 +29,8 @@ public class ParserHelperTest {
 
     public void textExtract(String text, int numRows, int numExpected) throws Exception {
         try (InputStream is = new ByteArrayInputStream(text.getBytes(StandardCharsets.UTF_8))) {
-            Reader reader = ParserHelper.extractSampleLines(is, StandardCharsets.UTF_8, numRows);
-            String targetString = "";
-            int intValueOfChar;
-            while ((intValueOfChar = reader.read()) != -1) {
-                targetString += (char) intValueOfChar;
-            }
-            reader.close();
-            assertEquals(targetString.split("\n").length, numExpected);
+            String value = ParserHelper.extractSampleLines(is, StandardCharsets.UTF_8, numRows);
+            assertEquals(numExpected, value.split("\n").length);
         }
     }
 
@@ -57,7 +51,7 @@ public class ParserHelperTest {
     public void testInvalidFile() throws Exception {
         String text = StringUtils.leftPad("Z", 64001, "Z");
         try {
-            textExtract(text, 100, 12);
+            textExtract(text, 100, 1);
             fail();
         } catch (IOException e) {
             // good
@@ -71,7 +65,7 @@ public class ParserHelperTest {
         assertEquals("INTEGER", ParserHelper.deriveJDBCDataType(Arrays.asList("1", "20000", "64")).getName());
         assertEquals("VARCHAR", ParserHelper.deriveJDBCDataType(Arrays.asList("1L", "200,00", "64")).getName());
         assertEquals("VARCHAR", ParserHelper.deriveJDBCDataType(Arrays.asList("BOB", "20", "64")).getName());
-        assertEquals("VARCHAR", ParserHelper.deriveJDBCDataType(null), null);
+        assertEquals("VARCHAR", ParserHelper.deriveJDBCDataType(null).getName());
     }
 
     @Test

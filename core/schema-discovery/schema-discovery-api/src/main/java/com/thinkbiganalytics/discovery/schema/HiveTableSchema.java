@@ -7,7 +7,7 @@ package com.thinkbiganalytics.discovery.schema;
 /**
  * Represents a Hive table
  */
-public interface HiveTableSchema {
+public interface HiveTableSchema extends TableSchema {
 
     String getHiveFormat();
 

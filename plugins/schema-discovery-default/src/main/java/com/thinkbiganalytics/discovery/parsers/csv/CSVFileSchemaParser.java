@@ -21,24 +21,30 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 @SchemaParser(name = "CSV", description = "Supports delimited text files with a field delimiter and optional escape and quote characters.", tags = {"CSV", "TSV"})
 public class CSVFileSchemaParser implements FileSchemaParser {
 
-    private static int SAMPLE_ROWS = 10;
+    private static final org.slf4j.Logger LOG = LoggerFactory.getLogger(CSVFileSchemaParser.class);
+
+    private static final int MAX_ROWS = 1000;
+
+    private int numRowsToSample = 10;
 
     @PolicyProperty(name = "Auto Detect?", hint = "Auto detect will attempt to infer delimiter from the sample file.", value = "true")
-    private boolean autoDetect;
+    private boolean autoDetect = true;
 
     @PolicyProperty(name = "Header?", hint = "Whether file has a header.", value = "true")
-    private boolean headerRow;
+    private boolean headerRow = true;
 
     @PolicyProperty(name = "Delimiter Char", hint = "Character separating fields", value = ",")
     private String separatorChar = ",";
@@ -49,66 +55,82 @@ public class CSVFileSchemaParser implements FileSchemaParser {
     @PolicyProperty(name = "Escape Char", hint = "Escape character", value = "\\")
     private String escapeChar = "\\";
 
-    private CSVFormat createCSVFormat() {
-        CSVFormat format = CSVFormat.DEFAULT.withAllowMissingColumnNames();
+    private CSVFormat createCSVFormat(String sampleData) throws IOException {
+        CSVFormat format;
+        if (autoDetect) {
+            CSVAutoDetect autoDetect = new CSVAutoDetect();
+            format = autoDetect.detectCSVFormat(sampleData);
+        } else {
+            format = CSVFormat.DEFAULT.withAllowMissingColumnNames();
 
-        if (StringUtils.isNotEmpty(separatorChar)) {
-            format = format.withDelimiter(separatorChar.charAt(0));
-        }
-        if (StringUtils.isNotEmpty(escapeChar)) {
-            format = format.withEscape(escapeChar.charAt(0));
-        }
-        if (StringUtils.isNotEmpty(quoteChar)) {
-            format = format.withQuoteMode(QuoteMode.MINIMAL).withQuote(quoteChar.charAt(0));
+            if (StringUtils.isNotEmpty(separatorChar)) {
+                format = format.withDelimiter(separatorChar.charAt(0));
+            }
+            if (StringUtils.isNotEmpty(escapeChar)) {
+                format = format.withEscape(escapeChar.charAt(0));
+            }
+            if (StringUtils.isNotEmpty(quoteChar)) {
+                format = format.withQuoteMode(QuoteMode.MINIMAL).withQuote(quoteChar.charAt(0));
+            }
         }
         return format;
     }
 
     @Override
     public Schema parse(InputStream is, Charset charset, TableSchemaType target) throws IOException {
+
         Validate.notNull(target, "target must not be null");
         Validate.notNull(is, "stream must not be null");
         Validate.notNull(charset, "charset must not be null");
-
-        DefaultFileSchema fileSchema = new DefaultFileSchema();
-        CSVFormat format = createCSVFormat();
+        validate();
 
         // Parse the file
-        try (Reader reader = ParserHelper.extractSampleLines(is, charset, SAMPLE_ROWS)) {
-            CSVParser parser = format.parse(reader);
-            int i = 0;
+        String sampleData = ParserHelper.extractSampleLines(is, charset, numRowsToSample);
+        CSVFormat format = createCSVFormat(sampleData);
+        try (Reader reader = new StringReader(sampleData)) {
 
-            ArrayList<DefaultField> fields = new ArrayList<>();
-            for (CSVRecord record : parser) {
-                if (i > SAMPLE_ROWS) {
-                    break;
-                }
-                int size = record.size();
-                for (int j = 0; j < size; j++) {
-                    DefaultField field = null;
-                    if (i == 0) {
-                        field = new DefaultField();
-                        if (headerRow) {
-                            field.setName(record.get(j));
-                        } else {
-                            field.setName("Col" + j + 1);
-                        }
-                        fields.add(field);
-                    } else {
-                        // Add sample values for rows
-                        field = fields.get(j);
-                        field.getSampleValues().add(StringUtils.defaultString(record.get(j), ""));
-                    }
-                }
-                i++;
-            }
-            fileSchema.setFields(fields);
+            CSVParser parser = format.parse(reader);
+            DefaultFileSchema fileSchema = populateSchema(parser);
 
             // Convert to target schema with proper derived types
             Schema targetSchema = convertToTarget(target, fileSchema);
             return targetSchema;
-
         }
+    }
+
+    private DefaultFileSchema populateSchema(CSVParser parser) {
+        DefaultFileSchema fileSchema = new DefaultFileSchema();
+        int i = 0;
+        ArrayList<DefaultField> fields = new ArrayList<>();
+        for (CSVRecord record : parser) {
+            if (i > numRowsToSample) {
+                break;
+            }
+            int size = record.size();
+            for (int j = 0; j < size; j++) {
+                DefaultField field = null;
+                if (i == 0) {
+                    field = new DefaultField();
+                    if (headerRow) {
+                        field.setName(record.get(j));
+                    } else {
+                        field.setName("Col_" + (j + 1));
+                    }
+                    fields.add(field);
+                } else {
+                    // Add sample values for rows
+                    try {
+                        field = fields.get(j);
+                        field.getSampleValues().add(StringUtils.defaultString(record.get(j), ""));
+                    } catch (IndexOutOfBoundsException e) {
+                        LOG.warn("Sample file has potential sparse column problem at row [?] field [?]", i + 1, j + 1);
+                    }
+                }
+            }
+            i++;
+        }
+        fileSchema.setFields(fields);
+        return fileSchema;
     }
 
     /**
@@ -118,7 +140,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
      * @param sourceSchema the source
      * @return the schema
      */
-    public Schema convertToTarget(TableSchemaType target, Schema sourceSchema) {
+    protected Schema convertToTarget(TableSchemaType target, Schema sourceSchema) {
         Schema targetSchema;
         switch (target) {
             case RAW:
@@ -154,4 +176,34 @@ public class CSVFileSchemaParser implements FileSchemaParser {
         return String.format(template, separatorChar, escapeChar, quoteChar);
     }
 
+    private void validate() {
+        Validate.isTrue(separatorChar != null && separatorChar.length() == 1);
+        Validate.isTrue(quoteChar != null && quoteChar.length() == 1);
+        Validate.isTrue(escapeChar != null && escapeChar.length() == 1);
+        Validate.inclusiveBetween(1, MAX_ROWS, numRowsToSample);
+    }
+
+    public void setAutoDetect(boolean autoDetect) {
+        this.autoDetect = autoDetect;
+    }
+
+    public void setHeaderRow(boolean headerRow) {
+        this.headerRow = headerRow;
+    }
+
+    public void setSeparatorChar(String separatorChar) {
+        this.separatorChar = separatorChar;
+    }
+
+    public void setQuoteChar(String quoteChar) {
+        this.quoteChar = quoteChar;
+    }
+
+    public void setEscapeChar(String escapeChar) {
+        this.escapeChar = escapeChar;
+    }
+
+    public void setNumRowsToSample(int numRowsToSample) {
+        this.numRowsToSample = numRowsToSample;
+    }
 }
