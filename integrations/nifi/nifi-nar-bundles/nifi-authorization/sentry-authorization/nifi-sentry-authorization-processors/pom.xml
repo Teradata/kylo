@@ -50,7 +50,7 @@
 		</dependency>
 
 		<!-- Sentry Dependency -->
-		<dependency>
+	<!--  <dependency>
 			<groupId>org.apache.sentry</groupId>
 			<artifactId>sentry-provider-db</artifactId>
 			<version>1.5.1-cdh5.5.0</version>
@@ -60,7 +60,7 @@
 					<artifactId>zookeeper</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
+		</dependency> -->	
 
 		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-simple</artifactId> 
 			<scope>test</scope> </dependency> -->

@@ -74,6 +74,4 @@ public interface ComponentProperties {
 			.identifiesControllerService(ThriftService.class)
 			.build();
 
-
-
 }
