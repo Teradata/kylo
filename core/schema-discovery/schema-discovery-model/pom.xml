@@ -19,9 +19,6 @@
       <artifactId>thinkbig-feed-manager-api</artifactId>
       <version>${project.version}</version>
     </dependency>
-
-
-
     <dependency>
       <groupId>org.springframework</groupId>
       <artifactId>spring-context-support</artifactId>

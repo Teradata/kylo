@@ -4,9 +4,11 @@
 package com.thinkbiganalytics.security.rest.controller;
 
 import java.security.Principal;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Consumer;
+import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -26,7 +28,6 @@ import org.springframework.stereotype.Component;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.security.action.Action;
-import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 import com.thinkbiganalytics.security.rest.model.ActionSet;
 import com.thinkbiganalytics.security.rest.model.PermissionsChange;
@@ -70,13 +71,15 @@ public class AccessControlController {
     public ActionSet getAllowedActions(@PathParam("name") String moduleName,
                                        @QueryParam("user") Set<String> userNames,
                                        @QueryParam("group") Set<String> groupNames) {
+        Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
+        Set<Principal> roles = this.actionsTransform.toGroupPrincipals(userNames);
+        Principal[] principals = Stream.concat(users.stream(), roles.stream()).toArray((size) -> new Principal[size]);
+                        
         return metadata.read(() -> {
-            Set<Principal> users = this.actionsTransform.toUserPrincipals(userNames);
-            Set<Principal> roles = this.actionsTransform.toGroupPrincipals(userNames);
             return actionsProvider.getAllowedActions(moduleName)
                             .map(this.actionsTransform.availableActionsToActionSet("services"))
                             .<WebApplicationException>orElseThrow(() -> new WebApplicationException("The available service actions were not found", Status.NOT_FOUND));
-        });
+        }, principals);
     }
     
     @POST

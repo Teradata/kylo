@@ -94,7 +94,8 @@ angular.module(MODULE_FEED_MGR).service('StateService', function ($state) {
      * @param {string} [opt_groupId] the system name of the group
      */
     this.navigateToGroupDetails = function(opt_groupId) {
-        $state.go("group-details", {groupId: opt_groupId});
+        var safeGroupId = angular.isString(opt_groupId) ? encodeURIComponent(opt_groupId) : null;
+        $state.go("group-details", {groupId: safeGroupId});
     };
 
     /**
@@ -110,6 +111,7 @@ angular.module(MODULE_FEED_MGR).service('StateService', function ($state) {
      * @param {string} [opt_userId] the system name of the user
      */
     this.navigateToUserDetails = function(opt_userId) {
-        $state.go("user-details", {userId: opt_userId});
+        var safeUserId = angular.isString(opt_userId) ? encodeURIComponent(opt_userId) : null;
+        $state.go("user-details", {userId: safeUserId});
     };
 });

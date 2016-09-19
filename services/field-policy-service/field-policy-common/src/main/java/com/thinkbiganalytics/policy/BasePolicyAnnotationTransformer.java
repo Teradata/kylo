@@ -10,7 +10,6 @@ import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.FieldRulePropertyBuilder;
 import com.thinkbiganalytics.rest.model.LabelValue;
 
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -244,7 +243,7 @@ public abstract class BasePolicyAnnotationTransformer<U extends BaseUiPolicyRule
                     String value = property.getStringValue();
                     Field f = FieldUtils.getField(standardizationPolicy.getClass(), field, true);
                     Object objectValue = convertStringToObject(value, f.getType());
-                    BeanUtils.setProperty(standardizationPolicy, field, objectValue);
+                    f.set(standardizationPolicy, objectValue);
                 }
             }
             afterFromUiModel(standardizationPolicy, rule);

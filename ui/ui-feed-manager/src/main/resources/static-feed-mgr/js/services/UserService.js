@@ -40,7 +40,7 @@ angular.module(MODULE_FEED_MGR).factory("UserService", function($http, RestUrlSe
         deleteGroup: function(groupId) {
             return $http({
                 method: "DELETE",
-                url: RestUrlService.SECURITY_GROUPS_URL + "/" + groupId
+                url: RestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId)
             });
         },
 
@@ -53,7 +53,7 @@ angular.module(MODULE_FEED_MGR).factory("UserService", function($http, RestUrlSe
         deleteUser: function(userId) {
             return $http({
                 method: "DELETE",
-                url: RestUrlService.SECURITY_USERS_URL + "/" + userId
+                url: RestUrlService.SECURITY_USERS_URL + "/" + encodeURIComponent(userId)
             });
         },
 
@@ -64,7 +64,7 @@ angular.module(MODULE_FEED_MGR).factory("UserService", function($http, RestUrlSe
          * @returns {GroupPrincipal} the group
          */
         getGroup: function(groupId) {
-            return $http.get(RestUrlService.SECURITY_GROUPS_URL + "/" + groupId)
+            return $http.get(RestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId))
                     .then(function(response) {
                         return response.data;
                     });
@@ -89,7 +89,7 @@ angular.module(MODULE_FEED_MGR).factory("UserService", function($http, RestUrlSe
          * @returns {UserPrincipal} the user
          */
         getUser: function(userId) {
-            return $http.get(RestUrlService.SECURITY_USERS_URL + "/" + userId)
+            return $http.get(RestUrlService.SECURITY_USERS_URL + "/" + encodeURIComponent(userId))
                     .then(function(response) {
                         return response.data;
                     });
@@ -114,7 +114,7 @@ angular.module(MODULE_FEED_MGR).factory("UserService", function($http, RestUrlSe
          * @returns {Array.<UserPrincipal>} the users
          */
         getUsersByGroup: function(groupId) {
-            return $http.get(RestUrlService.SECURITY_GROUPS_URL + "/" + groupId + "/users")
+            return $http.get(RestUrlService.SECURITY_GROUPS_URL + "/" + encodeURIComponent(groupId) + "/users")
                     .then(function(response) {
                         return response.data;
                     });

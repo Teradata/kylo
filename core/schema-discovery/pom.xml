@@ -12,8 +12,9 @@
     </parent>
 
     <modules>
-        <module>schema-discovery-model</module>
-        <module>schema-discovery-parser</module>
+      <module>schema-discovery-api</module>
+      <module>schema-discovery-model</module>
+      <module>schema-discovery-parser</module>
     </modules>
 
 

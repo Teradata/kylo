@@ -21,6 +21,11 @@
          * @type {CategoryModel}
          */
         self.model = {};
+        $scope.$watch(
+                function() {return CategoriesService.model},
+                function(model) {self.model = model},
+                true
+        );
 
         /**
          * Loads the category data once the list of categories has loaded.
@@ -29,13 +34,18 @@
             if (angular.isString($stateParams.categoryId)) {
                 self.model = CategoriesService.model = CategoriesService.findCategory($stateParams.categoryId);
                 CategoriesService.getRelatedFeeds(CategoriesService.model);
+                self.loadingCategory = false;
+            } else {
+                CategoriesService.getUserFields()
+                        .then(function(userFields) {
+                            CategoriesService.model = CategoriesService.newCategory();
+                            CategoriesService.model.userProperties = userFields;
+                            self.loadingCategory = false;
+                        });
             }
-            self.loadingCategory = false;
         };
 
         // Load the list of categories
-        CategoriesService.model = CategoriesService.newCategory();
-
         if (CategoriesService.categories.length === 0) {
             CategoriesService.reload().then(self.onLoad);
         } else {

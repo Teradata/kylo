@@ -316,6 +316,19 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
             }
         });
         return userPropertyList;
+    },
+
+    /**
+     * Gets the user fields for a new feed.
+     *
+     * @param {string} categoryId the category id
+     * @returns {Promise} for the user fields
+     */
+    getUserFields: function(categoryId) {
+        return $http.get(RestUrlService.GET_FEED_USER_FIELDS_URL(categoryId))
+                .then(function(response) {
+                    return response.data;
+                });
     }
 };
     data.init();

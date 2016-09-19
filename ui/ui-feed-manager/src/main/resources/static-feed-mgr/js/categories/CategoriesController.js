@@ -1,37 +1,60 @@
-(function () {
+(function() {
 
-    var controller = function($scope,$http,$mdToast,$mdDialog,AddButtonService,CategoriesService,StateService){
-
+    /**
+     * Displays a list of categories.
+     *
+     * @constructor
+     * @param $scope the application model
+     * @param AddButtonService the Add button service
+     * @param CategoriesService the categories service
+     * @param StateService the page state service
+     */
+    var CategoriesController = function($scope, AddButtonService, CategoriesService, StateService) {
         var self = this;
-        this.searchQuery = '';
 
-        this.categories = CategoriesService.categories;
+        /**
+         * List of categories.
+         * @type {Array.<Object>}
+         */
+        self.categories = [];
+        $scope.$watchCollection(
+                function() {return CategoriesService.categories},
+                function(newVal) {self.categories = newVal}
+        );
 
-        $scope.$watchCollection(function(){
-            return CategoriesService.categories
-        },function(newVal) {
-            self.categories = newVal;
-        })
+        /**
+         * Indicates that the category data is being loaded.
+         * @type {boolean}
+         */
+        self.loading = true;
 
-        this.newCategory = function() {
-            self.showDialog(null);
-        }
+        /**
+         * Query for filtering categories.
+         * @type {string}
+         */
+        self.searchQuery = "";
 
-        this.editCategory = function(category) {
+        /**
+         * Navigates to the details page for the specified category.
+         *
+         * @param {Object} category the category
+         */
+        self.editCategory = function(category) {
             StateService.navigateToCategoryDetails(category.id);
-        }
+        };
 
-        AddButtonService.registerAddButton('categories',function() {
+        // Register Add button
+        AddButtonService.registerAddButton('categories', function() {
             StateService.navigateToCategoryDetails(null);
         });
 
-
-
+        // Refresh list of categories
+        CategoriesService.reload()
+                .then(function() {
+                    self.loading = false;
+                });
     };
 
-    angular.module(MODULE_FEED_MGR).controller('CategoriesController',controller);
-
-
-
+    angular.module(MODULE_FEED_MGR).controller('CategoriesController', CategoriesController);
 }());
 

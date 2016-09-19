@@ -3,6 +3,7 @@ package com.thinkbiganalytics.feedmgr.service.category;
 import com.thinkbiganalytics.feedmgr.InvalidOperationException;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.UserField;
+import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
@@ -112,10 +113,20 @@ public class DefaultFeedManagerCategoryService implements FeedManagerCategorySer
     @Nonnull
     @Override
     public Set<UserField> getUserFields() {
-        return metadataAccess.read(() -> { 
+        return metadataAccess.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_CATEGORIES);
 
-            return UserPropertyTransform.toUserFields(categoryProvider.getUserFields()); 
+            return UserPropertyTransform.toUserFields(categoryProvider.getUserFields());
+        });
+    }
+
+    @Nonnull
+    @Override
+    public Set<UserProperty> getUserProperties() {
+        return metadataAccess.read(() -> {
+            this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_CATEGORIES);
+
+            return UserPropertyTransform.toUserProperties(Collections.emptyMap(), categoryProvider.getUserFields());
         });
     }
 

@@ -2,6 +2,7 @@ package com.thinkbiganalytics.feedmgr.service;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
@@ -20,6 +21,7 @@ import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.UIFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.UserFieldCollection;
+import com.thinkbiganalytics.feedmgr.rest.model.UserProperty;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
@@ -34,6 +36,9 @@ import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 
+/**
+ * Provides access to category, feed, and template metadata stored in the metadata store.
+ */
 public class FeedManagerMetadataService implements MetadataService {
 
     @Inject
@@ -54,10 +59,6 @@ public class FeedManagerMetadataService implements MetadataService {
     // Metadata event service
     @Inject
     private MetadataEventService eventService;
-
-    public FeedManagerMetadataService() {
-
-    }
 
     @Override
     public void registerTemplate(RegisteredTemplate registeredTemplate) {
@@ -324,6 +325,18 @@ public class FeedManagerMetadataService implements MetadataService {
         if (listener.getState() != FeedOperation.State.SUCCESS) {
             throw new FeedCleanupFailedException("Cleanup state " + listener.getState() + " for feed: " + feed.getId());
         }
+    }
+
+    @Nonnull
+    @Override
+    public Set<UserProperty> getCategoryUserFields() {
+        return categoryProvider.getUserProperties();
+    }
+
+    @Nonnull
+    @Override
+    public Optional<Set<UserProperty>> getFeedUserFields(@Nonnull final String categoryId) {
+        return feedProvider.getUserFields(categoryId);
     }
 
     @Nonnull

@@ -17,7 +17,6 @@ import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.schema.TextFileParser;
 
-import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.entity.InputPortsEntity;

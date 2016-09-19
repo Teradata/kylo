@@ -15,6 +15,8 @@ import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import org.apache.commons.lang.StringEscapeUtils;
 
 import java.io.Serializable;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Optional;
 
 import javax.annotation.Nonnull;
@@ -37,7 +39,8 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     @Nonnull
     @Override
     public Optional<User> findUserBySystemName(@Nonnull final String systemName) {
-        final String query = "SELECT * FROM [" + JcrUser.NODE_TYPE + "] AS user WHERE NAME() = '" + StringEscapeUtils.escapeSql(systemName) + "'";
+        final String safeSystemName = StringEscapeUtils.escapeSql(encodeUserName(systemName));
+        final String query = "SELECT * FROM [" + JcrUser.NODE_TYPE + "] AS user WHERE NAME() = '" + safeSystemName + "'";
         return Optional.ofNullable((User) findFirst(query));
     }
 
@@ -63,7 +66,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     public User.ID resolveId(@Nonnull final Serializable fid) {
         return new JcrUser.UserId(fid);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#resolveUserId(java.io.Serializable)
      */
@@ -71,7 +74,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     public User.ID resolveUserId(@Nonnull Serializable id) {
         return new JcrUser.UserId(id);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#resolveGroupId(java.io.Serializable)
      */
@@ -97,14 +100,14 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     public Optional<User> findUserById(@Nonnull User.ID id) {
         try {
             Node node = getSession().getNodeByIdentifier(id.toString());
-            
+
             if (node.isNodeType(JcrUser.NODE_TYPE)) {
                 return Optional.of(new JcrUser(node));
             } else {
                 // TODO: should we thrown an exception if the ID is not for a user?
                 return Optional.empty();
             }
-        } catch (ItemNotFoundException e) { 
+        } catch (ItemNotFoundException e) {
             return Optional.empty();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed attempting to find the user with ID: " + id, e);
@@ -129,7 +132,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     public User createUser(@Nonnull String username) {
         return createUser(username, false);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#findGroupById(com.thinkbiganalytics.metadata.api.user.UserGroup.ID)
      */
@@ -138,14 +141,14 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     public Optional<UserGroup> findGroupById(ID id) {
         try {
             Node node = getSession().getNodeByIdentifier(id.toString());
-            
+
             if (node.isNodeType(JcrUserGroup.NODE_TYPE)) {
                 return Optional.of(new JcrUserGroup(node));
             } else {
                 // TODO: should we thrown an exception if the ID is not for a group?
                 return Optional.empty();
             }
-        } catch (ItemNotFoundException e) { 
+        } catch (ItemNotFoundException e) {
             return Optional.empty();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed attempting to find the group with ID: " + id, e);
@@ -157,8 +160,9 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
      */
     @Nonnull
     @Override
-    public Optional<UserGroup> findGroupByName(@Nonnull String groupName) {
-        final String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "] AS user WHERE NAME() = '" + StringEscapeUtils.escapeSql(groupName) + "'";
+    public Optional<UserGroup> findGroupByName(@Nonnull final String groupName) {
+        final String safeGroupName = StringEscapeUtils.escapeSql(encodeGroupName(groupName));
+        final String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "] AS user WHERE NAME() = '" + safeGroupName + "'";
         return Optional.ofNullable(findFirst(query, JcrUserGroup.class));
     }
 
@@ -171,7 +175,7 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
         String query = "SELECT * FROM [" + JcrUserGroup.NODE_TYPE + "]";
         return findIterable(query, UserGroup.class, JcrUserGroup.class);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.user.UserProvider#ensureGroup(java.lang.String)
      */
@@ -190,42 +194,64 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
         return createGroup(groupName, false);
     }
 
-    private UserGroup createGroup(String groupName, boolean ensure) {
-        Session session = getSession();
-        String groupPath = UsersPaths.groupPath(groupName).toString();
-        
+    /**
+     * Creates a new group with the specified name.
+     *
+     * @param groupName the name of the group
+     * @param ensure {@code true} to return the group if it already exists, or {@code false} to throw an exception
+     * @return the group
+     * @throws GroupAlreadyExistsException if the group already exists and {@code ensure} is {@code false}
+     * @throws MetadataRepositoryException if the group could not be created
+     */
+    @Nonnull
+    private UserGroup createGroup(@Nonnull final String groupName, final boolean ensure) {
+        final Session session = getSession();
+        final String safeGroupName = encodeGroupName(groupName);
+        final String groupPath = UsersPaths.groupPath(safeGroupName).toString();
+
         try {
-            Node groupsNode = session.getRootNode().getNode(UsersPaths.GROUPS.toString());
+            final Node groupsNode = session.getRootNode().getNode(UsersPaths.GROUPS.toString());
 
             if (session.getRootNode().hasNode(groupPath)) {
                 if (ensure) {
-                    return JcrUtil.getJcrObject(groupsNode, groupName, JcrUserGroup.class);
+                    return JcrUtil.getJcrObject(groupsNode, safeGroupName, JcrUserGroup.class);
                 } else {
                     throw new GroupAlreadyExistsException(groupName);
                 }
             } else {
-                return JcrUtil.getOrCreateNode(groupsNode, groupName, JcrUserGroup.NODE_TYPE, JcrUserGroup.class);
+                return JcrUtil.getOrCreateNode(groupsNode, safeGroupName, JcrUserGroup.NODE_TYPE, JcrUserGroup.class);
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed attempting to create a new group with name: " + groupName, e);
         }
     }
-    
-    private User createUser(String username, boolean ensure) {
-        Session session = getSession();
-        String userPath = UsersPaths.userPath(username).toString();
-        
+
+    /**
+     * Creates a new user with the specified name.
+     *
+     * @param username the name of the user
+     * @param ensure {@code true} to return the user if it already exists, or {@code false} to throw an exception
+     * @return the user
+     * @throws UserAlreadyExistsException if the user already exists and {@code ensure} is {@code false}
+     * @throws MetadataRepositoryException if the user could not be created
+     */
+    @Nonnull
+    private User createUser(@Nonnull final String username, final boolean ensure) {
+        final Session session = getSession();
+        final String safeUserName = encodeUserName(username);
+        final String userPath = UsersPaths.userPath(username).toString();
+
         try {
-            Node usersNode = session.getRootNode().getNode(UsersPaths.USERS.toString());
-    
+            final Node usersNode = session.getRootNode().getNode(UsersPaths.USERS.toString());
+
             if (session.getRootNode().hasNode(userPath)) {
                 if (ensure) {
-                    return JcrUtil.getJcrObject(usersNode, username, JcrUser.class);
+                    return JcrUtil.getJcrObject(usersNode, safeUserName, JcrUser.class);
                 } else {
                     throw new UserAlreadyExistsException(username);
                 }
             } else {
-                return JcrUtil.getOrCreateNode(usersNode, username, JcrUser.NODE_TYPE, JcrUser.class);
+                return JcrUtil.getOrCreateNode(usersNode, safeUserName, JcrUser.NODE_TYPE, JcrUser.class);
             }
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed attempting to create a new user with name: " + username, e);
@@ -252,5 +278,35 @@ public class JcrUserProvider extends BaseJcrProvider<Object, Serializable> imple
     @Override
     public User updateUser(@Nonnull final User user) {
         return (User)update(user);
+    }
+
+    /**
+     * Encodes the specified group name for use with JCR methods.
+     *
+     * @param groupName the raw group name
+     * @return the encoded group name
+     */
+    @Nonnull
+    private String encodeGroupName(@Nonnull final String groupName) {
+        try {
+            return URLEncoder.encode(groupName, JcrUserGroup.ENCODING);
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("Unsupported encoding for system name of group: " + groupName, e);
+        }
+    }
+
+    /**
+     * Encodes the specified user name for use with JCR methods.
+     *
+     * @param username the raw user name
+     * @return the encoded user name
+     */
+    @Nonnull
+    private String encodeUserName(@Nonnull final String username) {
+        try {
+            return URLEncoder.encode(username, JcrUser.ENCODING);
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException("Unsupported encoding for system name of user: " + username, e);
+        }
     }
 }

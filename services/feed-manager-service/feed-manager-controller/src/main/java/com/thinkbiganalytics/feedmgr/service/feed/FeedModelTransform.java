@@ -28,6 +28,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplatePr
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -282,6 +283,6 @@ public class FeedModelTransform {
     @Nonnull
     private Set<UserFieldDescriptor> getUserFields(@Nullable final Category category) {
         final Set<UserFieldDescriptor> userFields = feedProvider.getUserFields();
-        return (category != null) ? Sets.union(userFields, categoryProvider.getFeedUserFields(category.getId())) : userFields;
+        return (category != null) ? Sets.union(userFields, categoryProvider.getFeedUserFields(category.getId()).orElse(Collections.emptySet())) : userFields;
     }
 }

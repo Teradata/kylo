@@ -10,9 +10,9 @@
         </header-section>
         <body-section>
             <thinkbig-category-definition></thinkbig-category-definition>
-            <thinkbig-category-properties></thinkbig-category-properties>
-            <thinkbig-category-feed-properties></thinkbig-category-feed-properties>
-            <thinkbig-category-feeds></thinkbig-category-feeds>
+            <thinkbig-category-properties ng-if="vm.model.id != null"></thinkbig-category-properties>
+            <thinkbig-category-feed-properties ng-if="vm.model.id != null"></thinkbig-category-feed-properties>
+            <thinkbig-category-feeds ng-if="vm.model.id != null"></thinkbig-category-feeds>
         </body-section>
     </card-layout>
 </div>
