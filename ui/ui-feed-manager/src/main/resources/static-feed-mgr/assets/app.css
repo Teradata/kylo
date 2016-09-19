@@ -1228,3 +1228,11 @@ md-toast .md-toast-content {
 .user-field-list div:not(:first-child) md-input-container {
   margin-top: 0;
 }
+
+/* Permissions Table */
+md-list-item .md-list-item-inner > md-checkbox.permissions-indent-1 {
+  margin-left: 59px;
+}
+md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
+  margin-left: 115px;
+}

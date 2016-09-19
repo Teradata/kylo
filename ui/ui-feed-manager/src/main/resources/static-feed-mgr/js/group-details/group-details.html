@@ -63,6 +63,15 @@
                     </editable-section>
                 </vertical-section-layout>
             </form>
+            <vertical-section-layout section-title="Permissions" on-save-edit="vm.onSavePermissions()" on-edit="vm.onEditPermissions()" allow-edit="!vm.loading && vm.model.systemName !== null"
+                                     editable="vm.isPermissionsEditable">
+                <readonly-section>
+                    <thinkbig-permissions-table allowed="vm.actions" read-only="true"></thinkbig-permissions-table>
+                </readonly-section>
+                <editable-section>
+                    <thinkbig-permissions-table allowed="vm.editActions"></thinkbig-permissions-table>
+                </editable-section>
+            </vertical-section-layout>
             <vertical-section-layout allow-edit="false" show-vertical-check="true" section-title="Related Users">
                 <readonly-section>
                     <md-list layout-fill class="list-item-table list-condensed" id="policy-list" ng-if="!vm.loading && vm.model.systemName !== null && vm.model.memberCount > 0">

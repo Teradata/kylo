@@ -3,15 +3,31 @@
      * Adds or updates user details.
      *
      * @constructor
-     * @param $scope the application model
+     * @param {Object} $scope the application model
      * @param $mdDialog the dialog service
      * @param $mdToast the toast notification service
-     * @param $stateParams the URL parameters
-     * @param UserService the user service
+     * @param {Object} $stateParams the URL parameters
+     * @param {string} [$stateParams.groupId] the group name in the url
+     * @param {AccessControlService} AccessControlService the access control service
+     * @param {UserService} UserService the user service
      * @param StateService manages system state
      */
-    function GroupDetailsController($scope, $mdDialog, $mdToast, $stateParams, UserService, StateService) {
+    function GroupDetailsController($scope, $mdDialog, $mdToast, $stateParams, AccessControlService, UserService, StateService) {
         var self = this;
+
+        /**
+         * List of actions allowed to the group.
+         *
+         * @type {Array.<Action>}
+         */
+        self.actions = [];
+
+        /**
+         * Editable list of actions allowed to the group.
+         *
+         * @type {Array.<Action>}
+         */
+        self.editActions = [];
 
         /**
          * Group model for the edit view.
@@ -25,6 +41,12 @@
          * @type {boolean}
          */
         self.isEditable = false;
+
+        /**
+         * Indicates if the permissions edit view is displayed.
+         * @type {boolean}
+         */
+        self.isPermissionsEditable = false;
 
         /**
          * Indicates that the group is currently being loaded.
@@ -104,6 +126,13 @@
         };
 
         /**
+         * Creates a copy of the permissions for editing.
+         */
+        self.onEditPermissions = function() {
+            self.editActions = angular.copy(self.actions);
+        };
+
+        /**
          * Loads the group details.
          */
         self.onLoad = function() {
@@ -116,6 +145,10 @@
                 UserService.getUsersByGroup($stateParams.groupId)
                         .then(function(users) {
                             self.users = users;
+                        });
+                AccessControlService.getAllowedActions(null, null, $stateParams.groupId)
+                        .then(function(actionSet) {
+                            self.actions = actionSet.actions;
                         });
             } else {
                 self.onEdit();
@@ -132,6 +165,17 @@
             UserService.saveGroup(model)
                     .then(function() {
                         self.model = model;
+                    });
+        };
+
+        /**
+         * Saves the current permissions.
+         */
+        self.onSavePermissions = function() {
+            var actions = angular.copy(self.editActions);
+            AccessControlService.setAllowedActions(null, null, self.model.systemName, actions)
+                    .then(function(actionSet) {
+                        self.actions = actionSet.actions;
                     });
         };
 
