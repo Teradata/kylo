@@ -75,7 +75,7 @@
         <module>metadata</module>
         <module>integrations</module>
         <module>ui</module>
-       <!--   <module>install</module> -->
+        <module>install</module>
     </modules>
     <repositories>
         <repository>
