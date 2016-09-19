@@ -192,7 +192,9 @@ public class HDFSUtil
 			log.info("Creating ACL for Path - " + path.toString());
 			fileSystem.modifyAclEntries(path, Lists.newArrayList(aclEntry));
 			log.info("Sucessfully created ACL for Path - " + path.toString());
-		} catch (IOException e) {
+			
+		} catch (IOException e) 
+		{
 			throw new IOException("Unable to apply HDFS Policy for " +path.toString() + " " +e.getMessage());
 		}
 	}

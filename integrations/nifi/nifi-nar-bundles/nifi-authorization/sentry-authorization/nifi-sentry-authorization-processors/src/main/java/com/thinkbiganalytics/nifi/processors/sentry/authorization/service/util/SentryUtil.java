@@ -13,10 +13,23 @@ public class SentryUtil {
 
 	private static final Logger log = LoggerFactory.getLogger(SentryUtil.class);
 
-	private static String NIFI = "nifi_";
+	private static final String NIFI = "nifi_";
+	private static final String CATEGORY= "category";
+	private static final String ALL= "ALL";
+	private static final String DATABASE= "DATABASE";
+	private static final String TABLE = "TABLE";
 
 	SentryClient sentryClientObject ;
 
+	/**
+	 * 
+	 * @param stmt : Statement object obtained from Thrift Connection
+	 * @param group_list : Group List for which permisison needs to be granted
+	 * @param category_name : Category Name
+	 * @param feed_name : Feed Name 
+	 * @param permission_level : Level at which permission needs to be granted
+	 * @return : Return true/false based on policy creation status
+	 */
 	public boolean createPolicy(Statement stmt, String group_list, String category_name, String feed_name ,String permission_level) 
 	{
 
@@ -61,7 +74,7 @@ public class SentryUtil {
 			//Grant All Permission to Role for Feed
 			if(permission_level.equalsIgnoreCase("category"))
 			{
-				boolean grantPriviledgeToRole = sentryClientObject.grantRolePriviledges(stmt, "ALL", "DATABASE", category_name, sentry_policy_role);
+				boolean grantPriviledgeToRole = sentryClientObject.grantRolePriviledges(stmt, ALL, DATABASE, category_name, sentry_policy_role);
 				
 				if (!grantPriviledgeToRole)
 				{
@@ -74,7 +87,7 @@ public class SentryUtil {
 				String tableAssignmentArray[] = tableList.split(",");
 				for(int tableCounter = 0 ; tableCounter < tableAssignmentArray.length ; tableCounter++)
 				{
-					boolean grantPriviledgeToRole = sentryClientObject.grantRolePriviledges(stmt, "ALL", "TABLE", category_name+"."+tableAssignmentArray[tableCounter], sentry_policy_role);
+					boolean grantPriviledgeToRole = sentryClientObject.grantRolePriviledges(stmt, ALL, TABLE, category_name+"."+tableAssignmentArray[tableCounter], sentry_policy_role);
 					if (!grantPriviledgeToRole)
 					{
 						return false;
@@ -82,9 +95,7 @@ public class SentryUtil {
 				}
 
 			}
-			
 			return true;
-			
 		}
 		catch(Exception e)
 		{
@@ -96,17 +107,21 @@ public class SentryUtil {
 	}
 
 	private String constructResourceforPermissionHIVE(String category_name, String feed_name, String permission_level) {
-		// TODO Auto-generated method stub
+
 		String final_table_PermissionList ="";
 
-		if (permission_level.equalsIgnoreCase("category"))
+		if (permission_level.equalsIgnoreCase(CATEGORY))
 		{
-			//Give all permission att database level
-			final_table_PermissionList = "DATABASE";
+			/**
+			 * Give all permission at database level
+			 */
+			final_table_PermissionList = DATABASE;
 		}
 		else
 		{
-			//Give Permissionto Feed Level
+			/**
+			 * Give Permissionto Feed Level
+			 */
 			final_table_PermissionList = feed_name + "," + feed_name + "_feed" + "," +
 					feed_name + "_invalid" + "," +
 					feed_name + "_profile"	+ "," +

@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.datalake.authorization;
 
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+
 /**
  * Sentry Client configuration class for setting sentry connection information.
  *
@@ -9,9 +12,11 @@ public class SentryClientConfig {
 
     private String driverName;
     private String connectionString;
-    private String principal;
-    private String keytab;
-
+    private Configuration config;
+	private String keyTab;
+	private String principle;
+	private FileSystem fileSystem;
+	
     public SentryClientConfig(String driverName, String connectionString) {
         this.driverName = driverName;
         this.connectionString = connectionString;
@@ -20,8 +25,8 @@ public class SentryClientConfig {
     public SentryClientConfig(String driverName, String connectionString, String principal, String keytab) {
         this.driverName = driverName;
         this.connectionString = connectionString;
-        this.setPrincipal(principal);
-        this.setKeytab(keytab);
+        this.setPrinciple(principal);
+        this.setKeyTab(keytab);
     }
 
     public SentryClientConfig() {
@@ -44,20 +49,36 @@ public class SentryClientConfig {
         this.connectionString = connectionString;
     }
 
-    public String getPrincipal() {
-        return principal;
-    }
+	public String getPrinciple() {
+		return principle;
+	}
 
-    public void setPrincipal(String principal) {
-        this.principal = principal;
-    }
+	public void setPrinciple(String principle) {
+		this.principle = principle;
+	}
 
-    public String getKeytab() {
-        return keytab;
-    }
+	public Configuration getConfig() {
+		return config;
+	}
 
-    public void setKeytab(String keytab) {
-        this.keytab = keytab;
-    }
+	public void setConfig(Configuration config) {
+		this.config = config;
+	}
+
+	public String getKeyTab() {
+		return keyTab;
+	}
+
+	public void setKeyTab(String keyTab) {
+		this.keyTab = keyTab;
+	}
+
+	public FileSystem getFileSystem() {
+		return fileSystem;
+	}
+
+	public void setFileSystem(FileSystem fileSystem) {
+		this.fileSystem = fileSystem;
+	}
 
 }

@@ -189,8 +189,10 @@ public class SentryClient {
 
 			if(matchFound)
 			{
-				//Return true of role is present in result set
-				log.info("Role " + roleName+"  found in Sentry database.");
+				/**
+				 * Return true of role is present in result set
+				 */
+				log.info("Role " + roleName+" found in Sentry database.");
 				return true;
 			}
 			else

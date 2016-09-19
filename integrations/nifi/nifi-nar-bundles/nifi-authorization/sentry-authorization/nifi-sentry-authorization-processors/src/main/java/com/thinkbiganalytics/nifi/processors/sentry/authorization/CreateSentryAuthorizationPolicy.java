@@ -65,7 +65,8 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 			.name("Hadoop Configuration Resources")
 			.description("A file or comma separated list of files which contains the Hadoop file system configuration. Without this, Hadoop "
 					+ "will search the classpath for a 'core-site.xml' and 'hdfs-site.xml' file or will revert to a default configuration.")
-			.required(false).addValidator(createMultipleFilesExistValidator())
+			.required(true)
+			.addValidator(createMultipleFilesExistValidator())
 			.build();
 
 	public static final PropertyDescriptor KERBEROS_PRINCIPAL = new PropertyDescriptor.Builder().name("Kerberos Principal").required(false)
@@ -126,6 +127,7 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 
 	}
 
+	@SuppressWarnings("static-access")
 	@Override
 	public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
 		FlowFile flowFile = session.get();
@@ -143,20 +145,25 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 			String category = context.getProperty(CATEGORY_NAME).evaluateAttributeExpressions(flowFile).getValue();
 			String feed = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
 
+			
+			/**
+			 * Create Policy in Sentry
+			 */
+			
 			Statement stmt = conn.createStatement();
 			SentryUtil sentryUtil = new SentryUtil();
 			boolean policy_creation_status=sentryUtil.createPolicy(stmt,group_list,category,feed ,permission);
-
+			
+			/**
+			 * Check for Kerberos Security Before Creating ACL
+			 */
 			
 			String principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
 			String keyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
 			String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
 
-			/**
-			 * Check for Kerberos Security Before Creating ACL
-			 */
 			boolean authenticateUser = false;
-			if (!(StringUtils.isEmpty(principal) && StringUtils.isEmpty(keyTab) && StringUtils.isEmpty(hadoopConfigurationResources))) {
+			if (!(StringUtils.isEmpty(principal) && StringUtils.isEmpty(keyTab) )) {
 				authenticateUser = true;
 			}
 
@@ -200,8 +207,7 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 					return;
 				}
 			}
-
-
+		
 			/**
 			 * Apply HDFS ACL 
 			 */
@@ -209,7 +215,10 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 			ApplyHDFSAcl applyAcl = new ApplyHDFSAcl();
 			boolean hdfs_acl_status = applyAcl.createAcl(hadoopConfigurationResources, category, feed, permission, group_list);
 
-			//Based on policy creation status , route flowfile either success or failure.
+			/**
+			 * Based on policy creation status , route flowfile either success or failure.
+			 */
+			
 			if(policy_creation_status && hdfs_acl_status)
 			{
 				session.transfer(flowFile, Success);
@@ -234,7 +243,9 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 
 				File nifiProperties = NiFiProperties.getInstance().getKerberosConfigurationFile();
 
-				// Check that the Kerberos configuration is set
+				/**
+				 *  Check that the Kerberos configuration is set
+				 */
 				if (nifiProperties == null) {
 					return new ValidationResult.Builder()
 							.subject(subject).input(input).valid(false)
@@ -243,7 +254,9 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 							.build();
 				}
 
-				// Check that the Kerberos configuration is readable
+				/**
+				 *  Check that the Kerberos configuration is readable
+				 */
 				if (!nifiProperties.canRead()) {
 					return new ValidationResult.Builder().subject(subject).input(input).valid(false)
 							.explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
