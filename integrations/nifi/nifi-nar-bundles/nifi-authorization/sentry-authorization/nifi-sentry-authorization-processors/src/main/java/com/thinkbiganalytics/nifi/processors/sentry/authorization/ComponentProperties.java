@@ -1,12 +1,12 @@
-/**
- * Copyright (c) 2016. Teradata Inc.
- * @author sv186029
- */
 package com.thinkbiganalytics.nifi.processors.sentry.authorization;
 
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.processor.util.StandardValidators;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
+
+/**
+ * Created by Shashi Vishwakarma on 9/9/16.
+ */
 
 public interface ComponentProperties {
 	/**

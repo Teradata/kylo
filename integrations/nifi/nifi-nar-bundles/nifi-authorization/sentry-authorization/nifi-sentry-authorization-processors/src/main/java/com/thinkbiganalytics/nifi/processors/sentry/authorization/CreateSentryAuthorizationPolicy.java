@@ -1,7 +1,7 @@
 /**
- * Copyright (c) 2016. Teradata Inc.
- * @author sv186029
+ * Created by Shashi Vishwakarma on 9/9/16.
  */
+
 package com.thinkbiganalytics.nifi.processors.sentry.authorization;
 
 import static com.thinkbiganalytics.nifi.processors.sentry.authorization.ComponentProperties.CATEGORY_NAME;
@@ -41,7 +41,7 @@ import com.thinkbiganalytics.nifi.processors.sentry.authorization.service.util.S
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
 
 @Tags({"sentry,authorization,thinkbig"})
-@CapabilityDescription("Provide a description")
+@CapabilityDescription("Sentry processor for creating policies for Apache Kylo.")
 @SeeAlso({})
 @ReadsAttributes({@ReadsAttribute(attribute="", description="")})
 @WritesAttributes({@WritesAttribute(attribute="", description="")})
@@ -112,9 +112,17 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 
 			Statement stmt = conn.createStatement();
 			SentryUtil sentryUtil = new SentryUtil();
-			sentryUtil.createPolicy(stmt,group_list,category,feed);
-
-			session.transfer(flowFile, Success);
+			boolean policy_creation_status=sentryUtil.createPolicy(stmt,group_list,category,feed ,permission);
+			
+			//Based on policy creation status , route flowfile either success or failure.
+			if(policy_creation_status)
+			{
+				session.transfer(flowFile, Success);
+			}
+			else
+			{
+				session.transfer(flowFile, Failure);
+			}
 
 		} catch (final ProcessException | SQLException e) {
 			logger.error("Unable to obtain connection for {} due to {}; routing to failure", new Object[]{flowFile, e});
