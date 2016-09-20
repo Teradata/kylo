@@ -182,7 +182,7 @@ public class DefaultServiceLevelAgreementScheduler implements ServiceLevelAgreem
                             slaChecker.checkAgreement(sla);
                             return null;
                         });
-                    });
+                    }, MetadataAccess.SERVICE);
 
 
                 }
