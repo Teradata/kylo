@@ -93,7 +93,7 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
             //1 get all feeds defined in feed manager
             List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
             Map<String, FeedManagerFeed> feedManagerFeedMap = new HashMap<>();
-            if (domainFeeds != null) {
+            if (domainFeeds != null && !domainFeeds.isEmpty()) {
                 List<OpsManagerFeed.ID> opsManagerFeedIds = new ArrayList<OpsManagerFeed.ID>();
                 for (FeedManagerFeed feedManagerFeed : domainFeeds) {
                     opsManagerFeedIds.add(opsManagerFeedProvider.resolveId(feedManagerFeed.getId().toString()));
