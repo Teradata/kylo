@@ -4,11 +4,12 @@ import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 
 import java.io.Serializable;
+import java.util.UUID;
 
 import javax.persistence.Column;
-import javax.persistence.Embeddable;
-import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
 import javax.persistence.Table;
 
 /**
@@ -18,15 +19,17 @@ import javax.persistence.Table;
 @Table(name = "KYLO_VERSION")
 public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion, Serializable {
 
-    @EmbeddedId
-    private KyloVersionId kyloVersionId;
+
+    @Id
+    @GeneratedValue
+    private java.util.UUID id;
 
 
-    @Column(name = "MAJOR_VERSION", insertable = false, updatable = false)
+    @Column(name = "MAJOR_VERSION")
     private String majorVersion;
 
 
-    @Column(name = "MINOR_VERSION", insertable = false, updatable = false)
+    @Column(name = "MINOR_VERSION")
     private String minorVersion;
 
     @Column
@@ -34,14 +37,18 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
 
 
     public JpaKyloVersion() {
-        this.kyloVersionId = new KyloVersionId();
+
     }
 
 
     public JpaKyloVersion(String majorVersion, String minorVersion) {
-        this.kyloVersionId = new KyloVersionId(majorVersion, minorVersion);
+        this.majorVersion = majorVersion;
+        this.minorVersion = minorVersion;
     }
 
+    public UUID getId() {
+        return id;
+    }
 
     public KyloVersion update(KyloVersion v) {
         setMajorVersion(v.getMajorVersion());
@@ -52,24 +59,23 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
 
     @Override
     public String getVersion() {
-        return this.kyloVersionId.getVersion();
+        return majorVersion + "." + minorVersion;
     }
 
-
     public String getMajorVersion() {
-        return this.kyloVersionId.getMajorVersion();
+        return this.majorVersion;
     }
 
     public void setMajorVersion(String majorVersion) {
-        this.kyloVersionId.setMajorVersion(majorVersion);
+        this.majorVersion = majorVersion;
     }
 
     public String getMinorVersion() {
-        return this.kyloVersionId.getMinorVersion();
+        return this.minorVersion;
     }
 
     public void setMinorVersion(String minorVersion) {
-        this.kyloVersionId.setMinorVersion(minorVersion);
+        this.minorVersion = minorVersion;
     }
 
     @Override
@@ -90,72 +96,6 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
         this.description = description;
     }
 
-
-    @Embeddable
-    public static class KyloVersionId implements Serializable {
-
-        @Column(name = "MAJOR_VERSION")
-        private String majorVersion;
-
-        @Column(name = "MINOR_VERSION")
-        private String minorVersion;
-
-        public String getVersion() {
-            return majorVersion + "." + minorVersion;
-        }
-
-        public KyloVersionId() {
-
-        }
-
-        public KyloVersionId(String majorVersion, String minorVersion) {
-            this.majorVersion = majorVersion;
-            this.minorVersion = minorVersion;
-        }
-
-        public String getMajorVersion() {
-            return majorVersion;
-        }
-
-        public void setMajorVersion(String majorVersion) {
-            this.majorVersion = majorVersion;
-        }
-
-        public String getMinorVersion() {
-            return minorVersion;
-        }
-
-        public void setMinorVersion(String minorVersion) {
-            this.minorVersion = minorVersion;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) {
-                return true;
-            }
-            if (o == null || getClass() != o.getClass()) {
-                return false;
-            }
-
-            KyloVersionId that = (KyloVersionId) o;
-
-            if (majorVersion != null ? !majorVersion.equals(that.majorVersion) : that.majorVersion != null) {
-                return false;
-            }
-            return !(minorVersion != null ? !minorVersion.equals(that.minorVersion) : that.minorVersion != null);
-
-        }
-
-        @Override
-        public int hashCode() {
-            int result = majorVersion != null ? majorVersion.hashCode() : 0;
-            result = 31 * result + (minorVersion != null ? minorVersion.hashCode() : 0);
-            return result;
-        }
-    }
-
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -167,12 +107,17 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
 
         JpaKyloVersion that = (JpaKyloVersion) o;
 
-        return !(kyloVersionId != null ? !kyloVersionId.equals(that.kyloVersionId) : that.kyloVersionId != null);
+        if (majorVersion != null ? !majorVersion.equals(that.majorVersion) : that.majorVersion != null) {
+            return false;
+        }
+        return !(minorVersion != null ? !minorVersion.equals(that.minorVersion) : that.minorVersion != null);
 
     }
 
     @Override
     public int hashCode() {
-        return kyloVersionId != null ? kyloVersionId.hashCode() : 0;
+        int result = majorVersion != null ? majorVersion.hashCode() : 0;
+        result = 31 * result + (minorVersion != null ? minorVersion.hashCode() : 0);
+        return result;
     }
 }

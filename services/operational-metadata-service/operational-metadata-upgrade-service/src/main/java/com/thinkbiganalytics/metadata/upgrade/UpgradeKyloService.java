@@ -72,59 +72,53 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
 
         KyloVersion version = kyloVersionProvider.getKyloVersion();
         if (version == null || version.getMajorVersionNumber().floatValue() < 0.4f) {
-            upgradeTo0_4_0();
+            version = upgradeTo0_4_0();
         } else {
-            operationalMetadataAccess.commit(() -> {
+            version = operationalMetadataAccess.commit(() -> {
                 //ensure/update the version
                 KyloVersion kyloVersion = kyloVersionProvider.updateToCurrentVersion();
-                log.info("Upgrade check complete for Kylo {}", kyloVersion.getVersion());
                 return kyloVersion;
             });
         }
+        log.info("Upgrade check complete for Kylo {}", version.getVersion());
 
 
     }
 
 
-    public void upgradeTo0_4_0() {
+    public KyloVersion upgradeTo0_4_0() {
 
-        metadataAccess.read(() -> {
-            operationalMetadataAccess.commit(() -> {
+        return metadataAccess.read(() -> operationalMetadataAccess.commit(() -> {
 
-                //1 get all feeds defined in feed manager
-                List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
-                Map<String, FeedManagerFeed> feedManagerFeedMap = new HashMap<>();
-                if (domainFeeds != null) {
-                    List<OpsManagerFeed.ID> opsManagerFeedIds = new ArrayList<OpsManagerFeed.ID>();
-                    for (FeedManagerFeed feedManagerFeed : domainFeeds) {
-                        opsManagerFeedIds.add(opsManagerFeedProvider.resolveId(feedManagerFeed.getId().toString()));
-                        feedManagerFeedMap.put(feedManagerFeed.getId().toString(), feedManagerFeed);
-                    }
-                    //find those that match
-                    List<? extends OpsManagerFeed> opsManagerFeeds = opsManagerFeedProvider.findByFeedIds(opsManagerFeedIds);
-                    for (OpsManagerFeed opsManagerFeed : opsManagerFeeds) {
-                        feedManagerFeedMap.remove(opsManagerFeed.getId().toString());
-                    }
-
-                    List<JpaOpsManagerFeed> feedsToAdd = new ArrayList<JpaOpsManagerFeed>();
-                    for (FeedManagerFeed feed : feedManagerFeedMap.values()) {
-                        String fullName = FeedNameUtil.fullName(feed.getCategory().getName(), feed.getName());
-                        OpsManagerFeed.ID opsManagerFeedId = opsManagerFeedProvider.resolveId(feed.getId().toString());
-                        JpaOpsManagerFeed opsManagerFeed = new JpaOpsManagerFeed(opsManagerFeedId, fullName);
-                        feedsToAdd.add(opsManagerFeed);
-                    }
-                    log.info("Synchronizing Feeds from Feed Manager. About to insert {} feed ids/names into Operations Manager", feedsToAdd.size());
-                    opsManagerFeedProvider.save(feedsToAdd);
+            //1 get all feeds defined in feed manager
+            List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
+            Map<String, FeedManagerFeed> feedManagerFeedMap = new HashMap<>();
+            if (domainFeeds != null) {
+                List<OpsManagerFeed.ID> opsManagerFeedIds = new ArrayList<OpsManagerFeed.ID>();
+                for (FeedManagerFeed feedManagerFeed : domainFeeds) {
+                    opsManagerFeedIds.add(opsManagerFeedProvider.resolveId(feedManagerFeed.getId().toString()));
+                    feedManagerFeedMap.put(feedManagerFeed.getId().toString(), feedManagerFeed);
+                }
+                //find those that match
+                List<? extends OpsManagerFeed> opsManagerFeeds = opsManagerFeedProvider.findByFeedIds(opsManagerFeedIds);
+                for (OpsManagerFeed opsManagerFeed : opsManagerFeeds) {
+                    feedManagerFeedMap.remove(opsManagerFeed.getId().toString());
                 }
 
-                //update the version
-                kyloVersionProvider.updateToCurrentVersion();
+                List<JpaOpsManagerFeed> feedsToAdd = new ArrayList<JpaOpsManagerFeed>();
+                for (FeedManagerFeed feed : feedManagerFeedMap.values()) {
+                    String fullName = FeedNameUtil.fullName(feed.getCategory().getName(), feed.getName());
+                    OpsManagerFeed.ID opsManagerFeedId = opsManagerFeedProvider.resolveId(feed.getId().toString());
+                    JpaOpsManagerFeed opsManagerFeed = new JpaOpsManagerFeed(opsManagerFeedId, fullName);
+                    feedsToAdd.add(opsManagerFeed);
+                }
+                log.info("Synchronizing Feeds from Feed Manager. About to insert {} feed ids/names into Operations Manager", feedsToAdd.size());
+                opsManagerFeedProvider.save(feedsToAdd);
+            }
 
-                return null;
-            });
-
-
-        }, MetadataAccess.SERVICE);
+            //update the version
+            return kyloVersionProvider.updateToCurrentVersion();
+        }), MetadataAccess.SERVICE);
     }
 
 
