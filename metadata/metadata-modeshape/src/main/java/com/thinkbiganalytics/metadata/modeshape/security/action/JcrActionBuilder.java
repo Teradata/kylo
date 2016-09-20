@@ -6,6 +6,8 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
 import javax.jcr.Node;
 import javax.jcr.security.Privilege;
 
+import org.modeshape.jcr.security.SimplePrincipal;
+
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
 import com.thinkbiganalytics.metadata.modeshape.security.JcrAccessControlUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
@@ -68,6 +70,7 @@ public class JcrActionBuilder<P> extends JcrAbstractActionsBuilder implements Ac
     @Override
     public P add() {
         JcrAccessControlUtil.addPermissions(this.actionNode, getManagementPrincipal(), Privilege.JCR_ALL);
+        JcrAccessControlUtil.addPermissions(this.actionNode, SimplePrincipal.EVERYONE, Privilege.JCR_READ);
         return this.parentBuilder;
     }
 
