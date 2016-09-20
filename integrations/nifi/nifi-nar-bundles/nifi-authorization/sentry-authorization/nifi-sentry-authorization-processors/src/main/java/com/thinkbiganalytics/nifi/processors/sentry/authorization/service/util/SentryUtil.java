@@ -4,10 +4,11 @@ package com.thinkbiganalytics.nifi.processors.sentry.authorization.service.util;
  */
 
 import java.sql.Statement;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.thinkbiganalytics.datalake.authorization.SentryClient;
+import com.thinkbiganalytics.datalake.authorization.client.SentryClient;
 
 public class SentryUtil {
 
@@ -38,7 +39,7 @@ public class SentryUtil {
 			sentryClientObject = new SentryClient();
 
 			log.info("Starting Sentry Policy Creation.");
-			String sentry_policy_role = NIFI+category_name+"_"+feed_name;
+			String sentry_policy_role = NIFI+category_name+"_"+feed_name+"_"+permission_level;
 
 			log.info("Check if role already exists.");
 			boolean ifRoleExists = sentryClientObject.checkIfRoleExists(stmt, sentry_policy_role);

@@ -46,7 +46,7 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.NiFiProperties;
 
-import com.thinkbiganalytics.datalake.authorization.hdfs.sentry.ApplyHDFSAcl;
+import com.thinkbiganalytics.datalake.authorization.hdfs.ApplyHDFSAcl;
 import com.thinkbiganalytics.nifi.processors.sentry.authorization.service.util.SentryUtil;
 import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
 import com.thinkbiganalytics.nifi.security.SecurityUtil;
