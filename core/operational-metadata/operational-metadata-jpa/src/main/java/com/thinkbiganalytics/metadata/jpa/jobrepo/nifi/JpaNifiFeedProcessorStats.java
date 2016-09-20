@@ -22,8 +22,8 @@ import javax.persistence.Transient;
 public class JpaNifiFeedProcessorStats implements NifiFeedProcessorStats {
 
     @Id
-    @GeneratedValue(generator = "uuid")
-    @GenericGenerator(name = "uuid", strategy = "uuid")
+    @GeneratedValue(generator = "uuid2")
+    @GenericGenerator(name = "uuid2", strategy = "uuid2")
     @Column(name = "id", unique = true)
     private String id;
 
