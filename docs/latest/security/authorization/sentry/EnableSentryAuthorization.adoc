@@ -120,6 +120,6 @@ image::images/S3.png[]
 	Kerberos Principle : nifi
 	Kerberos Keytab : /etc/security/nifi.headleass.keytab
 
-image::images/S3.png[]	
+image::images/S4.png[]	
 	
-Sentry authorization is configured successfully. Now create a feed from ThinkBig UI and create feed for testing.
+Sentry authorization is configured successfully. Now create a feed from ThinkBig UI and test it.
