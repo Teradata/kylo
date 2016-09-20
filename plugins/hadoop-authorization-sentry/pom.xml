@@ -31,6 +31,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>com.thinkbiganalytics.datalake</groupId>
+			<artifactId>thinkbig-sentry-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
 			<groupId>org.apache.hadoop</groupId>
 			<artifactId>hadoop-hdfs</artifactId>
 			<version>${hadoop.version}</version>
