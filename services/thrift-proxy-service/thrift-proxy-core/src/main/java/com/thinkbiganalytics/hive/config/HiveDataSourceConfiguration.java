@@ -1,19 +1,20 @@
 package com.thinkbiganalytics.hive.config;
 
-import org.apache.commons.lang3.StringUtils;
+//import com.thinkbiganalytics.hive.service.RefreshableDataSource;
+
+import com.thinkbiganalytics.hive.service.HiveService;
+import com.thinkbiganalytics.hive.service.RefreshableDataSource;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Primary;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.sql.DataSource;
 
@@ -22,7 +23,7 @@ import javax.sql.DataSource;
  */
 @Configuration
 @PropertySource("classpath:application.properties")
-@ComponentScan(basePackages={"com.thinkbiganalytics"})
+@ComponentScan(basePackages = {"com.thinkbiganalytics.hive.service"})
 public class HiveDataSourceConfiguration {
 
     @Autowired
@@ -41,13 +42,19 @@ public class HiveDataSourceConfiguration {
     }
 
 
-
+    @Bean(name = "hiveService")
+    public HiveService hiveService() {
+        return new HiveService();
+    }
 
 
     @Bean(name="hiveDataSource")
-    @ConfigurationProperties(prefix = "hive.datasource")
     public DataSource dataSource() {
-        DataSource ds = DataSourceBuilder.create().build();
+
+        //  DataSource ds = DataSourceBuilder.create().build();
+        // return ds;
+
+        RefreshableDataSource ds = new RefreshableDataSource("hive.datasource");
         return ds;
     }
 
@@ -58,6 +65,8 @@ public class HiveDataSourceConfiguration {
     public DataSource metadataDataSource() {
         DataSource ds = DataSourceBuilder.create().build();
         return ds;
+
+
     }
 
 }

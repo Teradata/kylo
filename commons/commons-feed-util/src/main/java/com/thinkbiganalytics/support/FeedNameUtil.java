@@ -10,15 +10,15 @@ public class FeedNameUtil {
 
 
     public static String category(String name) {
-        return StringUtils.substringBefore(name, ".");
+        return StringUtils.trim(StringUtils.substringBefore(name, "."));
     }
 
     public static String feed(String name) {
-        return StringUtils.substringAfterLast(name, ".");
+        return StringUtils.trim(StringUtils.substringAfterLast(name, "."));
     }
 
     public static String fullName(String category, String feed) {
-        return category + "." + feed;
+        return StringUtils.trim(category + "." + feed);
     }
 
 

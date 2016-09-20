@@ -3,13 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
-import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
@@ -34,19 +27,15 @@ import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeedProvider;
 import com.thinkbiganalytics.metadata.modeshape.op.JobRepoFeedOperationsProvider;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrFeedServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementActionAlertResponderFactory;
-import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementChecker;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreementScheduler;
-import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAssessmentProvider;
-import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAssessor;
 import com.thinkbiganalytics.metadata.modeshape.tag.TagProvider;
 import com.thinkbiganalytics.metadata.modeshape.template.JcrFeedTemplateProvider;
 import com.thinkbiganalytics.metadata.modeshape.user.JcrUserProvider;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementChecker;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessmentProvider;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
+
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
 
 /**
  *
@@ -128,7 +117,7 @@ public class MetadataJcrConfig {
 //    public DatasourceProvider datasetProvider() {
 //        return new InMemoryDatasourceProvider();
 //    }
-    
+
     @Bean
     public JcrServiceLevelAgreementProvider slaProvider() {
         return new JcrServiceLevelAgreementProvider();
@@ -139,37 +128,7 @@ public class MetadataJcrConfig {
         return new JcrFeedServiceLevelAgreementProvider();
     }
 
-    @Bean
-    public ServiceLevelAgreementScheduler serviceLevelAgreementScheduler() {
-        return new JcrServiceLevelAgreementScheduler();
-    }
 
-    @Bean
-    public ServiceLevelAgreementChecker serviceLevelAgreementChecker() {
-        return new JcrServiceLevelAgreementChecker();
-    }
-
-    @Bean(name = "slaAssessor")
-    public ServiceLevelAssessor slaAssessor() {
-        return new JcrServiceLevelAssessor();
-    }
-
-    @Bean
-    public ServiceLevelAssessmentProvider serviceLevelAssessmentProvider(){
-        return new JcrServiceLevelAssessmentProvider();
-    }
-
-    @Bean
-    public JcrServiceLevelAgreementActionAlertResponderFactory jcrServiceLevelAgreementActionAlertResponderFactory(){
-        return new JcrServiceLevelAgreementActionAlertResponderFactory();
-    }
-
-    @Bean(name = "slaActionAlertResponder")
-    public JcrServiceLevelAgreementActionAlertResponderFactory slaActionResponder(@Qualifier("alertProvider") AlertProvider alertProvider) {
-        JcrServiceLevelAgreementActionAlertResponderFactory responder = new JcrServiceLevelAgreementActionAlertResponderFactory();
-        alertProvider.addResponder(responder);
-        return responder;
-    }
 
     @Bean
     public ModeShapeAvailability modeShapeAvailability(){

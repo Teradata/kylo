@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 
+import java.sql.SQLException;
 import java.util.List;
 
 import javax.annotation.PostConstruct;
@@ -57,6 +58,20 @@ public class HiveRestController {
     @PostConstruct
     private void init() {
 
+    }
+
+
+    @GET
+    @Path("/test-connection")
+    @Produces({MediaType.TEXT_PLAIN })
+    public Response testConnection() {
+        boolean valid = false;
+        try {
+         valid =   hiveService.testConnection();
+        }catch (SQLException e){
+            throw new RuntimeException("SQL exception ",e);
+        }
+        return Response.ok(valid).build();
     }
 
 

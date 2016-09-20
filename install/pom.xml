@@ -160,6 +160,11 @@
                 </source>
                 <source>
                   <location>
+                    ../services/service-app/src/main/resources/version.txt
+                  </location>
+                </source>
+                <source>
+                  <location>
                     ../services/service-app/src/main/resources/application-context.xml
                   </location>
                 </source>

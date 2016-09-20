@@ -7,6 +7,8 @@ import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessor;
 
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,6 +24,8 @@ import javax.annotation.Nullable;
  */
 public class NifiFlowBuilder {
 
+    private static final Logger log = LoggerFactory.getLogger(NifiFlowBuilder.class);
+
     Map<String, NifiFlowProcessor> cache = new ConcurrentHashMap<>();
 
     public NifiFlowProcessGroup build(NifiVisitableProcessGroup group) {
@@ -30,8 +34,15 @@ public class NifiFlowBuilder {
         //reassign the failure map
         if (group.getFailureConnectionIdToSourceProcessorIds() != null) {
             group.getFailureConnectionIdToSourceProcessorIds().entrySet().forEach(connectionIdProcessorIdEntry -> {
-                flowProcessGroup.getFailureConnectionIdToSourceProcessorMap().computeIfAbsent(connectionIdProcessorIdEntry.getKey(), (connectionId) -> new ArrayList<>()).addAll(
-                    connectionIdProcessorIdEntry.getValue().stream().map(processorId -> cache.get(processorId)).collect(Collectors.toList()));
+                if (cache != null && !cache.isEmpty()) {
+
+                    flowProcessGroup.getFailureConnectionIdToSourceProcessorMap().computeIfAbsent(connectionIdProcessorIdEntry.getKey(), (connectionId) -> new ArrayList<>()).addAll(
+                        connectionIdProcessorIdEntry.getValue().stream().map(processorId -> {
+                            return cache.get(processorId);
+                        }).collect(Collectors.toList()));
+                }
+
+
             });
         }
 

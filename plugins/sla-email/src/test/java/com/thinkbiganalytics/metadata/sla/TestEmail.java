@@ -46,6 +46,11 @@ public class TestEmail {
             }
 
             @Override
+            public String getServiceLevelAgreementId() {
+                return null;
+            }
+
+            @Override
             public DateTime getTime() {
                 return new DateTime();
             }

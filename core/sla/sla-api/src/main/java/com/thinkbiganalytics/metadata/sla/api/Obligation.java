@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.sla.api;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
@@ -8,6 +9,14 @@ import java.util.Set;
  * @author Sean Felten
  */
 public interface Obligation {
+
+    interface ID extends Serializable {
+
+    }
+
+    ;
+
+    ID getId();
 
     /**
      * @return a description of the obligation

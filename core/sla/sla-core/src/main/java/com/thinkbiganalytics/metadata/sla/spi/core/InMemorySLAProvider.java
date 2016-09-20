@@ -13,9 +13,9 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.SLACheckBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheckBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 
 import org.joda.time.DateTime;
@@ -414,11 +414,65 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
         }
     }
 
+
+    private static class ObligationId implements Obligation.ID {
+
+        private static final long serialVersionUID = 8914036758972637669L;
+
+        private final UUID uuid;
+
+        public ObligationId() {
+            this(UUID.randomUUID());
+        }
+
+        public ObligationId(String str) {
+            this(UUID.fromString(str));
+        }
+
+        public ObligationId(UUID id) {
+            this.uuid = id;
+        }
+
+        @Override
+        public String toString() {
+            return this.uuid.toString();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (!this.getClass().equals(obj.getClass()))
+                return false;
+
+            return Objects.equals(this.uuid, ((SLAID) obj).uuid);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(getClass(), this.uuid);
+        }
+
+    }
+
     private static class ObligationImpl implements Obligation {
 
         private ObligationGroupImpl group;
         private String description;
         private Set<Metric> metrics = new HashSet<Metric>();
+        private Obligation.ID id;
+
+        public ObligationImpl(){
+            this.id = new ObligationId();
+        }
+
+
+        @Override
+        public ID getId() {
+            return id;
+        }
 
         @Override
         public String getDescription() {
@@ -470,7 +524,7 @@ public class InMemorySLAProvider implements ServiceLevelAgreementProvider {
 
 
     @Override
-    public SLACheckBuilder slaCheckBuilder(ID slaId) {
+    public ServiceLevelAgreementCheckBuilder slaCheckBuilder(ID slaId) {
         return null;
     }
 }

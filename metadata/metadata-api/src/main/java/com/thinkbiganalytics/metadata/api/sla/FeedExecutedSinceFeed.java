@@ -3,6 +3,8 @@
  */
 package com.thinkbiganalytics.metadata.api.sla;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import org.apache.commons.lang3.StringUtils;
 
 import java.beans.Transient;
@@ -18,7 +20,11 @@ public class FeedExecutedSinceFeed extends DependentFeed {
     private String sinceFeedName;
     private String sinceCategoryName;
 
-    public FeedExecutedSinceFeed(String sinceCategoryAndFeed, String categoryAndFeed) {
+    public FeedExecutedSinceFeed() {
+
+    }
+
+    public FeedExecutedSinceFeed(@JsonProperty("sinceCategoryAndFeedName") String sinceCategoryAndFeed, @JsonProperty("categoryAndFeed") String categoryAndFeed) {
         super(categoryAndFeed);
         this.sinceCategoryAndFeedName = sinceCategoryAndFeed;
         this.sinceCategoryName = StringUtils.substringBefore(sinceCategoryAndFeedName, ".");

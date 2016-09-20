@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
-import org.springframework.stereotype.Service;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -34,7 +33,6 @@ import javax.sql.DataSource;
 /**
  * Created by sr186054 on 2/11/16.
  */
-@Service("hiveService")
 public class HiveService {
     private static final Logger log = LoggerFactory.getLogger(HiveService.class);
 
@@ -85,6 +83,11 @@ public class HiveService {
             }
         }
         return allTables;
+    }
+
+    public boolean testConnection() throws SQLException {
+        return ((RefreshableDataSource) this.getDataSource()).testConnection();
+
     }
 
     /**
@@ -145,45 +148,49 @@ public class HiveService {
         final List<QueryResultColumn> columns = new ArrayList<>();
         final Map<String,Integer> displayNameMap = new HashMap<>();
 
-        jdbcTemplate.query(query, new RowMapper<Map<String,Object>>() {
-            @Override
-            public Map<String,Object> mapRow(ResultSet rs, int rowNum) throws SQLException {
-                if(columns.isEmpty()){
-                    ResultSetMetaData rsMetaData = rs.getMetaData();
-                    for(int i = 1; i<=rsMetaData.getColumnCount(); i++){
-                        String colName = rsMetaData.getColumnName(i);
-                        QueryResultColumn column = new QueryResultColumn();
-                        column.setField(rsMetaData.getColumnName(i));
-                        String displayName = rsMetaData.getColumnLabel(i);
-                        column.setHiveColumnLabel(displayName);
-                        //remove the table name if it exists
-                        displayName = StringUtils.substringAfterLast(displayName,".");
-                        Integer count =0;
-                        if(displayNameMap.containsKey(displayName)){
-                            count =  displayNameMap.get(displayName);
-                            count++;
+        try {
+            jdbcTemplate.query(query, new RowMapper<Map<String, Object>>() {
+                @Override
+                public Map<String, Object> mapRow(ResultSet rs, int rowNum) throws SQLException {
+                    if (columns.isEmpty()) {
+                        ResultSetMetaData rsMetaData = rs.getMetaData();
+                        for (int i = 1; i <= rsMetaData.getColumnCount(); i++) {
+                            String colName = rsMetaData.getColumnName(i);
+                            QueryResultColumn column = new QueryResultColumn();
+                            column.setField(rsMetaData.getColumnName(i));
+                            String displayName = rsMetaData.getColumnLabel(i);
+                            column.setHiveColumnLabel(displayName);
+                            //remove the table name if it exists
+                            displayName = StringUtils.substringAfterLast(displayName, ".");
+                            Integer count = 0;
+                            if (displayNameMap.containsKey(displayName)) {
+                                count = displayNameMap.get(displayName);
+                                count++;
+                            }
+                            displayNameMap.put(displayName, count);
+                            column.setDisplayName(displayName + "" + (count > 0 ? count : ""));
+
+                            //HiveResultSetMetaData object doesnt support accesss to the rsMetadata.getSchemaName or getTableName())
+                            //    column.setDatabaseName(rsMetaData.getSchemaName(i));
+                            column.setTableName(StringUtils.substringAfterLast(rsMetaData.getColumnName(i), "."));
+                            column.setDataType(Field.sqlTypeToDataType(rsMetaData.getColumnType(i)));
+                            columns.add(column);
                         }
-                        displayNameMap.put(displayName,count);
-                        column.setDisplayName(displayName + "" + (count > 0 ? count : ""));
-
-
-                        //HiveResultSetMetaData object doesnt support accesss to the rsMetadata.getSchemaName or getTableName())
-                        //    column.setDatabaseName(rsMetaData.getSchemaName(i));
-                        column.setTableName(StringUtils.substringAfterLast(rsMetaData.getColumnName(i),"."));
-                        column.setDataType(Field.sqlTypeToDataType(rsMetaData.getColumnType(i)));
-                        columns.add(column);
+                        queryResult.setColumns(columns);
                     }
-                    queryResult.setColumns(columns);
+                    Map<String, Object> row = new LinkedHashMap<>();
+                    for (QueryResultColumn column : columns) {
+                        row.put(column.getDisplayName(), rs.getObject(column.getHiveColumnLabel()));
+                    }
+                    queryResult.addRow(row);
+                    return row;
                 }
-                Map<String,Object> row = new LinkedHashMap<>();
-                for(QueryResultColumn column: columns){
-                    row.put(column.getDisplayName(), rs.getObject(column.getHiveColumnLabel()));
-                }
-                queryResult.addRow(row);
-                return row;
-            }
-        });
+            });
 
+        } catch (DataAccessException dae) {
+            dae.printStackTrace();
+
+        }
 
         log.info("Return " + queryResult.getRows().size());
         return queryResult;

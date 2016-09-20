@@ -3,14 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
@@ -22,6 +14,14 @@ import com.thinkbiganalytics.metadata.sla.api.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 /**
  *
@@ -44,8 +44,6 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
 
 
     public static final String SLA_CHECKS = "tba:slaChecks";
-
-    public static final String SLA_ASSESSMENTS = "tba:serviceLevelAssessments";
 
 
 
@@ -136,14 +134,6 @@ public class JcrServiceLevelAgreement extends AbstractJcrAuditableSystemEntity i
         }
     }
 
-    public JcrServiceLevelAssessment newAssessment() {
-        try {
-            Node node = this.node.addNode(SLA_ASSESSMENTS, JcrServiceLevelAssessment.NODE_TYPE);
-            return new JcrServiceLevelAssessment(node, this);
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to create the assessment node", e);
-        }
-    }
 
     public void clear(){
         try {

@@ -3,12 +3,12 @@
  */
 package com.thinkbiganalytics.nifi.v2.metadata;
 
+import com.thinkbiganalytics.metadata.api.sla.DatasourceUpdatedSinceFeedExecuted;
 import com.thinkbiganalytics.metadata.rest.model.Formatters;
 import com.thinkbiganalytics.metadata.rest.model.data.Datasource;
 import com.thinkbiganalytics.metadata.rest.model.event.FeedPreconditionTriggerEvent;
 import com.thinkbiganalytics.metadata.rest.model.feed.Feed;
-import com.thinkbiganalytics.metadata.rest.model.sla.DatasourceUpdatedSinceFeedExecutedMetric;
-import com.thinkbiganalytics.metadata.rest.model.sla.Metric;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataConstants;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProvider;
 import com.thinkbiganalytics.nifi.core.api.precondition.FeedPreconditionEventService;
@@ -207,9 +207,7 @@ public class BeginFeed extends AbstractFeedProcessor {
             Metric[] metrics = new Metric[dsNames.length];
 
             for (int idx = 0; idx < metrics.length; idx++) {
-                DatasourceUpdatedSinceFeedExecutedMetric metric = new DatasourceUpdatedSinceFeedExecutedMetric();
-                metric.setFeedName(feed.getSystemName());
-                metric.setDatasourceName(dsNames[idx]);
+                DatasourceUpdatedSinceFeedExecuted metric = new DatasourceUpdatedSinceFeedExecuted(dsNames[idx], feed.getSystemName());
                 metrics[idx] = metric;
             }
 

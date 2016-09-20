@@ -235,4 +235,12 @@ public class NifiFlowProcessor implements Serializable {
             .equalsIgnoreCase(parentId));
     }
 
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("NifiFlowProcessor{");
+        sb.append("id='").append(id).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append('}');
+        return sb.toString();
+    }
 }

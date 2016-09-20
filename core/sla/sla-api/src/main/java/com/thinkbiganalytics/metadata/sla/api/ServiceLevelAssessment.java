@@ -31,6 +31,8 @@ public interface ServiceLevelAssessment extends Comparable<ServiceLevelAssessmen
      * @return the SLA that was assessed
      */
     ServiceLevelAgreement getAgreement();
+
+    String getServiceLevelAgreementId();
     
     /**
      * @return a message describing the result of this assessment

@@ -55,7 +55,7 @@ public interface ServiceLevelAgreementProvider {
      * @return the builder
      */
     ServiceLevelAgreementBuilder builder();
-    
+
     /**
      * Produces a new builder for creating a new SLA that replaces another one having the given ID.
      * @param id the ID of the SLA that will be replaced
@@ -63,6 +63,6 @@ public interface ServiceLevelAgreementProvider {
      */
     ServiceLevelAgreementBuilder builder(ServiceLevelAgreement.ID id);
 
-    SLACheckBuilder slaCheckBuilder(ServiceLevelAgreement.ID slaId);
-    
+    ServiceLevelAgreementCheckBuilder slaCheckBuilder(ServiceLevelAgreement.ID slaId);
+
 }

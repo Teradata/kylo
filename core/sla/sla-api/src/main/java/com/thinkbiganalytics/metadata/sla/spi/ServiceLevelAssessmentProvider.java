@@ -11,11 +11,17 @@ import java.util.List;
 public interface ServiceLevelAssessmentProvider {
 
 
-    List<ServiceLevelAssessment> getAssessments();
+    List<? extends ServiceLevelAssessment> getAssessments();
 
     ServiceLevelAssessment findServiceLevelAssessment(ServiceLevelAssessment.ID id);
 
     ServiceLevelAssessment findLatestAssessment(ServiceLevelAgreement.ID slaId);
+
+
+    /**
+     * Ensure the assessment.getAgreement() is not null and if it is it will query and get the correct agreement according to the slaId on the assessment
+     */
+    boolean ensureServiceLevelAgreementOnAssessment(ServiceLevelAssessment assessment);
 
 
 }

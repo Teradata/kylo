@@ -66,10 +66,20 @@ public class HiveMetastoreService {
 
         List<DatabaseMetadata> metadata = new ArrayList<>();
 
-        String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, c.COLUMN_NAME FROM COLUMNS_V2 c JOIN TBLS t ON c.CD_ID=t.TBL_ID JOIN DBS d on d.DB_ID = t.DB_ID ORDER BY d.NAME, t.TBL_NAME";
+        String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, c.COLUMN_NAME "
+                       + "FROM COLUMNS_V2 c "
+                       + "JOIN  SDS s on s.CD_ID = c.CD_ID "
+                       + "JOIN  TBLS t ON s.SD_ID = t.SD_ID "
+                       + "JOIN  DBS d on d.DB_ID = t.DB_ID "
+                       + "ORDER BY d.NAME, t.TBL_NAME";
+
         if(DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())){
-            query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\", c.\"COLUMN_NAME\" FROM \"COLUMNS_V2\" c JOIN \"TBLS\" t ON c.\"CD_ID\"= t.\"TBL_ID\"\n"
-                    + " JOIN \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" ORDER BY d.\"NAME\", t.\"TBL_NAME\"";
+            query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\", c.\"COLUMN_NAME\" "
+                    + "FROM \"COLUMNS_V2\" c "
+                    + "JOIN  \"SDS\" s on s.\"CD_ID\" = c.\"CD_ID\" "
+                    + "JOIN  \"TBLS\" t ON s.\"SD_ID\" = t.\"SD_ID\" "
+                    + "JOIN  \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" "
+                    + "ORDER BY d.\"NAME\", t.\"TBL_NAME\"";
         }
 
 
@@ -109,11 +119,21 @@ public class HiveMetastoreService {
 
     public  List<TableSchema> getTableSchemas() throws DataAccessException{
 
-        String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, c.COLUMN_NAME, c. TYPE_NAME FROM COLUMNS_V2 c JOIN TBLS t ON c.CD_ID=t.TBL_ID JOIN DBS d on d.DB_ID = t.DB_ID";
+        String query = "SELECT d.NAME as \"DATABASE_NAME\", t.TBL_NAME, c.COLUMN_NAME c.TYPE_NAME "
+                       + "FROM COLUMNS_V2 c "
+                       + "JOIN  SDS s on s.CD_ID = c.CD_ID "
+                       + "JOIN  TBLS t ON s.SD_ID = t.SD_ID "
+                       + "JOIN  DBS d on d.DB_ID = t.DB_ID "
+                       + "ORDER BY d.NAME, t.TBL_NAME";
         if(DatabaseType.POSTGRES.equals(getMetastoreDatabaseType())){
-            query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\", c.\"COLUMN_NAME\", c.\"TYPE_NAME\" FROM \"COLUMNS_V2\" c \n"
-                    + "JOIN \"TBLS\" t ON c.\"CD_ID\"=t.\"TBL_ID\" \n"
-                    + "JOIN \"DBS\" d on d.\"DB_ID\"= t.\"DB_ID\"";
+            query = "SELECT d.\"NAME\" as \"DATABASE_NAME\", t.\"TBL_NAME\", c.\"COLUMN_NAME\",c.\"TYPE_NAME\" "
+                    + "FROM \"COLUMNS_V2\" c "
+                    + "JOIN  \"SDS\" s on s.\"CD_ID\" = c.\"CD_ID\" "
+                    + "JOIN  \"TBLS\" t ON s.\"SD_ID\" = t.\"SD_ID\" "
+                    + "JOIN  \"DBS\" d on d.\"DB_ID\" = t.\"DB_ID\" ";
+
+
+
         }
        final List<TableSchema> metadata = new ArrayList<>();
         final Map<String,Map<String,TableSchema>> databaseTables = new HashMap<>();

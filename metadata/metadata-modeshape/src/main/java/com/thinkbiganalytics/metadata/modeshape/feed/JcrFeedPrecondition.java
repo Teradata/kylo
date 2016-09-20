@@ -22,13 +22,12 @@ public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
 
     public static final String NODE_TYPE = "tba:feedPrecondition";
 
-    public static final String LAST_ASSESSMENT = "tba:lastAssessment";
+    //  public static final String LAST_ASSESSMENT = "tba:lastAssessment";
     public static final String SLA_REF = "tba:slaRef";
     public static final String SLA = "tba:sla";
 
     public static final String SLA_TYPE = "tba:sla";
-    public static final String LAST_ASSESSMENT_TYPE = "tba:serviceLevelAssessment";
-    
+
     private JcrFeed feed;
     
     /**
@@ -47,9 +46,7 @@ public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
             if (this.node.hasNode(SLA)) {
                 this.node.getNode(SLA).remove();
             }
-            if (this.node.hasNode(LAST_ASSESSMENT)) {
-                this.node.getNode(LAST_ASSESSMENT).remove();
-            }
+
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to cler the precondition", e);
         }
@@ -83,17 +80,7 @@ public class JcrFeedPrecondition extends JcrObject implements FeedPrecondition {
 
     @Override
     public ServiceLevelAssessment getLastAssessment() {
-        try {
-            if (this.node.hasNode("")) {
-                // TODO: create assessment
-//            return new JcrServiceLevelAssessment(node);
-                return null;
-            } else {
-                return null;
-            }
-        } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the last precondition assessment", e);
-        }
+        return null;
     }
 
     @Override
