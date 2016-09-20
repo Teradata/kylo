@@ -104,7 +104,12 @@ public class LdapAuthConfig {
         @Override
         protected LdapContextSource createInstance() throws Exception {
             DefaultSpringSecurityContextSource cxt = new DefaultSpringSecurityContextSource(this.uri.toASCIIString());
+//            LdapContextSource cxt = new LdapContextSource();
+//            cxt.setUrl(this.uri.toASCIIString() );
             cxt.setUserDn(this.userDn);
+            cxt.setPassword(new String(this.password));
+            cxt.setCacheEnvironmentProperties(false);
+            cxt.afterPropertiesSet();
             return cxt;
         }
     }
@@ -164,6 +169,8 @@ public class LdapAuthConfig {
         protected LdapAuthoritiesPopulator createInstance() throws Exception {
             DefaultLdapAuthoritiesPopulator authPopulator = new DefaultLdapAuthoritiesPopulator(this.contextSource, this.groupsOu);
             authPopulator.setGroupRoleAttribute(this.groupRoleAttribute);
+            authPopulator.setRolePrefix("");
+            authPopulator.setConvertToUpperCase(false);
             return authPopulator;
         }
     }

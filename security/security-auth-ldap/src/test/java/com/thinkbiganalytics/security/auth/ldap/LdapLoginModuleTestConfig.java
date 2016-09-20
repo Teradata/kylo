@@ -20,7 +20,8 @@ import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
 @EnableAutoConfiguration
 public class LdapLoginModuleTestConfig {
 
-    private static final String LDAP_ROOT = "ou=schema,dc=thinkbiganalytics,dc=com";
+//    private static final String LDAP_ROOT = "ou=schema,dc=example,dc=com";
+    private static final String LDAP_ROOT = "dc=example,dc=com";
     private static final int LDAP_PORT = 52389;
 
 
