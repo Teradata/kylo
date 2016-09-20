@@ -1,8 +1,8 @@
 package com.thinkbiganalytics.nifi.provenance.v2.cache;
 
 import com.google.common.collect.Sets;
-import com.thinkbiganalytics.nifi.provenance.ProvenanceEventProcessingException;
 import com.thinkbiganalytics.nifi.provenance.ProvenanceFeedLookup;
+import com.thinkbiganalytics.nifi.provenance.RootFlowFileNotFoundException;
 import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.RootFlowFile;
@@ -42,9 +42,11 @@ public class CacheUtil {
     // internal counters for general stats
     AtomicLong eventCounter = new AtomicLong(0L);
 
+
     private CacheUtil() {
 
     }
+
 
     public void logStats() {
         log.info("Processed {} events.  ", eventCounter.get());
@@ -119,6 +121,11 @@ public class CacheUtil {
             });
         }
 
+        //if we dont have a root flow file assigned the we cant proceed... error out
+        if (flowFile.getRootFlowFile() == null) {
+            //// if we cant find the root file add to holding bin and recheck
+            throw new RootFlowFileNotFoundException("Unable to find Root Flow File for FlowFile: " + flowFile + " and Event " + event);
+        }
 
         if (flowFile.getRootFlowFile() != null && StringUtils.isNotBlank(flowFile.getRootFlowFile().getFeedProcessGroupId())) {
             provenanceFeedLookup.ensureProcessorIsInCache(flowFile.getRootFlowFile().getFeedProcessGroupId(), event.getComponentId());
@@ -133,11 +140,6 @@ public class CacheUtil {
             event.setFeedProcessGroupId(flowFile.getFeedProcessGroupId());
             event.setComponentName(provenanceFeedLookup.getProcessorName(event.getComponentId()));
         }
-        //if we dont have a root flow file assigned the we cant proceed... error out
-        if (flowFile.getRootFlowFile() == null) {
-            throw new ProvenanceEventProcessingException("Unable to find Root Flow File for FlowFile: " + flowFile + " and Event " + event);
-        }
-
 
         event.setJobFlowFileId(flowFile.getRootFlowFile().getId());
         event.setJobEventId(flowFile.getRootFlowFile().getFirstEvent().getEventId());
@@ -152,6 +154,7 @@ public class CacheUtil {
         for (ActiveFlowFile modifiedFlowFile : modified) {
             flowFileMapDbCache.cacheFlowFile(modifiedFlowFile);
         }
+
 
     }
 }
