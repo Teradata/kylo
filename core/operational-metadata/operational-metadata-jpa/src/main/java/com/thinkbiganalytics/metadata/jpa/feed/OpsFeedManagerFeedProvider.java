@@ -43,7 +43,10 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
     }
 
     public List<? extends OpsManagerFeed> findByFeedIds(List<OpsManagerFeed.ID> ids) {
-        return repository.findByFeedIds(ids);
+        if (ids != null && !ids.isEmpty()) {
+            return repository.findByFeedIds(ids);
+        }
+        return null;
     }
 
     public void save(List<? extends OpsManagerFeed> feeds) {
