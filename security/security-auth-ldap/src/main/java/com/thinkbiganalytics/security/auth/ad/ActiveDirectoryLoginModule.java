@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.thinkbiganalytics.security.auth.ldap;
+package com.thinkbiganalytics.security.auth.ad;
 
 import java.security.Principal;
 import java.util.Map;
@@ -11,16 +11,17 @@ import javax.security.auth.callback.CallbackHandler;
 import javax.security.auth.callback.NameCallback;
 import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.AccountException;
-import javax.security.auth.login.CredentialException;
 
-import org.springframework.ldap.core.DirContextOperations;
-import org.springframework.security.authentication.BadCredentialsException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.ldap.authentication.LdapAuthenticator;
-import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
+import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
+import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 
 import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  *
@@ -28,14 +29,13 @@ import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
  */
 public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     
-    /** Option for the {@link LdapAuthenticator} used to authenticate via LDAP */
-    public static final String AUTHENTICATOR = "authenticator";
-    
-    /** Option for the {@link LdapAuthoritiesPopulator} used to retrieve any groups associated with the authenticated user */
-    public static final String AUTHORITIES_POPULATOR = "authoritiesPopulator";
+    private static final Logger log = LoggerFactory.getLogger(ActiveDirectoryLoginModule.class);
 
-    private LdapAuthenticator authenticator;
-    private LdapAuthoritiesPopulator authoritiesPopulator;
+    public static final String AUTH_PROVIDER = "authProvider";
+    public static final String USER_MAPPER = "userMapper";
+    
+    private ActiveDirectoryLdapAuthenticationProvider authProvider;
+    private UserDetailsContextMapper userMapper;
     
     
     /* (non-Javadoc)
@@ -45,8 +45,10 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         super.initialize(subject, callbackHandler, sharedState, options);
         
-        this.authenticator = (LdapAuthenticator) getOption(AUTHENTICATOR).orElseThrow(() -> new IllegalArgumentException("The \"" + AUTHENTICATOR + "\" option is required"));
-        this.authoritiesPopulator = (LdapAuthoritiesPopulator) getOption(AUTHORITIES_POPULATOR).orElse(null);
+        this.authProvider = (ActiveDirectoryLdapAuthenticationProvider) getOption(AUTH_PROVIDER)
+                        .orElseThrow(() -> new IllegalArgumentException("The \"" + AUTH_PROVIDER + "\" option is required"));
+        this.userMapper = (UserDetailsContextMapper) getOption(USER_MAPPER)
+                        .orElseThrow(() -> new IllegalArgumentException("The \"" + USER_MAPPER + "\" option is required"));
     }
 
     /* (non-Javadoc)
@@ -63,25 +65,27 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
             throw new AccountException("No username provided for authentication");
         }
         
-        Principal userPrincipal = addNewUserPrincipal(nameCallback.getName());
+        Principal userPrincipal = new UsernamePrincipal(nameCallback.getName());
         String password = new String(passwordCallback.getPassword());
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userPrincipal, password);
 
-        try {
-            DirContextOperations dirContext = this.authenticator.authenticate(authentication);
+        log.debug("Authenticating: {}", userPrincipal);
+        Authentication authenticated = this.authProvider.authenticate(authentication);
+        log.debug("Successfully Authenticated: {}", userPrincipal);
+        
+        setUserPrincipal(userPrincipal);
+
+        for (GrantedAuthority grant : authenticated.getAuthorities()) {
+            String groupName = grant.getAuthority();
+
+            log.debug("Found group for {}: {}", userPrincipal, groupName);
             
-            for (GrantedAuthority grant : this.authoritiesPopulator.getGrantedAuthorities(dirContext, nameCallback.getName())) {
-                String groupName = grant.getAuthority();
-                
-                if (groupName != null) {
-                    addNewGroupPrincipal(groupName);
-                }
+            if (groupName != null) {
+                addNewGroupPrincipal(groupName);
             }
-            
-            return true;
-        } catch (BadCredentialsException e) {
-            throw new CredentialException(e.getMessage());
         }
+        
+        return true;
     }
 
     /* (non-Javadoc)
@@ -89,8 +93,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
      */
     @Override
     protected boolean doCommit() throws Exception {
-        // TODO Auto-generated method stub
-        return false;
+        getSubject().getPrincipals().addAll(getPrincipals());
+        return true;
     }
 
     /* (non-Javadoc)
@@ -106,8 +110,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
      */
     @Override
     protected boolean doLogout() throws Exception {
-        // TODO Auto-generated method stub
-        return false;
+        getSubject().getPrincipals().removeAll(getPrincipals());
+        return true;
     }
 
 }
