@@ -109,7 +109,7 @@
          */
         self.getGroupTitles = function(user) {
             return _.map(user.groups, function(group) {
-                if (angular.isDefined(self.groups[group]) && angular.isDefined(self.groups[group].title)) {
+                if (angular.isDefined(self.groups[group]) && angular.isString(self.groups[group].title)) {
                     return self.groups[group].title;
                 } else {
                     return group;
