@@ -71,7 +71,7 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
     public void upgradeCheck() {
 
         KyloVersion version = kyloVersionProvider.getKyloVersion();
-        if (version == null || version.getMajorVersionNumber().floatValue() < 0.4f) {
+        if (version == null || version.getMajorVersionNumber() == null || (version.getMajorVersionNumber() != null && version.getMajorVersionNumber().floatValue() < 0.4f)) {
             version = upgradeTo0_4_0();
         } else {
             version = operationalMetadataAccess.commit(() -> {
