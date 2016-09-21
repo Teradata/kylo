@@ -92,9 +92,9 @@
                         <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm">
                             <label class="label-small md-container-ignore">Group</label>
                             <md-chips ng-model="vm.editModel.groups" md-require-match="true">
-                                <md-autocomplete md-items="group in vm.queryGroups(vm.groupSearchText)" md-item-text="vm.getGroupTitle(group.systemName)" placeholder="Type a name and press enter"
+                                <md-autocomplete md-items="group in vm.queryGroups(vm.groupSearchText)" md-item-text="vm.getGroupTitle(group)" placeholder="Type a name and press enter"
                                                  style="min-width: 250px;" md-no-cache="true" md-search-text="vm.groupSearchText">
-                                    <span md-highlight-text="group">{{vm.getGroupTitle(group)}}</span>
+                                    <span md-highlight-text="vm.findGroupSearchText(group)">{{vm.getGroupTitle(group)}}</span>
                                 </md-autocomplete>
                                 <md-chip-template>
                                     <span>
