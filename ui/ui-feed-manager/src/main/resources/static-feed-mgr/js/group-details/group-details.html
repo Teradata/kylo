@@ -11,7 +11,7 @@
         <body-section>
             <form name="groupForm">
                 <vertical-section-layout section-title="Details" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
-                                         editable="vm.isEditable" is-valid="groupForm.$valid">
+                                         editable="vm.isEditable" is-valid="vm.isValid">
                     <readonly-section>
                         <div layout="row" class="layout-padding-top-bottom">
                             <span flex="25" class="property-name">Group Name</span>
@@ -38,9 +38,10 @@
                     <editable-section>
                         <md-input-container class="md-block" ng-if="vm.model.systemName === null">
                             <label>Group Name</label>
-                            <input name="systemName" type="text" ng-model="vm.editModel.systemName" required="true"/>
-                            <div ng-messages="groupForm.systemName.$error" md-auto-hide="false">
-                                <div ng-message="required">A group name is required.</div>
+                            <input name="systemName" type="text" ng-model="vm.editModel.systemName"/>
+                            <div ng-messages="vm.$error" md-auto-hide="false">
+                                <div ng-message="duplicateName">That group name is already in use.</div>
+                                <div ng-message="missingName">A group name is required.</div>
                             </div>
                         </md-input-container>
                         <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.systemName !== null">

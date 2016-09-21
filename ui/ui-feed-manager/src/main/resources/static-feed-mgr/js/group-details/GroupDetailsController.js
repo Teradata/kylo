@@ -16,6 +16,12 @@
         var self = this;
 
         /**
+         * Error message object that maps keys to a boolean indicating the error state.
+         * @type {{duplicateName: boolean, missingName: boolean}}
+         */
+        self.$error = {duplicateName: false, missingName: false};
+
+        /**
          * List of actions allowed to the group.
          *
          * @type {Array.<Action>}
@@ -37,6 +43,12 @@
         self.editModel = {};
 
         /**
+         * Lookup map for detecting duplicate group names.
+         * @type {Object.<string, boolean>}
+         */
+        self.groupMap = {};
+
+        /**
          * Indicates if the edit view is displayed.
          * @type {boolean}
          */
@@ -47,6 +59,12 @@
          * @type {boolean}
          */
         self.isPermissionsEditable = false;
+
+        /**
+         * Indicates if the edit form is valid.
+         * @type {boolean}
+         */
+        self.isValid = false;
 
         /**
          * Indicates that the group is currently being loaded.
@@ -65,6 +83,26 @@
          * @type {Array.<UserPrincipal>}
          */
         self.users = [];
+
+        // Update isValid when $error is updated
+        $scope.$watch(
+                function() {return self.$error},
+                function() {
+                    self.isValid = _.reduce(self.$error, function(memo, value) {
+                        return memo && !value;
+                    }, true);
+                },
+                true
+        );
+
+        // Update $error when the system name changes
+        $scope.$watch(
+                function() {return self.editModel.systemName},
+                function() {
+                    self.$error.duplicateName = (angular.isString(self.editModel.systemName) && self.groupMap[self.editModel.systemName]);
+                    self.$error.missingName = (!angular.isString(self.editModel.systemName) || self.editModel.systemName.length === 0);
+                }
+        );
 
         /**
          * Indicates if the group can be deleted. The main requirement is that the group exists.
@@ -154,6 +192,14 @@
                 self.onEdit();
                 self.isEditable = true;
                 self.loading = false;
+
+                UserService.getGroups()
+                        .then(function(groups) {
+                            self.groupMap = {};
+                            angular.forEach(groups, function(group) {
+                                self.groupMap[group.systemName] = true;
+                            });
+                        });
             }
         };
 

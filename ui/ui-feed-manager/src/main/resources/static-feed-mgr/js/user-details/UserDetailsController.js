@@ -17,7 +17,7 @@
          * Error message object that maps keys to a boolean indicating the error state.
          * @type {{duplicateUser: boolean, missingGroup: boolean, missingUser: boolean}}
          */
-        self.$error = {missingGroup: false};
+        self.$error = {duplicateUser: false, missingGroup: false, missingUser: false};
 
         /**
          * User model for the edit view.
