@@ -6,6 +6,7 @@ angular.module(MODULE_OPERATIONS).service('RestUrlService', function () {
 
     this.FEEDS_BASE = "/proxy/v1/feeds";
     this.JOBS_BASE = "/proxy/v1/jobs";
+    this.SECURITY_BASE_URL = this.ROOT + "/proxy/v1/security";
     this.FEED_HEALTH_URL = this.FEEDS_BASE+"/health";
     this.FEED_NAMES_URL = this.FEEDS_BASE+"/names";
     this.FEED_HEALTH_COUNT_URL = this.FEEDS_BASE+"/health-count";
@@ -69,7 +70,7 @@ angular.module(MODULE_OPERATIONS).service('RestUrlService', function () {
     this.RELATED_JOBS_URL = function(executionId) {
         return self.JOBS_BASE+"/"+executionId+"/related";
     }
-    
+
 //Service monitoring
 
 this.SERVICES_URL = "/proxy/v1/service-monitor/";
