@@ -4,20 +4,17 @@
      *
      * @constructor
      * @param $scope the application model
+     * @param $mdToast the toast service
+     * @param {AccessControlService} AccessControlService the access control service
      * @param CategoriesService the category service
      */
-    function CategoryPropertiesController($scope, $mdToast, CategoriesService) {
+    function CategoryPropertiesController($scope, $mdToast, AccessControlService, CategoriesService) {
         var self = this;
 
         /**
-         * Indicates if the edit icon is visible.
-         * @type {boolean} {@code true} if the edit icon is visible, or {@code false} if hidden
+         * Indicates if the properties may be edited.
          */
         self.allowEdit = false;
-        $scope.$watch(
-                function() { return CategoriesService.model.id; },
-                function(newValue) { self.allowEdit = angular.isString(newValue); }
-        );
 
         /**
          * Category data used in "edit" mode.
@@ -30,6 +27,16 @@
          * @type {boolean} {@code true} if in "edit" mode or {@code false} if in "normal" mode
          */
         self.isEditable = false;
+
+        /**
+         * Indicates of the category is new.
+         * @type {boolean}
+         */
+        self.isNew = true;
+        $scope.$watch(
+                function() {return CategoriesService.model.id},
+                function(newValue) {self.isNew = !angular.isString(newValue)}
+        );
 
         /**
          * Indicates if the properties are valid and can be saved.
@@ -67,7 +74,13 @@
                         .hideDelay(3000)
                 );
             });
-        }
+        };
+
+        // Fetch the allowed actions
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    self.allowEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions);
+                });
     }
 
     /**

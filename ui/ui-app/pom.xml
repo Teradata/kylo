@@ -86,13 +86,6 @@
         </dependency>
 
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.datalake</groupId>
-            <artifactId>thinkbig-commons-rest-model</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
-
 
       <dependency>
         <groupId>com.thinkbiganalytics.datalake</groupId>

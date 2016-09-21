@@ -11,6 +11,10 @@
         <relativePath>../pom.xml</relativePath>
     </parent>
 
+  <properties>
+    <timestamp>${maven.build.timestamp}</timestamp>
+    <maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
+  </properties>
 
     <dependencyManagement>
         <dependencies>
@@ -64,9 +68,22 @@
         </dependency>
         -->
 
+      <dependency>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>thinkbig-operational-metadata-integration-service</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
 
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
+          <artifactId>thinkbig-operational-metadata-upgrade-service</artifactId>
+          <version>${project.version}</version>
+        </dependency>
+
+
+      <dependency>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-security-auth</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -148,12 +165,13 @@
             <version>${project.version}</version>
         </dependency>
 
-        <dependency>
-            <groupId>com.thinkbiganalytics.metadata</groupId>
-            <artifactId>thinkbig-metadata-db-modeshape-migration</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-
+      <!--
+      <dependency>
+          <groupId>com.thinkbiganalytics.metadata</groupId>
+          <artifactId>thinkbig-metadata-db-modeshape-migration</artifactId>
+          <version>${project.version}</version>
+      </dependency>
+-->
         <!-- -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -365,6 +383,13 @@
     </dependencies>
 
     <build>
+
+      <resources>
+        <resource>
+          <directory>src/main/resources</directory>
+          <filtering>true</filtering>
+        </resource>
+      </resources>
         <plugins>
 
             <!-- create single distribution file -->

@@ -38,5 +38,15 @@
             <artifactId>thinkbig-security-auth</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-feed-manager-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-job-repository-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

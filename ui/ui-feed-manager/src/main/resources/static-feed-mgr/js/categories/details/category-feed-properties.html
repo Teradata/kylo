@@ -1,4 +1,4 @@
-<vertical-section-layout allow-edit="vm.allowEdit" section-title="Feed Properties" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" editable="vm.isEditable" is-valid="vm.isValid">
+<vertical-section-layout allow-edit="vm.allowEdit && !vm.isNew" section-title="Feed Properties" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" editable="vm.isEditable" is-valid="vm.isValid">
     <readonly-section>
         <thinkbig-properties-admin fields="vm.model.userFields"></thinkbig-properties-admin>
     </readonly-section>

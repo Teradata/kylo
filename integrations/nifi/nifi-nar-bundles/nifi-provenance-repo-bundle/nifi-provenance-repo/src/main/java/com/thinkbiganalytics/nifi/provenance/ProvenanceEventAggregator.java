@@ -1,5 +1,7 @@
 package com.thinkbiganalytics.nifi.provenance;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.GroupedFeedProcessorEventAggregate;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
@@ -26,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -53,7 +56,6 @@ public class ProvenanceEventAggregator {
      */
     private BlockingQueue<ProvenanceEventRecordDTO> jmsProcessingQueue;
 
-
     /**
      * other queue for recording Failures and job completion regardless of batch or stream Needed for triggering when a feed is complete
      */
@@ -79,6 +81,12 @@ public class ProvenanceEventAggregator {
 
     Map<String, GroupedFeedProcessorEventAggregate> eventsToAggregate = new ConcurrentHashMap<>();
 
+
+    //sometimes events come in before their root flow file.  Root Flow files are needed for processing.
+    //if the events come in out of order, queue them in this map
+    //@see processEarlyChildren method
+    Cache<String, ConcurrentLinkedQueue<ProvenanceEventRecordDTO>> jobFlowFileIdEarlyChildrenMap = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
+
     @Autowired
     public ProvenanceEventAggregator(@Qualifier("streamConfiguration") StreamConfiguration configuration,
                                      @Qualifier("provenanceEventActiveMqWriter") ProvenanceEventActiveMqWriter provenanceEventActiveMqWriter) {
@@ -98,19 +106,9 @@ public class ProvenanceEventAggregator {
         t2.start();
 
         initCheckAndSendTimer();
-/*
-        int maxThreads = 1;
-        eventStatisticsExecutor =
-            new ThreadPoolExecutor(
-                maxThreads, // core thread pool size
-                maxThreads, // maximum thread pool size
-                1, // time to wait before resizing pool
-                TimeUnit.MINUTES,
-                new ArrayBlockingQueue<Runnable>(maxThreads, true),
-                new ThreadPoolExecutor.CallerRunsPolicy());
-                */
 
     }
+
 
     private String mapKey(ProvenanceEventRecordDTO event) {
         return event.getFeedName() + ":" + event.getComponentId();
@@ -120,45 +118,65 @@ public class ProvenanceEventAggregator {
         return stats.getFeedName() + ":" + stats.getProcessorId();
     }
 
+    private void processEarlyChildren(String jobFlowFileId) {
+        //if this is the start of the job the check and determine if there are any children that were initialized for this flowfile before receiving the start event and then reprocess them
+        ConcurrentLinkedQueue<ProvenanceEventRecordDTO> queue = jobFlowFileIdEarlyChildrenMap.getIfPresent(jobFlowFileId);
+        if (queue != null) {
+            ProvenanceEventRecordDTO nextEvent = null;
+            while ((nextEvent = queue.poll()) != null) {
+                log.info("Processing early child {} since the root flowfile {} has been processed.", nextEvent, jobFlowFileId);
+                prepareAndAdd(nextEvent);
+            }
+            jobFlowFileIdEarlyChildrenMap.invalidate(jobFlowFileId);
+        }
+    }
+
     /**
      * - Create/update the flowfile graph for this new event - Calculate statistics on the event and add them to the aggregated set to be processed - Add the event to the DelayQueue for further
      * processing as a Batch or Stream
      */
     public void prepareAndAdd(ProvenanceEventRecordDTO event) {
         try {
-
-            if (ProvenanceEventUtil.isDropFlowFilesEvent(event)) {
-                log.info("DROPPING FLOW FILES!! {}", event);
-                return;
-            }
-            log.info("Process Event {} ", event);
-            cacheUtil.cacheAndBuildFlowFileGraph(event);
-
-            //send the event off for stats processing to the threadpool.  order does not matter thus they can be in an number of threads
-            // eventStatisticsExecutor.execute(new StatisticsProvenanceEventConsumer(event));
-            ProvenanceEventStats stats = statsCalculator.calculateStats(event);
-
-            //if failure detected group and send off to separate queue
-            collectFailureEvents(event);
-
-            //add to delayed queue for processing
-            aggregateEvent(event, stats);
-
-
-            // check to see if the parents should be finished
-            if (event.isEndingFlowFileEvent()) {
-                Set<ProvenanceEventRecordDTO> completedRootFlowFileEvents = completeStatsForParentFlowFiles(event);
-                if (completedRootFlowFileEvents != null) {
-                    completedRootFlowFileEvents(completedRootFlowFileEvents);
+            if (event != null) {
+                if (ProvenanceEventUtil.isDropFlowFilesEvent(event)) {
+                    log.info("DROPPING FLOW FILES!! {}", event);
+                    return;
                 }
+                log.info("Process Event {} ", event);
+                try {
+                    cacheUtil.cacheAndBuildFlowFileGraph(event);
 
-                if (event.isEndOfJob() && event.getFlowFile().getRootFlowFile().areRelatedRootFlowFilesComplete()) {
-                    //trigger Complete event for event and flowfile
-                    collectCompletionEvents(event);
+                    //send the event off for stats processing to the threadpool.  order does not matter thus they can be in an number of threads
+                    // eventStatisticsExecutor.execute(new StatisticsProvenanceEventConsumer(event));
+                    ProvenanceEventStats stats = statsCalculator.calculateStats(event);
+                    //if failure detected group and send off to separate queue
+                    collectFailureEvents(event);
+                    //add to delayed queue for processing
+                    aggregateEvent(event, stats);
+
+                    if (event.isStartOfJob()) {
+                        processEarlyChildren(event.getJobFlowFileId());
+                    }
+
+                    // check to see if the parents should be finished
+                    if (event.isEndingFlowFileEvent()) {
+                        Set<ProvenanceEventRecordDTO> completedRootFlowFileEvents = completeStatsForParentFlowFiles(event);
+                        if (completedRootFlowFileEvents != null) {
+                            completedRootFlowFileEvents(completedRootFlowFileEvents);
+                        }
+
+                        if (event.isEndOfJob() && event.getFlowFile().getRootFlowFile().areRelatedRootFlowFilesComplete()) {
+                            //trigger Complete event for event and flowfile
+                            collectCompletionEvents(event);
+                        }
+                    }
+                } catch (RootFlowFileNotFoundException e) {
+                    //add to a holding bin
+                    log.info("Holding on to {} since the root flow file {} has yet to be processed.", event, event.getFlowFileUuid());
+                    jobFlowFileIdEarlyChildrenMap.asMap().computeIfAbsent(event.getFlowFileUuid(), (flowFileId) -> new ConcurrentLinkedQueue<ProvenanceEventRecordDTO>()).add(event);
+
                 }
             }
-
-
         } catch (Exception e) {
             log.error("ERROR PROCESSING EVENT! {}.  ERROR: {} ", event, e.getMessage(), e);
         }

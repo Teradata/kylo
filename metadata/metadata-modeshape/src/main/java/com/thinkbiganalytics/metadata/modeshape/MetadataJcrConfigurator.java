@@ -4,6 +4,7 @@
 package com.thinkbiganalytics.metadata.modeshape;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
@@ -20,6 +21,7 @@ import javax.jcr.nodetype.PropertyDefinition;
 import javax.jcr.security.Privilege;
 
 import org.modeshape.jcr.security.SimplePrincipal;
+import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
@@ -42,6 +44,7 @@ public class MetadataJcrConfigurator {
     
     public MetadataJcrConfigurator(List<PostMetadataConfigAction> actions) {
         this.postConfigActions.addAll(actions);
+        this.postConfigActions.sort(new AnnotationAwareOrderComparator());
     }
     
     private final AtomicBoolean configured = new AtomicBoolean(false);

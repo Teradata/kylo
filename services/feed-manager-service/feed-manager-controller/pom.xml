@@ -48,9 +48,29 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-sla-rest-model</artifactId>
+      <artifactId>thinkbig-operational-metadata-api</artifactId>
       <version>${project.version}</version>
     </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-operational-metadata-jpa</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-operational-metadata-integration-service</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-operational-metadata-rest-model</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>

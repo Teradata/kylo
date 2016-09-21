@@ -3,24 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
-import javax.inject.Inject;
-import javax.jcr.ItemNotFoundException;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import javax.jcr.query.QueryResult;
-
-import org.modeshape.jcr.api.JcrTools;
-
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
@@ -42,11 +24,28 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
-import com.thinkbiganalytics.metadata.sla.spi.SLACheckBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheckBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
-import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
+
+import org.modeshape.jcr.api.JcrTools;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
+
+import javax.inject.Inject;
+import javax.jcr.ItemNotFoundException;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.query.QueryResult;
 
 /**
  *
@@ -60,9 +59,6 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
 
     @Inject
     private FeedServiceLevelAgreementProvider feedServiceLevelAgreementProvider;
-
-    @Inject
-    private ServiceLevelAgreementScheduler serviceLevelAgreementScheduler;
 
     @Override
     public Class<? extends ServiceLevelAgreement> getEntityClass() {
@@ -106,7 +102,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
                 return JcrUtil.createJcrObject(slaNode, JcrServiceLevelAgreement.class);
             }));
         } catch (RepositoryException e) {
-            throw new MetadataRepositoryException("Failed to retrieve the obligation nodes", e);
+            throw new MetadataRepositoryException("Failed to retrieve the ServiceLevelAgreements", e);
         }
         
     }
@@ -170,7 +166,6 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             Node slaNode = session.getNodeByIdentifier(slaId.getIdValue());
             if(slaNode != null) {
                 JcrServiceLevelAgreement sla = new JcrServiceLevelAgreement(slaNode);
-                serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(sla);
 
                 //remove any other relationships
                 feedServiceLevelAgreementProvider.removeAllRelationships(id);
@@ -324,8 +319,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
             JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.NAME, this.name);
             JcrPropertyUtil.setProperty(this.slaNode, JcrServiceLevelAgreement.DESCRIPTION, this.description);
             ServiceLevelAgreement agreement = new JcrServiceLevelAgreement(this.slaNode);
-            //schedule it
-            serviceLevelAgreementScheduler.scheduleServiceLevelAgreement(agreement);
+
             return agreement;
         }
     }
@@ -435,7 +429,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         }
     }
 
-    public SLACheckBuilder slaCheckBuilder(ServiceLevelAgreement.ID slaId) {
+    public ServiceLevelAgreementCheckBuilder slaCheckBuilder(ServiceLevelAgreement.ID slaId) {
         try {
             Session session = getSession();
             Node n = session.getNodeByIdentifier(slaId.toString());
@@ -446,7 +440,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
     }
 
 
-    private static class SLACheckBuilderImpl implements SLACheckBuilder {
+    private static class SLACheckBuilderImpl implements ServiceLevelAgreementCheckBuilder {
 
 
         private JcrServiceLevelAgreement sla;
@@ -474,7 +468,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         }
 
         @Override
-        public SLACheckBuilder actionConfiguration(ServiceLevelAgreementActionConfiguration configuration) {
+        public ServiceLevelAgreementCheckBuilder actionConfiguration(ServiceLevelAgreementActionConfiguration configuration) {
             if (this.serviceLevelAgreementActionConfigurations == null) {
                 this.serviceLevelAgreementActionConfigurations = new ArrayList<>();
             }
@@ -485,7 +479,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         }
 
         @Override
-        public SLACheckBuilder actionConfigurations(List<ServiceLevelAgreementActionConfiguration> configurations) {
+        public ServiceLevelAgreementCheckBuilder actionConfigurations(List<ServiceLevelAgreementActionConfiguration> configurations) {
             if (this.serviceLevelAgreementActionConfigurations == null) {
                 this.serviceLevelAgreementActionConfigurations = new ArrayList<>();
             }
@@ -496,7 +490,7 @@ public class JcrServiceLevelAgreementProvider extends BaseJcrProvider<ServiceLev
         }
 
         @Override
-        public SLACheckBuilder cronExpression(String cronExpression) {
+        public ServiceLevelAgreementCheckBuilder cronExpression(String cronExpression) {
             this.cronExpression = cronExpression;
             return this;
         }

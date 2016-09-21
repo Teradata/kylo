@@ -15,5 +15,5 @@ public interface OperationsAccessControl {
 
     // TODO are there other levels of access besides the ability to view or administer operational functions?
     public static final Action ACCESS_OPS = Action.create("accessOperations");
-    public static final Action ADMIN_OPS = Action.create("adminOperations");
+    public static final Action ADMIN_OPS = ACCESS_OPS.subAction("adminOperations");
 }

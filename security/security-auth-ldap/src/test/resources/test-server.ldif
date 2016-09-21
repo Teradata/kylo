@@ -1,232 +1,48 @@
 version: 1
 
-dn: ou=groups,dc=thinkbiganalytics,dc=com
+dn: ou=groups,dc=example,dc=com
 objectclass: top
 objectclass: organizationalUnit
 ou: groups
 
-dn: ou=subgroups,ou=groups,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: organizationalUnit
-ou: subgroups
-
-dn: ou=people,dc=thinkbiganalytics,dc=com
+dn: ou=people,dc=example,dc=com
 objectclass: top
 objectclass: organizationalUnit
 ou: people
 
-dn: ou=space cadets,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: organizationalUnit
-ou: space cadets
 
-dn: ou=\"quoted people\",dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: organizationalUnit
-ou: "quoted people"
-
-dn: ou=otherpeople,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: organizationalUnit
-ou: otherpeople
-
-dn: uid=ben,ou=people,dc=thinkbiganalytics,dc=com
+dn: uid=dladmin,ou=people,dc=example,dc=com
 objectclass: top
 objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
-cn: Ben Alex
-sn: Alex
-uid: ben
-userPassword: {SHA}nFCebWjxfaLbHHG1Qk5UU4trbvQ=
+cn: Data Lake Admin
+sn: dladmin
+uid: dladmin
+userPassword: thinkbig
 
-dn: uid=bob,ou=people,dc=thinkbiganalytics,dc=com
+dn: uid=test,ou=people,dc=example,dc=com
 objectclass: top
 objectclass: person
 objectclass: organizationalPerson
 objectclass: inetOrgPerson
-cn: Bob Hamilton
-sn: Hamilton
-uid: bob
-userPassword: bobspassword
-
-dn: uid=joe,ou=otherpeople,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: person
-objectclass: organizationalPerson
-objectclass: inetOrgPerson
-cn: Joe Smeth
-sn: Smeth
-uid: joe
-userPassword: joespassword
-
-dn: cn=mouse\, jerry,ou=people,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: person
-objectclass: organizationalPerson
-objectclass: inetOrgPerson
-cn: Mouse, Jerry
-sn: Mouse
-uid: jerry
-userPassword: jerryspassword
-
-dn: cn=slash/guy,ou=people,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: person
-objectclass: organizationalPerson
-objectclass: inetOrgPerson
-cn: slash/guy
-sn: Slash
-uid: slashguy
-userPassword: slashguyspassword
-
-dn: cn=quote\"guy,ou=\"quoted people\",dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: person
-objectclass: organizationalPerson
-objectclass: inetOrgPerson
-cn: quote\"guy
-sn: Quote
-uid: quoteguy
-userPassword: quoteguyspassword
-
-dn: uid=space cadet,ou=space cadets,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: person
-objectclass: organizationalPerson
-objectclass: inetOrgPerson
-cn: Space Cadet
-sn: Cadet
-uid: space cadet
-userPassword: spacecadetspassword
+cn: Test User
+sn: Test
+uid: test
+userPassword: user
 
 
-
-dn: cn=developers,ou=groups,dc=thinkbiganalytics,dc=com
+dn: cn=admin,ou=groups,dc=example,dc=com
 objectclass: top
 objectclass: groupOfNames
-cn: developers
+cn: admin
+ou: admin
+member: uid=dladmin,ou=people,dc=example,dc=com
+member: uid=test,ou=people,dc=example,dc=com
+
+dn: cn=developer,ou=groups,dc=example,dc=com
+objectclass: top
+objectclass: groupOfNames
+cn: developer
 ou: developer
-member: uid=ben,ou=people,dc=thinkbiganalytics,dc=com
-member: uid=bob,ou=people,dc=thinkbiganalytics,dc=com
-
-dn: cn=managers,ou=groups,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: groupOfNames
-cn: managers
-ou: manager
-member: uid=ben,ou=people,dc=thinkbiganalytics,dc=com
-member: cn=mouse\, jerry,ou=people,dc=thinkbiganalytics,dc=com
-
-dn: cn=submanagers,ou=subgroups,ou=groups,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: groupOfNames
-cn: submanagers
-ou: submanager
-member: uid=ben,ou=people,dc=thinkbiganalytics,dc=com
-
-#Nested groups data
-###################
-
-dn: ou=jdeveloper,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: organizationalUnit
-ou: jdeveloper
-
-
-# javadude is part of (in a nested search)
-# circular-java-developers, java-developers, j-developers
-dn: uid=javadude,ou=people,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: person
-objectclass: organizationalPerson
-objectclass: inetOrgPerson
-cn: Java Dude
-sn: Dude
-uid: javadude
-userPassword: javadudespassword
-
-# groovydude is part of (in a nested search)
-# groovy-developers, java-developers, circular-java-developers, j-developers 
-dn: uid=groovydude,ou=people,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: person
-objectclass: organizationalPerson
-objectclass: inetOrgPerson
-cn: Groovy Dude
-sn: Dude
-uid: groovydude
-userPassword: groovydudespassword
-
-# closuredude is part of (in a nested search)
-# closure-developers, groovy-developers, java-developers, circular-java-developers, j-developers 
-dn: uid=closuredude,ou=people,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: person
-objectclass: organizationalPerson
-objectclass: inetOrgPerson
-cn: Closure Dude
-sn: Dude
-uid: closuredude
-userPassword: closuredudespassword
-
-# scaladude is part of (in a nested search)
-# scala-developers, groovy-developers, java-developers, circular-java-developers, j-developers 
-dn: uid=scaladude,ou=people,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: person
-objectclass: organizationalPerson
-objectclass: inetOrgPerson
-cn: Scala Dude
-sn: Dude
-uid: scaladude
-userPassword: scaladudespassword
-
-dn: cn=j-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: groupOfNames
-cn: j-developers
-ou: jdeveloper
-member: cn=java-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-
-dn: cn=java-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: groupOfNames
-cn: java-developers
-ou: jdeveloper
-member: cn=groovy-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-member: cn=scala-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-member: uid=javadude,ou=people,dc=thinkbiganalytics,dc=com
-
-dn: cn=circular-java-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: groupOfNames
-cn: circular-java-developers
-ou: jdeveloper
-member: cn=groovy-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-member: cn=scala-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-member: uid=javadude,ou=people,dc=thinkbiganalytics,dc=com
-
-
-dn: cn=groovy-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: groupOfNames
-cn: groovy-developers
-ou: jdeveloper
-member: cn=closure-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-member: uid=groovydude,ou=people,dc=thinkbiganalytics,dc=com
-member: cn=circular-java-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-
-dn: cn=closure-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: groupOfNames
-cn: closure-developers
-ou: jdeveloper
-member: uid=closuredude,ou=people,dc=thinkbiganalytics,dc=com
-
-dn: cn=scala-developers,ou=jdeveloper,dc=thinkbiganalytics,dc=com
-objectclass: top
-objectclass: groupOfNames
-cn: scala-developers
-ou: jdeveloper
-member: uid=scaladude,ou=people,dc=thinkbiganalytics,dc=com
+member: uid=test,ou=people,dc=example,dc=com

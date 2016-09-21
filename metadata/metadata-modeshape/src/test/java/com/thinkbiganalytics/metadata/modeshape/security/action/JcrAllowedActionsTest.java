@@ -5,6 +5,8 @@ package com.thinkbiganalytics.metadata.modeshape.security.action;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.security.AccessControlException;
 import java.util.Optional;
 
@@ -13,6 +15,7 @@ import javax.inject.Inject;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.Assert;
+import org.testng.annotations.BeforeClass;
 import org.testng.annotations.Test;
 
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -21,6 +24,7 @@ import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
 import com.thinkbiganalytics.metadata.modeshape.TestCredentials;
 import com.thinkbiganalytics.metadata.modeshape.TestUserPrincipal;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrTool;
 import com.thinkbiganalytics.security.action.AllowedActions;
 import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 
@@ -48,8 +52,6 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
 //            pw.flush();
 //            String result = sw.toString();
 //            System.out.println(result);
-//    
-//            return null;
 //        });
 //    }
     
@@ -63,8 +65,6 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             AllowedActions actions = option.get(); // Throws exception on failure
             
             actions.checkPermission(TestSecurityConfig.EXPORT_FEEDS);
-            
-            return null;
         });
     }
     
@@ -76,8 +76,6 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             assertThat(option.isPresent()).isTrue();
             
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS); // Throws exception on failure
-            
-            return null;
         });
     }
     
@@ -91,8 +89,6 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             AllowedActions actions = option.get(); // Throws exception on failure
             
             actions.checkPermission(TestSecurityConfig.EXPORT_FEEDS);
-            
-            return null;
         });
     }
     
@@ -104,8 +100,6 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             assertThat(option.isPresent()).isTrue();
             
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS);
-            
-            return null;
         });
     }
     
@@ -151,7 +145,6 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             assertThat(option.isPresent()).isTrue();
             
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS); 
-            return null;
         });
     }
     
@@ -180,7 +173,6 @@ public class JcrAllowedActionsTest extends AbstractTestNGSpringContextTests {
             } 
             
             option.get().checkPermission(TestSecurityConfig.EXPORT_FEEDS); 
-            return null;
         });
     }
 }

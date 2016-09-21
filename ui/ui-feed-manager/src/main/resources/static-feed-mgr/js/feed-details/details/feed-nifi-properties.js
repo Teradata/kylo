@@ -15,9 +15,15 @@
         };
     }
 
-    var controller = function ($scope, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory) {
+    var controller = function ($scope, AccessControlService, FeedService, EditFeedNifiPropertiesService, FeedInputProcessorOptionsFactory) {
 
         var self = this;
+
+        /**
+         * Indicates if the feed NiFi properties may be edited.
+         * @type {boolean}
+         */
+        self.allowEdit = false;
 
         this.model = FeedService.editFeedModel;
         this.editModel = {};
@@ -144,8 +150,13 @@
                 //make it editable
                 self.editableSection = true;
             });
-        }
+        };
 
+        // Fetch the allowed actions
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
+                });
     };
 
     angular.module(MODULE_FEED_MGR).controller('FeedNifiPropertiesController', controller);

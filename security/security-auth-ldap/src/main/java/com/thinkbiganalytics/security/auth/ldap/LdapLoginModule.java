@@ -13,6 +13,8 @@ import javax.security.auth.callback.PasswordCallback;
 import javax.security.auth.login.AccountException;
 import javax.security.auth.login.CredentialException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -21,12 +23,15 @@ import org.springframework.security.ldap.authentication.LdapAuthenticator;
 import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
 
 import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
+import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
  *
  * @author Sean Felten
  */
 public class LdapLoginModule extends AbstractLoginModule {
+    
+    private static final Logger log = LoggerFactory.getLogger(LdapLoginModule.class);
     
     /** Option for the {@link LdapAuthenticator} used to authenticate via LDAP */
     public static final String AUTHENTICATOR = "authenticator";
@@ -63,15 +68,21 @@ public class LdapLoginModule extends AbstractLoginModule {
             throw new AccountException("No username provided for authentication");
         }
         
-        Principal userPrincipal = addNewUserPrincipal(nameCallback.getName());
+        Principal userPrincipal = new UsernamePrincipal(nameCallback.getName());
         String password = new String(passwordCallback.getPassword());
         UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(userPrincipal, password);
 
         try {
+            log.debug("Authenticating: {}", userPrincipal);
             DirContextOperations dirContext = this.authenticator.authenticate(authentication);
+            log.debug("Successfully Authenticated: {}", userPrincipal);
             
+            setUserPrincipal(userPrincipal);
+
             for (GrantedAuthority grant : this.authoritiesPopulator.getGrantedAuthorities(dirContext, nameCallback.getName())) {
                 String groupName = grant.getAuthority();
+
+                log.debug("Found group for {}: {}", userPrincipal, groupName);
                 
                 if (groupName != null) {
                     addNewGroupPrincipal(groupName);
@@ -89,8 +100,8 @@ public class LdapLoginModule extends AbstractLoginModule {
      */
     @Override
     protected boolean doCommit() throws Exception {
-        // TODO Auto-generated method stub
-        return false;
+        getSubject().getPrincipals().addAll(getPrincipals());
+        return true;
     }
 
     /* (non-Javadoc)
@@ -106,8 +117,8 @@ public class LdapLoginModule extends AbstractLoginModule {
      */
     @Override
     protected boolean doLogout() throws Exception {
-        // TODO Auto-generated method stub
-        return false;
+        getSubject().getPrincipals().removeAll(getPrincipals());
+        return true;
     }
 
 }

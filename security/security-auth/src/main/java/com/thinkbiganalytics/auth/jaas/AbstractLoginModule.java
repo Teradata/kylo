@@ -64,11 +64,13 @@ public abstract class AbstractLoginModule implements LoginModule {
             setLoginSucceeded(true);
             return active && isLoginSucceeded();
         } catch (LoginException e) {
+            log.debug("Login exception", e);
             setLoginSucceeded(false);
             throw e;
-        }catch (Exception e) {
+        } catch (Exception e) {
+            log.debug("Login exception", e);
             setLoginSucceeded(false);
-            throw new LoginException("Login failure: " + e.getMessage());
+            throw new LoginException("Login failure: " + (e.getMessage() == null ? e.toString() : e.getMessage()));
         }
     }
 
@@ -84,9 +86,11 @@ public abstract class AbstractLoginModule implements LoginModule {
                 setCommitSucceeded(true);
                 return active && isCommitSucceeded();
             } catch (LoginException e) {
+                log.debug("Login commit exception", e);
                 setCommitSucceeded(false);
                 throw e;
             }catch (Exception e) {
+                log.debug("Login commit exception", e);
                 setCommitSucceeded(false);
                 throw new LoginException("Login commit failure: " + e.getMessage());
             }
@@ -108,9 +112,11 @@ public abstract class AbstractLoginModule implements LoginModule {
                 
                 return active && isCommitSucceeded();
             } catch (LoginException e) {
+                log.debug("Login abort exception", e);
                 setLoginSucceeded(false);
                 throw e;
             }catch (Exception e) {
+                log.debug("Login abort exception", e);
                 setLoginSucceeded(false);
                 throw new LoginException("Login abort failure: " + e.getMessage());
             }
@@ -129,9 +135,11 @@ public abstract class AbstractLoginModule implements LoginModule {
             
             return active;
         } catch (LoginException e) {
+            log.debug("Logout exception", e);
             setLoginSucceeded(false);
             throw e;
         } catch (Exception e) {
+            log.debug("Logout exception", e);
             setLoginSucceeded(false);
             throw new LoginException("Login logout failure: " + e.getMessage());
         } finally {

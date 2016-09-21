@@ -16,9 +16,15 @@
         };
     }
 
-    var controller =  function($scope, $q, FeedService) {
+    var controller =  function($scope, $q, AccessControlService, FeedService) {
 
         var self = this;
+
+        /**
+         * Indicates if the feed definitions may be edited.
+         * @type {boolean}
+         */
+        self.allowEdit = false;
 
         this.model = FeedService.editFeedModel;
         this.editableSection = false;
@@ -76,9 +82,13 @@
                 //make it editable
                 self.editableSection = true;
             });
-        }
+        };
 
-
+        // Fetch the allowed actions
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
+                });
     };
 
 

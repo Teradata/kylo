@@ -5,10 +5,23 @@
      * @constructor
      * @param $scope the application model
      * @param $http the HTTP service
+     * @param {AccessControlService} AccessControlService the access control service
      * @param RestUrlService the Rest URL service
      */
-    function BusinessMetadataController($scope, $http, RestUrlService) {
+    function BusinessMetadataController($scope, $http, AccessControlService, RestUrlService) {
         var self = this;
+
+        /**
+         * Indicates if the category fields may be edited.
+         * @type {boolean}
+         */
+        self.allowCategoryEdit = false;
+
+        /**
+         * Indicates if the feed fields may be edited.
+         * @type {boolean}
+         */
+        self.allowFeedEdit = false;
 
         /**
          * Model for editable sections.
@@ -105,6 +118,13 @@
             self.model = response.data;
             self.loading = false;
         });
+
+        // Load the permissions
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    self.allowCategoryEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, actionSet.actions);
+                    self.allowFeedEdit = AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
+                });
     }
 
     // Register the controller

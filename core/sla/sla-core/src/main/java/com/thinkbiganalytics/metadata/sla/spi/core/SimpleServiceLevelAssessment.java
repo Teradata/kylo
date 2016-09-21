@@ -74,9 +74,15 @@ public class SimpleServiceLevelAssessment implements ServiceLevelAssessment {
         return this.sla;
     }
 
+
+    @Override
+    public String getServiceLevelAgreementId() {
+        return this.sla != null ? this.sla.getId().toString() : null;
+    }
+
     /* (non-Javadoc)
-     * @see com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment#getMessage()
-     */
+         * @see com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment#getMessage()
+         */
     @Override
     public String getMessage() {
         return this.message;

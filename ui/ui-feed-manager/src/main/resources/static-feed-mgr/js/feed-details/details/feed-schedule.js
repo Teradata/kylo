@@ -24,9 +24,15 @@
         };
     }
 
-    var controller = function ($scope, $mdDialog, FeedService) {
+    var controller = function ($scope, $mdDialog, AccessControlService, FeedService) {
 
         var self = this;
+
+        /**
+         * Indicates if the feed schedule may be edited.
+         * @type {boolean}
+         */
+        self.allowEdit = false;
 
         this.model = FeedService.editFeedModel;
         this.editModel = {};
@@ -202,7 +208,11 @@
                 });
         };
 
-
+        // Fetch the allowed actions
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
+                });
     };
 
 

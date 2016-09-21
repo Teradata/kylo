@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.server;
 
-import com.thinkbiganalytics.jobrepo.config.JobRepositoryJpaConfiguration;
+import com.thinkbiganalytics.metadata.config.OperationalMetadataConfig;
 import com.thinkbiganalytics.rest.SpringJerseyConfiguration;
 
 import org.springframework.beans.factory.config.PropertyOverrideConfigurer;
@@ -24,7 +24,7 @@ import java.util.concurrent.Executors;
 @SpringBootApplication
 @EnableAutoConfiguration(exclude = {VelocityAutoConfiguration.class})
 @EnableConfigurationProperties
-@Import({DatabaseConfiguration.class, JobRepositoryJpaConfiguration.class,SpringJerseyConfiguration.class})
+@Import({DatabaseConfiguration.class, OperationalMetadataConfig.class,SpringJerseyConfiguration.class})
 @ComponentScan("com.thinkbiganalytics") //FIX this
 public class ThinkbigServerApplication implements SchedulingConfigurer {
 

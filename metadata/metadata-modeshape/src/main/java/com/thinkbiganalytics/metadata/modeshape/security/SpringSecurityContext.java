@@ -2,7 +2,10 @@ package com.thinkbiganalytics.metadata.modeshape.security;
 
 import java.security.Principal;
 import java.security.acl.Group;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.modeshape.jcr.security.SecurityContext;
 import org.springframework.security.authentication.jaas.JaasGrantedAuthority;
@@ -16,9 +19,15 @@ import org.springframework.security.core.Authentication;
 public class SpringSecurityContext implements SecurityContext {
     
     private final Authentication authentication;
+    private final Set<Principal> principals;
 
     public SpringSecurityContext(Authentication auth) {
+        this(auth, Collections.emptySet());
+    }
+    
+    public SpringSecurityContext(Authentication auth, Collection<Principal> additionalPrincipals) {
         this.authentication = auth;
+        this.principals = Collections.unmodifiableSet(new HashSet<>(additionalPrincipals));
     }
 
     @Override
@@ -33,7 +42,7 @@ public class SpringSecurityContext implements SecurityContext {
 
     @Override
     public boolean hasRole(String roleName) {
-        return this.authentication.getAuthorities().stream().anyMatch(grant -> {
+        boolean matched = this.authentication.getAuthorities().stream().anyMatch(grant -> {
             if (grant instanceof JaasGrantedAuthority) {
                 JaasGrantedAuthority jaasGrant = (JaasGrantedAuthority) grant;
 
@@ -46,6 +55,12 @@ public class SpringSecurityContext implements SecurityContext {
                 }
             }
         });
+        
+        if (matched) {
+            return true;
+        } else {
+            return this.principals.stream().anyMatch(principal -> matches(roleName, principal));
+        }
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.thinkbiganalytics.nifi.rest.model.flow;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -54,12 +55,26 @@ public class NifiFlowDeserializer {
 
             Map<String, List<NifiFlowProcessor>> failureConnectionProcessors = new HashMap<>();
 
-            if (group.getFailureConnectionIdToSourceProcessorMap() != null) {
-                group.getFailureConnectionIdToSourceProcessorMap().entrySet().forEach(connectionIdProcessorIdEntry -> {
-                    List<NifiFlowProcessor> populatedProcessors = connectionIdProcessorIdEntry.getValue().stream().map(processor -> processorMap.get(processor.getId())).collect(Collectors.toList());
-                    failureConnectionProcessors.put(connectionIdProcessorIdEntry.getKey(), populatedProcessors);
+            if (group.getFailureConnectionIdToSourceProcessorMap() != null && !group.getFailureConnectionIdToSourceProcessorMap().isEmpty()) {
+                log.info("flow has failure connections.. populate failure connections for for {} ({})", group.getName(), group.getId());
+                for (Map.Entry<String, List<NifiFlowProcessor>> entry : group.getFailureConnectionIdToSourceProcessorMap().entrySet()) {
+                    if (entry.getValue() != null && !entry.getValue().isEmpty()) {
+                        List<NifiFlowProcessor>
+                            populatedProcessors = new ArrayList<>();
 
-                });
+                        List<NifiFlowProcessor> connectionProcessors = entry.getValue();
+                        if (connectionProcessors != null && !connectionProcessors.isEmpty()) {
+                            for (NifiFlowProcessor flowProcessor : connectionProcessors) {
+                                if (flowProcessor != null) {
+                                    NifiFlowProcessor populatedProcessor = processorMap.get(flowProcessor.getId());
+                                    populatedProcessors.add(populatedProcessor);
+                                }
+                            }
+                        }
+                        failureConnectionProcessors.put(entry.getKey(), populatedProcessors);
+                    }
+                }
+
             }
             group.setFailureConnectionIdToSourceProcessorMap(failureConnectionProcessors);
 

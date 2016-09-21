@@ -1,12 +1,14 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.feedmgr.config;
 
+import javax.annotation.Priority;
 import javax.inject.Inject;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
@@ -24,12 +26,13 @@ public class FeedManagerSecurityConfiguration {
     public PostMetadataConfigAction feedManagerSecurityConfigAction() {
         return new ConfigureAuthorizationAction();
     }
-    
+
+//    @Order(PostMetadataConfigAction.DEFAULT_ORDER)
     public class ConfigureAuthorizationAction implements PostMetadataConfigAction {
 
         @Inject
         private MetadataAccess metadata;
-        
+
         @Inject
         private ModuleActionsBuilder builder;
 
@@ -48,6 +51,14 @@ public class FeedManagerSecurityConfiguration {
                                         .subAction(FeedsAccessControl.EDIT_FEEDS)
                                             .title("Edit Feeds")
                                             .description("Allows creating and editing new feeds")
+                                            .add()
+                                        .subAction(FeedsAccessControl.IMPORT_FEEDS)
+                                            .title("Import Feeds")
+                                            .description("Allows importing of previously exported feeds")
+                                            .add()
+                                        .subAction(FeedsAccessControl.EXPORT_FEEDS)
+                                            .title("Export Feeds")
+                                            .description("Allows exporting feeds definitions")
                                             .add()
                                         .subAction(FeedsAccessControl.ADMIN_FEEDS)
                                             .title("Administer Feeds")
@@ -72,6 +83,14 @@ public class FeedManagerSecurityConfiguration {
                                         .subAction(FeedsAccessControl.EDIT_TEMPLATES)
                                             .title("Edit Templates")
                                             .description("Allows creating and editing new feed templates")
+                                            .add()
+                                        .subAction(FeedsAccessControl.IMPORT_TEMPLATES)
+                                            .title("Import Templates")
+                                            .description("Allows importing of previously exported templates")
+                                            .add()
+                                        .subAction(FeedsAccessControl.EXPORT_TEMPLATES)
+                                            .title("Export Templates")
+                                            .description("Allows exporting template definitions")
                                             .add()
                                         .subAction(FeedsAccessControl.ADMIN_TEMPLATES)
                                             .title("Administer Templates")

@@ -1,15 +1,5 @@
 package com.thinkbiganalytics.feedmgr.config;
 
-import java.security.Principal;
-
-import javax.jcr.Credentials;
-import javax.jcr.Repository;
-
-import org.mockito.Mockito;
-import org.modeshape.jcr.api.txn.TransactionManagerLookup;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.nifi.SpringEnvironmentProperties;
 import com.thinkbiganalytics.feedmgr.service.category.FeedManagerCategoryService;
@@ -36,6 +26,16 @@ import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.security.AccessController;
+
+import org.mockito.Mockito;
+import org.modeshape.jcr.api.txn.TransactionManagerLookup;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+
+import java.security.Principal;
+
+import javax.jcr.Credentials;
+import javax.jcr.Repository;
 
 /**
  * Created by sr186054 on 7/21/16.
@@ -69,6 +69,11 @@ public class TestSpringConfiguration {
             @Override
             public void scheduleServiceLevelAgreement(ServiceLevelAgreement sla) {
 
+            }
+
+            @Override
+            public boolean unscheduleServiceLevelAgreement(ServiceLevelAgreement.ID slaId) {
+                return false;
             }
 
             @Override

@@ -14,18 +14,19 @@ import com.thinkbiganalytics.feedmgr.service.UserPropertyTransform;
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
-import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
@@ -35,6 +36,7 @@ import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.rest.model.LabelValue;
 import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -78,12 +80,17 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Inject
     ServiceLevelAgreementProvider slaProvider;
 
-    @Inject
-    FeedServiceLevelAgreementProvider feedServiceLevelAgreementProvider;
 
     /** Operations manager feed repository */
     @Inject
     FeedRepository feedRepository;
+
+
+    @Inject
+    OpsManagerFeedProvider opsManagerFeedProvider;
+
+    @Inject
+    OperationalMetadataAccess operationalMetadataAccess;
 
     /** Metadata event service */
     @Inject
@@ -250,6 +257,12 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             }
             domainFeed = feedManagerFeedProvider.update(domainFeed);
 
+            //call out to operations to make the connection to modeshape for the feeds
+            final String domainId = domainFeed.getId().toString();
+            final String feedName = FeedNameUtil.fullName(domainFeed.getCategory().getName(), domainFeed.getName());
+            //sync the feed information to ops manager
+            operationalMetadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName));
+
             // Build preconditions
             List<PreconditionRule> preconditions = feed.getSchedule().getPreconditions();
             if (preconditions != null) {
@@ -280,6 +293,10 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(feedId));
             feedRepository.deleteFeed(feed.getCategory().getName(), feed.getName());
             feedProvider.deleteFeed(feed.getId());
+            operationalMetadataAccess.commit(() -> {
+                opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feedId));
+                return null;
+            });
             return true;
         });
     }
@@ -408,7 +425,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     @Override
     public void setUserFields(@Nonnull final Set<UserField> userFields) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
 
         feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
     }

@@ -44,6 +44,11 @@ public class TestJira {
             }
 
             @Override
+            public String getServiceLevelAgreementId() {
+                return null;
+            }
+
+            @Override
             public DateTime getTime() {
                 return new DateTime();
             }

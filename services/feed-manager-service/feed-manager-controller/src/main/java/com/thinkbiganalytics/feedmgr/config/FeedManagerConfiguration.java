@@ -20,6 +20,7 @@ import com.thinkbiganalytics.feedmgr.service.template.DefaultFeedManagerTemplate
 import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService;
 import com.thinkbiganalytics.feedmgr.service.template.TemplateModelTransform;
 import com.thinkbiganalytics.feedmgr.sla.ServiceLevelAgreementService;
+import com.thinkbiganalytics.metadata.core.feed.FeedPreconditionService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -148,4 +149,10 @@ public class FeedManagerConfiguration {
     public ElasticSearch elasticSearch(){
         return new ElasticSearch(elasticSearchClientConfig());
     }
+
+    @Bean
+    public FeedPreconditionService feedPreconditionService() {
+        return new FeedPreconditionService();
+    }
+
 }

@@ -1,0 +1,186 @@
+package com.thinkbiganalytics.metadata.jpa.sla;
+
+import com.google.common.collect.ComparisonChain;
+import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
+import com.thinkbiganalytics.jpa.JsonAttributeConverter;
+import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
+import com.thinkbiganalytics.metadata.sla.api.Metric;
+import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
+import com.thinkbiganalytics.metadata.sla.api.ObligationAssessment;
+
+import org.hibernate.annotations.Parameter;
+import org.hibernate.annotations.Type;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.UUID;
+
+import javax.persistence.Column;
+import javax.persistence.Convert;
+import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
+import javax.persistence.Transient;
+
+/**
+ * Created by sr186054 on 9/14/16.
+ */
+@Entity
+@Table(name = "SLA_METRIC_ASSESSMENT")
+public class JpaMetricAssessment<D extends Serializable> extends AbstractAuditedEntity implements MetricAssessment<D> {
+
+
+    @Transient
+    private Comparator<MetricAssessment<D>> comparator = new DefaultComparator();
+
+    @Id
+    @GeneratedValue
+    @Column(name = "id", columnDefinition = "binary(16)")
+    private UUID id;
+
+    @Transient
+    private Metric metric;
+
+    @Column(name = "MESSAGE")
+    private String message;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "RESULT")
+    private AssessmentResult result;
+
+    @ManyToOne(optional = true, targetEntity = JpaObligationAssessment.class)
+    @JoinColumn(name = "SLA_OBLIGATION_ASSESSMENT_ID", nullable = true, insertable = true, updatable = true)
+    private ObligationAssessment obligationAssessment;
+
+    @Convert(converter = ComparablesAttributeConverter.class)
+    @Column(name = "COMPARABLES")
+    private List<Comparable<? extends Serializable>> comparables = Collections.emptyList();
+
+    @Column(name = "DATA")
+    private String serializedData;
+
+    @Column(name = "METRIC_TYPE")
+    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "255")})
+    private String metricType;
+
+
+    public static class ComparablesAttributeConverter extends JsonAttributeConverter<List<Comparable<? extends Serializable>>> {
+
+    }
+
+    public JpaMetricAssessment() {
+
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public Metric getMetric() {
+        return metric;
+    }
+
+    public void setMetric(Metric metric) {
+        this.metric = metric;
+        if (metric != null) {
+            this.metricType = metric.getClass().getName();
+        }
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
+    }
+
+    public AssessmentResult getResult() {
+        return result;
+    }
+
+    public void setResult(AssessmentResult result) {
+        this.result = result;
+    }
+
+    public ObligationAssessment getObligationAssessment() {
+        return obligationAssessment;
+    }
+
+    public void setObligationAssessment(ObligationAssessment obligationAssessment) {
+        this.obligationAssessment = obligationAssessment;
+    }
+
+    public String getSerializedData() {
+        return serializedData;
+    }
+
+    public void setData(D data) {
+        if (data != null) {
+            JsonAttributeConverter c = new JsonAttributeConverter();
+            String stringData = c.convertToDatabaseColumn(data);
+            this.serializedData = stringData;
+        } else {
+            this.serializedData = null;
+        }
+    }
+
+    @Override
+    public D getData() {
+        if (this.serializedData != null) {
+            JsonAttributeConverter c = new JsonAttributeConverter();
+            return (D) c.convertToEntityAttribute(this.serializedData);
+        } else {
+            return null;
+        }
+    }
+
+
+    protected void setComparator(Comparator<MetricAssessment<D>> comparator) {
+        this.comparator = comparator;
+    }
+
+    protected void setComparables(List<Comparable<? extends Serializable>> comparables) {
+        this.comparables = comparables;
+    }
+
+
+    @Override
+    public int compareTo(MetricAssessment<D> metric) {
+        return this.comparator.compare(this, metric);
+    }
+
+    protected class DefaultComparator implements Comparator<MetricAssessment<D>> {
+
+        @Override
+        public int compare(MetricAssessment<D> o1, MetricAssessment<D> o2) {
+            ComparisonChain chain = ComparisonChain
+                .start()
+                .compare(o1.getResult(), o2.getResult());
+
+            if (o1 instanceof JpaMetricAssessment<?> && o2 instanceof JpaMetricAssessment<?>) {
+                JpaMetricAssessment<?> s1 = (JpaMetricAssessment<?>) o1;
+                JpaMetricAssessment<?> s2 = (JpaMetricAssessment<?>) o2;
+
+                for (int idx = 0; idx < s1.comparables.size(); idx++) {
+                    Comparable comparables1 = s1.comparables.get(idx);
+                    Comparable comparables2 = s2.comparables.get(idx);
+                    chain = chain.compare(comparables1, comparables2);
+                }
+            }
+
+            return chain.result();
+        }
+    }
+}

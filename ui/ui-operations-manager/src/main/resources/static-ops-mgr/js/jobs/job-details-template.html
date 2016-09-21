@@ -114,25 +114,25 @@
         <header-section transclude-to="head" flex layout>
             <div style="white-space:nowrap" class="card-title">Job Details</div>
             <span flex></span>
-            <md-button class="icon-btn" ng-click="vm.showJobDialog()" >
+            <md-button class="icon-btn" ng-click="vm.showJobDialog()" ng-if="vm.allowAdmin">
                 <ng-md-icon md-icon icon="control_point_duplicate" class="accent-color-2"></ng-md-icon>
             </md-button>
         </header-section>
         <body-section transclude-to="body">
             <md-content flex md-scroll-y>
                 <div class="card-content">
-                    <md-button class="border-btn action-btn" ng-if="vm.jobTabData['JOB'].status =='FAILED'"
+                    <md-button class="border-btn action-btn" ng-if="vm.jobTabData['JOB'].status =='FAILED' && vm.allowAdmin"
                                ng-click="vm.restartJob($event)">RESTART
                     </md-button>
                     <md-button class="border-btn action-btn"
-                               ng-if="vm.jobTabData['JOB'].status =='STARTED' || vm.jobTabData['JOB'].status =='STARTING'"
+                               ng-if="(vm.jobTabData['JOB'].status =='STARTED' || vm.jobTabData['JOB'].status =='STARTING') && vm.allowAdmin"
                                ng-click="vm.stopJob($event)">STOP
                     </md-button>
                     <md-button class="border-btn action-btn"
-                               ng-if="vm.jobTabData['JOB'].status !='COMPLETED' && vm.jobTabData['JOB'].status !='FAILED'"
+                               ng-if="vm.jobTabData['JOB'].status !='COMPLETED' && vm.jobTabData['JOB'].status !='FAILED' && vm.allowAdmin"
                                ng-click="vm.failJob($event)">FAIL
                     </md-button>
-                    <md-button class="border-btn action-btn" ng-if="vm.jobTabData['JOB'].status =='FAILED'"
+                    <md-button class="border-btn action-btn" ng-if="vm.jobTabData['JOB'].status =='FAILED' && vm.allowAdmin"
                                ng-click="vm.abandonJob($event)">ABANDON
                     </md-button>
                 </div>

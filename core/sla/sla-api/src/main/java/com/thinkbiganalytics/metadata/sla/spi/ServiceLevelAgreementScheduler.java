@@ -11,4 +11,6 @@ public interface ServiceLevelAgreementScheduler {
 
     boolean unscheduleServiceLevelAgreement(ServiceLevelAgreement sla);
 
+    boolean unscheduleServiceLevelAgreement(ServiceLevelAgreement.ID slaId);
+
 }

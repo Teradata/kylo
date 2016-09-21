@@ -12,7 +12,6 @@
  *             template
  *          "sla"
  *              sla*
- *              slaAssessment*
  *          "extensions"
  *              "types"
  *                  typeDescriptor
@@ -74,9 +73,6 @@
 [tba:templatesFolder] > nt:folder
 
 [tba:slaFolder] > nt:folder
-    + slaAssessments (tba:slaAssessmentsFolder) = tba:slaAssessmentsFolder autocreated mandatory
-
-[tba:slaAssessmentsFolder] > nt:folder
 
 [tba:hadoopSecurityGroupFolder] > nt:folder
 
@@ -168,7 +164,6 @@
 [tba:feedPrecondition] > nt:hierarchyNode, mix:lastModified
     - tba:slaRef (REFERENCE)
     + tba:sla (tba:sla)
-    + tba:lastAssessment (tba:serviceLevelAssessment)
     // TODO: when to check conditions (schedule, event, ...)
 
 [tba:feedConnection] > nt:hierarchyNode, mix:referenceable
@@ -205,7 +200,6 @@
     - tba:defaultGroup (REFERENCE)
     + tba:groups (tba:obligationGroup) sns
     + tba:slaChecks (tba:slaCheck) sns
-    + tba:serviceLevelAssessments (tba:serviceLevelAssessment) sns
 
 [tba:obligationGroup] > nt:hierarchyNode
     - tba:condition (STRING) = 'REQUIRED' mandatory
@@ -225,19 +219,22 @@
 [tba:slaActionConfiguration] > tba:extensibleEntity, mix:title
     + tba:json (tba:genericJson) mandatory
 
-[tba:serviceLevelAssessment] > nt:hierarchyNode, mix:referenceable
-    - tba:message (STRING) 
-    - tba:result (STRING) mandatory
-    + tba:obligationAssessments (tba:obligationAssessment) sns
-
-[tba:obligationAssessment] > nt:hierarchyNode, mix:referenceable
-    - tba:obligation (WEAKREFERENCE) mandatory
-    - tba:message (STRING) 
-    - tba:result (STRING) mandatory
-    + tba:metricAssessments (tba:metricAssessment) sns
-
-[tba:metricAssessment] > nt:hierarchyNode, mix:referenceable
-    - tba:metric (WEAKREFERENCE) mandatory
-    - tba:message (STRING) 
-    - tba:result (STRING) mandatory
-    + tba:resource (nt:resource) 
+/**
+* [tba:serviceLevelAssessment] > nt:hierarchyNode, mix:referenceable
+*     - tba:message (STRING)
+*    - tba:result (STRING) mandatory
+*     + tba:obligationAssessments (tba:obligationAssessment) sns
+*
+* [tba:obligationAssessment] > nt:hierarchyNode, mix:referenceable
+*    - tba:obligation (WEAKREFERENCE) mandatory
+*     - tba:message (STRING)
+*     - tba:result (STRING) mandatory
+*     + tba:metricAssessments (tba:metricAssessment) sns
+*
+* [tba:metricAssessment] > nt:hierarchyNode, mix:referenceable
+*     - tba:metric (WEAKREFERENCE) mandatory
+*     - tba:message (STRING)
+*     - tba:result (STRING) mandatory
+*     + tba:resource (nt:resource)
+*
+**/

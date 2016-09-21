@@ -53,18 +53,20 @@ app.config(function($mdThemingProvider, $mdIconProvider) {
     //.iconSet...
 });
 app.config(function($stateProvider,$urlRouterProvider) {
-    $urlRouterProvider
-        .otherwise('/');
-    $stateProvider.state('home', {
-        url:'/',
-        views:{
-            'content': {
-                templateUrl: 'js/feeds/feeds-table.html'
+    // Redirect to /home for any unmatched url
+    $urlRouterProvider.otherwise("/");
+
+    // Set url states
+    $stateProvider.state("home", {
+        url: "/",
+        views: {
+            "content": {
+                templateUrl: "js/main/home.html"
             }
         },
         data:{
-            breadcrumbRoot:true,
-            displayName:'Feeds'
+            breadcrumbRoot: true,
+            displayName: "Home"
         }
     }).state('registered-templates',{
         url:'/registered-templates',

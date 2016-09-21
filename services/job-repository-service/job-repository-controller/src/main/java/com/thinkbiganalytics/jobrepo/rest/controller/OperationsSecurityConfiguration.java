@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.jobrepo.rest.controller;
 
@@ -24,12 +24,12 @@ public class OperationsSecurityConfiguration {
     public PostMetadataConfigAction operationsSecurityConfigAction() {
         return new ConfigureAuthorizationAction();
     }
-    
+
     public class ConfigureAuthorizationAction implements PostMetadataConfigAction {
 
         @Inject
         private MetadataAccess metadata;
-        
+
         @Inject
         private ModuleActionsBuilder builder;
 
@@ -43,8 +43,8 @@ public class OperationsSecurityConfiguration {
                                     .title("Access Operational information")
                                     .description("Allows access to operational information like active feeds and execution history, etc.")
                                     .subAction(OperationsAccessControl.ADMIN_OPS)
-                                        .title("Access Feeds")
-                                        .description("Allows access to feeds")
+                                        .title("Administer Operations")
+                                        .description("Allows administration of operations, such as stopping and abandoning them.")
                                         .add()
                                     .add()
                                 .add()

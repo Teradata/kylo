@@ -28,6 +28,12 @@
     </dependency>
 
     <dependency>
+      <groupId>com.thinkbiganalytics.metadata</groupId>
+      <artifactId>thinkbig-metadata-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
+    <dependency>
       <artifactId>thinkbig-feed-manager-rest-model</artifactId>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <version>${project.version}</version>

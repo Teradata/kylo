@@ -79,7 +79,6 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
 
 
     @Override
-    //TODO FIX SQL
     public List<? extends FeedManagerFeed> findByTemplateId(FeedManagerTemplate.ID templateId) {
         String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e WHERE e." + EntityUtil.asQueryProperty(JcrFeedManagerFeed.TEMPLATE) + " = $id";
         Map<String, String> bindParams = new HashMap<>();
@@ -88,7 +87,6 @@ public class JcrFeedManagerFeedProvider extends BaseJcrProvider<FeedManagerFeed,
     }
 
     @Override
-    //TODO FIX SQL
     public List<? extends FeedManagerFeed> findByCategoryId(FeedManagerCategory.ID categoryId) {
 
         String query = "SELECT * from " + EntityUtil.asQueryProperty(JcrFeed.NODE_TYPE) + " as e "

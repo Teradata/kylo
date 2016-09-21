@@ -11,6 +11,7 @@ import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
 import org.springframework.security.ldap.authentication.BindAuthenticator;
@@ -23,10 +24,12 @@ import com.thinkbiganalytics.auth.jaas.LoginConfigurationBuilder;
 import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 
 /**
- *
+ * LDAP login configuration.
+ * 
  * @author Sean Felten
  */
 @Configuration
+@Profile("auth-ldap")
 public class LdapAuthConfig {
     
     @Bean(name = "servicesLdapLoginConfiguration")
@@ -59,7 +62,7 @@ public class LdapAuthConfig {
 
 
     @Bean
-    @ConfigurationProperties("security.auth.ldap.context")
+    @ConfigurationProperties("security.auth.ldap.server")
     public LdapContextSourceFactory ldapContextSource() {
         return new LdapContextSourceFactory();
     }
@@ -72,10 +75,9 @@ public class LdapAuthConfig {
     
     @Bean
     @ConfigurationProperties("security.auth.ldap.groups")
-    protected LdapAuthoritiesPopulatorFactory ldapAuthoritiesPopulator(LdapContextSource context) {
+    public LdapAuthoritiesPopulatorFactory ldapAuthoritiesPopulator(LdapContextSource context) {
         return new LdapAuthoritiesPopulatorFactory(context);
     }
-    
     
     
     public static class LdapContextSourceFactory extends AbstractFactoryBean<LdapContextSource> {
@@ -104,7 +106,12 @@ public class LdapAuthConfig {
         @Override
         protected LdapContextSource createInstance() throws Exception {
             DefaultSpringSecurityContextSource cxt = new DefaultSpringSecurityContextSource(this.uri.toASCIIString());
+//            LdapContextSource cxt = new LdapContextSource();
+//            cxt.setUrl(this.uri.toASCIIString() );
             cxt.setUserDn(this.userDn);
+            cxt.setPassword(new String(this.password));
+            cxt.setCacheEnvironmentProperties(false);
+            cxt.afterPropertiesSet();
             return cxt;
         }
     }
@@ -164,6 +171,8 @@ public class LdapAuthConfig {
         protected LdapAuthoritiesPopulator createInstance() throws Exception {
             DefaultLdapAuthoritiesPopulator authPopulator = new DefaultLdapAuthoritiesPopulator(this.contextSource, this.groupsOu);
             authPopulator.setGroupRoleAttribute(this.groupRoleAttribute);
+            authPopulator.setRolePrefix("");
+            authPopulator.setConvertToUpperCase(false);
             return authPopulator;
         }
     }

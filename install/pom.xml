@@ -159,6 +159,12 @@
                   </location>
                 </source>
                 <source>
+                  <location>../services/service-app/target/classes</location>
+                  <includes>
+                    <include>version.txt</include>
+                  </includes>
+                </source>
+                <source>
                   <location>
                     ../services/service-app/src/main/resources/application-context.xml
                   </location>

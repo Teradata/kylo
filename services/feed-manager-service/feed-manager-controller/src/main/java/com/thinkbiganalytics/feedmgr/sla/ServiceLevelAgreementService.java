@@ -8,7 +8,6 @@ import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.api.sla.FeedServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
-import com.thinkbiganalytics.metadata.rest.Model;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.rest.model.sla.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
@@ -68,7 +67,7 @@ public class ServiceLevelAgreementService {
 
             List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findAllAgreements();
             if (agreements != null) {
-                return Model.transformFeedServiceLevelAgreements(agreements);
+                return ServiceLevelAgreementModelTransform.transformFeedServiceLevelAgreements(agreements);
             }
             return null;
 
@@ -82,7 +81,7 @@ public class ServiceLevelAgreementService {
             Feed.ID id = feedProvider.resolveFeed(feedId);
             List<FeedServiceLevelAgreement> agreements = feedSlaProvider.findFeedServiceLevelAgreements(id);
             if (agreements != null) {
-                return Model.transformFeedServiceLevelAgreements(agreements);
+                return ServiceLevelAgreementModelTransform.transformFeedServiceLevelAgreements(agreements);
             }
             return null;
 
@@ -97,7 +96,7 @@ public class ServiceLevelAgreementService {
 
             FeedServiceLevelAgreement agreement = feedSlaProvider.findAgreement(slaProvider.resolve(slaId));
             if (agreement != null) {
-                com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement modelSla = Model.toModel(agreement, true);
+                com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement modelSla = ServiceLevelAgreementModelTransform.toModel(agreement, true);
                 ServiceLevelAgreementMetricTransformerHelper transformer = new ServiceLevelAgreementMetricTransformerHelper();
                 ServiceLevelAgreementGroup serviceLevelAgreementGroup = transformer.toServiceLevelAgreementGroup(modelSla);
                 feedManagerFeedService
@@ -113,8 +112,26 @@ public class ServiceLevelAgreementService {
         });
     }
 
-    public boolean removeAgreement(String id) {
-        return metadataAccess.commit(() -> slaProvider.removeAgreement(slaProvider.resolve(id)));
+    public boolean removeAndUnscheduleAgreement(String id) {
+        return metadataAccess.commit(() -> {
+            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement.ID slaId = slaProvider.resolve(id);
+            slaProvider.removeAgreement(slaId);
+            serviceLevelAgreementScheduler.unscheduleServiceLevelAgreement(slaId);
+            return true;
+        });
+
+    }
+
+    public boolean removeAllAgreements() {
+        return metadataAccess.commit(() -> {
+            List<com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement> agreements = slaProvider.getAgreements();
+            if (agreements != null) {
+                for (com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement agreement : agreements) {
+                    slaProvider.removeAgreement(agreement.getId());
+                }
+            }
+            return true;
+        });
 
     }
 
@@ -129,12 +146,12 @@ public class ServiceLevelAgreementService {
     }
 
 
-    public ServiceLevelAgreement saveSla(ServiceLevelAgreementGroup serviceLevelAgreement) {
-        return saveSla(serviceLevelAgreement, null);
+    public ServiceLevelAgreement saveAndScheduleSla(ServiceLevelAgreementGroup serviceLevelAgreement) {
+        return saveAndScheduleSla(serviceLevelAgreement, null);
     }
 
 
-    private ServiceLevelAgreement saveSla(ServiceLevelAgreementGroup serviceLevelAgreement, FeedMetadata feed) {
+    private ServiceLevelAgreement saveAndScheduleSla(ServiceLevelAgreementGroup serviceLevelAgreement, FeedMetadata feed) {
         return metadataAccess.commit(() -> {
 
                 if (serviceLevelAgreement != null) {
@@ -195,10 +212,9 @@ public class ServiceLevelAgreementService {
                     }
                     //relate them
                     feedSlaProvider.relateFeeds(savedSla, slaFeeds);
-                    com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement restModel = Model.toModel(savedSla, slaFeeds, true);
-
-
-
+                    com.thinkbiganalytics.metadata.rest.model.sla.FeedServiceLevelAgreement restModel = ServiceLevelAgreementModelTransform.toModel(savedSla, slaFeeds, true);
+                    //schedule it
+                    serviceLevelAgreementScheduler.scheduleServiceLevelAgreement(savedSla);
                     return restModel;
 
                 }
@@ -210,7 +226,7 @@ public class ServiceLevelAgreementService {
 
     }
 
-    public ServiceLevelAgreement saveFeedSla(ServiceLevelAgreementGroup serviceLevelAgreement, String feedId) {
+    public ServiceLevelAgreement saveAndScheduleFeedSla(ServiceLevelAgreementGroup serviceLevelAgreement, String feedId) {
 
         return metadataAccess.commit(() -> {
             FeedMetadata feed = null;
@@ -219,7 +235,7 @@ public class ServiceLevelAgreementService {
             }
             if (feed != null) {
 
-                ServiceLevelAgreement sla = saveSla(serviceLevelAgreement, feed);
+                ServiceLevelAgreement sla = saveAndScheduleSla(serviceLevelAgreement, feed);
 
                 return sla;
             } else {

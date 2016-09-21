@@ -1,15 +1,15 @@
 package com.thinkbiganalytics.jobrepo.nifi.service;
 
 
-import com.thinkbiganalytics.jobrepo.config.OperationalMetadataAccess;
-import com.thinkbiganalytics.jobrepo.jpa.ExecutionConstants;
-import com.thinkbiganalytics.jobrepo.jpa.NifiJobExecutionProvider;
-import com.thinkbiganalytics.jobrepo.jpa.model.NifiJobExecution;
-import com.thinkbiganalytics.jobrepo.jpa.model.NifiStepExecution;
-import com.thinkbiganalytics.jobrepo.nifi.support.DateTimeUtil;
+import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.query.model.ExecutedJob;
 import com.thinkbiganalytics.jobrepo.service.AbstractJobService;
 import com.thinkbiganalytics.jobrepo.service.JobExecutionException;
+import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
+import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
+import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
+import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
@@ -34,7 +34,7 @@ public class NifiJobService extends AbstractJobService {
     private OperationalMetadataAccess operationalMetadataAccess;
 
     @Autowired
-    private NifiJobExecutionProvider nifiJobExecutionProvider;
+    private BatchJobExecutionProvider nifiJobExecutionProvider;
 
     @SuppressWarnings("SpringJavaAutowiringInspection")
     @Inject
@@ -63,12 +63,12 @@ public class NifiJobService extends AbstractJobService {
     @Override
     public void abandonJobExecution(Long executionId) throws JobExecutionException {
         operationalMetadataAccess.commit(() -> {
-            NifiJobExecution execution = this.nifiJobExecutionProvider.findByJobExecutionId(executionId);
+            BatchJobExecution execution = this.nifiJobExecutionProvider.findByJobExecutionId(executionId);
             if (execution != null) {
                 if (execution.getStartTime() == null) {
                     execution.setStartTime(DateTimeUtil.getNowUTCTime());
                 }
-                execution.setStatus(NifiJobExecution.JobStatus.ABANDONED);
+                execution.setStatus(BatchJobExecution.JobStatus.ABANDONED);
                 if (execution.getEndTime() == null) {
                     execution.setEndTime(DateTimeUtil.getNowUTCTime());
                 }
@@ -84,18 +84,18 @@ public class NifiJobService extends AbstractJobService {
     public void failJobExecution(Long executionId) {
         operationalMetadataAccess.commit(() -> {
 
-            NifiJobExecution execution = this.nifiJobExecutionProvider.findByJobExecutionId(executionId);
+            BatchJobExecution execution = this.nifiJobExecutionProvider.findByJobExecutionId(executionId);
             if (execution != null && !execution.isFailed()) {
-                for (NifiStepExecution step : execution.getStepExecutions()) {
+                for (BatchStepExecution step : execution.getStepExecutions()) {
                     if (!step.isFinished()) {
-                        step.setStatus(NifiStepExecution.StepStatus.FAILED);
+                        step.setStatus(BatchStepExecution.StepStatus.FAILED);
                         step.setExitCode(ExecutionConstants.ExitCode.FAILED);
                     }
                 }
                 if (execution.getStartTime() == null) {
                     execution.setStartTime(DateTimeUtil.getNowUTCTime());
                 }
-                execution.setStatus(NifiJobExecution.JobStatus.FAILED);
+                execution.setStatus(BatchJobExecution.JobStatus.FAILED);
                 if (execution.getEndTime() == null) {
                     execution.setEndTime(DateTimeUtil.getNowUTCTime());
                 }

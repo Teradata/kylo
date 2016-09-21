@@ -3,7 +3,7 @@
  */
 (function() {
     var controller = function($scope, $http, $location, $window, $mdSidenav, $mdMedia, $mdBottomSheet, $log, $q, $element, $rootScope, RestUrlService, StateService, ElasticSearchService,
-                              SideNavService, ConfigurationService) {
+                              SideNavService, ConfigurationService, AccessControlService) {
         var self = this;
         self.toggleSideNavList = toggleSideNavList;
         self.menu = [];
@@ -30,13 +30,23 @@
             }
         };
 
-        function buildSideNavMenu() {
+        function buildSideNavMenu(allowed) {
             var menu = [];
-            menu.push({sref: "feeds", icon: "link", text: "Feeds", defaultActive: false, fullscreen: false});
-            menu.push({sref: "categories", icon: "star", text: "Categories", defaultActive: false, fullscreen: false});
-            menu.push({sref: "tables", icon: "layers", text: "Tables", defaultActive: false, fullscreen: false});
-            menu.push({sref: "service-level-agreements", icon: "label", text: "SLA", defaultActive: false, fullscreen: false});
-            menu.push({sref: "visual-query", icon: "border_color", text: "Visual Query", defaultActive: false, fullscreen: true});
+            if (AccessControlService.hasAction(AccessControlService.FEEDS_ACCESS, allowed)) {
+                menu.push({sref: "feeds", icon: "link", text: "Feeds", defaultActive: false, fullscreen: false});
+            }
+            if (AccessControlService.hasAction(AccessControlService.CATEGORIES_ACCESS, allowed)) {
+                menu.push({sref: "categories", icon: "star", text: "Categories", defaultActive: false, fullscreen: false});
+            }
+            if (AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, allowed)) {
+                menu.push({sref: "tables", icon: "layers", text: "Tables", defaultActive: false, fullscreen: false});
+            }
+            if (AccessControlService.hasAction(AccessControlService.FEEDS_ACCESS, allowed)) {
+                menu.push({sref: "service-level-agreements", icon: "label", text: "SLA", defaultActive: false, fullscreen: false});
+            }
+            if (AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, allowed)) {
+                menu.push({sref: "visual-query", icon: "border_color", text: "Visual Query", defaultActive: false, fullscreen: true});
+            }
             self.selectedMenuItem = menu[0];
             self.menu = menu;
         }
@@ -57,12 +67,20 @@
             return ($mdMedia('gt-md') && SideNavService.isLockOpen)
         };
 
-        function buildAdminMenu() {
+        function buildAdminMenu(allowed) {
             var menu = [];
-            menu.push({sref: "business-metadata", icon: "business", text: "Business Metadata", defaultActive: false});
-            menu.push({sref: "groups", icon: "group", text: "Groups", defaultActive: false});
-            menu.push({sref: "registered-templates", icon: "folder_special", text: "Templates", defaultActive: false});
-            menu.push({sref: "users", icon: "account_box", text: "Users", defaultActive: false});
+            if (AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, allowed) || AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, allowed)) {
+                menu.push({sref: "business-metadata", icon: "business", text: "Business Metadata", defaultActive: false});
+            }
+            if (AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, allowed)) {
+                menu.push({sref: "groups", icon: "group", text: "Groups", defaultActive: false});
+            }
+            if (AccessControlService.hasAction(AccessControlService.TEMPLATES_ACCESS, allowed)) {
+                menu.push({sref: "registered-templates", icon: "folder_special", text: "Templates", defaultActive: false});
+            }
+            if (AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, allowed)) {
+                menu.push({sref: "users", icon: "account_box", text: "Users", defaultActive: false});
+            }
             self.adminMenu = menu;
         }
 
@@ -82,8 +100,12 @@
             closeSideNavList();
         }
 
-        buildSideNavMenu();
-        buildAdminMenu();
+        // Fetch list of allowed actions
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    buildSideNavMenu(actionSet.actions);
+                    buildAdminMenu(actionSet.actions);
+                });
 
         $rootScope.$on('$stateChangeSuccess', function(event, toState) {
             self.currentState = toState;

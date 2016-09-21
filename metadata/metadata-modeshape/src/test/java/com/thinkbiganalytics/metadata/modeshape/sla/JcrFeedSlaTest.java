@@ -1,21 +1,5 @@
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.inject.Inject;
-import javax.jcr.Node;
-import javax.jcr.RepositoryException;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.testng.Assert;
-
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleEntity;
@@ -33,6 +17,22 @@ import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.modeshape.security.AdminCredentials;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.testng.Assert;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import javax.inject.Inject;
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 
 /**
  * Created by sr186054 on 8/4/16.
@@ -129,7 +129,7 @@ public class JcrFeedSlaTest {
             ServiceLevelAgreement feedSla = entity.getAgreement();
             Assert.assertNotNull(feedSla);
 
-            List<ServiceLevelAgreement> agreements = slaProvider.getAgreements();
+            List<? extends ServiceLevelAgreement> agreements = slaProvider.getAgreements();
             //assert both agreements are there
             Assert.assertEquals(agreements.size(), 2);
 

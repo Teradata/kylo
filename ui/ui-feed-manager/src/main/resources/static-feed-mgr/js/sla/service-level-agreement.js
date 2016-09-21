@@ -1,6 +1,6 @@
-(function () {
+(function() {
 
-    var directive = function () {
+    var directive = function() {
         return {
             restrict: "EA",
             bindToController: {
@@ -9,7 +9,7 @@
             },
             controllerAs: 'vm',
             scope: {},
-            templateUrl: function (tElement, tAttrs) {
+            templateUrl: function(tElement, tAttrs) {
                 if (tAttrs) {
                     if (tAttrs.view === 'all') {
                         return 'js/sla/service-level-agreements.html'
@@ -20,19 +20,24 @@
                 }
             },
 
-
             controller: "ServiceLevelAgreementController",
-            link: function ($scope, element, attrs, controller) {
+            link: function($scope, element, attrs, controller) {
 
             }
 
         };
     }
 
-    var controller = function ($scope, $mdDialog, $mdToast, $http, $stateParams, $rootScope, StateService, FeedService, SlaService, PolicyInputFormService, PaginationDataService, TableOptionsService,
-                               AddButtonService) {
+    var controller = function($scope, $mdDialog, $mdToast, $http, $stateParams, $rootScope, StateService, FeedService, SlaService, PolicyInputFormService, PaginationDataService, TableOptionsService,
+                              AddButtonService, AccessControlService) {
 
         var self = this;
+
+        /**
+         * Indicates if editing SLAs is allowed.
+         * @type {boolean}
+         */
+        self.allowEdit = false;
 
         self.cardTitle = "Service Level Agreements";
 
@@ -44,9 +49,9 @@
             self.newSla = false;
         }
 
-        $scope.$watch(function () {
+        $scope.$watch(function() {
             return self.newSla;
-        }, function (newVal) {
+        }, function(newVal) {
             if (newVal == true) {
                 self.onNewSla();
                 self.newSla = false;
@@ -54,9 +59,15 @@
             }
         });
 
-        AddButtonService.registerAddButton('service-level-agreements', function () {
-            self.onNewSla();
-        });
+        // Register Add button
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    if (AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions)) {
+                        AddButtonService.registerAddButton("service-level-agreements", function() {
+                            self.onNewSla();
+                        });
+                    }
+                });
 
         function showList() {
             self.editSla = null;
@@ -69,7 +80,6 @@
                 AddButtonService.showAddButton();
             }
         }
-
 
         //   this.feed = FeedService.editFeedModel;
 
@@ -181,32 +191,31 @@
 
         this.filter = PaginationDataService.filter(self.pageName);
 
-        $scope.$watch(function () {
+        $scope.$watch(function() {
             return self.viewType;
-        }, function (newVal) {
+        }, function(newVal) {
             self.onViewTypeChange(newVal);
         })
 
-        this.onViewTypeChange = function (viewType) {
+        this.onViewTypeChange = function(viewType) {
             PaginationDataService.viewType(this.pageName, self.viewType);
         }
 
-        this.onOrderChange = function (order) {
+        this.onOrderChange = function(order) {
             PaginationDataService.sort(self.pageName, order);
             TableOptionsService.setSortOption(self.pageName, order);
         };
 
-        this.onPaginationChange = function (page, limit) {
+        this.onPaginationChange = function(page, limit) {
             PaginationDataService.currentPage(self.pageName, null, page);
             self.currentPage = page;
         };
-
 
         /**
          * Called when a user Clicks on a table Option
          * @param option
          */
-        this.selectedTableOption = function (option) {
+        this.selectedTableOption = function(option) {
             var sortString = TableOptionsService.toSortString(option);
             PaginationDataService.sort(self.pageName, sortString);
             var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
@@ -242,7 +251,7 @@
         }
 
         if (this.feed != null) {
-            SlaService.getFeedSlas(self.feed.feedId).then(function (response) {
+            SlaService.getFeedSlas(self.feed.feedId).then(function(response) {
                 if (response.data && response.data != undefined && response.data.length > 0) {
                     self.serviceLevelAgreements = response.data;
                 }
@@ -251,7 +260,7 @@
         }
         else {
             //get All Slas
-            SlaService.getAllSlas().then(function (response) {
+            SlaService.getAllSlas().then(function(response) {
                 self.serviceLevelAgreements = response.data;
                 self.loading = false;
             });
@@ -260,7 +269,7 @@
         /**
          * Load up the Metric Options for defining SLAs
          */
-        SlaService.getPossibleSlaMetricOptions().then(function (response) {
+        SlaService.getPossibleSlaMetricOptions().then(function(response) {
 
             var currentFeedValue = null;
             if (self.feed != null) {
@@ -270,7 +279,7 @@
 
         });
 
-        SlaService.getPossibleSlaActionOptions().then(function (response) {
+        SlaService.getPossibleSlaActionOptions().then(function(response) {
             var currentFeedValue = null;
             if (self.feed != null) {
                 currentFeedValue = PolicyInputFormService.currentFeedValue(self.feed);
@@ -279,7 +288,7 @@
             if (self.slaActionOptions.length > 0) {
                 self.showActionOptions = true;
 
-                _.each(self.slaActionOptions, function (action) {
+                _.each(self.slaActionOptions, function(action) {
                     //validate the rules
                     SlaService.validateSlaActionRule(action);
                 });
@@ -290,11 +299,11 @@
             }
         })
 
-        self.cancelEditSla = function () {
+        self.cancelEditSla = function() {
             showList();
         }
 
-        self.addNewCondition = function () {
+        self.addNewCondition = function() {
             self.ruleType = EMPTY_RULE_TYPE;
             //if editing one already validate, complete it and then add the new one
             var valid = true;
@@ -309,11 +318,11 @@
 
         }
 
-        self.addNewActionCondition = function () {
+        self.addNewActionCondition = function() {
             self.addingSlaAction = true;
         }
 
-        self.saveSla = function () {
+        self.saveSla = function() {
             var valid = self.validateForm();
             if (valid) {
 
@@ -330,13 +339,13 @@
                     showList();
 
                     $mdDialog.show(
-                        $mdDialog.alert()
-                            .parent(angular.element(document.body))
-                            .clickOutsideToClose(true)
-                            .title('Saved SLA')
-                            .textContent('Saved the Sla')
-                            .ariaLabel('Alert Saved Sla')
-                            .ok('Got it!')
+                            $mdDialog.alert()
+                                    .parent(angular.element(document.body))
+                                    .clickOutsideToClose(true)
+                                    .title('Saved SLA')
+                                    .textContent('Saved the Sla')
+                                    .ariaLabel('Alert Saved Sla')
+                                    .ok('Got it!')
                     );
                 }
 
@@ -347,22 +356,22 @@
         }
         function saveSla(successFn, failureFn) {
             if (self.feed != null) {
-                SlaService.saveFeedSla(self.feed.feedId, self.editSla).then(function (response) {
+                SlaService.saveFeedSla(self.feed.feedId, self.editSla).then(function(response) {
                     if (successFn) {
                         successFn(response);
                     }
-                }, function () {
+                }, function() {
                     if (failureFn) {
                         failureFn();
                     }
                 });
             }
             else {
-                SlaService.saveSla(self.editSla).then(function () {
+                SlaService.saveSla(self.editSla).then(function() {
                     if (successFn) {
                         successFn();
                     }
-                }, function () {
+                }, function() {
                     if (failureFn) {
                         failureFn();
                     }
@@ -370,12 +379,12 @@
             }
         }
 
-        self.onBackToList = function (ev) {
+        self.onBackToList = function(ev) {
             showList();
 
         }
 
-        self.onNewSla = function () {
+        self.onNewSla = function() {
             AddButtonService.hideAddButton();
             self.mode = 'NEW';
             self.creatingNewSla = true;
@@ -385,13 +394,24 @@
             self.addingSlaCondition = true;
         }
 
-        self.onEditSla = function (sla) {
-            AddButtonService.hideAddButton();
-            self.editSlaIndex = _.findIndex(self.serviceLevelAgreements, sla);
-            self.loadAndEditSla(sla.id);
-        }
+        self.onEditSla = function(sla) {
+            if (self.allowEdit) {
+                AddButtonService.hideAddButton();
+                self.editSlaIndex = _.findIndex(self.serviceLevelAgreements, sla);
+                self.loadAndEditSla(sla.id);
+            } else {
+                $mdDialog.show(
+                        $mdDialog.alert()
+                                .clickOutsideToClose(true)
+                                .title("Access Denied")
+                                .textContent("You do not have access to edit SLAs.")
+                                .ariaLabel("Access denied to edit SLAs.")
+                                .ok("OK")
+                );
+            }
+        };
 
-        self.loadAndEditSla = function (slaId) {
+        self.loadAndEditSla = function(slaId) {
             self.mode = 'EDIT';
             self.creatingNewSla = false;
             self.editSlaId = slaId;
@@ -399,17 +419,17 @@
             self.addingSlaCondition = false;
 
             //fetch the SLA
-            SlaService.getSlaForEditForm(slaId).then(function (response) {
+            SlaService.getSlaForEditForm(slaId).then(function(response) {
                 var sla = response.data;
 
-                _.each(sla.rules, function (rule) {
+                _.each(sla.rules, function(rule) {
                     rule.editable = true;
                     rule.mode = 'EDIT'
                     rule.groups = PolicyInputFormService.groupProperties(rule);
                     PolicyInputFormService.updatePropertyIndex(rule);
                 });
 
-                _.each(sla.actionConfigurations, function (rule) {
+                _.each(sla.actionConfigurations, function(rule) {
                     rule.editable = true;
                     rule.mode = 'EDIT'
                     rule.groups = PolicyInputFormService.groupProperties(rule);
@@ -424,49 +444,47 @@
             });
         }
 
-
-
-        self.onDeleteSla = function (ev) {
+        self.onDeleteSla = function(ev) {
             //warn are you sure you want to delete?
             if (self.editSlaIndex != null || self.editSlaId != null) {
                 var confirm = $mdDialog.confirm()
-                    .title('Delete SLA')
-                    .textContent('Are you sure you want to Delete this SLA?')
-                    .ariaLabel('Delete SLA')
-                    .targetEvent(ev)
-                    .ok('Please do it!')
-                    .cancel('Nope');
-                $mdDialog.show(confirm).then(function () {
-                    SlaService.deleteSla(self.editSla.id).then(function () {
+                        .title('Delete SLA')
+                        .textContent('Are you sure you want to Delete this SLA?')
+                        .ariaLabel('Delete SLA')
+                        .targetEvent(ev)
+                        .ok('Please do it!')
+                        .cancel('Nope');
+                $mdDialog.show(confirm).then(function() {
+                    SlaService.deleteSla(self.editSla.id).then(function() {
                         self.editSla = null;
                         if (self.editSlaIndex != null) {
-                                  self.serviceLevelAgreements.splice(self.editSlaIndex, 1);
-                            }
+                            self.serviceLevelAgreements.splice(self.editSlaIndex, 1);
+                        }
                         $mdToast.show(
-                            $mdToast.simple()
-                                .textContent('SLA Deleted.')
-                                .position('bottom left')
-                                .hideDelay(3000)
+                                $mdToast.simple()
+                                        .textContent('SLA Deleted.')
+                                        .position('bottom left')
+                                        .hideDelay(3000)
                         );
                         showList();
-                    }, function () {
+                    }, function() {
                         //alert delete error
                         $mdToast.show(
-                            $mdToast.simple()
-                                .textContent('Error deleting SLA.')
-                                .position('bottom left')
-                                .hideDelay(3000)
+                                $mdToast.simple()
+                                        .textContent('Error deleting SLA.')
+                                        .position('bottom left')
+                                        .hideDelay(3000)
                         );
                     });
 
-                }, function () {
+                }, function() {
                     //cancelled confirm box
                 });
 
             }
         }
 
-        self.onDeleteSlaMetric = function (index) {
+        self.onDeleteSlaMetric = function(index) {
             //warn before delete
             self.editSla.rules.splice(index, 1);
             if (self.editSla.rules.length == 0) {
@@ -474,7 +492,7 @@
             }
         }
 
-        self.onDeleteSlaAction = function (index) {
+        self.onDeleteSlaAction = function(index) {
             //warn before delete
             self.editSla.actionConfigurations.splice(index, 1);
             if (self.editSla.actionConfigurations.length == 0) {
@@ -482,7 +500,7 @@
             }
         }
 
-        self.onAddConditionRuleTypeChange = function () {
+        self.onAddConditionRuleTypeChange = function() {
             if (self.ruleType != EMPTY_RULE_TYPE) {
                 //replace current sla rule if already editing
                 var newRule = angular.copy(self.ruleType);
@@ -499,7 +517,7 @@
             }
         }
 
-        self.onAddSlaActionChange = function () {
+        self.onAddSlaActionChange = function() {
             if (self.slaAction != EMPTY_RULE_TYPE) {
                 //replace current sla rule if already editing
                 var newRule = angular.copy(self.slaAction);
@@ -518,12 +536,12 @@
          * Validate the form before adding/editing a Rule for an SLA
          * @returns {boolean}
          */
-        self.validateForm = function () {
+        self.validateForm = function() {
             //loop through properties and determine if they are valid
             //the following _.some routine returns true if the items are invalid
             var ruleProperties = [];
-            _.each(self.editSla.rules, function (rule) {
-                _.each(rule.properties, function (property) {
+            _.each(self.editSla.rules, function(rule) {
+                _.each(rule.properties, function(property) {
                     ruleProperties.push(property);
                 });
             });
@@ -533,18 +551,18 @@
                 //validate there is at least 1 action configuration
                 var actions = self.editSla.actionConfigurations.length;
                 /*
-                if (actions == 0) {
-                    validForm = false;
-                    $mdDialog.show(
-                        $mdDialog.alert()
-                            .parent(angular.element(document.body))
-                            .clickOutsideToClose(true)
-                            .title('SLA Action Required')
-                            .textContent('At least 1 SLA Action is Required')
-                            .ariaLabel('Alert Input Sla errors')
-                            .ok('Got it!')
-                    );
-                }
+                 if (actions == 0) {
+                 validForm = false;
+                 $mdDialog.show(
+                 $mdDialog.alert()
+                 .parent(angular.element(document.body))
+                 .clickOutsideToClose(true)
+                 .title('SLA Action Required')
+                 .textContent('At least 1 SLA Action is Required')
+                 .ariaLabel('Alert Input Sla errors')
+                 .ok('Got it!')
+                 );
+                 }
                  */
             }
             return validForm;
@@ -553,7 +571,7 @@
         function buildDisplayString() {
             if (self.editRule != null) {
                 var str = '';
-                _.each(self.editRule.properties, function (prop, idx) {
+                _.each(self.editRule.properties, function(prop, idx) {
                     if (prop.type != 'currentFeed') {
                         //chain it to the display string
                         if (str != '') {
@@ -562,7 +580,7 @@
                         str += ' ' + prop.displayName;
                         var val = prop.value;
                         if ((val == null || val == undefined || val == '') && (prop.values != null && prop.values.length > 0)) {
-                            val = _.map(prop.values, function (labelValue) {
+                            val = _.map(prop.values, function(labelValue) {
                                 return labelValue.value;
                             }).join(",");
                         }
@@ -573,10 +591,15 @@
             }
         }
 
+        // Fetch the allowed actions
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
+                });
     };
 
     angular.module(MODULE_FEED_MGR).controller('ServiceLevelAgreementController', controller);
     angular.module(MODULE_FEED_MGR)
-        .directive('thinkbigServiceLevelAgreement', directive);
+            .directive('thinkbigServiceLevelAgreement', directive);
 
 }());
