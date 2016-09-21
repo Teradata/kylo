@@ -61,7 +61,7 @@
          */
         self.paginationData = (function() {
             var paginationData = PaginationDataService.paginationData(PAGE_NAME);
-            PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', 'All']);
+            PaginationDataService.setRowsPerPageOptions(PAGE_NAME, ['5', '10', '20', '50', 'All']);
             return paginationData;
         })();
 
