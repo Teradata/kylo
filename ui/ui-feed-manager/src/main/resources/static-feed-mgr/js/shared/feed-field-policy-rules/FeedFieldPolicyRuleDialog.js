@@ -3,10 +3,21 @@
 
     var controller = function($scope, $mdDialog, $mdToast, $http, StateService, field, policyParameter , FieldPolicyRuleOptionsFactory){
     $scope.field = field;
+
+        $scope.loadingPolicies = true;
         $scope.options = [];
     FieldPolicyRuleOptionsFactory.getOptionsForType(policyParameter).then(function(response){
-        $scope.options =response.data;
+        var results = [];
+        if(response.data){
+            results = _.sortBy(response.data,function(r) {
+                return r.name;
+            });
+        }
+        $scope.options =results;
+        $scope.loadingPolicies = false;
     });
+
+
 
     //$scope.policyRules = field[policyParameter];
     var arr = field[policyParameter];

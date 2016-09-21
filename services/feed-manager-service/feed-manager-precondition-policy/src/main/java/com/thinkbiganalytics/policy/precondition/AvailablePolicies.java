@@ -1,12 +1,12 @@
 package com.thinkbiganalytics.policy.precondition;
 
+import com.thinkbiganalytics.policy.ReflectionPolicyAnnotationDiscoverer;
 import com.thinkbiganalytics.policy.precondition.transform.PreconditionAnnotationTransformer;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRuleBuilder;
 
 import org.apache.commons.lang3.StringUtils;
-import org.reflections.Reflections;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ public class AvailablePolicies {
 
         List<PreconditionRule> rules = new ArrayList<>();
         Set<Class<?>>
-            validators = new Reflections("com.thinkbiganalytics").getTypesAnnotatedWith(PreconditionPolicy.class);
+            validators = ReflectionPolicyAnnotationDiscoverer.getTypesAnnotatedWith(PreconditionPolicy.class);
         for (Class c : validators) {
             PreconditionPolicy policy = (PreconditionPolicy) c.getAnnotation(PreconditionPolicy.class);
             String desc = policy.description();

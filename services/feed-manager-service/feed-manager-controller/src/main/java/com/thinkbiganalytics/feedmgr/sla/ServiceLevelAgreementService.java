@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.feedmgr.sla;
 
+import com.thinkbiganalytics.app.ServicesApplicationStartupListener;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.service.feed.FeedManagerFeedService;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -20,6 +21,7 @@ import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
 
 import org.apache.commons.lang3.StringUtils;
+import org.joda.time.DateTime;
 
 import java.util.HashSet;
 import java.util.List;
@@ -30,7 +32,7 @@ import javax.inject.Inject;
 /**
  * Created by sr186054 on 7/18/16.
  */
-public class ServiceLevelAgreementService {
+public class ServiceLevelAgreementService implements ServicesApplicationStartupListener{
 
     @Inject
     private FeedManagerFeedService feedManagerFeedService;
@@ -51,8 +53,26 @@ public class ServiceLevelAgreementService {
     @Inject
     private FeedProvider feedProvider;
 
-    public List<ServiceLevelAgreementRule> discoverSlaMetrics() {
+
+    private List<ServiceLevelAgreementRule> serviceLevelAgreementRules;
+
+    @Override
+    public void onStartup(DateTime startTime) {
+        discoverServiceLevelAgreementRules();
+    }
+    private  List<ServiceLevelAgreementRule>  discoverServiceLevelAgreementRules(){
         List<ServiceLevelAgreementRule> rules = ServiceLevelAgreementMetricTransformer.instance().discoverSlaMetrics();
+        serviceLevelAgreementRules = rules;
+        return serviceLevelAgreementRules;
+    }
+
+    public List<ServiceLevelAgreementRule> discoverSlaMetrics() {
+        List<ServiceLevelAgreementRule> rules = serviceLevelAgreementRules;
+        if(rules == null){
+          rules = discoverServiceLevelAgreementRules();
+        }
+
+
         feedManagerFeedService
             .applyFeedSelectOptions(
                 ServiceLevelAgreementMetricTransformer.instance().findPropertiesForRulesetMatchingRenderTypes(rules, new String[]{PolicyPropertyTypes.PROPERTY_TYPE.feedChips.name(),

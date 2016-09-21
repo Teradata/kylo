@@ -10,8 +10,6 @@ import com.thinkbiganalytics.policy.validation.Validator;
 import com.thinkbiganalytics.standardization.transform.StandardizationAnnotationTransformer;
 import com.thinkbiganalytics.validation.transform.ValidatorAnnotationTransformer;
 
-import org.reflections.Reflections;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -26,7 +24,7 @@ public class AvailablePolicies {
 
     List<FieldStandardizationRule> rules = new ArrayList <>();
     Set<Class<?>>
-        standardizers =new Reflections("com.thinkbiganalytics").getTypesAnnotatedWith(Standardizer.class);
+        standardizers = ReflectionPolicyAnnotationDiscoverer.getTypesAnnotatedWith(Standardizer.class);
     for(Class c: standardizers){
       Standardizer standardizer = (Standardizer) c.getAnnotation(Standardizer.class);
       List<FieldRuleProperty> properties = StandardizationAnnotationTransformer.instance().getUiProperties(c);
@@ -40,7 +38,7 @@ public class AvailablePolicies {
 
     List<FieldValidationRule> rules = new ArrayList <>();
     Set<Class<?>>
-        validators =new Reflections("com.thinkbiganalytics").getTypesAnnotatedWith(Validator.class);
+        validators = ReflectionPolicyAnnotationDiscoverer.getTypesAnnotatedWith(Validator.class);
     for(Class c: validators){
       Validator validator = (Validator) c.getAnnotation(Validator.class);
       List<FieldRuleProperty> properties = ValidatorAnnotationTransformer.instance().getUiProperties(c);

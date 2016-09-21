@@ -11,6 +11,10 @@
     </parent>
 
     <dependencies>
+        <dependency>
+            <groupId>org.reflections</groupId>
+            <artifactId>reflections</artifactId>
+        </dependency>
 
     </dependencies>
 
