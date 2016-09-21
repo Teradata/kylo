@@ -1,24 +1,49 @@
-(function () {
+(function() {
 
-    var controller = function ($scope, $q, $stateParams, $mdDialog, $mdToast, $http, $state, $stateParams, RestUrlService, FeedService, RegisterTemplateService, StateService) {
+    /**
+     * Displays the details for a feed.
+     *
+     * @param $scope
+     * @param $q
+     * @param $stateParams
+     * @param $mdDialog
+     * @param $mdToast
+     * @param $http
+     * @param $state
+     * @param {AccessControlService} AccessControlService the access control service
+     * @param RestUrlService
+     * @param FeedService
+     * @param RegisterTemplateService
+     * @param StateService
+     */
+    var controller = function($scope, $q, $stateParams, $mdDialog, $mdToast, $http, $state, AccessControlService, RestUrlService, FeedService, RegisterTemplateService, StateService) {
 
         var SLA_INDEX = 3;
         var self = this;
+
+        /**
+         * Indicates if admin operations are allowed.
+         * @type {boolean}
+         */
+        self.allowAdmin = false;
+
+        /**
+         * Indicates if edit operations are allowed.
+         * @type {boolean}
+         */
+        self.allowEdit = false;
+
         this.feedId = null;
         this.selectedTabIndex = 0;
-        var init = function () {
-            self.feedId = $stateParams.feedId;
-            loadFeed($stateParams.tabIndex);
 
-        }
         this.loadingFeedData = false;
         this.model = FeedService.editFeedModel;
         this.model.loaded = false;
         this.loadMessage = ''
 
-        $scope.$watch(function () {
+        $scope.$watch(function() {
             return self.selectedTabIndex;
-        }, function (newVal) {
+        }, function(newVal) {
 
         })
 
@@ -29,8 +54,16 @@
          */
         this.newSla = false;
 
+        var init = function() {
+            self.feedId = $stateParams.feedId;
+            loadFeed($stateParams.tabIndex);
 
-
+            AccessControlService.getAllowedActions()
+                    .then(function(actionSet) {
+                        self.allowAdmin = AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, actionSet.actions);
+                        self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
+                    });
+        };
 
         /**
          * Displays a confirmation dialog for deleting the feed.
@@ -71,37 +104,37 @@
 
                 $mdDialog.hide();
                 $mdDialog.show(
-                    $mdDialog.alert()
-                        .ariaLabel("Error deleting feed")
-                        .clickOutsideToClose(true)
-                        .htmlContent(msg)
-                        .ok("Got it!")
-                        .parent(document.body)
-                        .title("Error deleting feed")
+                        $mdDialog.alert()
+                                .ariaLabel("Error deleting feed")
+                                .clickOutsideToClose(true)
+                                .htmlContent(msg)
+                                .ok("Got it!")
+                                .parent(document.body)
+                                .title("Error deleting feed")
                 );
             };
 
             $http.delete(RestUrlService.GET_FEEDS_URL + "/" + self.feedId).then(successFn, errorFn);
         };
 
-        this.enableFeed = function () {
-            $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function (response) {
+        this.enableFeed = function() {
+            $http.post(RestUrlService.ENABLE_FEED_URL(self.feedId)).then(function(response) {
                 self.model.state = response.data.state;
                 FeedService.updateEditModelStateIcon();
             });
         }
-        this.disableFeed = function () {
-            $http.post(RestUrlService.DISABLE_FEED_URL(self.feedId)).then(function (response) {
+        this.disableFeed = function() {
+            $http.post(RestUrlService.DISABLE_FEED_URL(self.feedId)).then(function(response) {
                 self.model.state = response.data.state;
                 FeedService.updateEditModelStateIcon();
             });
         }
 
         function mergeTemplateProperties(feed) {
-            var successFn = function (response) {
+            var successFn = function(response) {
                 return response;
             }
-            var errorFn = function (err) {
+            var errorFn = function(err) {
 
             }
 
@@ -117,15 +150,34 @@
             return promise;
         }
 
-        this.onCategoryClick = function () {
-            StateService.navigateToCategoryDetails(self.model.category.id);
-        }
+        /**
+         * Navigates to the category details page for this feed's category.
+         *
+         * An error is displayed if the user does not have permissions to access categories.
+         */
+        this.onCategoryClick = function() {
+            AccessControlService.getAllowedActions()
+                    .then(function(actionSet) {
+                        if (AccessControlService.hasAction(AccessControlService.CATEGORIES_ACCESS, actionSet.actions)) {
+                            StateService.navigateToCategoryDetails(self.model.category.id);
+                        } else {
+                            $mdDialog.show(
+                                    $mdDialog.alert()
+                                            .clickOutsideToClose(true)
+                                            .title("Access Denied")
+                                            .textContent("You do not have permissions to access categories.")
+                                            .ariaLabel("Access denied for categories")
+                                            .ok("OK")
+                            );
+                        }
+                    });
+        };
 
-        this.onTableClick = function () {
+        this.onTableClick = function() {
             StateService.navigateToTable(self.model.category.systemName, self.model.table.tableSchema.name);
         }
 
-        this.addSla = function () {
+        this.addSla = function() {
             self.selectedTabIndex = SLA_INDEX;
             self.newSla = true;
         }
@@ -134,9 +186,9 @@
             self.loadingFeedData = true;
             self.model.loaded = false;
             self.loadMessage = '';
-            var successFn = function (response) {
+            var successFn = function(response) {
                 if (response.data) {
-                    mergeTemplateProperties(response.data).then(function (updatedFeedResponse) {
+                    mergeTemplateProperties(response.data).then(function(updatedFeedResponse) {
                         //merge in the template properties
                         //this will update teh self.model as they point to the same object
 
@@ -145,13 +197,13 @@
                             var loadMessage = 'Unable to load Feed Details.  Please ensure that Apache Nifi is up and running and then refresh this page.';
                             self.loadMessage = loadMessage;
                             $mdDialog.show(
-                                $mdDialog.alert()
+                                    $mdDialog.alert()
                                     //   .parent(angular.element(document.querySelector('#popupContainer')))
-                                    .clickOutsideToClose(true)
-                                    .title('Unable to load Feed Details')
-                                    .textContent(loadMessage)
-                                    .ariaLabel('Unable to load Feed Details')
-                                    .ok('Got it!')
+                                            .clickOutsideToClose(true)
+                                            .title('Unable to load Feed Details')
+                                            .textContent(loadMessage)
+                                            .ariaLabel('Unable to load Feed Details')
+                                            .ok('Got it!')
                             );
                         } else {
                             self.model.loaded = true;
@@ -165,7 +217,7 @@
                             var inputProcessors = [];
 
                             var nonInputProcessors = [];
-                            angular.forEach(self.model.properties, function (property) {
+                            angular.forEach(self.model.properties, function(property) {
                                 if (property.userEditable) {
 
                                     if (processors[property.processorId] === undefined) {
@@ -200,24 +252,24 @@
                             self.loadingFeedData = false;
                             FeedService.updateEditModelStateIcon();
                         }
-                    }, function (err) {
+                    }, function(err) {
                         //handle err
                         self.loadingFeedData = false;
                     })
 
                 }
             }
-            var errorFn = function (err) {
+            var errorFn = function(err) {
                 self.loadingFeedData = false;
                 $mdDialog.show(
-                    $mdDialog.alert()
-                        .parent(angular.element(document.querySelector('body')))
-                        .clickOutsideToClose(true)
-                        .title('Error loading feed')
-                        .textContent('Feed error ')
-                        .ariaLabel('Error loading feed')
-                        .ok('Got it!')
-                    //.targetEvent(ev)
+                        $mdDialog.alert()
+                                .parent(angular.element(document.querySelector('body')))
+                                .clickOutsideToClose(true)
+                                .title('Error loading feed')
+                                .textContent('Feed error ')
+                                .ariaLabel('Error loading feed')
+                                .ok('Got it!')
+                        //.targetEvent(ev)
                 );
 
             }

@@ -1,31 +1,50 @@
-(function () {
+(function() {
 
-    var controller = function($scope,$http,RestUrlService, PaginationDataService,TableOptionsService, AddButtonService, StateService, RegisterTemplateService){
+    var controller = function($scope, $http, $mdDialog, AccessControlService, RestUrlService, PaginationDataService, TableOptionsService, AddButtonService, StateService, RegisterTemplateService) {
 
         var self = this;
+
+        /**
+         * Indicates if templates are allowed to be edited.
+         * @type {boolean}
+         */
+        self.allowEdit = false;
+
+        /**
+         * Indicates if templates are allowed to be exported.
+         * @type {boolean}
+         */
+        self.allowExport = false;
+
         self.registeredTemplates = [];
         this.loading = true;
-        this.cardTitle = 'Registered Templates'
-        AddButtonService.registerAddButton('registered-templates',function() {
-            RegisterTemplateService.resetModel();
-            StateService.navigateToRegisterTemplate();
-        });
+        this.cardTitle = 'Registered Templates';
+
+        // Register Add button
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    if (AccessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions)) {
+                        AddButtonService.registerAddButton("registered-templates", function() {
+                            RegisterTemplateService.resetModel();
+                            StateService.navigateToRegisterTemplate();
+                        });
+                    }
+                });
 
         //Pagination DAta
-        this.pageName="registered-templates";
+        this.pageName = "registered-templates";
         this.paginationData = PaginationDataService.paginationData(this.pageName);
         this.paginationId = 'registered-templates';
-        PaginationDataService.setRowsPerPageOptions(this.pageName,['5','10','20','50','All']);
-        this.currentPage =PaginationDataService.currentPage(self.pageName)||1;
+        PaginationDataService.setRowsPerPageOptions(this.pageName, ['5', '10', '20', '50', 'All']);
+        this.currentPage = PaginationDataService.currentPage(self.pageName) || 1;
         this.viewType = PaginationDataService.viewType(this.pageName);
         this.sortOptions = loadSortOptions();
 
         this.filter = PaginationDataService.filter(self.pageName);
 
-
-        $scope.$watch(function(){
+        $scope.$watch(function() {
             return self.viewType;
-        },function(newVal) {
+        }, function(newVal) {
             self.onViewTypeChange(newVal);
         })
 
@@ -33,16 +52,15 @@
             PaginationDataService.viewType(this.pageName, self.viewType);
         }
 
-        this.onOrderChange = function (order) {
-            PaginationDataService.sort(self.pageName,order);
-            TableOptionsService.setSortOption(self.pageName,order);
+        this.onOrderChange = function(order) {
+            PaginationDataService.sort(self.pageName, order);
+            TableOptionsService.setSortOption(self.pageName, order);
         };
 
-        this.onPaginationChange = function (page, limit) {
-            PaginationDataService.currentPage(self.pageName,null,page);
+        this.onPaginationChange = function(page, limit) {
+            PaginationDataService.currentPage(self.pageName, null, page);
             self.currentPage = page;
         };
-
 
         /**
          * Called when a user Clicks on a table Option
@@ -50,9 +68,9 @@
          */
         this.selectedTableOption = function(option) {
             var sortString = TableOptionsService.toSortString(option);
-            PaginationDataService.sort(self.pageName,sortString);
-            var updatedOption = TableOptionsService.toggleSort(self.pageName,option);
-            TableOptionsService.setSortOption(self.pageName,sortString);
+            PaginationDataService.sort(self.pageName, sortString);
+            var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
+            TableOptionsService.setSortOption(self.pageName, sortString);
         }
 
         /**
@@ -60,35 +78,50 @@
          * @returns {*[]}
          */
         function loadSortOptions() {
-            var options = {'Template':'templateName','Last Modified':'updateDate'};
+            var options = {'Template': 'templateName', 'Last Modified': 'updateDate'};
 
-            var sortOptions = TableOptionsService.newSortOptions(self.pageName,options,'templateName','asc');
+            var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'templateName', 'asc');
             var currentOption = TableOptionsService.getCurrentSort(self.pageName);
-            if(currentOption) {
-                TableOptionsService.saveSortOption(self.pageName,currentOption)
+            if (currentOption) {
+                TableOptionsService.saveSortOption(self.pageName, currentOption)
             }
             return sortOptions;
         }
 
-        this.templateDetails = function(event,template){
-            RegisterTemplateService.resetModel();
-            StateService.navigateToRegisteredTemplate(template.id, template.nifiTemplateId);
-        }
+        /**
+         * Displays the details of the specified template.
+         *
+         * @param event
+         * @param template
+         */
+        this.templateDetails = function(event, template) {
+            if (self.allowEdit) {
+                RegisterTemplateService.resetModel();
+                StateService.navigateToRegisteredTemplate(template.id, template.nifiTemplateId);
+            } else {
+                $mdDialog.show(
+                        $mdDialog.alert()
+                                .clickOutsideToClose(true)
+                                .title("Access Denied")
+                                .textContent("You do not have access to edit templates.")
+                                .ariaLabel("Access denied to edit templates")
+                                .ok("OK")
+                );
+            }
+        };
 
+        function getRegisteredTemplates() {
 
-
-        function getRegisteredTemplates(){
-
-            var successFn = function (response) {
+            var successFn = function(response) {
                 self.loading = false;
-                if(response.data){
-                    angular.forEach(response.data,function(template){
-                        template.exportUrl = RestUrlService.ADMIN_EXPORT_TEMPLATE_URL+"/"+template.id;
+                if (response.data) {
+                    angular.forEach(response.data, function(template) {
+                        template.exportUrl = RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + template.id;
                     });
                 }
-                 self.registeredTemplates = response.data;
+                self.registeredTemplates = response.data;
             }
-            var errorFn = function (err) {
+            var errorFn = function(err) {
                 self.loading = false;
 
             }
@@ -98,19 +131,20 @@
 
         }
 
-        this.exportTemplate = function(event,template){
-            var promise = $http.get( RestUrlService.ADMIN_EXPORT_TEMPLATE_URL+"/"+template.id);
+        this.exportTemplate = function(event, template) {
+            var promise = $http.get(RestUrlService.ADMIN_EXPORT_TEMPLATE_URL + "/" + template.id);
         }
 
-
-
-
-
         getRegisteredTemplates();
+
+        // Fetch the allowed actions
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    self.allowEdit = AccessControlService.hasAction(AccessControlService.TEMPLATES_EDIT, actionSet.actions);
+                    self.allowExport = AccessControlService.hasAction(AccessControlService.TEMPLATES_EXPORT, actionSet.actions);
+                });
     };
 
-    angular.module(MODULE_FEED_MGR).controller('RegisteredTemplatesController',controller);
-
-
+    angular.module(MODULE_FEED_MGR).controller('RegisteredTemplatesController', controller);
 
 }());

@@ -1,17 +1,22 @@
-(function () {
+(function() {
 
-    var controller = function($scope,$stateParams,$http,FeedService,RestUrlService, StateService){
+    var controller = function($scope, $stateParams, $http, AccessControlService, FeedService, RestUrlService, StateService) {
 
         var self = this;
 
-       //     StateService.navigateToFeeds();
+        /**
+         * Indicates if feeds may be imported from an archive.
+         * @type {boolean}
+         */
+        self.allowImport = false;
+
+        //     StateService.navigateToFeeds();
 
         this.layout = 'first'
         this.stepperUrl = null;
         this.totalSteps = null;
         this.template = null;
         self.model = FeedService.createFeedModel;
-
 
         var self = this;
         self.allTemplates = [];
@@ -22,36 +27,36 @@
          * @returns {HttpPromise}
          */
         function getRegisteredTemplates() {
-            var successFn = function (response) {
+            var successFn = function(response) {
 
-                if(response.data){
+                if (response.data) {
 
-                   var data = _.chain(response.data).sortBy('templateName').sortBy(function(template){
-                        if(template.templateName == 'Data Ingest') {
+                    var data = _.chain(response.data).sortBy('templateName').sortBy(function(template) {
+                        if (template.templateName == 'Data Ingest') {
                             return 0;
                         }
-                        else if (template.templateName =='Archive Data'){
+                        else if (template.templateName == 'Archive Data') {
                             return 1;
                         }
-                        else if (template.templateName =='Data Transformation'){
+                        else if (template.templateName == 'Data Transformation') {
                             return 2;
                         }
-                       else {
+                        else {
                             return 3;
                         }
                     })
-                       .value();
+                            .value();
 
-                    if(data.length >1){
+                    if (data.length > 1) {
                         self.displayMoreLink = true;
                     }
-                     self.allTemplates = data;
-                    self.firstTemplates = _.first(data,3);
+                    self.allTemplates = data;
+                    self.firstTemplates = _.first(data, 3);
 
                 }
 
             }
-            var errorFn = function (err) {
+            var errorFn = function(err) {
 
             }
             var promise = $http.get(RestUrlService.GET_REGISTERED_TEMPLATES_URL);
@@ -59,16 +64,14 @@
             return promise;
         };
 
-        this.more = function(){
+        this.more = function() {
             this.layout = 'all';
         }
 
-
-        this.gotoImportFeed = function(){
+        this.gotoImportFeed = function() {
             StateService.navigatetoImportFeed();
         }
         getRegisteredTemplates();
-
 
         this.selectTemplate = function(template) {
             self.model.templateId = template.id;
@@ -77,11 +80,11 @@
             self.model.defineTable = template.defineTable;
             self.model.allowPreconditions = template.allowPreconditions;
             self.model.dataTransformationFeed = template.dataTransformation;
-            if(template.defineTable){
+            if (template.defineTable) {
                 self.totalSteps = 6;
                 self.stepperUrl = 'js/define-feed/define-feed-stepper.html'
             }
-            else if(template.dataTransformation){
+            else if (template.dataTransformation) {
                 self.totalSteps = 8;
                 self.stepperUrl = 'js/define-feed/define-feed-data-transform-stepper.html'
             }
@@ -91,23 +94,20 @@
             }
         }
 
-
-
-
-
-
-        self.cancelStepper = function(){
+        self.cancelStepper = function() {
             //or just reset the url
             FeedService.resetFeed();
             self.stepperUrl = null;
             //StateService.navigateToFeeds();
         }
 
-
+        // Fetch the allowed actions
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    self.allowImport= AccessControlService.hasAction(AccessControlService.FEEDS_IMPORT, actionSet.actions);
+                });
     };
 
-    angular.module(MODULE_FEED_MGR).controller('DefineFeedController',controller);
-
-
+    angular.module(MODULE_FEED_MGR).controller('DefineFeedController', controller);
 
 }());

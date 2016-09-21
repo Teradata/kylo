@@ -114,4 +114,11 @@ angular.module(MODULE_FEED_MGR).service('StateService', function ($state) {
         var safeUserId = angular.isString(opt_userId) ? encodeURIComponent(opt_userId) : null;
         $state.go("user-details", {userId: safeUserId});
     };
+
+    /**
+     * Navigates to the Templates page.
+     */
+    this.navigateToRegisteredTemplates = function() {
+        $state.go("registered-templates");
+    }
 });

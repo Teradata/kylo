@@ -1,4 +1,4 @@
-<vertical-section-layout section-title="Feed Details" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.model.state == 'ENABLED'"
+<vertical-section-layout section-title="Feed Details" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()" allow-edit="vm.model.state == 'ENABLED' && vm.allowEdit"
                          editable="vm.editableSection" keep-editable-after-save="true">
 
     <readonly-section>

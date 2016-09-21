@@ -6,11 +6,18 @@
      * @param $scope the application model
      * @param $mdDialog the Angular Material dialog service
      * @param $mdToast the Angular Material toast service
+     * @param {AccessControlService} AccessControlService the access control service
      * @param CategoriesService the category service
      * @param StateService the URL service
      */
-    function CategoryDefinitionController($scope, $mdDialog, $mdToast, CategoriesService, StateService) {
+    function CategoryDefinitionController($scope, $mdDialog, $mdToast, AccessControlService, CategoriesService, StateService) {
         var self = this;
+
+        /**
+         * Indicates if the category definition may be edited.
+         * @type {boolean}
+         */
+        self.allowEdit = false;
 
         /**
          * Category data used in "edit" mode.
@@ -130,6 +137,12 @@
                 }
             });
         };
+
+        // Fetch the allowed actions
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    self.allowEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions);
+                });
     }
 
     /**

@@ -14,7 +14,7 @@
 </div>
 
 <div>
-  <div flex layout="column" layout-align="center start" ng-if="vm.editSla == null">
+  <div flex layout="column" layout-align="center start" ng-if="vm.editSla == null && vm.allowEdit">
     <md-button class="md-primary" aria-label="Add" ng-click="vm.onNewSla($event)">Add SLA</md-button>
   </div>
   <ng-include src="'js/sla/service-level-agreement-body.html'"></ng-include>

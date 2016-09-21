@@ -44,10 +44,96 @@ angular.module(MODULE_FEED_MGR).factory("AccessControlService", function($http, 
     }
 
     angular.extend(AccessControlService.prototype, {
+
+        /**
+         * Allows access to categories.
+         * @type {string}
+         */
+        CATEGORIES_ACCESS: "accessCategories",
+
+        /**
+         * Allows the administration of any category; even those created by others.
+         * @type {string}
+         */
+        CATEGORIES_ADMIN: "adminCategories",
+
+        /**
+         * Allows creating and editing new categories.
+         * @type {string}
+         */
+        CATEGORIES_EDIT: "editCategories",
+
+        /**
+         * Allows access to feeds.
+         * @type {string}
+         */
+        FEEDS_ACCESS: "accessFeeds",
+
+        /**
+         * Allows the administration of any feed; even those created by others.
+         * @type {string}
+         */
+        FEEDS_ADMIN: "adminFeeds",
+
+        /**
+         * Allows creating and editing new feeds.
+         * @type {string}
+         */
+        FEEDS_EDIT: "editFeeds",
+
+        /**
+         * Allows exporting feeds definitions.
+         * @type {string}
+         */
+        FEEDS_EXPORT: "exportFeeds",
+
+        /**
+         * Allows importing of previously exported feeds.
+         * @type {string}
+         */
+        FEEDS_IMPORT: "importFeeds",
+
+        /**
+         * Allows access to feeds and feed-related functions.
+         * @type {string}
+         */
+        FEED_MANAGER_ACCESS: "accessFeedsSupport",
+
+        /**
+         * Allows access to feed templates.
+         * @type {string}
+         */
+        TEMPLATES_ACCESS: "accessTemplates",
+
+        /**
+         * Allows the administration of any feed template; even those created by others.
+         * @type {string}
+         */
+        TEMPLATES_ADMIN: "adminTemplates",
+
+        /**
+         * Allows created and editing new feed templates.
+         * @type {string}
+         */
+        TEMPLATES_EDIT: "editTemplates",
+
+        /**
+         * Allows exporting template definitions.
+         * @type {string}
+         */
+        TEMPLATES_EXPORT: "exportTemplates",
+
+        /**
+         * Allows importing of previously exported templates.
+         * @type {string}
+         */
+        TEMPLATES_IMPORT: "importTemplates",
+
         /**
          * List of available actions
          *
-         * @type {Array.<Action>|null}
+         * @private
+         * @type {Promise|null}
          */
         AVAILABLE_ACTIONS_: null,
 
@@ -90,19 +176,34 @@ angular.module(MODULE_FEED_MGR).factory("AccessControlService", function($http, 
          * @returns {Promise} containing an {@link ActionSet} with the allowed actions
          */
         getAvailableActions: function(opt_module) {
-            // Check for cached response
-            if (this.AVAILABLE_ACTIONS_ !== null) {
-                var deferred = $q.defer();
-                deferred.resolve(this.AVAILABLE_ACTIONS_);
-                return deferred.promise;
-            }
-
             // Send request
-            var safeModule = angular.isString(opt_module) ? encodeURIComponent(opt_module) : DEFAULT_MODULE;
-            return $http.get(RestUrlService.SECURITY_BASE_URL + "/actions/" + safeModule + "/available")
-                    .then(function(response) {
-                        return response.data;
-                    });
+            if (this.AVAILABLE_ACTIONS_ === null) {
+                var safeModule = angular.isString(opt_module) ? encodeURIComponent(opt_module) : DEFAULT_MODULE;
+                this.AVAILABLE_ACTIONS_ = $http.get(RestUrlService.SECURITY_BASE_URL + "/actions/" + safeModule + "/available")
+                        .then(function(response) {
+                            return response.data;
+                        });
+            }
+            return this.AVAILABLE_ACTIONS_;
+        },
+
+        /**
+         * Determines if the specified action is allowed.
+         *
+         * @param {string} name the name of the action
+         * @param {Array.<Action>} actions the list of allowed actions
+         * @returns {boolean} {@code true} if the action is allowed, or {@code false} if denied
+         */
+        hasAction: function(name, actions) {
+            var self = this;
+            return _.some(actions, function(action) {
+                if (action.systemName === name) {
+                    return true;
+                } else if (angular.isArray(action.actions)) {
+                    return self.hasAction(name, action.actions);
+                }
+                return false;
+            });
         },
 
         /**

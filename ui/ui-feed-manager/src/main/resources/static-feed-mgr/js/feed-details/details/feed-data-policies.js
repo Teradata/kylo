@@ -15,9 +15,15 @@
         };
     }
 
-    var controller = function ($scope, $mdDialog, FeedService, FeedSecurityGroups) {
+    var controller = function ($scope, $mdDialog, AccessControlService, FeedService, FeedSecurityGroups) {
 
         var self = this;
+
+        /**
+         * Indicates if the feed data policies may be edited.
+         * @type {boolean}
+         */
+        self.allowEdit = false;
 
         this.model = FeedService.editFeedModel;
         this.editableSection = false;
@@ -133,6 +139,11 @@
                 });
         };
 
+        // Fetch the allowed actions
+        AccessControlService.getAllowedActions()
+                .then(function(actionSet) {
+                    self.allowEdit = AccessControlService.hasAction(AccessControlService.FEEDS_EDIT, actionSet.actions);
+                });
     };
 
     angular.module(MODULE_FEED_MGR).controller('FeedDataPoliciesController', controller);
