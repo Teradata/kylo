@@ -3,6 +3,9 @@ package com.thinkbiganalytics.metadata.jpa.app;
 import com.thinkbiganalytics.jpa.AbstractAuditedEntity;
 import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.Serializable;
 import java.util.UUID;
 
@@ -19,6 +22,7 @@ import javax.persistence.Table;
 @Table(name = "KYLO_VERSION")
 public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion, Serializable {
 
+    private static final Logger log = LoggerFactory.getLogger(JpaKyloVersion.class);
 
     @Id
     @GeneratedValue
@@ -81,7 +85,11 @@ public class JpaKyloVersion extends AbstractAuditedEntity implements KyloVersion
     @Override
     public Float getMajorVersionNumber() {
         if (getMajorVersion() != null) {
-            return Float.parseFloat(getMajorVersion());
+            try {
+                return Float.parseFloat(getMajorVersion());
+            } catch (NumberFormatException e) {
+                log.error("error parsing Kylo Major Version of {} to a Float", getMajorVersion());
+            }
         }
         return null;
     }
