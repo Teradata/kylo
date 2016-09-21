@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.feedmgr.config;
 
@@ -26,13 +26,13 @@ public class FeedManagerSecurityConfiguration {
     public PostMetadataConfigAction feedManagerSecurityConfigAction() {
         return new ConfigureAuthorizationAction();
     }
-    
+
 //    @Order(PostMetadataConfigAction.DEFAULT_ORDER)
     public class ConfigureAuthorizationAction implements PostMetadataConfigAction {
 
         @Inject
         private MetadataAccess metadata;
-        
+
         @Inject
         private ModuleActionsBuilder builder;
 
@@ -89,7 +89,7 @@ public class FeedManagerSecurityConfiguration {
                                             .description("Allows importing of previously exported templates")
                                             .add()
                                         .subAction(FeedsAccessControl.EXPORT_TEMPLATES)
-                                            .title("Export Feeds")
+                                            .title("Export Templates")
                                             .description("Allows exporting template definitions")
                                             .add()
                                         .subAction(FeedsAccessControl.ADMIN_TEMPLATES)

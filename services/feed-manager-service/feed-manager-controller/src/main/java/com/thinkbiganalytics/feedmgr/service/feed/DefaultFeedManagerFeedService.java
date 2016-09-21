@@ -425,7 +425,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
     @Override
     public void setUserFields(@Nonnull final Set<UserField> userFields) {
-        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
+        this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
 
         feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
     }
