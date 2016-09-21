@@ -40,6 +40,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfigu
 import com.thinkbiganalytics.metadata.sla.spi.ObligationBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ObligationGroupBuilder;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
+import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.security.AccessController;
 
 import java.io.Serializable;
@@ -65,8 +66,8 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Inject
     private CategoryProvider<Category> categoryProvider;
 
-    // @Inject
-    private JcrServiceLevelAgreementProvider slaProvider;
+    @Inject
+    private ServiceLevelAgreementProvider slaProvider;
 
     @Inject
     private DatasourceProvider datasourceProvider;
@@ -246,7 +247,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 //    }
 
                 Node slaNode = precondNode.addNode(JcrFeedPrecondition.SLA, JcrFeedPrecondition.SLA_TYPE);
-                ServiceLevelAgreementBuilder slaBldr = this.slaProvider.builder(slaNode);
+                ServiceLevelAgreementBuilder slaBldr = ((JcrServiceLevelAgreementProvider) this.slaProvider).builder(slaNode);
 
                 return new JcrPreconditionbuilder(slaBldr, feed);
             } else {
