@@ -22,6 +22,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.security.ldap.authentication.LdapAuthenticator;
 import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
 import org.testng.annotations.Test;
@@ -42,7 +43,7 @@ import com.thinkbiganalytics.security.UsernamePrincipal;
                                             LdapLoginModuleTestConfig.class 
                                             })
 @TestPropertySource("classpath:ldap-test.properties")
-@ConfigurationProperties(locations="classpath:ldap-test.properties")
+@ActiveProfiles("auth-ldap")
 public class LdapLoginModuleTest extends AbstractTestNGSpringContextTests {
     
     @Inject
