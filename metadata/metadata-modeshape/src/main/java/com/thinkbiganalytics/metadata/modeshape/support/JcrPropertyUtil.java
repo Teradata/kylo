@@ -106,6 +106,17 @@ public class JcrPropertyUtil {
         }
     }
 
+    public static Long getLong(Node node, String name) {
+        try {
+            Property prop = node.getProperty(name);
+            return prop.getLong();
+        } catch (PathNotFoundException e) {
+            return null;
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to access property: " + name, e);
+        }
+    }
+
     public static <E extends Enum<E>> E getEnum(Node node, String name, Class<E> enumType, E defaultValue) {
         try {
             Property prop = node.getProperty(name);

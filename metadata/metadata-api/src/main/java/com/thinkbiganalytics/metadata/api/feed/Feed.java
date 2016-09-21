@@ -15,6 +15,7 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 
 /**
@@ -105,4 +106,8 @@ public interface Feed<C extends Category> extends Propertied, AccessControlled, 
 
     @Deprecated
     FeedDestination getDestination(Datasource.ID id);
+
+    List<? extends HadoopSecurityGroup> getSecurityGroups();
+
+    void setSecurityGroups(List<? extends HadoopSecurityGroup> securityGroups);
 }

@@ -168,6 +168,10 @@ public class MetadataJcrConfigurator {
         if (session.getRootNode().hasNode("metadata/feeds/category")) {
             session.getRootNode().getNode("metadata/feeds/category").remove();
         }
+
+        if (!session.getRootNode().hasNode("metadata/hadoopSecurityGroups")) {
+            session.getRootNode().getNode("metadata").addNode("hadoopSecurityGroups");
+        }
     }
     
     private String namePrefix(String name) {

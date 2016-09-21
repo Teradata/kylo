@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbiganalytics.db.model.schema.Field;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
+import com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup;
 import com.thinkbiganalytics.policy.rest.model.FieldPolicy;
 
 import org.apache.commons.lang3.StringEscapeUtils;
@@ -91,6 +92,7 @@ public class TableSetup {
     @MetadataField(description = "List of fields that are primary keys separated by a comma")
     private String primaryKeyFields;
 
+    private List<HadoopSecurityGroup> securityGroups;
 
     public String getDescription() {
         return description;
@@ -454,5 +456,13 @@ public class TableSetup {
 
     public void setTargetMergeStrategy(String targetMergeStrategy) {
         this.targetMergeStrategy = targetMergeStrategy;
+    }
+
+    public List<HadoopSecurityGroup> getSecurityGroups() {
+        return securityGroups;
+    }
+
+    public void setSecurityGroups(List<HadoopSecurityGroup> securityGroups) {
+        this.securityGroups = securityGroups;
     }
 }

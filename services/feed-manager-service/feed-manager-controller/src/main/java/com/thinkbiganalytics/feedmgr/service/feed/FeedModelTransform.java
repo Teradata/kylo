@@ -24,9 +24,13 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
 
 import org.apache.commons.lang3.StringUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -63,6 +67,9 @@ public class FeedModelTransform {
 
     @Inject
     private HiveService hiveService;
+
+    @Inject
+    private HadoopSecurityGroupProvider hadoopSecurityGroupProvider;
 
     public void refreshTableSchemaFromHive(FeedMetadata feed) {
         //Merge back in the hive table schema ?
@@ -161,6 +168,20 @@ public class FeedModelTransform {
             domain.setUserProperties(UserPropertyTransform.toMetadataProperties(feedMetadata.getUserProperties()), userFields);
         }
 
+        // Set the hadoop security groups
+        final List<HadoopSecurityGroup> securityGroups = new ArrayList<>();
+        if (feedMetadata.getTable().getSecurityGroups() != null) {
+
+            for (com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup securityGroup : feedMetadata.getTable().getSecurityGroups()) {
+                JcrHadoopSecurityGroup hadoopSecurityGroup = (JcrHadoopSecurityGroup) hadoopSecurityGroupProvider.ensureSecurityGroup(securityGroup.getName());
+                hadoopSecurityGroup.setGroupId(securityGroup.getId());
+                hadoopSecurityGroup.setDescription(securityGroup.getDescription());
+                securityGroups.add(hadoopSecurityGroup);
+            }
+
+        }
+        domain.setSecurityGroups(securityGroups);
+
         domain.setVersionName(feedMetadata.getVersionName());
         return domain;
     }
@@ -191,7 +212,7 @@ public class FeedModelTransform {
     /**
      * Transforms the specified Metadata feed to a Feed Manager feed.
      *
-     * @param domain the Metadata feed
+     * @param domain       the Metadata feed
      * @param userFieldMap cache map from category to user-defined fields, or {@code null}
      * @return the Feed Manager feed
      */
@@ -236,6 +257,20 @@ public class FeedModelTransform {
         @SuppressWarnings("unchecked")
         final Set<UserProperty> userProperties = UserPropertyTransform.toUserProperties(domain.getUserProperties(), userFields);
         feed.setUserProperties(userProperties);
+
+        // Convert JCR securitygroup to DTO
+        List<com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup> restSecurityGroups = new ArrayList<>();
+        if(domain.getSecurityGroups() != null && domain.getSecurityGroups().size() > 0) {
+            for(Object group : domain.getSecurityGroups()) {
+                HadoopSecurityGroup hadoopSecurityGroup = (HadoopSecurityGroup)group;
+                com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup restSecurityGroup = new com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup();
+                restSecurityGroup.setDescription(hadoopSecurityGroup.getDescription());
+                restSecurityGroup.setId(hadoopSecurityGroup.getGroupId());
+                restSecurityGroup.setName(hadoopSecurityGroup.getName());
+                restSecurityGroups.add(restSecurityGroup);
+            }
+        }
+        feed.getTable().setSecurityGroups(restSecurityGroups);
 
         return feed;
     }

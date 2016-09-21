@@ -2,7 +2,6 @@ package com.thinkbiganalytics.metadata.migration.feed;
 
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
-import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
@@ -10,6 +9,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
@@ -292,4 +292,15 @@ public class FeedManagerFeedDTO implements FeedManagerFeed {
         // TODO Auto-generated method stub
         return null;
     }
+
+    @Override
+    public List<? extends HadoopSecurityGroup> getSecurityGroups() {
+        return null;
+    }
+
+    @Override
+    public void setSecurityGroups(List securityGroups) {
+
+    }
+
 }

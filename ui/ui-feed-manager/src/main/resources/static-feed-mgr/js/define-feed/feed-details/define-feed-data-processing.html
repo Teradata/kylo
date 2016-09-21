@@ -132,6 +132,7 @@
                     md-search-text="vm.securityGroupChips.searchText"
                     md-items="item in vm.feedSecurityGroups.querySearch(vm.securityGroupChips.searchText)"
                     md-item-text="item.name"
+                    md-no-cache="true"
                     placeholder="Add a Security Group">
                <span md-highlight-text="vm.securityGroupChips.searchText">{{item.name}}</span>
             </md-autocomplete>

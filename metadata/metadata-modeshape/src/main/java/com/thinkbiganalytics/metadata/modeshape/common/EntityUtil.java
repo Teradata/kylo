@@ -39,7 +39,12 @@ public class EntityUtil {
     public static String pathForTemplates() {
         return Paths.get("/metadata", "templates").toString();
     }
-    
+
+    public static String pathForHadoopSecurityGroups() {
+        return Paths.get("/metadata", "hadoopSecurityGroups").toString();
+    }
+
+
     public static String pathForAccessibleFunctions() {
         return Paths.get("/metadata", "accessibleFunctions").toString();
     }

@@ -97,6 +97,12 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+      <artifactId>thinkbig-hadoop-authorization-api</artifactId>
+      <version>${project.version}</version>
+    </dependency>
+
 
     <!-- HIVE THRIFT CLIENT -->
 
