@@ -246,7 +246,7 @@ status() {
       then
           echo Running.  Here are the related processes:
           pgrep -lf /thinkbig-spark-shell/
-      elsecd
+      else
         echo Stopped.
     fi
 }

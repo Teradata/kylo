@@ -8,6 +8,7 @@ import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
 import com.thinkbiganalytics.nifi.security.SecurityUtil;
 import com.thinkbiganalytics.nifi.util.InputStreamReaderRunnable;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.nifi.annotation.behavior.EventDriven;
@@ -32,11 +33,7 @@ import org.apache.spark.launcher.SparkLauncher;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 @EventDriven
 @InputRequirement(InputRequirement.Requirement.INPUT_REQUIRED)
@@ -48,6 +45,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
     public static final String SPARK_NETWORK_TIMEOUT_CONFIG_NAME = "spark.network.timeout";
     public static final String SPARK_YARN_KEYTAB = "spark.yarn.keytab";
     public static final String SPARK_YARN_PRINCIPAL = "spark.yarn.principal";
+    public static final String SPARK_YARN_QUEUE = "spark.yarn.queue";
 
     // Relationships
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
@@ -64,6 +62,22 @@ public class ExecuteSparkJob extends AbstractProcessor {
         .name("ApplicationJAR")
         .description("Path to the JAR file containing the Spark job application")
         .required(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
+    public static final PropertyDescriptor EXTRA_JARS = new PropertyDescriptor.Builder()
+        .name("Extra JARs")
+        .description("A file or a list of files separated by comma which should be added to the class path")
+        .required(false)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .expressionLanguageSupported(true)
+        .build();
+
+    public static final PropertyDescriptor YARN_QUEUE = new PropertyDescriptor.Builder()
+        .name("Yarn Queue")
+        .description("Optional Yarn Queue")
+        .required(false)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -193,6 +207,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
 
         final List<PropertyDescriptor> pds = new ArrayList<>();
         pds.add(APPLICATION_JAR);
+        pds.add(EXTRA_JARS);
         pds.add(MAIN_CLASS);
         pds.add(MAIN_ARGS);
         pds.add(SPARK_MASTER);
@@ -207,6 +222,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
         pds.add(HADOOP_CONFIGURATION_RESOURCES);
         pds.add(KERBEROS_PRINCIPAL);
         pds.add(KERBEROS_KEYTAB);
+        pds.add(YARN_QUEUE);
         propDescriptors = Collections.unmodifiableList(pds);
     }
 
@@ -230,6 +246,8 @@ public class ExecuteSparkJob extends AbstractProcessor {
         try {
               /* Configuration parameters for spark launcher */
             String appJar = context.getProperty(APPLICATION_JAR).evaluateAttributeExpressions(flowFile).getValue().trim();
+            String extraJars = context.getProperty(EXTRA_JARS).evaluateAttributeExpressions(flowFile).getValue();
+            String yarnQueue = context.getProperty(YARN_QUEUE).evaluateAttributeExpressions(flowFile).getValue();
             String mainClass = context.getProperty(MAIN_CLASS).evaluateAttributeExpressions(flowFile).getValue().trim();
             String sparkMaster = context.getProperty(SPARK_MASTER).evaluateAttributeExpressions(flowFile).getValue().trim();
             String appArgs = context.getProperty(MAIN_ARGS).evaluateAttributeExpressions(flowFile).getValue().trim();
@@ -247,6 +265,13 @@ public class ExecuteSparkJob extends AbstractProcessor {
                 args = appArgs.split(",");
             }
 
+            String[] extraJarPaths = null;
+            if (!StringUtils.isEmpty(extraJars)) {
+                extraJarPaths = extraJars.split(",");
+            } else {
+                getLogger().info("No extra jars to be added to class path");
+            }
+
             // If all 3 fields are filled out then assume kerberos is enabled and we want to authenticate the user
             boolean authenticateUser = false;
             if (!(StringUtils.isEmpty(principal) && StringUtils.isEmpty(keyTab) && StringUtils.isEmpty(hadoopConfigurationResources))) {
@@ -257,9 +282,12 @@ public class ExecuteSparkJob extends AbstractProcessor {
                 ApplySecurityPolicy applySecurityObject = new ApplySecurityPolicy();
                 Configuration configuration;
                 try {
+                    getLogger().info("Getting Hadoop configuration from " + hadoopConfigurationResources);
                     configuration = ApplySecurityPolicy.getConfigurationFromResources(hadoopConfigurationResources);
 
                     if (SecurityUtil.isSecurityEnabled(configuration)) {
+                        getLogger().info("Security is enabled");
+
                         if (principal.equals("") && keyTab.equals("")) {
                             getLogger().error("Kerberos Principal and Kerberos KeyTab information missing in Kerboeros enabled cluster.");
                             session.transfer(flowFile, REL_FAILURE);
@@ -267,7 +295,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
                         }
 
                         try {
-                            getLogger().info("User anuthentication initiated");
+                            getLogger().info("User authentication initiated");
 
                             boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(logger, hadoopConfigurationResources, principal, keyTab);
                             if (authenticationStatus) {
@@ -306,6 +334,7 @@ public class ExecuteSparkJob extends AbstractProcessor {
                 .setConf(SPARK_NETWORK_TIMEOUT_CONFIG_NAME, networkTimeout)
                 .setSparkHome(sparkHome)
                 .setAppName(sparkApplicationName);
+
             if(authenticateUser) {
                 launcher.setConf(SPARK_YARN_KEYTAB, keyTab);
                 launcher.setConf(SPARK_YARN_PRINCIPAL, principal);
@@ -313,6 +342,17 @@ public class ExecuteSparkJob extends AbstractProcessor {
             if (args != null) {
                 launcher.addAppArgs(args);
             }
+            if (ArrayUtils.isNotEmpty(extraJarPaths)) {
+                for (String path : extraJarPaths) {
+                    getLogger().info("Adding to class path '" + path + "'");
+                    launcher.addJar(path);
+                }
+            }
+            if (StringUtils.isNotEmpty(yarnQueue)) {
+                launcher.setConf(SPARK_YARN_QUEUE, yarnQueue);
+            }
+
+
             Process spark = launcher.launch();
 
             /* Read/clear the process input stream */
@@ -355,9 +395,14 @@ public class ExecuteSparkJob extends AbstractProcessor {
                 for (String filename : files) {
                     try {
                         final File file = new File(filename.trim());
-                        final boolean valid = file.exists() && file.isFile();
-                        if (!valid) {
-                            final String message = "File " + file + " does not exist or is not a file";
+                        if (!file.exists()) {
+                            final String message = "file " + filename + " does not exist";
+                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                        } else if (!file.isFile()) {
+                            final String message = filename + " is not a file";
+                            return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
+                        } else if (!file.canRead()) {
+                            final String message = "could not read " + filename;
                             return new ValidationResult.Builder().subject(subject).input(input).valid(false).explanation(message).build();
                         }
                     } catch (SecurityException e) {
