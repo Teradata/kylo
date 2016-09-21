@@ -420,10 +420,12 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
 
     private ServiceLevelAssessment completeAssessment(JpaServiceLevelAssessment slaAssessment, AssessmentResult result) {
         slaAssessment.setResult(result);
+        String slaName = slaAssessment.getAgreement() != null ? slaAssessment.getAgreement().getName() : "";
         if (result == AssessmentResult.SUCCESS) {
-            slaAssessment.setMessage("SLA assessment requirements were met");
+
+            slaAssessment.setMessage("SLA assessment requirements were met for '" + slaName + "'");
         } else {
-            slaAssessment.setMessage("At least one of the SLA obligations resulted in the status: " + result);
+            slaAssessment.setMessage("At least one of the SLA obligations for '" + slaName + "' resulted in the status: " + result);
         }
 
         //save it
