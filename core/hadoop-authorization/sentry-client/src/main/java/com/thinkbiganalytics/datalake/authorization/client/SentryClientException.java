@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.datalake.authorization;
+package com.thinkbiganalytics.datalake.authorization.client;
 
 /**
  * SentryClientException : Exception Supporting Class

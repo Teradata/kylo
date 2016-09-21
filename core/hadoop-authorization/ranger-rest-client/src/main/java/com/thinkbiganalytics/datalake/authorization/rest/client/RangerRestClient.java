@@ -28,6 +28,7 @@ public class RangerRestClient extends JerseyRestClient {
     public RangerRestClient(RangerRestClientConfig config) {
         super(config);
         this.clientConfig = config;
+       
     }
 
     protected WebTarget getBaseTarget() {

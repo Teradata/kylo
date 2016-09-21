@@ -17,7 +17,7 @@ public interface ComponentProperties {
 			.Builder().name("Group List")
 			.description("Comma Seperated list of group for creating policy")
 			.required(true)
-			.defaultValue("${security.authorization.group")
+			.defaultValue("${security.authorization.group}")
 			.addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
 			.expressionLanguageSupported(true)
 			.build();

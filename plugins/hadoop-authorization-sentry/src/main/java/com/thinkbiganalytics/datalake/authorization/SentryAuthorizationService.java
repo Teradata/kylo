@@ -1,52 +1,36 @@
 package com.thinkbiganalytics.datalake.authorization;
 
-import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.List;
+import com.thinkbiganalytics.datalake.authorization.client.SentryClient;
+import com.thinkbiganalytics.datalake.authorization.client.SentryClientConfig;
+import com.thinkbiganalytics.datalake.authorization.config.SentryConnection;
+import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 
 /**
  * Sentry Authorization Service
  *
- * @author sv186029
+ * Created by Shashi Vishwakarma on 19/9/2016.
+ *
  */
 public class SentryAuthorizationService implements HadoopAuthorizationService {
 
     private static final Logger log = LoggerFactory.getLogger(SentryAuthorizationService.class);
-
-    static String HIVE_DRIVER = "org.apache.hive.jdbc.HiveDriver";
-    static String BEELINE_URL = "jdbc:hive2://dn1.cdhtdaws.com:10000/test;principal=hive/dn1.cdhtdaws.com@CDHTDAWS.COM";
-    static String KERBEROS_PRINCIPLE = "user@CDHTDAWS.COM";
-    static String KERBEROS_KEYTAB = "/etc/security/keytabs/user.headless.keytab";
-
-    /*@Override
-    public void initiateAuthorizationService(AuthorizationConfiguration config) throws SentryClientException {
-
-        System.out.println("This is Sentry Authorization Service.");
-
-        SentryClientConfig sentryClientConfig = new SentryClientConfig();
-        SentryClient sentryClient = new SentryClient(sentryClientConfig);
-
-        //set required parameters
-        sentryClientConfig.setDriverName(HIVE_DRIVER);
-        sentryClientConfig.setConnectionString(BEELINE_URL);
-        sentryClientConfig.setPrincipal(KERBEROS_PRINCIPLE);
-        sentryClientConfig.setPrincipal(KERBEROS_KEYTAB);
-
-        //Execute authorization granting statements
-        sentryClient.executeAuthorization("CREATE ROLE developer");
-        sentryClient.executeAuthorization("GRANT ROLE developer TO GROUP testsentry");
-        sentryClient.executeAuthorization("GRANT ALL ON database test TO ROLE developer");
-    }*/
+    
+    SentryClient sentryClientObject;
 
     @Override
-    public void initialize(AuthorizationConfiguration config) {
-        throw new RuntimeException(("Implement me"));
-
+    public void initialize(AuthorizationConfiguration config) 
+    {
+    	
+    	 SentryConnection sentryConnHelper = (SentryConnection) config;
+         SentryClientConfig sentryClientConfiguration = new SentryClientConfig(sentryConnHelper.getDriverName() , sentryConnHelper.getConnectionURL() , sentryConnHelper.getUsername() , sentryConnHelper.getPassword());
+         sentryClientObject = new SentryClient(sentryClientConfiguration);
+       
     }
-
 
     @Override
     public HadoopAuthorizationGroup getGroupByName(String groupName) {

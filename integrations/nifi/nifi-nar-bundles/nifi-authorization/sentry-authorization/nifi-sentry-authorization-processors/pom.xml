@@ -33,6 +33,13 @@
 			<artifactId>thinkbig-hadoop-authorization-sentry</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+
+		<dependency>
+			<groupId>com.thinkbiganalytics.datalake</groupId>
+			<artifactId>thinkbig-sentry-client</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
 		<!-- Nifi Dependency -->
 		<dependency>
 			<groupId>org.apache.nifi</groupId>
@@ -48,22 +55,7 @@
 			<artifactId>nifi-mock</artifactId>
 			<scope>test</scope>
 		</dependency>
-
-		<!-- Sentry Dependency -->
-	<!--  <dependency>
-			<groupId>org.apache.sentry</groupId>
-			<artifactId>sentry-provider-db</artifactId>
-			<version>1.5.1-cdh5.5.0</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.apache.zookeeper</groupId>
-					<artifactId>zookeeper</artifactId>
-				</exclusion>
-			</exclusions>
-		</dependency> -->	
-
-		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-simple</artifactId> 
-			<scope>test</scope> </dependency> -->
+		
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>

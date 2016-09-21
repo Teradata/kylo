@@ -1,4 +1,4 @@
-package com.thinkbiganalytics.datalake.authorization;
+package com.thinkbiganalytics.datalake.authorization.client;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,7 +18,9 @@ public class SentryClient {
 
 	public SentryClient()
 	{
-		// Nothing to do here.
+		/**
+		 *  Nothing to do here.
+		 */
 	}
 
 	public SentryClient(SentryClientConfig config) {
@@ -189,8 +191,10 @@ public class SentryClient {
 
 			if(matchFound)
 			{
-				//Return true of role is present in result set
-				log.info("Role " + roleName+"  found in Sentry database.");
+				/**
+				 * Return true of role is present in result set
+				 */
+				log.info("Role " + roleName+" found in Sentry database.");
 				return true;
 			}
 			else
