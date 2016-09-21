@@ -15,7 +15,7 @@
 
         /**
          * Error message object that maps keys to a boolean indicating the error state.
-         * @type {Object.<string, boolean>}
+         * @type {{duplicateUser: boolean, missingGroup: boolean, missingUser: boolean}}
          */
         self.$error = {missingGroup: false};
 
@@ -67,6 +67,12 @@
          */
         self.model = {displayName: null, email: null, enabled: true, groups: [], systemName: null};
 
+        /**
+         * Lookup map for detecting duplicate user names.
+         * @type {Object.<string, boolean>}
+         */
+        self.userMap = {};
+
         // Update isValid when $error is updated
         $scope.$watch(
                 function() {return self.$error},
@@ -83,6 +89,15 @@
                 function() {return self.editModel.groups},
                 function() {self.$error.missingGroup = (angular.isUndefined(self.editModel.groups) || self.editModel.groups.length === 0)},
                 true
+        );
+
+        // Update $error when the system name changes
+        $scope.$watch(
+                function() {return self.editModel.systemName},
+                function() {
+                    self.$error.duplicateUser = (angular.isString(self.editModel.systemName) && self.userMap[self.editModel.systemName]);
+                    self.$error.missingUser = (!angular.isString(self.editModel.systemName) || self.editModel.systemName.length === 0);
+                }
         );
 
         /**
@@ -200,6 +215,14 @@
                 self.onEdit();
                 self.isEditable = true;
                 self.loading = false;
+
+                UserService.getUsers()
+                        .then(function(users) {
+                            self.userMap = {};
+                            angular.forEach(users, function(user) {
+                                self.userMap[user.systemName] = true;
+                            });
+                        });
             }
         };
 

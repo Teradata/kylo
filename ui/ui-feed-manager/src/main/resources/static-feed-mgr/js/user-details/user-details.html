@@ -55,9 +55,10 @@
                     <editable-section>
                         <md-input-container class="md-block" ng-if="vm.model.systemName === null">
                             <label>Username</label>
-                            <input name="username" type="text" ng-model="vm.editModel.systemName" required="true"/>
-                            <div ng-messages="userForm.username.$error" md-auto-hide="false">
-                                <div ng-message="required">A username is required.</div>
+                            <input name="username" type="text" ng-model="vm.editModel.systemName"/>
+                            <div ng-messages="vm.$error" md-auto-hide="false">
+                                <div ng-message="duplicateUser">That username is already in use.</div>
+                                <div ng-message="missingUser">A username is required.</div>
                             </div>
                         </md-input-container>
                         <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.systemName !== null">
