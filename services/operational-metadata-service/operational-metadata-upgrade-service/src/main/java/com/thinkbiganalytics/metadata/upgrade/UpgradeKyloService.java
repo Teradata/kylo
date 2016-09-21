@@ -1,23 +1,5 @@
 package com.thinkbiganalytics.metadata.upgrade;
 
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
-import com.thinkbiganalytics.metadata.api.app.KyloVersion;
-import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
-import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
-import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
-import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
-import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
-import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
-import com.thinkbiganalytics.security.AccessController;
-import com.thinkbiganalytics.support.FeedNameUtil;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -25,6 +7,26 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
+import com.thinkbiganalytics.metadata.api.app.KyloVersion;
+import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
+import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
+import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
+import com.thinkbiganalytics.metadata.jpa.feed.JpaOpsManagerFeed;
+import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailability;
+import com.thinkbiganalytics.metadata.modeshape.common.ModeShapeAvailabilityListener;
+import com.thinkbiganalytics.security.AccessController;
+import com.thinkbiganalytics.support.FeedNameUtil;
 
 /**
  * Created by sr186054 on 9/19/16.
@@ -39,6 +41,9 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
 
     @Inject
     private FeedManagerFeedProvider feedManagerFeedProvider;
+    
+    @Inject
+    private FeedManagerCategoryProvider feedManagerCategoryProvider;
 
     @Inject
     OpsManagerFeedProvider opsManagerFeedProvider;
@@ -88,7 +93,12 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
 
     public KyloVersion upgradeTo0_4_0() {
 
-        return metadataAccess.read(() -> operationalMetadataAccess.commit(() -> {
+        return metadataAccess.commit(() -> operationalMetadataAccess.commit(() -> {
+            
+            for (FeedManagerCategory category : feedManagerCategoryProvider.findAll()) {
+                // Ensure each category has an allowedActions (gets create if not present.)
+                category.getAllowedActions();
+            }
 
             //1 get all feeds defined in feed manager
             List<FeedManagerFeed> domainFeeds = feedManagerFeedProvider.findAll();
@@ -98,6 +108,9 @@ public class UpgradeKyloService implements ModeShapeAvailabilityListener {
                 for (FeedManagerFeed feedManagerFeed : domainFeeds) {
                     opsManagerFeedIds.add(opsManagerFeedProvider.resolveId(feedManagerFeed.getId().toString()));
                     feedManagerFeedMap.put(feedManagerFeed.getId().toString(), feedManagerFeed);
+                    
+                    // Ensure each feed has an allowedActions (gets create if not present.)
+                    feedManagerFeed.getAllowedActions();
                 }
                 //find those that match
                 List<? extends OpsManagerFeed> opsManagerFeeds = opsManagerFeedProvider.findByFeedIds(opsManagerFeedIds);
