@@ -7,10 +7,11 @@
      * @param $mdDialog the dialog service
      * @param $mdToast the toast notification service
      * @param $stateParams the URL parameters
+     * @param {AccessControlService} AccessControlService the access control service
      * @param UserService the user service
      * @param StateService manages system state
      */
-    function UserDetailsController($scope, $mdDialog, $mdToast, $stateParams, UserService, StateService) {
+    function UserDetailsController($scope, $mdDialog, $mdToast, $stateParams, AccessControlService, UserService, StateService) {
         var self = this;
 
         /**
@@ -18,6 +19,12 @@
          * @type {{duplicateUser: boolean, missingGroup: boolean, missingUser: boolean}}
          */
         self.$error = {duplicateUser: false, missingGroup: false, missingUser: false};
+
+        /**
+         * Indicates that admin operations are allowed.
+         * @type {boolean}
+         */
+        self.allowAdmin = false;
 
         /**
          * User model for the edit view.
@@ -202,6 +209,12 @@
                             self.groupList.push(group.systemName);
                             self.groupMap[group.systemName] = group;
                         });
+                    });
+
+            // Load allowed permissions
+            AccessControlService.getAllowedActions()
+                    .then(function(actionSet) {
+                        self.allowAdmin = AccessControlService.hasAction(AccessControlService.USERS_ADMIN, actionSet.actions);
                     });
 
             // Load the user details

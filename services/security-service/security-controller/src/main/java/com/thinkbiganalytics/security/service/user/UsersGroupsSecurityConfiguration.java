@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.security.service.user;
 
 import javax.inject.Inject;
@@ -13,8 +10,7 @@ import com.thinkbiganalytics.metadata.api.PostMetadataConfigAction;
 import com.thinkbiganalytics.security.action.config.ModuleActionsBuilder;
 
 /**
- *
- * @author Sean Felten
+ * Configures the actions for users and groups.
  */
 @Configuration
 public class UsersGroupsSecurityConfiguration {
@@ -35,10 +31,10 @@ public class UsersGroupsSecurityConfiguration {
                                 .description("Allows access to user and group-related functions")
                                 .subAction(UsersGroupsAccessContol.ACCESS_USERS)
                                     .title("Access Users")
-                                    .description("Allows the ability to view existing user")
+                                    .description("Allows the ability to view existing users")
                                     .subAction(UsersGroupsAccessContol.ADMIN_USERS)
                                         .title("Administer Users")
-                                        .description("Allow the ability to create and managed users")
+                                        .description("Allows the ability to create and manage users")
                                         .add()
                                     .add()
                                 .subAction(UsersGroupsAccessContol.ACCESS_GROUPS)
@@ -46,14 +42,13 @@ public class UsersGroupsSecurityConfiguration {
                                     .description("Allows the ability to view existing groups")
                                     .subAction(UsersGroupsAccessContol.ADMIN_GROUPS)
                                         .title("Administer Groups")
-                                        .description("Allow the ability to create and managed groups")
+                                        .description("Allows the ability to create and manage groups")
                                         .add()
                                     .add()
                                 .add()
                             .add()
                         .build();
-                
+
             }, MetadataAccess.SERVICE);
     }
-
 }

@@ -100,6 +100,18 @@ angular.module(MODULE_FEED_MGR).factory("AccessControlService", function($http, 
         FEED_MANAGER_ACCESS: "accessFeedsSupport",
 
         /**
+         * Allows the ability to view existing groups.
+         * @type {string}
+         */
+        GROUP_ACCESS: "accessGroups",
+
+        /**
+         * Allows the ability to create and manage groups.
+         * @type {string}
+         */
+        GROUP_ADMIN: "adminGroups",
+
+        /**
          * Allows access to feed templates.
          * @type {string}
          */
@@ -128,6 +140,24 @@ angular.module(MODULE_FEED_MGR).factory("AccessControlService", function($http, 
          * @type {string}
          */
         TEMPLATES_IMPORT: "importTemplates",
+
+        /**
+         * Allows the ability to view existing users.
+         * @type {string}
+         */
+        USERS_ACCESS: "accessUsers",
+
+        /**
+         * Allows the ability to create and manage users.
+         * @type {string}
+         */
+        USERS_ADMIN: "adminUsers",
+
+        /**
+         * Allows access to user and group-related functions.
+         * @type {string}
+         */
+        USERS_GROUPS_ACCESS: "accessUsersGroupsSupport",
 
         /**
          * List of available actions

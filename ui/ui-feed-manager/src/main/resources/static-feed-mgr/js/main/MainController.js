@@ -72,13 +72,13 @@
             if (AccessControlService.hasAction(AccessControlService.CATEGORIES_ADMIN, allowed) || AccessControlService.hasAction(AccessControlService.FEEDS_ADMIN, allowed)) {
                 menu.push({sref: "business-metadata", icon: "business", text: "Business Metadata", defaultActive: false});
             }
-            if (AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, allowed)) {
+            if (AccessControlService.hasAction(AccessControlService.GROUP_ACCESS, allowed)) {
                 menu.push({sref: "groups", icon: "group", text: "Groups", defaultActive: false});
             }
             if (AccessControlService.hasAction(AccessControlService.TEMPLATES_ACCESS, allowed)) {
                 menu.push({sref: "registered-templates", icon: "folder_special", text: "Templates", defaultActive: false});
             }
-            if (AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, allowed)) {
+            if (AccessControlService.hasAction(AccessControlService.USERS_ACCESS, allowed)) {
                 menu.push({sref: "users", icon: "account_box", text: "Users", defaultActive: false});
             }
             self.adminMenu = menu;
