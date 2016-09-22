@@ -203,16 +203,40 @@ describe("VisualQueryBuilderController", function() {
         this.$http.whenGET("js/feeds/feeds-table.html").respond(200, "");
 
         // Add tables
-        this.controller.chartViewModel.addNode(USERS_NODE);
-        this.controller.chartViewModel.addNode(SALES_NODE);
+        this.controller.chartViewModel.addNode({
+            id: 10,
+            name: "sample.t1",
+            nodeAttributes: {
+                attributes: [
+                    {name: "id", dataType: "smallint", selected: true},
+                    {name: "id_1", dataType: "smallint", selected: true}  // collision with sample.t1.id -> t1_id -> sample_t1_id -> id_1
+                ],
+                sql: "`sample`.`t1`"
+            },
+            connectors: {bottom: {}, left: {}, right: {}, top: {}},
+            inputConnectors: [{name: ""}],
+            outputConnectors: [{name: ""}]
+        });
+        this.controller.chartViewModel.addNode({
+            id: 11,
+            name: "sample.t2",
+            nodeAttributes: {
+                attributes: [
+                    {name: "id", dataType: "smallint", selected: true},  // collision with sample.t1.id
+                    {name: "t1_id", dataType: "smallint", selected: true},  // collision with sample.t1.id -> t1_id
+                    {name: "sample_t1_id", dataType: "smallint", selected: true}  // collision with sample.t1.id -> t1_id -> sample_t1_id
+                ],
+                sql: "`sample`.`t2`"
+            },
+            connectors: {bottom: {}, left: {}, right: {}, top: {}},
+            inputConnectors: [{name: ""}],
+            outputConnectors: [{name: ""}]
+        });
 
         // Test SQL
-        var expected = "SELECT tbl10.`username`, tbl10.`firstname`, tbl10.`lastname`, tbl11.`qtysold`, tbl11.`pricepaid`, tbl11.`commission` FROM `tickit`.`users` tbl10, `tickit`.`sales` tbl11";
+        var expected = "SELECT tbl10.`id` AS `id_2`, tbl10.`id_1`, tbl11.`id` AS `t2_id`, tbl11.`t1_id` AS `t2_t1_id`, tbl11.`sample_t1_id` AS `t2_sample_t1_id` FROM `sample`.`t1` tbl10, "
+                       + "`sample`.`t2` tbl11";
         expect(this.controller.getSQLModel()).toBe(expected);
-
-        // Test selected columns
-        expected = _.flatten([USERS_COLUMNS, SALES_COLUMNS], true);
-        expect(this.controller.selectedColumnsAndTables).toEqual(expected);
     });
 
     it("should produce SQL for pre-joined tables", function() {
