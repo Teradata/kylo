@@ -45,10 +45,24 @@
         //Track active requests and be able to cancel them if needed
         this.activeJobRequests = []
 
-        //Setup the Tabs
-        this.jobTabData = {'JOB': {}};
-        this.jobTabs = [{title: 'JOB', content: self.jobTabData['JOB']}];
-        this.selectedTab = this.jobTabs[0];
+        this.jobData = {};
+
+        /**
+         * {step1:data,step2:data}
+         * @type {{}}
+         */
+        this.stepData = {};
+
+        /**
+         * [{{title:'',data:{}},{title:'',data:{}}...}]
+         * @type {{}}
+         */
+
+        this.allSteps = [];
+
+        this.jobTab = {title: 'JOB', content: self.jobData}
+
+        //  this.selectedTab = this.jobTabs[0];
         this.tabMetadata = {
             selectedIndex: 0,
             bottom: false
@@ -87,13 +101,6 @@
 
         //Tab Functions
 
-        /**
-         * Called when a Tab is clicked
-         * @param tab
-         */
-        this.tabSelected = function(tab) {
-            self.selectedTab = tab;
-        }
 
         function toggleJobParameters(name) {
             if (name == 'JobParameters') {
@@ -106,7 +113,7 @@
 
         function selectFirstTab() {
             self.tabMetadata.selectedIndex = 0;
-            self.selectedTab = self.jobTabs[0];
+            // self.selectedTab = self.jobTabs[0];
         }
 
         function cancelLoadJobDataTimeout() {
@@ -265,6 +272,18 @@
 
         }
 
+        function cssClassForDisplayStatus(displayStatus) {
+            var cssStatus = {'success': ['COMPLETED', 'STARTING', 'STARTED', 'EXECUTING'], 'error': ['FAILED'], 'warn': ['STOPPING', 'STOPPED'], 'abandoned': ['ABANDONED'], 'unknown': ['UNKNOWN']};
+            var statusCssMap = {};
+            _.each(cssStatus, function (arr, key) {
+                _.each(arr, function (status, i) {
+                    statusCssMap[status] = key;
+                });
+            });
+            return statusCssMap[displayStatus];
+
+        }
+
         function transformJobData(job) {
             assignParameterArray(job);
             job.name = job.jobName;
@@ -278,6 +297,7 @@
 
             var iconStyle = IconService.iconStyleForJobStatus(job.displayStatus);
             var icon = IconService.iconForJobStatus(job.displayStatus);
+            job.cssStatusClass = cssClassForDisplayStatus(job.displayStatus);
 
             if (job.status == "STARTED") {
                 job.running = true;
@@ -286,20 +306,19 @@
                 job.stopping = true;
             }
             job.statusIcon = icon;
+            job.tabIconStyle = iconStyle;
 
-            angular.extend(self.jobTabData['JOB'], job);
-            self.jobData = self.jobTabData['JOB'];
+            angular.extend(self.jobData, job);
+
 
             if (job.executedSteps) {
                 angular.forEach(job.executedSteps, function(step, i) {
-
-                    var tabName = "STEP " + (i + 1);
-                    if (self.jobTabData[tabName] == undefined) {
-                        var data = {};
-                        self.jobTabData[tabName] = data;
-                        self.jobTabs.push({title: tabName, content: self.jobTabData[tabName]})
+                    var stepName = "Step " + (i + 1);
+                    if (self.stepData[stepName] == undefined) {
+                        self.stepData[stepName] = {};
+                        self.allSteps.push({title: stepName, content: self.stepData[stepName]})
                     }
-                    angular.extend(self.jobTabData[tabName], transformStep(step));
+                    angular.extend(self.stepData[stepName], transformStep(step));
 
                 });
             }
@@ -326,6 +345,7 @@
 
             var style = IconService.iconStyleForJobStatus(step.displayStatus);
             var icon = IconService.iconForJobStatus(step.displayStatus);
+            step.cssStatusClass = cssClassForDisplayStatus(step.displayStatus);
             step.statusIcon = icon;
             if (step.displayStatus == 'FAILED' || step.displayStatus == 'EXECUTING') {
                 step.tabIconStyle = style;
@@ -365,7 +385,7 @@
 
         function updateJob(executionId, job) {
             clearErrorMessage(executionId);
-            var existingJob = self.jobTabData['JOB'];
+            var existingJob = self.jobData;
             if (existingJob && executionId == job.executionId) {
                 transformJobData(job);
             }
@@ -379,20 +399,16 @@
         function loadJobExecution(executionId) {
             self.jobExecutionId = executionId;
 
-            //reset Job Tabs
-            var len = self.jobTabs.length;
+            //reset steps
+            var len = self.allSteps.length;
             while (len > 1) {
-                self.jobTabs.splice(len - 1, 1);
-                len = self.jobTabs.length;
+                self.allSteps.splice(len - 1, 1);
+                len = self.allSteps.length;
             }
-            angular.forEach(Object.keys(self.jobTabData), function(key, i) {
-                if (key == 'JOB') {
-                    //    self.jobTabData[key] = {};
-                }
-                else {
-                    delete self.jobTabData[key];
-                }
-            })
+            //clear out all the steps
+            angular.forEach(Object.keys(self.stepData), function (key, i) {
+                delete self.stepData[key];
+            });
 
             loadJobData(true);
             loadRelatedJobs(executionId);
@@ -400,7 +416,7 @@
         }
 
         function addJobErrorMessage(executionId, errMsg) {
-            var existingJob = self.jobTabData['JOB'];
+            var existingJob = self.allData['JOB'];
             if (existingJob) {
                 errMsg = errMsg.split('<br/>').join('\n');
                 existingJob.errorMessage = errMsg;
@@ -408,7 +424,7 @@
         }
 
         function clearErrorMessage(executionId) {
-            var existingJob = self.jobTabData['JOB'];
+            var existingJob = self.jobData;
             if (existingJob) {
                 existingJob.errorMessage = '';
             }
@@ -468,7 +484,7 @@
                 fullscreen: true,
                 locals: {
                     jobExecutionId: self.jobExecutionId,
-                    jobName: self.jobTabData['JOB'].jobName
+                    jobName: self.allData['JOB'].jobName
                 }
             })
                     .then(function(job) {
