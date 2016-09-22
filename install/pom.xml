@@ -395,6 +395,30 @@
                     <include>thinkbig-spark-interpreter-${project.version}-jar-with-dependencies.jar</include>
                   </includes>
                 </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-authorization-service/nifi-ranger-authorization-service-api-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-ranger-authorization-service-api-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-authorization-service/nifi-ranger-authorization-service-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-ranger-authorization-service-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-authorization/ranger-authorization/nifi-ranger-authorization-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-ranger-authorization-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
+                <source>
+                  <location>../integrations/nifi/nifi-nar-bundles/nifi-authorization/sentry-authorization/nifi-sentry-authorization-nar/target</location>
+                  <includes>
+                    <include>thinkbig-nifi-sentry-authorization-nar-${project.version}.nar</include>
+                  </includes>
+                </source>
               </sources>
             </mapping>
             <mapping>
