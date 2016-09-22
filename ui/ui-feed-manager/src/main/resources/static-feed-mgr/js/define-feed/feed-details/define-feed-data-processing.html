@@ -34,39 +34,41 @@
       </md-list-item>
 
 
-      <md-list-item ng-repeat="policy in vm.model.table.fieldPolicies">
-         <div layout="row" layout-fill>
-            <div flex="25" class="md-list-item-text">
-               <md-input-container class="md-block" flex-gt-sm>
-                  <div>{{policy.name}}</div>
-               </md-input-container>
-            </div>
-            <div flex="10" class="md-list-item-text ">
-               <md-input-container class="md-block"  flex-gt-sm>
-                  <input type="checkbox" ng-model="policy.index" aria-label="Index"/>
-               </md-input-container>
-            </div>
-            <div flex="10" class="md-list-item-text ">
-               <md-input-container class="md-block"  flex-gt-sm>
-                  <input type="checkbox" ng-model="policy.profile" aria-label="Profile"/>
-               </md-input-container>
-            </div>
-            <div flex="25" class="md-list-item-text hint" layout-align="start center">
-              <div ng-click="vm.showFieldRuleDialog(policy,'standardization')" style="color:#2D78B1;">
-                 <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;"><ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon></md-button>ADD</div>
-               <div ng-if="policy.standardization != null && policy.standardization.length >0" class="orange" style="padding-left:32px;">
-                  {{policy.standardization.length}} Added
-               </div>
-            </div>
-            <div flex="25" class="md-list-item-text hint" layout-align="start center">
-               <div href ng-click="vm.showFieldRuleDialog(policy,'validation')" style="color:#2D78B1;">
-                  <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;"><ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon></md-button>ADD</div>
-               <div ng-if="policy.validation != null && policy.validation.length >0" class="orange" style="padding-left:32px;">
-                  {{policy.validation.length}} Added
-               </div>
-            </div>
-         </div>
-   </md-list-item>
+       <md-virtual-repeat-container browser-height browser-height-offset="400" browser-height-scroll-y="false">
+           <md-list-item md-virtual-repeat="policy in vm.model.table.fieldPolicies">
+             <div layout="row" layout-fill>
+                <div flex="25" class="md-list-item-text">
+                   <md-input-container class="md-block" flex-gt-sm>
+                      <div>{{policy.name}}</div>
+                   </md-input-container>
+                </div>
+                <div flex="10" class="md-list-item-text ">
+                   <md-input-container class="md-block"  flex-gt-sm>
+                      <input type="checkbox" ng-model="policy.index" aria-label="Index"/>
+                   </md-input-container>
+                </div>
+                <div flex="10" class="md-list-item-text ">
+                   <md-input-container class="md-block"  flex-gt-sm>
+                      <input type="checkbox" ng-model="policy.profile" aria-label="Profile"/>
+                   </md-input-container>
+                </div>
+                <div flex="25" class="md-list-item-text hint" layout-align="start center">
+                  <div ng-click="vm.showFieldRuleDialog(policy,'standardization')" style="color:#2D78B1;">
+                     <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;"><ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon></md-button>ADD</div>
+                   <div ng-if="policy.standardization != null && policy.standardization.length >0" class="orange" style="padding-left:32px;">
+                      {{policy.standardization.length}} Added
+                   </div>
+                </div>
+                <div flex="25" class="md-list-item-text hint" layout-align="start center">
+                   <div href ng-click="vm.showFieldRuleDialog(policy,'validation')" style="color:#2D78B1;">
+                      <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;"><ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon></md-button>ADD</div>
+                   <div ng-if="policy.validation != null && policy.validation.length >0" class="orange" style="padding-left:32px;">
+                      {{policy.validation.length}} Added
+                   </div>
+                </div>
+             </div>
+           </md-list-item>
+       </md-virtual-repeat-container>
       </md-list>
 
 
