@@ -1,6 +1,3 @@
-/**
- * 
- */
 package com.thinkbiganalytics.metadata.modeshape.security.action;
 
 import java.security.AccessControlException;
@@ -34,15 +31,15 @@ import com.thinkbiganalytics.security.action.AllowedActions;
  * @author Sean Felten
  */
 public class JcrAllowedActions extends JcrObject implements AllowedActions {
-    
+
     public static final String NODE_NAME = "tba:allowedActions";
     public static final String NODE_TYPE = "tba:allowedActions";
-    
-    
+
+
     public JcrAllowedActions(Node allowedActionsNode) {
         super(allowedActionsNode);
     }
-    
+
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.security.action.AllowedActions#getAvailableActions()
      */
@@ -78,14 +75,14 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
     public boolean enableOnly(Principal principal, Action action, Action... more) {
         Set<Action> actions = new HashSet<>(Arrays.asList(more));
         actions.add(action);
-        
+
         return enableOnly(principal, actions);
     }
 
     @Override
     public boolean enableOnly(Principal principal, Set<Action> actions) {
         final AtomicBoolean result = new AtomicBoolean(false);
-      
+
         getAvailableActions().stream().forEach(available -> {
             available.stream().forEach(child -> {
                 if (actions.contains(child)) {
@@ -95,7 +92,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
                 }
             });
         });
-        
+
         return result.get();
     }
 
@@ -123,28 +120,27 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
         actions.add(action);
         checkPermission(actions);
     }
-    
+
     @Override
     public void checkPermission(Set<Action> actions) {
-        Node current = getNode();
-        
         for (Action action : actions) {
+            Node current = getNode();
             for (Action parent : action.getHierarchy()) {
                 if (! JcrUtil.hasNode(current, parent.getSystemName())) {
                     throw new AccessControlException("Not authorized to perform the action: " + action.getSystemName());
                 }
-                
+
                 current = JcrUtil.getNode(current, parent.getSystemName());
             }
         }
     }
-    
+
     public JcrAllowedActions copy(Node allowedNode, JcrAllowedActions src, Principal principal, String... privilegeNames) {
         try {
             for (Node actionNode : JcrUtil.getNodesOfType(src.getNode(), JcrAllowableAction.NODE_TYPE)) {
                 copyAction(actionNode, allowedNode, principal, privilegeNames);
             }
-            
+
             return new JcrAllowedActions(allowedNode);
         } catch (RepositoryException e) {
             throw new MetadataException("Failed to copy allowed actions", e);
@@ -156,24 +152,24 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
         JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.TITLE);
         JcrPropertyUtil.copyProperty(src, dest, JcrPropertyConstants.DESCRIPTION);
         JcrAccessControlUtil.addPermissions(dest, principal, privilegeNames);
-        
+
         for (Node child : JcrUtil.getNodesOfType(src, JcrAllowableAction.NODE_TYPE)) {
             copyAction(child, dest, principal, privilegeNames);
         }
-        
+
         return dest;
     }
-    
+
     private boolean togglePermission(Iterable<Action> actions, Principal principal, boolean add) {
         boolean result = false;
-        
+
         for (Action action : actions) {
             result |= togglePermission(action, principal, add);
         }
-        
+
         return result;
     }
-    
+
     private boolean togglePermission(Action action, Principal principal, boolean add) {
         return findActionNode(action)
                     .map(node -> {
@@ -188,7 +184,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
 
     private Optional<Node> findActionNode(Action action) {
         Node current = getNode();
-        
+
         for (Action pathAction : action.getHierarchy()) {
             if (JcrUtil.hasNode(current, pathAction.getSystemName())) {
                 current = JcrUtil.getNode(current, pathAction.getSystemName());
@@ -196,7 +192,7 @@ public class JcrAllowedActions extends JcrObject implements AllowedActions {
                 return Optional.empty();
             }
         }
-        
+
         return Optional.of(current);
     }
 }
