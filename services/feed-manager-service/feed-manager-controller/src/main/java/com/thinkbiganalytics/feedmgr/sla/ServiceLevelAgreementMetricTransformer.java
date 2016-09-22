@@ -4,11 +4,11 @@ package com.thinkbiganalytics.feedmgr.sla;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementMetric;
 import com.thinkbiganalytics.policy.BasePolicyAnnotationTransformer;
+import com.thinkbiganalytics.policy.ReflectionPolicyAnnotationDiscoverer;
 import com.thinkbiganalytics.policy.rest.model.FieldRuleProperty;
 import com.thinkbiganalytics.policy.rest.model.GenericBaseUiPolicyRuleBuilder;
 
 import org.apache.commons.lang3.StringUtils;
-import org.reflections.Reflections;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -55,8 +55,8 @@ public class ServiceLevelAgreementMetricTransformer
 
         List<ServiceLevelAgreementRule> rules = new ArrayList<>();
         Set<Class<?>>
-            validators = new Reflections("com.thinkbiganalytics").getTypesAnnotatedWith(ServiceLevelAgreementMetric.class);
-        for (Class c : validators) {
+            metrics = ReflectionPolicyAnnotationDiscoverer.getTypesAnnotatedWith(ServiceLevelAgreementMetric.class);
+        for (Class c : metrics) {
             List<FieldRuleProperty> properties = getUiProperties(c);
             ServiceLevelAgreementMetric policy = (ServiceLevelAgreementMetric) c.getAnnotation(ServiceLevelAgreementMetric.class);
             rules.add(buildUiModel(policy,c,properties));

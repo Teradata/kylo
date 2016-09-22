@@ -15,9 +15,9 @@
 
         /**
          * Error message object that maps keys to a boolean indicating the error state.
-         * @type {Object.<string, boolean>}
+         * @type {{duplicateUser: boolean, missingGroup: boolean, missingUser: boolean}}
          */
-        self.$error = {missingGroup: false};
+        self.$error = {duplicateUser: false, missingGroup: false, missingUser: false};
 
         /**
          * User model for the edit view.
@@ -67,6 +67,12 @@
          */
         self.model = {displayName: null, email: null, enabled: true, groups: [], systemName: null};
 
+        /**
+         * Lookup map for detecting duplicate user names.
+         * @type {Object.<string, boolean>}
+         */
+        self.userMap = {};
+
         // Update isValid when $error is updated
         $scope.$watch(
                 function() {return self.$error},
@@ -85,6 +91,15 @@
                 true
         );
 
+        // Update $error when the system name changes
+        $scope.$watch(
+                function() {return self.editModel.systemName},
+                function() {
+                    self.$error.duplicateUser = (angular.isString(self.editModel.systemName) && self.userMap[self.editModel.systemName]);
+                    self.$error.missingUser = (!angular.isString(self.editModel.systemName) || self.editModel.systemName.length === 0);
+                }
+        );
+
         /**
          * Indicates if the user can be deleted. The main requirement is that the user exists.
          *
@@ -95,13 +110,30 @@
         };
 
         /**
+         * Finds the substring of the title for the specified group that matches the query term.
+         *
+         * @param group the group
+         * @returns {string} the group title substring
+         */
+        self.findGroupSearchText = function(group) {
+            var safeQuery = self.groupSearchText.toLocaleUpperCase();
+            if (angular.isString(self.groupMap[group].title)) {
+                var titleIndex = self.groupMap[group].title.toLocaleUpperCase().indexOf(safeQuery);
+                return (titleIndex > -1) ? self.groupMap[group].title.substr(titleIndex, safeQuery.length) : self.groupSearchText;
+            } else {
+                var nameIndex = group.toLocaleUpperCase().indexOf(safeQuery);
+                return (nameIndex > -1) ? group.substr(nameIndex, safeQuery.length) : self.groupSearchText;
+            }
+        };
+
+        /**
          * Gets the title for the specified group.
          *
          * @param group the group
          * @returns {string} the group title
          */
         self.getGroupTitle = function(group) {
-            if (angular.isDefined(self.groupMap[group]) && angular.isDefined(self.groupMap[group].title)) {
+            if (angular.isDefined(self.groupMap[group]) && angular.isString(self.groupMap[group].title)) {
                 return self.groupMap[group].title;
             } else {
                 return group;
@@ -183,6 +215,14 @@
                 self.onEdit();
                 self.isEditable = true;
                 self.loading = false;
+
+                UserService.getUsers()
+                        .then(function(users) {
+                            self.userMap = {};
+                            angular.forEach(users, function(user) {
+                                self.userMap[user.systemName] = true;
+                            });
+                        });
             }
         };
 
@@ -205,13 +245,30 @@
          */
         self.queryGroups = function(query) {
             var safeQuery = query.toLocaleUpperCase();
-            return self.groupList.filter(function(group) {
-                if (self.editModel.groups.indexOf(group) !== -1) {
-                    return false;
-                }
-
-                return (group.toLocaleUpperCase().indexOf(safeQuery) > -1 || (angular.isString(self.groupMap[group].title) && self.groupMap[group].title.toLocaleUpperCase().indexOf(safeQuery) > -1));
-            });
+            return self.groupList
+                    // Filter groups that are already selected
+                    .filter(function(group) {
+                        return (self.editModel.groups.indexOf(group) === -1);
+                    })
+                    // Find position of query term
+                    .map(function(group) {
+                        var nameIndex = group.toLocaleUpperCase().indexOf(safeQuery);
+                        var titleIndex = angular.isString(self.groupMap[group].title) ? self.groupMap[group].title.toLocaleUpperCase().indexOf(safeQuery) : -1;
+                        var index = (titleIndex > -1 && (nameIndex === -1 || nameIndex > titleIndex)) ? titleIndex : nameIndex;
+                        return {name: group, index: index};
+                    })
+                    // Filter groups without query term
+                    .filter(function(item) {
+                        return item.index > -1;
+                    })
+                    // Sort based on position of query term
+                    .sort(function(a, b) {
+                        return a.index - b.index;
+                    })
+                    // Map back to just the name
+                    .map(function(item) {
+                        return item.name;
+                    });
         };
 
         // Load the user details

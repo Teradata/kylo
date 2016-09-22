@@ -174,7 +174,9 @@ public class ServiceLevelAgreementRestController {
         return this.metadata.commit(() -> {
             List<? extends com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement> list = this.provider.getAgreements();
 
-            return Lists.transform(list, ServiceLevelAgreementModelTransform.DOMAIN_TO_SLA);
+            List<ServiceLevelAgreement> transformedList = Lists.newArrayList(Lists.transform(list, ServiceLevelAgreementModelTransform.DOMAIN_TO_SLA));
+            return transformedList;
+
         });
     }
 

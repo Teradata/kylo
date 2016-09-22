@@ -3,6 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>thinkbig-service-app</artifactId>
+  <packaging>jar</packaging>
 
     <parent>
         <artifactId>thinkbig-services</artifactId>
@@ -24,6 +25,11 @@
 
     <dependencies>
 
+      <dependency>
+        <groupId>com.thinkbiganalytics.datalake</groupId>
+        <artifactId>thinkbig-service-app-api</artifactId>
+        <version>${project.version}</version>
+      </dependency>
         <!-- Services monitoring code -->
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
@@ -382,7 +388,8 @@
         </dependency>
     </dependencies>
 
-    <build>
+
+  <build>
 
       <resources>
         <resource>

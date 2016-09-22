@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
+
 import org.apache.commons.lang3.ClassUtils;
 
 import java.util.ArrayList;
@@ -124,5 +125,13 @@ public class BaseUiPolicyRule {
       setPropertyValuesDisplayString(sb.toString());
     }
 
+  }
+
+  @Override
+  public String toString() {
+    final StringBuilder sb = new StringBuilder("BaseUiPolicyRule{");
+    sb.append("name='").append(name).append('\'');
+    sb.append('}');
+    return sb.toString();
   }
 }

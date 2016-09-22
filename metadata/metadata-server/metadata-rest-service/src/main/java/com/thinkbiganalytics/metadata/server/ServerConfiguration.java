@@ -7,6 +7,8 @@ import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.MetadataAction;
 import com.thinkbiganalytics.metadata.api.MetadataCommand;
 import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
+import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
+import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.op.DataOperationsProvider;
@@ -96,6 +98,16 @@ public class ServerConfiguration {
                 } catch (Exception e) {
                     throw new MetadataExecutionException(e);
                 }
+            }
+
+            @Override
+            public <R> R commit(MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd, Principal... principals) {
+              return commit(cmd,principals);
+            }
+
+            @Override
+            public void commit(MetadataAction action, MetadataRollbackAction rollbackAction, Principal... principals) {
+             commit(action,principals);
             }
 
             @Override

@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.thinkbiganalytics.policy.PolicyPropertyTypes;
-import com.thinkbiganalytics.policy.precondition.AvailablePolicies;
+import com.thinkbiganalytics.policy.precondition.PreconditionPolicyRuleCache;
 import com.thinkbiganalytics.policy.precondition.transform.PreconditionAnnotationTransformer;
 import com.thinkbiganalytics.policy.rest.model.PreconditionRule;
 
@@ -16,9 +16,11 @@ public class FeedManagerPreconditionService {
     @Inject
     FeedManagerFeedService feedManagerFeedService;
 
+    @Inject
+    PreconditionPolicyRuleCache preconditionPolicyRuleCache;
 
     public List<PreconditionRule> getPossiblePreconditions() {
-        List<PreconditionRule> rules = AvailablePolicies.discoverPreconditions();
+        List<PreconditionRule> rules = preconditionPolicyRuleCache.getPreconditionRules();
         //find and attach Feed Lookup list to those that are of that type
 
         feedManagerFeedService

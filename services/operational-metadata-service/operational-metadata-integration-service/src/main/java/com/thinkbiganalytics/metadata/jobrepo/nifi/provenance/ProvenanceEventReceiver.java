@@ -199,6 +199,6 @@ public class ProvenanceEventReceiver {
     private void successfulJob(ProvenanceEventRecordDTO event) {
         FeedOperation.State state = FeedOperation.State.SUCCESS;
         log.info("Success JOB for Event {} ", event);
-        this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, ""));
+        this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, "Job Succeeded for feed: "+event.getFeedName()));
     }
 }

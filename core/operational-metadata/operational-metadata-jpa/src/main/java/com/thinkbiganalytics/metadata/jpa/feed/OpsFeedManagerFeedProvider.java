@@ -68,7 +68,7 @@ public class OpsFeedManagerFeedProvider implements OpsManagerFeedProvider {
     @Override
     public void delete(OpsManagerFeed.ID id) {
         OpsManagerFeed feed = findById(id);
-        if (feed == null) {
+        if (feed != null) {
             repository.delete(feed.getId());
         }
     }

@@ -2,7 +2,7 @@ p<md-dialog aria-label="Validation Results"  ng-cloak>
     <form>
         <div  class="md-toolbar-tools">
             <h4 class="md-title">
-                <span>{{title}} for {{field.name}}</span></h4>
+                <span>{{title}} for field {{field.name}}</span></h4>
             <span flex></span>
         </div>
         <md-dialog-content layout="column" style="min-width:500px;" layout-padding>
@@ -26,6 +26,7 @@ p<md-dialog aria-label="Validation Results"  ng-cloak>
 
 
              <div class="edit-form">
+                 <md-progress-linear md-mode="indeterminate" ng-if="loadingPolicies"></md-progress-linear>
 
                 <md-input-container class="md-block layout-padding-top-bottom">
                     <label class="md-container-ignore label-small layout-padding-top">Select Rule Type</label>

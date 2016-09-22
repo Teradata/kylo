@@ -35,6 +35,10 @@ import com.thinkbiganalytics.security.action.AllowedActions;
  */
 public class JcrAllowedActions extends JcrObject implements AllowedActions {
     
+    public static final String NODE_NAME = "tba:allowedActions";
+    public static final String NODE_TYPE = "tba:allowedActions";
+    
+    
     public JcrAllowedActions(Node allowedActionsNode) {
         super(allowedActionsNode);
     }

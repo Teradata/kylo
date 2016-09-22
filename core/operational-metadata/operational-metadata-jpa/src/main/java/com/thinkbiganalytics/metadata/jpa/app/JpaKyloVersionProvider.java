@@ -4,11 +4,14 @@ import com.thinkbiganalytics.metadata.api.app.KyloVersion;
 import com.thinkbiganalytics.metadata.api.app.KyloVersionProvider;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 import java.util.Properties;
 
@@ -19,6 +22,9 @@ import javax.annotation.PostConstruct;
  */
 @Service
 public class JpaKyloVersionProvider implements KyloVersionProvider {
+
+    private static final Logger log = LoggerFactory.getLogger(JpaKyloVersionProvider.class);
+
 
     private KyloVersionRepository kyloVersionRepository;
 
@@ -93,11 +99,19 @@ public class JpaKyloVersionProvider implements KyloVersionProvider {
 
             InputStream in = this.getClass().getClassLoader()
                 .getResourceAsStream(versionFile);
+            URL url = this.getClass().getClassLoader().getResource(versionFile);
             if (in != null) {
                 try {
+                    try {
+                        log.info("finding version information from {} ", url.toURI().getPath().toString());
+                    } catch (Exception e) {
+
+                    }
                     prop.load(in);
                     currentVersion = prop.getProperty("version");
                     buildTimestamp = prop.getProperty("build.date");
+
+                    log.info("loaded Kylo version file: {}  build Time: {}", currentVersion, buildTimestamp);
                 } catch (IOException e) {
 
                 }

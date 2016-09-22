@@ -247,6 +247,9 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Override
     //@Transactional(transactionManager = "metadataTransactionManager")
     public void saveFeed(final FeedMetadata feed) {
+        if (StringUtils.isBlank(feed.getId())) {
+            feed.setIsNew(true);
+        }
         metadataAccess.commit(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
 
@@ -260,8 +263,7 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
             //call out to operations to make the connection to modeshape for the feeds
             final String domainId = domainFeed.getId().toString();
             final String feedName = FeedNameUtil.fullName(domainFeed.getCategory().getName(), domainFeed.getName());
-            //sync the feed information to ops manager
-            operationalMetadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName));
+
 
             // Build preconditions
             List<PreconditionRule> preconditions = feed.getSchedule().getPreconditions();
@@ -269,17 +271,34 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
                 PreconditionPolicyTransformer transformer = new PreconditionPolicyTransformer(preconditions);
                 transformer.applyFeedNameToCurrentFeedProperties(feed.getCategory().getSystemName(), feed.getSystemFeedName());
                 List<com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup> transformedPreconditions = transformer.getPreconditions();
-                ServiceLevelAgreementBuilder preconditionBuilder = feedProvider.buildPrecondition(domainFeed.getId()).name("Precondition for feed " + domainFeed.getId());
+                ServiceLevelAgreementBuilder
+                    preconditionBuilder =
+                    feedProvider.buildPrecondition(domainFeed.getId()).name("Precondition for feed " + feed.getCategoryAndFeedName() + "  (" + domainFeed.getId() + ")");
                 for (com.thinkbiganalytics.metadata.rest.model.sla.ObligationGroup precondition : transformedPreconditions) {
                     for (Obligation group : precondition.getObligations()) {
                         preconditionBuilder.obligationGroupBuilder(ObligationGroup.Condition.valueOf(precondition.getCondition())).obligationBuilder().metric(group.getMetrics()).build();
                     }
                 }
                 preconditionBuilder.build();
+
+                //add in the lineage dependency relationships
+
+                //sync the feed information to ops manager
+                operationalMetadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName));
+
+
             }
 
             // Return result
             return feed;
+        }, (e) -> {
+            if (feed.isNew() && StringUtils.isNotBlank(feed.getId())) {
+                //Rollback ops Manager insert if it is newly created
+                operationalMetadataAccess.commit(() -> {
+                    opsManagerFeedProvider.delete(opsManagerFeedProvider.resolveId(feed.getId()));
+                    return null;
+                });
+            }
         });
 
 

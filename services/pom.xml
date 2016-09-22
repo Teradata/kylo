@@ -10,6 +10,7 @@
     <packaging>pom</packaging>
     
     <modules>
+        <module>service-app-api</module>
         <module>field-policy-service</module>
         <module>jms-service</module>
         <module>spark-shell-service</module>
@@ -18,9 +19,9 @@
         <module>service-monitor-service</module>
         <module>thrift-proxy-service</module>
         <module>feed-manager-service</module>
-        <module>service-app</module>
         <module>security-service</module>
         <module>schema-discovery-service</module>
         <module>operational-metadata-service</module>
+        <module>service-app</module>
     </modules>
 </project>

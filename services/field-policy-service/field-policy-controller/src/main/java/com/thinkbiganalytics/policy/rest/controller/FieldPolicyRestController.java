@@ -1,10 +1,9 @@
 package com.thinkbiganalytics.policy.rest.controller;
 
 
-import com.thinkbiganalytics.policy.AvailablePolicies;
+import com.thinkbiganalytics.policy.FieldPolicyCache;
 import com.thinkbiganalytics.policy.rest.model.FieldStandardizationRule;
 import com.thinkbiganalytics.policy.rest.model.FieldValidationRule;
-
 
 import java.util.List;
 
@@ -24,6 +23,7 @@ import io.swagger.annotations.Api;
 @Path("/v1/field-policies")
 public class FieldPolicyRestController {
 
+
     public FieldPolicyRestController() {
     }
 
@@ -31,7 +31,7 @@ public class FieldPolicyRestController {
     @Path("/standardization")
     @Produces({MediaType.APPLICATION_JSON })
     public Response getStandardizationPolicies(){
-       List<FieldStandardizationRule>standardizationRules = AvailablePolicies.discoverStandardizationRules();
+        List<FieldStandardizationRule> standardizationRules = FieldPolicyCache.getStandardizationPolicies();
        return Response.ok(standardizationRules).build();
     }
 
@@ -39,7 +39,7 @@ public class FieldPolicyRestController {
     @Path("/validation")
     @Produces({MediaType.APPLICATION_JSON })
     public Response getValidationPolicies(){
-        List<FieldValidationRule>standardizationRules = AvailablePolicies.discoverValidationRules();
+        List<FieldValidationRule> standardizationRules = FieldPolicyCache.getValidationPolicies();
         return Response.ok(standardizationRules).build();
     }
 

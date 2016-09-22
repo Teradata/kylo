@@ -8,6 +8,7 @@ import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
 import com.thinkbiganalytics.feedmgr.rest.model.json.UserPropertyDeserializer;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -70,6 +71,7 @@ public class FeedMetadata implements UIFeed {
     //indicates this feed has inputPorts and is a "reusable template" for other feeds
     @JsonProperty("reusableFeed")
     private boolean isReusableFeed;
+    boolean isNew = false;
 
     //deprecated
     private Long version;
@@ -274,7 +276,7 @@ public class FeedMetadata implements UIFeed {
 
     @JsonIgnore
     public String getCategoryAndFeedName() {
-        return this.category.getSystemName() + "." + this.getSystemFeedName();
+        return FeedNameUtil.fullName(this.category.getSystemName(), this.getSystemFeedName());
     }
 
     public String getFeedId() {
@@ -409,5 +411,11 @@ public class FeedMetadata implements UIFeed {
             hadoopSecurityGroups = "";
         }
 
+    public boolean isNew() {
+        return isNew;
+    }
+
+    public void setIsNew(boolean isNew) {
+        this.isNew = isNew;
     }
 }

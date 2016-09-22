@@ -159,10 +159,7 @@
                   </location>
                 </source>
                 <source>
-                  <location>../services/service-app/target/classes</location>
-                  <includes>
-                    <include>version.txt</include>
-                  </includes>
+                  <location>../services/service-app/target/classes/version.txt</location>
                 </source>
                 <source>
                   <location>

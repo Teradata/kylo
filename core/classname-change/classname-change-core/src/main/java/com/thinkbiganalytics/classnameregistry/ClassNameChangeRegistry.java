@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.classnameregistry;
 
-import org.reflections.Reflections;
+import com.thinkbiganalytics.policy.ReflectionPolicyAnnotationDiscoverer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,7 @@ public class ClassNameChangeRegistry {
 
     public void loadRegistry() {
         Set<Class<?>>
-            classes = new Reflections().getTypesAnnotatedWith(ClassNameChange.class);
+            classes = ReflectionPolicyAnnotationDiscoverer.getTypesAnnotatedWith(ClassNameChange.class);
         if (classes != null && !classes.isEmpty()) {
             for (Class clazz : classes) {
                 ClassNameChange classNameChange = (ClassNameChange) clazz.getAnnotation(ClassNameChange.class);

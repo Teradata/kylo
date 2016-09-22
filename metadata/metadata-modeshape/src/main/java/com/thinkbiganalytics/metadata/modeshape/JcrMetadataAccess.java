@@ -3,6 +3,25 @@
  */
 package com.thinkbiganalytics.metadata.modeshape;
 
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.metadata.api.MetadataAccessException;
+import com.thinkbiganalytics.metadata.api.MetadataAction;
+import com.thinkbiganalytics.metadata.api.MetadataCommand;
+import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
+import com.thinkbiganalytics.metadata.api.MetadataRollbackAction;
+import com.thinkbiganalytics.metadata.api.MetadataRollbackCommand;
+import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadOnlyPrincipal;
+import com.thinkbiganalytics.metadata.modeshape.security.OverrideCredentials;
+import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
+import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
+
+import org.modeshape.jcr.api.txn.TransactionManagerLookup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import java.security.Principal;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -21,23 +40,6 @@ import javax.jcr.Session;
 import javax.transaction.NotSupportedException;
 import javax.transaction.SystemException;
 import javax.transaction.TransactionManager;
-
-import org.modeshape.jcr.api.txn.TransactionManagerLookup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.metadata.api.MetadataAccessException;
-import com.thinkbiganalytics.metadata.api.MetadataAction;
-import com.thinkbiganalytics.metadata.api.MetadataCommand;
-import com.thinkbiganalytics.metadata.api.MetadataExecutionException;
-import com.thinkbiganalytics.metadata.modeshape.security.ModeShapeReadOnlyPrincipal;
-import com.thinkbiganalytics.metadata.modeshape.security.OverrideCredentials;
-import com.thinkbiganalytics.metadata.modeshape.security.SpringAuthenticationCredentials;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
-import com.thinkbiganalytics.metadata.modeshape.support.JcrVersionUtil;
 
 
 /**
@@ -65,6 +67,14 @@ public class JcrMetadataAccess implements MetadataAccess {
         };
     };
 
+    private static MetadataRollbackAction nullRollbackAction  = (e) -> {
+
+    };
+
+
+    private static MetadataRollbackCommand nullRollbackCommand = (e) -> {
+        nullRollbackAction.execute(e);
+    };
     @Inject
     @Named("metadataJcrRepository")
     private Repository repository;
@@ -106,7 +116,7 @@ public class JcrMetadataAccess implements MetadataAccess {
     /**
      * A set of Nodes that have been Checked Out. Nodes that have the mix:versionable need to be Checked Out and then Checked In when updating.
      *
-     * @see com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil.setProperty() which checks out the node before applying the update
+     * @see com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil#setProperty(Node, String, Object) which checks out the node before applying the update
      */
     public static void checkinNodes() throws RepositoryException {
         Set<Node> checkedOutNodes = getCheckedoutNodes();
@@ -124,6 +134,11 @@ public class JcrMetadataAccess implements MetadataAccess {
     public <R> R commit(MetadataCommand<R> cmd, Principal... principals) {
         return commit(createCredentials(principals), cmd);
     }
+
+    public <R> R commit(MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd, Principal... principals) {
+
+        return commit(createCredentials(principals), cmd, rollbackCmd);
+    }
     
     /* (non-Javadoc)
      * @see com.thinkbiganalytics.metadata.api.MetadataAccess#commit(java.lang.Runnable, java.security.Principal[])
@@ -134,6 +149,15 @@ public class JcrMetadataAccess implements MetadataAccess {
             return null;
         }, principals);
     }
+
+    public void commit(MetadataAction action,  MetadataRollbackAction rollbackAction, Principal... principals) {
+        commit(() -> {
+            action.execute();
+            return null;
+        }, (e) -> {
+            rollbackAction.execute(e);
+        },principals);
+    }
     
     public void commit(Credentials creds, MetadataAction action) {
         commit(creds, () -> {
@@ -143,6 +167,11 @@ public class JcrMetadataAccess implements MetadataAccess {
     }
 
     public <R> R commit(Credentials creds, MetadataCommand<R> cmd) {
+        return commit(creds,cmd,nullRollbackCommand);
+    }
+
+
+    public <R> R commit(Credentials creds, MetadataCommand<R> cmd, MetadataRollbackCommand rollbackCmd) {
         Session session = activeSession.get();
         
         if (session == null) {
@@ -163,12 +192,20 @@ public class JcrMetadataAccess implements MetadataAccess {
                     txnMgr.commit();
                     return result;
                 } catch (Exception e) {
-                    log.warn("Exception while execution a transactional operation - rollng back", e);
+                    log.warn("Exception while execution a transactional operation - rolling back", e);
 
                     try {
                         txnMgr.rollback();
+
                     } catch (SystemException se) {
                         log.error("Failed to rollback tranaction as a result of other transactional errors", se);
+                    }
+                    if(rollbackCmd != null){
+                        try {
+                            rollbackCmd.execute(e);
+                        } catch (Exception rbe) {
+                            log.error("Failed to execution rollback command", rbe);
+                        }
                     }
 
                     activeSession.get().refresh(false);

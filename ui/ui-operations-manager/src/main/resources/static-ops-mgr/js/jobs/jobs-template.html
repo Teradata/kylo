@@ -49,12 +49,10 @@
                                     <span class="column-title column-title-bottom">Run Time</span>
                                 </div>
                                 <div flex="20" flex-gt-md="20" layout="row" hide show-gt-sm class="item-column  md-list-item-text">
-                                    <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.restartJob($event,job)">RESTART</md-button>
-                                    <md-button class="border-btn action-btn" ng-if="(job.status =='STARTED' || job.status =='STARTING') && vm.allowAdmin" ng-click="vm.stopJob($event,job)">STOP
-                                    </md-button>
-                                    <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && vm.allowAdmin" ng-click="vm.failJob($event,job)">FAIL
-                                    </md-button>
-                                    <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.abandonJob($event,job)">ABANDON</md-button>
+                                   <!-- <md-button class="border-btn action-btn" ng-if="job.status =='FAILED'" ng-click="vm.restartJob($event,job)">RESTART</md-button> -->
+                                    <!-- <md-button class="border-btn action-btn" ng-if="job.status =='STARTED' || job.status =='STARTING'" ng-click="vm.stopJob($event,job)">STOP</md-button>-->
+                                    <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED'" ng-click="vm.failJob($event,job)">FAIL</md-button>
+                                    <md-button class="border-btn action-btn" ng-if="job.status =='FAILED'" ng-click="vm.abandonJob($event,job)">ABANDON</md-button>
                                     <span ng-if="job.errorMessage != ''">
                                         <br/>
                                         <span class="md-warn md-caption">{{job.errorMessage}}</span>
@@ -116,12 +114,10 @@
                                     <td md-cell hide show-gt-md>{{job.runTime | time}}</td>
                                     <td md-cell >{{job.status}}</td>
                                     <td md-cell hide show-gt-md>
-                                        <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.restartJob($event,job)">RESTART</md-button>
-                                        <md-button class="border-btn action-btn" ng-if="(job.status =='STARTED' || job.status =='STARTING') && vm.allowAdmin" ng-click="vm.stopJob($event,job)">STOP
-                                        </md-button>
-                                        <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED' && vm.allowAdmin" ng-click="vm.failJob($event,job)">FAIL
-                                        </md-button>
-                                        <md-button class="border-btn action-btn" ng-if="job.status =='FAILED' && vm.allowAdmin" ng-click="vm.abandonJob($event,job)">ABANDON</md-button>
+                                        <md-button class="border-btn action-btn" ng-if="job.status =='FAILED'" ng-click="vm.restartJob($event,job)">RESTART</md-button>
+                                        <md-button class="border-btn action-btn" ng-if="job.status =='STARTED' || job.status =='STARTING'" ng-click="vm.stopJob($event,job)">STOP</md-button>
+                                        <md-button class="border-btn action-btn" ng-if="job.status !='COMPLETED' && job.status !='FAILED'" ng-click="vm.failJob($event,job)">FAIL</md-button>
+                                        <md-button class="border-btn action-btn" ng-if="job.status =='FAILED'" ng-click="vm.abandonJob($event,job)">ABANDON</md-button>
                                          <span ng-if="job.errorMessage != ''">
                                         <br/>
                                         <span class="md-warn md-caption">{{job.errorMessage}}</span>
