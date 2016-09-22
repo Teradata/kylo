@@ -404,12 +404,12 @@ public class FeedMetadata implements UIFeed {
 
     @JsonIgnore
     public void updateHadoopSecurityGroups() {
-        if(getSecurityGroups() != null) {
+        if (getSecurityGroups() != null) {
             hadoopSecurityGroups = StringUtils.join(getSecurityGroups().stream().map(group -> group.getName()).collect(Collectors.toList()), ",");
-        }
-        else {
+        } else {
             hadoopSecurityGroups = "";
         }
+    }
 
     public boolean isNew() {
         return isNew;
