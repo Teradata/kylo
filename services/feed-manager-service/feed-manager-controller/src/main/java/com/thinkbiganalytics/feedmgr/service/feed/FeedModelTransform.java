@@ -170,9 +170,9 @@ public class FeedModelTransform {
 
         // Set the hadoop security groups
         final List<HadoopSecurityGroup> securityGroups = new ArrayList<>();
-        if (feedMetadata.getTable().getSecurityGroups() != null) {
+        if (feedMetadata.getSecurityGroups() != null) {
 
-            for (com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup securityGroup : feedMetadata.getTable().getSecurityGroups()) {
+            for (com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup securityGroup : feedMetadata.getSecurityGroups()) {
                 JcrHadoopSecurityGroup hadoopSecurityGroup = (JcrHadoopSecurityGroup) hadoopSecurityGroupProvider.ensureSecurityGroup(securityGroup.getName());
                 hadoopSecurityGroup.setGroupId(securityGroup.getId());
                 hadoopSecurityGroup.setDescription(securityGroup.getDescription());
@@ -270,7 +270,7 @@ public class FeedModelTransform {
                 restSecurityGroups.add(restSecurityGroup);
             }
         }
-        feed.getTable().setSecurityGroups(restSecurityGroups);
+        feed.setSecurityGroups(restSecurityGroups);
 
         return feed;
     }

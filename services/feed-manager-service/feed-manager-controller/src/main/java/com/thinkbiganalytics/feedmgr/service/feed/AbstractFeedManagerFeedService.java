@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
+import com.thinkbiganalytics.datalake.authorization.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
@@ -18,12 +19,14 @@ import com.thinkbiganalytics.security.AccessController;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.inject.Inject;
 
 /**
@@ -33,6 +36,10 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
     private static final Logger log = LoggerFactory.getLogger(AbstractFeedManagerFeedService.class);
 
+    private static final String HADOOP_AUTHORIZATION_TYPE_NONE = "NONE";
+    private static final String HADOOP_AUTHORIZATION_TYPE_RANGER = "RANGER";
+    private static final String HADOOP_AUTHORIZATION_TYPE_SENTRY = "SENTRY";
+
     @Autowired
     private NifiRestClient nifiRestClient;
 
@@ -41,6 +48,11 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
     @Inject
     private AccessController accessController;
+
+    // I had to use autowired instead of Inject to allow null values.
+    @Autowired(required = false)
+    @Qualifier("hadoopAuthorizationService")
+    private HadoopAuthorizationService hadoopAuthorizationService;
 
     protected abstract RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
 
@@ -60,6 +72,11 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         if (feedMetadata.getProperties() == null) {
             feedMetadata.setProperties(new ArrayList<NifiProperty>());
         }
+
+        feedMetadata.updateHadoopSecurityGroups();
+
+        setHadoopAuthorizationType(feedMetadata);
+
         //get all the properties for the metadata
         RegisteredTemplate
             registeredTemplate = getRegisteredTemplateWithAllProperties(feedMetadata.getTemplateId());
@@ -131,6 +148,26 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
             }
         }
         return feed;
+    }
+
+    private void setHadoopAuthorizationType(FeedMetadata feedMetadata) {
+        if (hadoopAuthorizationService == null) {
+            feedMetadata.setHadoopAuthorizationType(HADOOP_AUTHORIZATION_TYPE_NONE);
+        }
+        else {
+            String fullyQualifiedClassName = hadoopAuthorizationService.getClass().getTypeName();
+            String className = fullyQualifiedClassName.substring(fullyQualifiedClassName.lastIndexOf(".") + 1);
+
+            if(className.equals("RangerAuthorizationService")) {
+                feedMetadata.setHadoopAuthorizationType(HADOOP_AUTHORIZATION_TYPE_RANGER);
+            }
+            else if(className.equals("SentryAuthorizationService")) {
+                feedMetadata.setHadoopAuthorizationType(HADOOP_AUTHORIZATION_TYPE_SENTRY);
+            }
+            else {
+                throw new UnsupportedOperationException("Hadoop authorization type not supported");
+            }
+        }
     }
 
 }

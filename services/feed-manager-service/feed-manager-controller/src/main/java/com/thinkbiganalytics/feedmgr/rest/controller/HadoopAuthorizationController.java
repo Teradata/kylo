@@ -3,8 +3,12 @@ package com.thinkbiganalytics.feedmgr.rest.controller;
 import com.thinkbiganalytics.datalake.authorization.HadoopAuthorizationService;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.inject.Inject;
@@ -22,8 +26,10 @@ import io.swagger.annotations.Api;
 @Api(value = "hadoop-authorization", produces = "application/json")
 @Path("/v1/feedmgr/hadoop-authorization")
 public class HadoopAuthorizationController {
+    private static final Logger log = LoggerFactory.getLogger(HadoopAuthorizationController.class);
 
-    @Inject
+    // I had to use autowired instead of Inject to allow null values.
+    @Autowired(required = false)
     @Qualifier("hadoopAuthorizationService")
     private HadoopAuthorizationService hadoopAuthorizationService;
 
@@ -33,7 +39,14 @@ public class HadoopAuthorizationController {
     public Response getGroups() {
         try {
 
-            List<HadoopAuthorizationGroup> groups = hadoopAuthorizationService.getAllGroups();
+            List<HadoopAuthorizationGroup> groups = null;
+            if(hadoopAuthorizationService != null) {
+                groups = hadoopAuthorizationService.getAllGroups();
+            }
+            else {
+                groups = new ArrayList<>();
+                log.debug("No plugin for hadoop authorization was loaded. Returning empty results");
+            }
 
             return Response.ok(groups).build();
         }catch (Exception e){
