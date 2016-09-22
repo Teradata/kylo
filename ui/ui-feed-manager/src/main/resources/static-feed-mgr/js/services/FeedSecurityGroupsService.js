@@ -20,21 +20,6 @@ angular.module(MODULE_FEED_MGR).factory('FeedSecurityGroups', function ($http, $
     },
         loadAvailableGroups: function (query) {
 
-        /*var data = [
-            {
-                'name': 'root'
-            },
-            {
-                'name': 'admin'
-            },
-            {
-                'name': 'hive'
-            },
-            {
-                'name': 'Marketing'
-            }
-
-        ]; */
         var securityGroups = $http.get(RestUrlService.HADOOP_SECURITY_GROUPS)
             .then(function(dataResult) {
                 lowerGroups = dataResult.data.map(function(tag){

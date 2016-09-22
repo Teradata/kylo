@@ -10,7 +10,7 @@
      * @param CategoriesService the category service
      * @param StateService the URL service
      */
-    function CategoryDefinitionController($scope, $mdDialog, $mdToast, AccessControlService, CategoriesService, StateService) {
+    function CategoryDefinitionController($scope, $mdDialog, $mdToast, AccessControlService, CategoriesService, StateService, FeedSecurityGroups) {
         var self = this;
 
         /**
@@ -42,6 +42,18 @@
          * @type {boolean} {@code true} if all properties are valid, or {@code false} otherwise
          */
         self.isValid = true;
+
+        this.categorySecurityGroups = FeedSecurityGroups;
+        self.securityGroupChips = {};
+        self.securityGroupChips.selectedItem = null;
+        self.securityGroupChips.searchText = null;
+
+        self.splitSecurityGroups = function() {
+            if(self.model.securityGroups) {
+                return _.map(self.model.securityGroups, function(securityGroup) { return securityGroup.name}).join(",") ;
+            }
+
+        };
 
         /**
          * Indicates if the category can be deleted.
@@ -103,6 +115,7 @@
             model.icon = self.editModel.icon;
             model.iconColor = self.editModel.iconColor;
             model.userProperties = (self.model.id === null) ? self.editModel.userProperties : null;
+            model.securityGroups = self.editModel.securityGroups;
 
             CategoriesService.save(model).then(function(response) {
                 CategoriesService.reload();

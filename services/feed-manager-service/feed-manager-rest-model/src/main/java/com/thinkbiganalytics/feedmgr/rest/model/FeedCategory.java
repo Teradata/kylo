@@ -28,6 +28,8 @@ public class FeedCategory {
     private String iconColor;
     private String description;
 
+    private List<HadoopSecurityGroup> securityGroups;
+
     /** User-defined fields for feeds within this category */
     private Set<UserField> userFields;
 
@@ -209,5 +211,13 @@ public class FeedCategory {
 
     public void setSystemName(String systemName) {
         this.systemName = systemName;
+    }
+
+    public List<HadoopSecurityGroup> getSecurityGroups() {
+        return securityGroups;
+    }
+
+    public void setSecurityGroups(List<HadoopSecurityGroup> securityGroups) {
+        this.securityGroups = securityGroups;
     }
 }
