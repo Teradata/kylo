@@ -1,21 +1,36 @@
-describe("VisualQueryBuilderController", function () {
+describe("VisualQueryBuilderController", function() {
     // Include dependencies
     beforeEach(module(MODULE_FEED_MGR));
 
     // Setup tests
-    beforeEach(inject(function ($injector) {
+    beforeEach(inject(function($injector) {
         var $scope = $injector.get("$rootScope").$new(false);
-        this.controller = $injector.get("$controller")("VisualQueryBuilderController",
-                {$scope: $scope});
+        this.controller = $injector.get("$controller")("VisualQueryBuilderController", {$scope: $scope});
 
         this.$http = $injector.get("$httpBackend");
     }));
 
+    /** List of selected tickit.date columns */
+    var DATE_COLUMNS = [{column: "caldate", alias: "tbl14", tableName: "tickit.date", tableColumn: "caldate", dataType: "date"}];
+
+    /** A node for the tickit.date table */
+    var DATE_NODE = {
+        id: 14,
+        name: "tickit.date",
+        nodeAttributes: {
+            attributes: [
+                {name: "dateid", dataType: "smallint", selected: false},
+                {name: "caldate", dataType: "date", selected: true}
+            ],
+            sql: "`tickit`.`date`"
+        },
+        connectors: {bottom: {}, left: {}, right: {}, top: {}},
+        inputConnectors: [{name: ""}],
+        outputConnectors: [{name: ""}]
+    };
+
     /** List of selected tickit.event columns */
-    var EVENT_COLUMNS = [
-        {column: "eventname", alias: "tbl12", tableName: "tickit.event", tableColumn: "eventname",
-            dataType: "string"}
-    ];
+    var EVENT_COLUMNS = [{column: "eventname", alias: "tbl12", tableName: "tickit.event", tableColumn: "eventname", dataType: "string"}];
 
     /** A node for the tickit.event table */
     var EVENT_NODE = {
@@ -24,6 +39,7 @@ describe("VisualQueryBuilderController", function () {
         nodeAttributes: {
             attributes: [
                 {name: "eventid", dataType: "int", selected: false},
+                {name: "dateid", dataType: "smallint", selected: false},
                 {name: "eventname", dataType: "string", selected: true}
             ],
             sql: "`tickit`.`event`"
@@ -35,12 +51,9 @@ describe("VisualQueryBuilderController", function () {
 
     /** List of selected tickit.sales columns */
     var SALES_COLUMNS = [
-        {column: "qtysold", alias: "tbl11", tableName: "tickit.sales", tableColumn: "qtysold",
-            dataType: "string"},
-        {column: "pricepaid", alias: "tbl11", tableName: "tickit.sales", tableColumn: "pricepaid",
-            dataType: "double"},
-        {column: "commission", alias: "tbl11", tableName: "tickit.sales", tableColumn: "commission",
-            dataType: "double"}
+        {column: "qtysold", alias: "tbl11", tableName: "tickit.sales", tableColumn: "qtysold", dataType: "string"},
+        {column: "pricepaid", alias: "tbl11", tableName: "tickit.sales", tableColumn: "pricepaid", dataType: "double"},
+        {column: "commission", alias: "tbl11", tableName: "tickit.sales", tableColumn: "commission", dataType: "double"}
     ];
 
     /** A node for the tickit.sales table */
@@ -52,6 +65,7 @@ describe("VisualQueryBuilderController", function () {
                 {name: "salesid", dataType: "int", selected: false},
                 {name: "buyerid", dataType: "int", selected: false},
                 {name: "eventid", dataType: "int", selected: false},
+                {name: "dateid", dataType: "smallint", selected: false},
                 {name: "qtysold", dataType: "string", selected: true},
                 {name: "pricepaid", dataType: "double", selected: true},
                 {name: "commission", dataType: "double", selected: true}
@@ -65,12 +79,9 @@ describe("VisualQueryBuilderController", function () {
 
     /** List of selected tickit.users columns */
     var USERS_COLUMNS = [
-        {column: "username", alias: "tbl10", tableName: "tickit.users", tableColumn: "username",
-            dataType: "string"},
-        {column: "firstname", alias: "tbl10", tableName: "tickit.users", tableColumn: "firstname",
-            dataType: "string"},
-        {column: "lastname", alias: "tbl10", tableName: "tickit.users", tableColumn: "lastname",
-            dataType: "string"}
+        {column: "username", alias: "tbl10", tableName: "tickit.users", tableColumn: "username", dataType: "string"},
+        {column: "firstname", alias: "tbl10", tableName: "tickit.users", tableColumn: "firstname", dataType: "string"},
+        {column: "lastname", alias: "tbl10", tableName: "tickit.users", tableColumn: "lastname", dataType: "string"}
     ];
 
     /** A node for the tickit.users table */
@@ -93,8 +104,7 @@ describe("VisualQueryBuilderController", function () {
 
     /** List of selected tickit.venue columns */
     var VENUE_COLUMNS = [
-        {column: "venuename", alias: "tbl13", tableName: "tickit.venue", tableColumn: "venuename",
-            dataType: "string"}
+        {column: "venuename", alias: "tbl13", tableName: "tickit.venue", tableColumn: "venuename", dataType: "string"}
     ];
 
     /** A node for the tickit.venue table */
@@ -125,8 +135,7 @@ describe("VisualQueryBuilderController", function () {
      * @param {number} dstNodeId the destination node id
      * @param {string|null} dstJoinKey the destination join column, or null if not defined
      */
-    function connectTables (chartViewModel, srcNodeId, srcJoinKey, dstNodeId, dstJoinKey)
-    {
+    function connectTables(chartViewModel, srcNodeId, srcJoinKey, dstNodeId, dstJoinKey) {
         // Add connection
         var dstConnector = chartViewModel.findConnector(dstNodeId, 0);
         var srcConnector = chartViewModel.findConnector(srcNodeId, 0);
@@ -150,24 +159,22 @@ describe("VisualQueryBuilderController", function () {
     }
 
     // getSQLModel
-    it("should produce SQL for one table", function () {
+    it("should produce SQL for one table", function() {
         this.$http.whenGET("js/feeds/feeds-table.html").respond(200, "");
 
         // Test SQL
         this.controller.chartViewModel.addNode(SALES_NODE);
 
-        var expected = "SELECT tbl11.`qtysold`, tbl11.`pricepaid`, tbl11.`commission` FROM "
-                + "`tickit`.`sales` tbl11";
+        var expected = "SELECT tbl11.`qtysold`, tbl11.`pricepaid`, tbl11.`commission` FROM `tickit`.`sales` tbl11";
         expect(this.controller.getSQLModel()).toBe(expected);
 
         // Test selected columns
         expect(this.controller.selectedColumnsAndTables).toEqual(SALES_COLUMNS);
     });
 
-    it("should produce SQL for joined tables", function () {
+    it("should produce SQL for joined tables", function() {
         this.$http.whenGET("js/feeds/feeds-table.html").respond(200, "");
-        this.$http.whenGET("js/visual-query/visual-query-builder-connection-dialog.html").respond(
-                200, "");
+        this.$http.whenGET("js/visual-query/visual-query-builder-connection-dialog.html").respond(200, "");
 
         // Add tables
         var chartViewModel = this.controller.chartViewModel;
@@ -182,12 +189,9 @@ describe("VisualQueryBuilderController", function () {
         connectTables(chartViewModel, 12, "venueid", 13, "venueid");
 
         // Test SQL
-        var expected = "SELECT tbl10.`username`, tbl10.`firstname`, tbl10.`lastname`, "
-                + "tbl11.`qtysold`, tbl11.`pricepaid`, tbl11.`commission`, tbl12.`eventname`, "
-                + "tbl13.`venuename` FROM `tickit`.`users` tbl10 INNER JOIN `tickit`.`sales` tbl11 "
-                + "ON tbl11.`buyerid` = tbl10.`userid` INNER JOIN `tickit`.`event` tbl12 ON "
-                + "tbl12.`eventid` = tbl11.`eventid` INNER JOIN `tickit`.`venue` tbl13 ON "
-                + "tbl13.`venueid` = tbl12.`venueid`";
+        var expected = "SELECT tbl10.`username`, tbl10.`firstname`, tbl10.`lastname`, tbl11.`qtysold`, tbl11.`pricepaid`, tbl11.`commission`, tbl12.`eventname`, tbl13.`venuename` "
+                       + "FROM `tickit`.`users` tbl10 INNER JOIN `tickit`.`sales` tbl11 ON tbl11.`buyerid` = tbl10.`userid` INNER JOIN `tickit`.`event` tbl12 ON tbl12.`eventid` = tbl11.`eventid` "
+                       + "INNER JOIN `tickit`.`venue` tbl13 ON tbl13.`venueid` = tbl12.`venueid`";
         expect(this.controller.getSQLModel()).toBe(expected);
 
         // Test selected columns
@@ -195,7 +199,7 @@ describe("VisualQueryBuilderController", function () {
         expect(this.controller.selectedColumnsAndTables).toEqual(expected);
     });
 
-    it("should produce SQL for multiple tables", function () {
+    it("should produce SQL for multiple tables", function() {
         this.$http.whenGET("js/feeds/feeds-table.html").respond(200, "");
 
         // Add tables
@@ -203,9 +207,7 @@ describe("VisualQueryBuilderController", function () {
         this.controller.chartViewModel.addNode(SALES_NODE);
 
         // Test SQL
-        var expected = "SELECT tbl10.`username`, tbl10.`firstname`, tbl10.`lastname`, "
-                + "tbl11.`qtysold`, tbl11.`pricepaid`, tbl11.`commission` FROM `tickit`.`users` "
-                + "tbl10, `tickit`.`sales` tbl11";
+        var expected = "SELECT tbl10.`username`, tbl10.`firstname`, tbl10.`lastname`, tbl11.`qtysold`, tbl11.`pricepaid`, tbl11.`commission` FROM `tickit`.`users` tbl10, `tickit`.`sales` tbl11";
         expect(this.controller.getSQLModel()).toBe(expected);
 
         // Test selected columns
@@ -213,7 +215,7 @@ describe("VisualQueryBuilderController", function () {
         expect(this.controller.selectedColumnsAndTables).toEqual(expected);
     });
 
-    it("should produce SQL for pre-joined tables", function () {
+    it("should produce SQL for pre-joined tables", function() {
         this.$http.whenGET("js/feeds/feeds-table.html").respond(200, "");
 
         // Add tables
@@ -223,13 +225,36 @@ describe("VisualQueryBuilderController", function () {
         connectTables(this.controller.chartViewModel, 10, null, 11, null);
 
         // Test SQL
-        var expected = "SELECT tbl10.`username`, tbl10.`firstname`, tbl10.`lastname`, "
-                + "tbl11.`qtysold`, tbl11.`pricepaid`, tbl11.`commission` FROM `tickit`.`users` "
-                + "tbl10 JOIN `tickit`.`sales` tbl11";
+        var expected = "SELECT tbl10.`username`, tbl10.`firstname`, tbl10.`lastname`, tbl11.`qtysold`, tbl11.`pricepaid`, tbl11.`commission` FROM `tickit`.`users` tbl10 JOIN `tickit`.`sales` tbl11";
         expect(this.controller.getSQLModel()).toBe(expected);
 
         // Test selected columns
         expected = _.flatten([USERS_COLUMNS, SALES_COLUMNS], true);
+        expect(this.controller.selectedColumnsAndTables).toEqual(expected);
+    });
+
+    it("should produce SQL for multiple join conditions", function() {
+        this.$http.whenGET("js/feeds/feeds-table.html").respond(200, "");
+        this.$http.whenGET("js/visual-query/visual-query-builder-connection-dialog.html").respond(200, "");
+
+        // Add tables
+        var chartViewModel = this.controller.chartViewModel;
+
+        chartViewModel.addNode(SALES_NODE);
+        chartViewModel.addNode(EVENT_NODE);
+        chartViewModel.addNode(DATE_NODE);
+
+        connectTables(chartViewModel, 11, "eventid", 12, "eventid");
+        connectTables(chartViewModel, 12, "dateid", 14, "dateid");
+        connectTables(chartViewModel, 11, "dateid", 14, "dateid");
+
+        // Test SQL
+        var expected = "SELECT tbl11.`qtysold`, tbl11.`pricepaid`, tbl11.`commission`, tbl12.`eventname`, tbl14.`caldate` FROM `tickit`.`sales` tbl11 INNER JOIN `tickit`.`event` tbl12 ON "
+                       + "tbl12.`eventid` = tbl11.`eventid` INNER JOIN `tickit`.`date` tbl14 ON tbl14.`dateid` = tbl11.`dateid` AND tbl14.`dateid` = tbl12.`dateid`";
+        expect(this.controller.getSQLModel().replace(/INNER/g, "\nINNER")).toBe(expected.replace(/INNER/g, "\nINNER"));
+
+        // Test selected columns
+        expected = _.flatten([SALES_COLUMNS, EVENT_COLUMNS, DATE_COLUMNS], true);
         expect(this.controller.selectedColumnsAndTables).toEqual(expected);
     });
 });
