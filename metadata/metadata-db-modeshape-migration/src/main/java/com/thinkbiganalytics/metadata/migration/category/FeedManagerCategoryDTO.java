@@ -4,6 +4,7 @@ import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 import org.joda.time.DateTime;
@@ -123,6 +124,16 @@ public class FeedManagerCategoryDTO implements FeedManagerCategory {
 
     @Override
     public void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields) {}
+
+    @Override
+    public List<? extends HadoopSecurityGroup> getSecurityGroups() {
+        return null;
+    }
+
+    @Override
+    public void setSecurityGroups(List<? extends HadoopSecurityGroup> securityGroups) {
+
+    }
 
     @Override
     public AllowedActions getAllowedActions() {
