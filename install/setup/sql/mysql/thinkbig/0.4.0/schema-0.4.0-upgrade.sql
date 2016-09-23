@@ -17,7 +17,7 @@ END IF;
 IF NOT EXISTS(SELECT table_name
             FROM INFORMATION_SCHEMA.COLUMNS
            WHERE table_schema = 'thinkbig'
-             AND table_name = 'BATCH_NIFI_JOB' and column_name = 'FLOW_FILE_ID') then
+             AND table_name = 'BATCH_NIFI_STEP' and column_name = 'FLOW_FILE_ID') then
 ALTER TABLE `thinkbig`.`BATCH_NIFI_STEP`
 ADD COLUMN `FLOW_FILE_ID` VARCHAR(45) NULL;
 end if;
@@ -198,7 +198,7 @@ FEED_TYPE varchar(45) NULL,
  PRIMARY KEY (`id`)
  ) ENGINE=InnoDB;
 
-IF EXISTS(SELECT table_name
+IF NOT EXISTS(SELECT table_name
             FROM INFORMATION_SCHEMA.COLUMNS
            WHERE table_schema = 'thinkbig'
              AND table_name = 'FEED' and COLUMN_NAME ='FEED_TYPE')
