@@ -8,6 +8,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedConnection;
 import com.thinkbiganalytics.metadata.api.feed.FeedDestination;
 import com.thinkbiganalytics.metadata.api.feed.FeedPrecondition;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 import com.thinkbiganalytics.security.action.AllowedActions;
@@ -46,6 +47,7 @@ public class BaseFeed<C extends Category> implements Feed<C> {
     private FeedPreconditionImpl precondition;
     private Map<String, Object> properties;
     private List<ServiceLevelAgreement> feedServiceLevelAgreements;
+    private List<? extends HadoopSecurityGroup> hadoopSecurityGroups;
 
     /**
      * User-defined properties
@@ -237,6 +239,16 @@ public class BaseFeed<C extends Category> implements Feed<C> {
     public FeedPrecondition setPrecondition(ServiceLevelAgreement sla) {
         this.precondition = new FeedPreconditionImpl(this, sla);
         return this.precondition;
+    }
+
+    @Override
+    public List<? extends HadoopSecurityGroup> getSecurityGroups() {
+        return this.hadoopSecurityGroups;
+    }
+
+    @Override
+    public void setSecurityGroups(List<? extends HadoopSecurityGroup> securityGroups) {
+        hadoopSecurityGroups = securityGroups;
     }
 
     private static class BaseId {

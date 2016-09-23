@@ -18,7 +18,7 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     this.CONTROLLER_SERVICES_BASE_URL = this.ROOT+"/proxy/v1/feedmgr/nifi/controller-services";
     this.GET_TEMPLATES_URL = self.TEMPLATES_BASE_URL;
     this.GET_UNREGISTERED_TEMPLATES_URL = self.TEMPLATES_BASE_URL+"/unregistered";
-
+    this.HADOOP_AUTHORIZATATION_BASE_URL = self.ROOT + "/proxy/v1/feedmgr/hadoop-authorization";
     this.UPLOAD_SAMPLE_TABLE_FILE = self.FEEDS_BASE_URL+"/table/sample-file";
 
     this.VALIDATE_CRON_EXPRESSION_URL = this.ROOT+"/proxy/v1/feedmgr/util/cron-expression/validate";
@@ -178,6 +178,9 @@ angular.module(MODULE_FEED_MGR).service('RestUrlService', function () {
     this.ADMIN_EXPORT_FEED_URL = self.ADMIN_BASE_URL+"/export-feed";
 
     this.ADMIN_IMPORT_FEED_URL = self.ADMIN_BASE_URL+"/import-feed";
+
+    // Hadoop Security Authorization
+    this.HADOOP_SECURITY_GROUPS = self.HADOOP_AUTHORIZATATION_BASE_URL + "/groups";
 
     // Security service URLs
 

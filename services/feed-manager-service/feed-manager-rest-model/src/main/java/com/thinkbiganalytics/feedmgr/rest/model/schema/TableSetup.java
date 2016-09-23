@@ -91,7 +91,6 @@ public class TableSetup {
     @MetadataField(description = "List of fields that are primary keys separated by a comma")
     private String primaryKeyFields;
 
-
     public String getDescription() {
         return description;
     }
@@ -455,4 +454,6 @@ public class TableSetup {
     public void setTargetMergeStrategy(String targetMergeStrategy) {
         this.targetMergeStrategy = targetMergeStrategy;
     }
+
+
 }

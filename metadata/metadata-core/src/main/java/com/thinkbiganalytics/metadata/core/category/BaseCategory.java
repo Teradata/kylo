@@ -3,6 +3,7 @@ package com.thinkbiganalytics.metadata.core.category;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 import org.joda.time.DateTime;
@@ -36,6 +37,8 @@ public class BaseCategory implements Category {
     private DateTime createdTime;
 
     private DateTime modifiedTime;
+
+    private List<? extends HadoopSecurityGroup> hadoopSecurityGroups;
 
     /**
      * User-defined properties
@@ -95,6 +98,16 @@ public class BaseCategory implements Category {
 
     public void setVersion(Integer version) {
         this.version = version;
+    }
+
+    @Override
+    public List<? extends HadoopSecurityGroup> getSecurityGroups() {
+        return this.hadoopSecurityGroups;
+    }
+
+    @Override
+    public void setSecurityGroups(List<? extends HadoopSecurityGroup> securityGroups) {
+        hadoopSecurityGroups = securityGroups;
     }
 
     private static class BaseId {

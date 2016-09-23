@@ -16,6 +16,12 @@
                     {{vm.model.description}}
                 </div>
             </div>
+            <div layout="row" class="layout-padding-top-bottom">
+                <span flex="25" class="property-name">Hadoop Security Groups</span>
+                <div flex>
+                    {{vm.splitSecurityGroups()}}
+                </div>
+            </div>
             <div layout="row" class="layout-padding-top-bottom" layout-align="start start">
                 <span flex="25" class="property-name">Icon</span>
 
@@ -36,6 +42,29 @@
             <md-input-container class="md-block">
                 <label>Description</label>
                 <textarea ng-model="vm.editModel.description"></textarea>
+            </md-input-container>
+
+            <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
+                <label class="label-small md-container-ignore">Hadoop Security Groups</label>
+                <md-chips ng-model="vm.editModel.securityGroups" md-autocomplete-snap
+                          md-transform-chip="vm.transformChip($chip)"
+                          md-require-match="true" class="layout-padding-top-bottom">
+                    <md-autocomplete
+                        md-min-length="0"
+                        md-selected-item="vm.securityGroupChips.selectedItem"
+                        md-search-text="vm.securityGroupChips.searchText"
+                        md-items="item in vm.categorySecurityGroups.querySearch(vm.securityGroupChips.searchText)"
+                        md-item-text="item.name"
+                        md-no-cache="true"
+                        placeholder="Add a Hadoop Security Group">
+                        <span md-highlight-text="vm.securityGroupChips.searchText">{{item.name}}</span>
+                    </md-autocomplete>
+                    <md-chip-template>
+                            <span>
+                              <strong>{{$chip.name}}</strong>
+                            </span>
+                    </md-chip-template>
+                </md-chips>
             </md-input-container>
 
             <div layout="column">

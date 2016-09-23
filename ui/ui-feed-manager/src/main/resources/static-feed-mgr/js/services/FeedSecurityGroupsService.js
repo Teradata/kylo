@@ -1,6 +1,6 @@
 
 
-angular.module(MODULE_FEED_MGR).factory('FeedSecurityGroups', function () {
+angular.module(MODULE_FEED_MGR).factory('FeedSecurityGroups', function ($http, $q, RestUrlService) {
 
 
     /**
@@ -15,31 +15,24 @@ angular.module(MODULE_FEED_MGR).factory('FeedSecurityGroups', function () {
     var data = {
         querySearch: function (query) {
             var self = this;
-        var groups = self.loadAvailableGroups();
-        var results = query ? groups.filter(createFilterFor(query)) : [];
-        return results;
+        var groups = self.loadAvailableGroups(query);
+        return groups;
     },
-        loadAvailableGroups: function () {
+        loadAvailableGroups: function (query) {
 
-        var data = [
-            {
-                'name': 'root'
+        var securityGroups = $http.get(RestUrlService.HADOOP_SECURITY_GROUPS)
+            .then(function(dataResult) {
+                lowerGroups = dataResult.data.map(function(tag){
+                    tag._lowername = tag.name.toLowerCase();
+                    return tag;
+                });
+                var results = query ? lowerGroups.filter(createFilterFor(query)) : [];
+                return results;
             },
-            {
-                'name': 'admin'
-            },
-            {
-                'name': 'hive'
-            },
-            {
-                'name': 'Marketing'
-            }
-
-        ];
-        return data.map(function(tag){
-            tag._lowername = tag.name.toLowerCase();
-            return tag;
-        })
+            function(error) {
+                console.log('Error retrieving hadoop authorization groups');
+            });
+        return securityGroups;
     }
 };
     return data;

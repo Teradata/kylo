@@ -16,6 +16,7 @@ import org.springframework.ldap.core.support.LdapContextSource;
 import org.springframework.security.ldap.DefaultSpringSecurityContextSource;
 import org.springframework.security.ldap.authentication.BindAuthenticator;
 import org.springframework.security.ldap.authentication.LdapAuthenticator;
+import org.springframework.security.ldap.authentication.NullLdapAuthoritiesPopulator;
 import org.springframework.security.ldap.userdetails.DefaultLdapAuthoritiesPopulator;
 import org.springframework.security.ldap.userdetails.LdapAuthoritiesPopulator;
 
@@ -106,8 +107,6 @@ public class LdapAuthConfig {
         @Override
         protected LdapContextSource createInstance() throws Exception {
             DefaultSpringSecurityContextSource cxt = new DefaultSpringSecurityContextSource(this.uri.toASCIIString());
-//            LdapContextSource cxt = new LdapContextSource();
-//            cxt.setUrl(this.uri.toASCIIString() );
             cxt.setUserDn(this.userDn);
             cxt.setPassword(new String(this.password));
             cxt.setCacheEnvironmentProperties(false);
@@ -148,6 +147,7 @@ public class LdapAuthConfig {
         private LdapContextSource contextSource;
         private String groupsOu;
         private String groupRoleAttribute;
+        private boolean enabled = true;
         
         public LdapAuthoritiesPopulatorFactory(LdapContextSource contextSource) {
             super();
@@ -162,6 +162,10 @@ public class LdapAuthConfig {
             this.groupRoleAttribute = groupRoleAttribute;
         }
         
+        public void setEnabled(boolean enabled) {
+            this.enabled = enabled;
+        }
+        
         @Override
         public Class<?> getObjectType() {
             return LdapAuthoritiesPopulator.class;
@@ -169,11 +173,15 @@ public class LdapAuthConfig {
 
         @Override
         protected LdapAuthoritiesPopulator createInstance() throws Exception {
-            DefaultLdapAuthoritiesPopulator authPopulator = new DefaultLdapAuthoritiesPopulator(this.contextSource, this.groupsOu);
-            authPopulator.setGroupRoleAttribute(this.groupRoleAttribute);
-            authPopulator.setRolePrefix("");
-            authPopulator.setConvertToUpperCase(false);
-            return authPopulator;
+            if (this.enabled) {
+                DefaultLdapAuthoritiesPopulator authPopulator = new DefaultLdapAuthoritiesPopulator(this.contextSource, this.groupsOu);
+                authPopulator.setGroupRoleAttribute(this.groupRoleAttribute);
+                authPopulator.setRolePrefix("");
+                authPopulator.setConvertToUpperCase(false);
+                return authPopulator;
+            } else {
+                return new NullLdapAuthoritiesPopulator();
+            }
         }
     }
 }

@@ -4,6 +4,7 @@ import com.thinkbiganalytics.metadata.api.MissingUserPropertyException;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.security.AccessControlled;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 
 import org.joda.time.DateTime;
 
@@ -68,4 +69,8 @@ public interface Category extends AccessControlled {
      * @since 0.4.0
      */
     void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields);
+
+    List<? extends HadoopSecurityGroup> getSecurityGroups();
+
+    void setSecurityGroups(List<? extends HadoopSecurityGroup> securityGroups);
 }

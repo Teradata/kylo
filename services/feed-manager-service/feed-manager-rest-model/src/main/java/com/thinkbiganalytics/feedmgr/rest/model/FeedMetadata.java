@@ -15,6 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * The specification for a feed and how it should interact with various components.
@@ -89,6 +90,14 @@ public class FeedMetadata implements UIFeed {
     public String getTemplateId() {
         return templateId;
     }
+
+    @MetadataField(description = "List of Ranger/Sentry groups that you want to grant access for this feed")
+    private String hadoopSecurityGroups;
+
+    @MetadataField(description = "Type of authorization system used. NONE, RANGER, or SENTRY")
+    private String hadoopAuthorizationType;
+
+    private List<HadoopSecurityGroup> securityGroups;
 
     public FeedMetadata() {}
 
@@ -371,6 +380,35 @@ public class FeedMetadata implements UIFeed {
     @JsonDeserialize(using = UserPropertyDeserializer.class)
     public void setUserProperties(final Set<UserProperty> userProperties) {
         this.userProperties = userProperties;
+    }
+
+    public List<HadoopSecurityGroup> getSecurityGroups() {
+        return securityGroups;
+    }
+
+    public void setSecurityGroups(List<HadoopSecurityGroup> securityGroups) {
+        this.securityGroups = securityGroups;
+    }
+
+    public String getHadoopSecurityGroups() {
+        return hadoopSecurityGroups;
+    }
+
+    public String getHadoopAuthorizationType() {
+        return hadoopAuthorizationType;
+    }
+
+    public void setHadoopAuthorizationType(String hadoopAuthorizationType) {
+        this.hadoopAuthorizationType = hadoopAuthorizationType;
+    }
+
+    @JsonIgnore
+    public void updateHadoopSecurityGroups() {
+        if (getSecurityGroups() != null) {
+            hadoopSecurityGroups = StringUtils.join(getSecurityGroups().stream().map(group -> group.getName()).collect(Collectors.toList()), ",");
+        } else {
+            hadoopSecurityGroups = "";
+        }
     }
 
     public boolean isNew() {

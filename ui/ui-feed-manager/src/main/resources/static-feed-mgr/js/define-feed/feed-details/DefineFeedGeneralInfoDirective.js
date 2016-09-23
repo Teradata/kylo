@@ -55,6 +55,7 @@
                         }
                     });
                 });
+                setSecurityGroups(item.name);
             }
             else {
                 self.model.category.name = null;
@@ -69,6 +70,14 @@
         function validate(){
            var valid = isNotEmpty(self.model.category.name) && isNotEmpty(self.model.feedName) && isNotEmpty(self.model.templateId);
             self.isValid = valid;
+        }
+
+        function setSecurityGroups(newVal) {
+            if(newVal) {
+                var category = self.categoriesService.findCategoryByName(newVal)
+                var securityGroups = category.securityGroups;
+                self.model.securityGroups = securityGroups;
+            }
         }
 
         function isNotEmpty(item){

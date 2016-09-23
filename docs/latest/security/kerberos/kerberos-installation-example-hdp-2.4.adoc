@@ -177,5 +177,26 @@ image::images/4.png[]
 	Then do next till end. Finally click on complete.
 
 image::images/5.png[]
+<<<<<<< 8f970d793b1b9da4670d34c4fa34fac7ab530eff:docs/latest/security/kerberos/kerberos-installation-example-hdp-2.4.adoc
+=======
+
+Make sure all services started properly. Kerberos is sucessfully installed on cluster.
+
+=== KeyTab Generation
+
+Create a keytab file for Nifi user.
+
+	kadmin.local
+	addprinc -randkey nifi@sandbox.hortonworks.com 
+	xst -norandkey -k /etc/security/keytabs/nifi.headless.keytab nifi@sandbox.hortonworks.com
+	exit
+	
+	chown nifi:hadoop /etc/security/keytabs/nifi.headless.keytab
+	chmod 440 /etc/security/keytabs/nifi.headless.keytab
+
+[Optional] You can initialize your keytab file using below command.
+	
+	kinit -kt  /etc/security/keytabs/nifi.headless.keytab nifi
+>>>>>>> Update KerberosInstallation.adoc:docs/latest/security/KerberosInstallation.adoc
 
 Make sure all services started properly. Kerberos is sucessfully installed on cluster.

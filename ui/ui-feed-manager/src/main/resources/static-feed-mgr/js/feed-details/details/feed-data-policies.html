@@ -356,8 +356,8 @@
     </md-input-container>
 
     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
-      <label class="label-small md-container-ignore">Security Groups</label>
-      <md-chips ng-model="vm.editModel.table.securityGroups" md-autocomplete-snap
+      <label class="label-small md-container-ignore">Hadoop Security Groups</label>
+      <md-chips ng-model="vm.editModel.securityGroups" md-autocomplete-snap
                 md-transform-chip="vm.transformChip($chip)"
                 md-require-match="true" class="layout-padding-top-bottom">
         <md-autocomplete
@@ -366,7 +366,7 @@
             md-search-text="vm.securityGroupChips.searchText"
             md-items="item in vm.feedSecurityGroups.querySearch(vm.securityGroupChips.searchText)"
             md-item-text="item.name"
-            placeholder="Add a Security Group">
+            placeholder="Add a Hadoop Security Group">
           <span md-highlight-text="vm.securityGroupChips.searchText">{{item.name}}</span>
         </md-autocomplete>
         <md-chip-template>

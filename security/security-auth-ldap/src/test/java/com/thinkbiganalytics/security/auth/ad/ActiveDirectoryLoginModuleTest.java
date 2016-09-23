@@ -32,7 +32,9 @@ import com.thinkbiganalytics.security.GroupPrincipal;
 import com.thinkbiganalytics.security.UsernamePrincipal;
 
 /**
- *
+ * Test for the ActiveDirectoryLoginModule.  Note that these tests are disabled by default as it 
+ * requires an actual Active Directory instance running as configured in the file ad-test.properties.
+ * 
  * @author Sean Felten
  */
 @SpringApplicationConfiguration(classes = { 
@@ -54,18 +56,18 @@ public class ActiveDirectoryLoginModuleTest extends AbstractTestNGSpringContextT
     
 //    @Test
     public void testLoginAdmin() throws Exception {
-        Subject subject = login("dladmin", "thinkbig");
+        Subject subject = login("dladmin", "Th1nkb1g!");
         
-        assertThat(subject.getPrincipals()).hasSize(2).contains(new UsernamePrincipal("dladmin"), new GroupPrincipal("admin"));
+        assertThat(subject.getPrincipals()).contains(new UsernamePrincipal("dladmin"), new GroupPrincipal("Admin"));
     }
     
 //    @Test
     public void testLoginTest() throws Exception {
-        Subject subject = login("test", "user");
+        Subject subject = login("test", "Th1nkb1g!");
         
         assertThat(subject.getPrincipals()).hasSize(3).contains(new UsernamePrincipal("test"), 
-                                                                new GroupPrincipal("admin"), 
-                                                                new GroupPrincipal("developer"));
+                                                                new GroupPrincipal("Admin"), 
+                                                                new GroupPrincipal("Developer"));
     }
     
 //    @Test(expectedExceptions=LoginException.class)

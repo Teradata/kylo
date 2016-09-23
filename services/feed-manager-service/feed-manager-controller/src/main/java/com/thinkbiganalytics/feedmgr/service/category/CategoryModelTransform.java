@@ -9,9 +9,13 @@ import com.thinkbiganalytics.metadata.api.category.CategoryNotFoundException;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategory;
 import com.thinkbiganalytics.metadata.api.feedmgr.category.FeedManagerCategoryProvider;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroupProvider;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
 
 import org.joda.time.DateTime;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -34,6 +38,9 @@ public class CategoryModelTransform {
     /** Transform functions for feeds */
     @Inject
     FeedModelTransform feedModelTransform;
+
+    @Inject
+    private HadoopSecurityGroupProvider hadoopSecurityGroupProvider;
 
     /**
      * Transforms the specified Metadata category to a Feed Manager category.
@@ -86,6 +93,20 @@ public class CategoryModelTransform {
             // Transform user-defined fields and properties
             category.setUserFields(UserPropertyTransform.toUserFields(categoryProvider.getFeedUserFields(domainCategory.getId()).orElse(Collections.emptySet())));
             category.setUserProperties(UserPropertyTransform.toUserProperties(domainCategory.getUserProperties(), userFields));
+
+            // Convert JCR securitygroup to DTO
+            List<com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup> restSecurityGroups = new ArrayList<>();
+            if(domainCategory.getSecurityGroups() != null && domainCategory.getSecurityGroups().size() > 0) {
+                for(Object group : domainCategory.getSecurityGroups()) {
+                    HadoopSecurityGroup hadoopSecurityGroup = (HadoopSecurityGroup)group;
+                    com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup restSecurityGroup = new com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup();
+                    restSecurityGroup.setDescription(hadoopSecurityGroup.getDescription());
+                    restSecurityGroup.setId(hadoopSecurityGroup.getGroupId());
+                    restSecurityGroup.setName(hadoopSecurityGroup.getName());
+                    restSecurityGroups.add(restSecurityGroup);
+                }
+            }
+            category.setSecurityGroups(restSecurityGroups);
 
             return category;
         } else {
@@ -186,6 +207,20 @@ public class CategoryModelTransform {
         if (feedCategory.getUserProperties() != null) {
             category.setUserProperties(UserPropertyTransform.toMetadataProperties(feedCategory.getUserProperties()), userFields);
         }
+
+        // Set the hadoop security groups
+        final List<HadoopSecurityGroup> securityGroups = new ArrayList<>();
+        if (feedCategory.getSecurityGroups() != null) {
+
+            for (com.thinkbiganalytics.feedmgr.rest.model.HadoopSecurityGroup securityGroup : feedCategory.getSecurityGroups()) {
+                JcrHadoopSecurityGroup hadoopSecurityGroup = (JcrHadoopSecurityGroup) hadoopSecurityGroupProvider.ensureSecurityGroup(securityGroup.getName());
+                hadoopSecurityGroup.setGroupId(securityGroup.getId());
+                hadoopSecurityGroup.setDescription(securityGroup.getDescription());
+                securityGroups.add(hadoopSecurityGroup);
+            }
+
+        }
+        category.setSecurityGroups(securityGroups);
 
         return category;
     }

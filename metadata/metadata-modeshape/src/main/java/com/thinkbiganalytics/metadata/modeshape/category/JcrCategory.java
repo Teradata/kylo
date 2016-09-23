@@ -3,16 +3,19 @@ package com.thinkbiganalytics.metadata.modeshape.category;
 import com.thinkbiganalytics.metadata.api.category.Category;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
 import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrUtil;
 import com.thinkbiganalytics.security.action.AllowedActions;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,6 +31,7 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
 
     public static String CATEGORY_NAME = "tba:category";
     public static String NODE_TYPE = "tba:category";
+    public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
 
     public JcrCategory(Node node) {
         super(node);
@@ -93,5 +97,25 @@ public class JcrCategory extends AbstractJcrAuditableSystemEntity implements Cat
     @Override
     public AllowedActions getAllowedActions() {
         return JcrUtil.getOrCreateNode(this.node, JcrAllowedActions.NODE_NAME, JcrAllowedActions.NODE_TYPE, JcrAllowedActions.class);
+    }
+
+    public List<? extends HadoopSecurityGroup> getSecurityGroups() {
+        Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(this.node, HADOOP_SECURITY_GROUPS);
+        List<HadoopSecurityGroup> hadoopSecurityGroups = new ArrayList<>();
+        if (list != null) {
+            for (Node n : list) {
+                hadoopSecurityGroups.add(JcrUtil.createJcrObject(n, JcrHadoopSecurityGroup.class));
+            }
+        }
+        return hadoopSecurityGroups;
+    }
+
+    public void setSecurityGroups(List<? extends HadoopSecurityGroup> hadoopSecurityGroups) {
+        JcrPropertyUtil.setProperty(this.node, HADOOP_SECURITY_GROUPS, null);
+
+        for (HadoopSecurityGroup securityGroup : hadoopSecurityGroups) {
+            Node securityGroupNode = ((JcrHadoopSecurityGroup) securityGroup).getNode();
+            JcrPropertyUtil.addToSetProperty(this.node, HADOOP_SECURITY_GROUPS, securityGroupNode, true);
+        }
     }
 }

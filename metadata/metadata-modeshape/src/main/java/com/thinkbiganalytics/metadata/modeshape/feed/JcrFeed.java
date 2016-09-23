@@ -14,6 +14,8 @@ import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.category.JcrCategory;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrEntity;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
+import com.thinkbiganalytics.metadata.modeshape.security.JcrHadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.modeshape.security.action.JcrAllowedActions;
 import com.thinkbiganalytics.metadata.modeshape.sla.JcrServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.modeshape.support.JcrPropertyUtil;
@@ -57,6 +59,7 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
     public static final String SCHEDULE_PERIOD = "tba:schedulingPeriod"; // Cron expression, or Timer Expression
     public static final String SCHEDULE_STRATEGY = "tba:schedulingStrategy"; //CRON_DRIVEN, TIMER_DRIVEN
     public static final String SLA = "tba:slas";
+    public static final String HADOOP_SECURITY_GROUPS = "tba:securityGroups";
 
 
     public static void addSecurity(Node feedNode) {
@@ -297,6 +300,17 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
         return serviceLevelAgreements;
     }
 
+    public List<? extends HadoopSecurityGroup> getSecurityGroups() {
+        Set<Node> list = JcrPropertyUtil.getReferencedNodeSet(this.node, HADOOP_SECURITY_GROUPS);
+        List<HadoopSecurityGroup> hadoopSecurityGroups = new ArrayList<>();
+        if (list != null) {
+            for (Node n : list) {
+                hadoopSecurityGroups.add(JcrUtil.createJcrObject(n, JcrHadoopSecurityGroup.class));
+            }
+        }
+        return hadoopSecurityGroups;
+    }
+
     public void removeServiceLevelAgreement(ServiceLevelAgreement.ID id) {
         try {
             Set<Node> nodes = JcrPropertyUtil.getSetProperty(this.node, SLA);
@@ -317,6 +331,15 @@ public class JcrFeed<C extends Category> extends AbstractJcrAuditableSystemEntit
 
     public void setServiceLevelAgreements(List<? extends ServiceLevelAgreement> serviceLevelAgreements) {
         setProperty(SLA, serviceLevelAgreements);
+    }
+
+    public void setSecurityGroups(List<? extends HadoopSecurityGroup> hadoopSecurityGroups) {
+        JcrPropertyUtil.setProperty(this.node, HADOOP_SECURITY_GROUPS, null);
+
+        for (HadoopSecurityGroup securityGroup : hadoopSecurityGroups) {
+            Node securityGroupNode = ((JcrHadoopSecurityGroup) securityGroup).getNode();
+            JcrPropertyUtil.addToSetProperty(this.node, HADOOP_SECURITY_GROUPS, securityGroupNode, true);
+        }
     }
 
     public boolean addServiceLevelAgreement(ServiceLevelAgreement sla) {

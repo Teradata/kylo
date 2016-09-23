@@ -47,6 +47,7 @@
 	+ sla (tba:slaFolder) = tba:slaFolder autocreated mandatory
 	+ extensions (tba:extensionsFolder) = tba:extensionsFolder autocreated mandatory
 	+ security (tba:securityFolder) = tba:securityFolder autocreated mandatory
+	+ hadoopSecurityGroups (tba:hadoopSecurityGroupFolder) = tba:hadoopSecurityGroupFolder autocreated mandatory
 
 [tba:feedsFolder] > nt:folder 
     + * (tba:category) sns
@@ -72,6 +73,8 @@
 [tba:templatesFolder] > nt:folder
 
 [tba:slaFolder] > nt:folder
+
+[tba:hadoopSecurityGroupFolder] > nt:folder
 
 /* -=-=-=-=-=--=-=-  Security  -=-=-=-=-=-=-=-=- */
 
@@ -136,6 +139,7 @@
 
 [tba:category] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied, tba:accessControlled
 	- tba:systemName (STRING) mandatory
+	- tba:securityGroups (WEAKREFERENCE) multiple
 	- tba:state (LONG)
 	- tba:initialized (BOOLEAN) = 'false'
 	+ * (tba:feed) sns
@@ -155,6 +159,7 @@
 	- tba:schedulingStrategy (STRING)
     - tba:dependentFeeds (REFERENCE) multiple
     - tba:slas (WEAKREFERENCE) multiple
+    - tba:securityGroups (WEAKREFERENCE) multiple
 
 
 [tba:feedPrecondition] > nt:hierarchyNode, mix:lastModified
@@ -169,6 +174,9 @@
 
 [tba:feedDestination] > tba:feedConnection 
 //  + fieldPolicies (tba:fieldPolicy) sns
+
+[tba:hadoopSecurityGroup] > nt:hierarchyNode, mix:referenceable, mix:title
+    - tba:groupId (LONG) mandatory
 
 [tba:datasource] > tba:extensibleEntity, mix:referenceable, mix:title, tba:propertied 
     - tba:systemName (STRING) mandatory

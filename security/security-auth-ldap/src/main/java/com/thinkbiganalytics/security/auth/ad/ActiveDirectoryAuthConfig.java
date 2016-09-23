@@ -75,7 +75,7 @@ public class ActiveDirectoryAuthConfig {
         
         private URI uri;
         private String domain;
-        
+
         public void setUri(String uri) {
             this.uri = URI.create(uri);
         }
@@ -91,7 +91,10 @@ public class ActiveDirectoryAuthConfig {
 
         @Override
         protected ActiveDirectoryLdapAuthenticationProvider createInstance() throws Exception {
-            return new ActiveDirectoryLdapAuthenticationProvider(this.domain, this.uri.toASCIIString());
+            ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(this.domain, this.uri.toASCIIString());
+            provider.setConvertSubErrorCodesToExceptions(true);
+
+            return provider;
         }
     }
     
@@ -99,7 +102,6 @@ public class ActiveDirectoryAuthConfig {
         
         private String passwordAttribute = null;
         private String[] groupAttributes = null;
-        
         
         public void setPasswordAttribute(String passwordAttribute) {
             this.passwordAttribute = passwordAttribute;
