@@ -283,11 +283,10 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
 
                 //add in the lineage dependency relationships
 
-                //sync the feed information to ops manager
-                operationalMetadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName));
-
-
             }
+            //sync the feed information to ops manager
+            operationalMetadataAccess.commit(() -> opsManagerFeedProvider.save(opsManagerFeedProvider.resolveId(domainId), feedName));
+
 
             // Return result
             return feed;
