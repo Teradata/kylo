@@ -91,7 +91,9 @@ public class ActiveDirectoryAuthConfig {
 
         @Override
         protected ActiveDirectoryLdapAuthenticationProvider createInstance() throws Exception {
-            return new ActiveDirectoryLdapAuthenticationProvider(this.domain, this.uri.toASCIIString());
+            ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(this.domain, this.uri.toASCIIString());
+            provider.setConvertSubErrorCodesToExceptions(true);
+            return provider;
         }
     }
     
