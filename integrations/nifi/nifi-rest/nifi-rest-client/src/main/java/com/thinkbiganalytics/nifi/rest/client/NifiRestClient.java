@@ -283,6 +283,9 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(
                 "Unable to create Template instance for templateId: " + templateId + " under Process group " + processGroupId + ".  Unable find the processGroup or template");
+        } catch (ClientErrorException e) {
+            final String msg = e.getResponse().readEntity(String.class);
+            throw new NifiComponentNotFoundException("Unable to create Template instance for templateId: " + templateId + " under Process group " + processGroupId + ". " + msg);
         }
     }
 
