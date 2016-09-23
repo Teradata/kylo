@@ -7,6 +7,8 @@ import java.net.URI;
 
 import javax.security.auth.login.AppConfigurationEntry;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -85,7 +87,7 @@ public class LdapAuthConfig {
         
         private URI uri;
         private String userDn;
-        private char[] password;
+        private char[] password = "".toCharArray();
         
         public void setUri(String uri) {
             this.uri = URI.create(uri);
@@ -107,8 +109,8 @@ public class LdapAuthConfig {
         @Override
         protected LdapContextSource createInstance() throws Exception {
             DefaultSpringSecurityContextSource cxt = new DefaultSpringSecurityContextSource(this.uri.toASCIIString());
-            cxt.setUserDn(this.userDn);
-            cxt.setPassword(new String(this.password));
+            if (StringUtils.isNotEmpty(this.userDn)) cxt.setUserDn(this.userDn);
+            if (ArrayUtils.isNotEmpty(this.password)) cxt.setPassword(new String(this.password));
             cxt.setCacheEnvironmentProperties(false);
             cxt.afterPropertiesSet();
             return cxt;
@@ -147,7 +149,7 @@ public class LdapAuthConfig {
         private LdapContextSource contextSource;
         private String groupsOu;
         private String groupRoleAttribute;
-        private boolean enabled = true;
+        private boolean enabled = false;
         
         public LdapAuthoritiesPopulatorFactory(LdapContextSource contextSource) {
             super();

@@ -7,6 +7,8 @@ import java.net.URI;
 
 import javax.security.auth.login.AppConfigurationEntry;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -121,13 +123,8 @@ public class ActiveDirectoryAuthConfig {
             LdapUserDetailsMapper mapper = new LdapUserDetailsMapper();
             mapper.setConvertToUpperCase(false);
             mapper.setRolePrefix("");
-            
-            if (this.passwordAttribute != null) {
-                mapper.setPasswordAttributeName(passwordAttribute);
-            }
-            if (this.groupAttributes != null) {
-                mapper.setRoleAttributes(groupAttributes);
-            }
+            if (StringUtils.isNotEmpty(this.passwordAttribute)) mapper.setPasswordAttributeName(passwordAttribute);
+            if (ArrayUtils.isNotEmpty(this.groupAttributes)) mapper.setRoleAttributes(groupAttributes);
             
             return mapper;
         }
