@@ -120,5 +120,12 @@ angular.module(MODULE_FEED_MGR).service('StateService', function ($state) {
      */
     this.navigateToRegisteredTemplates = function() {
         $state.go("registered-templates");
-    }
+    };
+
+    /**
+     * Navigates to the Home page.
+     */
+    this.navigateToHome = function() {
+        $state.go("home");
+    };
 });

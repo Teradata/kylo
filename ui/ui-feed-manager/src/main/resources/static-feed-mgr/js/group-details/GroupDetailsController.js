@@ -29,6 +29,18 @@
         self.actions = [];
 
         /**
+         * Indicates that admin operations are allowed.
+         * @type {boolean}
+         */
+        self.allowAdmin = false;
+
+        /**
+         * Indicates that user operations are allowed.
+         * @type {boolean}
+         */
+        self.allowUsers = false;
+
+        /**
          * Editable list of actions allowed to the group.
          *
          * @type {Array.<Action>}
@@ -174,6 +186,14 @@
          * Loads the group details.
          */
         self.onLoad = function() {
+            // Fetch allowed permissions
+            AccessControlService.getAllowedActions()
+                    .then(function(actionSet) {
+                        self.allowAdmin = AccessControlService.hasAction(AccessControlService.GROUP_ADMIN, actionSet.actions);
+                        self.allowUsers = AccessControlService.hasAction(AccessControlService.USERS_ACCESS, actionSet.actions);
+                    });
+
+            // Fetch group details
             if (angular.isString($stateParams.groupId)) {
                 UserService.getGroup($stateParams.groupId)
                         .then(function(group) {

@@ -23,6 +23,8 @@ import org.apache.nifi.web.api.entity.InputPortsEntity;
 import org.glassfish.jersey.media.multipart.FormDataContentDisposition;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.JDBCException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
@@ -54,11 +56,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
 
 @Api(value = "feed-manager-feeds", produces = "application/json")
 @Path("/v1/feedmgr/feeds")
 @Component
 public class FeedRestController {
+
+    private static final Logger log = LoggerFactory.getLogger(FeedRestController.class);
 
     /** Messages for the default locale */
     private static final ResourceBundle STRINGS = ResourceBundle.getBundle("com.thinkbiganalytics.feedmgr.rest.controller.FeedMessages");
@@ -81,29 +88,37 @@ public class FeedRestController {
     @Inject
     ServiceLevelAgreementService serviceLevelAgreementService;
 
-    public FeedRestController() {
-    }
-
     private MetadataService getMetadataService() {
         return metadataService;
     }
 
+    /**
+     * Creates a new Feed using the specified metadata.
+     *
+     * @param feedMetadata the feed metadata
+     * @return the feed
+     */
     @POST
     @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
     @Produces({MediaType.APPLICATION_JSON})
-    public Response createFeed(FeedMetadata feedMetadata) {
+    @ApiOperation("Creates a new Feed from a metadata object.")
+    @ApiResponse(code = 200, message = "Returns the new feed.", response = NifiFeed.class)
+    @Nonnull
+    public Response createFeed(@Nonnull final FeedMetadata feedMetadata) {
         NifiFeed feed;
         try {
             feed = getMetadataService().createFeed(feedMetadata);
         } catch (Exception e) {
-            //Database Exception.. post back to the user as an error
-            feed = new NifiFeed(feedMetadata, null);
-            String msg = "Error saving Feed " + e.getMessage();
+            log.error("Failed to create a new feed.", e);
 
+            // Create an error message
+            String msg = (e.getMessage() != null) ? "Error saving Feed " + e.getMessage() : "An unknown error occurred while saving the feed.";
             if (e.getCause() instanceof JDBCException) {
-                JDBCException dae = (JDBCException) e.getCause();
-                msg += ".  " + dae.getSQLException();
+                msg += ". " + ((JDBCException) e).getSQLException();
             }
+
+            // Add error message to feed
+            feed = new NifiFeed(feedMetadata, null);
             feed.addErrorMessage(msg);
             feed.setSuccess(false);
         }

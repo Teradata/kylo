@@ -416,10 +416,11 @@
             // Add JOIN clauses for tables connected to this one
             var edges = [];
             var srcID = tableInfo.data.id;
+            graph[srcID].seen = true;
 
             angular.forEach(graph[srcID].edges, function(connection, dstID) {
                 if (connection !== null) {
-                    joinClauses.push(getJoinSQL(tableInfo.data, graph[dstID].data, connection));
+                    joinClauses.push(getJoinSQL(tableInfo.data, graph[dstID].data, connection, graph));
                     edges.push(dstID);
                     graph[srcID].edges[dstID] = null;
                     graph[dstID].edges[srcID] = null;
@@ -487,21 +488,45 @@
          *
          * @param {Object} src the node for the source table
          * @param {Object} dst the node for the destination table
-         * @param {Object} connection
+         * @param {Object} connection the join description
+         * @param {TableJoinMap} graph the table join map
          * @return {string} the JOIN statement
          */
-        function getJoinSQL(src, dst, connection) {
+        function getJoinSQL(src, dst, connection, graph) {
             // Use default text if missing join keys
             if (typeof(connection.joinKeys.destKey) === "undefined" || typeof(connection.joinKeys.sourceKey) === "undefined") {
                 return "JOIN " + dst.nodeAttributes.sql + " " + TABLE_PREFIX + dst.id;
             }
 
             // Create JOIN clause
+            graph[dst.id].seen = true;
+
             var sql = connection.joinType + " " + dst.nodeAttributes.sql + " " + TABLE_PREFIX + dst.id + " ON " + TABLE_PREFIX + dst.id + ".`";
             sql += StringUtils.quoteSql((connection.source.nodeID === src.id) ? connection.joinKeys.sourceKey : connection.joinKeys.destKey);
             sql += "` = " + TABLE_PREFIX + src.id + ".`";
             sql += StringUtils.quoteSql((connection.source.nodeID === src.id) ? connection.joinKeys.destKey : connection.joinKeys.sourceKey);
             sql += "`";
+
+            // Add conditions for 'seen' tables
+            var conditions = _.values(graph[dst.id].edges)
+                    // Filter for tables already added in the SQL query
+                    .filter(function(edge) {
+                        return (edge != null && edge.source.nodeID != src.id && graph[edge.source.nodeID].seen && edge.dest.nodeID != src.id && graph[edge.dest.nodeID].seen);
+                    })
+                    // Build join condition
+                    .map(function(edge) {
+                        var condition = TABLE_PREFIX + edge.source.nodeID + ".`" + StringUtils.quoteSql(edge.joinKeys.sourceKey) + "` = ";
+                        condition += TABLE_PREFIX + edge.dest.nodeID + ".`" + StringUtils.quoteSql(edge.joinKeys.destKey) + "`";
+
+                        // Remove join from graph
+                        graph[edge.source.nodeID].edges[edge.dest.nodeID] = null;
+                        graph[edge.dest.nodeID].edges[edge.source.nodeID] = null;
+
+                        return condition;
+                    });
+            if (conditions.length > 0) {
+                sql += " AND " + conditions.join(" AND ");
+            }
 
             return sql;
         }
@@ -538,10 +563,7 @@
             var joinClauses = [];
 
             angular.forEach(graph, function(node) {
-                if (node.seen) {
-                    // ignored
-                }
-                else if (_.size(node.edges) === 0) {
+                if (_.size(node.edges) === 0) {
                     fromTables.push(node.data.nodeAttributes.sql + " " + TABLE_PREFIX + node.data.id);
                 }
                 else {
@@ -563,7 +585,7 @@
                             do {
                                 ++i;
                                 alias = attr.name + "_" + i;
-                            } while (aliasCount[alias] !== 0);
+                            } while (aliasCount[alias] > 0);
                         }
 
                         // Add column to clause

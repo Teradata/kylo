@@ -123,16 +123,16 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
         this.sample_ = 1.0;
 
         /**
-         * The source SQL for transformations.
+         * The source SQL for transformations, escaped for Scala.
          *
          * @private
          * @type {string}
          */
-        this.source_ = sql;
+        this.source_ = StringUtils.escapeScala(sql);
 
         /**
          * List of states.
-         * 
+         *
          * @private
          * @type {Array.<ScriptState>}
          */
@@ -218,7 +218,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
 
         /**
          * Gets the columns after applying the current transformation.
-         * 
+         *
          * @returns {Array.<QueryResultColumn>|null} the columns or {@code null} if the transformation has not been applied
          */
         getColumns: function() {
@@ -283,7 +283,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
 
         /**
          * Gets the rows after applying the current transformation.
-         * 
+         *
          * @returns {Array.<Object.<string,*>>|null} the rows or {@code null} if the transformation has not been applied
          */
         getRows: function() {
@@ -405,7 +405,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
 
         /**
          * Returns an object for recreating this script.
-         * 
+         *
          * @return {Object} the saved state
          */
         save: function() {
@@ -944,7 +944,7 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
             } if (expression.source.charAt(0) === "\"") {
                 return expression.source;
             } if (expression.source.charAt(0) === "'") {
-                return "\"" + expression.source.substr(1, expression.source.length - 2) + "\"";
+                return "\"" + expression.source.substr(1, expression.source.length - 2).replace(/"/g, "\\\"") + "\"";
             }
             return "\"" + expression.source + "\"";
         },

@@ -24,7 +24,7 @@
          */
         self.onLoad = function(actions) {
             // Determine if Feed Manager is allowed at all
-            if (!AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, actions)) {
+            if (!AccessControlService.hasAction(AccessControlService.FEED_MANAGER_ACCESS, actions) && !AccessControlService.hasAction(AccessControlService.USERS_GROUPS_ACCESS, actions)) {
                 self.loading = false;
                 $mdDialog.show(
                         $mdDialog.alert()
@@ -46,6 +46,12 @@
             }
             if (AccessControlService.hasAction(AccessControlService.TEMPLATES_ACCESS, actions)) {
                 return StateService.navigateToRegisteredTemplates();
+            }
+            if (AccessControlService.hasAction(AccessControlService.USERS_ACCESS, actions)) {
+                return StateService.navigateToUsers();
+            }
+            if (AccessControlService.hasAction(AccessControlService.GROUP_ACCESS, actions)) {
+                return StateService.navigateToGroups();
             }
 
             // Otherwise, let the user pick
