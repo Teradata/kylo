@@ -63,8 +63,8 @@ public class TemplateCreationHelper {
 
     Map<String, Integer> controllerServiceEnableAttempts = new ConcurrentHashMap<>();
 
-    private Integer MAX_ENABLE_ATTEMPTS = 10;
-    private Long ENABLE_CONTROLLER_SERVICE_WAIT_TIME = 3000L;
+    private Integer MAX_ENABLE_ATTEMPTS = 5;
+    private Long ENABLE_CONTROLLER_SERVICE_WAIT_TIME = 2000L;
 
     public TemplateCreationHelper(NifiRestClient restClient) {
         this.restClient = restClient;
