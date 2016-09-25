@@ -574,7 +574,7 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         // while there are entries I process them
         ImportTemplate importTemplate = new ImportTemplate(fileName);
         while ((entry = zis.getNextEntry()) != null) {
-            log.info("zip file entry: " + entry.getName() + " created at: " + entry.getCreationTime());
+            log.info("zip file entry: " + entry.getName());
             // consume all the data from this entry
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             int len = 0;
