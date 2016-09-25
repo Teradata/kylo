@@ -104,6 +104,9 @@ public class NifiProcessGroup {
     }
 
     public List<NifiProcessorDTO> getErrors() {
+        if (errors == null) {
+            errors = new ArrayList<>();
+        }
         return errors;
     }
 

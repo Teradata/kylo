@@ -291,7 +291,44 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
 
     public NifiProcessGroup createNewTemplateInstance(String templateId, Map<String, Object> staticConfigProperties, boolean createReusableFlow) {
         TemplateInstanceCreator creator = new TemplateInstanceCreator(this, templateId, staticConfigProperties, createReusableFlow);
-        return creator.createTemplate();
+        NifiProcessGroup group = creator.createTemplate();
+        return group;
+    }
+
+    public void markConnectionPortsAsRunning(ProcessGroupEntity entity) {
+        //1 startAll
+        try {
+            startAll(entity.getProcessGroup().getId(), entity.getProcessGroup().getParentGroupId());
+        } catch (NifiClientRuntimeException e) {
+            log.error("Error trying to mark connection ports Running for {}", entity.getProcessGroup().getName());
+        }
+
+        Set<PortDTO> ports = null;
+        try {
+            ports = getPortsForProcessGroup(entity.getProcessGroup().getParentGroupId());
+        } catch (NifiClientRuntimeException e) {
+            log.error("Error getPortsForProcessGroup {}", entity.getProcessGroup().getName());
+        }
+        if (ports != null && !ports.isEmpty()) {
+            for (PortDTO port : ports) {
+                port.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
+                if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())) {
+                    try {
+                        startInputPort(entity.getProcessGroup().getParentGroupId(), port.getId());
+                    } catch (NifiClientRuntimeException e) {
+                        log.error("Error starting Input Port {} for process group {}", port.getName(), entity.getProcessGroup().getName());
+                    }
+                } else if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name())) {
+                    try {
+                        startOutputPort(entity.getProcessGroup().getParentGroupId(), port.getId());
+                    } catch (NifiClientRuntimeException e) {
+                        log.error("Error starting Output Port {} for process group {}", port.getName(), entity.getProcessGroup().getName());
+                    }
+                }
+            }
+
+        }
+
     }
 
     public ControllerStatusEntity getControllerStatus() {

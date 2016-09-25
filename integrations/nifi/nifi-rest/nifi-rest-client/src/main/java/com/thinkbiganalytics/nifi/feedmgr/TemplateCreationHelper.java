@@ -20,7 +20,6 @@ import com.thinkbiganalytics.nifi.rest.support.NifiTemplateNameUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
-import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
@@ -527,40 +526,10 @@ public class TemplateCreationHelper {
         }
     }
 
-    public void markConnectionPortsAsRunning(ProcessGroupEntity feedProcessGroup) {
-        //1 startAll
-        try {
-            restClient.startAll(feedProcessGroup.getProcessGroup().getId(), feedProcessGroup.getProcessGroup().getParentGroupId());
-        } catch (NifiClientRuntimeException e) {
-            log.error("Error trying to mark connection ports Running for {}", feedProcessGroup.getProcessGroup().getName());
-        }
 
-        Set<PortDTO> ports = null;
-        try {
-            ports = restClient.getPortsForProcessGroup(feedProcessGroup.getProcessGroup().getParentGroupId());
-        } catch (NifiClientRuntimeException e) {
-            log.error("Error getPortsForProcessGroup {}", feedProcessGroup.getProcessGroup().getName());
-        }
-        if (ports != null && !ports.isEmpty()) {
-            for (PortDTO port : ports) {
-                port.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-                if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())) {
-                    try {
-                        restClient.startInputPort(feedProcessGroup.getProcessGroup().getParentGroupId(), port.getId());
-                    } catch (NifiClientRuntimeException e) {
-                        log.error("Error starting Input Port {} for process group {}", port.getName(), feedProcessGroup.getProcessGroup().getName());
-                    }
-                } else if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name())) {
-                    try {
-                        restClient.startOutputPort(feedProcessGroup.getProcessGroup().getParentGroupId(), port.getId());
-                    } catch (NifiClientRuntimeException e) {
-                        log.error("Error starting Output Port {} for process group {}", port.getName(), feedProcessGroup.getProcessGroup().getName());
-                    }
-                }
-            }
+    public void markConnectionPortsAsRunning(ProcessGroupEntity entity) {
 
-        }
-
+        restClient.markConnectionPortsAsRunning(entity);
     }
 
 }
