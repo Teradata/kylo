@@ -11,7 +11,7 @@
                 {{vm.model.schedule.schedulingStrategy}}
             </div>
         </div>
-        <div layout="row" class="layout-padding-top-bottom">
+            <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.schedule.schedulingStrategy != 'TRIGGER_DRIVEN'">
             <span flex="25" class="property-name">Period</span>
 
             <div flex>
