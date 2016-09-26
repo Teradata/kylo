@@ -24,11 +24,12 @@ public class ApplyHDFSAcl {
 	 * @param feed_name : Feed Name 
 	 * @param permission_level : Feed Permission Level
 	 * @param groupList : Group List for Authorization
+	 * @param hdfs_permission 
 	 * @throws IOException 
 	 */
 
 	@SuppressWarnings("static-access")
-	public boolean createAcl(String HadoopConfigurationResource, String category_name , String feed_name, String permission_level , String groupList) throws IOException {
+	public boolean createAcl(String HadoopConfigurationResource, String category_name , String feed_name, String permission_level , String groupList, String hdfs_permission) throws IOException {
 
 		try {
 

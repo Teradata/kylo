@@ -55,23 +55,24 @@ public class RangerRestClient extends JerseyRestClient {
         }
     }
 
-    /*public void updatePolicy(JSONObject obj, int policyId) throws RangerRestClientException {
-        try {
+    public void updatePolicy(JSONObject obj, int policyId) throws RangerRestClientException {
+        try {        	
             put("/public/api/policy/" + policyId, obj, String.class);
         } catch (Exception e) {
+        	e.printStackTrace();
             // TODO Auto-generated catch block
             throw new RangerRestClientException("Unable to update policy.", e);
         }
-    } */
+    } 
 
-    /*public String deletePolicy(int policyId) throws RangerRestClientException {
+    public String deletePolicy(int policyId) throws RangerRestClientException {
         try {
             return delete("/public/api/policy/" + policyId, null, String.class);
         } catch (Exception e) {
             // TODO Auto-generated catch block
             throw new RangerRestClientException("Unable to delete policy .", e);
         }
-    }*/
+    }
 
     public String searchPolicies(Map<String, Object> searchCriteria) throws RangerRestClientException {
         try {

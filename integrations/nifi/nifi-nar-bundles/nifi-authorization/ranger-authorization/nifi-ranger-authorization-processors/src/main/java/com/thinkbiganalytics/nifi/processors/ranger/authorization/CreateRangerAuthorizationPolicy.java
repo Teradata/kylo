@@ -123,6 +123,8 @@ public class CreateRangerAuthorizationPolicy extends AbstractProcessor  {
 			RangerRestClient rangerClientObject =  rangerService.getConnection();
 			RangerUtil rangerUtil = new RangerUtil();
 
+			
+			
 			logger.info("Creating HDFS Policy");
 			if (rangerUtil.checkIfPolicyExists(rangerClientObject, category_name,feed_name , permission_level , HDFS_REPOSITORY_TYPE))
 			{
@@ -132,7 +134,10 @@ public class CreateRangerAuthorizationPolicy extends AbstractProcessor  {
 			}
 			else
 			{
-				logger.warn("HDFS Policy already exists for feed " + feed_name +". Skipping HDFS policy creation");
+				int policyId = rangerUtil.getIdForExistingPolicy(rangerClientObject, category_name, feed_name, permission_level, HDFS_REPOSITORY_TYPE);
+				HDFSPolicy updatehdfsPolicy = rangerUtil.updateHDFSPolicyJson( group_list, permission_level , category_name , feed_name ,hdfs_permission_list ,hdfs_reposiroty_name);
+				rangerClientObject.updatePolicy(updatehdfsPolicy.policyJson(), policyId);
+				logger.warn("HDFS Policy already exists for feed " + feed_name +". Updating HDFS existing policy.");
 			}
 
 			logger.info("Creating HIVE Policy");
@@ -144,7 +149,10 @@ public class CreateRangerAuthorizationPolicy extends AbstractProcessor  {
 			}
 			else
 			{
-				logger.warn("HIVE Policy already exists for feed " + feed_name +". Skipping HIVE policy creation");
+				int policyId = rangerUtil.getIdForExistingPolicy(rangerClientObject, category_name, feed_name, permission_level, HIVE_REPOSITORY_TYPE);
+				HivePolicy updateHivePolicy = rangerUtil.updateHivePolicyJson( group_list, permission_level , category_name , feed_name ,hive_permission_list,hive_reposiroty_name);
+				rangerClientObject.updatePolicy(updateHivePolicy.policyJson(), policyId);
+				logger.warn("HIVE Policy already exists for feed " + feed_name +". Updating Hive existing policy.");
 			}
 
 			session.transfer(flowFile, REL_SUCCESS);
