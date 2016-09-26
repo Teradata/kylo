@@ -13,7 +13,7 @@
                    <span class="item-title">
                    {{vm.jobData.name}}
                    </span>
-                  <span class="column-title-bottom" ng-class="{{vm.jobData.cssStatusClass}}">
+                  <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
                                                        <ng-md-icon ng-if="vm.jobData.statusIcon" class="{{vm.jobData.tabIconStyle}}" icon="{{vm.jobData.statusIcon}}" size="20">
                                                        </ng-md-icon>{{vm.jobData.displayStatus}}</span>
 
@@ -239,9 +239,10 @@
                                                          <span class="item-title">
                                                            {{vm.jobData.name}}
                                                        </span>
-                                                             <span ng-class="{{vm.jobData.cssStatusClass}}" class="column-title-bottom">
+                                                             <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
                                                                <ng-md-icon
                                                                    icon="{{vm.jobData.statusIcon}}"
+                                                                   class="{{vm.jobData.tabIconStyle}}"
                                                                    size="20">
                                                                </ng-md-icon>{{vm.jobData.displayStatus}}</span>
 
