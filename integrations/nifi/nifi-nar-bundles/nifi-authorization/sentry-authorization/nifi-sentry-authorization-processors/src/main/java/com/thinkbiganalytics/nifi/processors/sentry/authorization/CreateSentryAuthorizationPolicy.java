@@ -9,6 +9,8 @@ import static com.thinkbiganalytics.nifi.processors.sentry.authorization.Compone
 import static com.thinkbiganalytics.nifi.processors.sentry.authorization.ComponentProperties.GROUP_LIST;
 import static com.thinkbiganalytics.nifi.processors.sentry.authorization.ComponentProperties.PERMISSION_LEVEL;
 import static com.thinkbiganalytics.nifi.processors.sentry.authorization.ComponentProperties.THRIFT_SERVICE;
+import static com.thinkbiganalytics.nifi.processors.sentry.authorization.ComponentProperties.HDFS_PERMISSION_LIST;
+import static com.thinkbiganalytics.nifi.processors.sentry.authorization.ComponentProperties.HIVE_PERMISSION_LIST;
 
 import java.io.File;
 import java.io.IOException;
@@ -100,6 +102,8 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 		descriptors.add(KERBEROS_PRINCIPAL);
 		descriptors.add(KERBEROS_KEYTAB);
 		descriptors.add(PERMISSION_LEVEL);
+		descriptors.add(HIVE_PERMISSION_LIST);
+		descriptors.add(HDFS_PERMISSION_LIST);
 		descriptors.add(GROUP_LIST);
 		descriptors.add(CATEGORY_NAME);
 		descriptors.add(FEED_NAME);
@@ -144,20 +148,21 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 			String group_list = context.getProperty(GROUP_LIST).evaluateAttributeExpressions(flowFile).getValue();
 			String category = context.getProperty(CATEGORY_NAME).evaluateAttributeExpressions(flowFile).getValue();
 			String feed = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
+			String hive_permission = context.getProperty(HIVE_PERMISSION_LIST).getValue();
+			String hdfs_permission = context.getProperty(HDFS_PERMISSION_LIST).getValue();		
 
-			
 			/**
 			 * Create Policy in Sentry
 			 */
-			
+
 			Statement stmt = conn.createStatement();
 			SentryUtil sentryUtil = new SentryUtil();
-			boolean policy_creation_status=sentryUtil.createPolicy(stmt,group_list,category,feed ,permission);
-			
+			boolean policy_creation_status=sentryUtil.createPolicy(stmt,group_list,category,feed ,permission , hive_permission);
+
 			/**
 			 * Check for Kerberos Security Before Creating ACL
 			 */
-			
+
 			String principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
 			String keyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
 			String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
@@ -207,18 +212,18 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 					return;
 				}
 			}
-		
+
 			/**
 			 * Apply HDFS ACL 
 			 */
-			
+
 			ApplyHDFSAcl applyAcl = new ApplyHDFSAcl();
-			boolean hdfs_acl_status = applyAcl.createAcl(hadoopConfigurationResources, category, feed, permission, group_list);
+			boolean hdfs_acl_status = applyAcl.createAcl(hadoopConfigurationResources, category, feed, permission, group_list , hdfs_permission);
 
 			/**
 			 * Based on policy creation status , route flowfile either success or failure.
 			 */
-			
+
 			if(policy_creation_status && hdfs_acl_status)
 			{
 				session.transfer(flowFile, Success);

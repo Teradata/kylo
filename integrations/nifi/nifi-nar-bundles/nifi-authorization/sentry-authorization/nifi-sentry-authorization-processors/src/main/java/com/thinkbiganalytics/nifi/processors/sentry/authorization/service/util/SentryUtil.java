@@ -17,6 +17,8 @@ public class SentryUtil {
 	private static final String NIFI = "nifi_";
 	private static final String CATEGORY= "category";
 	private static final String ALL= "ALL";
+	private static final String INSERT= "INSERT";
+	private static final String SELECT= "SELECT";
 	private static final String DATABASE= "DATABASE";
 	private static final String TABLE = "TABLE";
 
@@ -29,9 +31,10 @@ public class SentryUtil {
 	 * @param category_name : Category Name
 	 * @param feed_name : Feed Name 
 	 * @param permission_level : Level at which permission needs to be granted
+	 * @param hive_permission select,insert,all
 	 * @return : Return true/false based on policy creation status
 	 */
-	public boolean createPolicy(Statement stmt, String group_list, String category_name, String feed_name ,String permission_level) 
+	public boolean createPolicy(Statement stmt, String group_list, String category_name, String feed_name ,String permission_level, String hive_permission) 
 	{
 
 		try
@@ -73,9 +76,18 @@ public class SentryUtil {
 
 			log.info("Granting Permission to Role");
 			//Grant All Permission to Role for Feed
-			if(permission_level.equalsIgnoreCase("category"))
+			
+			/**
+			 * Decide permission to be granted. 
+			 */
+			String finalPermission = getFinalPermission(hive_permission);
+			
+			/**
+			 * Check Level of Permission to be Granted.
+			 */
+			if(permission_level.equalsIgnoreCase(CATEGORY))
 			{
-				boolean grantPriviledgeToRole = sentryClientObject.grantRolePriviledges(stmt, ALL, DATABASE, category_name, sentry_policy_role);
+				boolean grantPriviledgeToRole = sentryClientObject.grantRolePriviledges(stmt, finalPermission, DATABASE, category_name, sentry_policy_role);
 				
 				if (!grantPriviledgeToRole)
 				{
@@ -88,7 +100,7 @@ public class SentryUtil {
 				String tableAssignmentArray[] = tableList.split(",");
 				for(int tableCounter = 0 ; tableCounter < tableAssignmentArray.length ; tableCounter++)
 				{
-					boolean grantPriviledgeToRole = sentryClientObject.grantRolePriviledges(stmt, ALL, TABLE, category_name+"."+tableAssignmentArray[tableCounter], sentry_policy_role);
+					boolean grantPriviledgeToRole = sentryClientObject.grantRolePriviledges(stmt, finalPermission, TABLE, category_name+"."+tableAssignmentArray[tableCounter], sentry_policy_role);
 					if (!grantPriviledgeToRole)
 					{
 						return false;
@@ -105,6 +117,33 @@ public class SentryUtil {
 			return false;
 		}
 		
+	}
+
+	private String getFinalPermission(String hive_permission) {
+		// TODO Auto-generated method stub
+		String finalPermissionToBeApplied = "";
+				
+		if (hive_permission.toLowerCase().contains("all"))
+		{
+			finalPermissionToBeApplied = ALL;
+		}
+		else
+		{
+			if(hive_permission.toLowerCase().contains("insert"))
+			{
+				finalPermissionToBeApplied = INSERT;
+			}
+			else
+			{
+				/**
+				 * If No match found then return read only permission.
+				 */
+				
+				finalPermissionToBeApplied = SELECT;
+			}
+		}
+		
+		return finalPermissionToBeApplied;
 	}
 
 	private String constructResourceforPermissionHIVE(String category_name, String feed_name, String permission_level) {
