@@ -2,6 +2,7 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
 import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
@@ -16,6 +17,7 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolde
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,6 +63,13 @@ public class ProvenanceEventReceiver {
 
     Cache<String, String> completedJobEvents = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
 
+
+    /**
+     * small cache to make sure we dont process any event more than once. The refresh/expire interval for this cache can be small since if a event comes in moore than once it would happen within a
+     * second
+     */
+    Cache<String, DateTime> processedEvents = CacheBuilder.newBuilder().expireAfterWrite(2, TimeUnit.MINUTES).build();
+
     private String triggeredEventsKey(ProvenanceEventRecordDTO event) {
         return event.getJobFlowFileId() + "_" + event.getEventId();
     }
@@ -70,7 +79,8 @@ public class ProvenanceEventReceiver {
      */
     @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
-        addEventsToQueue(events);
+        log.info("About to process {} events from the {} queue ", events.getEvents().size(), Queues.FEED_MANAGER_QUEUE);
+        addEventsToQueue(events, Queues.FEED_MANAGER_QUEUE);
     }
 
     /**
@@ -78,7 +88,8 @@ public class ProvenanceEventReceiver {
      */
     @JmsListener(destination = Queues.PROVENANCE_EVENT_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
     public void receiveTopic(ProvenanceEventRecordDTOHolder events) {
-        addEventsToQueue(events);
+        log.info("About to process {} events from the {} queue ", events.getEvents().size(), Queues.PROVENANCE_EVENT_QUEUE);
+        addEventsToQueue(events, Queues.PROVENANCE_EVENT_QUEUE);
     }
 
     int maxThreads = 10;
@@ -93,7 +104,8 @@ public class ProvenanceEventReceiver {
 
     private Map<String, ConcurrentLinkedQueue<ProvenanceEventRecordDTO>> jobEventMap = new ConcurrentHashMap<>();
 
-    private void addEventsToQueue(ProvenanceEventRecordDTOHolder events) {
+
+    private void addEventsToQueue(ProvenanceEventRecordDTOHolder events, String sourceJmsQueue) {
         Set<String> newJobs = new HashSet<>();
 
         events.getEvents().stream().sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).forEach(e -> {
@@ -101,7 +113,9 @@ public class ProvenanceEventReceiver {
                 if (!jobEventMap.containsKey(e.getJobFlowFileId())) {
                     newJobs.add(e.getJobFlowFileId());
                 }
-                jobEventMap.computeIfAbsent(e.getJobFlowFileId(), (id) -> new ConcurrentLinkedQueue()).add(e);
+                if (isProcessBatchEvent(e, sourceJmsQueue)) {
+                    jobEventMap.computeIfAbsent(e.getJobFlowFileId(), (id) -> new ConcurrentLinkedQueue()).add(e);
+                }
             }
 
             if (e.isFinalJobEvent()) {
@@ -137,7 +151,11 @@ public class ProvenanceEventReceiver {
                     } else {
                         ProvenanceEventRecordDTO event = null;
                         while ((event = queue.poll()) != null) {
-                            nifiEvents.add(receiveEvent(event));
+                            //   log.info("Process event {} ",event);
+                            NifiEvent nifiEvent = receiveEvent(event);
+                            if (nifiEvent != null) {
+                                nifiEvents.add(nifiEvent);
+                            }
                         }
                         jobEventMap.remove(jobId);
                         //  ((ThreadPoolExecutor)executorService).getQueue()
@@ -151,10 +169,41 @@ public class ProvenanceEventReceiver {
         }
     }
 
-    public NifiEvent receiveEvent(ProvenanceEventRecordDTO event) {
-        log.info("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}", event, event.isEndOfJob(), event.isEndingFlowFileEvent());
+    /**
+     * Return a key with the Event Id and Flow File Id to indicate that this event is currently processing.
+     */
+    private String processingEventMapKey(ProvenanceEventRecordDTO event) {
+        return event.getEventId() + "_" + event.getFlowFileUuid();
+    }
 
-        NifiEvent nifiEvent = nifiEventProvider.create(event);
+    /**
+     * Enusre this incoming event didnt get processed already
+     * @param event
+     * @return
+     */
+    private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, String sourceJmsQueue) {
+        //Skip batch processing for the events coming in as batch events from the Provenance Event Queue.
+        // this will be processed in order when the events come in.
+        if (event.isBatchJob() && Queues.PROVENANCE_EVENT_QUEUE.equalsIgnoreCase(sourceJmsQueue)) {
+            //   log.info("Skip processing event {} from Jms Queue: {}. It will be processed later in order.", event,Queues.PROVENANCE_EVENT_QUEUE);
+            return false;
+        }
+
+        String processingCheckMapKey = processingEventMapKey(event);
+        DateTime timeAddedToQueue = processedEvents.getIfPresent(processingCheckMapKey);
+        if (timeAddedToQueue == null) {
+            processedEvents.put(processingCheckMapKey, DateTimeUtil.getNowUTCTime());
+            return true;
+        } else {
+            //  log.info("Skip processing for event {}  at {} since it has already been added to a queue for processing at {} ",event, DateTimeUtil.getNowUTCTime(),timeAddedToQueue);
+            return false;
+        }
+    }
+
+    public NifiEvent receiveEvent(ProvenanceEventRecordDTO event) {
+        NifiEvent nifiEvent = null;
+        log.info("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(), event.isEndingFlowFileEvent(), event.isBatchJob());
+        nifiEvent = nifiEventProvider.create(event);
         if (event.isBatchJob()) {
             nifiJobExecutionProvider.save(event, nifiEvent);
         }
