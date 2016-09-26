@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.api;
 
@@ -35,13 +35,13 @@ import io.swagger.annotations.Api;
  * @author Sean Felten
  */
 @Component
-@Path("/extension")
+@Path("/metadata/extension")
 @Api(value = "metadata-extensions", produces = "application/json", description = "Allow creation and storing of new Entities with dynamic types ")
 public class ExtensionsController {
-    
+
     @Inject
     private MetadataAccess metadata;
-    
+
     @Inject
     private ExtensibleTypeProvider typeProvider;
 
@@ -54,7 +54,7 @@ public class ExtensionsController {
             return new ArrayList<>(Collections2.transform(list, ExtensiblesModel.DOMAIN_TO_TYPE));
         });
     }
-    
+
     @Path("type/{nameOrId}")
     @GET
     @Produces(MediaType.APPLICATION_JSON)
@@ -63,19 +63,19 @@ public class ExtensionsController {
             ExtensibleType.ID domainId = null;
             String name = null;
             ExtensibleType type = null;
-            
+
             try {
                 domainId = this.typeProvider.resolve(id);
             } catch (IllegalArgumentException e) {
                 name = id;
             }
-            
+
             if (domainId != null) {
                 type = this.typeProvider.getType(domainId);
             } else {
                 type = this.typeProvider.getType(name);
             }
-            
+
             if (type != null) {
                 return ExtensiblesModel.DOMAIN_TO_TYPE.apply(type);
             } else {
@@ -83,7 +83,7 @@ public class ExtensionsController {
             }
         });
     }
-    
+
     @Path("type/{id}")
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
@@ -94,7 +94,7 @@ public class ExtensionsController {
             return this.typeProvider.deleteType(domainId);
         });
     }
-    
+
     @Path("type")
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
@@ -102,11 +102,11 @@ public class ExtensionsController {
     public ExtensibleTypeDescriptor createType(ExtensibleTypeDescriptor descr) {
         return metadata.commit(() -> {
             ExtensibleType type = ExtensiblesModel.createType(descr, this.typeProvider);
-            
+
             return ExtensiblesModel.DOMAIN_TO_TYPE.apply(type);
         });
     }
-    
+
     @Path("type/{id}")
     @PUT
     @Consumes(MediaType.APPLICATION_JSON)
@@ -116,9 +116,9 @@ public class ExtensionsController {
         return metadata.read(() -> {
             ExtensibleType.ID domainId = this.typeProvider.resolve(id);
             ExtensibleType type =  ExtensiblesModel.updateType(descr, domainId, this.typeProvider);
-            
+
             return ExtensiblesModel.DOMAIN_TO_TYPE.apply(type);
         });
     }
-    
+
 }
