@@ -128,13 +128,17 @@
          * Check for duplicate system names.
          */
         self.onNameChange = function() {
-            FeedService.getSystemName(self.editModel.name)
-                    .then(function (response) {
-                        var systemName = response.data;
-                        self.$error.duplicateName = _.some(CategoriesService.categories, function(category) {
-                            return (category.systemName === systemName);
+            if (!angular.isString(self.model.systemName)) {
+                FeedService.getSystemName(self.editModel.name)
+                        .then(function(response) {
+                            var systemName = response.data;
+                            self.$error.duplicateName = _.some(CategoriesService.categories, function(category) {
+                                return (category.systemName === systemName);
+                            });
                         });
-                    });
+            } else {
+                self.$error.duplicateName = false;
+            }
         };
 
         /**
