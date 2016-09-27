@@ -7,6 +7,8 @@ import java.net.URI;
 
 import javax.security.auth.login.AppConfigurationEntry;
 
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -75,7 +77,7 @@ public class LdapAuthConfig {
     }
     
     @Bean
-    @ConfigurationProperties("security.auth.ldap.groups")
+    @ConfigurationProperties("security.auth.ldap.user")
     public LdapAuthoritiesPopulatorFactory ldapAuthoritiesPopulator(LdapContextSource context) {
         return new LdapAuthoritiesPopulatorFactory(context);
     }
@@ -85,7 +87,7 @@ public class LdapAuthConfig {
         
         private URI uri;
         private String userDn;
-        private char[] password;
+        private char[] password = "".toCharArray();
         
         public void setUri(String uri) {
             this.uri = URI.create(uri);
@@ -107,8 +109,8 @@ public class LdapAuthConfig {
         @Override
         protected LdapContextSource createInstance() throws Exception {
             DefaultSpringSecurityContextSource cxt = new DefaultSpringSecurityContextSource(this.uri.toASCIIString());
-            cxt.setUserDn(this.userDn);
-            cxt.setPassword(new String(this.password));
+            if (StringUtils.isNotEmpty(this.userDn)) cxt.setUserDn(this.userDn);
+            if (ArrayUtils.isNotEmpty(this.password)) cxt.setPassword(new String(this.password));
             cxt.setCacheEnvironmentProperties(false);
             cxt.afterPropertiesSet();
             return cxt;
@@ -147,7 +149,7 @@ public class LdapAuthConfig {
         private LdapContextSource contextSource;
         private String groupsOu;
         private String groupRoleAttribute;
-        private boolean enabled = true;
+        private boolean enableGroups = false;
         
         public LdapAuthoritiesPopulatorFactory(LdapContextSource contextSource) {
             super();
@@ -162,8 +164,8 @@ public class LdapAuthConfig {
             this.groupRoleAttribute = groupRoleAttribute;
         }
         
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
+        public void setEnableGroups(boolean enabled) {
+            this.enableGroups = enabled;
         }
         
         @Override
@@ -173,7 +175,7 @@ public class LdapAuthConfig {
 
         @Override
         protected LdapAuthoritiesPopulator createInstance() throws Exception {
-            if (this.enabled) {
+            if (this.enableGroups) {
                 DefaultLdapAuthoritiesPopulator authPopulator = new DefaultLdapAuthoritiesPopulator(this.contextSource, this.groupsOu);
                 authPopulator.setGroupRoleAttribute(this.groupRoleAttribute);
                 authPopulator.setRolePrefix("");

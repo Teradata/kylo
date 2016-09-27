@@ -25,7 +25,6 @@ import com.thinkbiganalytics.metadata.event.jms.JmsChangeEventDispatcher;
 import com.thinkbiganalytics.metadata.event.jms.MetadataJmsConfig;
 import com.thinkbiganalytics.metadata.event.reactor.ReactorContiguration;
 import com.thinkbiganalytics.metadata.modeshape.ModeShapeEngineConfig;
-import com.thinkbiganalytics.metadata.rest.RestConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.MetricAssessor;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAssessor;
@@ -46,7 +45,7 @@ import java.security.Principal;
 @Configuration
 @EnableAutoConfiguration
 //@Import({ RestConfiguration.class, ReactorContiguration.class, MetadataJmsConfig.class, JpaConfiguration.class })
-@Import({RestConfiguration.class, ReactorContiguration.class, MetadataJmsConfig.class, ModeShapeEngineConfig.class})
+@Import({ReactorContiguration.class, MetadataJmsConfig.class, ModeShapeEngineConfig.class})
 public class ServerConfiguration {
 
 

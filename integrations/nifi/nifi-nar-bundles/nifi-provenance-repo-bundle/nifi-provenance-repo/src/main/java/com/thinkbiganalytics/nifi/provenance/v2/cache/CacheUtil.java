@@ -71,7 +71,7 @@ public class CacheUtil {
         //This indicates the start of a Job.
         if (ProvenanceEventUtil.isFirstEvent(event) && (event.getParentUuids() == null || (event.getParentUuids() != null && event.getParentUuids().isEmpty()))) {
             flowFile.setFirstEvent(event);
-            log.info("Marking {} as root file from event type {} ", flowFile.getId(), event.getEventType());
+            log.debug("Marking {} as root file from event type {} ", flowFile.getId(), event.getEventType());
             flowFile.markAsRootFlowFile();
             event.setIsStartOfJob(true);
             modified.add(flowFile);
@@ -142,7 +142,12 @@ public class CacheUtil {
         }
 
         event.setJobFlowFileId(flowFile.getRootFlowFile().getId());
-        event.setJobEventId(flowFile.getRootFlowFile().getFirstEvent().getEventId());
+        if(flowFile.getRootFlowFile().getFirstEvent() != null) {
+            event.setJobEventId(flowFile.getRootFlowFile().getFirstEvent().getEventId());
+        }
+        else {
+            log.error(" ERROR!!! the flow file {} does not have a registered starting Event.  Statistics and operational metrics may not be captured for this flow file..  Current Provenance Event is: {} ",flowFile, event);
+        }
 
         if (ProvenanceEventUtil.isCompletionEvent(event)) {
             flowFile.addCompletionEvent(event);

@@ -200,12 +200,13 @@
 <div flex layout="column" tabIndex="-1" role="main" class="md-whiteframe-z2" layout-fill>
 
 
-
-    <md-toolbar layout="row" class="md-whiteframe-z1 page-header" layout-align="start center">
+    <md-toolbar layout="row" class="md-whiteframe-z1 page-header" layout-align="space-between center">
         <md-button class="menu toggle-side-nav" hide-gt-md ng-click="mc.toggleSideNavList()" aria-label="Show Menu">
             <ng-md-icon icon="menu"></ng-md-icon>
         </md-button>
         <ui-router-breadcrumbs displayname-property="data.displayName" template-url="js/shared/ui-router-breadcrumbs/uiBreadcrumbs.tpl.html" style="padding-left:25px;"></ui-router-breadcrumbs>
+        <span flex="20"></span>
+        <current-time style="margin-top:-40px;padding-right:10px;" class="md-caption"></current-time>
     </md-toolbar>
 
     <md-content flex id="content" md-scroll-y>

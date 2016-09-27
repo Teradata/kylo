@@ -149,13 +149,14 @@
          */
         self.onDelete = function() {
             var name = (angular.isString(self.model.title) && self.model.title.length > 0) ? self.model.title : self.model.systemName;
-            UserService.deleteGroup(self.model.systemName)
+            UserService.deleteGroup(encodeURIComponent($stateParams.groupId))
                     .then(function() {
                         $mdToast.show(
                                 $mdToast.simple()
                                         .textContent("Successfully deleted the group " + name + ".")
                                         .hideDelay(3000)
                         );
+                        StateService.navigateToGroups();
                     }, function() {
                         $mdDialog.show(
                                 $mdDialog.alert()

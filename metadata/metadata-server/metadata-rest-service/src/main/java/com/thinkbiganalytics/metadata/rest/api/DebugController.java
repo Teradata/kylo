@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.api;
 
@@ -45,40 +45,40 @@ import com.thinkbiganalytics.metadata.sla.api.Metric;
  * @author Sean Felten
  */
 @Component
-@Path("/debug")
+@Path("/metadata/debug")
 public class DebugController {
-    
+
     @Context
     private UriInfo uriInfo;
-    
+
     @Inject
     private MetadataAccess metadata;
-    
+
     @Inject
     private MetadataEventService eventService;
 
     @POST
     @Path("event")
-    public String postFeedOperationStatusEvent(@QueryParam("feed") String feedName, 
-                                               @QueryParam("op") String opIdStr, 
+    public String postFeedOperationStatusEvent(@QueryParam("feed") String feedName,
+                                               @QueryParam("op") String opIdStr,
                                                @QueryParam("state") String stateStr,
                                                @QueryParam("status") @DefaultValue("") String status) {
         FeedOperation.ID opId = null;
         FeedOperation.State state = FeedOperation.State.valueOf(stateStr.toUpperCase());
         FeedOperationStatusEvent event = new FeedOperationStatusEvent(feedName, opId, state, status);
-        
+
         this.eventService.notify(event);
-        
+
         return event.toString();
     }
-    
+
     @GET
     @Path("datasource/hivetable")
     @Produces(MediaType.APPLICATION_JSON)
     public Datasource exampleHiveTable() {
         return new HiveTableDatasource("table1", "database1", "table1");
     }
-    
+
     @GET
     @Path("metrics")
     @Produces(MediaType.APPLICATION_JSON)
@@ -96,7 +96,7 @@ public class DebugController {
         }
         return metrics;
     }
-    
+
     @GET
     @Path("procondition")
     @Produces(MediaType.APPLICATION_JSON)
@@ -106,7 +106,7 @@ public class DebugController {
                            new FeedExecutedSinceFeed("DependentCategory", "DependentFeed", "ExecutedSinceCategory", "ExecutedSinceFeed"));
         return procond;
     }
-    
+
     @GET
     @Path("jcr/{abspath: .*}")
     @Produces(MediaType.TEXT_PLAIN)
@@ -114,7 +114,7 @@ public class DebugController {
         return metadata.read(() -> {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            
+
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
                 Node node = session.getNode("/" + abspath);
@@ -123,13 +123,13 @@ public class DebugController {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            
+
             pw.flush();
             return sw.toString();
         });
     }
-    
-    
+
+
     @GET
     @Path("jcr")
     @Produces(MediaType.TEXT_PLAIN)
@@ -137,7 +137,7 @@ public class DebugController {
         return metadata.read(() -> {
             StringWriter sw = new StringWriter();
             PrintWriter pw = new PrintWriter(sw);
-            
+
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
                 Node node = session.getNodeByIdentifier(jcrId);
@@ -148,10 +148,10 @@ public class DebugController {
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
-            
+
             pw.flush();
             return sw.toString();
         });
     }
-    
+
 }

@@ -13,6 +13,8 @@ import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 
 import org.apache.nifi.web.api.dto.provenance.ProvenanceEventDTO;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,8 @@ import javax.inject.Named;
 public class NifiJobService extends AbstractJobService {
 
     private static final Logger log = LoggerFactory.getLogger(NifiJobService.class);
+
+    private static DateTimeFormatter utcDateTimeFormat = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss.SSS").withZoneUTC();
 
     @Inject
     private OperationalMetadataAccess operationalMetadataAccess;
@@ -72,6 +76,9 @@ public class NifiJobService extends AbstractJobService {
                 if (execution.getEndTime() == null) {
                     execution.setEndTime(DateTimeUtil.getNowUTCTime());
                 }
+                String msg = execution.getExitMessage() != null ? execution.getExitMessage() + "\n" : "";
+                msg += " Job Manually Abandonded @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
+                execution.setExitMessage(msg);
                 //also stop any running steps??
                 this.nifiJobExecutionProvider.save(execution);
 
@@ -90,6 +97,10 @@ public class NifiJobService extends AbstractJobService {
                     if (!step.isFinished()) {
                         step.setStatus(BatchStepExecution.StepStatus.FAILED);
                         step.setExitCode(ExecutionConstants.ExitCode.FAILED);
+                        String msg = step.getExitMessage() != null ? step.getExitMessage() + "\n" : "";
+                        msg += " Step Manually failed @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
+                        step.setExitMessage(msg);
+                        execution.setExitMessage(msg);
                     }
                 }
                 if (execution.getStartTime() == null) {
@@ -99,6 +110,9 @@ public class NifiJobService extends AbstractJobService {
                 if (execution.getEndTime() == null) {
                     execution.setEndTime(DateTimeUtil.getNowUTCTime());
                 }
+                String msg = execution.getExitMessage() != null ? execution.getExitMessage() + "\n" : "";
+                msg += " Job Manually failed @ " + utcDateTimeFormat.print(DateTimeUtil.getNowUTCTime());
+                execution.setExitMessage(msg);
                 this.nifiJobExecutionProvider.save(execution);
             }
             return execution;

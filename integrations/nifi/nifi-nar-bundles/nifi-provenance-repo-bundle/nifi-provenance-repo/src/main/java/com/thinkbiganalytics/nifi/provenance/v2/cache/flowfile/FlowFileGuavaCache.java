@@ -6,6 +6,7 @@ import com.google.common.cache.CacheStats;
 import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.nifi.provenance.model.ActiveFlowFile;
 import com.thinkbiganalytics.nifi.provenance.model.IdReferenceFlowFile;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.CacheUtil;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
 import com.thinkbiganalytics.util.SpringApplicationContext;
@@ -61,6 +62,9 @@ public class FlowFileGuavaCache {
 
     private final LoadingCache<String, ActiveFlowFile> cache;
 
+    private DateTime lastPrintLogTime = null;
+    private Long PRINT_LOG_MILLIS = 60 * 2 * 1000L; //print the summary log every 2 minutes
+
     private FlowFileGuavaCache() {
         cache = CacheBuilder.newBuilder().recordStats().build(new CacheLoader<String, ActiveFlowFile>() {
                                                                   @Override
@@ -88,10 +92,15 @@ public class FlowFileGuavaCache {
                 parent.assignFeedInformation(parentFlowFile.getFeedName(), parentFlowFile.getFeedProcessGroupId());
                 if (parentFlowFile.isRootFlowFile()) {
                     parent.markAsRootFlowFile();
+                    ProvenanceEventRecordDTO firstEvent = constructFirstEvent(parentFlowFile);
+                    parent.setFirstEvent(firstEvent);
+                    firstEvent.setFlowFile(parent);
+
                 }
                 parent.setCurrentFlowFileComplete(parentFlowFile.isComplete());
                 cache.put(parent.getId(), parent);
             }
+
 
             for (String childId : parentFlowFile.getChildIds()) {
                 ActiveFlowFile child = cache.getIfPresent(childId);
@@ -105,6 +114,24 @@ public class FlowFileGuavaCache {
             }
         }
         return parent;
+    }
+
+    /**
+     * Construct what is needed from the idRef file to create the First event of the root flow file
+     * @param rootFlowFile
+     * @return
+     */
+    private ProvenanceEventRecordDTO constructFirstEvent(IdReferenceFlowFile rootFlowFile){
+        ProvenanceEventRecordDTO firstEvent = new ProvenanceEventRecordDTO();
+        firstEvent.setEventId(rootFlowFile.getRootFlowFileFirstEventId());
+        firstEvent.setEventTime(new DateTime(rootFlowFile.getRootFlowFileFirstEventTime()));
+        firstEvent.setEventType(rootFlowFile.getRootFlowFileFirstEventType());
+        firstEvent.setComponentId(rootFlowFile.getRootFlowFileFirstEventComponentId());
+        firstEvent.setComponentName(rootFlowFile.getRootFlowFileFirstEventComponentName());
+        firstEvent.setFeedName(rootFlowFile.getFeedName());
+        firstEvent.setFeedProcessGroupId(rootFlowFile.getFeedProcessGroupId());
+
+        return firstEvent;
     }
 
     private ActiveFlowFile loadFromCache(String flowFileId) {
@@ -184,7 +211,11 @@ public class FlowFileGuavaCache {
                     log.info("Time to expire {} flowfiles {} ms. Root Flow Files left in cache: {} ", rootFiles.size(), (stop - start), getRootFlowFiles().size());
                 }
             }
-            printSummary();
+            if(lastPrintLogTime == null || (lastPrintLogTime != null && DateTime.now().getMillis() - lastPrintLogTime.getMillis() > (PRINT_LOG_MILLIS))) {
+                printSummary();
+                lastPrintLogTime = DateTime.now();
+            }
+
         } catch (Exception e) {
             log.error("Error attempting to invalidate FlowFileGuava cache {}, {}", e.getMessage(), e);
         }

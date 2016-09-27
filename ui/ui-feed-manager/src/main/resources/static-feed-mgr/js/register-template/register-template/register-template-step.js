@@ -1,7 +1,6 @@
+(function() {
 
-(function () {
-
-    var directive = function () {
+    var directive = function() {
         return {
             restrict: "EA",
             bindToController: {
@@ -11,32 +10,40 @@
             controllerAs: 'vm',
             templateUrl: 'js/register-template/register-template/register-template-step.html',
             controller: "RegisterCompleteRegistrationController",
-            link: function ($scope, element, attrs, controller) {
-
+            link: function($scope, element, attrs, controller) {
             }
-
         };
-    }
+    };
 
-    var controller =  function($scope, $http,$mdToast,$mdDialog,RestUrlService, StateService,RegisterTemplateService) {
-
+    function RegisterCompleteRegistrationController($scope, $http, $mdToast, $mdDialog, RestUrlService, StateService, RegisterTemplateService) {
         var self = this;
+
+        /**
+         * Error message object that maps keys to a boolean indicating the error state.
+         * @type {Object}
+         */
+        self.$error = {missingRegistration: true};
+
+        /**
+         * Indicates if the edit form is valid.
+         * @type {boolean}
+         */
+        self.isValid = false;
+
         this.model = RegisterTemplateService.model;
         this.message = null;
         this.registrationSuccess = false;
-        this.isValid = false;
-        this.stepNumber = parseInt(this.stepIndex)+1
+        this.stepNumber = parseInt(this.stepIndex) + 1
         this.templateTableOption = this.model.templateTableOption;
-        if(this.templateTableOption == undefined){
+        if (this.templateTableOption == undefined) {
 
-            if(this.model.defineTable){
+            if (this.model.defineTable) {
                 this.templateTableOption = 'DEFINE_TABLE'
             }
-            else if(this.model.dataTransformation) {
-               this.templateTableOption = 'DATA_TRANSFORMATION'
+            else if (this.model.dataTransformation) {
+                this.templateTableOption = 'DATA_TRANSFORMATION'
             }
-            else if(this.model.reusableTemplate)
-            {
+            else if (this.model.reusableTemplate) {
                 self.templateTableOption = 'COMMON_REUSABLE_TEMPLATE'
             }
             else {
@@ -44,108 +51,121 @@
             }
 
         }
-    this.templateTableOptions = [{type:'NO_TABLE',displayName:'No table customization',description:'User will not be given option to customize destination table'},{type:'DEFINE_TABLE',displayName:'Customize destination table',description:'Allow users to define and customize the destination data table.'}, {type:'DATA_TRANSFORMATION',displayName:'Data Transformation',description:'Users pick and choose different data tables and columns and apply functions to transform the data to their desired destination table'}]
-
+        this.templateTableOptions =
+                [{type: 'NO_TABLE', displayName: 'No table customization', description: 'User will not be given option to customize destination table'},
+                    {type: 'DEFINE_TABLE', displayName: 'Customize destination table', description: 'Allow users to define and customize the destination data table.'}, {
+                    type: 'DATA_TRANSFORMATION',
+                    displayName: 'Data Transformation',
+                    description: 'Users pick and choose different data tables and columns and apply functions to transform the data to their desired destination table'
+                }]
 
         this.onTableOptionChange = function() {
 
-
-            if(self.templateTableOption == 'DEFINE_TABLE'){
+            if (self.templateTableOption == 'DEFINE_TABLE') {
                 self.model.defineTable = true;
                 self.model.dataTransformation = false;
             }
-            else if(self.templateTableOption == 'DATA_TRANSFORMATION'){
+            else if (self.templateTableOption == 'DATA_TRANSFORMATION') {
                 self.model.defineTable = false;
                 self.model.dataTransformation = true;
             }
-            else if(self.templateTableOption == 'NO_TABLE'){
+            else if (self.templateTableOption == 'NO_TABLE') {
                 self.model.defineTable = false;
                 self.model.dataTransformation = false;
             }
         }
 
-
         self.connectionMap = {};
         self.inputPortList = [];
-        if(self.model.needsReusableTemplate){
-            RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then(function(response){
-                var arr= [];
-
-                if(response.data) {
-                    angular.forEach(response.data,function(port,i) {
-                            arr.push({label:port.name,value:port.name});
-                            self.connectionMap[port.name] = port;
-                        });
-                    self.inputPortList = arr;
+        if (self.model.needsReusableTemplate) {
+            RegisterTemplateService.fetchRegisteredReusableFeedInputPorts().then(function(response) {
+                // Update connectionMap and inputPortList
+                self.inputPortList = [];
+                if (response.data) {
+                    angular.forEach(response.data, function(port, i) {
+                        self.inputPortList.push({label: port.name, value: port.name});
+                        self.connectionMap[port.name] = port;
+                    });
                 }
+
+                // Check for invalid connections
+                angular.forEach(self.model.reusableTemplateConnections, function(connection) {
+                    if (!angular.isDefined(self.connectionMap[connection.inputPortDisplayName])) {
+                        connection.inputPortDisplayName = null;
+                        self.$error["port-" + connection.feedOutputPortName] = true;
+                    }
+                });
             });
         }
 
+        // Update isValid when $error is updated
+        $scope.$watch(
+                function() {return self.$error},
+                function() {
+                    self.isValid = _.reduce(self.$error, function(memo, value) {
+                        return memo && !value;
+                    }, true);
+                },
+                true
+        );
 
-
-
-        this.onNeedsReusableTemplateConnectionChange = function(connection){
-         var port = self.connectionMap[connection.inputPortDisplayName];
+        self.onNeedsReusableTemplateConnectionChange = function(connection) {
+            var port = self.connectionMap[connection.inputPortDisplayName];
             connection.reusableTemplateInputPortName = port.name;
-        }
+            self.$error["port-" + connection.feedOutputPortName] = false;
+        };
 
-
-
-        this.showIconPicker= function() {
-            var iconModel = {icon:self.model.icon.title,iconColor:self.model.icon.color};
+        this.showIconPicker = function() {
+            var iconModel = {icon: self.model.icon.title, iconColor: self.model.icon.color};
             iconModel.name = self.model.templateName;
-
 
             $mdDialog.show({
                 controller: 'IconPickerDialog',
                 templateUrl: 'js/shared/icon-picker-dialog/icon-picker-dialog.html',
                 parent: angular.element(document.body),
-                clickOutsideToClose:false,
+                clickOutsideToClose: false,
                 fullscreen: true,
-                locals : {
-                    iconModel:iconModel
+                locals: {
+                    iconModel: iconModel
                 }
             })
-                .then(function(msg) {
-                    if(msg) {
-                        self.model.icon.title = msg.icon;
-                        self.model.icon.color=msg.color;
-                    }
+                    .then(function(msg) {
+                        if (msg) {
+                            self.model.icon.title = msg.icon;
+                            self.model.icon.color = msg.color;
+                        }
 
-                }, function() {
+                    }, function() {
 
-                });
+                    });
         };
 
-
-
-
         this.registerTemplate = function() {
-            var successFn = function (response) {
+            var successFn = function(response) {
                 //toast created!!!
-                var message = 'Template Registered with '+response.data.properties.length+' properties';
+                var message = 'Template Registered with ' + response.data.properties.length + ' properties';
                 self.message = message;
-                self.registrationSuccess=true;
+                self.registrationSuccess = true;
                 $mdToast.show(
-                    $mdToast.simple()
-                        .textContent(message)
-                        .hideDelay(3000)
+                        $mdToast.simple()
+                                .textContent(message)
+                                .hideDelay(3000)
                 );
                 self.showCompleteDialog()
 
             }
-            var errorFn = function (err) {
-                var message = 'Error Registering Template '+err;
-                self.message =message;
-                self.registrationSuccess=false;
+            var errorFn = function(err) {
+                var message = 'Error Registering Template ' + err;
+                self.message = message;
+                self.registrationSuccess = false;
                 $mdToast.simple()
-                    .textContent(message)
-                    .hideDelay(3000);
+                        .textContent(message)
+                        .hideDelay(3000);
                 self.showCompleteDialog()
             }
 
             //get all properties that are selected
-           var savedTemplate = RegisterTemplateService.getModelForSave();
+            var savedTemplate = RegisterTemplateService.getModelForSave();
             var promise = $http({
                 url: RestUrlService.REGISTER_TEMPLATE_URL(),
                 method: "POST",
@@ -159,9 +179,9 @@
 
         $scope.$watch(function() {
             return self.model.nifiTemplateId;
-        },function(newVal){
-            if(newVal != null) {
-                self.isValid = true;
+        }, function(newVal) {
+            if (newVal != null) {
+                self.$error.missingRegistration = false;
                 self.registrationSuccess = false;
             }
         });
@@ -173,68 +193,54 @@
                 templateUrl: 'js/register-template/register-template/register-template-complete.html',
                 parent: angular.element(document.body),
                 targetEvent: ev,
-                clickOutsideToClose:false,
+                clickOutsideToClose: false,
                 fullscreen: true,
-                locals : {
-                    nifiTemplateId : self.model.nifiTemplateId,
-                    templateName:self.model.templateName,
+                locals: {
+                    nifiTemplateId: self.model.nifiTemplateId,
+                    templateName: self.model.templateName,
                     message: self.message,
-                    registrationSuccess:self.registrationSuccess
+                    registrationSuccess: self.registrationSuccess
                 }
             })
-                .then(function(msg) {
-                    if(msg == 'explore') {
-                        StateService.navigateToFeeds();
-                    }
-                    if(msg == 'newTemplate') {
-                        StateService.navigateToRegisterTemplate();
-                    }
-                    if(msg == 'newFeed') {
-                        StateService.navigateToDefineFeed(self.model.nifiTemplateId);
-                    }
+                    .then(function(msg) {
+                        if (msg == 'explore') {
+                            StateService.navigateToFeeds();
+                        }
+                        if (msg == 'newTemplate') {
+                            StateService.navigateToRegisterTemplate();
+                        }
+                        if (msg == 'newFeed') {
+                            StateService.navigateToDefineFeed(self.model.nifiTemplateId);
+                        }
 
-                }, function() {
+                    }, function() {
 
-                });
+                    });
         };
 
+    }
 
-
-    };
-
-
-    angular.module(MODULE_FEED_MGR).controller('RegisterCompleteRegistrationController', controller);
-
-
-    angular.module(MODULE_FEED_MGR)
-        .directive('thinkbigRegisterCompleteRegistration', directive);
-
+    angular.module(MODULE_FEED_MGR).controller("RegisterCompleteRegistrationController", RegisterCompleteRegistrationController);
+    angular.module(MODULE_FEED_MGR).directive("thinkbigRegisterCompleteRegistration", directive);
 })();
 
-
-function RegistrationCompleteDialogController($scope, $mdDialog, $mdToast, $http, StateService, nifiTemplateId,templateName,message, registrationSuccess ){
-    var self = this;
-
+function RegistrationCompleteDialogController($scope, $mdDialog, $mdToast, $http, StateService, nifiTemplateId, templateName, message, registrationSuccess) {
     $scope.nifiTemplateId = nifiTemplateId;
     $scope.templateName = templateName;
-    $scope.message =message;
+    $scope.message = message;
     $scope.registrationSuccess = registrationSuccess;
 
-    $scope.exploreFeeds = function(){
+    $scope.exploreFeeds = function() {
         $mdDialog.hide('explore');
+    };
 
-    }
-
-    $scope.registerNewTemplate = function(){
+    $scope.registerNewTemplate = function() {
         $mdDialog.hide('newTemplate');
-    }
+    };
 
-    $scope.defineNewFeed = function(){
+    $scope.defineNewFeed = function() {
         $mdDialog.hide('newFeed');
-
-    }
-
-
+    };
 
     $scope.hide = function() {
         $mdDialog.hide();
@@ -243,6 +249,4 @@ function RegistrationCompleteDialogController($scope, $mdDialog, $mdToast, $http
     $scope.cancel = function() {
         $mdDialog.cancel();
     };
-
-
-};
+}

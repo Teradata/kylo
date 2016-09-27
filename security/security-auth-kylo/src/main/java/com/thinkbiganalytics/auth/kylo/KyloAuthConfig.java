@@ -51,7 +51,8 @@ public class KyloAuthConfig {
     private boolean authPassword;
 
     /**
-     * Creates a new services login configuration using the Metadata Login Module.
+     * Creates a new services login configuration using the Metadata Login Module.  Currently
+     * this LoginModule is only applicable on the services side.
      *
      * @param builder the login configuration builder
      * @return the services login configuration
@@ -61,27 +62,6 @@ public class KyloAuthConfig {
     public LoginConfiguration servicesKyloLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
         return builder
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
-                    .moduleClass(KyloLoginModule.class)
-                    .controlFlag(AppConfigurationEntry.LoginModuleControlFlag.OPTIONAL)
-                    .option(KyloLoginModule.METADATA_ACCESS, metadataAccess)
-                    .option(KyloLoginModule.PASSWORD_ENCODER, passwordEncoder)
-                    .option(KyloLoginModule.USER_PROVIDER, userProvider)
-                    .option(KyloLoginModule.REQUIRE_PASSWORD, this.authPassword)
-                    .add()
-                .build();
-    }
-
-    /**
-     * Creates a new UI login configuration using the Kylo Login Module.
-     *
-     * @param builder the login configuration builder
-     * @return the UI login configuration
-     */
-    @Bean(name = "uiKyloLoginConfiguration")
-    @Nonnull
-    public LoginConfiguration uiKyloLoginConfiguration(@Nonnull final LoginConfigurationBuilder builder) {
-        return builder
-                .loginModule(JaasAuthConfig.JAAS_UI)
                     .moduleClass(KyloLoginModule.class)
                     .controlFlag(AppConfigurationEntry.LoginModuleControlFlag.OPTIONAL)
                     .option(KyloLoginModule.METADATA_ACCESS, metadataAccess)

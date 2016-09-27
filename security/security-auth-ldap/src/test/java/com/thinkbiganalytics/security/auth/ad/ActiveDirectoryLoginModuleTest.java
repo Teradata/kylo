@@ -19,8 +19,7 @@ import javax.security.auth.callback.UnsupportedCallbackException;
 import javax.security.auth.login.LoginException;
 
 import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
-import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
+import org.springframework.security.ldap.authentication.AbstractLdapAuthenticationProvider;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.testng.AbstractTestNGSpringContextTests;
@@ -48,10 +47,7 @@ import com.thinkbiganalytics.security.UsernamePrincipal;
 public class ActiveDirectoryLoginModuleTest extends AbstractTestNGSpringContextTests {
     
     @Inject
-    private ActiveDirectoryLdapAuthenticationProvider authProvider;
-    
-    @Inject
-    private UserDetailsContextMapper userMapper;
+    private AbstractLdapAuthenticationProvider authProvider;
 
     
 //    @Test
@@ -78,7 +74,6 @@ public class ActiveDirectoryLoginModuleTest extends AbstractTestNGSpringContextT
     private Subject login(String user, String password) throws LoginException {
         Map<String, Object> options = new HashMap<>();
         options.put(ActiveDirectoryLoginModule.AUTH_PROVIDER, this.authProvider);
-        options.put(ActiveDirectoryLoginModule.USER_MAPPER, this.userMapper);
         
         Subject subject = new Subject();
         ActiveDirectoryLoginModule module = new ActiveDirectoryLoginModule();

@@ -28,7 +28,7 @@ fi
 
 if ! [ -f nifi-0.6.1-bin.tar.gz ]
 then
-    echo "Working in offline mode and file not found.. exiting"
+    echo "Working in online mode and file not found.. exiting"
     exit 1
 fi
 

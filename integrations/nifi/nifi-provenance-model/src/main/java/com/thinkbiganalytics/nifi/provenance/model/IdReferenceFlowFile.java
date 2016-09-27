@@ -17,6 +17,10 @@ public class IdReferenceFlowFile implements Serializable {
     private String feedProcessGroupId;
 
     private Long rootFlowFileFirstEventId;
+    private Long rootFlowFileFirstEventTime;
+    private String rootFlowFileFirstEventType;
+    private String rootFlowFileFirstEventComponentId;
+    private String rootFlowFileFirstEventComponentName;
 
 
 
@@ -120,5 +124,37 @@ public class IdReferenceFlowFile implements Serializable {
 
     public void setRootFlowFileFirstEventId(Long rootFlowFileFirstEventId) {
         this.rootFlowFileFirstEventId = rootFlowFileFirstEventId;
+    }
+
+    public Long getRootFlowFileFirstEventTime() {
+        return rootFlowFileFirstEventTime;
+    }
+
+    public void setRootFlowFileFirstEventTime(Long rootFlowFileFirstEventTime) {
+        this.rootFlowFileFirstEventTime = rootFlowFileFirstEventTime;
+    }
+
+    public String getRootFlowFileFirstEventType() {
+        return rootFlowFileFirstEventType;
+    }
+
+    public void setRootFlowFileFirstEventType(String rootFlowFileFirstEventType) {
+        this.rootFlowFileFirstEventType = rootFlowFileFirstEventType;
+    }
+
+    public String getRootFlowFileFirstEventComponentId() {
+        return rootFlowFileFirstEventComponentId;
+    }
+
+    public void setRootFlowFileFirstEventComponentId(String rootFlowFileFirstEventComponentId) {
+        this.rootFlowFileFirstEventComponentId = rootFlowFileFirstEventComponentId;
+    }
+
+    public String getRootFlowFileFirstEventComponentName() {
+        return rootFlowFileFirstEventComponentName;
+    }
+
+    public void setRootFlowFileFirstEventComponentName(String rootFlowFileFirstEventComponentName) {
+        this.rootFlowFileFirstEventComponentName = rootFlowFileFirstEventComponentName;
     }
 }

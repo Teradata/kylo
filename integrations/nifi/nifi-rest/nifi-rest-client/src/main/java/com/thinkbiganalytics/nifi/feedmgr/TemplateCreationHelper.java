@@ -20,7 +20,6 @@ import com.thinkbiganalytics.nifi.rest.support.NifiTemplateNameUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
-import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
@@ -63,8 +62,8 @@ public class TemplateCreationHelper {
 
     Map<String, Integer> controllerServiceEnableAttempts = new ConcurrentHashMap<>();
 
-    private Integer MAX_ENABLE_ATTEMPTS = 10;
-    private Long ENABLE_CONTROLLER_SERVICE_WAIT_TIME = 3000L;
+    private Integer MAX_ENABLE_ATTEMPTS = 5;
+    private Long ENABLE_CONTROLLER_SERVICE_WAIT_TIME = 2000L;
 
     public TemplateCreationHelper(NifiRestClient restClient) {
         this.restClient = restClient;
@@ -80,7 +79,7 @@ public class TemplateCreationHelper {
         if (controllerServiceEntity != null) {
             snapshotControllerServices = controllerServiceEntity.getControllerServices();
             for (ControllerServiceDTO serviceDTO : controllerServiceEntity.getControllerServices()) {
-                if (serviceDTO.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED)) {
+                if (serviceDTO.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
                     snapshottedEnabledControllerServices.add(serviceDTO);
                 }
             }
@@ -420,16 +419,18 @@ public class TemplateCreationHelper {
                 Lists.newArrayList(Iterables.filter(newlyCreatedControllerServices, new Predicate<ControllerServiceDTO>() {
                     @Override
                     public boolean apply(ControllerServiceDTO controllerServiceDTO) {
-                        return serviceTypes.contains(controllerServiceDTO.getType());
+                        return serviceTypes.contains(controllerServiceDTO.getType()) && (controllerServiceDTO.getReferencingComponents() == null
+                                                                                         || controllerServiceDTO.getReferencingComponents().size() == 0);
                     }
 
                 }));
             if (servicesToDelete != null && !servicesToDelete.isEmpty()) {
                 try {
                     restClient.deleteControllerServices(servicesToDelete);
-                } catch (NifiClientRuntimeException e) {
+                } catch (Exception e) {
                     log.info("error attempting to cleanup controller services while trying to delete Services: " + e.getMessage()
                              + ".  It might be wise to login to NIFI and verify there are not extra controller services");
+                    getErrors().add(new NifiError(NifiError.SEVERITY.INFO, "There is an error attempting to remove the controller service :" + e.getMessage()));
                 }
             }
         }
@@ -527,40 +528,10 @@ public class TemplateCreationHelper {
         }
     }
 
-    public void markConnectionPortsAsRunning(ProcessGroupEntity feedProcessGroup) {
-        //1 startAll
-        try {
-            restClient.startAll(feedProcessGroup.getProcessGroup().getId(), feedProcessGroup.getProcessGroup().getParentGroupId());
-        } catch (NifiClientRuntimeException e) {
-            log.error("Error trying to mark connection ports Running for {}", feedProcessGroup.getProcessGroup().getName());
-        }
 
-        Set<PortDTO> ports = null;
-        try {
-            ports = restClient.getPortsForProcessGroup(feedProcessGroup.getProcessGroup().getParentGroupId());
-        } catch (NifiClientRuntimeException e) {
-            log.error("Error getPortsForProcessGroup {}", feedProcessGroup.getProcessGroup().getName());
-        }
-        if (ports != null && !ports.isEmpty()) {
-            for (PortDTO port : ports) {
-                port.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-                if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name())) {
-                    try {
-                        restClient.startInputPort(feedProcessGroup.getProcessGroup().getParentGroupId(), port.getId());
-                    } catch (NifiClientRuntimeException e) {
-                        log.error("Error starting Input Port {} for process group {}", port.getName(), feedProcessGroup.getProcessGroup().getName());
-                    }
-                } else if (port.getType().equalsIgnoreCase(NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name())) {
-                    try {
-                        restClient.startOutputPort(feedProcessGroup.getProcessGroup().getParentGroupId(), port.getId());
-                    } catch (NifiClientRuntimeException e) {
-                        log.error("Error starting Output Port {} for process group {}", port.getName(), feedProcessGroup.getProcessGroup().getName());
-                    }
-                }
-            }
+    public void markConnectionPortsAsRunning(ProcessGroupEntity entity) {
 
-        }
-
+        restClient.markConnectionPortsAsRunning(entity);
     }
 
 }

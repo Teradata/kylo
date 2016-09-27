@@ -317,7 +317,6 @@
 <div flex layout="column" tabIndex="-1" role="main" class="md-whiteframe-z2" layout-fill style="background-color:#F9F9F9;">
     <add-button></add-button>
     <md-toolbar layout="row" class="md-whiteframe-z1 page-header" layout-align="space-between center">
-        <div layout="row " flex>
 
         <md-button class="menu toggle-side-nav" ng-hide="mc.isSideNavHidden()" ng-click="mc.toggleSideNavList()" aria-label="Show Menu">
             <ng-md-icon icon="menu"></ng-md-icon>
@@ -331,16 +330,12 @@
                 <md-button class=" border-btn-white " ng-click="mc.search()">
                     Search
                 </md-button>
-                <span flex="20"></span>
-                <!--
-                <div style="padding:5px;"><md-button class="md-primary md-raised md-icon-button rounded-rectangle" ng-click="mc.search()">
-                    <ng-md-icon icon="search" ></ng-md-icon>
-                </md-button>
-                </div>            </div>
-                -->
-                </div>
 
+                </div>
+        <div layout="row" flex="30" layout-align="end center">
+            <current-time style="margin-top:-40px;padding-right:10px;" class="md-caption"></current-time>
         </div>
+
     </md-toolbar>
 
     <md-content flex id="content" md-scroll-y class="{{mc.currentState.name}}" scroll>

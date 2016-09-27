@@ -170,13 +170,14 @@
          */
         self.onDelete = function() {
             var name = (angular.isString(self.model.displayName) && self.model.displayName.length > 0) ? self.model.displayName : self.model.systemName;
-            UserService.deleteUser(self.model.systemName)
+            UserService.deleteUser(encodeURIComponent(self.model.systemName))
                     .then(function() {
                         $mdToast.show(
                                 $mdToast.simple()
                                         .textContent("Successfully deleted the user " + name)
                                         .hideDelay(3000)
                         );
+                        StateService.navigateToUsers();
                     }, function() {
                         $mdDialog.show(
                                 $mdDialog.alert()

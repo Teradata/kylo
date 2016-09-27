@@ -1,5 +1,33 @@
 package com.thinkbiganalytics.feedmgr.service;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Lists;
+import com.thinkbiganalytics.feedmgr.nifi.NifiControllerServiceProperties;
+import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
+import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
+import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
+import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
+import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
+import com.thinkbiganalytics.json.ObjectMapperSerializer;
+import com.thinkbiganalytics.metadata.api.MetadataAccess;
+import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
+import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
+import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.model.NifiError;
+import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
+import com.thinkbiganalytics.nifi.rest.model.NifiProcessorDTO;
+
+import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.apache.nifi.web.api.dto.TemplateDTO;
+import org.apache.nifi.web.api.entity.ProcessGroupEntity;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.xml.sax.SAXException;
+
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,30 +42,6 @@ import java.util.zip.ZipOutputStream;
 import javax.inject.Inject;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPathExpressionException;
-
-import org.apache.commons.io.IOUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.xml.sax.SAXException;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Lists;
-import com.thinkbiganalytics.feedmgr.nifi.NifiControllerServiceProperties;
-import com.thinkbiganalytics.feedmgr.nifi.NifiTemplateParser;
-import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
-import com.thinkbiganalytics.feedmgr.rest.model.ImportOptions;
-import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
-import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
-import com.thinkbiganalytics.feedmgr.rest.support.SystemNamingService;
-import com.thinkbiganalytics.json.ObjectMapperSerializer;
-import com.thinkbiganalytics.metadata.api.MetadataAccess;
-import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessorDTO;
 
 /**
  * Created by sr186054 on 5/6/16.
@@ -112,6 +116,7 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         private String nifiConnectingReusableTemplateXml;
 
         private boolean verificationToReplaceConnectingResuableTemplateNeeded;
+
 
         @JsonIgnore
         public boolean isValid() {
@@ -320,21 +325,17 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             return importTemplate;
         }
         log.info("Importing Zip file template {}, overwrite: {}, reusableFlow: {}", fileName, importOptions.isOverwrite());
-
+        ImportTemplate connectingTemplate = null;
         if(importTemplate.hasConnectingReusableTemplate() && ImportOptions.IMPORT_CONNECTING_FLOW.YES.equals(importOptions.getImportConnectingFlow())){
             log.info("Importing Zip file template {}. first importing reusable flow from zip");
-           ImportTemplate connectingTemplate = importConnectingReusableTemplate(importTemplate,true);
+            connectingTemplate = importConnectingReusableTemplate(importTemplate, true);
             if(!connectingTemplate.isSuccess()) {
                 //return with exception
+                return connectingTemplate;
             }
         }
 
-
-
-
-
         RegisteredTemplate template = ObjectMapperSerializer.deserialize(importTemplate.getTemplateJson(), RegisteredTemplate.class);
-
 
         //1 ensure this template doesnt already exist
         importTemplate.setTemplateName(template.getTemplateName());
@@ -358,8 +359,8 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             importTemplate.setTemplateName(templateName);
             TemplateDTO templateDTO = nifiRestClient.getTemplateByName(templateName);
             if (templateDTO != null) {
+                oldTemplateXml = nifiRestClient.getTemplateXml(templateDTO.getId());
                 if (importOptions.isOverwrite()) {
-                    oldTemplateXml = nifiRestClient.getTemplateXml(templateDTO.getId());
                     nifiRestClient.deleteTemplate(templateDTO.getId());
                 } else {
                     throw new UnsupportedOperationException(
@@ -373,39 +374,56 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         log.info("Attempting to import Nifi Template: {} for file {}", templateName, fileName);
         TemplateDTO dto = nifiRestClient.importTemplate(template.getTemplateName(), importTemplate.getNifiTemplateXml());
         template.setNifiTemplateId(dto.getId());
-        //register it in the system
-        metadataService.registerTemplate(template);
-        //get the new template
-        if(StringUtils.isNotBlank(template.getId())) {
-            template = metadataService.getRegisteredTemplate(template.getId());
-        }
-        else {
-            template = metadataService.getRegisteredTemplateByName(template.getTemplateName());
-        }
+
         Map<String,Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
         NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(template.getNifiTemplateId(), configProperties,false);
-
+        importTemplate.setTemplateResults(newTemplateInstance);
         if (newTemplateInstance.isSuccess()) {
             importTemplate.setSuccess(true);
-            importTemplate.setTemplateId(template.getId());
-            importTemplate.setNifiTemplateId(template.getNifiTemplateId());
-        } else {
-            //delete this template
-            importTemplate.setSuccess(false);
-            //if it doesnt have any feeds delete it
-            metadataService.deleteRegisteredTemplate(template.getId());
-            //restore old template
-            if (oldTemplateXml != null) {
-                nifiRestClient.importTemplate(oldTemplateXml);
+
+            try {
+                importTemplate.setNifiTemplateId(template.getNifiTemplateId());
+                //register it in the system
+                metadataService.registerTemplate(template);
+                //get the new template
+                if (StringUtils.isNotBlank(template.getId())) {
+                    template = metadataService.getRegisteredTemplate(template.getId());
+                } else {
+                    template = metadataService.getRegisteredTemplateByName(template.getTemplateName());
+                }
+                importTemplate.setTemplateId(template.getId());
+
+            } catch (Exception e) {
+                importTemplate.setSuccess(false);
+                Throwable root = ExceptionUtils.getRootCause(e);
+                String msg = root != null ? root.getMessage() : e.getMessage();
+                importTemplate.getTemplateResults().addError(NifiError.SEVERITY.WARN, "Error registering the template " + template.getTemplateName() + " in the Kylo metadata. " + msg, "");
             }
+
+        }
+        if (!importTemplate.isSuccess()) {
+            rollbackTemplateImportInNifi(importTemplate, dto, oldTemplateXml);
+            //also restore existing registered template with metadata
             //restore old registered template
             if (existingTemplate != null) {
-                metadataService.registerTemplate(existingTemplate);
+                try {
+                    metadataService.registerTemplate(existingTemplate);
+                } catch (Exception e) {
+                Throwable root = ExceptionUtils.getRootCause(e);
+                String msg = root != null ? root.getMessage() : e.getMessage();
+                    importTemplate.getTemplateResults().addError(NifiError.SEVERITY.WARN, "Error while restoring the template " + template.getTemplateName() + " in the Kylo metadata. " + msg, "");
+                }
             }
         }
-        importTemplate.setTemplateResults(newTemplateInstance);
-        //delete processgroup
-        nifiRestClient.deleteProcessGroup(newTemplateInstance.getProcessGroupEntity().getProcessGroup());
+
+        //remove the temporary Process Group we created
+        removeTemporaryProcessGroup(importTemplate);
+
+        //if we also imported the reusable template make sure that is all running properly
+        if (connectingTemplate != null) {
+            //enable it
+            nifiRestClient.markConnectionPortsAsRunning(connectingTemplate.getTemplateResults().getProcessGroupEntity());
+        }
 
         return importTemplate;
     }
@@ -451,38 +469,17 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         log.info("Import success... validate by creating a template instance in nifi Nifi Template: {} for file {}", templateName, fileName);
         Map<String, Object> configProperties = propertyExpressionResolver.getStaticConfigProperties();
         NifiProcessGroup newTemplateInstance = nifiRestClient.createNewTemplateInstance(dto.getId(), configProperties, createReusableFlow);
+        importTemplate.setTemplateResults(newTemplateInstance);
         log.info("Import finished for {}, {}... verify results", templateName, fileName);
         if (newTemplateInstance.isSuccess()) {
             log.info("SUCCESS! This template is valid Nifi Template: {} for file {}", templateName, fileName);
             importTemplate.setSuccess(true);
         } else {
-            String processGroupId = newTemplateInstance.getProcessGroupEntity().getProcessGroup().getId();
-            String parentProcessGroupId = newTemplateInstance.getProcessGroupEntity().getProcessGroup().getParentGroupId();
-            log.error("ERROR! This template is NOT VALID Nifi Template: {} for file {}.  Errors are: {} ", templateName, fileName, newTemplateInstance.getAllErrors());
-            //delete this template
-            importTemplate.setSuccess(false);
-            //delete the template?
-            nifiRestClient.deleteTemplate(dto.getId());
-            log.info("Rollback Nifi:  Deleted the template: {}  from Nifi ", templateName);
-            nifiRestClient.stopAllProcessors(parentProcessGroupId, processGroupId);
-            //remove connections
-            nifiRestClient.removeConnectionsToProcessGroup(parentProcessGroupId, processGroupId);
-
-            log.info("Rollback Nifi: Stopped all processors on {}", newTemplateInstance.getProcessGroupEntity().getProcessGroup().getName());
-            nifiRestClient.deleteProcessGroup(newTemplateInstance.getProcessGroupEntity().getProcessGroup());
-            log.error("Rollback Nifi: Deleted the process group {} from nifi: {}  from Nifi ", newTemplateInstance.getProcessGroupEntity().getProcessGroup().getName());
-            //restore old template
-            if (oldTemplateXml != null) {
-                log.info("Rollback Nifi: Attempt to restore old template xml ");
-                nifiRestClient.importTemplate(oldTemplateXml);
-                log.info("Rollback Nifi: restored old template xml ");
-            }
-            log.info("Rollback Nifi: Rollback Complete! ");
+            rollbackTemplateImportInNifi(importTemplate, dto, oldTemplateXml);
         }
-        importTemplate.setTemplateResults(newTemplateInstance);
-        //delete processgroup
-        if (!createReusableFlow && newTemplateInstance.isSuccess()) {
-            log.info("Success cleanup: Removing temporary flow from Nifi for processgroup: {}", newTemplateInstance.getProcessGroupEntity().getProcessGroup().getName());
+
+        if (!createReusableFlow) {
+            removeTemporaryProcessGroup(importTemplate);
             nifiRestClient.deleteProcessGroup(newTemplateInstance.getProcessGroupEntity().getProcessGroup());
             log.info("Success cleanup: Successfully cleaned up Nifi");
         }
@@ -490,15 +487,72 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         return importTemplate;
     }
 
+    /**
+     * Restore the previous Template back to Nifi
+     */
+    private void rollbackTemplateImportInNifi(ImportTemplate importTemplate, TemplateDTO dto, String oldTemplateXml) throws IOException {
 
-    //@Transactional(transactionManager = "metadataTransactionManager")
+        log.error("ERROR! This template is NOT VALID Nifi Template: {} for file {}.  Errors are: {} ", importTemplate.getTemplateName(), importTemplate.getFileName(),
+                  importTemplate.getTemplateResults().getAllErrors());
+        //delete this template
+        importTemplate.setSuccess(false);
+        //delete the template from NiFi
+        nifiRestClient.deleteTemplate(dto.getId());
+        //restore old template
+        if (oldTemplateXml != null) {
+            log.info("Rollback Nifi: Attempt to restore old template xml ");
+            nifiRestClient.importTemplate(oldTemplateXml);
+            log.info("Rollback Nifi: restored old template xml ");
+        }
+        log.info("Rollback Nifi:  Deleted the template: {}  from Nifi ", importTemplate.getTemplateName());
+
+    }
+
+    /**
+     * Cleanup and remove the temporary process group associated with this import
+     *
+     * This should be called after the import to cleanup NiFi
+     * @param importTemplate
+     */
+    private void removeTemporaryProcessGroup(ImportTemplate importTemplate) {
+        String processGroupName = importTemplate.getTemplateResults().getProcessGroupEntity().getProcessGroup().getName();
+        String processGroupId = importTemplate.getTemplateResults().getProcessGroupEntity().getProcessGroup().getId();
+        String parentProcessGroupId = importTemplate.getTemplateResults().getProcessGroupEntity().getProcessGroup().getParentGroupId();
+        log.info("About to cleanup the temporary process group {} ({})", processGroupName, processGroupId);
+        try {
+            //Now try to remove the processgroup associated with this template import
+            ProcessGroupEntity e = null;
+            try {
+                e = nifiRestClient.getProcessGroup(processGroupId, false, false);
+            } catch (NifiComponentNotFoundException notFound) {
+                //if its not there then we already cleaned up :)
+            }
+            if (e != null) {
+                try {
+                    nifiRestClient.stopAllProcessors(parentProcessGroupId, processGroupId);
+                    //remove connections
+                    nifiRestClient.removeConnectionsToProcessGroup(parentProcessGroupId, processGroupId);
+                } catch (Exception e2) {
+                    //this is ok. we are cleaning up the template so if an error occurs due to no connections it is fine since we ultimately want to remove this temp template.
+                }
+                nifiRestClient.deleteProcessGroup(importTemplate.getTemplateResults().getProcessGroupEntity().getProcessGroup());
+            }
+            log.info("Successfully cleaned up Nifi and deleted the process group {} ", importTemplate.getTemplateResults().getProcessGroupEntity().getProcessGroup().getName());
+        } catch (NifiClientRuntimeException e) {
+            log.error("error attempting to cleanup and remove the temporary process group (" + processGroupId + " during the import of template " + importTemplate.getTemplateName());
+            importTemplate.getTemplateResults().addError(NifiError.SEVERITY.WARN,
+                                                         "Issues found in cleaning up the template import: " + importTemplate.getTemplateName() + ".  The Process Group : " + processGroupName + " ("
+                                                         + processGroupId + ")"
+                                                         + " may need to be manually cleaned up in NiFi ", "");
+        }
+    }
+
     public ImportTemplate importTemplate(final String fileName, final InputStream inputStream, ImportOptions importOptions) {
         return metadataAccess.commit(() -> {
             ImportTemplate template = null;
             if (!isValidFileImport(fileName)) {
                 throw new UnsupportedOperationException("Unable to import " + fileName + ".  The file must be a zip file or a Nifi Template xml file");
             }
-
             try {
                 if (fileName.endsWith(".zip")) {
                     template = importZip(fileName, inputStream, importOptions); //dont allow exported reusable flows to become registered templates
@@ -520,7 +574,7 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
         // while there are entries I process them
         ImportTemplate importTemplate = new ImportTemplate(fileName);
         while ((entry = zis.getNextEntry()) != null) {
-            log.info("entry: " + entry.getName() + ", " + entry.getSize());
+            log.info("zip file entry: " + entry.getName());
             // consume all the data from this entry
             ByteArrayOutputStream out = new ByteArrayOutputStream();
             int len = 0;
@@ -536,10 +590,6 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             }else if (entry.getName().startsWith(NIFI_CONNECTING_REUSABLE_TEMPLATE_XML_FILE)) {
                 importTemplate.setNifiConnectingReusableTemplateXml(outString);
             }
-
-            //while (zis.available() > 0)
-            //  zis.read();
-
         }
         zis.closeEntry();
         zis.close();

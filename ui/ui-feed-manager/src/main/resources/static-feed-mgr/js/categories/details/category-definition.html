@@ -37,6 +37,9 @@
                 <div ng-messages="categoryForm.name.$error">
                     <div ng-message="required">A category name is required.</div>
                 </div>
+                <div ng-messages="vm.$error" md-auto-hide="false">
+                    <div ng-message="duplicateName">There is an existing category with that name.</div>
+                </div>
             </md-input-container>
 
             <md-input-container class="md-block">

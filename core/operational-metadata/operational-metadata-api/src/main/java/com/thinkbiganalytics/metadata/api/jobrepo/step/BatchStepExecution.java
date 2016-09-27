@@ -40,6 +40,8 @@ public interface BatchStepExecution {
 
     String getExitMessage();
 
+    void setExitMessage(String msg);
+
     DateTime getLastUpdated();
 
     boolean isFinished();

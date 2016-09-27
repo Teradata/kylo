@@ -17,15 +17,16 @@ import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
 import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.glassfish.jersey.SslConfigurator;
 import org.glassfish.jersey.apache.connector.ApacheClientProperties;
-import org.glassfish.jersey.apache.connector.ApacheConnectorProvider;
 import org.glassfish.jersey.client.ClientConfig;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.client.HttpUrlConnectorProvider;
 import org.glassfish.jersey.client.JerseyClientBuilder;
 import org.glassfish.jersey.client.authentication.HttpAuthenticationFeature;
 import org.glassfish.jersey.jackson.JacksonFeature;
 import org.glassfish.jersey.media.multipart.Boundary;
 import org.glassfish.jersey.media.multipart.MultiPart;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.media.multipart.file.StreamDataBodyPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -130,7 +131,7 @@ public class JerseyRestClient {
             // connectionManager.setMaxPerRoute(new HttpRoute(new HttpHost("localhost")), 40);
 
             clientConfig.property(ApacheClientProperties.CONNECTION_MANAGER, connectionManager);
-            ApacheConnectorProvider connectorProvider = new ApacheConnectorProvider();
+            HttpUrlConnectorProvider connectorProvider = new HttpUrlConnectorProvider();
             clientConfig.connectorProvider(connectorProvider);
 
         }
@@ -145,7 +146,7 @@ public class JerseyRestClient {
 
         }
         client.register(JacksonFeature.class);
-        client.register(MultiPartFeature.class);
+        //  client.register(MultiPartFeature.class);
 
         if (StringUtils.isNotBlank(config.getUsername())) {
             HttpAuthenticationFeature feature = HttpAuthenticationFeature.basic(config.getUsername(), config.getPassword());
@@ -227,6 +228,19 @@ public class JerseyRestClient {
         contentType = Boundary.addBoundary(contentType);
         return target.request().post(Entity.entity(object, contentType), returnType);
     }
+
+    public <T> T postMultiPartStream(String path, String name, String fileName, InputStream stream, Class<T> returnType) {
+        WebTarget target = buildTarget(path, null);
+        MultiPart multiPart = new MultiPart(MediaType.MULTIPART_FORM_DATA_TYPE);
+
+        StreamDataBodyPart streamDataBodyPart = new StreamDataBodyPart(name, stream, fileName, MediaType.APPLICATION_OCTET_STREAM_TYPE);
+        multiPart.getBodyParts().add(streamDataBodyPart);
+        MediaType contentType = MediaType.MULTIPART_FORM_DATA_TYPE;
+        contentType = Boundary.addBoundary(contentType);
+        return target.request().post(
+            Entity.entity(multiPart, contentType), returnType);
+    }
+
 
     public <T> T post(String path, Object object, Class<T> returnType) {
         WebTarget target = buildTarget(path, null);

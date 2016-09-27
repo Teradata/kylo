@@ -147,7 +147,7 @@ public class TemplateInstanceCreator {
                     //update any references to the controller services and try to assign the value to an enabled service if it is not already
                     if (input != null) {
                         log.info("attempt to update controllerservices on {} input processor ", input.getName());
-                        templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(input), staticConfigPropertyStringMap);
+                        templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(inputProcessors), staticConfigPropertyStringMap);
                     }
                     log.info("attempt to update controllerservices on {} processors ", (nonInputProcessors != null ? nonInputProcessors.size() : 0));
                     templateCreationHelper.updateControllerServiceReferences(nonInputProcessors, staticConfigPropertyStringMap);

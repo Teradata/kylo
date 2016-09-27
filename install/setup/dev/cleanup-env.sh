@@ -10,7 +10,6 @@ echo "Uninstalling thinkbig applications with RPM uninstall"
 rm -rf /opt/thinkbig
 mysql -e "drop database thinkbig;"
 mysql -e "show databases;"
-userdel thinkbig
 
 echo "Uninstalling NiFi"
 service nifi stop
@@ -18,14 +17,12 @@ chkconfig nifi off
 rm -rf /opt/nifi
 rm -rf /var/log/nifi
 rm -f /etc/init.d/nifi
-userdel nifi
 
 echo "Uninstalling ActiveMQ"
 service activemq stop
 rm -f /etc/init.d/activemq
 rm -f /etc/default/activemq
 rm -rf /opt/activemq
-userdel activemq
 
 echo "Uninstalling elasticsearch"
 rpm -e elasticsearch
@@ -34,8 +31,13 @@ rm -rf /var/lib/elasticsearch/
 echo "Uninstalling /opt/java"
 rm -rf /opt/java
 
-echo "Uninstall complete. You should now be able to re-install the RPM and run the setup wizard to get a clean install"
+echo "Uninstall complete. You should now be able to re-install the RPM and run the setup wizard to get a clean install. Note: The users were not deleted. You can skip the manual step of adding a user"
 
 else 
   echo "Exiting and skipping removal since you didn't say YES"
 fi
+
+# Dont delete users by default. It causes issues if you are re-installing everything
+#userdel thinkbig
+#userdel nifi
+#userdel activemq

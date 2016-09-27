@@ -63,7 +63,7 @@ import io.swagger.annotations.Api;
  */
 @Component
 @Api(value = "metadata-feeds", produces = "application/json", description = "Manage Feed Metadata and allow feeds to be updated with various Metadata Properties")
-@Path("/feed")
+@Path("/metadata/feed")
 public class FeedsController {
 
     private static final Logger LOG = LoggerFactory.getLogger(FeedsController.class);
@@ -262,21 +262,21 @@ public class FeedsController {
             }
         });
     }
-//    
+//
 //    @GET
 //    @Path("{fid}/source/{sid}")
 //    @Produces(MediaType.APPLICATION_JSON)
 //    public FeedSource getFeedSource(@PathParam("fid") final String feedId, @PathParam("sid") final String srcId) {
 //        LOG.debug("Get feed {} source {}", feedId, srcId);
-//        
+//
 //        return this.metadata.read(() -> {
 //            com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
 //            com.thinkbiganalytics.metadata.api.feed.FeedSource.ID domainSrcId = feedProvider.resolveSource(srcId);
 //            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
-//            
+//
 //            if (domain != null) {
 //                com.thinkbiganalytics.metadata.api.feed.FeedSource domainSrc = domain.getSource(domainSrcId);
-//                
+//
 //                if (domainSrc != null) {
 //                    return Model.DOMAIN_TO_FEED_SOURCE.apply(domainSrc);
 //                } else {
@@ -307,7 +307,7 @@ public class FeedsController {
             }
         });
     }
-//    
+//
 //    @GET
 //    @Path("{fid}/destination/{sid}")
 //    @Produces(MediaType.APPLICATION_JSON)
@@ -318,10 +318,10 @@ public class FeedsController {
 //            com.thinkbiganalytics.metadata.api.feed.Feed.ID domainId = feedProvider.resolveFeed(feedId);
 //            com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID domainDestId = feedProvider.resolveDestination(destId);
 //            com.thinkbiganalytics.metadata.api.feed.Feed<?> domain = feedProvider.getFeed(domainId);
-//            
+//
 //            if (domain != null) {
 //                com.thinkbiganalytics.metadata.api.feed.FeedDestination domainDest = domain.getDestination(domainDestId);
-//                
+//
 //                if (domainDest != null) {
 //                    return Model.DOMAIN_TO_FEED_DESTINATION.apply(domainDest);
 //                } else {
