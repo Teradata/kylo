@@ -8,13 +8,13 @@ import java.net.URI;
 import javax.security.auth.login.AppConfigurationEntry;
 
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
+import org.springframework.security.ldap.authentication.ad.DelegatingActiveDirectoryLdapAuthenticationProvider;
 import org.springframework.security.ldap.userdetails.LdapUserDetailsMapper;
 import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
 
@@ -32,7 +32,7 @@ import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 public class ActiveDirectoryAuthConfig {
     
     @Bean(name = "servicesActiveDirectoryLoginConfiguration")
-    public LoginConfiguration servicesAdLoginConfiguration(ActiveDirectoryLdapAuthenticationProvider authProvider,
+    public LoginConfiguration servicesAdLoginConfiguration(DelegatingActiveDirectoryLdapAuthenticationProvider authProvider,
                                                            UserDetailsContextMapper userMapper,
                                                            LoginConfigurationBuilder builder) {
         return builder
@@ -40,13 +40,12 @@ public class ActiveDirectoryAuthConfig {
                     .moduleClass(ActiveDirectoryLoginModule.class)
                     .controlFlag(AppConfigurationEntry.LoginModuleControlFlag.REQUIRED)
                     .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
-                    .option(ActiveDirectoryLoginModule.USER_MAPPER, userMapper)
                     .add()
                 .build();
     }
     
     @Bean(name = "uiActiveDirectoryLoginConfiguration")
-    public LoginConfiguration uiAdLoginConfiguration(ActiveDirectoryLdapAuthenticationProvider authProvider,
+    public LoginConfiguration uiAdLoginConfiguration(DelegatingActiveDirectoryLdapAuthenticationProvider authProvider,
                                                      UserDetailsContextMapper userMapper,
                                                      LoginConfigurationBuilder builder) {
         return builder
@@ -54,7 +53,6 @@ public class ActiveDirectoryAuthConfig {
                     .moduleClass(ActiveDirectoryLoginModule.class)
                     .controlFlag(AppConfigurationEntry.LoginModuleControlFlag.REQUIRED)
                     .option(ActiveDirectoryLoginModule.AUTH_PROVIDER, authProvider)
-                    .option(ActiveDirectoryLoginModule.USER_MAPPER, userMapper)
                     .add()
                 .build();
     }
@@ -68,15 +66,24 @@ public class ActiveDirectoryAuthConfig {
     
     @Bean
     @ConfigurationProperties("security.auth.ad.server")
-    protected ActiveDirectoryProviderFactory activeDirectoryAuthenticationProvider() {
-        return new ActiveDirectoryProviderFactory();
+    protected ActiveDirectoryProviderFactory activeDirectoryAuthenticationProvider(UserDetailsContextMapper mapper) {
+        ActiveDirectoryProviderFactory factory = new ActiveDirectoryProviderFactory();
+        factory.setEnableGroups(userDetailsContextMapper().isEnableGroups());  // More consistent to set this with security.auth.ad.user.groupsEnabled=
+        factory.setMapper(mapper);
+        return factory;
     }
     
     
-    public static class ActiveDirectoryProviderFactory extends AbstractFactoryBean<ActiveDirectoryLdapAuthenticationProvider> {
+    public static class ActiveDirectoryProviderFactory extends AbstractFactoryBean<DelegatingActiveDirectoryLdapAuthenticationProvider> {
         
         private URI uri;
         private String domain;
+        private boolean enableGroups = false;
+        private UserDetailsContextMapper mapper;
+        
+        public void setEnableGroups(boolean groupsEnabled) {
+            this.enableGroups = groupsEnabled;
+        }
 
         public void setUri(String uri) {
             this.uri = URI.create(uri);
@@ -86,31 +93,45 @@ public class ActiveDirectoryAuthConfig {
             this.domain = domain;
         }
         
+        public void setMapper(UserDetailsContextMapper mapper) {
+            this.mapper = mapper;
+        }
+        
         @Override
         public Class<?> getObjectType() {
-            return ActiveDirectoryLdapAuthenticationProvider.class;
+            return DelegatingActiveDirectoryLdapAuthenticationProvider.class;
         }
 
         @Override
-        protected ActiveDirectoryLdapAuthenticationProvider createInstance() throws Exception {
+        protected DelegatingActiveDirectoryLdapAuthenticationProvider createInstance() throws Exception {
             ActiveDirectoryLdapAuthenticationProvider provider = new ActiveDirectoryLdapAuthenticationProvider(this.domain, this.uri.toASCIIString());
             provider.setConvertSubErrorCodesToExceptions(true);
-
-            return provider;
+            provider.setUserDetailsContextMapper(this.mapper);
+            
+            return new DelegatingActiveDirectoryLdapAuthenticationProvider(provider, this.enableGroups);
         }
     }
     
     public static class UserDetailsMapperFactory extends AbstractFactoryBean<UserDetailsContextMapper> {
         
-        private String passwordAttribute = null;
+        private boolean enableGroups = false;
         private String[] groupAttributes = null;
         
-        public void setPasswordAttribute(String passwordAttribute) {
-            this.passwordAttribute = passwordAttribute;
+        public boolean isEnableGroups() {
+            return enableGroups;
+        }
+        
+        public void setEnableGroups(boolean enabled) {
+            this.enableGroups = enabled;
         }
 
         public void setGroupAttribures(String groupAttribures) {
             this.groupAttributes = groupAttribures.split("\\|");
+        }
+        
+        @Override
+        public boolean isSingleton() {
+            return true;
         }
 
         @Override
@@ -123,7 +144,6 @@ public class ActiveDirectoryAuthConfig {
             LdapUserDetailsMapper mapper = new LdapUserDetailsMapper();
             mapper.setConvertToUpperCase(false);
             mapper.setRolePrefix("");
-            if (StringUtils.isNotEmpty(this.passwordAttribute)) mapper.setPasswordAttributeName(passwordAttribute);
             if (ArrayUtils.isNotEmpty(this.groupAttributes)) mapper.setRoleAttributes(groupAttributes);
             
             return mapper;

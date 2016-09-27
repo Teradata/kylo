@@ -17,8 +17,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
-import org.springframework.security.ldap.userdetails.UserDetailsContextMapper;
+import org.springframework.security.ldap.authentication.AbstractLdapAuthenticationProvider;
 
 import com.thinkbiganalytics.auth.jaas.AbstractLoginModule;
 import com.thinkbiganalytics.security.UsernamePrincipal;
@@ -32,10 +31,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     private static final Logger log = LoggerFactory.getLogger(ActiveDirectoryLoginModule.class);
 
     public static final String AUTH_PROVIDER = "authProvider";
-    public static final String USER_MAPPER = "userMapper";
     
-    private ActiveDirectoryLdapAuthenticationProvider authProvider;
-    private UserDetailsContextMapper userMapper;
+    private AbstractLdapAuthenticationProvider authProvider;
     
     
     /* (non-Javadoc)
@@ -45,10 +42,8 @@ public class ActiveDirectoryLoginModule extends AbstractLoginModule {
     public void initialize(Subject subject, CallbackHandler callbackHandler, Map<String, ?> sharedState, Map<String, ?> options) {
         super.initialize(subject, callbackHandler, sharedState, options);
         
-        this.authProvider = (ActiveDirectoryLdapAuthenticationProvider) getOption(AUTH_PROVIDER)
+        this.authProvider = (AbstractLdapAuthenticationProvider) getOption(AUTH_PROVIDER)
                         .orElseThrow(() -> new IllegalArgumentException("The \"" + AUTH_PROVIDER + "\" option is required"));
-        this.userMapper = (UserDetailsContextMapper) getOption(USER_MAPPER)
-                        .orElseThrow(() -> new IllegalArgumentException("The \"" + USER_MAPPER + "\" option is required"));
     }
 
     /* (non-Javadoc)

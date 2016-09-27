@@ -77,7 +77,7 @@ public class LdapAuthConfig {
     }
     
     @Bean
-    @ConfigurationProperties("security.auth.ldap.groups")
+    @ConfigurationProperties("security.auth.ldap.user")
     public LdapAuthoritiesPopulatorFactory ldapAuthoritiesPopulator(LdapContextSource context) {
         return new LdapAuthoritiesPopulatorFactory(context);
     }
@@ -149,7 +149,7 @@ public class LdapAuthConfig {
         private LdapContextSource contextSource;
         private String groupsOu;
         private String groupRoleAttribute;
-        private boolean enabled = false;
+        private boolean enableGroups = false;
         
         public LdapAuthoritiesPopulatorFactory(LdapContextSource contextSource) {
             super();
@@ -164,8 +164,8 @@ public class LdapAuthConfig {
             this.groupRoleAttribute = groupRoleAttribute;
         }
         
-        public void setEnabled(boolean enabled) {
-            this.enabled = enabled;
+        public void setEnableGroups(boolean enabled) {
+            this.enableGroups = enabled;
         }
         
         @Override
@@ -175,7 +175,7 @@ public class LdapAuthConfig {
 
         @Override
         protected LdapAuthoritiesPopulator createInstance() throws Exception {
-            if (this.enabled) {
+            if (this.enableGroups) {
                 DefaultLdapAuthoritiesPopulator authPopulator = new DefaultLdapAuthoritiesPopulator(this.contextSource, this.groupsOu);
                 authPopulator.setGroupRoleAttribute(this.groupRoleAttribute);
                 authPopulator.setRolePrefix("");
