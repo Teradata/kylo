@@ -3,9 +3,8 @@
  */
 package com.thinkbiganalytics.auth.file;
 
-import javax.security.auth.login.AppConfigurationEntry.LoginModuleControlFlag;
-
 import org.jboss.security.auth.spi.UsersRolesLoginModule;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -22,12 +21,18 @@ import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 @Profile("auth-file")
 public class FileAuthConfig {
     
+    @Value("${security.auth.file.login.ui:required}")
+    private String uiLoginFlag;
+    
+    @Value("${security.auth.file.login.services:required}")
+    private String servicesLoginFlag;
+
     @Bean(name = "servicesFileLoginConfiguration" )
     public LoginConfiguration servicesFileLoginConfiguration(LoginConfigurationBuilder builder) {
         return builder
                         .loginModule(JaasAuthConfig.JAAS_SERVICES)
                             .moduleClass(UsersRolesLoginModule.class)
-                            .controlFlag(LoginModuleControlFlag.OPTIONAL)      
+                            .controlFlag(this.servicesLoginFlag)      
                             .option("defaultUsersProperties", "users.default.properties")
                             .option("defaultRolesProperties", "roles.default.properties")
                             .option("usersProperties", "users.properties")
@@ -41,7 +46,7 @@ public class FileAuthConfig {
         return builder
                         .loginModule(JaasAuthConfig.JAAS_UI)
                             .moduleClass(UsersRolesLoginModule.class)
-                            .controlFlag(LoginModuleControlFlag.OPTIONAL)
+                            .controlFlag(this.uiLoginFlag)
                             .option("defaultUsersProperties", "users.default.properties")
                             .option("defaultRolesProperties", "roles.default.properties")
                             .option("usersProperties", "users.properties")

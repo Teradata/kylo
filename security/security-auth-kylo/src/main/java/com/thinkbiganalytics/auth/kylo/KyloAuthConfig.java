@@ -4,7 +4,6 @@ import java.util.Optional;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
-import javax.security.auth.login.AppConfigurationEntry;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +30,9 @@ import com.thinkbiganalytics.security.action.AllowedModuleActionsProvider;
 @Configuration
 @Profile("auth-kylo")
 public class KyloAuthConfig {
+    
+    @Value("${security.auth.kylo.login.services:required}")
+    private String servicesLoginFlag;
 
     @Inject
     private MetadataAccess metadataAccess;
@@ -63,7 +65,7 @@ public class KyloAuthConfig {
         return builder
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(KyloLoginModule.class)
-                    .controlFlag(AppConfigurationEntry.LoginModuleControlFlag.OPTIONAL)
+                    .controlFlag(this.servicesLoginFlag)
                     .option(KyloLoginModule.METADATA_ACCESS, metadataAccess)
                     .option(KyloLoginModule.PASSWORD_ENCODER, passwordEncoder)
                     .option(KyloLoginModule.USER_PROVIDER, userProvider)

@@ -67,6 +67,21 @@ public class DefaultLoginConfigurationBuilder implements LoginConfigurationBuild
         }
 
         @Override
+        public ModuleBuilder controlFlag(String flag) {
+            if ("required".equals(flag)) {
+                return controlFlag(LoginModuleControlFlag.REQUIRED);
+            } else if ("requisite".equals(flag)) {
+                return controlFlag(LoginModuleControlFlag.REQUISITE);
+            } else if ("sufficient".equals(flag)) {
+                return controlFlag(LoginModuleControlFlag.SUFFICIENT);
+            } else if ("optional".equals(flag)) {
+                return controlFlag(LoginModuleControlFlag.OPTIONAL);
+            } else {
+                throw new IllegalArgumentException("Unknown login module control flag: " + flag);
+            }
+        }
+
+        @Override
         public ModuleBuilder controlFlag(LoginModuleControlFlag flag) {
             this.flag = flag;
             return this;

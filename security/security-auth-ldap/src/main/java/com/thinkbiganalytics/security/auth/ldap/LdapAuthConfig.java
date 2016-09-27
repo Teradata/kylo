@@ -5,10 +5,9 @@ package com.thinkbiganalytics.security.auth.ldap;
 
 import java.net.URI;
 
-import javax.security.auth.login.AppConfigurationEntry;
-
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.config.AbstractFactoryBean;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -35,6 +34,12 @@ import com.thinkbiganalytics.auth.jaas.config.JaasAuthConfig;
 @Profile("auth-ldap")
 public class LdapAuthConfig {
     
+    @Value("${security.auth.ldap.login.ui:required}")
+    private String uiLoginFlag;
+    
+    @Value("${security.auth.ldap.login.services:required}")
+    private String servicesLoginFlag;
+
     @Bean(name = "servicesLdapLoginConfiguration")
     public LoginConfiguration servicesLdapLoginConfiguration(LdapAuthenticator authenticator,
                                                              LdapAuthoritiesPopulator authoritiesPopulator,
@@ -42,7 +47,7 @@ public class LdapAuthConfig {
         return builder
                 .loginModule(JaasAuthConfig.JAAS_SERVICES)
                     .moduleClass(LdapLoginModule.class)
-                    .controlFlag(AppConfigurationEntry.LoginModuleControlFlag.OPTIONAL)
+                    .controlFlag(this.servicesLoginFlag)
                     .option(LdapLoginModule.AUTHENTICATOR, authenticator)
                     .option(LdapLoginModule.AUTHORITIES_POPULATOR, authoritiesPopulator)
                     .add()
@@ -56,7 +61,7 @@ public class LdapAuthConfig {
         return builder
                 .loginModule(JaasAuthConfig.JAAS_UI)
                     .moduleClass(LdapLoginModule.class)
-                    .controlFlag(AppConfigurationEntry.LoginModuleControlFlag.OPTIONAL)
+                    .controlFlag(this.uiLoginFlag)
                     .option(LdapLoginModule.AUTHENTICATOR, authenticator)
                     .option(LdapLoginModule.AUTHORITIES_POPULATOR, authoritiesPopulator)
                     .add()

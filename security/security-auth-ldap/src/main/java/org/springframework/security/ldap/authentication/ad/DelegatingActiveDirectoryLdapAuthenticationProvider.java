@@ -10,7 +10,6 @@ import org.springframework.ldap.core.DirContextOperations;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.ldap.authentication.AbstractLdapAuthenticationProvider;
-import org.springframework.security.ldap.authentication.ad.ActiveDirectoryLdapAuthenticationProvider;
 
 /**
  * A decorator provider around a ActiveDirectoryLdapAuthenticationProvider because the latter hads been declared
