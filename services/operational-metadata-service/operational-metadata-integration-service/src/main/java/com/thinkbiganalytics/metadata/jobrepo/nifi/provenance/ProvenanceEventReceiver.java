@@ -2,11 +2,15 @@ package com.thinkbiganalytics.metadata.jobrepo.nifi.provenance;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
 import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedOperationStatusEvent;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeed;
+import com.thinkbiganalytics.metadata.api.feed.OpsManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
 import com.thinkbiganalytics.metadata.api.op.FeedOperation;
@@ -17,6 +21,7 @@ import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolde
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 
+import org.apache.commons.lang3.StringUtils;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,10 +64,56 @@ public class ProvenanceEventReceiver {
     private OperationalMetadataAccess operationalMetadataAccess;
 
     @Inject
+    OpsManagerFeedProvider opsManagerFeedProvider;
+
+    @Inject
     private MetadataEventService eventService;
 
     Cache<String, String> completedJobEvents = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
 
+
+    LoadingCache<String, OpsManagerFeed> opsManagerFeedCache = null;
+    static OpsManagerFeed NULL_FEED = new OpsManagerFeed() {
+        @Override
+        public ID getId() {
+            return null;
+        }
+
+        @Override
+        public String getName() {
+            return null;
+        }
+
+        @Override
+        protected Object clone() throws CloneNotSupportedException {
+            return super.clone();
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
+    };
+
+
+    public ProvenanceEventReceiver(){
+        opsManagerFeedCache = CacheBuilder.newBuilder().build(new CacheLoader<String, OpsManagerFeed>() {
+                                                                  @Override
+                                                                  public OpsManagerFeed load(String feedName) throws Exception {
+                                                                      OpsManagerFeed feed =null;
+                                                                      try {
+                                                                            feed = operationalMetadataAccess.read(() -> {
+                                                                              return opsManagerFeedProvider.findByName(feedName);
+                                                                          });
+                                                                      }catch (Exception e){
+
+                                                                      }
+                                                                      return feed == null ? NULL_FEED : feed;
+                                                                  }
+
+                                                              }
+        );
+    }
 
     /**
      * small cache to make sure we dont process any event more than once. The refresh/expire interval for this cache can be small since if a event comes in moore than once it would happen within a
@@ -202,6 +253,15 @@ public class ProvenanceEventReceiver {
 
     public NifiEvent receiveEvent(ProvenanceEventRecordDTO event) {
         NifiEvent nifiEvent = null;
+        String feedName = event.getFeedName();
+        if(StringUtils.isNotBlank(feedName)) {
+            OpsManagerFeed feed = opsManagerFeedCache.getUnchecked(feedName);
+            if(feed == null || NULL_FEED.equals(feed)) {
+                log.info("Not processiong operational metadata for feed {} , event {} because it is not registered in feed manager ",feedName,event);
+                opsManagerFeedCache.invalidate(feedName);
+                return null;
+            }
+        }
         log.info("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(), event.isEndingFlowFileEvent(), event.isBatchJob());
         nifiEvent = nifiEventProvider.create(event);
         if (event.isBatchJob()) {
