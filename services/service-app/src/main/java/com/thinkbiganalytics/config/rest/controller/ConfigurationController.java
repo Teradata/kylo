@@ -1,16 +1,14 @@
 package com.thinkbiganalytics.config.rest.controller;
 
+import com.thinkbiganalytics.DateTimeUtil;
+
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.core.env.AbstractEnvironment;
 import org.springframework.core.env.Environment;
 import org.springframework.core.env.PropertiesPropertySource;
-import org.springframework.core.env.PropertySource;
 
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -20,7 +18,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -71,4 +68,12 @@ public class ConfigurationController {
         map.put("feedMgr", url + "/feed-mgr/index.html");
         return Response.ok(map).build();
     }
+
+    @GET
+    @Path("/system-time")
+    @Produces(MediaType.APPLICATION_JSON)
+    public Response generateSystemName() {
+        return Response.ok(DateTimeUtil.getNowUTCTime()).build();
+    }
+
 }
