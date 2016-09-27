@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -171,11 +172,16 @@ public class CreateFeedBuilder {
                     ProcessGroupEntity entity = restClient.getProcessGroup(processGroupId, true, true);
 
                     ProcessorDTO input = fetchInputProcessorForProcessGroup(entity);
+                    ProcessorDTO cleanupProcessor = NifiProcessUtil.findFirstProcessorsByType(NifiProcessUtil.getInputProcessors(entity.getProcessGroup()),
+                                                                                              "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup");
                     List<ProcessorDTO> nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity.getProcessGroup());
 
                     //update any references to the controller services and try to assign the value to an enabled service if it is not already
                     if (input != null) {
                         templateCreationHelper.updateControllerServiceReferences(Lists.newArrayList(input));
+                    }
+                    if (cleanupProcessor != null) {
+                        templateCreationHelper.updateControllerServiceReferences(Collections.singletonList(cleanupProcessor));
                     }
                     templateCreationHelper.updateControllerServiceReferences(nonInputProcessors);
                     //refetch processors for updated errors

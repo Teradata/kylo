@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -32,6 +33,8 @@ public class RangerUtil
 	private static String archiveBasePath ="/archive/";
 	private static String NIFI = "nifi_";
 	private static String HIVE_COLUMN_PERMISSION="*";
+	private static String TOTAL_COUNT="totalCount";
+	private static String VXPOLICIES="vXPolicies";
 
 
 
@@ -112,12 +115,6 @@ public class RangerUtil
 		return search;
 	}
 
-	public HDFSPolicy getGETPolicyJson()
-	{
-		return null;
-
-	}
-
 	public HDFSPolicy getDeletePolicyJson()
 	{
 		return null;
@@ -188,8 +185,93 @@ public class RangerUtil
 		return final_table_PermissionList;
 	}
 
+	@SuppressWarnings({ "unchecked", "static-access" })
+	public HDFSPolicy updateHDFSPolicyJson( String group_list, String permission_level, String category_name, String feed_name, String hdfs_permission_list, String hdfs_reposiroty_name)
+	{
+		logger.info("Start of getHDFSUpdatePolicyJson");
+
+		HDFSPolicy policy = new HDFSPolicy();
+
+		//Add remove users/groups/permissions to test createPolicy function
+		//Passing permission list is mandatory if 'usersList' or 'groupList' otherwise createPolicy() will fail
+
+		//Covert group string to array list.
+		List<String> groupList = Arrays.asList(group_list.split("\\s*,\\s*"));
+		@SuppressWarnings("rawtypes")
+		ArrayList Grouparraylist = new ArrayList(groupList);
+
+		//Covert array string to array list.
+		List<String> hdfs_permission_list_LIST = Arrays.asList(hdfs_permission_list.split("\\s*,\\s*"));
+		@SuppressWarnings("rawtypes")
+		ArrayList HDFSPermissionarraylist = new ArrayList(hdfs_permission_list_LIST);
+
+		String ranger_policy_name = NIFI+category_name+"_"+feed_name+"_"+permission_level;
+		String resource_name = constructResourceforPermissionHDFS(category_name,feed_name ,permission_level);
+		String description = "Ranger policy updated for group list " +group_list+ " for resource " + resource_name ;
+
+		policy.setPolicyName(ranger_policy_name);
+		policy.setResourceName(resource_name);
+		policy.setDescription(description);
+		policy.setRepositoryName(hdfs_reposiroty_name);
+		policy.setRepositorytype(HDFS_REPOSITORY_TYPE);
+		policy.setIsEnabled(IsEnable);
+		policy.setIsRecursive(IsRecursive);
+		policy.setIsAuditEnabled(IsAuditable);
+		policy.setGroups(Grouparraylist);
+		policy.setPermissions(HDFSPermissionarraylist);
+
+		logger.info("End of getHDFSUpdatePolicyJson");
+		return policy;
+
+	}
+
+	public HivePolicy updateHivePolicyJson(String group_list, String permission_level, String category_name,
+			String feed_name, String hive_permission_list, String hive_reposiroty_name)
+	{
+		// TODO Auto-generated method stub
+
+		logger.info("Start of getHIVEUpdatePolicyJson  - Update Hive Policy");
+		HivePolicy hivePolicy = new HivePolicy();
+
+		//Add remove users/groups/permissions to test createPolicy function
+		//Passing permission list is mandatory if 'usersList' or 'groupList' is passed otherwise createPolicy() will fail
+
+
+		//Covert group string to array list.
+		List<String> groupList = Arrays.asList(group_list.split("\\s*,\\s*"));
+		@SuppressWarnings("rawtypes")
+		ArrayList groupListHive = new ArrayList(groupList);
+
+		//Covert array string to array list.
+		List<String> hive_permission_list_LIST = Arrays.asList(hive_permission_list.split("\\s*,\\s*"));
+
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		ArrayList permListHive = new ArrayList(hive_permission_list_LIST);
+
+		String ranger_policy_name = NIFI+category_name+"_"+feed_name+"_"+permission_level;
+		String tablePermission = constructResourceforPermissionHIVE(category_name , feed_name , permission_level);
+		String description = "Ranger policy updated for group list " +group_list+ " for resource " + feed_name ;
+
+		hivePolicy.setPolicyName(ranger_policy_name);
+		hivePolicy.setDatabases(category_name);
+		hivePolicy.setTables(tablePermission);
+		hivePolicy.setColumns(HIVE_COLUMN_PERMISSION);
+		hivePolicy.setUdfs("");
+		hivePolicy.setDescription(description);
+		hivePolicy.setRepositoryName(hive_reposiroty_name);
+		hivePolicy.setRepositoryType(HIVE_REPOSITORY_TYPE);
+		hivePolicy.setIsEnabled(IsEnable);
+		hivePolicy.setIsAuditEnabled(IsAuditable);
+		hivePolicy.setGroupList(groupListHive);
+		hivePolicy.setPermList(permListHive);
+
+		logger.info("End of getHIVEUpdatePolicyJson  - Update Hive Policy");
+
+		return hivePolicy;
+
+	}
 	public boolean checkIfPolicyExists(RangerRestClient rangerClientObject, String category_name, String feed_name, String permission_level, String repositoryType)  throws
-																					 RangerRestClientException {
+	RangerRestClientException {
 
 		logger.info("Start of check if policy exists");
 		String policy_serach_criteria  = NIFI+category_name+"_"+feed_name+"_"+permission_level;
@@ -200,9 +282,9 @@ public class RangerUtil
 		try {
 			JSONObject json = (JSONObject) parser.parse(searchResponse);
 
-			if (json.containsKey("totalCount"))
+			if (json.containsKey(TOTAL_COUNT))
 			{
-				int totalPolicyCount =  Integer.parseInt( json.get("totalCount").toString());
+				int totalPolicyCount =  Integer.parseInt(json.get(TOTAL_COUNT).toString());
 
 				if (totalPolicyCount > 0)
 				{
@@ -220,6 +302,38 @@ public class RangerUtil
 		}
 		logger.info("End of check if policy exists");
 		return true;
+	}
+
+	public int getIdForExistingPolicy(RangerRestClient rangerClientObject, String category_name, String feed_name, String permission_level, String repositoryType) throws ParseException
+	{
+
+		logger.info("Get Policy ID");
+		int policyId = 0 ;
+		String policy_serach_criteria  = NIFI+category_name+"_"+feed_name+"_"+permission_level;
+		SearchPolicy  searchPolicyObj = getSearchPolicyJson(policy_serach_criteria,repositoryType);
+		String searchResponse = rangerClientObject.searchPolicies(searchPolicyObj.searchCriteria());
+
+		JSONParser parser = new JSONParser();
+		try {
+			JSONObject json = (JSONObject) parser.parse(searchResponse);
+
+			if (json.containsKey(VXPOLICIES))
+			{
+				JSONArray policyJsonArray = (JSONArray) json.get(VXPOLICIES);
+				JSONObject firstPolicy =  (JSONObject) policyJsonArray.get(0);
+				policyId =  Integer.parseInt(firstPolicy.get("id").toString());
+			}
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			logger.error("Unable to get policy Id  " + e.getMessage());
+			throw new ParseException(policyId, "Unable to get ranger policy ID "  + e);
+		}
+
+		logger.info("Got Policy Id -" + policyId);
+
+		return policyId;
+
 	}
 }
 

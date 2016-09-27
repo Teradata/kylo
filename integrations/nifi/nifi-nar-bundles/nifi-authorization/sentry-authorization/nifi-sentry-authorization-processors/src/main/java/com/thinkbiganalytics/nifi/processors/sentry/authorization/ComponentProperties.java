@@ -34,7 +34,7 @@ public interface ComponentProperties {
 	public static final PropertyDescriptor HDFS_PERMISSION_LIST = new PropertyDescriptor
 			.Builder().name("HDFS Permission List")
 			.description("HDFS Permission List")
-			.defaultValue("read,write")
+			.defaultValue("read")
 			.required(true)
 			.addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
 			.build();
@@ -42,7 +42,7 @@ public interface ComponentProperties {
 	public static final PropertyDescriptor HIVE_PERMISSION_LIST = new PropertyDescriptor
 			.Builder().name("HIVE Permission List")
 			.description("HIVE Permission List")
-			.defaultValue("create,select,update")
+			.defaultValue("select")
 			.required(true)
 			.addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
 			.build();

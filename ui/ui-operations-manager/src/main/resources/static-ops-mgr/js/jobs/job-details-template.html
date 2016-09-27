@@ -13,7 +13,7 @@
                    <span class="item-title">
                    {{vm.jobData.name}}
                    </span>
-                  <span class="column-title-bottom" ng-class="{{vm.jobData.cssStatusClass}}">
+                  <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
                                                        <ng-md-icon ng-if="vm.jobData.statusIcon" class="{{vm.jobData.tabIconStyle}}" icon="{{vm.jobData.statusIcon}}" size="20">
                                                        </ng-md-icon>{{vm.jobData.displayStatus}}</span>
 
@@ -36,7 +36,7 @@
           </div>
 
           <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Exit Description</div>
-          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="vm.jobData.exitDescription"
+          <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre;" ng-text-truncate="vm.jobData.exitDescription"
                ng-tt-chars-threshold="150">
           </div>
         </div>
@@ -160,7 +160,7 @@
                     <div ng-if="step.content.open" class="fade-in-out layout-padding-left-16" layout-fill flex>
 
                       <div class="item-title" style="padding-top:10px;padding-bottom:4px;">Exit Description</div>
-                      <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;" ng-text-truncate="step.content.exitDescription"
+                      <div class="accent-color-3" style="font-size:16px;padding-top:4px;padding-bottom:25px;white-space:pre;" ng-text-truncate="step.content.exitDescription"
                            ng-tt-chars-threshold="150">
                       </div>
                       <md-list flex layout-fill ng-show="vm.loading == false" class="list-item-table">
@@ -239,9 +239,10 @@
                                                          <span class="item-title">
                                                            {{vm.jobData.name}}
                                                        </span>
-                                                             <span ng-class="{{vm.jobData.cssStatusClass}}" class="column-title-bottom">
+                                                             <span class="column-title-bottom {{vm.jobData.cssStatusClass}}">
                                                                <ng-md-icon
                                                                    icon="{{vm.jobData.statusIcon}}"
+                                                                   class="{{vm.jobData.tabIconStyle}}"
                                                                    size="20">
                                                                </ng-md-icon>{{vm.jobData.displayStatus}}</span>
 

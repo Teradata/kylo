@@ -182,7 +182,7 @@ public class SentryClient {
 			{
 
 				String obtainedRole = resultSet.getString(1);
-				if (obtainedRole.equals(roleName))
+				if (obtainedRole.equalsIgnoreCase(roleName))
 				{
 					matchFound = true;
 				}

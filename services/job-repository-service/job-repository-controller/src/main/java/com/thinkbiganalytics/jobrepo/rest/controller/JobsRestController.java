@@ -182,8 +182,10 @@ public class JobsRestController {
     List<RelatedJobExecution> previousJobs = this.jobRepository.findPreviousJobExecutions(executionId);
     if (previousJobs != null && !previousJobs.isEmpty()) {
       for (RelatedJobExecution previousJob : previousJobs) {
+        if (previousJob != null && !previousJob.getJobExecutionId().equals(executionId)) {
         this.jobService.abandonJobExecution(previousJob.getJobExecutionId());
       }
+    }
     }
 
     ExecutedJob job = this.jobRepository.findByExecutionId(executionId + "");

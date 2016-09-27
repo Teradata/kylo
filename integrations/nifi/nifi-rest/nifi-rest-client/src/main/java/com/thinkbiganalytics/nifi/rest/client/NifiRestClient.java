@@ -827,7 +827,7 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
         for (ControllerServiceDTO dto : services) {
             try {
                 deleteControllerService(dto.getId());
-            } catch (NifiClientRuntimeException e) {
+            } catch (Exception e) {
                 if(!(e instanceof NifiComponentNotFoundException)) {
                     unableToDelete.add(dto.getId());
                 }

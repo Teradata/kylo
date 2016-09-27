@@ -1,5 +1,5 @@
 /**
- * 
+ *
  */
 package com.thinkbiganalytics.metadata.rest.api;
 
@@ -41,15 +41,15 @@ import com.thinkbiganalytics.metadata.rest.model.op.Dataset.ContentType;
  * @author Sean Felten
  */
 @Component
-@Path("/dataop")
+@Path("/metadata/dataop")
 public class DataOperationsController {
-    
+
     @Inject
     private FeedProvider feedProvider;
-    
+
     @Inject
     private DataOperationsProvider operationsProvider;
-    
+
     @Inject
     private MetadataAccess metadata;
 
@@ -62,7 +62,7 @@ public class DataOperationsController {
         return this.metadata.read(() -> {
             // TODO add criteria filtering
             List<com.thinkbiganalytics.metadata.api.op.DataOperation> domainOps = operationsProvider.getDataOperations();
-            
+
             return new ArrayList<>(Collections2.transform(domainOps, Model.DOMAIN_TO_DS_OP));
         });
     }
@@ -72,11 +72,11 @@ public class DataOperationsController {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public DataOperation getOperation(@PathParam("opid") final String opid) {
-        
+
         return this.metadata.read(() -> {
             com.thinkbiganalytics.metadata.api.op.DataOperation.ID domainId = operationsProvider.resolve(opid);
             com.thinkbiganalytics.metadata.api.op.DataOperation domainOp = operationsProvider.getDataOperation(domainId);
-            
+
             if (domainOp != null) {
                 return Model.DOMAIN_TO_DS_OP.apply(domainOp);
             } else {
@@ -88,38 +88,38 @@ public class DataOperationsController {
     @POST
     @Consumes(MediaType.APPLICATION_FORM_URLENCODED)
     @Produces(MediaType.APPLICATION_JSON)
-    public DataOperation beginOperation(@FormParam("feedDestinationId") final String destIdStr, 
+    public DataOperation beginOperation(@FormParam("feedDestinationId") final String destIdStr,
                                         @FormParam("status") final String status) {
-        
+
         return this.metadata.read(() -> {
                 // Deprecated
 //                com.thinkbiganalytics.metadata.api.feed.FeedDestination.ID destId = feedProvider.resolveDestination(destIdStr);
 //                com.thinkbiganalytics.metadata.api.feed.FeedDestination dest = feedProvider.getFeedDestination(destId);
-//                
+//
 //                if (dest != null) {
 //                    com.thinkbiganalytics.metadata.api.op.DataOperation op = operationsProvider.beginOperation(dest, new DateTime());
 //                    return Model.DOMAIN_TO_DS_OP.apply(op);
 //                } else {
-//                    throw new WebApplicationException("A feed destination with the given ID does not exist: " + destIdStr, 
+//                    throw new WebApplicationException("A feed destination with the given ID does not exist: " + destIdStr,
 //                                                      Status.BAD_REQUEST);
 //                }
             return null;
         });
     }
-    
+
     @PUT
     @Path("{opid}")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     public DataOperation updateOperation(@PathParam("opid") final String opid,
                                          final DataOperation op) {
-        
+
         return this.metadata.read(() -> {
             com.thinkbiganalytics.metadata.api.op.DataOperation.ID domainId = operationsProvider.resolve(opid);
             com.thinkbiganalytics.metadata.api.op.DataOperation domainOp = operationsProvider.getDataOperation(domainId);
             Datasource domainDs = domainOp.getProducer().getDatasource();
             com.thinkbiganalytics.metadata.api.op.DataOperation resultOp;
-            
+
             if (op.getState() == State.SUCCESS) {
                 if (domainDs instanceof HiveTableDatasource && op.getDataset().getContentType() == ContentType.PARTITIONS) {
                     // TODO Handle partitions
@@ -127,14 +127,14 @@ public class DataOperationsController {
                     resultOp = operationsProvider.updateOperation(domainId, "", change);
                 } else if (domainDs instanceof DirectoryDatasource && op.getDataset().getContentType() == ContentType.FILES) {
                     List<java.nio.file.Path> paths = new ArrayList<>();
-                    
+
                     for (com.thinkbiganalytics.metadata.rest.model.op.ChangeSet cs : op.getDataset().getChangeSets()) {
                         com.thinkbiganalytics.metadata.rest.model.op.FileList fl = (com.thinkbiganalytics.metadata.rest.model.op.FileList) cs;
                         for (String pathStr : fl.getPaths()) {
                             paths.add(java.nio.file.Paths.get(pathStr));
                         }
                     }
-                    
+
                     Dataset<DirectoryDatasource, FileList> change = operationsProvider.createDataset((DirectoryDatasource) domainDs, paths);
                     resultOp = operationsProvider.updateOperation(domainId, "", change);
                 } else {
@@ -143,7 +143,7 @@ public class DataOperationsController {
             } else {
                 resultOp = operationsProvider.updateOperation(domainId, op.getStatus(), Model.OP_STATE_TO_DOMAIN.apply(op.getState()));
             }
-            
+
             return Model.DOMAIN_TO_DS_OP.apply(resultOp);
         });
     }

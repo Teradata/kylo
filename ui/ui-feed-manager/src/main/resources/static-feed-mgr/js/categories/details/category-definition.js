@@ -9,9 +9,17 @@
      * @param {AccessControlService} AccessControlService the access control service
      * @param CategoriesService the category service
      * @param StateService the URL service
+     * @param FeedSecurityGroups the feed security groups service
+     * @param FeedService the feed service
      */
-    function CategoryDefinitionController($scope, $mdDialog, $mdToast, AccessControlService, CategoriesService, StateService, FeedSecurityGroups) {
+    function CategoryDefinitionController($scope, $mdDialog, $mdToast, AccessControlService, CategoriesService, StateService, FeedSecurityGroups, FeedService) {
         var self = this;
+
+        /**
+         * Error message object that maps keys to a boolean indicating the error state.
+         * @type {{duplicateName: boolean}}
+         */
+        self.$error = {duplicateName: false};
 
         /**
          * Indicates if the category definition may be edited.
@@ -32,21 +40,32 @@
         self.isEditable = !angular.isString(CategoriesService.model.id);
 
         /**
+         * Indicates if the edit form is valid.
+         * @type {boolean}
+         */
+        self.isValid = false;
+
+        /**
          * Category data used in "normal" mode.
          * @type {CategoryModel}
          */
         self.model = CategoriesService.model;
 
-        /**
-         * Indicates if the model is valid and can be saved.
-         * @type {boolean} {@code true} if all properties are valid, or {@code false} otherwise
-         */
-        self.isValid = true;
-
         this.categorySecurityGroups = FeedSecurityGroups;
         self.securityGroupChips = {};
         self.securityGroupChips.selectedItem = null;
         self.securityGroupChips.searchText = null;
+
+        // Update isValid when $error is updated
+        $scope.$watch(
+                function() {return self.$error},
+                function() {
+                    self.isValid = _.reduce(self.$error, function(memo, value) {
+                        return memo && !value;
+                    }, true);
+                },
+                true
+        );
 
         self.splitSecurityGroups = function() {
             if(self.model.securityGroups) {
@@ -106,6 +125,23 @@
         };
 
         /**
+         * Check for duplicate system names.
+         */
+        self.onNameChange = function() {
+            if (!angular.isString(self.model.systemName)) {
+                FeedService.getSystemName(self.editModel.name)
+                        .then(function(response) {
+                            var systemName = response.data;
+                            self.$error.duplicateName = _.some(CategoriesService.categories, function(category) {
+                                return (category.systemName === systemName);
+                            });
+                        });
+            } else {
+                self.$error.duplicateName = false;
+            }
+        };
+
+        /**
          * Saves the category definition.
          */
         self.onSave = function() {
@@ -156,6 +192,15 @@
                 .then(function(actionSet) {
                     self.allowEdit = AccessControlService.hasAction(AccessControlService.CATEGORIES_EDIT, actionSet.actions);
                 });
+
+        // Fetch the existing categories
+        CategoriesService.reload().then(self.onNameChange);
+
+        // Watch for changes to name
+        $scope.$watch(
+                function() {return self.editModel.name},
+                self.onNameChange
+        );
     }
 
     /**
