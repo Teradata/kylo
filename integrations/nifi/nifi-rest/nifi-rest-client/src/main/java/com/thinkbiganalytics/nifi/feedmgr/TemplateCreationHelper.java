@@ -79,7 +79,7 @@ public class TemplateCreationHelper {
         if (controllerServiceEntity != null) {
             snapshotControllerServices = controllerServiceEntity.getControllerServices();
             for (ControllerServiceDTO serviceDTO : controllerServiceEntity.getControllerServices()) {
-                if (serviceDTO.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED)) {
+                if (serviceDTO.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
                     snapshottedEnabledControllerServices.add(serviceDTO);
                 }
             }
