@@ -94,7 +94,7 @@ public class ProvenanceEventAggregator {
         this.jmsProcessingQueue = new LinkedBlockingQueue<>();
 
         this.eventsJmsQueue = new LinkedBlockingQueue<>();
-        log.info("************** NEW ProvenanceEventAggregator for {} and activemq: {} ", configuration, provenanceEventActiveMqWriter);
+        log.debug("************** NEW ProvenanceEventAggregator for {} and activemq: {} ", configuration, provenanceEventActiveMqWriter);
         this.configuration = configuration;
         this.provenanceEventActiveMqWriter = provenanceEventActiveMqWriter;
         this.lastCollectionTime = DateTime.now();
@@ -196,7 +196,7 @@ public class ProvenanceEventAggregator {
         //  log.info("try to complete parents for {}, root: {},  parents: {} ", event.getFlowFile().getId(), rootFlowFile.getId(), event.getFlowFile().getParents().size());
 
         if (event.isEndingFlowFileEvent() && event.getFlowFile().hasParents()) {
-            log.info("Attempt to complete all {} parent Job flow files that are complete", event.getFlowFile().getParents().size());
+            log.debug("Attempt to complete all {} parent Job flow files that are complete", event.getFlowFile().getParents().size());
             List<ProvenanceEventStats> list = new ArrayList<>();
             Set<ProvenanceEventRecordDTO> eventList = new HashSet<>();
             event.getFlowFile().getParents().stream().filter(parent -> parent.isCurrentFlowFileComplete()).forEach(parent -> {
@@ -290,7 +290,7 @@ public class ProvenanceEventAggregator {
         List<ProvenanceEventRecordDTO> eventsSentToJms = eventsToAggregate.values().stream().flatMap(feedProcessorEventAggregate -> {
             return feedProcessorEventAggregate.collectEventsToBeSentToJmsQueue().stream();
         }).collect(Collectors.toList());
-        log.info("collecting {} events from {} - {} ", eventsSentToJms.size(), lastCollectionTime, DateTime.now());
+        log.debug("collecting {} events from {} - {} ", eventsSentToJms.size(), lastCollectionTime, DateTime.now());
         jmsProcessingQueue.addAll(eventsSentToJms);
         lastCollectionTime = DateTime.now();
     }

@@ -515,8 +515,15 @@ public class ActiveFlowFile {
         }
 
         if (getRootFlowFile() != null) {
-            Long firstEventId = getRootFlowFile().getFirstEvent().getEventId();
-            idReferenceFlowFile.setRootFlowFileFirstEventId(firstEventId);
+            ProvenanceEventRecordDTO firstEvent = getRootFlowFile().getFirstEvent();
+            if(firstEvent != null) {
+                Long firstEventId =firstEvent.getEventId();
+                idReferenceFlowFile.setRootFlowFileFirstEventId(firstEventId);
+                idReferenceFlowFile.setRootFlowFileFirstEventComponentId(firstEvent.getComponentId());
+                idReferenceFlowFile.setRootFlowFileFirstEventComponentName(firstEvent.getComponentName());
+                idReferenceFlowFile.setRootFlowFileFirstEventTime(firstEvent.getEventTime().getMillis());
+                idReferenceFlowFile.setRootFlowFileFirstEventType(firstEvent.getEventType());
+            }
         }
         return idReferenceFlowFile;
 

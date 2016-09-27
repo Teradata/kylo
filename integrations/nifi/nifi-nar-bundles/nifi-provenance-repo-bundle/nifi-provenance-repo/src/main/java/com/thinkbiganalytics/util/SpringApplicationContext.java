@@ -34,18 +34,18 @@ public class SpringApplicationContext implements ApplicationContextAware {
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        log.info("Application Context aware set {} ", applicationContext);
+        log.debug("Application Context aware set {} ", applicationContext);
         if (initialized.compareAndSet(false, true)) {
             this.applicationContext = applicationContext;
-            log.info("First initializatoin done via Spring App context aware");
+            log.debug("First initializatoin done via Spring App context aware");
         } else {
-            log.info("attempt to init, but app context already set incoming: {}, set one: {} ", applicationContext, this.applicationContext);
+            log.debug("attempt to init, but app context already set incoming: {}, set one: {} ", applicationContext, this.applicationContext);
         }
     }
 
     public void initializeSpring() {
         if (initialized.compareAndSet(false, true)) {
-            log.info("INIT Spring!!! {} ", this);
+            log.debug("INIT Spring!!! {} ", this);
             ApplicationContext applicationContext = new ClassPathXmlApplicationContext(new String[]{"application-context.xml"});
             this.applicationContext = applicationContext;
         }

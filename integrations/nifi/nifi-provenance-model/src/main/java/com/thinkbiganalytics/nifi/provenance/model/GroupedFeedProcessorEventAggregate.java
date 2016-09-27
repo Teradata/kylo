@@ -45,8 +45,6 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
     private List<ProvenanceEventRecordDTO> streamEvents = new ArrayList<>();
     private Map<String, ProvenanceEventRecordDTO> lastStreamEventByJob = new ConcurrentHashMap<>();
 
-    private Set<String> eventIdsSentToJms = new HashSet<>();
-
 
     private AggregatedProcessorStatistics stats;
 

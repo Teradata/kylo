@@ -71,7 +71,6 @@ public class ProvenanceStatsCalculator {
             DateTime previousSendTime = null;
             if (isUpdatingNextSendTime.compareAndSet(false, true)) {
                 try {
-                    log.info("Update the nextSendTime ");
                     previousSendTime = nextSendTime.get();
                     nextSendTime.set(nextSendTime.get().plusSeconds(aggregationIntervalSeconds));
                     sendStats(previousSendTime.getMillis());
@@ -99,7 +98,7 @@ public class ProvenanceStatsCalculator {
      */
     public void sendStats(Long key) {
         AggregatedFeedProcessorStatisticsHolder statisticsHolder = statsByTime.get(key);
-        log.info("Attempt to send stats for key {} , {} ", key, statisticsHolder);
+        log.debug("Attempt to send stats for key {} , {} ", key, statisticsHolder);
         if (statisticsHolder != null) {
             if (provenanceEventActiveMqWriter != null) {
                 provenanceEventActiveMqWriter.writeStats(statisticsHolder);
