@@ -1309,13 +1309,33 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
 
                 entity.setControllerService(dto);
                 updateEntityForSave(entity);
-                return put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
-            } else {
-                return entity;
+                entity = put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
             }
-        } else {
-            return entity;
         }
+        //initially when trying to enable the service the state will be ENABLING
+        //This will last until the service is up.
+        //if it is in the ENABLING state it needs to wait and try again to get the status.
+
+        dto = entity.getControllerService();
+        if (dto.getState().equalsIgnoreCase(NifiProcessUtil.SERVICE_STATE.ENABLING.name())) {
+            //attempt to retry x times before returning
+            int retryCount = 0;
+            int maxRetries = 5;
+            while (retryCount <= maxRetries) {
+                entity = getControllerService(null, id);
+                if (!entity.getControllerService().getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
+                    try {
+                        Thread.sleep(3000);
+                        retryCount++;
+                    } catch (InterruptedException e2) {
+
+                    }
+                } else {
+                    retryCount = maxRetries + 1;
+                }
+            }
+        }
+        return entity;
     }
 
     public ControllerServiceEntity disableControllerService(String id) throws NifiComponentNotFoundException {

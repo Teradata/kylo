@@ -31,7 +31,7 @@ public class NifiProcessUtil {
     }
 
     public static enum SERVICE_STATE {
-        ENABLED,DISABLED;
+        ENABLING, ENABLED, DISABLED;
     }
 
     public static String SYSTEM_PROPERTY_PREFIX = "system:";
