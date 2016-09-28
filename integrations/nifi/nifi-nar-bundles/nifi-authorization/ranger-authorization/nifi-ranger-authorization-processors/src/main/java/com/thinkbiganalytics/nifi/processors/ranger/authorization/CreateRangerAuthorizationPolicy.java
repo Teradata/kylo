@@ -123,10 +123,32 @@ public class CreateRangerAuthorizationPolicy extends AbstractProcessor  {
 			RangerRestClient rangerClientObject =  rangerService.getConnection();
 			RangerUtil rangerUtil = new RangerUtil();
 
+			/**
+			 * Clear Policy If Group List is empty and Terminate processor.
+			 */
 			
-			
+			if(group_list.equals(""))
+			{
+				logger.info("Group list is empty. Old Policy will be cleared if exists.");
+				if (rangerUtil.checkIfPolicyExists(rangerClientObject, category_name,feed_name , permission_level , HDFS_REPOSITORY_TYPE))
+				{
+					int policyId = rangerUtil.getIdForExistingPolicy(rangerClientObject, category_name, feed_name, permission_level, HDFS_REPOSITORY_TYPE);
+					String delete = rangerClientObject.deletePolicy(policyId);
+				}
+
+				if (rangerUtil.checkIfPolicyExists(rangerClientObject, category_name,feed_name ,permission_level , HIVE_REPOSITORY_TYPE))
+				{
+					int policyId = rangerUtil.getIdForExistingPolicy(rangerClientObject, category_name, feed_name, permission_level, HIVE_REPOSITORY_TYPE);
+					rangerClientObject.deletePolicy(policyId);
+				}
+				
+				session.transfer(flowFile, REL_SUCCESS);
+				return;
+			}
+
+
 			logger.info("Creating HDFS Policy");
-			if (rangerUtil.checkIfPolicyExists(rangerClientObject, category_name,feed_name , permission_level , HDFS_REPOSITORY_TYPE))
+			if (!(rangerUtil.checkIfPolicyExists(rangerClientObject, category_name,feed_name , permission_level , HDFS_REPOSITORY_TYPE)))
 			{
 				HDFSPolicy createhdfsPolicy = rangerUtil.getHDFSCreatePolicyJson( group_list, permission_level , category_name , feed_name ,hdfs_permission_list ,hdfs_reposiroty_name);
 				rangerClientObject.createPolicy(createhdfsPolicy.policyJson());
@@ -141,7 +163,7 @@ public class CreateRangerAuthorizationPolicy extends AbstractProcessor  {
 			}
 
 			logger.info("Creating HIVE Policy");
-			if (rangerUtil.checkIfPolicyExists(rangerClientObject, category_name,feed_name ,permission_level , HIVE_REPOSITORY_TYPE))
+			if (!(rangerUtil.checkIfPolicyExists(rangerClientObject, category_name,feed_name ,permission_level , HIVE_REPOSITORY_TYPE)))
 			{
 				HivePolicy createHivePolicy = rangerUtil.getHIVECreatePolicyJson( group_list, permission_level , category_name , feed_name ,hive_permission_list,hive_reposiroty_name);
 				rangerClientObject.createPolicy(createHivePolicy.policyJson());
@@ -161,9 +183,6 @@ public class CreateRangerAuthorizationPolicy extends AbstractProcessor  {
 			e.printStackTrace();
 			logger.error("Unable to obtain Ranger connection for {} due to {}; routing to failure", new Object[]{flowFile, e});
 			session.transfer(flowFile, REL_FAILURE);
-
 		}
-
 	}
-
 }

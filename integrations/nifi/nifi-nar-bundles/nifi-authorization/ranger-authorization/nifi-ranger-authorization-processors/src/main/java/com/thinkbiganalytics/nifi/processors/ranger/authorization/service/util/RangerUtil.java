@@ -288,11 +288,11 @@ public class RangerUtil
 
 				if (totalPolicyCount > 0)
 				{
-					return false;
+					return true;
 				}
 				else
 				{
-					return true;
+					return false;
 				}
 			}
 		} catch (ParseException e) {
