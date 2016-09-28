@@ -20,10 +20,12 @@ public class ServiceLevelAssessmentAlertUtil {
             for (ObligationAssessment obAssmnt : slaAssmt.getObligationAssessments()) {
                 if(obAssmnt.getMetricAssessments() != null) {
                     for (MetricAssessment metricAssmnt : obAssmnt.getMetricAssessments()) {
-                        descrBldr
-                            .append("Requirement: ")
-                            .append(metricAssmnt.getMetric().getDescription())
-                            .append("\n\nResult: ")
+
+                            descrBldr
+                                .append("Requirement: ")
+                                .append(metricAssmnt.getMetricDescription())
+                            .append("\n\n")
+                          .append("Result: ")
                             .append(metricAssmnt.getMessage())
                             .append("\n\n");
                     }

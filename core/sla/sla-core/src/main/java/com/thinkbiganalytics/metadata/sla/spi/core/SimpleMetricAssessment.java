@@ -3,15 +3,15 @@
  */
 package com.thinkbiganalytics.metadata.sla.spi.core;
 
-import java.io.Serializable;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
 import com.google.common.collect.ComparisonChain;
 import com.thinkbiganalytics.metadata.sla.api.AssessmentResult;
 import com.thinkbiganalytics.metadata.sla.api.Metric;
 import com.thinkbiganalytics.metadata.sla.api.MetricAssessment;
+
+import java.io.Serializable;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 /**
  *
@@ -50,6 +50,11 @@ public class SimpleMetricAssessment<D extends Serializable> implements MetricAss
     @Override
     public Metric getMetric() {
         return this.metric;
+    }
+
+    @Override
+    public String getMetricDescription() {
+        return getMetric() != null ? getMetric().getDescription(): null;
     }
 
     @Override

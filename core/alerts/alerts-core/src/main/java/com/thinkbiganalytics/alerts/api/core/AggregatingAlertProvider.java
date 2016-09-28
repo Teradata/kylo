@@ -174,7 +174,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
     public void alertsAvailable(int count) {
         Executor exec = getListenersExecutor();
         
-        LOG.info("Alert available: {}", count);
+        LOG.debug("Alert available: {}", count);
         
         exec.execute(new Runnable() {
             public void run() {
@@ -186,7 +186,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
                     Alert alert = combinedAlerts.next();
                     AlertSource src = srcList.get(getSourceId(alert));
                     
-                    LOG.info("Alert {} received from {}", alert.getId(), src);
+                    LOG.debug("Alert {} received from {}", alert.getId(), src);
                     
                     notifyListeners(alert);
                     
@@ -303,7 +303,7 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
     }
         
     private void notifyResponders(final Alert.ID id, final AlertManager manager) {
-        LOG.info("Notifying responders of change for alert ID: {}", id);
+        LOG.debug("Notifying responders of change for alert ID: {}", id);
 
         final List<AlertResponder> respList = snapshotResponderts();
         
@@ -311,13 +311,13 @@ public class AggregatingAlertProvider implements AlertProvider, AlertNotifyRecei
                 @Override
                 public void run() {
                     
-                    LOG.info("Invoking responders for alerts: {}", respList);
+                    LOG.debug("Invoking responders for alerts: {}", respList);
 
                     for (AlertResponder responder : respList) {
                         SourceAlertID srcId = asSourceAlertId(id);
                         Alert alert = getAlert(srcId.alertId, manager);
 
-                        LOG.info("Alert change: {}  from source: {}  responder: {}", alert, manager, responder);
+                        LOG.debug("Alert change: {}  from source: {}  responder: {}", alert, manager, responder);
                         
                         if (alert != null) {
                             alertChange(alert, responder, manager);

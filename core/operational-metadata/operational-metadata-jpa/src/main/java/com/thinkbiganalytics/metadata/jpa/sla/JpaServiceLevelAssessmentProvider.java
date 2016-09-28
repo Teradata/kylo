@@ -66,7 +66,8 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
 
     @Override
     public ServiceLevelAssessment findServiceLevelAssessment(ServiceLevelAssessment.ID id) {
-        return serviceLevelAssessmentRepository.findOne(id);
+        ServiceLevelAssessment assessment = serviceLevelAssessmentRepository.findOne(id);
+        return assessment;
     }
 
 

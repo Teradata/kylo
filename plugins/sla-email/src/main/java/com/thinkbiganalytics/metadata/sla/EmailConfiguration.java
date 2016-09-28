@@ -18,6 +18,7 @@ public class EmailConfiguration {
     private String password;
     private String smptAuthNtmlDomain;
     private boolean sslEnable;
+    private boolean debug;
 
     public String getProtocol() {
         return protocol;
@@ -101,5 +102,13 @@ public class EmailConfiguration {
 
     public boolean isConfigured(){
         return StringUtils.isNotBlank(getHost()) && StringUtils.isNotBlank(getProtocol());
+    }
+
+    public boolean isDebug() {
+        return debug;
+    }
+
+    public void setDebug(boolean debug) {
+        this.debug = debug;
     }
 }

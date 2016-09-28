@@ -68,7 +68,7 @@ public class JpaObligationAssessment extends AbstractAuditedEntity implements Ob
     private ServiceLevelAssessment serviceLevelAssessment;
 
 
-    @OneToMany(targetEntity = JpaMetricAssessment.class, mappedBy = "obligationAssessment", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = JpaMetricAssessment.class, mappedBy = "obligationAssessment", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<MetricAssessment> metricAssessments = new HashSet<>();
 
     @Convert(converter = ComparablesAttributeConverter.class)
@@ -174,15 +174,14 @@ public class JpaObligationAssessment extends AbstractAuditedEntity implements Ob
                 }
             }
 
-            if (chain.result() != 0) {
-                return chain.result();
-            }
 
             List<MetricAssessment<Serializable>> list1 = new ArrayList<>(o1.getMetricAssessments());
             List<MetricAssessment<Serializable>> list2 = new ArrayList<>(o2.getMetricAssessments());
 
             chain = chain.compare(list1.size(), list2.size());
-
+            if (chain.result() != 0) {
+                return chain.result();
+            }
             Collections.sort(list1);
             Collections.sort(list2);
 
