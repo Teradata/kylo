@@ -1288,11 +1288,18 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
         ControllerServiceDTO dto = entity.getControllerService();
 
         if (properties != null) {
+            boolean changed = false;
             Map<String, String> resolvedProperties = NifiEnvironmentProperties.getEnvironmentControllerServiceProperties(properties, dto.getName());
             if (resolvedProperties != null && !resolvedProperties.isEmpty()) {
-                ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, resolvedProperties);
+                changed = ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, resolvedProperties);
             } else {
-                ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, properties);
+                changed = ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, properties);
+            }
+            if (changed) {
+                //first save the property change
+                entity.setControllerService(dto);
+                updateEntityForSave(entity);
+                put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
             }
         }
 
