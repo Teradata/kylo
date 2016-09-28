@@ -29,7 +29,9 @@ public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgree
 
     @Override
     protected boolean shouldAlert(ServiceLevelAgreement agreement, ServiceLevelAssessment assessment) {
-        return jcrMetadataAccess.read(() -> {
+        boolean shouldAlert = false;
+        try {
+            shouldAlert = jcrMetadataAccess.read(() -> {
             // Get the last assessment that was created for this SLA (if any).
             ServiceLevelAssessment previous = null;
             ServiceLevelAssessment.ID previousId = this.alertedAssessments.get(agreement.getId());
@@ -41,12 +43,17 @@ public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgree
 
             if (previous != null) {
                 assessmentProvider.ensureServiceLevelAgreementOnAssessment(previous);
+                LOG.info("found previous assessment {} ", previous.getClass());
 
                 return assessment.compareTo(previous) != 0;
             } else {
                 return true;
             }
         });
+        } catch (Exception e) {
+            LOG.error("Error checking shouldAlert for {}. {} ", agreement.getName(), e.getMessage(), e);
+        }
+        return shouldAlert;
     }
 
     private boolean isAssessable(ServiceLevelAgreement agreement) {
