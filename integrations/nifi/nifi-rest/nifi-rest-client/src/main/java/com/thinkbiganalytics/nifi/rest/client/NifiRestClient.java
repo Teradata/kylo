@@ -1286,29 +1286,33 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
     public ControllerServiceEntity enableControllerServiceAndSetProperties(String id, Map<String, String> properties) throws NifiClientRuntimeException {
         ControllerServiceEntity entity = getControllerService(null, id);
         ControllerServiceDTO dto = entity.getControllerService();
-
-        if (properties != null) {
-            boolean changed = false;
-            Map<String, String> resolvedProperties = NifiEnvironmentProperties.getEnvironmentControllerServiceProperties(properties, dto.getName());
-            if (resolvedProperties != null && !resolvedProperties.isEmpty()) {
-                changed = ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, resolvedProperties);
-            } else {
-                changed = ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, properties);
+        //only need to do this if it is not enabled
+        if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
+            if (properties != null) {
+                boolean changed = false;
+                Map<String, String> resolvedProperties = NifiEnvironmentProperties.getEnvironmentControllerServiceProperties(properties, dto.getName());
+                if (resolvedProperties != null && !resolvedProperties.isEmpty()) {
+                    changed = ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, resolvedProperties);
+                } else {
+                    changed = ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, properties);
+                }
+                if (changed) {
+                    //first save the property change
+                    entity.setControllerService(dto);
+                    updateEntityForSave(entity);
+                    put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
+                }
             }
-            if (changed) {
-                //first save the property change
+
+            if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
+                dto.setState(NifiProcessUtil.SERVICE_STATE.ENABLED.name());
+
                 entity.setControllerService(dto);
                 updateEntityForSave(entity);
-                put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
+                return put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
+            } else {
+                return entity;
             }
-        }
-
-        if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
-            dto.setState(NifiProcessUtil.SERVICE_STATE.ENABLED.name());
-
-            entity.setControllerService(dto);
-            updateEntityForSave(entity);
-            return put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
         } else {
             return entity;
         }
