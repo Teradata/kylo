@@ -84,6 +84,14 @@ class TransformJobTracker extends SparkListener {
         event.stageIds.foreach(stages.update(_, job.get))
     }
 
+    /** Handles unsupported events.
+      *
+      * Required for compatibility with CDH 5.8.
+      *
+      * @param event the spark event
+      */
+    def onOtherEvent(@Nonnull event: SparkListenerEvent) {}
+
     /** Records information about a completed stage.
       *
       * @param event the stage information
