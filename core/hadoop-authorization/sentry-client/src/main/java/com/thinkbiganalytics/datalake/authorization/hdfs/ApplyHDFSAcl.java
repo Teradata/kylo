@@ -40,7 +40,7 @@ public class ApplyHDFSAcl {
 			conf = hdfsUtil.getConfigurationFromResources(HadoopConfigurationResource);
 			
 			String allPathForAclCreation = hdfsUtil.constructResourceforPermissionHDFS(category_name, feed_name, permission_level);
-			hdfsUtil.splitPathListAndApplyPolicy(allPathForAclCreation, conf, sentryConfig.getFileSystem() , groupList);
+			hdfsUtil.splitPathListAndApplyPolicy(allPathForAclCreation, conf, sentryConfig.getFileSystem() , groupList , hdfs_permission);
 			
 			return true;
 		} catch (IOException e) {

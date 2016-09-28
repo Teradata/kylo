@@ -3,7 +3,7 @@ package com.thinkbiganalytics.datalake.authorization.hdfs;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-
+import java.util.HashMap;
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileStatus;
 import org.apache.hadoop.fs.FileSystem;
@@ -25,11 +25,17 @@ public class HDFSUtil
 {
 
 	private static final Logger log = LoggerFactory.getLogger(HDFSUtil.class);
-	
+
 	private static String modelDBPath ="/model.db/";
 	private static String appBasePath ="/app/warehouse/";
 	private static String etlBasePath ="/etl/";
 	private static String archiveBasePath ="/archive/";
+	final private static String READ="read";
+	final private static String WRITE="write";
+	final private static String EXECUTE="execute";
+	final private static String ALL="all";
+	final private static String NONE="none";
+
 
 	/**
 	 * 
@@ -96,14 +102,23 @@ public class HDFSUtil
 		return final_resource_path;
 	}
 
-	public void splitPathListAndApplyPolicy(String allPathForAclCreation , Configuration conf , FileSystem fileSystem, String groupList) throws IOException
+	/**
+	 * 
+	 * @param allPathForAclCreation : Each Kylo internal path
+	 * @param conf : Hadoop configuration resources
+	 * @param fileSystem : HDFS filesystem 
+	 * @param groupList : List of group for granting permission
+	 * @param hdfs_permission 
+	 * @throws IOException
+	 */
+	public void splitPathListAndApplyPolicy(String allPathForAclCreation , Configuration conf , FileSystem fileSystem, String groupList, String hdfs_permission) throws IOException
 	{
 		String allKyloIntermediatePath[] = allPathForAclCreation.split(",");
 		for(int pathCounter = 0 ; pathCounter < allKyloIntermediatePath.length ; pathCounter ++)
 		{
 			try
 			{
-				individualIntermediatePath(conf,fileSystem,allKyloIntermediatePath[pathCounter] , groupList);
+				individualIntermediatePath(conf,fileSystem,allKyloIntermediatePath[pathCounter] , groupList ,hdfs_permission);
 			}
 			catch (IOException e)
 			{
@@ -112,28 +127,40 @@ public class HDFSUtil
 		}
 	}
 
-	public void individualIntermediatePath(Configuration conf , FileSystem fileSystem , String kyloPath, String groupList ) throws IOException 
+	public void individualIntermediatePath(Configuration conf , FileSystem fileSystem , String kyloPath, String groupList , String hdfs_permission ) throws IOException 
 	{
 		Path path = new Path(kyloPath);
 		fileSystem = path.getFileSystem(conf);
-		listAllDir(fileSystem ,path , groupList);
+		listAllDir(fileSystem ,path , groupList ,hdfs_permission);
 	}
 
-/**
- * 
- * @param fileSystem : HDFS fileSystem object
- * @param path : Path on which ACL needs to be created 
- * @param groupList : List of group to which permission needs to be granted.
- * @throws FileNotFoundException
- * @throws IOException
- */
-	
-	public void listAllDir(FileSystem fileSystem ,Path path ,String groupList) throws FileNotFoundException, IOException
-	{
-		FileStatus[] fileStatus = fileSystem.listStatus(path);
+	/**
+	 * 
+	 * @param fileSystem : HDFS fileSystem object
+	 * @param path : Path on which ACL needs to be created 
+	 * @param groupList : List of group to which permission needs to be granted.
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 
+	public void listAllDir(FileSystem fileSystem ,Path path ,String groupList , String hdfs_permission) throws FileNotFoundException, IOException
+	{
+		FsAction fsActionObject = getFinalPermission(hdfs_permission);
+		FileStatus[] fileStatus = fileSystem.listStatus(path);
+		
 		for(FileStatus status : fileStatus)
 		{
+			/**
+			 * Flush ACL before creating new one.
+			 */
+
+			flushAcl(fileSystem, status.getPath());
+
+
+			/**
+			 * Apply ACL recursively on each file/directory.
+			 */
+
 			if(status.isDirectory())
 			{
 				String groupListForPermission[] = groupList.split(",");
@@ -143,8 +170,10 @@ public class HDFSUtil
 					/**
 					 * Create HDFS ACL for each for each Path on HDFS
 					 */
+
+
 					AclEntry aclEntry = new AclEntry.Builder().setName(groupListForPermission[groupCounter]) 
-							.setPermission(FsAction.ALL).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
+							.setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
 
 					/**
 					 * Apply ACL on Path
@@ -154,7 +183,10 @@ public class HDFSUtil
 
 				}
 
-				listAllDir(fileSystem,status.getPath(), groupList);
+				/**
+				 * Recursive call made to apply acl on each sub directory
+				 */
+				listAllDir(fileSystem,status.getPath(), groupList , hdfs_permission);
 			}
 			else
 			{
@@ -165,8 +197,9 @@ public class HDFSUtil
 					/**
 					 * Create HDFS ACL for each for each Path on HDFS
 					 */
-					AclEntry aclEntry = new AclEntry.Builder().setName(groupListForPermission[groupCounter]) 
-							.setPermission(FsAction.ALL).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
+
+					AclEntry aclEntry = new AclEntry.Builder().setName(groupListForPermission[groupCounter])
+							.setPermission(fsActionObject).setScope(AclEntryScope.ACCESS).setType(AclEntryType.GROUP).build();
 
 					/**
 					 * Apply ACL on Path
@@ -193,11 +226,103 @@ public class HDFSUtil
 			log.info("Creating ACL for Path - " + path.toString());
 			fileSystem.modifyAclEntries(path, Lists.newArrayList(aclEntry));
 			log.info("Sucessfully created ACL for Path - " + path.toString());
-			
+
 		} catch (IOException e) 
 		{
 			throw new IOException("Unable to apply HDFS Policy for " +path.toString() + " " +e.getMessage());
 		}
 	}
 
+	/**
+	 * 
+	 * @param fileSystem : HDFS FileSystem Object
+	 * @param path : HDFS Path 
+	 * @throws IOException
+	 */
+	public void flushAcl(FileSystem fileSystem , Path path) throws IOException
+	{
+		try
+		{
+			fileSystem.removeAcl(path);
+
+		} catch (IOException e) 
+		{
+			throw new IOException("Unable to flush HDFS Policy for " +path.toString() + " " +e.getMessage());
+		}
+
+	}
+
+	/**
+	 * 
+	 * @param hdfsPermission : Permission assgined by user.
+	 * @return : Final Permission to be set for creating ACL 
+	 */
+	
+	private FsAction getFinalPermission(String hdfsPermission)
+	{
+
+		HashMap<String,Integer> standardPermissionMap=new HashMap<String,Integer>(); 
+
+		String  permissions[] =  hdfsPermission.split(",");
+		standardPermissionMap.put(READ, 0);
+		standardPermissionMap.put(WRITE, 0);
+		standardPermissionMap.put(EXECUTE, 0);
+		standardPermissionMap.put(NONE,0 );
+		standardPermissionMap.put(ALL, 0);
+
+		for ( String permission : permissions){
+
+			permission = permission.toLowerCase();
+			
+			switch (permission)
+			{
+			case READ: standardPermissionMap.put(READ, 1);break ;
+			case WRITE :standardPermissionMap.put(WRITE, 1);break ;
+			case EXECUTE : standardPermissionMap.put(EXECUTE, 1); break ;
+			case ALL: return FsAction.ALL; 
+			case NONE : return FsAction.NONE ; 
+			default : standardPermissionMap.put(NONE, 1 ) ;
+			}
+		}
+
+			if (standardPermissionMap.get(READ)==1 && standardPermissionMap.get(WRITE)==1 && standardPermissionMap.get(EXECUTE)==1)
+				return FsAction.ALL ;
+
+			if (standardPermissionMap.get(READ)==1 && standardPermissionMap.get(WRITE)==1)
+			{
+				return FsAction.READ_WRITE ;
+			}
+
+			if (standardPermissionMap.get(READ)==1 && standardPermissionMap.get(EXECUTE)==1)
+			{
+				return FsAction.READ_EXECUTE;
+			}
+
+			if (standardPermissionMap.get(WRITE)==1 && standardPermissionMap.get(EXECUTE)==1)
+			{
+				return FsAction.WRITE_EXECUTE;
+			}
+
+			if (standardPermissionMap.get(WRITE)==1 )
+			{
+				return FsAction.WRITE;
+			}
+
+			if (standardPermissionMap.get(READ)==1 )
+			{
+				return FsAction.READ;
+			}
+
+			if (standardPermissionMap.get(EXECUTE)==1 )
+			{
+				return FsAction.EXECUTE;
+			}
+		
+
+		/**
+		 * Default Permission - None
+		 */
+		return FsAction.NONE;
+
+	}
 }
