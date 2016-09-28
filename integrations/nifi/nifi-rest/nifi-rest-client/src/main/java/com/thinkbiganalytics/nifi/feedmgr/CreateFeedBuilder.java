@@ -24,6 +24,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import javax.annotation.Nonnull;
 
@@ -248,19 +251,21 @@ public class CreateFeedBuilder {
     }
 
     private ProcessorDTO fetchInputProcessorForProcessGroup(ProcessGroupEntity entity) {
-        //identify the various processors (first level initial processors)
-        List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity.getProcessGroup());
+        // Find first processor by type
+        final List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity.getProcessGroup());
+        final ProcessorDTO input = Optional.ofNullable(NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType))
+                .orElseGet(() -> inputProcessors.stream()
+                        .filter(processor -> !processor.getType().equals(NifiProcessUtil.CLEANUP_TYPE))
+                        .findFirst()
+                        .orElse(null)
+                );
 
-        ProcessorDTO input = NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType);
-        //if the input is null attempt to get the first input available on the template
-        if (input == null && inputProcessors != null && !inputProcessors.isEmpty()) {
-            input = inputProcessors.get(0);
-        }
-        if(input != null){
+        // Update cached type
+        if (input != null) {
             inputProcessorType = input.getType();
         }
-        return input;
 
+        return input;
     }
 
     private void updatePortConnectionsForProcessGroup(String processGroupId) throws NifiComponentNotFoundException {

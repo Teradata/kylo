@@ -40,6 +40,9 @@ public class NifiProcessUtil {
 
     public static String PROPERTIES_PROCESSOR ="PropertiesProcessor";
 
+    /** Type of the cleanup processor */
+    public static String CLEANUP_TYPE = "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup";
+
 
     private  static class ProcessorByTypePredicate implements Predicate<ProcessorDTO> {
 
