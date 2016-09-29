@@ -140,12 +140,13 @@ public class ProvenanceFeedLookup {
                         matchingFailedEvent = event.getPreviousEvent();
                     } else {
                         matchingFailedEvent = event.getFlowFile().getFirstCompletedEventsForProcessorId(finalRealFailureProcessorId);
-                        //previous flow files??
-                        log.info("Matching Event in flowfile = {}", matchingFailedEvent);
                     }
 
                     if (matchingFailedEvent != null) {
                         failureEvent = matchingFailedEvent;
+                    } else {
+                        //unable to find the correct failure event.... add this event
+                        failureEvent = event;
                     }
                 }
             }

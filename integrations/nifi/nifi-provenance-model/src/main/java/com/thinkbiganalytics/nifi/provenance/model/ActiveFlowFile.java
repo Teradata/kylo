@@ -401,16 +401,33 @@ public class ActiveFlowFile {
     }
 
     public ProvenanceEventRecordDTO getFirstCompletedEventsForProcessorId(String processorId) {
+        return getFirstCompletedEventsForProcessorId(processorId, true);
+    }
+
+    public ProvenanceEventRecordDTO getFirstCompletedEventsForProcessorId(String processorId, boolean lookupToParents) {
+        ProvenanceEventRecordDTO e = null;
         List<ProvenanceEventRecordDTO> processorEvents = completedEventsByProcessorId.get(processorId);
         if (processorEvents != null && !processorEvents.isEmpty()) {
-            return processorEvents.get(0);
+            e = processorEvents.get(0);
         }
-        return null;
+        if (lookupToParents && e == null && !getParents().isEmpty()) {
+            for (ActiveFlowFile ff : getParents()) {
+                if (!ff.equals(this)) {
+                    e = ff.getFirstCompletedEventsForProcessorId(processorId, lookupToParents);
+                    if (e != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return e;
+
     }
 
     public void addCompletionEvent(ProvenanceEventRecordDTO event) {
         getCompletedEvents().add(event);
         getCompletedProcessorIds().add(event.getComponentId());
+        log.info("completing processor {} for ff: {} ", event.getComponentId(), this.getId());
         completedEventsByProcessorId.computeIfAbsent(event.getComponentId(), (processorId) -> new ArrayList<>()).add(event);
         setPreviousEvent(event);
         calculateEventDuration(event);
