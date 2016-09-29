@@ -115,7 +115,7 @@ public class RemoveHDFSFolder extends AbstractHadoopProcessor {
             // Delete path
             getLogger().debug("Deleting path: " + path);
             try {
-                if (!fileSystem.delete(path, true)) {
+                if (!fileSystem.delete(path, true) && fileSystem.exists(path)) {
                     getLogger().error("Failed to remove path: " + path);
                     session.transfer(flowFile, REL_FAILURE);
                     return;
