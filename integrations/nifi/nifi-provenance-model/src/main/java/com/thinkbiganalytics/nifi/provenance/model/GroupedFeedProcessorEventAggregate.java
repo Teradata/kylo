@@ -302,18 +302,16 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
 
             //Move anything that is potential to batch if the time between is greater
             if (now.isAfter(lastEventTime.plus(allowedMillisBetweenEvents))) {
-                if (secondToLastEventTime == null || (secondToLastEventTime != null && lastEventTime.isAfter(secondToLastEventTime.plus(allowedMillisBetweenEvents)))) {
                     //BATCH!
                     tempStreamingCount.set(0);
                     List<ProvenanceEventRecordDTO> movedEvents = movePotentialStreamToBatch();
-                } else {
-                    if (!potentialStreamEvents.isEmpty()) {
-                        //treat as stream
-                        potentialStreamEvents.forEach(e -> e.setStream(true));
+
+                   /* if(movedEvents != null && !movedEvents.isEmpty()){
+                        movedEvents.forEach(e -> {
+                            log.info("set {}as batch.", e);
+                        });
                     }
-                    potentialStreamEvents.clear();
-                    tempStreamingCount.set(0);
-                }
+                    */
 
             }
             //if the First Event was a Batch event we should pass this event through so it gets reconciled in the Ops Manager
