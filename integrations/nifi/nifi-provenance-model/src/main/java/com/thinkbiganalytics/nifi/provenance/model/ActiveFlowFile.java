@@ -334,22 +334,27 @@ public class ActiveFlowFile {
 
     private Long calculateEventDuration(ProvenanceEventRecordDTO event) {
 
+        Long dur = null;
         //lookup the flow file to get the prev event
         ProvenanceEventRecordDTO prev = getPreviousEvent(event);
         if (prev != null) {
-            long dur = event.getEventTime().getMillis() - prev.getEventTime().getMillis();
+            dur = event.getEventTime().getMillis() - prev.getEventTime().getMillis();
             if (dur < 0) {
                 log.warn("The Duration for event {} is <0.  prev event {}.  dur: {} ", event, prev, dur);
                 dur = 0L;
             }
-            event.setEventDuration(dur);
-            return dur;
+
         } else if (event.getEventDuration() == null || event.getEventDuration() < 0L) {
-            event.setEventDuration(0L);
-            return 0L;
+            dur = 0L;
         } else {
-            return event.getEventDuration() != null ? event.getEventDuration() : 0L;
+            dur = event.getEventDuration() != null ? event.getEventDuration() : 0L;
         }
+        if (dur == null) {
+            log.warn("Event duration could not be determined.  returning 0L for duration on event: {} ", event);
+            dur = 0L;
+        }
+        event.setEventDuration(dur);
+        return dur;
 
     }
 
