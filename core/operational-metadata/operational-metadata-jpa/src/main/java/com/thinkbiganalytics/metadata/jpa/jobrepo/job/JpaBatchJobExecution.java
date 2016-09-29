@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
+import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
@@ -289,14 +290,22 @@ public class JpaBatchJobExecution implements BatchJobExecution {
                 }
                 stringBuffer.append("Failed Step " + se.getStepName());
             }
+            if(se.getEndTime() == null)
+            {
+                ((JpaBatchStepExecution)se).setEndTime(DateTimeUtil.getNowUTCTime());
+            }
         }
         if (failedJob) {
             setExitMessage(stringBuffer != null ? stringBuffer.toString() : "");
             setStatus(JpaBatchJobExecution.JobStatus.FAILED);
             setExitCode(ExecutionConstants.ExitCode.FAILED);
+
         } else {
             setStatus(JpaBatchJobExecution.JobStatus.COMPLETED);
             setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+        }
+        if(endTime == null){
+            endTime = DateTimeUtil.getNowUTCTime();
         }
     }
 

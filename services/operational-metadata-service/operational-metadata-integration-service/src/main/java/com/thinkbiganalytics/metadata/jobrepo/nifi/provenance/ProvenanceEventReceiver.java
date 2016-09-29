@@ -102,9 +102,9 @@ public class ProvenanceEventReceiver {
                                                                   public OpsManagerFeed load(String feedName) throws Exception {
                                                                       OpsManagerFeed feed =null;
                                                                       try {
-                                                                            feed = operationalMetadataAccess.read(() -> {
-                                                                              return opsManagerFeedProvider.findByName(feedName);
-                                                                          });
+                                                                          feed = operationalMetadataAccess.commit(() -> {
+                                                                                return opsManagerFeedProvider.findByName(feedName);
+                                                                            });
                                                                       }catch (Exception e){
 
                                                                       }
@@ -198,7 +198,7 @@ public class ProvenanceEventReceiver {
                 try {
                     ConcurrentLinkedQueue<ProvenanceEventRecordDTO> queue = jobEventMap.get(jobId);
                     if (queue == null) {
-                        jobEventMap.remove(jobId);
+                        clearJobFromQueue(jobId);
                     } else {
                         ProvenanceEventRecordDTO event = null;
                         while ((event = queue.poll()) != null) {
@@ -208,7 +208,7 @@ public class ProvenanceEventReceiver {
                                 nifiEvents.add(nifiEvent);
                             }
                         }
-                        jobEventMap.remove(jobId);
+                        clearJobFromQueue(jobId);
                         //  ((ThreadPoolExecutor)executorService).getQueue()
                     }
                 } catch (Exception ex) {
@@ -218,6 +218,12 @@ public class ProvenanceEventReceiver {
                 return nifiEvents;
             });
         }
+    }
+
+    private void clearJobFromQueue(final String jobId) {
+        log.info("clearning JobQueue {} ", jobId);
+        jobEventMap.remove(jobId);
+
     }
 
     /**
@@ -235,7 +241,7 @@ public class ProvenanceEventReceiver {
     private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, String sourceJmsQueue) {
         //Skip batch processing for the events coming in as batch events from the Provenance Event Queue.
         // this will be processed in order when the events come in.
-        if (event.isBatchJob() && Queues.PROVENANCE_EVENT_QUEUE.equalsIgnoreCase(sourceJmsQueue)) {
+        if (Queues.PROVENANCE_EVENT_QUEUE.equalsIgnoreCase(sourceJmsQueue)) {
             //   log.info("Skip processing event {} from Jms Queue: {}. It will be processed later in order.", event,Queues.PROVENANCE_EVENT_QUEUE);
             return false;
         }
@@ -246,7 +252,8 @@ public class ProvenanceEventReceiver {
             processedEvents.put(processingCheckMapKey, DateTimeUtil.getNowUTCTime());
             return true;
         } else {
-            //  log.info("Skip processing for event {}  at {} since it has already been added to a queue for processing at {} ",event, DateTimeUtil.getNowUTCTime(),timeAddedToQueue);
+            log.info("Skip processing for id: {}, event {}  at {} since it has already been added to a queue for processing at {} ", processingCheckMapKey, event, DateTimeUtil.getNowUTCTime(),
+                     timeAddedToQueue);
             return false;
         }
     }
@@ -306,6 +313,7 @@ public class ProvenanceEventReceiver {
      * This will fire when Job3 finishes indicating this entire flow is complete<br/>
      */
     private void successfulJob(ProvenanceEventRecordDTO event) {
+
         FeedOperation.State state = FeedOperation.State.SUCCESS;
         log.info("Success JOB for Event {} ", event);
         this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, "Job Succeeded for feed: "+event.getFeedName()));

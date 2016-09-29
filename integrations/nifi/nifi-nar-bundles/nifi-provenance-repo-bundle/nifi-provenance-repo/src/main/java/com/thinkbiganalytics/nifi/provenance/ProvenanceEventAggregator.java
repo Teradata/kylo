@@ -9,6 +9,8 @@ import com.thinkbiganalytics.nifi.provenance.model.stats.ProvenanceEventStats;
 import com.thinkbiganalytics.nifi.provenance.model.stats.StatsModel;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.CacheUtil;
+import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiFlowCache;
+import com.thinkbiganalytics.nifi.provenance.v2.cache.flow.NifiRestConnectionListener;
 import com.thinkbiganalytics.nifi.provenance.v2.cache.stats.ProvenanceStatsCalculator;
 import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventActiveMqWriter;
 
@@ -23,17 +25,22 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
+
+import javax.annotation.PostConstruct;
 
 /**
  * This will take a ProvenanceEvent, prepare it by building the FlowFile graph of its relationship to the running flow, generate Statistics about the Event and then set it in the DelayQueue for the
@@ -44,7 +51,7 @@ import java.util.stream.Collectors;
  * Created by sr186054 on 8/14/16.
  */
 @Component
-public class ProvenanceEventAggregator {
+public class ProvenanceEventAggregator implements NifiRestConnectionListener {
 
     private static final Logger log = LoggerFactory.getLogger(ProvenanceEventAggregator.class);
 
@@ -78,9 +85,24 @@ public class ProvenanceEventAggregator {
     @Autowired
     CacheUtil cacheUtil;
 
+    @Autowired
+    NifiFlowCache nifiFlowCache;
 
+    /**
+     * The Map of Objects that determine if the events for a Feed/processor are stream or batch
+     */
     Map<String, GroupedFeedProcessorEventAggregate> eventsToAggregate = new ConcurrentHashMap<>();
 
+    List<ProvenanceEventRecordDTO> eventsPriorToNifiConnection = new LinkedList<>();
+    CountDownLatch onNifiConnectedLatch = new CountDownLatch(1);
+
+    private AtomicBoolean isProcessingConnectionEvents = new AtomicBoolean(false);
+
+
+    @PostConstruct
+    private void init() {
+        this.nifiFlowCache.subscribeConnectionListener(this);
+    }
 
     //sometimes events come in before their root flow file.  Root Flow files are needed for processing.
     //if the events come in out of order, queue them in this map
@@ -124,22 +146,37 @@ public class ProvenanceEventAggregator {
         if (queue != null) {
             ProvenanceEventRecordDTO nextEvent = null;
             while ((nextEvent = queue.poll()) != null) {
-                log.info("Processing early child {} since the root flowfile {} has been processed.", nextEvent, jobFlowFileId);
+                log.debug("Processing early child {} since the root flowfile {} has been processed.", nextEvent, jobFlowFileId);
                 prepareAndAdd(nextEvent);
             }
             jobFlowFileIdEarlyChildrenMap.invalidate(jobFlowFileId);
         }
     }
 
-    /**
-     * - Create/update the flowfile graph for this new event - Calculate statistics on the event and add them to the aggregated set to be processed - Add the event to the DelayQueue for further
-     * processing as a Batch or Stream
-     */
-    public void prepareAndAdd(ProvenanceEventRecordDTO event) {
+    @Override
+    public void onConnected() {
+        ProvenanceEventRecordDTO nextEvent = null;
+        isProcessingConnectionEvents.set(true);
+        if (!eventsPriorToNifiConnection.isEmpty()) {
+            log.info("About to process {} events that were stored prior to making the NiFi rest connection ", eventsPriorToNifiConnection.size());
+        }
+        eventsPriorToNifiConnection.forEach(e -> {
+            log.debug("Processing onConnected {}", e);
+            process(e);
+
+        });
+        eventsPriorToNifiConnection.clear();
+        isProcessingConnectionEvents.set(false);
+        log.info("Finished processing events prior to nifi rest connection.  Allow for flow to continue processing");
+        onNifiConnectedLatch.countDown();
+
+    }
+
+    public void process(ProvenanceEventRecordDTO event) {
         try {
             if (event != null) {
                 if (ProvenanceEventUtil.isDropFlowFilesEvent(event)) {
-                    log.info("DROPPING FLOW FILES!! {}", event);
+                    log.info("DROPPING FLOW FILES Event: {}", event);
                     return;
                 }
                 log.info("Process Event {} ", event);
@@ -165,7 +202,7 @@ public class ProvenanceEventAggregator {
                             completedRootFlowFileEvents(completedRootFlowFileEvents);
                         }
 
-                        if (event.isEndOfJob() && event.getFlowFile().getRootFlowFile().areRelatedRootFlowFilesComplete()) {
+                        if (event.isEndOfJob() && event.getFlowFile().getRootFlowFile().isFlowAndRelatedRootFlowFilesComplete()) {
                             //trigger Complete event for event and flowfile
                             collectCompletionEvents(event);
                         }
@@ -180,7 +217,36 @@ public class ProvenanceEventAggregator {
         } catch (Exception e) {
             log.error("ERROR PROCESSING EVENT! {}.  ERROR: {} ", event, e.getMessage(), e);
         }
+    }
 
+    /**
+     * - Create/update the flowfile graph for this new event - Calculate statistics on the event and add them to the aggregated set to be processed - Add the event to the DelayQueue for further
+     * processing as a Batch or Stream
+     */
+    public void prepareAndAdd(ProvenanceEventRecordDTO event) {
+
+        if (event != null) {
+
+            if (!nifiFlowCache.isConnected() && !isProcessingConnectionEvents.get()) {
+                eventsPriorToNifiConnection.add(event);
+                log.debug("Adding {} prior to nifi connection size: {}", event, eventsPriorToNifiConnection.size());
+                return;
+            } else {
+                //if(isProcessingConnectionEvents.get() == true) {
+                //wait
+                if (onNifiConnectedLatch.getCount() == 1) {
+                    log.debug("Awaiting on Nifi Connection to finish processing event {} ", event);
+                }
+                try {
+                    onNifiConnectedLatch.await();
+                } catch (Exception e) {
+
+                }
+                // }
+            }
+
+            process(event);
+        }
     }
 
     private String eventsToString(Collection<ProvenanceEventRecordDTO> events) {
@@ -259,10 +325,19 @@ public class ProvenanceEventAggregator {
      */
     public void collectCompletionEvents(ProvenanceEventRecordDTO event) {
         if (event.isEndOfJob()) {
-            event.setIsFinalJobEvent(true);
             if (event.getFlowFile() != null && event.getFlowFile().getRootFlowFile() != null) {
                 event.setIsBatchJob(event.getFlowFile().getRootFlowFile().isBatch());
             }
+
+            //  if(event.getFlowFile().getRootFlowFile().isFlowComplete() && event.getFlowFile().getRootFlowFile().areRelatedRootFlowFilesComplete()) {
+            event.setIsFinalJobEvent(true);
+            if (event.getFlowFile().getRootFlowFile().hasAnyFailures()) {
+                event.setIsFailure(true);
+                event.setHasFailedEvents(true);
+            }
+            //mark flow as able to be expired from cache
+            // }
+            log.info("Sending Final Flowfile completion event for event: {} isFailure: {} ", event, event.isFailure());
             eventsJmsQueue.offer(event);
         }
     }

@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.jpa.jobrepo.step;
 
+import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEventStepExecution;
@@ -228,11 +229,17 @@ public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
     public void failStep() {
         setStatus(StepStatus.FAILED);
         setExitCode(ExecutionConstants.ExitCode.FAILED);
+        if(endTime == null){
+            endTime = DateTimeUtil.getNowUTCTime();
+        }
     }
 
     public void completeStep() {
         setStatus(StepStatus.COMPLETED);
         setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+        if(endTime == null){
+            endTime = DateTimeUtil.getNowUTCTime();
+        }
     }
 
     @Override

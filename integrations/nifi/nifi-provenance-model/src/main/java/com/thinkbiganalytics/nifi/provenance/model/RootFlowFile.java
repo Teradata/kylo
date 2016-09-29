@@ -18,6 +18,10 @@ public class RootFlowFile extends ActiveFlowFile {
 
     private ActiveFlowFile flowFile;
 
+    private boolean canExpire;
+
+    private DateTime minimiumExpireTime;
+
 
     private Set<String> rootFlowFileActiveChildren = new HashSet<>();
 
@@ -55,14 +59,14 @@ public class RootFlowFile extends ActiveFlowFile {
     public void addRootFileActiveChild(String flowFileId) {
         if (this.isRootFlowFile()) {
             getRootFlowFileActiveChildren().add(flowFileId);
-            log.info("adding active child {} to root {}. size: {} ", flowFileId, this.getId(), getRootFlowFileActiveChildren().size());
+            log.debug("adding active child {} to root {}. size: {} ", flowFileId, this.getId(), getRootFlowFileActiveChildren().size());
         }
     }
 
     public void removeRootFileActiveChild(String flowFileId) {
         if (this.isRootFlowFile()) {
             getRootFlowFileActiveChildren().remove(flowFileId);
-            log.info("removing active child {} from root {}. size: {} ", flowFileId, this.getId(), getRootFlowFileActiveChildren().size());
+            log.debug("removing active child {} from root {}. size: {} ", flowFileId, this.getId(), getRootFlowFileActiveChildren().size());
         }
     }
 
@@ -315,7 +319,7 @@ public class RootFlowFile extends ActiveFlowFile {
         this.relatedRootFlowFiles.add(rootFlowFile);
     }
 
-    public boolean areRelatedRootFlowFilesComplete() {
+    public boolean areRelatedRootFlowFilesCompleteOld() {
         if (getRelatedRootFlowFiles() != null || getRelatedRootFlowFiles().isEmpty()) {
             return true;
         } else {
@@ -330,4 +334,46 @@ public class RootFlowFile extends ActiveFlowFile {
         }
     }
 
+    public boolean isFlowAndRelatedRootFlowFilesComplete() {
+        boolean thisComplete = isFlowComplete();
+        if (thisComplete) {
+
+            boolean relatedCompleted = false;
+            if (getRootFlowFile().getRelatedRootFlowFiles().isEmpty()) {
+                relatedCompleted = true;
+            } else {
+                relatedCompleted = getRelatedRootFlowFiles().stream().filter(ff -> !ff.equals(this)).allMatch(ff2 -> ff2.isFlowComplete());
+                if (relatedCompleted) {
+                    DateTime now = DateTime.now();
+                    getRootFlowFile().getRelatedRootFlowFiles().stream().forEach(ff -> ff.setMinimiumExpireTime(now));
+                    this.setMinimiumExpireTime(now);
+                }
+            }
+            thisComplete &= relatedCompleted;
+        }
+        return thisComplete;
+    }
+
+    /**
+     * Checks this flow and any related flow files for failure events
+     */
+    public boolean hasAnyFailures() {
+        boolean failures = this.hasFailedEvents();
+        if (!failures && !getRootFlowFile().getRelatedRootFlowFiles().isEmpty()) {
+
+            failures &= getRelatedRootFlowFiles().stream().anyMatch(ff -> ff.hasFailedEvents());
+        }
+        return failures;
+    }
+
+
+    public void setMinimiumExpireTime(DateTime minimiumExpireTime) {
+        if (minimiumExpireTime == null) {
+            this.minimiumExpireTime = minimiumExpireTime;
+        }
+    }
+
+    public DateTime getMinimiumExpireTime() {
+        return minimiumExpireTime;
+    }
 }

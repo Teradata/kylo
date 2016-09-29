@@ -197,7 +197,7 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
         SearchResultsEntity results = search(processorId);
         //log this
         if (results != null && results.getSearchResultsDTO() != null && results.getSearchResultsDTO().getProcessorResults() != null && !results.getSearchResultsDTO().getProcessorResults().isEmpty()) {
-            log.info("Attempt to find processor by id {}. Processors Found: {} ", processorId, results.getSearchResultsDTO().getProcessorResults().size());
+            log.debug("Attempt to find processor by id {}. Processors Found: {} ", processorId, results.getSearchResultsDTO().getProcessorResults().size());
             ComponentSearchResultDTO processorResult = results.getSearchResultsDTO().getProcessorResults().get(0);
             String id = processorResult.getId();
             String groupId = processorResult.getGroupId();
@@ -298,7 +298,7 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
                 String feedName = FeedNameUtil.fullName(category.getName(), feedProcessGroup.getName());
                 //if it is a versioned feed then strip the version to get the correct feed name
                 feedName = NifiTemplateNameUtil.parseVersionedProcessGroupName(feedName);
-                log.info("Get Feed flow for feed: {} ", feedName);
+                log.debug("Get Feed flow for feed: {} ", feedName);
                 NifiFlowProcessGroup feedFlow = getFeedFlow(category,feedProcessGroup);
                 feedFlow.setFeedName(feedName);
                 feedFlows.add(feedFlow);
@@ -423,7 +423,7 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
 
         }
         URI uri = builder.build().toUri();
-        log.info("URI: {}", uri);
+        log.debug("URI: {}", uri);
         return uri;
     }
 

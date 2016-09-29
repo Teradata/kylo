@@ -200,7 +200,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
 
         //If you want to know when a feed is truely finished along with any of its related feeds you can use this method below.
         //commented out since the ProvenanceEventReceiver already handles it
-        //checkIfJobAndRelatedJobsAreFinished
+        ensureRelatedJobsAreFinished(event,jobExecution);
 
     }
 
@@ -359,6 +359,21 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
                 log.info("Failed JobExecution");
             } else if (jobExecution.isSuccess()) {
                 log.info("Completed Job Execution");
+            }
+        }
+    }
+
+    private void ensureRelatedJobsAreFinished(ProvenanceEventRecordDTO event,BatchJobExecution jobExecution) {
+        //Check related jobs
+        if (event.isFinalJobEvent() && jobExecutionRepository.hasRelatedJobs(jobExecution.getJobExecutionId())) {
+
+            List<JpaBatchJobExecution> runningJobs = jobExecutionRepository.findRunningRelatedJobExecutions(jobExecution.getJobExecutionId());
+            if (runningJobs != null && !runningJobs.isEmpty()) {
+                for (JpaBatchJobExecution job : runningJobs) {
+                    job.completeOrFailJob();
+                    log.info("Finishing related running job {} for event ",job.getJobExecutionId(),event);
+                }
+                jobExecutionRepository.save(runningJobs);
             }
         }
     }

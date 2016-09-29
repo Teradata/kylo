@@ -136,7 +136,7 @@ public class ActiveFlowFile {
         }
         if (isRootFlowFile()) {
             //shouldnt get here.. but just in case
-            log.info("marking root flow in getRootFlowFile for {} ", this.getId());
+            log.debug("marking root flow in getRootFlowFile for {} ", this.getId());
             markAsRootFlowFile();
             root = this.rootFlowFile;
         } else {
@@ -321,7 +321,7 @@ public class ActiveFlowFile {
                         event.setPreviousEvent(previousEvent);
                         if (event.getParentUuids() == null && event.getParentUuids().isEmpty()) {
                             event.setParentUuids(getParents().stream().map(ff -> ff.getId()).collect(Collectors.toList()));
-                            log.info("Assigned Parent Flow File ids as {}, to event {} ", event.getParentUuids(), event);
+                            log.debug("Assigned Parent Flow File ids as {}, to event {} ", event.getParentUuids(), event);
                             //set children?
                             //previousEvents.addChild(event)
                         }
@@ -421,8 +421,8 @@ public class ActiveFlowFile {
     public void checkAndMarkIfFlowFileIsComplete(ProvenanceEventRecordDTO event) {
         if ("DROP".equalsIgnoreCase(event.getEventType())) {
             currentFlowFileComplete = true;
-            log.info("Marking flow file {} as complete for event {}/{} with root file: {} ", this.getId(), event.getEventId(), event.getEventType(),
-                     (getRootFlowFile() != null ? getRootFlowFile().getId() + "" : "null root"));
+            log.debug("Marking flow file {} as complete for event {}/{} with root file: {} ", this.getId(), event.getEventId(), event.getEventType(),
+                      (getRootFlowFile() != null ? getRootFlowFile().getId() + "" : "null root"));
             lastEvent = event;
             getRootFlowFile().removeRootFileActiveChild(this.getId());
         }
@@ -444,7 +444,6 @@ public class ActiveFlowFile {
     /**
      * Walks the graph of this flow and all children to see if there is a DROP event associated with each and every flow file
      */
-
     public boolean isFlowComplete() {
         if (timeCompleted != null) {
             return true;
@@ -455,9 +454,9 @@ public class ActiveFlowFile {
             for (ActiveFlowFile child : directChildren) {
                 complete &= child.isCurrentFlowFileComplete();
                 if (!complete) {
-                    log.info("**** Failed isFlowComplete for {} because child was not complete: {} ", this.getId(), child.getId());
+                    log.debug("**** Failed isFlowComplete for {} because child was not complete: {} ", this.getId(), child.getId());
                     if (isRootFlowFile()) {
-                        log.info("Root flow failed completion for {} with active children of {} ", getId(), this.getRootFlowFile().getRootFlowFileActiveChildren().size());
+                        log.debug("Root flow failed completion for {} with active children of {} ", getId(), this.getRootFlowFile().getRootFlowFileActiveChildren().size());
                     }
                     break;
                 }
@@ -465,11 +464,14 @@ public class ActiveFlowFile {
         }
         if (complete && isRootFlowFile()) {
             complete = !this.getRootFlowFile().hasActiveRootChildren();
-            log.info(" isComplete for root file {} = {} with activechildren of {} ", getId(), complete, this.getRootFlowFile().getRootFlowFileActiveChildren().size());
+            log.debug(" isComplete for root file {} = {}.  Related flows complete: {}, with activechildren of {} ", getId(), complete, this.getRootFlowFile().getRootFlowFileActiveChildren().size());
         }
         if (complete && timeCompleted == null) {
             // log.info("****** COMPLETING FLOW FILE {} ",this);
             timeCompleted = new DateTime();
+        }
+        if (complete && isRootFlowFile()) {
+            log.debug("****** COMPLETING ROOT FLOW FILE {} # of related {} ", this);
         }
         return complete;
     }

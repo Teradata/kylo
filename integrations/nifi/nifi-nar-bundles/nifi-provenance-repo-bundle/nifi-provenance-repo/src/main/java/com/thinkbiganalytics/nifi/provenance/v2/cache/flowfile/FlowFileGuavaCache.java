@@ -169,8 +169,10 @@ public class FlowFileGuavaCache {
         int backoffSeconds = 60;
         DateTime completeTime = DateTime.now().minusSeconds(backoffSeconds);
         //hold onto any completed flow files for xx seconds after they are complete before removing from cache
-        return cache.asMap().values().stream().filter(flowFile -> (flowFile.isRootFlowFile() && flowFile.isFlowComplete() && completeTime.isAfter(flowFile.getTimeCompleted()))).collect(
-            Collectors.toList());
+        return cache.asMap().values().stream().filter(
+            flowFile -> (flowFile.isRootFlowFile() && flowFile.getRootFlowFile().isFlowAndRelatedRootFlowFilesComplete() && completeTime.isAfter(flowFile.getRootFlowFile().getMinimiumExpireTime())))
+            .collect(
+                Collectors.toList());
     }
 
     public CacheStats stats() {

@@ -91,6 +91,7 @@ public class CacheUtil {
                     if(parentFlowFile.isRootFlowFile()){
                         relatedRootFlowFileIds.add(parentFlowFile.getId());
                         relatedRootFlowFiles.add(parentFlowFile.getRootFlowFile());
+
                     }
                     parentFlowFile.addChild(flowFile);
                     if (!flowFile.isRootFlowFile()) {
