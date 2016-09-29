@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.thinkbiganalytics.datalake.authorization.client.SentryClient;
+import com.thinkbiganalytics.datalake.authorization.client.SentryClientException;
 
 public class SentryUtil {
 
@@ -49,7 +50,11 @@ public class SentryUtil {
 
 			if (ifRoleExists)
 			{
-				return true;
+				/**
+				 * Drop role if exists and apply update policy.	
+				 */
+
+				sentryClientObject.dropRole(stmt, sentry_policy_role);
 			}
 
 			log.info("Creating Sentry Role " + sentry_policy_role);
@@ -76,19 +81,19 @@ public class SentryUtil {
 
 			log.info("Granting Permission to Role");
 			//Grant All Permission to Role for Feed
-			
+
 			/**
 			 * Decide permission to be granted. 
 			 */
 			String finalPermission = getFinalPermission(hive_permission);
-			
+
 			/**
 			 * Check Level of Permission to be Granted.
 			 */
 			if(permission_level.equalsIgnoreCase(CATEGORY))
 			{
 				boolean grantPriviledgeToRole = sentryClientObject.grantRolePriviledges(stmt, finalPermission, DATABASE, category_name, sentry_policy_role);
-				
+
 				if (!grantPriviledgeToRole)
 				{
 					return false;
@@ -116,13 +121,42 @@ public class SentryUtil {
 			e.printStackTrace();
 			return false;
 		}
-		
+
+	}
+
+	public boolean deletePolicy(Statement stmt , String category_name , String feed_name , String permission_level) throws SentryClientException
+	{
+
+		try
+		{
+			boolean status = false;
+			sentryClientObject = new SentryClient();
+			String sentry_policy_role = NIFI+category_name+"_"+feed_name+"_"+permission_level;
+			log.info("Check if role already exists.");
+			boolean ifRoleExists = sentryClientObject.checkIfRoleExists(stmt, sentry_policy_role);
+
+			if(ifRoleExists)
+			{
+				status = sentryClientObject.dropRole(stmt, sentry_policy_role);
+			}
+			else
+			{
+				status = true;
+			}
+
+			return status;
+		}
+		catch(Exception e)
+		{
+			throw new SentryClientException("Unable to drop role  " + e.getMessage());
+		}
+
 	}
 
 	private String getFinalPermission(String hive_permission) {
 		// TODO Auto-generated method stub
 		String finalPermissionToBeApplied = "";
-				
+
 		if (hive_permission.toLowerCase().contains("all"))
 		{
 			finalPermissionToBeApplied = ALL;
@@ -138,11 +172,11 @@ public class SentryUtil {
 				/**
 				 * If No match found then return read only permission.
 				 */
-				
+
 				finalPermissionToBeApplied = SELECT;
 			}
 		}
-		
+
 		return finalPermissionToBeApplied;
 	}
 

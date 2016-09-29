@@ -50,5 +50,30 @@ public class ApplyHDFSAcl {
 
 		}
 	}
+	
+	@SuppressWarnings("static-access")
+	public boolean flushACL(String HadoopConfigurationResource, String category_name , String feed_name, String permission_level ) throws IOException
+	{
+		
+		try {
+
+			SentryClientConfig sentryConfig = new SentryClientConfig();
+			HDFSUtil hdfsUtil = new HDFSUtil();
+
+			Configuration conf = sentryConfig.getConfig(); 
+			conf = hdfsUtil.getConfigurationFromResources(HadoopConfigurationResource);
+			
+			String allPathForAclCreation = hdfsUtil.constructResourceforPermissionHDFS(category_name, feed_name, permission_level);
+			hdfsUtil.splitPathListAndFlushPolicy(allPathForAclCreation, conf, sentryConfig.getFileSystem() );
+			
+			return true;
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new IOException("Unable to create ACL " + e);
+
+		}
+		
+	}
 
 }

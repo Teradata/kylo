@@ -48,6 +48,7 @@ import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.util.NiFiProperties;
 
+import com.thinkbiganalytics.datalake.authorization.client.SentryClientException;
 import com.thinkbiganalytics.datalake.authorization.hdfs.ApplyHDFSAcl;
 import com.thinkbiganalytics.nifi.processors.sentry.authorization.service.util.SentryUtil;
 import com.thinkbiganalytics.nifi.security.ApplySecurityPolicy;
@@ -152,17 +153,8 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 			String hdfs_permission = context.getProperty(HDFS_PERMISSION_LIST).getValue();		
 
 			/**
-			 * Create Policy in Sentry
+			 * Perform Kerberos Authentication
 			 */
-
-			Statement stmt = conn.createStatement();
-			SentryUtil sentryUtil = new SentryUtil();
-			boolean policy_creation_status=sentryUtil.createPolicy(stmt,group_list,category,feed ,permission , hive_permission);
-
-			/**
-			 * Check for Kerberos Security Before Creating ACL
-			 */
-
 			String principal = context.getProperty(KERBEROS_PRINCIPAL).getValue();
 			String keyTab = context.getProperty(KERBEROS_KEYTAB).getValue();
 			String hadoopConfigurationResources = context.getProperty(HADOOP_CONFIGURATION_RESOURCES).getValue();
@@ -213,11 +205,44 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 				}
 			}
 
+			
+		
+			Statement stmt = conn.createStatement();
+			SentryUtil sentryUtil = new SentryUtil();
+			ApplyHDFSAcl applyAcl = new ApplyHDFSAcl();
+			
+			/**
+			 * Delete existing policy if group list is empty.
+			 */
+			if(group_list.equals(""))
+			{
+				logger.info("Group list is empty. Deleting feed policy.");
+				boolean deleteSentryPolicyStatus = sentryUtil.deletePolicy(stmt, category, feed, permission);
+				boolean deleteACLStatus = applyAcl.flushACL(hadoopConfigurationResources, category, feed, permission);
+				
+				if(deleteSentryPolicyStatus && deleteACLStatus)
+				{
+					session.transfer(flowFile, Success);
+					return;
+				}
+				else
+				{
+					session.transfer(flowFile, Failure);
+					return;
+				}
+			}
+		
+			/**
+			 * Create Policy in Sentry
+			 */
+			boolean policy_creation_status=sentryUtil.createPolicy(stmt,group_list,category,feed ,permission , hive_permission);
+
+
+			
 			/**
 			 * Apply HDFS ACL 
 			 */
 
-			ApplyHDFSAcl applyAcl = new ApplyHDFSAcl();
 			boolean hdfs_acl_status = applyAcl.createAcl(hadoopConfigurationResources, category, feed, permission, group_list , hdfs_permission);
 
 			/**
@@ -233,7 +258,7 @@ public class CreateSentryAuthorizationPolicy extends AbstractProcessor {
 				session.transfer(flowFile, Failure);
 			}
 
-		} catch (final ProcessException | SQLException | IOException e) {
+		} catch (final ProcessException | SQLException | IOException | SentryClientException e) {
 			logger.error("Unable to obtain connection for {} due to {}; routing to failure", new Object[]{flowFile, e});
 			session.transfer(flowFile, Failure);
 		}
