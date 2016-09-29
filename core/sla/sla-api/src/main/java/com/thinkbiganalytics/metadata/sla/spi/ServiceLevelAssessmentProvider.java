@@ -17,6 +17,8 @@ public interface ServiceLevelAssessmentProvider {
 
     ServiceLevelAssessment findLatestAssessment(ServiceLevelAgreement.ID slaId);
 
+    ServiceLevelAssessment findLatestAssessmentNotEqualTo(ServiceLevelAgreement.ID slaId, ServiceLevelAssessment.ID assessmentId);
+
 
     /**
      * Ensure the assessment.getAgreement() is not null and if it is it will query and get the correct agreement according to the slaId on the assessment

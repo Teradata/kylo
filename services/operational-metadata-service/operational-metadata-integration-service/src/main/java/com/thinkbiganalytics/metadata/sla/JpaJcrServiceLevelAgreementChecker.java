@@ -38,7 +38,7 @@ public class JpaJcrServiceLevelAgreementChecker extends DefaultServiceLevelAgree
             if (previousId != null) {
                 previous = this.assessmentProvider.findServiceLevelAssessment(previousId);
             } else {
-                previous = this.assessmentProvider.findLatestAssessment(agreement.getId());
+                previous = this.assessmentProvider.findLatestAssessmentNotEqualTo(agreement.getId(), assessment.getId());
             }
 
             if (previous != null) {
