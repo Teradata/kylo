@@ -4,89 +4,84 @@ package com.thinkbiganalytics.feedmgr.nifi;
 import com.thinkbiganalytics.annotations.AnnotatedFieldProperty;
 import com.thinkbiganalytics.feedmgr.MetadataFieldAnnotationFieldNameResolver;
 import com.thinkbiganalytics.feedmgr.MetadataFields;
+import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
 import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
- * Auto Inject Property Values stored in both the FeedMetadata for @Metdata properties and the application.properties file
- * for static properties Static Property resolution  supports 2 use cases
- * 1) store properties in the file starting with the prefix defined in the configPropertyPrefix property below
- * 2) store properties in the file starting with "nifi.<PROCESSORTYPE>.<PROPERTY_KEY>   where
- * PROCESSORTYPE and PROPERTY_KEY are all lowercase and the spaces are substituted with underscore This comes from the @ConfigurationPropertyReplacer.java class in the nifi-rest-client project
+ * Resolves the values for NiFi processor properties using the following logic:
+ * <ol>
+ *     <li>Resolves {@code ${config.<NAME>}} to a property of the same name in the {@code application.properties} file.</li>
+ *     <li>Looks for a property in {@code application.properties} that matches {@code nifi.<PROCESSOR TYPE>.<PROPERTY KEY>}.</li>
+ *     <li>Resolves {@code ${metadata.<NAME>}} to a {@link MetadataField} property of the {@link FeedMetadata} class.</li>
+ * </ol>
+ *
+ * <p>The {@code <PROCESSOR TYPE>} is the class name of the NiFi processor converted to lowercase. The {@code <PROPERTY KEY>} is the NiFi processor property key converted to lowercase and spaces
+ * substituted with underscores. See {@link ConfigurationPropertyReplacer} in the {@code nifi-rest-client} project for more information.</p>
  */
 public class PropertyExpressionResolver {
 
+    private static final Logger log = LoggerFactory.getLogger(PropertyExpressionResolver.class);
+
+    /** Matches a variable in a property value */
+    private static final Pattern VARIABLE_PATTERN = Pattern.compile("\\$\\{(.+?)\\}");
+
+    /** Prefix for variable-type property replacement */
+    public static String configPropertyPrefix = "config.";
+
+    /** Prefix for {@link FeedMetadata} property replacement */
+    public static String metadataPropertyPrefix = MetadataFieldAnnotationFieldNameResolver.metadataPropertyPrefix;
+
+    /** Properties from the {@code application.properties} file */
     @Autowired
     private SpringEnvironmentProperties environmentProperties;
 
-    public static String metadataPropertyPrefix = MetadataFieldAnnotationFieldNameResolver.metadataPropertyPrefix;
-    public static String configPropertyPrefix = "config.";
-
-    public List<NifiProperty> resolvePropertyExpressions(FeedMetadata metadata) {
-        List<NifiProperty> resolvedProperties = new ArrayList<>();
-        if (metadata != null && metadata.getProperties() != null && !metadata.getProperties().isEmpty()) {
-            for (NifiProperty property : metadata.getProperties()) {
-                if (resolveExpression(metadata, property)) {
-                    resolvedProperties.add(property);
-                }
-            }
+    /**
+     * Resolves the values for all properties of the specified feed.
+     *
+     * @param metadata the feed
+     * @return the modified properties
+     */
+    @Nonnull
+    public List<NifiProperty> resolvePropertyExpressions(@Nullable final FeedMetadata metadata) {
+        if (metadata != null) {
+            return metadata.getProperties().stream()
+                    .filter(property -> resolveExpression(metadata, property))
+                    .collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
         }
-        return resolvedProperties;
     }
 
-
-    public boolean resolveExpression(FeedMetadata metadata, NifiProperty property) {
-        String value = property.getValue();
-        StringBuffer sb = null;
-
-        if (StringUtils.isNotBlank(value)) {
-            Pattern variablePattern = Pattern.compile("\\$\\{(.*?)\\}");
-            Matcher matchVariablePattern = variablePattern.matcher(value);
-
-            while (matchVariablePattern.find()) {
-                if (sb == null) {
-                    sb = new StringBuffer();
-                }
-                String group = matchVariablePattern.group();
-                int groupCount = matchVariablePattern.groupCount();
-                if (groupCount == 1) {
-
-                    String variable = matchVariablePattern.group(1);
-                    //lookup the variable
-                    //first look at configuration properties
-                    String resolvedValue = getConfigurationPropertyValue(property, variable);
-                    if (resolvedValue != null) {
-                        matchVariablePattern.appendReplacement(sb, Matcher.quoteReplacement(resolvedValue));
-                    } else {
-                        try {
-                            resolvedValue = getMetadataPropertyValue(metadata, variable);
-                            matchVariablePattern.appendReplacement(sb, Matcher.quoteReplacement(resolvedValue));
-
-                        } catch (Exception e) {
-                        }
-                    }
-                }
-            }
-            if (sb != null) {
-                matchVariablePattern.appendTail(sb);
-                property.setValue(StringUtils.trim(sb.toString()));
-            }
-        }
-        return sb != null;
-
+    /**
+     * Resolves the value of the specified property of the specified feed.
+     *
+     * @param metadata the feed
+     * @param property the property
+     * @return {@code true} if the property was modified, or {@code false} otherwise
+     */
+    public boolean resolveExpression(@Nonnull final FeedMetadata metadata, @Nonnull final NifiProperty property) {
+        final ResolveResult variableResult = resolveVariables(property, metadata);
+        final ResolveResult staticConfigResult = (!variableResult.isFinal) ? resolveStaticConfigProperty(property) : new ResolveResult(false, false);
+        return variableResult.isModified || staticConfigResult.isModified;
     }
 
     public String getMetadataPropertyValue(FeedMetadata metadata, String variableName) throws Exception {
@@ -117,12 +112,8 @@ public class PropertyExpressionResolver {
         }
         Map<String, Object> nifiProps = environmentProperties.getPropertiesStartingWith("nifi.");
         if (nifiProps != null && !nifiProps.isEmpty()) {
-            if (props != null) {
-                //copy it to a new map
-                props = new HashMap<>(props);
-            } else {
-                props = new HashMap<>();
-            }
+            //copy it to a new map
+            props = new HashMap<>(props);
             props.putAll(nifiProps);
         }
         return props;
@@ -139,19 +130,101 @@ public class PropertyExpressionResolver {
     }
 
     public List<AnnotatedFieldProperty> getMetadataProperties() {
-        List<AnnotatedFieldProperty> properties = MetadataFields.getInstance().getProperties(FeedMetadata.class);
-        return properties;
+        return MetadataFields.getInstance().getProperties(FeedMetadata.class);
     }
 
+    /**
+     * Resolves the value of the specified property using static configuration properties.
+     *
+     * @param property the property
+     * @return the result of the transformation
+     */
+    private ResolveResult resolveStaticConfigProperty(@Nonnull final NifiProperty property) {
+        final String name = ConfigurationPropertyReplacer.getProcessorPropertyConfigName(property);
+        final String value = environmentProperties.getPropertyValueAsString(name);
 
-    private List<String> getFieldNames(List<Field> fields) {
-        List<String> names = new ArrayList<>();
-        if (fields != null) {
-            for (Field field : fields) {
-                Class clazz = field.getDeclaringClass();
-                names.add(field.getName());
-            }
+        if (value != null) {
+            property.setValue(value);
+            return new ResolveResult(true, true);
         }
-        return names;
+        return new ResolveResult(false, false);
+    }
+
+    /**
+     * Resolves the variables in the value of the specified property.
+     *
+     * @param property the property
+     * @param metadata the feed
+     * @return the result of the transformation
+     */
+    private ResolveResult resolveVariables(@Nonnull final NifiProperty property, @Nonnull final FeedMetadata metadata) {
+        // Filter blank values
+        final String value = property.getValue();
+        if (StringUtils.isBlank(value)) {
+            return new ResolveResult(false, false);
+        }
+
+        // Look for a match, else return
+        final Matcher matcher = VARIABLE_PATTERN.matcher(value);
+        if (!matcher.find()) {
+            return new ResolveResult(false, false);
+        }
+
+        // Replace matches with resolved values
+        boolean hasConfig = false;
+        boolean isModified = false;
+        final StringBuffer result = new StringBuffer(value.length() * 2);
+
+        do {
+            final String variable = matcher.group(1);
+
+            // Resolve configuration variables
+            final String configValue = getConfigurationPropertyValue(property, variable);
+            if (configValue != null) {
+                hasConfig = true;
+                isModified = true;
+                matcher.appendReplacement(result, Matcher.quoteReplacement(configValue));
+                continue;
+            }
+
+            // Resolve metadata variables
+            try {
+                final String metadataValue = getMetadataPropertyValue(metadata, variable);
+                if (metadataValue != null) {
+                    isModified = true;
+                    matcher.appendReplacement(result, Matcher.quoteReplacement(metadataValue));
+                }
+            } catch (Exception e) {
+                log.error("Unable to resolve variable: " + variable, e);
+            }
+        } while (matcher.find());
+
+        // Replace property value
+        matcher.appendTail(result);
+        property.setValue(StringUtils.trim(result.toString()));
+
+        return new ResolveResult(hasConfig, isModified);
+    }
+
+    /**
+     * The result of resolving a NiFi property value.
+     */
+    private static class ResolveResult {
+        /** Indicates that the value should not be resolved further */
+        final boolean isFinal;
+
+        /** Indicates that the value was modified */
+        final boolean isModified;
+
+        /**
+         * Constructs a {@code ResultResult} with the specified attributes.
+         *
+         * @param isFinal {@code true} if the value should not be resolved further, or {@code false} otherwise
+         * @param isModified {@code true} if the value was modified, or {@code false} otherwise
+         */
+        ResolveResult(final boolean isFinal, final boolean isModified) {
+            this.isFinal = isFinal;
+            this.isModified = isModified;
+        }
     }
 }
