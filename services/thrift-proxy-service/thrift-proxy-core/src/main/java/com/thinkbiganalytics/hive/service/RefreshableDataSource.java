@@ -1,14 +1,21 @@
 package com.thinkbiganalytics.hive.service;
 
+import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
+import com.thinkbiganalytics.kerberos.KerberosTicketGenerator;
+import com.thinkbiganalytics.kerberos.KerberosUtil;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.hadoop.security.UserGroupInformation;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceBuilder;
 import org.springframework.core.env.Environment;
 import org.springframework.jdbc.datasource.DataSourceUtils;
 import org.springframework.jdbc.support.JdbcUtils;
 
 import java.io.PrintWriter;
+import java.security.PrivilegedExceptionAction;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -18,6 +25,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 
 import javax.annotation.PostConstruct;
+import javax.inject.Inject;
 import javax.sql.DataSource;
 
 /**
@@ -35,6 +43,10 @@ public class RefreshableDataSource implements DataSource {
 
     @Autowired
     Environment env;
+
+    @Inject
+    @Qualifier("kerberosHiveConfiguration")
+    private KerberosTicketConfiguration kerberosTicketConfiguration;
 
     public RefreshableDataSource() {
 
@@ -66,11 +78,7 @@ public class RefreshableDataSource implements DataSource {
         try {
             String prefix = getPrefixWithTrailingDot();
             String query = env.getProperty(prefix + "validationQuery");
-            if (StringUtils.isNotBlank(username) || StringUtils.isNotBlank(password)) {
-                connection = getConnectionForValidation(username, password);
-            } else {
-                connection = getConnectionForValidation();
-            }
+            connection = getConnectionForValidation();
             statement = connection.createStatement();
             statement.execute(query);
             valid = true;
@@ -86,11 +94,7 @@ public class RefreshableDataSource implements DataSource {
     }
 
     private Connection getConnectionForValidation() throws SQLException {
-        return getDataSource().getConnection();
-    }
-
-    private Connection getConnectionForValidation(String username, String password) throws SQLException {
-        return getDataSource().getConnection();
+        return KerberosUtil.getConnectionWithOrWithoutKerberos(getDataSource(), kerberosTicketConfiguration);
     }
 
     private Connection testAndRefreshIfInvalid() throws SQLException {
