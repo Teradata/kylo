@@ -529,7 +529,7 @@ NifiControllerServiceProperties nifiControllerServiceProperties;
             }
             if (e != null) {
                 try {
-                    nifiRestClient.stopAllProcessors(parentProcessGroupId, processGroupId);
+                    nifiRestClient.stopAllProcessors(processGroupId, parentProcessGroupId);
                     //remove connections
                     nifiRestClient.removeConnectionsToProcessGroup(parentProcessGroupId, processGroupId);
                 } catch (Exception e2) {
