@@ -126,7 +126,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
         this.numberOfEventsThatMakeAStream = numberOfEventsThatMakeAStream;
         this.stats = new AggregatedProcessorStatistics(processorId, feedName);
         this.initTime = DateTime.now();
-        log.info("new GroupedFeedProcessorEventAggregate for " + feedName + "," + processorId + " - " + this.initTime);
+        log.debug("new GroupedFeedProcessorEventAggregate for " + feedName + "," + processorId + " - " + this.initTime);
     }
 
 
@@ -205,6 +205,12 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
             jmsEvents.addAll(potentialStreamEvents);
             batchCount.addAndGet(potentialStreamEvents.size());
             potentialStreamEvents.clear();
+            list.forEach(e -> {
+                if (e.isStartOfJob()) {
+                    e.getFlowFile().getRootFlowFile().setFirstEventType(RootFlowFile.FIRST_EVENT_TYPE.BATCH);
+                    log.debug("Potential to batch. Starting of job is a converted from stream to a batch for event {} ", e);
+                }
+            });
         }
         return list;
     }
@@ -239,7 +245,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
      */
     private void moveToStream(ProvenanceEventRecordDTO event) {
         if(event.isStartOfJob()) {
-            log.debug("Starting of job is a stream for event {}", event);
+            log.debug("Starting of job is a stream for event {}, ff: {} ", event, event.getJobFlowFileId());
         }
         event.setStream(true);
         if (event.isStartOfJob()) {
@@ -271,10 +277,15 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
                             eventsToAdd.addAll(event.getFlowFile().getRootFlowFile().getCompletedEvents());
                             eventsToAdd.add(event);
                             eventsToAdd.forEach(e -> {
+                                e.setStream(false);
+                                e.setIsBatchJob(true);
+                                if (e.isStartOfJob()) {
+                                    e.getFlowFile().getRootFlowFile().setFirstEventType(RootFlowFile.FIRST_EVENT_TYPE.BATCH);
+                                }
                                 lastStreamEventByJob.put(lastStreamEventMapKey(e), e);
                             });
-                            log.info("Turning a stream into a batch because Root was indicated as a Batch.  adding {} events.  This Event {} for jobFlowFile:  {} ", eventsToAdd.size(), event,
-                                     event.getJobFlowFileId());
+                            log.debug("Turning a stream into a batch because Root was indicated as a Batch.  adding {} events.  This Event {} for jobFlowFile:  {} ", eventsToAdd.size(), event,
+                                      event.getJobFlowFileId());
                             event.setStream(false);
                             //mark as Batch job and reassing jobId to match that of the batch job?
                             // event.setJobFlowFileId(ff.getId());
@@ -334,9 +345,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
                     } else {
                         potentialStreamEvents.add(event);
                         /// no longer a stream event
-                        if (event.isStartOfJob()) {
-                            log.debug("Starting of job is a converted from stream to a batch for event {} ", event);
-                        }
+
                         List<ProvenanceEventRecordDTO> movedEvents = movePotentialStreamToBatch();
 
                         tempStreamingCount.set(0);
@@ -408,6 +417,9 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
 
             //mark as batch
             jmsEvents.stream().forEach(e -> {
+                if (e.isStartOfJob()) {
+                    log.debug("jmsEvents.  Starting of job is a batch for event {}, ff: {} ", e, e.getJobFlowFileId());
+                }
                 e.setIsBatchJob(true);
             });
 

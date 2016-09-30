@@ -631,6 +631,8 @@ public class ProvenanceEventRecordDTO implements Serializable {
         sb.append(", eventType=").append(getEventType());
         sb.append(", eventDetails=").append(getDetails());
         sb.append(", isEndOfJob=").append(isEndOfJob());
+        sb.append(", isBatch=").append(isBatchJob());
+        sb.append(", isStream=").append(isStream());
         sb.append('}');
         return sb.toString();
     }

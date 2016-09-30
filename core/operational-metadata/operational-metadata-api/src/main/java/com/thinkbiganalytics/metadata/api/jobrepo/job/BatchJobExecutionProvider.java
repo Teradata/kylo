@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.metadata.api.jobrepo.job;
 
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
-import com.thinkbiganalytics.metadata.api.jobrepo.step.BatchStepExecution;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
 /**
@@ -15,7 +14,7 @@ public interface BatchJobExecutionProvider {
 
     BatchJobInstance createJobInstance(ProvenanceEventRecordDTO event);
 
-    BatchStepExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent);
+    BatchJobExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent);
 
     BatchJobExecution findByEventAndFlowFile(Long eventId, String flowfileid);
 

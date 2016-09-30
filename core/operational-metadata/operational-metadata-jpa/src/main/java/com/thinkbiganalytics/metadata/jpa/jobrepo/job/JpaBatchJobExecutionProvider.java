@@ -206,7 +206,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
 
 
     @Override
-    public BatchStepExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
+    public BatchJobExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
         //find the JobExecution for the event if it exists, otherwise create one
         JpaBatchJobExecution jobExecution = jobExecutionRepository.findByEventAndFlowFile(event.getJobEventId(), event.getJobFlowFileId());
         if (jobExecution == null && event.isStartOfJob()) {
@@ -219,16 +219,16 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
             if (event.isEndOfJob()) {
                 finishJob(event, jobExecution);
             }
-            this.jobExecutionRepository.save(jobExecution);
+            jobExecution =    this.jobExecutionRepository.save(jobExecution);
         } else if (jobExecution != null && jobExecution.isFinished()) {
             //ensure failures
             boolean addedFailures = ensureFailureSteps(jobExecution);
             if (addedFailures) {
                 jobExecution.completeOrFailJob();
-                this.jobExecutionRepository.save(jobExecution);
+                jobExecution =    this.jobExecutionRepository.save(jobExecution);
             }
         }
-        return null;
+        return jobExecution;
     }
 
 
