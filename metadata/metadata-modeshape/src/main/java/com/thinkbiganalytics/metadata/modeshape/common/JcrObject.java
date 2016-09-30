@@ -49,6 +49,18 @@ public class JcrObject {
             throw new MetadataRepositoryException("Unable to create JcrObject from node " + nodeName, e);
         }
     }
+    
+    /* (non-Javadoc)
+     * @see java.lang.Object#toString()
+     */
+    @Override
+    public String toString() {
+        try {
+            return getClass().getSimpleName() + ": " + this.node.getName();
+        } catch (RepositoryException e) {
+            return getClass().getSimpleName() + " - error: " + e.getMessage();
+        }
+    }
 
     public String getTypeName() {
         try {
