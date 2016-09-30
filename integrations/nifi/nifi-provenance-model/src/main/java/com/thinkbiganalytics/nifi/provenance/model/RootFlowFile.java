@@ -337,14 +337,14 @@ public class RootFlowFile extends ActiveFlowFile {
     public boolean isFlowAndRelatedRootFlowFilesComplete() {
         boolean thisComplete = isFlowComplete();
         if (thisComplete) {
-
+            DateTime now = DateTime.now();
             boolean relatedCompleted = false;
             if (getRootFlowFile().getRelatedRootFlowFiles().isEmpty()) {
                 relatedCompleted = true;
+                this.setMinimiumExpireTime(now);
             } else {
                 relatedCompleted = getRelatedRootFlowFiles().stream().filter(ff -> !ff.equals(this)).allMatch(ff2 -> ff2.isFlowComplete());
                 if (relatedCompleted) {
-                    DateTime now = DateTime.now();
                     getRootFlowFile().getRelatedRootFlowFiles().stream().forEach(ff -> ff.setMinimiumExpireTime(now));
                     this.setMinimiumExpireTime(now);
 
@@ -379,8 +379,9 @@ public class RootFlowFile extends ActiveFlowFile {
 
 
     private void setMinimiumExpireTime(DateTime minimiumExpireTime) {
-        if (minimiumExpireTime == null) {
+        if (this.minimiumExpireTime == null) {
             this.minimiumExpireTime = minimiumExpireTime;
+            // log.info("set minimum ExpireTime on {} to be {} ",this.getId(),minimiumExpireTime);
         }
     }
 

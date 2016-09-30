@@ -7,9 +7,7 @@ import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 import com.thinkbiganalytics.nifi.provenance.model.stats.AggregatedFeedProcessorStatisticsHolder;
-import com.thinkbiganalytics.nifi.provenance.v2.ProvenanceEventRecordConverter;
 
-import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.h2.tools.Server;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,36 +59,47 @@ public class ProvenanceEventActiveMqWriter {
 
     @PostConstruct
     public void postConstruct() {
-        logger.info("!!!!!!!!!!!!!!! CREATED NEW ProvenanceEventRecordActiveMQWriter ");
+
     }
 
 
-    public void writeEvents(ProvenanceEventRecordDTOHolder failedEvents) {
-        logger.info("SENDING FAILURE Events to JMS {} ", failedEvents);
-        sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_QUEUE, failedEvents);
+    /**
+     * Write to the provenance-event queue This is used for important events such as Start, Fail, End
+     */
+    public void writeEvents(ProvenanceEventRecordDTOHolder events) {
+        logger.info("SENDING {} events to {} ", events, Queues.PROVENANCE_EVENT_QUEUE);
+        sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_QUEUE, events);
     }
 
+    /**
+     * Write out stats to JMS
+     * @param stats
+     */
     public void writeStats(AggregatedFeedProcessorStatisticsHolder stats) {
         try {
             logger.info("SENDING AGGREGATED STAT to JMS {} ", stats);
             sendJmsMessage.sendSerializedObjectToQueue(Queues.PROVENANCE_EVENT_STATS_QUEUE, stats);
 
         } catch (Exception e) {
-            logger.error("JMS Error has occurred sending stats. Enable temporary queue", e);
+            logger.error("JMS Error has occurred sending stats. Temporary queue has been disabled in this current version.", e);
         }
     }
 
+    /***
+     * Write the batch events to JMS
+     * @param events
+     */
     public void writeBatchEvents(ProvenanceEventRecordDTOHolder events) {
         try {
             logger.info("SENDING Events to JMS {} ", events);
             sendJmsMessage.sendSerializedObjectToQueue(Queues.FEED_MANAGER_QUEUE, events);
 
         } catch (Exception e) {
-            logger.error("JMS Error has occurred sending events. Enable temporary queue", e);
+            logger.error("JMS Error has occurred sending events. Temporary queue has been disabled in this current version.", e);
         }
     }
 
-    @Deprecated
+   /* @Deprecated
     public Long writeEvent(ProvenanceEventRecordDTO event) {
         logger.debug(
             "SENDING JMS PROVENANCE_EVENT for EVENT_ID: " + event.getEventId() + ", COMPONENT_ID: " + event.getComponentId()
@@ -114,13 +123,13 @@ public class ProvenanceEventActiveMqWriter {
         }
         return event.getEventId();
     }
-
+*/
 
     @Deprecated
-    public Long writeEvent(ProvenanceEventRecord event) {
-        ProvenanceEventRecordDTO dto = ProvenanceEventRecordConverter.convert(event);
-        return writeEvent(dto);
-    }
+    //public Long writeEvent(ProvenanceEventRecord event) {
+    //   ProvenanceEventRecordDTO dto = ProvenanceEventRecordConverter.convert(event);
+    //   return writeEvent(dto);
+    // }
 
     private void initializeTemporaryDatabase() throws Exception {
         logger.info("Starting H2 database. The database name is:  " + h2DatabaseName);
