@@ -213,6 +213,7 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
                     jobFlowFileIdEarlyChildrenMap.asMap().computeIfAbsent(event.getFlowFileUuid(), (flowFileId) -> new ConcurrentLinkedQueue<ProvenanceEventRecordDTO>()).add(event);
 
                 }
+                log.info("Processed Event {} ", event);
             }
         } catch (Exception e) {
             log.error("ERROR PROCESSING EVENT! {}.  ERROR: {} ", event, e.getMessage(), e);
@@ -310,7 +311,7 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
                                      if (!failedEvent.isFailure()) {
                                          failedEvent.setIsFailure(true);
                                          failedEvent.getFlowFile().getRootFlowFile().addFailedEvent(failedEvent);
-                                         eventsJmsQueue.offer(failedEvent);
+                                         addToEventsQueue(failedEvent);
                                          ProvenanceEventStats failedEventStats = provenanceFeedLookup.failureEventStats(failedEvent);
                                          statsCalculator.addFailureStats(failedEventStats);
                                      }
@@ -325,6 +326,7 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
      */
     public void collectCompletionEvents(ProvenanceEventRecordDTO event) {
         if (event.isEndOfJob()) {
+            log.info("collectCompletition {}  - {} - {} ", event.getJobFlowFileId(), event.getFlowFile().getRootFlowFile().getFirstEventType(), event.getFlowFile().getRootFlowFile().isBatch());
             if (event.getFlowFile() != null && event.getFlowFile().getRootFlowFile() != null) {
                 event.setIsBatchJob(event.getFlowFile().getRootFlowFile().isBatch());
             }
@@ -338,7 +340,23 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
             //mark flow as able to be expired from cache
             // }
             log.info("Sending Final Flowfile completion event for event: {} isFailure: {} ", event, event.isFailure());
-            eventsJmsQueue.offer(event);
+            addToEventsQueue(event);
+        }
+    }
+
+    private void addToEventsQueue(ProvenanceEventRecordDTO event) {
+        try {
+            eventsJmsQueue.put(event);
+        } catch (InterruptedException e) {
+            log.error("Exception adding event {} to eventsJmsQueue {} ", event, e.getMessage(), e);
+        }
+    }
+
+    private void addToBatchQueue(ProvenanceEventRecordDTO event) {
+        try {
+            jmsProcessingQueue.put(event);
+        } catch (InterruptedException e) {
+            log.error("Exception adding event {} to batchEvent Jms Queue {} ", event, e.getMessage(), e);
         }
     }
 
@@ -366,7 +384,9 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
             return feedProcessorEventAggregate.collectEventsToBeSentToJmsQueue().stream();
         }).collect(Collectors.toList());
         log.debug("collecting {} events from {} - {} ", eventsSentToJms.size(), lastCollectionTime, DateTime.now());
-        jmsProcessingQueue.addAll(eventsSentToJms);
+        if (eventsSentToJms != null && !eventsSentToJms.isEmpty()) {
+            eventsSentToJms.stream().forEach(e -> addToBatchQueue(e));
+        }
         lastCollectionTime = DateTime.now();
     }
 

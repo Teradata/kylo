@@ -76,8 +76,8 @@ public class ProvenanceEventReceiver {
 
     private AtomicLong activeJobExecutionThreads = new AtomicLong(0);
 
-    @Value("${thinkbig.opsmgr.provenance.jobexecution.maxthreads:50}")
-    private Integer maxThreads = 50;
+    @Value("${thinkbig.opsmgr.provenance.jobexecution.maxthreads:30}")
+    private Integer maxThreads = 30;
 
     /**
      * Service to run threads
