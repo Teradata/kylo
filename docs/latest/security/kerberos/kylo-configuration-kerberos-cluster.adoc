@@ -65,7 +65,8 @@ for them to work in a Kerberos cluster some configuration is required. Some exam
     TIP: Replace "sandbox.hortonworks.com" with your domain
 
     To add Kerberos support to thinkbig-services you must enable the feature and update hive connection URL to support Kerberos.
-
+....
+....
     [root]# vi /opt/thinkbig/thinkbig-services/conf/application.properties
 
     # This property is for the hive thrift connection used by thinkbig-services
