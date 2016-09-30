@@ -1,4 +1,6 @@
 = Kerberos Installation Guide
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
 Think Big Analytics
 June 2016
 

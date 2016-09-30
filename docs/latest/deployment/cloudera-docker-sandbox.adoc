@@ -1,4 +1,5 @@
 = Cloudera Docker Sandbox Deployment Guide
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
 == About
 In some cases you may want to deploy a Cloudera sandbox in AWS for a team to perform a simple proof of concept or avoid system

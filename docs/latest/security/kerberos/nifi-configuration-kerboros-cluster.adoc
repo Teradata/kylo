@@ -1,4 +1,6 @@
 = NiFi Configuration for a Kerberos Cluster
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
 Think Big Analytics
 June 2016
 

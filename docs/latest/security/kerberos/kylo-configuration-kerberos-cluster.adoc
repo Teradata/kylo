@@ -1,4 +1,6 @@
 = Kylo Configuration for a Kerboros Cluster
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
 Think Big Analytics
 September 2016
 

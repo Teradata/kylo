@@ -1,4 +1,6 @@
 == Developer Getting Started Guide
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
 This guide should help you get your local development environment up and running quickly. Development in
 an IDE is usually done in conjunction with a Hortonworks sandbox in order to have a cluster to
 communicate with.
@@ -75,12 +77,12 @@ Perform a maven build to download all of the artifacts and verify that everythin
 === Install and Configure the Hortonworks Sandbox
 Follow the guide below to install and configure the Hortonworks sandbox
 
-link:./hortonworks-sandbox.adoc[Configure Hortonworks Sandbox]
+link:./hortonworks-sandbox{outfilesuffix}[Configure Hortonworks Sandbox]
 
 === Install the Think Big Applications
 To install the Think Big apps, NiFi, ActiveMQ, and Elasticsearch in the VM you can use the deployment wizard instructions found here.
 
-link:./deployment/wizard-deployment-guide.adoc[Wizard Driven Deployment Guide]
+link:./deployment/wizard-deployment-guide{outfilesuffix}[Wizard Driven Deployment Guide]
 
 Instead of downloading the RPM file on the first step from Artifactory, copy the RPM file from your project folder after running a maven build.
 
