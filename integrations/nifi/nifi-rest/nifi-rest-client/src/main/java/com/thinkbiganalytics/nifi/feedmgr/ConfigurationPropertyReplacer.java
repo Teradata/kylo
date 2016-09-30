@@ -15,10 +15,10 @@ import java.util.regex.Pattern;
 
 /**
  * Auto Inject Property Values stored in the application.properties file
- * 2 use cases are supported
+ * 3 use cases are supported
  * 1) store properties in the file starting with the prefix defined in the "PropertyExpressionResolver class"  default = config.
  * 2) store properties in the file starting with "nifi.<PROCESSORTYPE>.<PROPERTY_KEY>   where PROCESSORTYPE and PROPERTY_KEY are all lowercase and the spaces are substituted with underscore
- *
+ * 3) Global property replacement.  properties starting with "nifi.all_processors.<PROPERTY_KEY> will globally replace the value when the template is instantiated
  */
 public class ConfigurationPropertyReplacer {
 
@@ -27,6 +27,10 @@ public class ConfigurationPropertyReplacer {
         return processorTypeName;
     }
 
+    public static String getGlobalAllProcessorsPropertyConfigName(NifiProperty property) {
+        String processorTypeName = "nifi.all_processors." + property.getKey().toLowerCase().trim().replaceAll(" +", "_");
+        return processorTypeName;
+    }
     /**
      * This will replace the Map of Properties in the DTO but not persist back to Nifi.  You need to call the rest client to persist the change
      */
@@ -99,6 +103,10 @@ public class ConfigurationPropertyReplacer {
                     String key = getProcessorPropertyConfigName(property);
 
                     Object resolvedValue =  configProperties != null ? configProperties.get(key) : null;
+                    if (resolvedValue == null) {
+                        String allKey = getGlobalAllProcessorsPropertyConfigName(property);
+                        resolvedValue = configProperties != null ? configProperties.get(allKey) : null;
+                    }
                     if (resolvedValue != null) {
                         sb = new StringBuffer();
                         sb.append(resolvedValue.toString());
