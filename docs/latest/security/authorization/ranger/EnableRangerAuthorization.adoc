@@ -1,6 +1,8 @@
 = Enable Ranger Authorization Guide
 ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
+IMPORTANT: This feature is a work in progress. It is not ready for use
+
 Think Big Analytics
 September 2016
 
@@ -65,37 +67,6 @@ image::images/R3.png[]
 image::images/R4.png[]
 
 
-=== Configure Ranger Controller Service.
-
-* Go to NIFI UI.
-* Click on controller setting.
-* Click on (+) sign and add RangerControllerSerive.
-* Update RangerControllerSerive property and enable it.
-
-	Ranger REST Client Hostname  : localhost
-	Ranger REST Client Port : 6080
-	Ranger REST Client User Name : admin
-	Ranger REST Client Password : <passowrd>
-
-image::images/R5.png[]
-
-
-=== Configure CreataRangerAuthorizationPolicy processor
-
-* Go to NIFI
-* Select resusable template.
-* Select CreataRangerAuthorizationPolicy processor.
-* Update property descriptor as per cluster.
-
-	Group List : ${security.authorization.groups}
-	Hive Permission List : create,select,update
-	HDFS Permission List : read,write
-	Category Name : ${category}
-	Feed Name : ${feed}
-	HDFS Repository Name : Sandbox_hadoop
-	HIVE Repository Name : Sandbox_hive
-
-image::images/R6.png[]
 
 Ranger authorization is configured successfully. Now create a feed from ThinkBig UI and create feed for testing.
 
