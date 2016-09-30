@@ -361,6 +361,10 @@ public class RootFlowFile extends ActiveFlowFile {
         return thisComplete;
     }
 
+    public boolean isCanExpire() {
+        return getMinimiumExpireTime() != null;
+    }
+
     /**
      * Checks this flow and any related flow files for failure events
      */
