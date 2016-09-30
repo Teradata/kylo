@@ -11,14 +11,15 @@ import java.util.Date;
 public class DateTimeUtil {
 
     public static Date convertToUTC(Date date) {
-        DateTimeZone tz = DateTimeZone.getDefault();
-        Date utc = new Date(tz.convertLocalToUTC(date.getTime(), false));
-        return utc;
+        DateTime time = new DateTime(date.getTime());
+        DateTimeZone dtZone = DateTimeZone.forID("UTC");
+        DateTime utc = time.withZone(dtZone);
+        return utc.toDate();
     }
 
     public static DateTime convertToUTC(DateTime date) {
-        DateTimeZone tz = DateTimeZone.getDefault();
-        Date utc = new Date(tz.convertLocalToUTC(date.getMillis(), false));
+        DateTimeZone dtZone = DateTimeZone.forID("UTC");
+        DateTime utc = date.withZone(dtZone);
         return new DateTime(utc);
     }
 

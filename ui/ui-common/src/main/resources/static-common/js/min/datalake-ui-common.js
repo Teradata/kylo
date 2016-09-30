@@ -376,7 +376,7 @@ angular.module(COMMON_APP_MODULE_NAME).directive('currentTime', function ($http,
 
             function getTime() {
                 $http.get('/proxy/v1/configuration/system-time').then(function (response) {
-                    scope.currentTimeUtc = $filter('date')(response.data, scope.dateFormat)
+                    scope.currentTimeUtc = $filter('date')(response.data, scope.dateFormat, 'UTC/GMT ')
                 });
             }
 
