@@ -61,9 +61,11 @@ public class ConfigurationPropertyReplacer {
         return !changedProperties.isEmpty();
     }
 
+
     /**
      *
-     * @param property
+     * @param property the NifiProperty to replace
+     * @param configProperties a Map of properties which will be looked to to match against thie property key
      * @return
      */
     public static boolean resolveStaticConfigurationProperty(NifiProperty property, Map<String,Object> configProperties){

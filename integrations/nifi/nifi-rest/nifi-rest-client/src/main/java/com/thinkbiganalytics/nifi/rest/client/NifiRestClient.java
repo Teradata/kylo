@@ -5,12 +5,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
-import com.thinkbiganalytics.nifi.feedmgr.CreateFeedBuilder;
 import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
@@ -471,16 +469,6 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
     }
 
 
-    public NifiProcessGroup createTemplateInstanceAsProcessGroup(String templateId, String category, String feedName,
-                                                                 String inputProcessorType, List<NifiProperty> properties,
-                                                                 NifiProcessorSchedule feedSchedule) {
-        return CreateFeedBuilder.newFeed(this, category, feedName, templateId).inputProcessorType(inputProcessorType)
-            .feedSchedule(feedSchedule).properties(properties).build();
-    }
-
-    public CreateFeedBuilder newFeedBuilder(String templateId, String category, String feedName) {
-        return CreateFeedBuilder.newFeed(this, category, feedName, templateId);
-    }
 
 
     private Map<String, Object> getUpdateParams() {

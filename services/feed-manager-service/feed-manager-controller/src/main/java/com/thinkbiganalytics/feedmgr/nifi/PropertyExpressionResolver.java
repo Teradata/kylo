@@ -30,12 +30,13 @@ import javax.annotation.Nullable;
  * Resolves the values for NiFi processor properties using the following logic:
  * <ol>
  *     <li>Resolves {@code ${config.<NAME>}} to a property of the same name in the {@code application.properties} file.</li>
- *     <li>Looks for a property in {@code application.properties} that matches {@code nifi.<PROCESSOR TYPE>.<PROPERTY KEY>}.</li>
+ *     <li>Looks for a property in {@code application.properties} that matches {@code nifi.<PROCESSOR TYPE>.<PROPERTY KEY>} or {@code nifi.all_processors.<PROPERTY_KEY>}.</li>
  *     <li>Resolves {@code ${metadata.<NAME>}} to a {@link MetadataField} property of the {@link FeedMetadata} class.</li>
  * </ol>
  *
  * <p>The {@code <PROCESSOR TYPE>} is the class name of the NiFi processor converted to lowercase. The {@code <PROPERTY KEY>} is the NiFi processor property key converted to lowercase and spaces
- * substituted with underscores. See {@link ConfigurationPropertyReplacer} in the {@code nifi-rest-client} project for more information.</p>
+ * substituted with underscores.
+ * See {@link ConfigurationPropertyReplacer} in the {@code nifi-rest-client} project for more information.</p>
  */
 public class PropertyExpressionResolver {
 
@@ -70,6 +71,24 @@ public class PropertyExpressionResolver {
             return Collections.emptyList();
         }
     }
+
+    /**
+     * @return only those properties that were updated
+     */
+    public List<NifiProperty> resolveStaticProperties(@Nullable final List<NifiProperty> allProperties) {
+
+        if (allProperties != null) {
+            return allProperties.stream().filter(property -> resolveStaticConfigProperty(property).isModified).collect(Collectors.toList());
+        } else {
+            return Collections.emptyList();
+        }
+    }
+
+
+
+
+
+
 
     /**
      * Resolves the value of the specified property of the specified feed.
@@ -125,7 +144,12 @@ public class PropertyExpressionResolver {
         } else {
             //see if the processorType is configured
             String processorTypeProperty = ConfigurationPropertyReplacer.getProcessorPropertyConfigName(property);
-            return environmentProperties.getPropertyValueAsString(processorTypeProperty);
+            String value = environmentProperties.getPropertyValueAsString(processorTypeProperty);
+            if (StringUtils.isBlank(value)) {
+                String globalPropertyType = ConfigurationPropertyReplacer.getGlobalAllProcessorsPropertyConfigName(property);
+                value = environmentProperties.getPropertyValueAsString(globalPropertyType);
+            }
+            return value;
         }
     }
 
@@ -141,7 +165,12 @@ public class PropertyExpressionResolver {
      */
     private ResolveResult resolveStaticConfigProperty(@Nonnull final NifiProperty property) {
         final String name = ConfigurationPropertyReplacer.getProcessorPropertyConfigName(property);
-        final String value = environmentProperties.getPropertyValueAsString(name);
+        final String processorTypePropertyValue = environmentProperties.getPropertyValueAsString(name);
+
+        final String globalName = ConfigurationPropertyReplacer.getGlobalAllProcessorsPropertyConfigName(property);
+        final String globalPropertyValue = environmentProperties.getPropertyValueAsString(globalName);
+
+        final String value = StringUtils.isBlank(processorTypePropertyValue) ? globalPropertyValue : processorTypePropertyValue;
 
         if (value != null) {
             property.setValue(value);
@@ -149,6 +178,8 @@ public class PropertyExpressionResolver {
         }
         return new ResolveResult(false, false);
     }
+
+
 
     /**
      * Resolves the variables in the value of the specified property.
