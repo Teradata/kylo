@@ -223,6 +223,7 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
     /**
      * - Create/update the flowfile graph for this new event - Calculate statistics on the event and add them to the aggregated set to be processed - Add the event to the DelayQueue for further
      * processing as a Batch or Stream
+     * Ensures Nifi rest is up
      */
     public void prepareAndAdd(ProvenanceEventRecordDTO event) {
 
