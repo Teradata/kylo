@@ -19,7 +19,10 @@ public interface BatchJobExecutionRepository extends JpaRepository<JpaBatchJobEx
                    + "where nifiEventJob.eventId = :eventId and nifiEventJob.flowFileId = :flowFileId")
     JpaBatchJobExecution findByEventAndFlowFile(@Param("eventId") Long eventId, @Param("flowFileId") String flowFileId);
 
-    //
+    @Query(value = "select job from JpaBatchJobExecution as job "
+                   + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId  "
+                   + "where nifiEventJob.flowFileId = :flowFileId")
+    JpaBatchJobExecution findByFlowFile(@Param("flowFileId") String flowFileId);
 
     @Query(value = "  select job from JpaBatchJobExecution as job "
                    + "join JpaNifiEventJobExecution as nifiEventJob on nifiEventJob.jobExecution.jobExecutionId = job.jobExecutionId "

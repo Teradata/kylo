@@ -43,10 +43,8 @@ import java.util.stream.Collectors;
 import javax.annotation.PostConstruct;
 
 /**
- * This will take a ProvenanceEvent, prepare it by building the FlowFile graph of its relationship to the running flow, generate Statistics about the Event and then set it in the DelayQueue for the
- * system to process as either a Batch or a Strem Statistics are calculated by the (ProvenanceStatsCalculator) where the events are grouped by Feed and Processor and then aggregated during a given
- * interval before being sent off to a JMS queue for processing.
- *
+ * This will take a ProvenanceEvent, prepare it by building the FlowFile graph of its relationship to the running flow, generate Statistics about the Event and then Group each event by Feed and then Processor {@code GroupedFeedProcessorEventAggregate} to determine if
+ * it is a Batch or Stream using the {@code StreamConfiguration}
  *
  * Created by sr186054 on 8/14/16.
  */
@@ -59,14 +57,9 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
     private StreamConfiguration configuration;
 
     /**
-     * This is the batch event jms queue
+     * This is the queue to send all Batch events and any important streaming events failure, ending job events
      */
     private BlockingQueue<ProvenanceEventRecordDTO> jmsProcessingQueue;
-
-    /**
-     * other queue for recording Failures and job completion regardless of batch or stream Needed for triggering when a feed is complete
-     */
-    private BlockingQueue<ProvenanceEventRecordDTO> eventsJmsQueue;
 
     /**
      * Reference to when to send the aggregated events found in the  statsByTime map.
@@ -93,9 +86,22 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
      */
     Map<String, GroupedFeedProcessorEventAggregate> eventsToAggregate = new ConcurrentHashMap<>();
 
+
+    /**
+     * Collection that will be populated with any events that were captured prior to the Nifi Rest client connection ({@code nifiFlowCache.isConnected}) is made
+     */
     List<ProvenanceEventRecordDTO> eventsPriorToNifiConnection = new LinkedList<>();
+
+    /**
+     * Provenance Calculations relay on looking at the Flow Graph.  The graph is built and cached ({@code NifiFlowCache}). Because Nifi will start up before the rest client is active we need to wait
+     * until the restclient is ready before processing. Until Nifi Rest is connected events will be queued up in the {@code eventsPriorToNifiConnection} list. Once connected ({@code
+     * nifiFlowCache.isConnected}) the events in  the {@code eventsPriorToNifiConnection} list, and then block until finished processing with this countdown latch
+     */
     CountDownLatch onNifiConnectedLatch = new CountDownLatch(1);
 
+    /**
+     * Flag to indicate the Nifi Rest COnnection has been made, but it is/is not processing the events that were captured prior to the connection being made.
+     */
     private AtomicBoolean isProcessingConnectionEvents = new AtomicBoolean(false);
 
 
@@ -104,9 +110,10 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
         this.nifiFlowCache.subscribeConnectionListener(this);
     }
 
-    //sometimes events come in before their root flow file.  Root Flow files are needed for processing.
-    //if the events come in out of order, queue them in this map
-    //@see processEarlyChildren method
+    /**sometimes events come in before their root flow file.  Root Flow files are needed for processing.
+     *if the events come in out of order, queue them in this map
+     *@see #processEarlyChildren method
+     **/
     Cache<String, ConcurrentLinkedQueue<ProvenanceEventRecordDTO>> jobFlowFileIdEarlyChildrenMap = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
 
     @Autowired
@@ -115,7 +122,6 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
         super();
         this.jmsProcessingQueue = new LinkedBlockingQueue<>();
 
-        this.eventsJmsQueue = new LinkedBlockingQueue<>();
         log.debug("************** NEW ProvenanceEventAggregator for {} and activemq: {} ", configuration, provenanceEventActiveMqWriter);
         this.configuration = configuration;
         this.provenanceEventActiveMqWriter = provenanceEventActiveMqWriter;
@@ -123,9 +129,6 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
 
         Thread t = new Thread(new JmsBatchProvenanceEventFeedConsumer(configuration, provenanceEventActiveMqWriter, this.jmsProcessingQueue));
         t.start();
-
-        Thread t2 = new Thread(new JmsImportantProvenanceEventConsumer(configuration, provenanceEventActiveMqWriter, this.eventsJmsQueue));
-        t2.start();
 
         initCheckAndSendTimer();
 
@@ -188,12 +191,6 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
                     ProvenanceEventStats stats = statsCalculator.calculateStats(event);
                     //if failure detected group and send off to separate queue
                     collectFailureEvents(event);
-                    //add to delayed queue for processing
-                    aggregateEvent(event, stats);
-
-                    if (event.isStartOfJob()) {
-                        processEarlyChildren(event.getJobFlowFileId());
-                    }
 
                     // check to see if the parents should be finished
                     if (event.isEndingFlowFileEvent()) {
@@ -207,6 +204,15 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
                             collectCompletionEvents(event);
                         }
                     }
+
+                    //add to delayed queue for processing
+                    aggregateEvent(event, stats);
+
+                    if (event.isStartOfJob()) {
+                        processEarlyChildren(event.getJobFlowFileId());
+                    }
+
+
                 } catch (RootFlowFileNotFoundException e) {
                     //add to a holding bin
                     log.info("Holding on to {} since the root flow file {} has yet to be processed.", event, event.getFlowFileUuid());
@@ -234,8 +240,7 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
                 log.debug("Adding {} prior to nifi connection size: {}", event, eventsPriorToNifiConnection.size());
                 return;
             } else {
-                //if(isProcessingConnectionEvents.get() == true) {
-                //wait
+
                 if (onNifiConnectedLatch.getCount() == 1) {
                     log.debug("Awaiting on Nifi Connection to finish processing event {} ", event);
                 }
@@ -244,7 +249,6 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
                 } catch (Exception e) {
 
                 }
-                // }
             }
 
             process(event);
@@ -312,7 +316,6 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
                                      if (!failedEvent.isFailure()) {
                                          failedEvent.setIsFailure(true);
                                          failedEvent.getFlowFile().getRootFlowFile().addFailedEvent(failedEvent);
-                                         addToEventsQueue(failedEvent);
                                          ProvenanceEventStats failedEventStats = provenanceFeedLookup.failureEventStats(failedEvent);
                                          statsCalculator.addFailureStats(failedEventStats);
                                      }
@@ -325,10 +328,11 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
      * Send off all final completion job events to ops manager for recording
      * @param event
      */
-    public void collectCompletionEvents(ProvenanceEventRecordDTO event) {
+    private void collectCompletionEvents(ProvenanceEventRecordDTO event) {
         if (event.isEndOfJob()) {
             log.info("collectCompletition {}  - {} - {} ", event.getJobFlowFileId(), event.getFlowFile().getRootFlowFile().getFirstEventType(), event.getFlowFile().getRootFlowFile().isBatch());
             if (event.getFlowFile() != null && event.getFlowFile().getRootFlowFile() != null) {
+                log.info("Setting event {} as batch? {} ", event, event.getFlowFile().getRootFlowFile().isBatch());
                 event.setIsBatchJob(event.getFlowFile().getRootFlowFile().isBatch());
             }
 
@@ -338,22 +342,11 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
                 event.setIsFailure(true);
                 event.setHasFailedEvents(true);
             }
-            //mark flow as able to be expired from cache
-            // }
-            log.info("Sending Final Flowfile completion event for event: {} isFailure: {} ", event, event.isFailure());
-            addToEventsQueue(event);
         }
     }
 
-    private void addToEventsQueue(ProvenanceEventRecordDTO event) {
-        try {
-            eventsJmsQueue.put(event);
-        } catch (InterruptedException e) {
-            log.error("Exception adding event {} to eventsJmsQueue {} ", event, e.getMessage(), e);
-        }
-    }
 
-    private void addToBatchQueue(ProvenanceEventRecordDTO event) {
+    private void addToJmsQueue(ProvenanceEventRecordDTO event) {
         try {
             jmsProcessingQueue.put(event);
         } catch (InterruptedException e) {
@@ -372,8 +365,7 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
             eventsToAggregate.computeIfAbsent(mapKey(event), mapKey -> new GroupedFeedProcessorEventAggregate(event.getFeedName(),
                                                                                                               event
                                                                                                                   .getComponentId(), configuration.getMaxTimeBetweenEventsMillis(),
-                                                                                                              configuration.getNumberOfEventsToConsiderAStream())).add(
-                stats, event);
+                                                                                                              configuration.getNumberOfEventsToConsiderAStream())).add(stats, event);
         }
     }
 
@@ -386,7 +378,7 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
         }).collect(Collectors.toList());
         log.debug("collecting {} events from {} - {} ", eventsSentToJms.size(), lastCollectionTime, DateTime.now());
         if (eventsSentToJms != null && !eventsSentToJms.isEmpty()) {
-            eventsSentToJms.stream().forEach(e -> addToBatchQueue(e));
+            eventsSentToJms.stream().forEach(e -> addToJmsQueue(e));
         }
         lastCollectionTime = DateTime.now();
     }

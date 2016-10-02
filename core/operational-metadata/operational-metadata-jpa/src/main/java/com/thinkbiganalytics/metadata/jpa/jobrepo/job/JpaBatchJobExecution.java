@@ -95,10 +95,9 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     @JoinColumn(name = "JOB_INSTANCE_ID", nullable = false, insertable = true, updatable = true)
     private BatchJobInstance jobInstance;
 
-    @OneToMany(targetEntity = JpaBatchJobExecutionParameter.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = JpaBatchJobExecutionParameter.class, mappedBy = "jobExecution",fetch = FetchType.LAZY, orphanRemoval = true)
     @Fetch(FetchMode.JOIN)
-    @JoinColumn(name = "JOB_EXECUTION_ID", referencedColumnName = "JOB_EXECUTION_ID")
-    private Set<BatchJobExecutionParameter> jobParameters;
+    private Set<BatchJobExecutionParameter> jobParameters = new HashSet<>();
 
 
     @OneToMany(targetEntity = JpaBatchStepExecution.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -249,10 +248,12 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     }
 
     public void addJobExecutionContext(BatchJobExecutionContextValue context) {
-        if (getJobExecutionContext().contains(context)) {
-            getJobExecutionContext().remove(context);
+        if (!getJobExecutionContext().contains(context)) {
+            getJobExecutionContext().add(context);
+            //JpaBatchJobExecutionContextValue existing = (JpaBatchJobExecutionContextValue)getJobExecutionContextKeyMap().get(context.getKeyName());
+            //existing.setStringVal(context.getStringVal());
         }
-        getJobExecutionContext().add(context);
+
     }
 
     @Override
@@ -261,6 +262,17 @@ public class JpaBatchJobExecution implements BatchJobExecution {
             Map<String, String> map = new HashMap<>();
             getJobExecutionContext().forEach(ctx -> {
                 map.put(ctx.getKeyName(), ctx.getStringVal());
+            });
+            return map;
+        }
+        return null;
+    }
+
+    public Map<String, BatchJobExecutionContextValue> getJobExecutionContextKeyMap() {
+        if (!getJobExecutionContext().isEmpty()) {
+            Map<String, BatchJobExecutionContextValue> map = new HashMap<>();
+            getJobExecutionContext().forEach(ctx -> {
+                map.put(ctx.getKeyName(), ctx);
             });
             return map;
         }
@@ -276,6 +288,38 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         this.nifiEventJobExecution = nifiEventJobExecution;
     }
 
+
+    public void failJob(){
+        StringBuffer stringBuffer = null;
+        setExitMessage(stringBuffer != null ? stringBuffer.toString() : "");
+        setStatus(JpaBatchJobExecution.JobStatus.FAILED);
+        setExitCode(ExecutionConstants.ExitCode.FAILED);
+        if(endTime == null){
+            endTime = DateTimeUtil.getNowUTCTime();
+        }
+        for (BatchStepExecution se : getStepExecutions()) {
+            if (BatchStepExecution.StepStatus.FAILED.equals(se.getStatus())) {
+                if (stringBuffer == null) {
+                    stringBuffer = new StringBuffer();
+                } else {
+                    stringBuffer.append(",");
+                }
+                stringBuffer.append("Failed Step " + se.getStepName());
+            }
+            if(se.getEndTime() == null)
+            {
+                ((JpaBatchStepExecution)se).setEndTime(DateTimeUtil.getNowUTCTime());
+            }
+        }
+    }
+
+    public void completeJob(){
+        setStatus(JpaBatchJobExecution.JobStatus.COMPLETED);
+        setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+        if(endTime == null){
+            endTime = DateTimeUtil.getNowUTCTime();
+        }
+    }
 
     public void completeOrFailJob() {
         StringBuffer stringBuffer = null;
@@ -296,17 +340,12 @@ public class JpaBatchJobExecution implements BatchJobExecution {
             }
         }
         if (failedJob) {
-            setExitMessage(stringBuffer != null ? stringBuffer.toString() : "");
-            setStatus(JpaBatchJobExecution.JobStatus.FAILED);
-            setExitCode(ExecutionConstants.ExitCode.FAILED);
+           failJob();
 
         } else {
-            setStatus(JpaBatchJobExecution.JobStatus.COMPLETED);
-            setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+           completeJob();
         }
-        if(endTime == null){
-            endTime = DateTimeUtil.getNowUTCTime();
-        }
+
     }
 
     @Override

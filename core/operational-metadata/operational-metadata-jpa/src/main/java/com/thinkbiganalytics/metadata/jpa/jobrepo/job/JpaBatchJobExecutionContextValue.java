@@ -89,9 +89,6 @@ public class JpaBatchJobExecutionContextValue extends AbstractBatchExecutionCont
 
         JpaBatchJobExecutionContextValue that = (JpaBatchJobExecutionContextValue) o;
 
-        if (id != null ? !id.equals(that.id) : that.id != null) {
-            return false;
-        }
         if (keyName != null ? !keyName.equals(that.keyName) : that.keyName != null) {
             return false;
         }
@@ -101,8 +98,7 @@ public class JpaBatchJobExecutionContextValue extends AbstractBatchExecutionCont
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (keyName != null ? keyName.hashCode() : 0);
+        int result = keyName != null ? keyName.hashCode() : 0;
         result = 31 * result + (jobExecutionId != null ? jobExecutionId.hashCode() : 0);
         return result;
     }

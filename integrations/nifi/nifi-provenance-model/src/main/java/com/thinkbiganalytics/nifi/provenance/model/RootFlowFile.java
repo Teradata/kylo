@@ -35,6 +35,10 @@ public class RootFlowFile extends ActiveFlowFile {
         return firstEventType;
     }
 
+    public void markAsBatch() {
+        setFirstEventType(FIRST_EVENT_TYPE.BATCH);
+    }
+
 
     public void setFirstEventType(FIRST_EVENT_TYPE firstEventType) {
         this.firstEventType = firstEventType;

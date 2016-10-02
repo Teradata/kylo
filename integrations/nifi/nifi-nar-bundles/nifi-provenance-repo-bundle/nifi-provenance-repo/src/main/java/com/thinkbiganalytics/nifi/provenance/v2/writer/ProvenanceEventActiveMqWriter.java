@@ -92,7 +92,24 @@ public class ProvenanceEventActiveMqWriter {
     public void writeBatchEvents(ProvenanceEventRecordDTOHolder events) {
         try {
             logger.info("SENDING Events to JMS {} ", events);
-            sendJmsMessage.sendSerializedObjectToQueue(Queues.FEED_MANAGER_QUEUE, events);
+
+            try {
+                if (jmsUnavailable) {
+                    persistEventToTemporaryTable(events);
+                } else {
+                    logger.info("Processing the JMS message as normal");
+                    sendJmsMessage.sendSerializedObjectToQueue(Queues.FEED_MANAGER_QUEUE, events);
+                }
+            } catch (Exception e) {
+                logger.error("JMS Error has occurred. Enable temporary queue", e);
+                jmsUnavailable = true;
+                try {
+                    initializeTemporaryDatabase();
+                    databaseWriter.writeEvent(events);
+                } catch (Exception dwe) {
+                    logger.error("Error writing the temporary provenance event to the database", dwe);
+                }
+            }
 
         } catch (Exception e) {
             logger.error("JMS Error has occurred sending events. Temporary queue has been disabled in this current version.", e);
@@ -125,7 +142,6 @@ public class ProvenanceEventActiveMqWriter {
     }
 */
 
-    @Deprecated
     //public Long writeEvent(ProvenanceEventRecord event) {
     //   ProvenanceEventRecordDTO dto = ProvenanceEventRecordConverter.convert(event);
     //   return writeEvent(dto);
@@ -148,6 +164,16 @@ public class ProvenanceEventActiveMqWriter {
         logger.info("Started H2 database");
 
         databaseWriter.createTables();
+    }
+
+    private void persistEventToTemporaryTable(ProvenanceEventRecordDTOHolder holder) throws Exception {
+        holder.getEvents().stream().forEach(e -> {
+            try {
+                persistEventToTemporaryTable(e);
+            } catch (Exception e1) {
+                logger.error("JMS is down and an error occurred writing to the temporary H2 Datrabase for event {}, {}", e, e1.getMessage(), e1);
+            }
+        });
     }
 
     private void persistEventToTemporaryTable(ProvenanceEventRecordDTO dto) throws Exception {

@@ -16,11 +16,20 @@ public interface BatchJobExecutionProvider {
 
     BatchJobExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent);
 
+    BatchJobExecution save(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event, NifiEvent nifiEvent);
+
     BatchJobExecution findByEventAndFlowFile(Long eventId, String flowfileid);
 
-    BatchJobExecution failStepsInJobThatNeedToBeFailed(BatchJobExecution jobExecution);
+    //BatchJobExecution failStepsInJobThatNeedToBeFailed(BatchJobExecution jobExecution);
 
     BatchJobExecution findByJobExecutionId(Long jobExecutionId);
 
     BatchJobExecution save(BatchJobExecution jobExecution);
+
+    /**
+     *
+     * @param event
+     * @return
+     */
+    BatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event);
 }

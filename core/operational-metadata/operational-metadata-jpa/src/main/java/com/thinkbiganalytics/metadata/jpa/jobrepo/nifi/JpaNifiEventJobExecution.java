@@ -34,7 +34,7 @@ public class JpaNifiEventJobExecution implements Serializable, NifiEventJobExecu
     private BatchJobExecution jobExecution;
 
 
-    @Column(name = "EVENT_ID", insertable = false, updatable = false)
+    @Column(name = "EVENT_ID")
     private Long eventId;
 
     @Column(name = "FLOW_FILE_ID", insertable = false, updatable = false)
@@ -46,19 +46,19 @@ public class JpaNifiEventJobExecution implements Serializable, NifiEventJobExecu
     }
 
     public JpaNifiEventJobExecution(Long eventId, String flowFileId) {
-        this.eventJobExecutionPK = new NifiEventJobExecutionPK(eventId, flowFileId);
+        this.eventJobExecutionPK = new NifiEventJobExecutionPK( flowFileId);
+        this.eventId = eventId;
     }
 
-    public JpaNifiEventJobExecution(BatchJobExecution jobExecution, Long eventId, String flowFileId) {
-        this.eventJobExecutionPK = new NifiEventJobExecutionPK(eventId, flowFileId);
+    public JpaNifiEventJobExecution(BatchJobExecution jobExecution,Long eventId, String flowFileId) {
+        this.eventJobExecutionPK = new NifiEventJobExecutionPK(flowFileId);
+        this.eventId = eventId;
         this.jobExecution = jobExecution;
     }
 
     @Embeddable
     public static class NifiEventJobExecutionPK implements Serializable {
 
-        @Column(name = "EVENT_ID")
-        private Long eventId;
 
         @Column(name = "FLOW_FILE_ID")
         private String flowFileId;
@@ -67,18 +67,10 @@ public class JpaNifiEventJobExecution implements Serializable, NifiEventJobExecu
 
         }
 
-        public NifiEventJobExecutionPK(Long eventId, String flowFileId) {
-            this.eventId = eventId;
-            this.flowFileId = flowFileId;
+        public NifiEventJobExecutionPK(String flowFileId) {
+             this.flowFileId = flowFileId;
         }
 
-        public Long getEventId() {
-            return eventId;
-        }
-
-        public void setEventId(Long eventId) {
-            this.eventId = eventId;
-        }
 
         public String getFlowFileId() {
             return flowFileId;
@@ -99,19 +91,22 @@ public class JpaNifiEventJobExecution implements Serializable, NifiEventJobExecu
 
             NifiEventJobExecutionPK that = (NifiEventJobExecutionPK) o;
 
-            if (!eventId.equals(that.eventId)) {
-                return false;
-            }
-            return flowFileId.equals(that.flowFileId);
+            return !(flowFileId != null ? !flowFileId.equals(that.flowFileId) : that.flowFileId != null);
 
         }
 
         @Override
         public int hashCode() {
-            int result = eventId.hashCode();
-            result = 31 * result + flowFileId.hashCode();
-            return result;
+            return flowFileId != null ? flowFileId.hashCode() : 0;
         }
+    }
+
+    public Long getEventId() {
+        return eventId;
+    }
+
+    public void setEventId(Long eventId) {
+        this.eventId = eventId;
     }
 
     public NifiEventJobExecutionPK getEventJobExecutionPK() {

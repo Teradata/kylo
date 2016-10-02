@@ -4,7 +4,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.activemq.config.ActiveMqConstants;
 import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
@@ -19,31 +18,16 @@ import com.thinkbiganalytics.metadata.jpa.jobrepo.nifi.NifiEventProvider;
 import com.thinkbiganalytics.nifi.activemq.Queues;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
-import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 
 import org.apache.commons.lang3.StringUtils;
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicLong;
 
 import javax.inject.Inject;
 
@@ -74,40 +58,12 @@ public class ProvenanceEventReceiver {
     private MetadataEventService eventService;
 
 
-    private AtomicLong activeJobExecutionThreads = new AtomicLong(0);
-
-    @Value("${thinkbig.opsmgr.provenance.jobexecution.maxthreads:30}")
-    private Integer maxThreads = 30;
-
-    /**
-     * Service to run threads
-     */
-    ExecutorService executorService =
-        new ThreadPoolExecutor(
-            maxThreads, // core thread pool size
-            maxThreads, // maximum thread pool size
-            10, // time to wait before resizing pool
-            TimeUnit.SECONDS,
-            new ArrayBlockingQueue<Runnable>(maxThreads, true),
-            new ThreadPoolExecutor.CallerRunsPolicy());
 
 
     /**
      * Temporary cache of completed events in to check against to ensure we trigger the same event twice
      */
     Cache<String, String> completedJobEvents = CacheBuilder.newBuilder().expireAfterWrite(20, TimeUnit.MINUTES).build();
-
-
-    /**
-     * small cache to make sure we dont process any event more than once. The refresh/expire interval for this cache can be small since if a event comes in moore than once it would happen within a
-     * second
-     */
-    Cache<String, DateTime> processedEvents = CacheBuilder.newBuilder().expireAfterWrite(2, TimeUnit.MINUTES).build();
-
-    /**
-     * A Map that will be used in the Thread poll grouped by Job Flow file Id
-     */
-    private Map<String, LinkedBlockingQueue<ProvenanceEventRecordDTO>> jobEventMap = new ConcurrentHashMap<>();
 
     /**
      * Cache of the Ops Manager Feed Object to ensure that we only process and create Job Executions for feeds that have been registered in Feed Manager
@@ -172,179 +128,47 @@ public class ProvenanceEventReceiver {
 
 
     /**
-     * Process events coming from NiFi that are related to "BATCH Jobs. These will result in new JOB/STEPS to be created in Ops Manager with full provenance data
+     * Process the Events from Nifi
+     * If its a batch job, write the records to Ops manager
+     * if its a stream just write to the Nifi_event table
+     * When either are marked as the last event Notify the eventbus for the trigger feed mechanism to work.
+     * @param events
      */
-    @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
+    @JmsListener(destination = Queues.FEED_MANAGER_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY, concurrency = "10-50")
     public void receiveEvents(ProvenanceEventRecordDTOHolder events) {
         log.info("About to process {} events from the {} queue ", events.getEvents().size(), Queues.FEED_MANAGER_QUEUE);
-        addEventsToQueue(events, Queues.FEED_MANAGER_QUEUE);
-    }
+        events.getEvents().stream().filter(e -> isRegisteredWithFeedManager(e)).forEach(event -> {
 
-    /**
-     * Process Failure Events or Ending Job Events
-     */
-    @JmsListener(destination = Queues.PROVENANCE_EVENT_QUEUE, containerFactory = ActiveMqConstants.JMS_CONTAINER_FACTORY)
-    public void receiveTopic(ProvenanceEventRecordDTOHolder events) {
-        log.info("About to process {} events from the {} queue ", events.getEvents().size(), Queues.PROVENANCE_EVENT_QUEUE);
-        addEventsToQueue(events, Queues.PROVENANCE_EVENT_QUEUE);
-    }
-
-
-    private void addEventsToQueue(ProvenanceEventRecordDTOHolder events, String sourceJmsQueue) {
-        Set<String> newJobs = new HashSet<>();
-
-        events.getEvents().stream().sorted(ProvenanceEventUtil.provenanceEventRecordDTOComparator()).filter(e -> isRegisteredWithFeedManager(e)).forEach(e -> {
-            if (e.isBatchJob() && isProcessBatchEvent(e, sourceJmsQueue)) {
-                try {
-                    // eventKeys.add(eventKey(e));
-                    log.info("Process event {} ", e);
-
-                    LinkedBlockingQueue queue = new LinkedBlockingQueue<ProvenanceEventRecordDTO>();
-
-                    BlockingQueue q = jobEventMap.putIfAbsent(e.getJobFlowFileId(), queue);
-                    if (q == null) {
-                        q = queue;
-                        //we just added it so start the thread
-                        log.info("Starting new Job queue ", e);
-                        activeJobExecutionThreads.incrementAndGet();
-                        executorService.submit(new ProcessBatchJobTask(e.getJobFlowFileId(), q));
-
-                    }
-                    q.put(e);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-
-                }
+            if (event.isBatchJob()) {
+                //ensure the job is there
+                BatchJobExecution jobExecution = operationalMetadataAccess.commit(() -> nifiJobExecutionProvider.getOrCreateJobExecution(event));
+                NifiEvent nifiEvent = operationalMetadataAccess.commit(() -> receiveBatchEvent(jobExecution, event));
             } else {
-                //we dont care about order for these events... just process in any order and save
-                receiveEvent(e);
+                NifiEvent nifiEvent = operationalMetadataAccess.commit(() -> nifiEventProvider.create(event));
             }
-
+            if (event.isFinalJobEvent()) {
+                notifyJobFinished(event);
+            }
         });
     }
 
+
     /**
-     * persist the event to the NIFI_EVENT table and Notify if its a final job
-     *
-     * @return the persisted NiFi Event
+     * Process this record and record the Job Obs
      */
-    public NifiEvent receiveEvent(ProvenanceEventRecordDTO event) {
-        NifiEvent nifiEvent = operationalMetadataAccess.commit(() -> nifiEventProvider.create(event));
-        if (!event.isBatchJob() && event.isFinalJobEvent()) {
-            //if its a Stream notify its complete
-            notifyJobFinished(event);
+    private NifiEvent receiveBatchEvent(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
+        NifiEvent nifiEvent = null;
+        log.debug("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(), event.isEndingFlowFileEvent(), event.isBatchJob());
+        nifiEvent = nifiEventProvider.create(event);
+        if (event.isBatchJob()) {
+            BatchJobExecution job = nifiJobExecutionProvider.save(jobExecution, event, nifiEvent);
+            if (job == null) {
+                log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(),
+                          event.isEndingFlowFileEvent(), event.isBatchJob());
+            }
         }
+
         return nifiEvent;
-    }
-
-
-    /**
-     * Process events for a given Root Flow file (this indicates a JobExecution in Ops Manager)
-     * This task will block on the queue until the Job has received the "ending event" from NiFi
-     *
-     */
-    private class ProcessBatchJobTask implements Runnable {
-
-        private String jobId;
-        private BlockingQueue<ProvenanceEventRecordDTO> queue;
-        private List<NifiEvent> eventsProcessed;
-        private boolean isActive = true;
-
-        public ProcessBatchJobTask(String jobId, BlockingQueue<ProvenanceEventRecordDTO> queue) {
-            this.jobId = jobId;
-            this.queue = queue;
-            this.eventsProcessed = new ArrayList<>();
-            log.debug("processing job {} in new thread ", jobId);
-
-        }
-
-        @Override
-        public void run() {
-
-                try {
-                     while (isActive) {
-                         {
-                             final ProvenanceEventRecordDTO event = queue.take();
-                             NifiEvent nifiEvent = operationalMetadataAccess.commit(() -> receiveBatchEvent(event));
-                             if (nifiEvent != null) {
-                                 eventsProcessed.add(nifiEvent);
-                             }
-                             if (event.isFinalJobEvent()) {
-                                 isActive = false;
-                                 notifyJobFinished(event);
-
-                             }
-                         }
-                        }
-                        clearJobFromQueue(jobId);
-                } catch (Exception ex) {
-                    ex.printStackTrace();
-                    log.error("Error processing {} ", ex);
-                    clearJobFromQueue(jobId);
-                }
-        }
-
-        /**
-         * Process this record and record the Job Obs
-         * @param event
-         * @return
-         */
-        private NifiEvent receiveBatchEvent(ProvenanceEventRecordDTO event) {
-            NifiEvent nifiEvent = null;
-            log.debug("Received ProvenanceEvent {}.  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(), event.isEndingFlowFileEvent(), event.isBatchJob());
-            nifiEvent = nifiEventProvider.create(event);
-            if (event.isBatchJob()) {
-                BatchJobExecution job = nifiJobExecutionProvider.save(event, nifiEvent);
-                if (job == null) {
-                    log.error(" Detected a Batch event, but could not find related Job record. for event: {}  is end of Job: {}.  is ending flowfile:{}, isBatch: {}", event, event.isEndOfJob(),
-                              event.isEndingFlowFileEvent(), event.isBatchJob());
-                }
-            }
-
-            return nifiEvent;
-        }
-
-    }
-
-    private void clearJobFromQueue(final String jobId) {
-
-            if(jobEventMap.containsKey(jobId) && jobEventMap.get(jobId).isEmpty()) {
-                log.debug("clearning JobQueue {} ", jobId);
-                jobEventMap.remove(jobId);
-                activeJobExecutionThreads.decrementAndGet();
-            } else {
-                if (jobEventMap.containsKey(jobId)) {
-                    log.debug("Dont clear. {} ", jobId);
-                }
-            }
-
-    }
-
-
-    /**
-     * Enusre this incoming event didnt get processed already
-     * @param event
-     * @return
-     */
-    private boolean isProcessBatchEvent(ProvenanceEventRecordDTO event, String sourceJmsQueue) {
-        //Skip batch processing for the events coming in as batch events from the Provenance Event Queue.
-        // this will be processed in order when the events come in.
-        if (Queues.PROVENANCE_EVENT_QUEUE.equalsIgnoreCase(sourceJmsQueue)) {
-            //   log.info("Skip processing event {} from Jms Queue: {}. It will be processed later in order.", event,Queues.PROVENANCE_EVENT_QUEUE);
-            return false;
-        }
-
-        String processingCheckMapKey = event.getEventId() + "_" + event.getFlowFileUuid();
-
-        DateTime timeAddedToQueue = processedEvents.getIfPresent(processingCheckMapKey);
-        if (timeAddedToQueue == null) {
-            processedEvents.put(processingCheckMapKey, DateTimeUtil.getNowUTCTime());
-            return true;
-        } else {
-            log.debug("Skip processing for id: {}, event {}  at {} since it has already been added to a queue for processing at {} ", processingCheckMapKey, event, DateTimeUtil.getNowUTCTime(),
-                      timeAddedToQueue);
-            return false;
-        }
     }
 
     /**

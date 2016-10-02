@@ -2,6 +2,7 @@ package com.thinkbiganalytics.nifi.activemq;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,6 +35,16 @@ public class ProvenanceEventReceiverDatabaseWriter implements InitializingBean {
     public void afterPropertiesSet() throws Exception {
     }
 
+
+    public void writeEvent(ProvenanceEventRecordDTOHolder holder) throws Exception {
+        holder.getEvents().stream().forEach(e -> {
+            try {
+                writeEvent(e);
+            } catch (Exception e1) {
+                logger.error("An error occurred writing to the temporary H2 Database for event {}, {}", e, e1.getMessage(), e1);
+            }
+        });
+    }
 
     /**
      * Write the Event to the Database Table
