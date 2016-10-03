@@ -75,12 +75,15 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
 
     private NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository;
 
+    private BatchStepExecutionRepository stepExecutionRepository;
+
 
     @Autowired
     public JpaBatchJobExecutionProvider(BatchJobExecutionRepository jobExecutionRepository, BatchJobInstanceRepository jobInstanceRepository,
                                         BatchStepExecutionRepository nifiStepExecutionRepository,
                                         NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository,
-                                        BatchJobParametersRepository jobParametersRepository
+                                        BatchJobParametersRepository jobParametersRepository,
+                                        BatchStepExecutionRepository stepExecutionRepository
     ) {
 
         this.jobExecutionRepository = jobExecutionRepository;
@@ -88,6 +91,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         this.nifiStepExecutionRepository = nifiStepExecutionRepository;
         this.relatedRootFlowFilesRepository = relatedRootFlowFilesRepository;
         this.jobParametersRepository = jobParametersRepository;
+        this.stepExecutionRepository = stepExecutionRepository;
 
     }
 
@@ -371,7 +375,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         } else {
             //update it
             assignStepExecutionContextMap(event, stepExecution);
-            log.info("Update Step Execution {} on Job: {} using event {} ", stepExecution.getStepName(), jobExecution, event);
+            log.info("Update Step Execution {} ({}) on Job: {} using event {} ", stepExecution.getStepName(), stepExecution.getStepExecutionId(), jobExecution, event);
             stepExecution = nifiStepExecutionRepository.save(stepExecution);
             //also persist to spring batch tables
             //TODO to be removed in next release once Spring batch is completely removed.  Needed since the UI references this table

@@ -421,4 +421,15 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     public int hashCode() {
         return jobExecutionId.hashCode();
     }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("JpaBatchJobExecution{");
+        sb.append("jobExecutionId=").append(jobExecutionId);
+        sb.append(", status=").append(status);
+        sb.append(", startTime=").append(startTime);
+        sb.append(", endTime=").append(endTime);
+        sb.append('}');
+        return sb.toString();
+    }
 }

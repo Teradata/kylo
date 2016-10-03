@@ -93,8 +93,7 @@ public class JpaBatchStepExecution implements Serializable, BatchStepExecution {
     private BatchJobExecution jobExecution;
 
 
-    @OneToMany(targetEntity = JpaBatchStepExecutionContextValue.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "STEP_EXECUTION_ID", referencedColumnName = "STEP_EXECUTION_ID")
+    @OneToMany(targetEntity = JpaBatchStepExecutionContextValue.class, mappedBy = "stepExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<BatchStepExecutionContextValue> stepExecutionContext = new HashSet<>();
 
     @OneToOne(targetEntity = JpaNifiEventStepExecution.class, mappedBy = "stepExecution", fetch = FetchType.EAGER, cascade = CascadeType.ALL)
