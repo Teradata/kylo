@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -170,7 +171,16 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
      */
     private String lastStreamEventMapKey(ProvenanceEventRecordDTO event) {
         StringBuffer sb = new StringBuffer();
-        //  return event.getJobFlowFileId() + "_" + event.getEventType() + "_" + event.isEndOfJob() + "_" + event.isStartOfJob() + "_" + event.getComponentId() + "_" + event.isFailure();
+          return event.getJobFlowFileId() + "_" + event.getEventType() + "_" + event.isEndOfJob() + "_" + event.isStartOfJob() + "_" + event.getComponentId() + "_" + event.isFailure();
+    }
+
+    /**
+     * Key used to reduce the streaming set and send only these relevant events to OpsManager
+     * @param event
+     * @return
+     */
+    private String suppressedStreamEventsKey(ProvenanceEventRecordDTO event) {
+        StringBuffer sb = new StringBuffer();
         if (event.isEndOfJob()) {
             //always send the end of job
             sb.append(event.getJobFlowFileId()).append("_");
@@ -179,6 +189,22 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
             .append(event.isStartOfJob())
             .append(event.isFailure());
         return sb.toString();
+    }
+
+    /**
+     * suppresses the stream events by adding them to the queue using the {@code suppressedStreEventsKey} method
+     */
+    private void addStreamEventsToQueue(){
+        if (!lastStreamEventByJob.isEmpty()) {
+            Map<String,ProvenanceEventRecordDTO> suppressedEvents = new HashMap<>();
+            lastStreamEventByJob.values().stream().forEach(e -> {
+                suppressedEvents.put(suppressedStreamEventsKey(e),e);
+            });
+
+            //   log.info("About to add {} stream events to the queue ",lastStreamEventByJob.size());
+            jmsEvents.addAll(suppressedEvents.values());
+        }
+
     }
 
     /**
@@ -296,7 +322,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
             if (ProvenanceEventUtil.isCompletionEvent(event)) {
                 checkAndMarkAsEndOfJob(event, isRootFLowFileFinished);
                 //if the event is not the first event, but the first event is a Stream then move this to a stream
-                if (RootFlowFile.FIRST_EVENT_TYPE.STREAM.equals(event.getFlowFile().getRootFlowFile().getFirstEventType())) {
+                if (event.getFlowFile().getRootFlowFile().isStream()) {
                     moveToStream(event);
 
                 } else {
@@ -336,7 +362,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
     }
 
     private void addToBatchList(ProvenanceEventRecordDTO event) {
-        log.debug("BATCH Adding Batch event {} ", event);
+        log.info("BATCH Adding Batch event {} ", event);
         event.setIsBatchJob(true);
         event.getFlowFile().getRootFlowFile().markAsBatch();
         jmsEvents.add(event);
@@ -365,10 +391,8 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
      * If the Event is a batch and is the start of the job then set the flag on the Root flow file to indicate the file is of type Batch
      * @param events
      */
-    private List<ProvenanceEventRecordDTO> markFlowFileAsBatch(Collection<ProvenanceEventRecordDTO> events) {
-        List<ProvenanceEventRecordDTO> firstEvents = events.stream().filter(e -> e.isStartOfJob()).collect(Collectors.toList());
-        firstEvents.forEach(e -> e.getFlowFile().getRootFlowFile().markAsBatch());
-        return firstEvents;
+    private void markFlowFileAsBatch(Collection<ProvenanceEventRecordDTO> events) {
+        events.stream().filter(e -> !e.getFlowFile().getRootFlowFile().isBatch()).map(e -> e.getFlowFile().getRootFlowFile()).forEach(rootFlowFile -> rootFlowFile.markAsBatch());
     }
 
     /**
@@ -390,12 +414,8 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
              * if the First Event was a Batch event we should send on those in the {@code lastStreamEventByJob} this event through so it gets reconciled in the Ops Manager
              */
             addStreamingEventsWhoseFirstEventWasABatchToQueue();
-            //add in any lastStreamEventByJob events and push them into the queue
-            if (!lastStreamEventByJob.isEmpty()) {
-                //   log.info("About to add {} stream events to the queue ",lastStreamEventByJob.size());
-                jmsEvents.addAll(lastStreamEventByJob.values());
-            }
-
+            //suppress and add in any lastStreamEventByJob events and push them into the queue
+            addStreamEventsToQueue();
 
             //copy and clear
             events = new ArrayList<>(jmsEvents);

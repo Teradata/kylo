@@ -54,7 +54,7 @@ public class RootFlowFile extends ActiveFlowFile {
     }
 
     public boolean isStream() {
-        return getFirstEventType().equals(FIRST_EVENT_TYPE.STREAM);
+        return getFirstEventType() != null && FIRST_EVENT_TYPE.STREAM.equals(getFirstEventType());
     }
 
     private Set<RootFlowFile> relatedRootFlowFiles = new HashSet<>();
