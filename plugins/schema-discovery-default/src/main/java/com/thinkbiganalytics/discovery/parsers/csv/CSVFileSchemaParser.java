@@ -60,6 +60,8 @@ public class CSVFileSchemaParser implements FileSchemaParser {
         if (autoDetect) {
             CSVAutoDetect autoDetect = new CSVAutoDetect();
             format = autoDetect.detectCSVFormat(sampleData);
+            this.separatorChar = Character.toString(format.getDelimiter());
+            this.quoteChar = Character.toString(format.getQuoteCharacter());
         } else {
             format = CSVFormat.DEFAULT.withAllowMissingColumnNames();
 
@@ -73,6 +75,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
                 format = format.withQuoteMode(QuoteMode.MINIMAL).withQuote(quoteChar.charAt(0));
             }
         }
+
         return format;
     }
 
@@ -86,6 +89,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
 
         // Parse the file
         String sampleData = ParserHelper.extractSampleLines(is, charset, numRowsToSample);
+        Validate.notEmpty(sampleData, "No data in file");
         CSVFormat format = createCSVFormat(sampleData);
         try (Reader reader = new StringReader(sampleData)) {
 
@@ -205,5 +209,17 @@ public class CSVFileSchemaParser implements FileSchemaParser {
 
     public void setNumRowsToSample(int numRowsToSample) {
         this.numRowsToSample = numRowsToSample;
+    }
+
+    public String getSeparatorChar() {
+        return separatorChar;
+    }
+
+    public String getQuoteChar() {
+        return quoteChar;
+    }
+
+    public String getEscapeChar() {
+        return escapeChar;
     }
 }
