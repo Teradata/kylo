@@ -23,9 +23,9 @@ public class CheckDataLatestJobsQuery extends CheckDataAllJobsQuery {
     QueryBuilder q = super.getQueryBuilder();
     q.replaceFrom(" BATCH_JOB_EXECUTION e" +
                   " LEFT JOIN BATCH_JOB_INSTANCE ji on ji.JOB_INSTANCE_ID = e.JOB_INSTANCE_ID " +
-                  " LEFT JOIN BATCH_EXECUTION_CONTEXT_VALUES exec_ctx1 ON exec_ctx1.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
+                  " LEFT JOIN BATCH_JOB_EXECUTION_CTX_VALS exec_ctx1 ON exec_ctx1.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
                   " AND exec_ctx1.KEY_NAME = :validation_key " +
-                  " LEFT JOIN BATCH_EXECUTION_CONTEXT_VALUES exec_ctx2 ON exec_ctx2.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
+                  " LEFT JOIN BATCH_JOB_EXECUTION_CTX_VALS exec_ctx2 ON exec_ctx2.JOB_EXECUTION_ID = e.JOB_EXECUTION_ID " +
                   " AND exec_ctx2.KEY_NAME = :validation_message_key ")
         .innerJoin(getMaxQuery()).as("p2 ").on("p2.MAX_JOB_EXECUTION_ID = e.JOB_EXECUTION_ID");
     return q;

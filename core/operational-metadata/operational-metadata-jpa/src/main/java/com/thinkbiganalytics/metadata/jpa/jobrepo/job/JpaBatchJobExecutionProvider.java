@@ -20,7 +20,6 @@ import com.thinkbiganalytics.metadata.jpa.jobrepo.step.JpaBatchStepExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.step.JpaBatchStepExecutionContextValue;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -132,11 +131,11 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         JpaBatchJobExecution jobExecution = new JpaBatchJobExecution();
         jobExecution.setJobInstance(jobInstance);
         //add in the parameters from the attributes
-        jobExecution.setCreateTime(DateTimeUtil.convertToUTC(DateTime.now()));
+        jobExecution.setCreateTime(DateTimeUtil.getNowUTCTime());
         jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
         jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
         jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
-        jobExecution.setLastUpdated(DateTimeUtil.convertToUTC(DateTime.now()));
+        jobExecution.setLastUpdated(DateTimeUtil.getNowUTCTime());
 
         //create the job params
         Map<String, Object> jobParameters = new HashMap<>();
@@ -156,12 +155,12 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         jobParameters.put(FeedConstants.PARAM__FEED_NAME, event.getFeedName());
         jobParameters.put(FeedConstants.PARAM__JOB_TYPE, FeedConstants.PARAM_VALUE__JOB_TYPE_FEED);
         jobParameters.put(FeedConstants.PARAM__FEED_IS_PARENT, "true");
-        Set<JpaBatchJobExecutionParameter> jpaJobParameters = buildJobParameters(jobExecution,jobParameters);
+        Set<JpaBatchJobExecutionParameter> jpaJobParameters = addJobParameters(jobExecution, jobParameters);
         this.jobParametersRepository.save(jpaJobParameters);
         return jobExecution;
     }
 
-    private  Set<JpaBatchJobExecutionParameter> buildJobParameters(JpaBatchJobExecution jobExecution, Map<String, Object> jobParameters) {
+    private Set<JpaBatchJobExecutionParameter> addJobParameters(JpaBatchJobExecution jobExecution, Map<String, Object> jobParameters) {
         Set<JpaBatchJobExecutionParameter> jobExecutionParametersList = new HashSet<>();
         for (Map.Entry<String, Object> entry : jobParameters.entrySet()) {
             JpaBatchJobExecutionParameter jobExecutionParameters = jobExecution.addParameter(entry.getKey(), entry.getValue());
@@ -271,8 +270,8 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
            } else {
                jobParameters = new HashMap<>();
            }
-           ;
-           this.jobParametersRepository.save(buildJobParameters(jobExecution, jobParameters));
+
+           this.jobParametersRepository.save(addJobParameters(jobExecution, jobParameters));
            save = true;
        }
        if(save) {
@@ -410,7 +409,8 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
             String nifiFeedName = event.getAttributeMap().get(NIFI_FEED_PROPERTY);
             String feedName = nifiCategory + "." + nifiFeedName;
             if (FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK.equalsIgnoreCase(jobType)) {
-                ((JpaBatchJobExecution) jobExecution).setAsCheckDataJob(feedName);
+                Set<JpaBatchJobExecutionParameter> updatedParams = ((JpaBatchJobExecution) jobExecution).setAsCheckDataJob(feedName);
+                jobParametersRepository.save(updatedParams);
                 return true;
             }
         }
