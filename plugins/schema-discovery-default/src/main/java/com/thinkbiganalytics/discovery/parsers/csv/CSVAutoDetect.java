@@ -152,6 +152,13 @@ class CSVAutoDetect {
             for (int i = 0; i < chars.length; i++) {
                 char c = chars[i];
                 switch (c) {
+/*                    case ' ':
+                        increment(' ', true);
+                        break;
+                    case ':':
+                        increment(':', true);
+                        break;
+*/
                     case ';':
                         increment(';', true);
                         break;
@@ -164,6 +171,11 @@ class CSVAutoDetect {
                     case '\t':
                         increment('\t', true);
                         break;
+/*
+                    case '+':
+                        increment('+', true);
+                        break;
+*/
                     case '"':
                         increment('"', false);
                         break;
