@@ -91,15 +91,15 @@ public class LdapAuthConfig {
     public static class LdapContextSourceFactory extends AbstractFactoryBean<LdapContextSource> {
         
         private URI uri;
-        private String userDn;
+        private String authDn;
         private char[] password = "".toCharArray();
         
         public void setUri(String uri) {
             this.uri = URI.create(uri);
         }
         
-        public void setUserDn(String userDn) {
-            this.userDn = userDn;
+        public void setAuthDn(String userDn) {
+            this.authDn = userDn;
         }
 
         public void setPassword(String password) {
@@ -114,7 +114,7 @@ public class LdapAuthConfig {
         @Override
         protected LdapContextSource createInstance() throws Exception {
             DefaultSpringSecurityContextSource cxt = new DefaultSpringSecurityContextSource(this.uri.toASCIIString());
-            if (StringUtils.isNotEmpty(this.userDn)) cxt.setUserDn(this.userDn);
+            if (StringUtils.isNotEmpty(this.authDn)) cxt.setUserDn(this.authDn);
             if (ArrayUtils.isNotEmpty(this.password)) cxt.setPassword(new String(this.password));
             cxt.setCacheEnvironmentProperties(false);
             cxt.afterPropertiesSet();
@@ -152,8 +152,8 @@ public class LdapAuthConfig {
     public static class LdapAuthoritiesPopulatorFactory extends AbstractFactoryBean<LdapAuthoritiesPopulator> {
 
         private LdapContextSource contextSource;
-        private String groupsOu;
-        private String groupRoleAttribute;
+        private String groupsBase;
+        private String groupNameAttr;
         private boolean enableGroups = false;
         
         public LdapAuthoritiesPopulatorFactory(LdapContextSource contextSource) {
@@ -161,12 +161,12 @@ public class LdapAuthConfig {
             this.contextSource = contextSource;
         }
         
-        public void setGroupsOu(String groupsOu) {
-            this.groupsOu = groupsOu;
+        public void setGroupsBase(String groupsOu) {
+            this.groupsBase = groupsOu;
         }
         
-        public void setGroupRoleAttribute(String groupRoleAttribute) {
-            this.groupRoleAttribute = groupRoleAttribute;
+        public void setGroupNameAttr(String groupRoleAttribute) {
+            this.groupNameAttr = groupRoleAttribute;
         }
         
         public void setEnableGroups(boolean enabled) {
@@ -181,8 +181,8 @@ public class LdapAuthConfig {
         @Override
         protected LdapAuthoritiesPopulator createInstance() throws Exception {
             if (this.enableGroups) {
-                DefaultLdapAuthoritiesPopulator authPopulator = new DefaultLdapAuthoritiesPopulator(this.contextSource, this.groupsOu);
-                authPopulator.setGroupRoleAttribute(this.groupRoleAttribute);
+                DefaultLdapAuthoritiesPopulator authPopulator = new DefaultLdapAuthoritiesPopulator(this.contextSource, this.groupsBase);
+                authPopulator.setGroupRoleAttribute(this.groupNameAttr);
                 authPopulator.setRolePrefix("");
                 authPopulator.setConvertToUpperCase(false);
                 return authPopulator;
