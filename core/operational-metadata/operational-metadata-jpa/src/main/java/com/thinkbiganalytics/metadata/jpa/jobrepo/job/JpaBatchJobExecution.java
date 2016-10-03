@@ -372,15 +372,16 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     }
 
 
-    public void setAsCheckDataJob(String feedNameReference) {
+    public Set<JpaBatchJobExecutionParameter> setAsCheckDataJob(String feedNameReference) {
+        Set<JpaBatchJobExecutionParameter> updatedParams = new HashSet<>();
 
-        BatchJobExecutionParameter feedNameRefParam = null;
-        BatchJobExecutionParameter jobTypeParam = null;
+        JpaBatchJobExecutionParameter feedNameRefParam = null;
+        JpaBatchJobExecutionParameter jobTypeParam = null;
         for (BatchJobExecutionParameter p : getJobParameters()) {
             if (FeedConstants.PARAM__FEED_NAME.equalsIgnoreCase(p.getKeyName())) {
-                feedNameRefParam = p;
+                feedNameRefParam = (JpaBatchJobExecutionParameter) p;
             } else if (FeedConstants.PARAM__JOB_TYPE.equalsIgnoreCase(p.getKeyName())) {
-                jobTypeParam = p;
+                jobTypeParam = (JpaBatchJobExecutionParameter) p;
             }
 
             if (feedNameRefParam != null && jobTypeParam != null) {
@@ -399,6 +400,11 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         } else {
             jobTypeParam.setStringVal(FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK);
         }
+
+        updatedParams.add(feedNameRefParam);
+
+        updatedParams.add(jobTypeParam);
+        return updatedParams;
 
     }
 
