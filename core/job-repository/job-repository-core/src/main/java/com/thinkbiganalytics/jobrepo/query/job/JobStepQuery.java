@@ -53,13 +53,13 @@ public class JobStepQuery extends AbstractConstructedQuery {
   @Override
   public QueryBuilder getQueryBuilder() {
     return DefaultQueryBuilder.newQuery(getDatabaseType()).select(
-        "SELECT MAX(se.JOB_EXECUTION_ID) as \"JOB_EXECUTION_ID\", se.STEP_NAME,MAX(se.STEP_EXECUTION_ID) as \"STEP_EXECUTION_ID\", je.JOB_INSTANCE_ID")
+        "SELECT MAX(se.JOB_EXECUTION_ID) as \"JOB_EXECUTION_ID\", se.STEP_NAME,MAX(se.STEP_EXECUTION_ID) as \"STEP_EXECUTION_ID\", je.JOB_INSTANCE_ID, nifiStep.EVENT_ID")
         .from("FROM BATCH_STEP_EXECUTION se\n" +
               "INNER JOIN BATCH_JOB_EXECUTION je on je.JOB_EXECUTION_ID = se.JOB_EXECUTION_ID\n" +
-              "where je.JOB_INSTANCE_ID = (SELECT JOB_INSTANCE_ID from BATCH_JOB_EXECUTION WHERE JOB_EXECUTION_ID = :executionId )\n"
-              +
+              " LEFT JOIN BATCH_NIFI_STEP nifiStep on nifiStep.STEP_EXECUTION_ID = se.STEP_EXECUTION_ID " +
+              "where je.JOB_INSTANCE_ID = (SELECT JOB_INSTANCE_ID from BATCH_JOB_EXECUTION WHERE JOB_EXECUTION_ID = :executionId )\n" +
               " AND je.JOB_EXECUTION_ID <= :executionId " +
-              "GROUP BY  se.STEP_NAME,je.JOB_INSTANCE_ID ")
+              "GROUP BY  se.STEP_NAME,je.JOB_INSTANCE_ID, nifiStep.EVENT_ID ")
         .withNamedParameter("executionId", jobExecutionId)
         .defaultOrderBy("MAX(se.STEP_EXECUTION_ID)", "asc");
 
@@ -75,6 +75,7 @@ public class JobStepQuery extends AbstractConstructedQuery {
         row.setJobInstanceId(resultSet.getLong("JOB_INSTANCE_ID"));
         row.setStepExecutionId(resultSet.getLong("STEP_EXECUTION_ID"));
         row.setStepName(resultSet.getString("STEP_NAME"));
+        row.setNifiEventId(resultSet.getLong("EVENT_ID"));
         return row;
       }
     };

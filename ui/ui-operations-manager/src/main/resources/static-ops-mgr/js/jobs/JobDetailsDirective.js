@@ -312,6 +312,8 @@
 
 
             if (job.executedSteps) {
+                job.executedSteps = _.chain(job.executedSteps).sortBy('startTime').sortBy('nifiEventId').value();
+
                 angular.forEach(job.executedSteps, function(step, i) {
                     var stepName = "Step " + (i + 1);
                     if (self.stepData[stepName] == undefined) {

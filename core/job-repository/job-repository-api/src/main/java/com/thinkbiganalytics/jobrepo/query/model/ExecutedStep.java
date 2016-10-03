@@ -86,4 +86,8 @@ public interface ExecutedStep {
   public void setRunning(boolean running);
 
 
+  void setNifiEventId(Long nifiEventId);
+
+  Long getNifiEventId();
+
 }

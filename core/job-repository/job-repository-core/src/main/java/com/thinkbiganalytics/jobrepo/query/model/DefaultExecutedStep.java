@@ -30,6 +30,7 @@ public class DefaultExecutedStep implements Serializable, ExecutedStep {
   private String exitDescription;
   private long id;
   private int version;
+  private Long nifiEventId;
 
   private Long runTime;
   private Long timeSinceEndTime;
@@ -234,5 +235,13 @@ public class DefaultExecutedStep implements Serializable, ExecutedStep {
   @Override
   public void setRunning(boolean running) {
     this.running = running;
+  }
+
+  public Long getNifiEventId() {
+    return nifiEventId;
+  }
+
+  public void setNifiEventId(Long nifiEventId) {
+    this.nifiEventId = nifiEventId;
   }
 }
