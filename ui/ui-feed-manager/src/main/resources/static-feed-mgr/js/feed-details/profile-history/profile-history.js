@@ -78,7 +78,8 @@
 
                      //sort it desc
 
-                     dataArr = _.sortBy(dataArr,dateColumn).reverse();
+                    // dataArr = _.sortBy(dataArr,dateColumn).reverse();
+                     dataArr = _.sortBy(dataArr,'DATE_TIME').reverse();
 
                      self.profileSummary = dataArr;
 
