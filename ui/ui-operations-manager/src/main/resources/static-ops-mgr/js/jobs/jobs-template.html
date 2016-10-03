@@ -40,7 +40,7 @@
                                     <span class="column-title column-title-bottom">Feed</span>
                                 </div>
                                 <div flex-md="30" flex-gt-md="20" flex-sm="30" layout="column" hide show-gt-xs  show-lg show-xl show-sm show-md class="item-column  md-list-item-text" ng-click="vm.jobDetails($event,job)">
-                                    <span class="item-title" ng-if="job.startTime">{{job.startTime | date: 'MMM d, yyyy HH:mm:ss'}}</span>
+                                    <span class="item-title" ng-if="job.startTime">{{job.startTime | date: 'MMM d, yyyy HH:mm:ss' : 'UTC'}}</span>
                                     <span class="item-title" ng-if="job.startTime == undefined"> N/A </span>
                                     <span class="column-title column-title-bottom">Start Time</span>
                                 </div>
