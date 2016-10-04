@@ -169,16 +169,39 @@ public class CSVFileSchemaParserTest {
         }
     }
 
+    @org.junit.Test
+    public void testUTF16() throws Exception {
+        try (InputStream is = CSVFileSchemaParserTest.class.getClassLoader().getResourceAsStream("MOCK_DATA_utf16_encoded.txt")) {
+            parser.setAutoDetect(false);
+            parser.setSeparatorChar(",");
+            parser.setQuoteChar("\t");
+            HiveTableSchema schema = toHiveTableSchema(is, Charset.forName("UTF-16LE"));
+            assertEquals("UTF-16LE", schema.getCharset());
+            List<? extends Field> fields = schema.getFields();
+            assertTrue(fields.size() == 4);
+
+            IntStream.range(0, fields.size()).forEach(idx -> {
+                assertEquals(fields.get(idx).getName(), "col" + (idx + 1));
+                assertEquals(fields.get(idx).getSampleValues().size(), 4);
+            });
+        }
+    }
+
     private void checkInvalidFormatException(IOException e) {
         assertTrue("Expecting unrecognized format exception", e.getLocalizedMessage().contains("Unrecognized format"));
     }
 
     private HiveTableSchema toHiveTableSchema(InputStream is) throws IOException {
-        Schema schema = parser.parse(is, Charset.defaultCharset(), TableSchemaType.HIVE);
+        return toHiveTableSchema(is, Charset.defaultCharset());
+    }
+
+    private HiveTableSchema toHiveTableSchema(InputStream is, Charset cs) throws IOException {
+        Schema schema = parser.parse(is, cs, TableSchemaType.HIVE);
         assertTrue(schema != null);
         assertTrue(schema instanceof HiveTableSchema);
         return (HiveTableSchema) schema;
     }
+
 
     private HiveTableSchema validateSchema1(String text) throws IOException {
         try (InputStream is = toInputStream(text)) {

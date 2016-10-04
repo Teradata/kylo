@@ -95,6 +95,7 @@ public class CSVFileSchemaParser implements FileSchemaParser {
 
             CSVParser parser = format.parse(reader);
             DefaultFileSchema fileSchema = populateSchema(parser);
+            fileSchema.setCharset(charset.name());
 
             // Convert to target schema with proper derived types
             Schema targetSchema = convertToTarget(target, fileSchema);

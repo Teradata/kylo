@@ -25,6 +25,9 @@ public class SchemaParserAnnotationTransformer extends BasePolicyAnnotationTrans
         descriptor.setDescription(annotation.description());
         descriptor.setProperties(properties);
         descriptor.setObjectClassType(policy.getClass().getTypeName());
+        descriptor.setTags(annotation.tags());
+        descriptor.setGeneratesHiveSerde(annotation.generatesHiveSerde());
+        descriptor.setSupportsBinary(annotation.supportsBinary());
         return descriptor;
     }
 
