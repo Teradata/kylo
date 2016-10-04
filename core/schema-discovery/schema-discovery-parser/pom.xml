@@ -8,7 +8,7 @@
   <parent>
     <artifactId>thinkbig-schema-discovery</artifactId>
     <groupId>com.thinkbiganalytics.datalake</groupId>
-    <version>0.4.0</version>
+    <version>0.4.1-SNAPSHOT</version>
   </parent>
 
 
@@ -23,7 +23,7 @@
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
       <artifactId>thinkbig-kerberos-core</artifactId>
-      <version>0.4.0</version>
+      <version>0.4.1-SNAPSHOT</version>
     </dependency>
     <dependency>
       <groupId>org.apache.commons</groupId>

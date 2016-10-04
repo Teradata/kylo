@@ -10,7 +10,7 @@
     <parent>
         <groupId>com.thinkbiganalytics.nifi.elasticsearch</groupId>
         <artifactId>thinkbig-nifi-elasticsearch-bundle</artifactId>
-        <version>0.4.0</version>
+        <version>0.4.1-SNAPSHOT</version>
     </parent>
     <packaging>nar</packaging>
     <properties>
