@@ -151,6 +151,13 @@ public class CacheUtil {
         }
 
         if (ProvenanceEventUtil.isCompletionEvent(event)) {
+            //try to find the last provenance event that was completed in the flow that matches the source connection id for this incoming event.
+            //this will be the previous processor in the flow
+            ProvenanceEventRecordDTO prevEvent = provenanceFeedLookup.getPreviousProvenanceEventFromConnectionRelationship(event);
+            if (prevEvent != null) {
+                log.debug("Found previous event {} for event {} ", prevEvent, event);
+                event.setPreviousEvent(prevEvent);
+            }
             flowFile.addCompletionEvent(event);
         }
 

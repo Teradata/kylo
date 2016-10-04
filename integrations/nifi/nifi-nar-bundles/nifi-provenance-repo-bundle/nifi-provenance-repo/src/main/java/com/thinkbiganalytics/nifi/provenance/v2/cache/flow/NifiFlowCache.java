@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -177,7 +178,10 @@ public class NifiFlowCache {
         if(group.getFailureConnectionIdToSourceProcessorMap() != null){
             failureConnectionIdToSourceProcessorMap.putAll(group.getFailureConnectionIdToSourceProcessorMap());
         }
+
+
     }
+
 
     public NifiFlowProcessor getProcessor(String processorId) {
         return processorIdProcessorMap.get(processorId);
@@ -334,6 +338,17 @@ public class NifiFlowCache {
          List<NifiFlowProcessor> processors = failureConnectionIdToSourceProcessorMap.get(connectionId);
         if(processors != null){
             return processors.get(0).getId();
+        }
+        return null;
+    }
+
+    /**
+     * Returns a set of all the matching Source Component Ids related to this connection
+     */
+    public Set<String> getProcessorIdsWithDestinationConnectionIdentifier(String connectionId) {
+        List<NifiFlowProcessor> processors = destinationConnectionIdProcessorMap.get(connectionId);
+        if (processors != null) {
+            return processors.stream().map(p -> p.getId()).collect(Collectors.toSet());
         }
         return null;
     }

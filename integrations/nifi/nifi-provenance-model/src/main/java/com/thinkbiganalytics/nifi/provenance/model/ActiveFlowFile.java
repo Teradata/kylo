@@ -328,6 +328,9 @@ public class ActiveFlowFile {
                         previousEvent.addChildUuid(this.getId());
                     }
             }
+            //ensure its relates to the correct connection
+
+
         }
     }
 
@@ -419,6 +422,30 @@ public class ActiveFlowFile {
             for (ActiveFlowFile ff : getParents()) {
                 if (!ff.equals(this)) {
                     e = ff.getFirstCompletedEventsForProcessorId(processorId, lookupToParents);
+                    if (e != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return e;
+
+    }
+
+    public ProvenanceEventRecordDTO getLastCompletedEventForProcessorId(String processorId) {
+        return getLastCompletedEventForProcessorId(processorId, true);
+    }
+
+    public ProvenanceEventRecordDTO getLastCompletedEventForProcessorId(String processorId, boolean lookupToParents) {
+        ProvenanceEventRecordDTO e = null;
+        List<ProvenanceEventRecordDTO> processorEvents = completedEventsByProcessorId.get(processorId);
+        if (processorEvents != null && !processorEvents.isEmpty()) {
+            e = processorEvents.get(processorEvents.size() - 1);
+        }
+        if (lookupToParents && e == null && !getParents().isEmpty()) {
+            for (ActiveFlowFile ff : getParents()) {
+                if (!ff.equals(this)) {
+                    e = ff.getLastCompletedEventForProcessorId(processorId, lookupToParents);
                     if (e != null) {
                         break;
                     }
