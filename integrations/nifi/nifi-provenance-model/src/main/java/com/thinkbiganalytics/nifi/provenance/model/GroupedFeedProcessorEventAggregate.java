@@ -57,6 +57,8 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
      */
     private boolean isLastEventStream;
 
+    private boolean containsStartingJobEvents;
+
 
     /**
      * Collection of events in temporary state where the system is undecied if they are a stream or not.
@@ -210,7 +212,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
     /**
      * Moves the entire collection of {@code potentialStreamEvents} to the {@code jmsEvents} batch collection
      * and clears the {@code potentialStreamEvents} list
-     * @return 
+     * @return
      */
     private void movePotentialStreamToBatch() {
         if (!potentialStreamEvents.isEmpty()) {
@@ -226,16 +228,25 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
      */
     private void finalMovePotentialStreamToBatch() {
         if (!potentialStreamEvents.isEmpty()) {
-            potentialStreamEvents.stream().filter(e -> !e.getFlowFile().getRootFlowFile().isBatch() && e.isStartOfJob()).map(
-                e -> e.getFlowFile().getRootFlowFile()).forEach(rootFlowFile -> rootFlowFile.markAsBatch());
+            //initially mark any starting events in the group as Batch flow files.
+            Set<RootFlowFile> batchRootFlowFiles = potentialStreamEvents.stream().filter(e -> !e.getFlowFile().getRootFlowFile().isBatch() && e.isStartOfJob()).map(
+                e -> e.getFlowFile().getRootFlowFile()).collect(Collectors.toSet());
+            if (batchRootFlowFiles != null && !batchRootFlowFiles.isEmpty()) {
+                batchRootFlowFiles.forEach(rootFlowFile -> {
+                    log.debug("final move mark as batch {} ", rootFlowFile.getId());
+                    rootFlowFile.markAsBatch();
+                });
+            }
 
+            //for those that are part of a batch flow file, add to the batch group
+            //otherwise it is part of a stream
             potentialStreamEvents.stream().forEach(event -> {
                 if (event.getFlowFile().getRootFlowFile().isBatch()) {
                     addToBatchList(event);
                 } else {
-                    log.info("moved event to stream even tho it was at the end. {} ", event);
+                    log.debug("final move... moving event to stream even instead of batch. event: {}, root ffId: {}, isBatch: {} ", event, event.getFlowFile().getRootFlowFile().getId(),
+                              event.getFlowFile().getRootFlowFile().isBatch());
                     lastStreamEventByJob.put(lastStreamEventMapKey(event), event);
-                    // markStreamAsBatchForEventWithRelatedBatchJobs(event);
                     streamEvents.add(event);
 
                 }
@@ -338,6 +349,9 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
     private void groupEventAsStreamOrBatch(ProvenanceEventRecordDTO event, boolean isRootFLowFileFinished) {
         lock.lock();
         try {
+            if (event.isStartOfJob()) {
+                containsStartingJobEvents = true;
+            }
 
             if (lastEventTime == null) {
                 lastEventTime = event.getEventTime();
@@ -504,6 +518,10 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
 
     public String getSummary() {
         return stats.toString();
+    }
+
+    public boolean isContainsStartingJobEvents() {
+        return containsStartingJobEvents;
     }
 
     @Override
