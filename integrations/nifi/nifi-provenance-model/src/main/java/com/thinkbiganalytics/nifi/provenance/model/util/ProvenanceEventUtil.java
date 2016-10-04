@@ -20,7 +20,7 @@ public class ProvenanceEventUtil {
 
     public static final String[] ENDING_EVENT_TYPES = {"DROP", "EXPIRE",};
 
-    public static final String[] NON_COMPLETION_EVENTS = {"SEND", "CLONE"};
+    public static final String[] NON_COMPLETION_EVENTS = {"SEND"};
 
     public static boolean contains(String[] allowedEvents, String event) {
         return Arrays.stream(allowedEvents).anyMatch(event::equals);

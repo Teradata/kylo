@@ -262,7 +262,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
        //if the event is the start of the Job, but the job execution was created from another downstream event, ensure the start time and event are related correctly
        if(event.isStartOfJob() && !isNew ){
            jobExecution.getNifiEventJobExecution().setEventId(event.getEventId());
-           jobExecution.setStartTime(event.getEventTime());
+           jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
            //create the job params
            Map<String, Object> jobParameters = new HashMap<>();
            if(event.isStartOfJob() && event.getAttributeMap() != null) {

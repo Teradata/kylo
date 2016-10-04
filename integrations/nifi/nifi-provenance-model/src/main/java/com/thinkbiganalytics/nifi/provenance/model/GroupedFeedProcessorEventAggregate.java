@@ -365,6 +365,9 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
         log.info("BATCH Adding Batch event {} ", event);
         event.setIsBatchJob(true);
         event.getFlowFile().getRootFlowFile().markAsBatch();
+        if (event.getPreviousEvent() == null && !event.isStartOfJob()) {
+            event.getFlowFile().setPreviousEvent(event);
+        }
         jmsEvents.add(event);
     }
 

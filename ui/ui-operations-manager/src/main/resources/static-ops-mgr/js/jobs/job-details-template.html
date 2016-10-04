@@ -266,7 +266,7 @@
             </div>
           </md-list-item>
           <md-divider></md-divider>
-          <md-list-item ng-if="vm.jobData.endTime != null">
+          <md-list-item ng-if="vm.jobData.endTime != null && vm.jobData.running == false">
             <div layout="column" class="item-column md-list-item-text ">
                                                <span class="item-title">{{vm.jobData.endTime | date:'MMM d, yyyy HH:mm:ss'}}
                                                </span>
