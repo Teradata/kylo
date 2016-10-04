@@ -19,7 +19,7 @@ angular.module(COMMON_APP_MODULE_NAME).directive('currentTime', function ($http,
             dateFormat: '@',
             refreshInterval: '@'
         },
-        template: "<span>{{currentTimeUtc}} UTC</span>",
+        template: "<span>{{currentTimeUtc}}</span>",
         link: function (scope, element, attrs) {
 
             if (scope.dateFormat == null) {
@@ -28,7 +28,7 @@ angular.module(COMMON_APP_MODULE_NAME).directive('currentTime', function ($http,
 
             function getTime() {
                 $http.get('/proxy/v1/configuration/system-time').then(function (response) {
-                    scope.currentTimeUtc = $filter('date')(response.data, scope.dateFormat, 'UTC/GMT ')
+                    scope.currentTimeUtc = $filter('date')(response.data, scope.dateFormat)
                 });
             }
 

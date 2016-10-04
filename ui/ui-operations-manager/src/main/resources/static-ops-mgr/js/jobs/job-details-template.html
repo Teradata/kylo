@@ -21,7 +21,7 @@
             </div>
 
             <div flex="30" layout="column">
-                                               <span class="item-title">{{vm.jobData.startTime | date:'MMM d, yyyy HH:mm:ss' : 'UTC'}}
+                                               <span class="item-title">{{vm.jobData.startTime | date:'MMM d, yyyy HH:mm:ss'}}
                                                </span>
               <span class="column-title column-title-bottom">Start Time</span>
             </div>
@@ -143,7 +143,7 @@
                       </div>
 
                       <div flex="30" layout="column">
-                                               <span class="item-title">{{step.content.startTime | date:'MMM d, yyyy HH:mm:ss' : 'UTC'}}
+                                               <span class="item-title">{{step.content.startTime | date:'MMM d, yyyy HH:mm:ss'}}
                                                </span>
                         <span class="column-title column-title-bottom">Start Time</span>
                       </div>
@@ -260,7 +260,7 @@
           <md-divider></md-divider>
           <md-list-item>
             <div layout="column" class="item-column md-list-item-text ">
-                                               <span class="item-title">{{vm.jobData.startTime | date:'MMM d, yyyy HH:mm:ss' : 'UTC'}}
+                                               <span class="item-title">{{vm.jobData.startTime | date:'MMM d, yyyy HH:mm:ss'}}
                                                </span>
               <span class="column-title column-title-bottom">Start Time</span>
             </div>
@@ -268,7 +268,7 @@
           <md-divider></md-divider>
           <md-list-item ng-if="vm.jobData.endTime != null">
             <div layout="column" class="item-column md-list-item-text ">
-                                               <span class="item-title">{{vm.jobData.endTime | date:'MMM d, yyyy HH:mm:ss' : 'UTC'}}
+                                               <span class="item-title">{{vm.jobData.endTime | date:'MMM d, yyyy HH:mm:ss'}}
                                                </span>
               <span class="column-title column-title-bottom">End Time</span>
             </div>
