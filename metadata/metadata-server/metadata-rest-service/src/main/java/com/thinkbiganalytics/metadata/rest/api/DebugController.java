@@ -12,6 +12,7 @@ import java.util.List;
 import javax.inject.Inject;
 import javax.jcr.Node;
 import javax.jcr.Session;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.DefaultValue;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -106,6 +107,31 @@ public class DebugController {
                            new FeedExecutedSinceFeed("DependentCategory", "DependentFeed", "ExecutedSinceCategory", "ExecutedSinceFeed"));
         return procond;
     }
+    
+    @DELETE
+    @Path("jcr/{abspath: .*}")
+    @Produces(MediaType.TEXT_PLAIN)
+    public String deleteJcrTree(@PathParam("abspath") final String abspath) {
+        StringWriter sw = new StringWriter();
+        PrintWriter pw = new PrintWriter(sw);
+        
+        try {
+            metadata.commit(() -> {
+                Session session = JcrMetadataAccess.getActiveSession();
+                Node node = session.getRootNode().getNode(abspath);
+                String nodeStr = node.toString();
+                
+                node.remove();
+                pw.print("DELETING: ");
+                pw.println(nodeStr);
+            });
+        } catch (Exception e) {
+            e.printStackTrace(pw);
+        }
+        
+        pw.flush();
+        return sw.toString();
+    }
 
     @GET
     @Path("jcr/{abspath: .*}")
@@ -117,7 +143,7 @@ public class DebugController {
 
             try {
                 Session session = JcrMetadataAccess.getActiveSession();
-                Node node = session.getNode("/" + abspath);
+                Node node = session.getRootNode().getNode(abspath);
                 JcrTools tools = new JcrTool(true, pw);
                 tools.printSubgraph(node);
             } catch (Exception e) {

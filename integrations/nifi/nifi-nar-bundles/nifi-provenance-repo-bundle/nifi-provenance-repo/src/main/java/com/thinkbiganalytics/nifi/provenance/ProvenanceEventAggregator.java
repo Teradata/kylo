@@ -24,6 +24,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -373,7 +374,15 @@ public class ProvenanceEventAggregator implements NifiRestConnectionListener {
     private void checkAndProcess() {
         //update the collection time
 
-        List<ProvenanceEventRecordDTO> eventsSentToJms = eventsToAggregate.values().stream().flatMap(feedProcessorEventAggregate -> {
+        List<ProvenanceEventRecordDTO> eventsSentToJms = eventsToAggregate.values().stream().sorted(new Comparator<GroupedFeedProcessorEventAggregate>() {
+            @Override
+            public int compare(GroupedFeedProcessorEventAggregate o1, GroupedFeedProcessorEventAggregate o2) {
+                boolean v1 = o1.isContainsStartingJobEvents();
+                boolean v2 = o2.isContainsStartingJobEvents();
+                return (v1 == v2 ? 0 : (v1 ? -1 : 1));
+            }
+        }).flatMap(feedProcessorEventAggregate -> {
+            log.debug("collect and send {}, {} ", feedProcessorEventAggregate.getProcessorId(), feedProcessorEventAggregate.isContainsStartingJobEvents());
             return feedProcessorEventAggregate.collectEventsToBeSentToJmsQueue().stream();
         }).collect(Collectors.toList());
         log.debug("collecting {} events from {} - {} ", eventsSentToJms.size(), lastCollectionTime, DateTime.now());

@@ -39,6 +39,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import javax.annotation.Nonnull;
+
 /**
  * Created by sr186054 on 5/6/16.
  */
@@ -437,40 +439,53 @@ public class TemplateCreationHelper {
     }
 
     /**
-     * When versioning we want to delete only the input port connections. keep output port connections in place as they may still have data running through them that should flow through the system
+     * Deletes the input port connections to the specified process group.
+     *
+     * <p>When versioning we want to delete only the input port connections. Keep output port connections in place as they may still have data running through them that should flow through the
+     * system.</p>
+     *
+     * @param processGroup the process group with input port connections
+     * @throws NifiClientRuntimeException if a connection cannot be deleted
      */
-    private void deleteInputPortConnections(ProcessGroupDTO processGroup) throws NifiClientRuntimeException {
-        ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(processGroup.getParentGroupId());
-        if (connectionsEntity != null) {
+    private void deleteInputPortConnections(@Nonnull final ProcessGroupDTO processGroup) throws NifiClientRuntimeException {
+        // Get the list of incoming connections coming from some source to this process group
+        final ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(processGroup.getParentGroupId());
+        if (connectionsEntity == null) {
+            return;
+        }
 
-            //Incoming connections coming from some source to this process group.
+        final List<ConnectionDTO> connections = NifiConnectionUtil.findConnectionsMatchingDestinationGroupId(connectionsEntity.getConnections(), processGroup.getId());
+        if (connections == null) {
+            return;
+        }
 
-            List<ConnectionDTO> connections = NifiConnectionUtil.findConnectionsMatchingDestinationGroupId(connectionsEntity.getConnections(), processGroup.getId());
-            if (connections != null) {
-                for (ConnectionDTO connection : connections) {
-                    String type = connection.getSource().getType();
-                    log.info("Found Connection Matching Destination Group Id. {}, connected to {} as type: {} ", connection.getId(), connection.getDestination().getId(), type);
-                    if (NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)) {
-                        //stop the port
-                        try {
-                            restClient.stopInputPort(connection.getSource().getGroupId(), connection.getSource().getId());
-                            log.info("Stopped input port {} for connection: {} ", connection.getSource().getId(), connection.getId());
-                        } catch (NifiClientRuntimeException e) {
-                            log.info("Error stopping the input port {} for connection: {} prior to deleting the connection.", connection.getSource().getId(), connection.getId());
+        // Delete the connections
+        for (ConnectionDTO connection : connections) {
+            final String type = connection.getSource().getType();
+            log.info("Found connection {} matching source type {} and destination group {}.", connection.getId(), type, connection.getDestination().getId());
 
-                        }
-                    }
-                    try {
-                        restClient.deleteConnection(connection, false);
-                    } catch (NifiClientRuntimeException e) {
-                        if (connection != null && connection.getSource() != null && connection.getDestination() != null) {
-                            log.info("Error deleting the connection Source/Dest {}/{}, Connection Id: {}.", connection.getSource().getName(), connection.getDestination().getName(),
-                                     connection.getId());
-                        }
-                    }
+            // Stop the port
+            if (NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)) {
+                try {
+                    restClient.stopInputPort(connection.getSource().getGroupId(), connection.getSource().getId());
+                    log.info("Stopped input port {} for connection: {} ", connection.getSource().getId(), connection.getId());
+                } catch (Exception e) {
+                    log.error("Failed to stop input port for connection: {}", connection.getId(), e);
+                    throw new NifiClientRuntimeException("Error stopping the input port " + connection.getSource().getId() + " for connection " + connection.getId() + " prior to deleting the "
+                                                         + "connection.");
                 }
             }
 
+            // Delete the connection
+            try {
+                restClient.deleteConnection(connection, false);
+            } catch (Exception e) {
+                log.error("Failed to delete the connection: {}", connection.getId(), e);
+
+                final String source = (connection.getSource() != null) ? connection.getSource().getName() : null;
+                final String destination = (connection.getDestination() != null) ? connection.getDestination().getName() : null;
+                throw new NifiClientRuntimeException("Error deleting the connection " + connection.getId() + " with source " + source + " and destination " + destination + ".");
+            }
         }
     }
 
@@ -502,7 +517,9 @@ public class TemplateCreationHelper {
         try {
             deleteInputPortConnections(processGroup);
         } catch (NifiClientRuntimeException e) {
-            log.error("Error trying to delete input port connections for Process Group {} while creating a new version. ", processGroup.getName());
+            log.error("Error trying to delete input port connections for Process Group {} while creating a new version. ", processGroup.getName(), e);
+            getErrors().add(new NifiError(NifiError.SEVERITY.FATAL, "The input port connections to the process group " + processGroup.getName() + " could not be deleted. Please delete them manually "
+                                                                    + "in NiFi and try again."));
         }
 
         //rename the feedGroup to be name+timestamp

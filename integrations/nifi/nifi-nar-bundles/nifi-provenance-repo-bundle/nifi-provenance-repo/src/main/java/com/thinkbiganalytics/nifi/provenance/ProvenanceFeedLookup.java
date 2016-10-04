@@ -129,6 +129,30 @@ public class ProvenanceFeedLookup {
         return false;
     }
 
+    public ProvenanceEventRecordDTO getPreviousProvenanceEventFromConnectionRelationship(ProvenanceEventRecordDTO event) {
+        ProvenanceEventRecordDTO matchingEvent = null;
+        if (StringUtils.isNotBlank(event.getSourceConnectionIdentifier())) {
+            Set<String> sourceProcessorIds = nifiFlowCache.getProcessorIdsWithDestinationConnectionIdentifier(event.getSourceConnectionIdentifier());
+            if (sourceProcessorIds != null) {
+                for (String sourceProcessorId : sourceProcessorIds) {
+                    if (event.getPreviousEvent() != null && event.getPreviousEvent().getComponentId().equalsIgnoreCase(sourceProcessorId)) {
+                        matchingEvent = event.getPreviousEvent();
+                    } else {
+                        matchingEvent = event.getFlowFile().getLastCompletedEventForProcessorId(sourceProcessorId);
+                    }
+                    if (matchingEvent != null) {
+                        break;
+                    }
+                }
+                return matchingEvent;
+            }
+        }
+        if (matchingEvent == null) {
+            matchingEvent = event.getPreviousEvent();
+        }
+        return matchingEvent;
+    }
+
     public ProvenanceEventRecordDTO getFailureProvenanceEventFromConnectionRelationship(ProvenanceEventRecordDTO event) {
         ProvenanceEventRecordDTO failureEvent = null;
             if (StringUtils.isNotBlank(event.getSourceConnectionIdentifier())) {

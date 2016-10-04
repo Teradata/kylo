@@ -117,12 +117,10 @@
         };
 
         /**
-         * Initialze the model for the flowchart
+         * Initialize the model for the flowchart.
          */
         function setupFlowChartModel() {
-            //
-            // Create the view-model for the chart and attach to the scope.
-            //
+            // Load data model
             var chartDataModel;
             if (typeof(self.model.visualQueryModel) !== "undefined") {
                 chartDataModel = self.model.visualQueryModel;
@@ -131,7 +129,17 @@
             } else {
                 chartDataModel = {"nodes": [], "connections": []};
             }
-            angular.forEach(chartDataModel.nodes, function(node) {self.prepareNode(node)});
+
+            // Prepare nodes
+            angular.forEach(chartDataModel.nodes, function(node) {
+                // Add utility functions
+                self.prepareNode(node);
+
+                // Determine next node ID
+                nextNodeID = Math.max(node.id + 1, nextNodeID);
+            });
+
+            // Create view model
             self.chartViewModel = new flowchart.ChartViewModel(chartDataModel, self.onCreateConnectionCallback, self.onEditConnectionCallback, self.onDeleteSelectedCallback);
         }
 

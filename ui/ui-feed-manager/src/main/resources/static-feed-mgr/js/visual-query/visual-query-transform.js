@@ -77,7 +77,7 @@
         };
 
         // Translates expressions into Spark code
-        if (FeedService.createFeedModel.dataTransformation.states.length > 0) {
+        if (angular.isArray(FeedService.createFeedModel.dataTransformation.states) && FeedService.createFeedModel.dataTransformation.states.length > 0) {
             this.sparkShellService = new SparkShellService(this.sql, FeedService.createFeedModel.dataTransformation.states);
             this.functionHistory = this.sparkShellService.getHistory();
         } else {
@@ -256,7 +256,7 @@
 
         /**
          * Query Hive using the query from the previous step. Set the Grids rows and columns.
-         * 
+         *
          * @return {Promise} a promise for when the query completes
          */
         this.query = function() {
