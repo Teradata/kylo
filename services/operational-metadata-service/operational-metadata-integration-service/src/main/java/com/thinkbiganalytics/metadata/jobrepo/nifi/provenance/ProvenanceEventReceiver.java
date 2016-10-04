@@ -183,7 +183,7 @@ public class ProvenanceEventReceiver {
         if(StringUtils.isNotBlank(feedName)) {
             OpsManagerFeed feed = opsManagerFeedCache.getUnchecked(feedName);
             if(feed == null || NULL_FEED.equals(feed)) {
-                log.debug("Not processiong operational metadata for feed {} , event {} because it is not registered in feed manager ", feedName, event);
+                log.debug("Not processing operational metadata for feed {} , event {} because it is not registered in feed manager ", feedName, event);
                 opsManagerFeedCache.invalidate(feedName);
               return false;
             } else {
@@ -222,7 +222,7 @@ public class ProvenanceEventReceiver {
      */
     private void failedJob(ProvenanceEventRecordDTO event) {
         FeedOperation.State state = FeedOperation.State.FAILURE;
-        log.info("FAILED JOB for Event {} ", event);
+        log.debug("FAILED JOB for Event {} ", event);
         this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, "Failed Job"));
     }
 
@@ -235,7 +235,7 @@ public class ProvenanceEventReceiver {
     private void successfulJob(ProvenanceEventRecordDTO event) {
 
         FeedOperation.State state = FeedOperation.State.SUCCESS;
-        log.info("Success JOB for Event {} ", event);
-        this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, "Job Succeeded for feed: "+event.getFeedName()));
+        log.debug("Success JOB for Event {} ", event);
+        this.eventService.notify(new FeedOperationStatusEvent(event.getFeedName(), null, state, "Job Succeeded for feed: " + event.getFeedName()));
     }
 }

@@ -347,7 +347,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
                                                      : DateTimeUtil.convertToUTC((event.getEventTime().minus(event.getEventDuration()))));
             stepExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
             stepExecution.setStepName(event.getComponentName());
-            log.info("New Step Execution {} on Job: {} using event {} ", stepExecution.getStepName(), jobExecution, event);
+            log.info("New Step Execution {} on Job: {} using event {} ", stepExecution.getStepName(), jobExecution.getJobExecutionId(), event.getEventId());
 
             boolean failure = event.isFailure();
             if (failure) {
@@ -374,7 +374,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         } else {
             //update it
             assignStepExecutionContextMap(event, stepExecution);
-            log.info("Update Step Execution {} ({}) on Job: {} using event {} ", stepExecution.getStepName(), stepExecution.getStepExecutionId(), jobExecution, event);
+            //log.info("Update Step Execution {} ({}) on Job: {} using event {} ", stepExecution.getStepName(), stepExecution.getStepExecutionId(), jobExecution, event);
             stepExecution = nifiStepExecutionRepository.save(stepExecution);
             //also persist to spring batch tables
             //TODO to be removed in next release once Spring batch is completely removed.  Needed since the UI references this table
@@ -431,16 +431,16 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
             if (isComplete) {
                 boolean hasFailures = jobExecutionRepository.hasRelatedJobFailures(jobExecution.getJobExecutionId());
                 if (jobExecution.isFailed() || hasFailures) {
-                    log.info("FINISHED AND FAILED JOB with relation {} ", jobExecution.getJobExecutionId());
+                    log.debug("FINISHED AND FAILED JOB with relation {} ", jobExecution.getJobExecutionId());
                 } else {
-                    log.info("FINISHED JOB with relation {} ", jobExecution.getJobExecutionId());
+                    log.debug("FINISHED JOB with relation {} ", jobExecution.getJobExecutionId());
                 }
             }
         } else {
             if (jobExecution.isFailed()) {
-                log.info("Failed JobExecution");
+                log.debug("Failed JobExecution");
             } else if (jobExecution.isSuccess()) {
-                log.info("Completed Job Execution");
+                log.debug("Completed Job Execution");
             }
         }
     }
@@ -453,7 +453,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
             if (runningJobs != null && !runningJobs.isEmpty()) {
                 for (JpaBatchJobExecution job : runningJobs) {
                     job.completeOrFailJob();
-                    log.info("Finishing related running job {} for event ",job.getJobExecutionId(),event);
+                    log.debug("Finishing related running job {} for event ", job.getJobExecutionId(), event);
                 }
                 jobExecutionRepository.save(runningJobs);
             }
