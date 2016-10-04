@@ -208,14 +208,39 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
     }
 
     /**
-     * Moves the entire collection of {@code }potentialStreamEvents} to the {@code jmsEvents} batch collection
+     * Moves the entire collection of {@code potentialStreamEvents} to the {@code jmsEvents} batch collection
      * and clears the {@code potentialStreamEvents} list
-     * @return the list of events added as batch
+     * @return 
      */
     private void movePotentialStreamToBatch() {
         if (!potentialStreamEvents.isEmpty()) {
             markFlowFileAsBatch(potentialStreamEvents);
             potentialStreamEvents.stream().filter(e -> e.getFlowFile().getRootFlowFile().isBatch()).forEach(e -> addToBatchList(e));
+            potentialStreamEvents.clear();
+        }
+    }
+
+    /**
+     * Moves the the collection of {@code potentialStreamEvents} to the {@code jmsEvents} batch collection only if the event is marked with a flowfile that is a "batch" all other events that are part
+     * of a "streaming feed" are pushed into the streaming group
+     */
+    private void finalMovePotentialStreamToBatch() {
+        if (!potentialStreamEvents.isEmpty()) {
+            potentialStreamEvents.stream().filter(e -> !e.getFlowFile().getRootFlowFile().isBatch() && e.isStartOfJob()).map(
+                e -> e.getFlowFile().getRootFlowFile()).forEach(rootFlowFile -> rootFlowFile.markAsBatch());
+
+            potentialStreamEvents.stream().forEach(event -> {
+                if (event.getFlowFile().getRootFlowFile().isBatch()) {
+                    addToBatchList(event);
+                } else {
+                    log.info("moved event to stream even tho it was at the end. {} ", event);
+                    lastStreamEventByJob.put(lastStreamEventMapKey(event), event);
+                    // markStreamAsBatchForEventWithRelatedBatchJobs(event);
+                    streamEvents.add(event);
+
+                }
+            });
+
             potentialStreamEvents.clear();
         }
     }
@@ -411,7 +436,7 @@ public class GroupedFeedProcessorEventAggregate implements Serializable {
             if (now.isAfter(lastEventTime.plus(allowedMillisBetweenEvents))) {
                 //this is now a Batch
                     tempStreamingCount.set(0);
-                movePotentialStreamToBatch();
+                finalMovePotentialStreamToBatch();
             }
             /**
              * if the First Event was a Batch event we should send on those in the {@code lastStreamEventByJob} this event through so it gets reconciled in the Ops Manager
