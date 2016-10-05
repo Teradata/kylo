@@ -54,7 +54,7 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
     @Column(name = "RESULT")
     private AssessmentResult result;
 
-    @OneToMany(targetEntity = JpaObligationAssessment.class, mappedBy = "serviceLevelAssessment", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = JpaObligationAssessment.class, mappedBy = "serviceLevelAssessment", fetch = FetchType.EAGER, cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<ObligationAssessment> obligationAssessments = new HashSet<>();
 
     public JpaServiceLevelAssessment() {
@@ -159,6 +159,7 @@ public class JpaServiceLevelAssessment extends AbstractAuditedEntity implements 
             .start()
             .compare(this.getResult(), sla.getResult())
             .compare(this.getAgreement().getName(), sla.getAgreement().getName());
+
 
         if (chain.result() != 0) {
             return chain.result();

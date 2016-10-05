@@ -1,6 +1,11 @@
-package com.thinkbiganalytics.nifi.feedmgr;
+package com.thinkbiganalytics.feedmgr.nifi;
 
 import com.google.common.collect.Lists;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
+import com.thinkbiganalytics.nifi.feedmgr.FeedCreationException;
+import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
+import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
+import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
@@ -24,6 +29,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nonnull;
 
@@ -39,6 +45,8 @@ public class CreateFeedBuilder {
     private String templateId;
     private String category;
     private String feedName;
+    private FeedMetadata feedMetadata;
+    private PropertyExpressionResolver propertyExpressionResolver;
     private String inputProcessorType;
     private String reusableTemplateCategoryName = "reusable_templates";
     private boolean isReusableTemplate;
@@ -63,17 +71,19 @@ public class CreateFeedBuilder {
     TemplateCreationHelper templateCreationHelper;
 
 
-    protected CreateFeedBuilder(NifiRestClient restClient, String category, String feedName, String templateId) {
+    protected CreateFeedBuilder(NifiRestClient restClient, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver) {
         this.restClient = restClient;
-
-        this.category = category;
-        this.feedName = feedName;
+        this.feedMetadata = feedMetadata;
+        this.category = feedMetadata.getCategory().getSystemName();
+        this.feedName = feedMetadata.getSystemFeedName();
         this.templateId = templateId;
         this.templateCreationHelper = new TemplateCreationHelper(this.restClient);
+        this.propertyExpressionResolver = propertyExpressionResolver;
     }
 
-    public static CreateFeedBuilder newFeed(NifiRestClient restClient, String category, String feedName, String templateId) {
-        return new CreateFeedBuilder(restClient, category, feedName, templateId);
+
+    public static CreateFeedBuilder newFeed(NifiRestClient restClient, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver) {
+        return new CreateFeedBuilder(restClient, feedMetadata, templateId, propertyExpressionResolver);
     }
 
     public CreateFeedBuilder feedSchedule(NifiProcessorSchedule feedSchedule) {
@@ -248,19 +258,21 @@ public class CreateFeedBuilder {
     }
 
     private ProcessorDTO fetchInputProcessorForProcessGroup(ProcessGroupEntity entity) {
-        //identify the various processors (first level initial processors)
-        List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity.getProcessGroup());
+        // Find first processor by type
+        final List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity.getProcessGroup());
+        final ProcessorDTO input = Optional.ofNullable(NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType))
+                .orElseGet(() -> inputProcessors.stream()
+                        .filter(processor -> !processor.getType().equals(NifiProcessUtil.CLEANUP_TYPE))
+                        .findFirst()
+                        .orElse(null)
+                );
 
-        ProcessorDTO input = NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType);
-        //if the input is null attempt to get the first input available on the template
-        if (input == null && inputProcessors != null && !inputProcessors.isEmpty()) {
-            input = inputProcessors.get(0);
-        }
-        if(input != null){
+        // Update cached type
+        if (input != null) {
             inputProcessorType = input.getType();
         }
-        return input;
 
+        return input;
     }
 
     private void updatePortConnectionsForProcessGroup(String processGroupId) throws NifiComponentNotFoundException {
@@ -381,10 +393,17 @@ public class CreateFeedBuilder {
         //get this process group
         ProcessGroupEntity activeProcessGroupName = restClient.getProcessGroup(processGroupId, false, false);
 
-        modifiedProperties = NifiPropertyUtil.matchAndSetPropertyValues(rootProcessGroup.getProcessGroup().getName(),
+        modifiedProperties = new ArrayList<>();
+        //resolve the static properties
+        //first fill in any properties with static references
+        List<NifiProperty> modifiedStaticProperties = propertyExpressionResolver.resolveStaticProperties(propertiesToUpdate);
+        // now apply any of the incoming metadata properties to this
+
+        List<NifiProperty> modifiedFeedMetadataProperties = NifiPropertyUtil.matchAndSetPropertyValues(rootProcessGroup.getProcessGroup().getName(),
                                                                         activeProcessGroupName.getProcessGroup().getName(),
                                                                         propertiesToUpdate, properties);
-
+        modifiedProperties.addAll(modifiedStaticProperties);
+        modifiedProperties.addAll(modifiedFeedMetadataProperties);
         restClient.updateProcessGroupProperties(modifiedProperties);
 
 

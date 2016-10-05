@@ -5,12 +5,10 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
-import com.thinkbiganalytics.nifi.feedmgr.CreateFeedBuilder;
 import com.thinkbiganalytics.nifi.feedmgr.NifiEnvironmentProperties;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
-import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
@@ -471,16 +469,6 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
     }
 
 
-    public NifiProcessGroup createTemplateInstanceAsProcessGroup(String templateId, String category, String feedName,
-                                                                 String inputProcessorType, List<NifiProperty> properties,
-                                                                 NifiProcessorSchedule feedSchedule) {
-        return CreateFeedBuilder.newFeed(this, category, feedName, templateId).inputProcessorType(inputProcessorType)
-            .feedSchedule(feedSchedule).properties(properties).build();
-    }
-
-    public CreateFeedBuilder newFeedBuilder(String templateId, String category, String feedName) {
-        return CreateFeedBuilder.newFeed(this, category, feedName, templateId);
-    }
 
 
     private Map<String, Object> getUpdateParams() {
@@ -1286,25 +1274,56 @@ public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorC
     public ControllerServiceEntity enableControllerServiceAndSetProperties(String id, Map<String, String> properties) throws NifiClientRuntimeException {
         ControllerServiceEntity entity = getControllerService(null, id);
         ControllerServiceDTO dto = entity.getControllerService();
+        //only need to do this if it is not enabled
+        if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
+            if (properties != null) {
+                boolean changed = false;
+                Map<String, String> resolvedProperties = NifiEnvironmentProperties.getEnvironmentControllerServiceProperties(properties, dto.getName());
+                if (resolvedProperties != null && !resolvedProperties.isEmpty()) {
+                    changed = ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, resolvedProperties);
+                } else {
+                    changed = ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, properties);
+                }
+                if (changed) {
+                    //first save the property change
+                    entity.setControllerService(dto);
+                    updateEntityForSave(entity);
+                    put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
+                }
+            }
 
-        if (properties != null) {
-            Map<String, String> resolvedProperties = NifiEnvironmentProperties.getEnvironmentControllerServiceProperties(properties, dto.getName());
-            if (resolvedProperties != null && !resolvedProperties.isEmpty()) {
-                ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, resolvedProperties);
-            } else {
-                ConfigurationPropertyReplacer.replaceControllerServiceProperties(dto, properties);
+            if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
+                dto.setState(NifiProcessUtil.SERVICE_STATE.ENABLED.name());
+
+                entity.setControllerService(dto);
+                updateEntityForSave(entity);
+                entity = put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
             }
         }
+        //initially when trying to enable the service the state will be ENABLING
+        //This will last until the service is up.
+        //if it is in the ENABLING state it needs to wait and try again to get the status.
 
-        if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
-            dto.setState(NifiProcessUtil.SERVICE_STATE.ENABLED.name());
+        dto = entity.getControllerService();
+        if (dto.getState().equalsIgnoreCase(NifiProcessUtil.SERVICE_STATE.ENABLING.name())) {
+            //attempt to retry x times before returning
+            int retryCount = 0;
+            int maxRetries = 5;
+            while (retryCount <= maxRetries) {
+                entity = getControllerService(null, id);
+                if (!entity.getControllerService().getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
+                    try {
+                        Thread.sleep(3000);
+                        retryCount++;
+                    } catch (InterruptedException e2) {
 
-            entity.setControllerService(dto);
-            updateEntityForSave(entity);
-            return put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
-        } else {
-            return entity;
+                    }
+                } else {
+                    retryCount = maxRetries + 1;
+                }
+            }
         }
+        return entity;
     }
 
     public ControllerServiceEntity disableControllerService(String id) throws NifiComponentNotFoundException {

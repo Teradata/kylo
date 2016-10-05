@@ -16,6 +16,12 @@ public interface MetricAssessment<D extends Serializable> extends Comparable<Met
      * @return the metric that was assessed
      */
     Metric getMetric();
+
+    /**
+     *
+     * @return the description about the metric
+     */
+    String getMetricDescription();
     
     /**
      * @return a message describing the assessment result

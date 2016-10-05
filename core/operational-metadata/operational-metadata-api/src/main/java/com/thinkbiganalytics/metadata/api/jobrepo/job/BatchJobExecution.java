@@ -44,7 +44,7 @@ public interface BatchJobExecution {
 
     DateTime getLastUpdated();
 
-    Set<BatchJobExecutionParameter> getJobParameters();
+    Set<? extends BatchJobExecutionParameter> getJobParameters();
 
     Set<BatchStepExecution> getStepExecutions();
 

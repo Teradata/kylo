@@ -100,12 +100,11 @@
             //NEED TO COPY IN TABLE PROPS HERE
             self.editModel.table = angular.copy(FeedService.editFeedModel.table);
             EditFeedNifiPropertiesService.editFeedModel = self.editModel;
-            updateInputProcessor(self.model.inputProcessor.processorId);
-            if(self.model.inputProcessor !== undefined) {
-                self.editModel.inputProcessorId = self.model.inputProcessor.processorId
+            if (angular.isDefined(self.model.inputProcessor)) {
+                updateInputProcessor(self.model.inputProcessor.processorId);
+                self.editModel.inputProcessorId = self.model.inputProcessor.processorId;
             }
-
-        }
+        };
 
         this.onCancel = function () {
 

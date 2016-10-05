@@ -1,4 +1,5 @@
 = Manual Deployment Guide
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
 == About
 
@@ -339,7 +340,7 @@ Perform the following step on the node NiFI is installed on
 === Complete this step for Cloudera installations ONLY
 
   See the appendix section in the deployment guide "Cloudera Configuration File Changes"
-  link:deployment-guide.adoc[Deployment Guide]
+  link:deployment-guide{outfilesuffix}[Deployment Guide]
 
 === Final Step: Start the 3 Think Big services
 

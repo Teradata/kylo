@@ -13,6 +13,7 @@ public class JobStepQueryRow {
   private String stepName;
   private Long stepExecutionId;
   private Long jobInstanceId;
+  private Long nifiEventId;
 
 
   public Long getJobExecutionId() {
@@ -45,5 +46,13 @@ public class JobStepQueryRow {
 
   public void setJobInstanceId(Long jobInstanceId) {
     this.jobInstanceId = jobInstanceId;
+  }
+
+  public Long getNifiEventId() {
+    return nifiEventId;
+  }
+
+  public void setNifiEventId(Long nifiEventId) {
+    this.nifiEventId = nifiEventId;
   }
 }

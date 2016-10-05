@@ -56,7 +56,7 @@ public class NifiFlowDeserializer {
             Map<String, List<NifiFlowProcessor>> failureConnectionProcessors = new HashMap<>();
 
             if (group.getFailureConnectionIdToSourceProcessorMap() != null && !group.getFailureConnectionIdToSourceProcessorMap().isEmpty()) {
-                log.info("flow has failure connections.. populate failure connections for for {} ({})", group.getName(), group.getId());
+                log.debug("flow has failure connections.. populate failure connections for for {} ({})", group.getName(), group.getId());
                 for (Map.Entry<String, List<NifiFlowProcessor>> entry : group.getFailureConnectionIdToSourceProcessorMap().entrySet()) {
                     if (entry.getValue() != null && !entry.getValue().isEmpty()) {
                         List<NifiFlowProcessor>

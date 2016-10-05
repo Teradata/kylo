@@ -1,3 +1,4 @@
 ## Data Lake Accelerator Architecture
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
 image:images/data-lake-accelerator-architecture-diagram.png[Data Lake Accelerator Architecture]

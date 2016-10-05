@@ -364,6 +364,7 @@ public class JpaServiceLevelAssessor implements ServiceLevelAssessor {
             assessment.setMetric(this.metric);
             assessment.setMessage(this.message);
             assessment.setResult(this.result);
+            assessment.setMetricDescription(this.metric.getDescription());
             //assessment.setData(this.data);
 
             if (this.comparator != null) {

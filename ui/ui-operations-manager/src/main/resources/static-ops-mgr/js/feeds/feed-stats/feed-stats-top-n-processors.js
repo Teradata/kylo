@@ -61,14 +61,14 @@
                     return stats.flowFilesFinished
                 }
             },
-            'Jobs Started': {
+            'Flows Started': {
                 axisLabel: 'Count', fn: function (stats) {
-                    return stats.jobsStarted
+                    return stats.flowsStarted
                 }
             },
-            'Jobs Finished': {
+            'Flows Finished': {
                 axisLabel: 'Count', fn: function (stats) {
-                    return stats.jobsFinished
+                    return stats.flowsFinished
                 }
             },
             'Total Events': {
@@ -160,13 +160,13 @@
                     return parseInt(d);
                 },
                 color: function (d) {
-                    if (d.key == 'Successful Jobs') {
+                    if (d.key == 'Successful Flows') {
                         return '#009933';
                     }
-                    else if (d.key == 'Failed Jobs') {
+                    else if (d.key == 'Failed Flows') {
                         return '#FF0000';
                     }
-                    else if (d.key == 'Running Jobs') {
+                    else if (d.key == 'Running Flows') {
                         return '#FF9901';
                     }
                 },
@@ -307,11 +307,15 @@
         self.timeframeOptions = [];
         self.timeFrame = 'DAY';
         self.lastRefreshTime = null;
+        self.timeFramOptionsLookupMap = {};
+        self.selectedTimeFrameOptionObject = {};
 
         function loadTimeFrameOption() {
-            ProvenanceEventStatsService.getTimeFrameOptions().then(function (opts) {
-                console.log(opts);
-                self.timeFrameOptions = opts.data;
+            ProvenanceEventStatsService.getTimeFrameOptions().then(function (response) {
+                self.timeFrameOptions = response.data;
+                _.each(response.data, function (labelValue) {
+                    self.timeFramOptionsLookupMap[labelValue.value] = labelValue;
+                });
             })
         }
 
@@ -319,19 +323,27 @@
             clearRefreshInterval();
             buildChartData();
             setRefreshInterval();
+            //update selected timewindow
+            self.selectedTimeFrameOptionObject = null;
+            var timeFrameObject = self.timeFramOptionsLookupMap[self.timeFrame];
+            if (timeFrameObject != null) {
+                self.selectedTimeFrameOptionObject = timeFrameObject;
+            }
+            //  console.log('timeframe ', self.selectedTimeFrameOptionObject, self.timeFramOptionsLookupMap)
         }
 
         loadTimeFrameOption();
-
-        self.jobsStarted = 0;
-        self.jobsFinished = 0;
-        self.jobsFailed = 0;
-        self.avgJobDuration = 0;
+        self.minTime = null;
+        self.maxTime = null;
+        self.flowsStarted = 0;
+        self.flowsFinished = 0;
+        self.flowsFailed = 0;
+        self.avgFlowDuration = 0;
         self.totalProcessorSelectedFunctionValue
 
         //stats for pie chart
-        self.jobsRunning = 0;
-        self.jobsSuccess = 0;
+        self.flowsRunning = 0;
+        self.flowsSuccess = 0;
 
         self.onProcessorChartFunctionChanged = function () {
             buildProcessorChartData();
@@ -342,17 +354,19 @@
             buildFeedCharts();
         }
 
+        var processorNameCount = {};
+        var processorIdNameMap = {};
+
         function buildProcessorChartData() {
             var values = [];
-            var processorNameCount = {};
-            var processorIdNameMap = {};
+
             $q.when(ProvenanceEventStatsService.getFeedProcessorDuration(self.feedName, self.timeFrame)).then(function (processorStats) {
-                var jobsStarted = 0;
-                var jobsFinished = 0;
-                var jobDuration = 0;
-                var jobsFailed = 0;
-                var jobsSuccess = 0;
-                var jobsRunning = 0;
+                var flowsStarted = 0;
+                var flowsFinished = 0;
+                var flowDuration = 0;
+                var flowsFailed = 0;
+                var flowsSuccess = 0;
+                var flowsRunning = 0;
                 var total = 0;
                 _.each(processorStats.data, function (p) {
 
@@ -369,12 +383,12 @@
                     var processorName = processorIdNameMap[p.processorId];
                     var v = self.processorStatsFunctionMap[self.selectedProcessorStatisticFunction].fn(p);
                     values.push({label: processorName, value: v});
-                    jobsStarted += p.jobsStarted;
-                    jobsFinished += p.jobsFinished;
-                    jobDuration += p.jobDuration;
-                    jobsFailed += p.jobsFailed;
-                    jobsSuccess = (jobsFinished - jobsFailed);
-                    jobsRunning = (jobsStarted - jobsFinished) < 0 ? 0 : (jobsStarted - jobsFinished);
+                    flowsStarted += p.jobsStarted;
+                    flowsFinished += p.jobsFinished;
+                    flowDuration += p.jobDuration;
+                    flowsFailed += p.jobsFailed;
+                    flowsSuccess = (flowsFinished - flowsFailed);
+                    flowsRunning = (flowsStarted - flowsFinished) < 0 ? 0 : (flowsStarted - flowsFinished);
                     total += v;
                 });
                 var configMap = self.processorStatsFunctionMap[self.selectedProcessorStatisticFunction];
@@ -383,21 +397,21 @@
                 self.lastRefreshTime = new Date();
                 var data = [{key: "Processor", "color": "#1f77b4", values: values}];
                 self.processorDurationChartData = data
-                self.jobsStarted = jobsStarted;
-                self.jobsFinished = jobsFinished;
-                self.jobsFailed = jobsFailed;
-                self.jobsRunning = jobsRunning;
-                self.jobsSuccess = jobsSuccess
-                self.avgJobDuration = ((jobDuration / jobsFinished) / 1000).toFixed(2)
+                self.flowsStarted = flowsStarted;
+                self.flowsFinished = flowsFinished;
+                self.flowsFailed = flowsFailed;
+                self.flowsRunning = flowsRunning;
+                self.flowsSuccess = flowsSuccess
+                self.avgFlowDuration = ((flowDuration / flowsFinished) / 1000).toFixed(2)
                 if (configMap.valueFormatFn != undefined) {
                     total = configMap.valueFormatFn(total);
                 }
                 self.totalProcessorSelectedFunctionValue = total;
 
                 self.statusPieChartData = [];
-                self.statusPieChartData.push({key: "Successful Jobs", value: self.jobsSuccess})
-                self.statusPieChartData.push({key: "Failed Jobs", value: self.jobsFailed})
-                self.statusPieChartData.push({key: "Running Jobs", value: self.jobsRunning});
+                self.statusPieChartData.push({key: "Successful Flows", value: self.flowsSuccess})
+                self.statusPieChartData.push({key: "Failed Flows", value: self.flowsFailed})
+                self.statusPieChartData.push({key: "Running Flows", value: self.flowsRunning});
                 if (self.chartApi && self.chartApi.update) {
 
                     self.processorDurationChartOptions.chart.yAxis.axisLabel = configMap.axisLabel
@@ -415,7 +429,6 @@
                             return d3.format(',.2f')(d);
                         }
                     }
-                    console.log('HEIGHT ', self.processorDurationChartOptions.chart.height)
                     self.chartApi.update();
                 }
 
@@ -427,7 +440,11 @@
         function buildFeedCharts() {
 
             $q.when(ProvenanceEventStatsService.getFeedStatisticsOverTime(self.feedName, self.timeFrame)).then(function (feedStats) {
-
+                var timeArr = _.map(feedStats.data, function (item) {
+                    return item.maxEventTime
+                });
+                self.minTime = ArrayUtils.min(timeArr);
+                self.maxTime = ArrayUtils.max(timeArr);
                 buildFeedTimeChartData(feedStats.data);
                 buildFeedBytesChartData(feedStats.data);
             });

@@ -31,7 +31,7 @@ public class NifiProcessUtil {
     }
 
     public static enum SERVICE_STATE {
-        ENABLED,DISABLED;
+        ENABLING, ENABLED, DISABLED;
     }
 
     public static String SYSTEM_PROPERTY_PREFIX = "system:";
@@ -39,6 +39,9 @@ public class NifiProcessUtil {
     public static String SYSTEM_PROPERTY_JSON = SYSTEM_PROPERTY_PREFIX+"json";
 
     public static String PROPERTIES_PROCESSOR ="PropertiesProcessor";
+
+    /** Type of the cleanup processor */
+    public static String CLEANUP_TYPE = "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup";
 
 
     private  static class ProcessorByTypePredicate implements Predicate<ProcessorDTO> {

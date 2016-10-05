@@ -62,7 +62,7 @@ public class StatsModel {
                 stats.setRootProcessGroupId((rootFlowFile != null && rootFlowFile.hasFeedInformationAssigned()) ? rootFlowFile.getFeedProcessGroupId() : null);
                 stats.setJobsFinished(1L);
                 setCompletionJobStats(rootFlowFile, event, stats);
-                log.info("New Completion job stats finished? {} for root: {} eventType: {} ", stats.getJobsFinished(), rootFlowFile.getId(), event.getEventType());
+                log.debug("New Completion job stats finished? {} for root: {} eventType: {} ", stats.getJobsFinished(), rootFlowFile.getId(), event.getEventType());
             }
         }
         return stats;
@@ -104,7 +104,7 @@ public class StatsModel {
             event.getFlowFile().addFailedEvent(event);
         }
         if(event.isEndingFlowFileEvent()){
-            log.info("ending flow file {} attached to root{} ... did we finish? {} ", event.getFlowFile().getId(), rootFlowFile.getId(), stats.getJobsFinished());
+            log.debug("ending flow file {} attached to root{} ... did we finish? {} ", event.getFlowFile().getId(), rootFlowFile.getId(), stats.getJobsFinished());
         }
 
         if (stats.getJobsFinished() == 1L) {
@@ -115,7 +115,7 @@ public class StatsModel {
     }
 
     private static void setCompletionJobStats(RootFlowFile rootFlowFile, ProvenanceEventRecordDTO event, ProvenanceEventStats stats) {
-        log.info("Finishing Job for flowfile: {} with eventtype: {}.  ", event.getFlowFile(), event.getEventType());
+        log.debug("Finishing Job for flowfile: {} with eventtype: {}.  ", event.getFlowFile(), event.getEventType());
         event.setIsEndOfJob(true);
         Long jobTime = calculateJobDuration(rootFlowFile, event);
         stats.setJobDuration(jobTime);

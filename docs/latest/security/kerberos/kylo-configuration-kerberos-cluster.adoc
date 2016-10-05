@@ -1,4 +1,6 @@
 = Kylo Configuration for a Kerboros Cluster
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
 Think Big Analytics
 September 2016
 
@@ -26,7 +28,7 @@ for them to work in a Kerberos cluster some configuration is required. Some exam
 == Configuration Steps :
 
 .   Create a Headless Keytab File for Hive and Think Big User
-
+....
     Note: Perform the following as root. Replace "sandbox.hortonworks.com" with your domain.
 
     [root]# kadmin.local
@@ -39,6 +41,7 @@ for them to work in a Kerberos cluster some configuration is required. Some exam
     [root]# chmod 440 /etc/security/keytabs/thinkbig.headless.keytab
     [root]# chown thinkbig:hadoop /etc/security/keytabs/hive-thinkbig.headless.keytab
     [root]# chmod 440 /etc/security/keytabs/hive-thinkbig.headless.keytab
+....
 
 . Validate the Keytabs Work
 
@@ -58,15 +61,32 @@ for them to work in a Kerberos cluster some configuration is required. Some exam
     kerberos.thinkbig.kerberosEnabled=true
 
 . Modify thinkbig-services Configuration
-
-    Note: Replace "sandbox.hortonworks.com" with your domain
+....
+    TIP: Replace "sandbox.hortonworks.com" with your domain
 
     To add Kerberos support to thinkbig-services you must enable the feature and update hive connection URL to support Kerberos.
-
+....
+....
     [root]# vi /opt/thinkbig/thinkbig-services/conf/application.properties
 
+    # This property is for the hive thrift connection used by thinkbig-services
     hive.datasource.url=jdbc:hive2://localhost:10000/default;principal=hive/sandbox.hortonworks.com@sandbox.hortonworks.com
+
+    # This property will default the URL when importing a template using the thrift connection
+    nifi.service.hive_thrift_service.database_connection_url=jdbc:hive2://localhost:10000/default;principal=hive/sandbox.hortonworks.com@sandbox.hortonworks.com
+
+    # Set Kerberos to true for the thinkbig-services application and set the 3 required properties
     kerberos.hive.kerberosEnabled=true
+    kerberos.hive.hadoopConfigurationResources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
+    kerberos.hive.kerberosPrincipal=hive/sandbox.hortonworks.com
+    kerberos.hive.keytabLocation=/etc/security/keytabs/hive-thinkbig.headless.keytab
+
+    # uncomment these 3 properties to default all NiFi processors that have these fields. Saves time when importing a template
+    nifi.all_processors.kerberos_principal=nifi
+    nifi.all_processors.kerberos_keytab=/etc/security/keytabs/nifi.headless.keytab
+    nifi.all_processors.hadoop_configuration_resources=/etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
+
+....
 
 
 . Restart thinkbig-services and thinkbig-spark-shell

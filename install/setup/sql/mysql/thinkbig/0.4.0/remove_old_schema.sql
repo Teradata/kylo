@@ -5,6 +5,9 @@ create procedure remove_old_schema_040()
 
 begin
 
+DECLARE output VARCHAR(4000) DEFAULT '';
+SELECT CONCAT(' STARTING Remove old schema') into output;
+
 DROP TABLE IF EXISTS CHANGE_SET_FILES_PATH;
 DROP TABLE IF EXISTS CHANGE_SET_HIVE_TABLE_PART_VALUE;
 DROP TABLE IF EXISTS CHANGE_SET_HIVE_TABLE;
@@ -33,15 +36,7 @@ IF EXISTS(SELECT table_name
 THEN
 ALTER TABLE`thinkbig`.`FEED`
 DROP FOREIGN KEY `FKi6tlfq6nytlrb8429acoovlay`;
-ALTER TABLE `thinkbig`.`FEED`
-DROP COLUMN `category_id`,
-DROP COLUMN `version`,
-DROP COLUMN `sla_id`,
-DROP COLUMN `state`,
-DROP COLUMN `initialized`,
-DROP COLUMN `display_name`,
-DROP INDEX `FKi6tlfq6nytlrb8429acoovlay` ,
-DROP INDEX `UK_j4px0sd8c2k3ycpw6uvqpl1c6` ;
+DROP TABLE FEED;
 END IF;
 
 
@@ -50,12 +45,18 @@ DROP TABLE IF EXISTS SLA_METRIC;
 DROP TABLE IF EXISTS SLA_OBLIGATION_GROUP;
 DROP TABLE IF EXISTS SLA_OBLIGATION;
 DROP TABLE IF EXISTS SLA;
+SELECT CONCAT(output,'\n','Removed Old schema.') into output;
+
+SELECT output;
+
 END//
 
 delimiter ;
-
+SET foreign_key_checks = 0;
 -- Execute the procedure
 call remove_old_schema_040();
+SET foreign_key_checks = 1;
 
 -- Drop the procedure
 drop procedure remove_old_schema_040;
+

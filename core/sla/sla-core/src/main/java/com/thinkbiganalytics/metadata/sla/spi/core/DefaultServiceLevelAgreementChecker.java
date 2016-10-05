@@ -77,12 +77,12 @@ public class DefaultServiceLevelAgreementChecker implements ServiceLevelAgreemen
         if (agreement != null) {
             Alert newAlert = null;
             if (isAssessable(agreement)) {
-                LOG.info("Assessing SLA: " + agreement.getName());
+                LOG.info("Assessing SLA  : " + agreement.getName());
 
                 try {
                     ServiceLevelAssessment assessment = assessor.assess(agreement);
 
-                    if (assessment.getResult() != AssessmentResult.SUCCESS && shouldAlert(agreement, assessment)) {
+                    if (!assessment.getResult().equals(AssessmentResult.SUCCESS) && shouldAlert(agreement, assessment)) {
                         newAlert = alertManager.create(AssessmentAlerts.VIOLATION_ALERT_TYPE,
                                                        Alert.Level.FATAL,
                                                        "Violation of SLA: " + agreement.getName(), assessment.getId());
@@ -110,26 +110,32 @@ public class DefaultServiceLevelAgreementChecker implements ServiceLevelAgreemen
      * @return true if the alert should be generated
      */
     protected boolean shouldAlert(ServiceLevelAgreement agreement, ServiceLevelAssessment assessment) {
-        // Get the last assessment that was created for this SLA (if any).
-        ServiceLevelAssessment previous = null;
-        ServiceLevelAssessment.ID previousId = this.alertedAssessments.get(agreement.getId());
-        if (previousId != null) {
-            previous = this.assessmentProvider.findServiceLevelAssessment(previousId);
-        } else {
-            previous = this.assessmentProvider.findLatestAssessment(agreement.getId());
-        }
-
-        if (previous != null) {
-
-            if (previous.getAgreement() == null && StringUtils.isNotBlank(assessment.getServiceLevelAgreementId())) {
-                ServiceLevelAgreement previousAgreement = slaProvider.getAgreement(slaProvider.resolve(assessment.getServiceLevelAgreementId()));
-
+        boolean shouldAlert = false;
+        try {
+            // Get the last assessment that was created for this SLA (if any).
+            ServiceLevelAssessment previous = null;
+            ServiceLevelAssessment.ID previousId = this.alertedAssessments.get(agreement.getId());
+            if (previousId != null) {
+                previous = this.assessmentProvider.findServiceLevelAssessment(previousId);
+            } else {
+                previous = this.assessmentProvider.findLatestAssessment(agreement.getId());
             }
 
-            return assessment.compareTo(previous) != 0;
-        } else {
-            return true;
+            if (previous != null) {
+
+                if (previous.getAgreement() == null && StringUtils.isNotBlank(assessment.getServiceLevelAgreementId())) {
+                    ServiceLevelAgreement previousAgreement = slaProvider.getAgreement(slaProvider.resolve(assessment.getServiceLevelAgreementId()));
+
+                }
+
+                shouldAlert = assessment.compareTo(previous) != 0;
+            } else {
+                shouldAlert = true;
+            }
+        } catch (Exception e) {
+            LOG.error("Error checking shouldAlert for {}. {} ", agreement.getName(), e.getMessage(), e);
         }
+        return shouldAlert;
     }
 
     private boolean isAssessable(ServiceLevelAgreement agreement) {

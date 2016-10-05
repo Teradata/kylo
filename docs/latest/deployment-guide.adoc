@@ -1,4 +1,5 @@
 = Data Lake Accelerator Deployment Guide
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
 
 WARNING: There is an issue with the spark client using the SQL context with Orc tables using HDP 2.4.2. Please see this troubleshooting tip configure the spark client to work around the issue.
 
@@ -48,7 +49,7 @@ The Data Lake Accelerator services should be installed on an edge node.  The fol
 
 If installing in a new Hortonworks sandbox make sure to do the following first before running through the installation steps below.
 
-link:./hortonworks-sandbox.adoc[Configure Hortonworks Sandbox]
+link:./hortonworks-sandbox{outfilesuffix}[Configure Hortonworks Sandbox]
 
 ==== Java Requirements
 Data Lake Accelerator requires Java 8 for NiFi, thinkbig-ui, and thinkbig-services. If you already have Java 8 installed as the system level Java you have the option to leverage that.
@@ -86,18 +87,18 @@ and 1 node development boxes. The WGET command is used to download binaries so i
 
 Click on the below link to go to the wizard driven deployment instructions
 
-link:./deployment/wizard-deployment-guide.adoc[Wizard Driven Deployment Guide]
+link:deployment/wizard-deployment-guide{outfilesuffix}[Wizard Driven Deployment Guide]
 
 === Install Procedure 2: Installing each component manually
 Click on the below link to go to the manual deployment instructions
 
-link:./deployment/manual-deployment-guide.adoc[Manual Deployment Guide]
+link:./deployment/manual-deployment-guide{outfilesuffix}[Manual Deployment Guide]
 
 === Install Procedure 3: Cloudera EC2 Docker Sandbox
 This is an option for those who want to deploy PCNG to single node Cloudera sandbox in AWS. This is useful when you need to get a quick Cloudera instance running to test PCNG but don't have
 the resources to install a Cloudera cluster
 
-link:./deployment/cloudera-docker-sandbox.adoc[Cloudera EC2 Docker Sandbox Deployment Guide ]
+link:./deployment/cloudera-docker-sandbox{outfilesuffix}[Cloudera EC2 Docker Sandbox Deployment Guide ]
 
 == Configuration
 
@@ -109,19 +110,19 @@ link:./deployment/cloudera-docker-sandbox.adoc[Cloudera EC2 Docker Sandbox Deplo
 
     This guide will help you enabled kerberos for your local development sandbox for development and testing
 
-link:./security/kerberos/kerberos-installation-example-hdp-2.4.adoc[HDP 2.4 Sandbox Kerberos Setup Example]
+link:./security/kerberos/kerberos-installation-example-hdp-2.4{outfilesuffix}[HDP 2.4 Sandbox Kerberos Setup Example]
 
 ==== Step 1: Configure Kerberos for NiFi
 
     Some additional configuration is required for allowing the NiFi components to work with a Kerberos cluster.
 
-link:./security/kerberos/nifi-configuration-kerboros-cluster.adoc[Configure NiFi for Kerberos]
+link:./security/kerberos/nifi-configuration-kerboros-cluster{outfilesuffix}[Configure NiFi for Kerberos]
 
 ==== Step 2: Configure Kerberos for Kylo Applications
 
     Additional configuration is required for allowing some features in the Kylo applications to work with a Kerberos cluster
 
-link:./security/kerberos/kylo-configuration-kerberos-cluster.adoc[Configure Kylo for Kerberos]
+link:./security/kerberos/kylo-configuration-kerberos-cluster{outfilesuffix}[Configure Kylo for Kerberos]
 
 === Configuration Files
 
@@ -250,3 +251,12 @@ In addition there is a script for cleaning up the hive schema and HDFS folders t
 
 TBD
 	
+== Icons and Icon Colors
+Icons and the colors can be configured using 2 JSON files found in the /opt/thinkbig/thinkbig-services/conf directory
+
+    * *icons.json*   This is an array of valid icon names.  Valid names that can be used can be found here:  https://klarsys.github.io/angular-material-icons/.  Kylo is currently using the 0.7.1 version of this icon package.
+    * *icon-colors.json*  This is an array of objects indicating the display name and respective Hex color code.
+
+
+
+    

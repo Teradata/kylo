@@ -3,9 +3,9 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
+import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
-import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionParameter;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecutionProvider;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobInstance;
 import com.thinkbiganalytics.metadata.api.jobrepo.nifi.NifiEvent;
@@ -20,7 +20,6 @@ import com.thinkbiganalytics.metadata.jpa.jobrepo.step.JpaBatchStepExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.step.JpaBatchStepExecutionContextValue;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
 
-import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +37,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
+import javax.inject.Inject;
+import javax.persistence.OptimisticLockException;
+
 /**
  * Created by sr186054 on 8/31/16.
  */
@@ -54,6 +56,9 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     @Autowired
     private BatchExecutionContextProvider batchExecutionContextProvider;
 
+    @Inject
+    private OperationalMetadataAccess operationalMetadataAccess;
+
 
     @Autowired
     private JPAQueryFactory factory;
@@ -62,22 +67,30 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
 
     private BatchJobInstanceRepository jobInstanceRepository;
 
+    private BatchJobParametersRepository jobParametersRepository;
+
 
     private BatchStepExecutionRepository nifiStepExecutionRepository;
 
     private NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository;
 
+    private BatchStepExecutionRepository stepExecutionRepository;
+
 
     @Autowired
     public JpaBatchJobExecutionProvider(BatchJobExecutionRepository jobExecutionRepository, BatchJobInstanceRepository jobInstanceRepository,
                                         BatchStepExecutionRepository nifiStepExecutionRepository,
-                                        NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository
+                                        NifiRelatedRootFlowFilesRepository relatedRootFlowFilesRepository,
+                                        BatchJobParametersRepository jobParametersRepository,
+                                        BatchStepExecutionRepository stepExecutionRepository
     ) {
 
         this.jobExecutionRepository = jobExecutionRepository;
         this.jobInstanceRepository = jobInstanceRepository;
         this.nifiStepExecutionRepository = nifiStepExecutionRepository;
         this.relatedRootFlowFilesRepository = relatedRootFlowFilesRepository;
+        this.jobParametersRepository = jobParametersRepository;
+        this.stepExecutionRepository = stepExecutionRepository;
 
     }
 
@@ -118,34 +131,42 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         JpaBatchJobExecution jobExecution = new JpaBatchJobExecution();
         jobExecution.setJobInstance(jobInstance);
         //add in the parameters from the attributes
-        jobExecution.setCreateTime(DateTimeUtil.convertToUTC(DateTime.now()));
+        jobExecution.setCreateTime(DateTimeUtil.getNowUTCTime());
         jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
         jobExecution.setStatus(BatchJobExecution.JobStatus.STARTED);
         jobExecution.setExitCode(ExecutionConstants.ExitCode.EXECUTING);
-        jobExecution.setLastUpdated(DateTimeUtil.convertToUTC(DateTime.now()));
+        jobExecution.setLastUpdated(DateTimeUtil.getNowUTCTime());
 
         //create the job params
-        Map<String, Object> jobParameters;
-        if (event.getAttributeMap() != null) {
+        Map<String, Object> jobParameters = new HashMap<>();
+        if(event.isStartOfJob() && event.getAttributeMap() != null) {
             jobParameters = new HashMap<>(event.getAttributeMap());
         } else {
             jobParameters = new HashMap<>();
         }
+
+
+
+        //save the params
+        JpaNifiEventJobExecution eventJobExecution = new JpaNifiEventJobExecution(jobExecution, event.getEventId(), event.getJobFlowFileId());
+        jobExecution.setNifiEventJobExecution(eventJobExecution);
+        jobExecution = this.jobExecutionRepository.save(jobExecution);
         //bootstrap the feed parameters
         jobParameters.put(FeedConstants.PARAM__FEED_NAME, event.getFeedName());
         jobParameters.put(FeedConstants.PARAM__JOB_TYPE, FeedConstants.PARAM_VALUE__JOB_TYPE_FEED);
         jobParameters.put(FeedConstants.PARAM__FEED_IS_PARENT, "true");
+        Set<JpaBatchJobExecutionParameter> jpaJobParameters = addJobParameters(jobExecution, jobParameters);
+        this.jobParametersRepository.save(jpaJobParameters);
+        return jobExecution;
+    }
 
-        //save the params
-        Set<BatchJobExecutionParameter> jobExecutionParametersList = new HashSet<>();
+    private Set<JpaBatchJobExecutionParameter> addJobParameters(JpaBatchJobExecution jobExecution, Map<String, Object> jobParameters) {
+        Set<JpaBatchJobExecutionParameter> jobExecutionParametersList = new HashSet<>();
         for (Map.Entry<String, Object> entry : jobParameters.entrySet()) {
-            BatchJobExecutionParameter jobExecutionParameters = jobExecution.addParameter(entry.getKey(), entry.getValue());
+            JpaBatchJobExecutionParameter jobExecutionParameters = jobExecution.addParameter(entry.getKey(), entry.getValue());
             jobExecutionParametersList.add(jobExecutionParameters);
         }
-        jobExecution.setJobParameters(jobExecutionParametersList);
-        JpaNifiEventJobExecution eventJobExecution = new JpaNifiEventJobExecution(jobExecution, event.getEventId(), event.getJobFlowFileId());
-        jobExecution.setNifiEventJobExecution(eventJobExecution);
-        return this.jobExecutionRepository.save(jobExecution);
+        return jobExecutionParametersList;
     }
 
     private JpaBatchJobExecution createNewJobExecution(ProvenanceEventRecordDTO event) {
@@ -180,10 +201,16 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         if (jobExecution.getJobExecutionId() == null) {
             log.error("Warning execution id is null for ending event {} ", event);
         }
+        if(event.isHasFailedEvents()){
+            jobExecution.failJob();
+        }
+        else {
+            jobExecution.completeJob();
+        }
 
         ///END OF THE JOB... fail or complete the job?
-        ensureFailureSteps(jobExecution);
-        jobExecution.completeOrFailJob();
+      //  ensureFailureSteps(jobExecution);
+        //jobExecution.completeOrFailJob();
         jobExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
         log.info("Finishing Job: {} with a status of: {}", jobExecution.getJobExecutionId(), jobExecution.getStatus());
         //add in execution contexts
@@ -200,35 +227,90 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
 
         //If you want to know when a feed is truely finished along with any of its related feeds you can use this method below.
         //commented out since the ProvenanceEventReceiver already handles it
-        //checkIfJobAndRelatedJobsAreFinished
+        //ensureRelatedJobsAreFinished(event,jobExecution);
 
     }
 
 
-    @Override
-    public BatchStepExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
-        //find the JobExecution for the event if it exists, otherwise create one
-        JpaBatchJobExecution jobExecution = jobExecutionRepository.findByEventAndFlowFile(event.getJobEventId(), event.getJobFlowFileId());
-        if (jobExecution == null && event.isStartOfJob()) {
-            jobExecution = createNewJobExecution(event);
+    /**
+     * Get or Create the JobExecution for a given ProvenanceEvent
+     * @param event
+     * @return
+     */
+   public synchronized  JpaBatchJobExecution getOrCreateJobExecution(ProvenanceEventRecordDTO event){
+           JpaBatchJobExecution jobExecution = null;
+       boolean isNew = false;
+        try {
+            jobExecution = jobExecutionRepository.findByFlowFile(event.getJobFlowFileId());
+            if (jobExecution == null) {
+              jobExecution =  createNewJobExecution(event);
+                isNew = true;
+            }
+        }catch(OptimisticLockException e){
+            //read
+            jobExecution = jobExecutionRepository.findByFlowFile(event.getJobFlowFileId());
         }
-        //add in the stepExecutions
-        if (jobExecution != null && !jobExecution.isFinished()) {
+
+       //if the attrs coming in change the type to a CHECK job then update the entity
+      boolean updatedJobType = updateJobType(jobExecution, event);
+       boolean save = isNew || updatedJobType;
+       if (event.isEndOfJob()) {
+           finishJob(event, jobExecution);
+           save = true;
+       }
+
+       //if the event is the start of the Job, but the job execution was created from another downstream event, ensure the start time and event are related correctly
+       if(event.isStartOfJob() && !isNew ){
+           jobExecution.getNifiEventJobExecution().setEventId(event.getEventId());
+           jobExecution.setStartTime(DateTimeUtil.convertToUTC(event.getEventTime()));
+           //create the job params
+           Map<String, Object> jobParameters = new HashMap<>();
+           if(event.isStartOfJob() && event.getAttributeMap() != null) {
+               jobParameters = new HashMap<>(event.getAttributeMap());
+           } else {
+               jobParameters = new HashMap<>();
+           }
+
+           this.jobParametersRepository.save(addJobParameters(jobExecution, jobParameters));
+           save = true;
+       }
+       if(save) {
+           jobExecutionRepository.save(jobExecution);
+       }
+    return jobExecution;
+    }
+
+    public BatchJobExecution save(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
+        if(jobExecution == null){
+            //log
+            return null;
+        }
+            JpaBatchJobExecution jpaBatchJobExecution = (JpaBatchJobExecution)jobExecution;
             checkAndRelateJobs(event, nifiEvent);
             createStepExecution(jobExecution, event);
-            if (event.isEndOfJob()) {
-                finishJob(event, jobExecution);
+          /*  if (event.isEndOfJob()) {
+                finishJob(event, jpaBatchJobExecution);
+                jobExecution =    this.jobExecutionRepository.save(jpaBatchJobExecution);
             }
-            this.jobExecutionRepository.save(jobExecution);
-        } else if (jobExecution != null && jobExecution.isFinished()) {
+       */
+
+        if (jobExecution.isFinished()) {
             //ensure failures
-            boolean addedFailures = ensureFailureSteps(jobExecution);
-            if (addedFailures) {
-                jobExecution.completeOrFailJob();
-                this.jobExecutionRepository.save(jobExecution);
+            boolean addedFailures = ensureFailureSteps(jpaBatchJobExecution);
+           /* if (addedFailures) {
+                jpaBatchJobExecution.completeOrFailJob();
+                jobExecution =    this.jobExecutionRepository.save(jpaBatchJobExecution);
             }
+            */
         }
-        return null;
+        return jobExecution;
+    }
+
+    @Override
+    public BatchJobExecution save(ProvenanceEventRecordDTO event, NifiEvent nifiEvent) {
+        JpaBatchJobExecution jobExecution = getOrCreateJobExecution(event);
+        return save(jobExecution,event,nifiEvent);
+
     }
 
 
@@ -265,7 +347,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
                                                      : DateTimeUtil.convertToUTC((event.getEventTime().minus(event.getEventDuration()))));
             stepExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
             stepExecution.setStepName(event.getComponentName());
-            log.info("New Step Execution {} on Job: {} using event {} ", stepExecution.getStepName(), jobExecution, event);
+            log.info("New Step Execution {} on Job: {} using event {} ", stepExecution.getStepName(), jobExecution.getJobExecutionId(), event.getEventId());
 
             boolean failure = event.isFailure();
             if (failure) {
@@ -292,17 +374,14 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         } else {
             //update it
             assignStepExecutionContextMap(event, stepExecution);
-            log.info("Update Step Execution {} on Job: {} using event {} ", stepExecution.getStepName(), jobExecution, event);
+            //log.info("Update Step Execution {} ({}) on Job: {} using event {} ", stepExecution.getStepName(), stepExecution.getStepExecutionId(), jobExecution, event);
             stepExecution = nifiStepExecutionRepository.save(stepExecution);
             //also persist to spring batch tables
             //TODO to be removed in next release once Spring batch is completely removed.  Needed since the UI references this table
             batchExecutionContextProvider.saveStepExecutionContext(stepExecution.getStepExecutionId(), stepExecution.getStepExecutionContextAsMap());
         }
 
-        if (stepExecution != null) {
-            //if the attrs coming in change the type to a CHECK job then update the entity
-            updateJobType(jobExecution, event);
-        }
+
         return stepExecution;
 
     }
@@ -322,7 +401,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     /**
      * Sets the Job Execution params to either Check Data or Feed Jobs
      */
-    private void updateJobType(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
+    private boolean updateJobType(BatchJobExecution jobExecution, ProvenanceEventRecordDTO event) {
 
         if (event.getUpdatedAttributes() != null && event.getUpdatedAttributes().containsKey(NIFI_JOB_TYPE_PROPERTY)) {
             String jobType = event.getUpdatedAttributes().get(NIFI_JOB_TYPE_PROPERTY);
@@ -330,9 +409,12 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
             String nifiFeedName = event.getAttributeMap().get(NIFI_FEED_PROPERTY);
             String feedName = nifiCategory + "." + nifiFeedName;
             if (FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK.equalsIgnoreCase(jobType)) {
-                ((JpaBatchJobExecution) jobExecution).setAsCheckDataJob(feedName);
+                Set<JpaBatchJobExecutionParameter> updatedParams = ((JpaBatchJobExecution) jobExecution).setAsCheckDataJob(feedName);
+                jobParametersRepository.save(updatedParams);
+                return true;
             }
         }
+        return false;
     }
 
 
@@ -349,16 +431,31 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
             if (isComplete) {
                 boolean hasFailures = jobExecutionRepository.hasRelatedJobFailures(jobExecution.getJobExecutionId());
                 if (jobExecution.isFailed() || hasFailures) {
-                    log.info("FINISHED AND FAILED JOB with relation {} ", jobExecution.getJobExecutionId());
+                    log.debug("FINISHED AND FAILED JOB with relation {} ", jobExecution.getJobExecutionId());
                 } else {
-                    log.info("FINISHED JOB with relation {} ", jobExecution.getJobExecutionId());
+                    log.debug("FINISHED JOB with relation {} ", jobExecution.getJobExecutionId());
                 }
             }
         } else {
             if (jobExecution.isFailed()) {
-                log.info("Failed JobExecution");
+                log.debug("Failed JobExecution");
             } else if (jobExecution.isSuccess()) {
-                log.info("Completed Job Execution");
+                log.debug("Completed Job Execution");
+            }
+        }
+    }
+
+    private void ensureRelatedJobsAreFinished(ProvenanceEventRecordDTO event,BatchJobExecution jobExecution) {
+        //Check related jobs
+        if (event.isFinalJobEvent() && jobExecutionRepository.hasRelatedJobs(jobExecution.getJobExecutionId())) {
+
+            List<JpaBatchJobExecution> runningJobs = jobExecutionRepository.findRunningRelatedJobExecutions(jobExecution.getJobExecutionId());
+            if (runningJobs != null && !runningJobs.isEmpty()) {
+                for (JpaBatchJobExecution job : runningJobs) {
+                    job.completeOrFailJob();
+                    log.debug("Finishing related running job {} for event ", job.getJobExecutionId(), event);
+                }
+                jobExecutionRepository.save(runningJobs);
             }
         }
     }
@@ -373,7 +470,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     }
 
 
-    @Override
+/*
     public BatchJobExecution failStepsInJobThatNeedToBeFailed(BatchJobExecution jobExecution) {
         List<JpaBatchStepExecution> steps = nifiStepExecutionRepository.findStepsInJobThatNeedToBeFailed(jobExecution.getJobExecutionId());
         if (steps != null && !steps.isEmpty()) {
@@ -387,6 +484,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
 
         return jobExecution;
     }
+    */
 
 
     @Override

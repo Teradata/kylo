@@ -70,6 +70,10 @@ public class JpaMetricAssessment<D extends Serializable> extends AbstractAudited
     @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "255")})
     private String metricType;
 
+    @Column(name="METRIC_DESCRIPTION")
+    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "255")})
+    private String metricDescription;
+
 
     public static class ComparablesAttributeConverter extends JsonAttributeConverter<List<Comparable<? extends Serializable>>> {
 
@@ -155,6 +159,13 @@ public class JpaMetricAssessment<D extends Serializable> extends AbstractAudited
         this.comparables = comparables;
     }
 
+    public String getMetricDescription() {
+        return metricDescription;
+    }
+
+    public void setMetricDescription(String metricDescription) {
+        this.metricDescription = metricDescription;
+    }
 
     @Override
     public int compareTo(MetricAssessment<D> metric) {

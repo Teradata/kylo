@@ -151,20 +151,20 @@ public class ServiceLevelAgreementRestController {
         return Response.ok(validation).build();
     }
 
-
-    @POST
-    @Consumes(MediaType.APPLICATION_JSON)
-    @Produces(MediaType.APPLICATION_JSON)
-    public ServiceLevelAgreement createAgreement(ServiceLevelAgreement agreement) {
-        log.debug("POST Create SLA {}", agreement);
-
-        return this.metadata.commit(() -> {
-            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement domainSla
-                = ServiceLevelAgreementModelTransform.generateDomain(agreement, this.provider);
-
-            return ServiceLevelAgreementModelTransform.DOMAIN_TO_SLA.apply(domainSla);
-        });
-    }
+// TODO: this method was conflicting with saveSla()
+//    @POST
+//    @Consumes(MediaType.APPLICATION_JSON)
+//    @Produces(MediaType.APPLICATION_JSON)
+//    public ServiceLevelAgreement createAgreement(ServiceLevelAgreement agreement) {
+//        log.debug("POST Create SLA {}", agreement);
+//
+//        return this.metadata.commit(() -> {
+//            com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement domainSla
+//                = ServiceLevelAgreementModelTransform.generateDomain(agreement, this.provider);
+//
+//            return ServiceLevelAgreementModelTransform.DOMAIN_TO_SLA.apply(domainSla);
+//        });
+//    }
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)

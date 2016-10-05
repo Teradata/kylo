@@ -1,4 +1,6 @@
 = Configure Nifi for HDFS Encryption
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
 Think Big Analytics
 June 2016
 

@@ -58,6 +58,7 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
                     handleViolation(alert);
                     response.handle("Handled SLA Alert");
                 } catch (Exception e) {
+                    log.error("ERROR Handling Alert Error {} ", e.getMessage());
                     response.unHandle("Failed to handle violation");
                 }
             }
@@ -70,16 +71,19 @@ public class ServiceLevelAgreementActionAlertResponderFactory implements AlertRe
             ServiceLevelAssessment assessment = assessmentProvider.findServiceLevelAssessment(assessmentId);
             ServiceLevelAgreement agreement = assessment.getAgreement();
             assessmentProvider.ensureServiceLevelAgreementOnAssessment(assessment);
-
+            agreement = assessment.getAgreement();
             if (agreement != null && agreement.getSlaChecks() != null && !agreement.getSlaChecks().isEmpty()) {
                 for (ServiceLevelAgreementCheck check : agreement.getSlaChecks()) {
+
                     for (ServiceLevelAgreementActionConfiguration configuration : ((JcrServiceLevelAgreementCheck) check).getActionConfigurations(true)) {
                         List<Class<? extends ServiceLevelAgreementAction>> responders = configuration.getActionClasses();
+
                         if (responders != null) {
                             //first check to see if there is a Spring Bean configured for this class type... if so call that
                             for (Class<? extends ServiceLevelAgreementAction> responderClass : responders) {
                                 ServiceLevelAgreementAction action = ServiceLevelAgreementActionUtil.instantiate(responderClass);
                                 if (action != null) {
+                                    log.info("Found {} action", action.getClass().getName());
                                     //reassign the content of the alert to the ServiceLevelAssessment
                                     //validate the action is ok
                                     ServiceLevelAgreementActionValidation validation = ServiceLevelAgreementActionUtil.validateConfiguration(action);

@@ -1,4 +1,9 @@
 = Kerberos Installation Guide
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
+IMPORTANT: This document should only be used for DEV/Sandbox purposes. It is useful to help quickly Kerberize your
+Hortonwroks sandbox so that you can test Kerberos features.
+
 Think Big Analytics
 June 2016
 

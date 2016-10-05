@@ -44,6 +44,9 @@ public class FlowFileMapDbCache {
     @Value("${thinkbig.provenance.cache.flowfile.persistence.days:3}")
     private int expireAfterNumber = 3;
 
+    @Value("${thinkbig.provenance.cache.flowfile.deleteOnOpen:false}")
+    private boolean deleteOnOpen = false;
+
     private TimeUnit expireAfterUnit = TimeUnit.DAYS;
 
     public FlowFileMapDbCache() {

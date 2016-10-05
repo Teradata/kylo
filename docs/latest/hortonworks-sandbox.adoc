@@ -1,4 +1,6 @@
 == Hortonworks Sandbox Configuration
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
 This guide will help you install the Hortonworks sandbox for development and RPM testing
 
 === Install and Configure the Hortonworks Sandbox

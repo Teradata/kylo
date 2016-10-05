@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
+import com.thinkbiganalytics.DateTimeUtil;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
 import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
@@ -94,10 +95,9 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     @JoinColumn(name = "JOB_INSTANCE_ID", nullable = false, insertable = true, updatable = true)
     private BatchJobInstance jobInstance;
 
-    @OneToMany(targetEntity = JpaBatchJobExecutionParameter.class, fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(targetEntity = JpaBatchJobExecutionParameter.class, mappedBy = "jobExecution",fetch = FetchType.LAZY, orphanRemoval = true)
     @Fetch(FetchMode.JOIN)
-    @JoinColumn(name = "JOB_EXECUTION_ID", referencedColumnName = "JOB_EXECUTION_ID")
-    private Set<BatchJobExecutionParameter> jobParameters;
+    private Set<BatchJobExecutionParameter> jobParameters = new HashSet<>();
 
 
     @OneToMany(targetEntity = JpaBatchStepExecution.class, mappedBy = "jobExecution", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)
@@ -248,10 +248,12 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     }
 
     public void addJobExecutionContext(BatchJobExecutionContextValue context) {
-        if (getJobExecutionContext().contains(context)) {
-            getJobExecutionContext().remove(context);
+        if (!getJobExecutionContext().contains(context)) {
+            getJobExecutionContext().add(context);
+            //JpaBatchJobExecutionContextValue existing = (JpaBatchJobExecutionContextValue)getJobExecutionContextKeyMap().get(context.getKeyName());
+            //existing.setStringVal(context.getStringVal());
         }
-        getJobExecutionContext().add(context);
+
     }
 
     @Override
@@ -260,6 +262,17 @@ public class JpaBatchJobExecution implements BatchJobExecution {
             Map<String, String> map = new HashMap<>();
             getJobExecutionContext().forEach(ctx -> {
                 map.put(ctx.getKeyName(), ctx.getStringVal());
+            });
+            return map;
+        }
+        return null;
+    }
+
+    public Map<String, BatchJobExecutionContextValue> getJobExecutionContextKeyMap() {
+        if (!getJobExecutionContext().isEmpty()) {
+            Map<String, BatchJobExecutionContextValue> map = new HashMap<>();
+            getJobExecutionContext().forEach(ctx -> {
+                map.put(ctx.getKeyName(), ctx);
             });
             return map;
         }
@@ -276,6 +289,38 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     }
 
 
+    public void failJob(){
+        StringBuffer stringBuffer = null;
+        setExitMessage(stringBuffer != null ? stringBuffer.toString() : "");
+        setStatus(JpaBatchJobExecution.JobStatus.FAILED);
+        setExitCode(ExecutionConstants.ExitCode.FAILED);
+        if(endTime == null){
+            endTime = DateTimeUtil.getNowUTCTime();
+        }
+        for (BatchStepExecution se : getStepExecutions()) {
+            if (BatchStepExecution.StepStatus.FAILED.equals(se.getStatus())) {
+                if (stringBuffer == null) {
+                    stringBuffer = new StringBuffer();
+                } else {
+                    stringBuffer.append(",");
+                }
+                stringBuffer.append("Failed Step " + se.getStepName());
+            }
+            if(se.getEndTime() == null)
+            {
+                ((JpaBatchStepExecution)se).setEndTime(DateTimeUtil.getNowUTCTime());
+            }
+        }
+    }
+
+    public void completeJob(){
+        setStatus(JpaBatchJobExecution.JobStatus.COMPLETED);
+        setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+        if(endTime == null){
+            endTime = DateTimeUtil.getNowUTCTime();
+        }
+    }
+
     public void completeOrFailJob() {
         StringBuffer stringBuffer = null;
         boolean failedJob = false;
@@ -289,15 +334,18 @@ public class JpaBatchJobExecution implements BatchJobExecution {
                 }
                 stringBuffer.append("Failed Step " + se.getStepName());
             }
+            if(se.getEndTime() == null)
+            {
+                ((JpaBatchStepExecution)se).setEndTime(DateTimeUtil.getNowUTCTime());
+            }
         }
         if (failedJob) {
-            setExitMessage(stringBuffer != null ? stringBuffer.toString() : "");
-            setStatus(JpaBatchJobExecution.JobStatus.FAILED);
-            setExitCode(ExecutionConstants.ExitCode.FAILED);
+           failJob();
+
         } else {
-            setStatus(JpaBatchJobExecution.JobStatus.COMPLETED);
-            setExitCode(ExecutionConstants.ExitCode.COMPLETED);
+           completeJob();
         }
+
     }
 
     @Override
@@ -324,15 +372,16 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     }
 
 
-    public void setAsCheckDataJob(String feedNameReference) {
+    public Set<JpaBatchJobExecutionParameter> setAsCheckDataJob(String feedNameReference) {
+        Set<JpaBatchJobExecutionParameter> updatedParams = new HashSet<>();
 
-        BatchJobExecutionParameter feedNameRefParam = null;
-        BatchJobExecutionParameter jobTypeParam = null;
+        JpaBatchJobExecutionParameter feedNameRefParam = null;
+        JpaBatchJobExecutionParameter jobTypeParam = null;
         for (BatchJobExecutionParameter p : getJobParameters()) {
             if (FeedConstants.PARAM__FEED_NAME.equalsIgnoreCase(p.getKeyName())) {
-                feedNameRefParam = p;
+                feedNameRefParam = (JpaBatchJobExecutionParameter) p;
             } else if (FeedConstants.PARAM__JOB_TYPE.equalsIgnoreCase(p.getKeyName())) {
-                jobTypeParam = p;
+                jobTypeParam = (JpaBatchJobExecutionParameter) p;
             }
 
             if (feedNameRefParam != null && jobTypeParam != null) {
@@ -351,6 +400,11 @@ public class JpaBatchJobExecution implements BatchJobExecution {
         } else {
             jobTypeParam.setStringVal(FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK);
         }
+
+        updatedParams.add(feedNameRefParam);
+
+        updatedParams.add(jobTypeParam);
+        return updatedParams;
 
     }
 
@@ -372,5 +426,16 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     @Override
     public int hashCode() {
         return jobExecutionId.hashCode();
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("JpaBatchJobExecution{");
+        sb.append("jobExecutionId=").append(jobExecutionId);
+        sb.append(", status=").append(status);
+        sb.append(", startTime=").append(startTime);
+        sb.append(", endTime=").append(endTime);
+        sb.append('}');
+        return sb.toString();
     }
 }

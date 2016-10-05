@@ -1,7 +1,12 @@
 <card-layout class="centered">
-  <header-section layout-column>
-    <span class="card-title kpi-header">Processors Run Time (sec)</span>
-    <span class="md-caption kpi-subtitle ">Average Processing Time</span>
+  <header-section layout="row">
+    <span class="card-title kpi-header">Feed Statistics</span>
+    <span flex></span>
+
+    <div layout="column">
+      <span class="hint">{{vm.lastRefreshTime | date:'HH:mm:ss'}}</span>
+      <span class="md-caption">Last Refreshed</span>
+    </div>
   </header-section>
 
 
@@ -14,35 +19,39 @@
             <md-option value="{{opt.value}}" ng-repeat="opt in vm.timeFrameOptions track by opt.value">{{ opt.label }}</md-option>
           </md-select>
         </md-input-container>
-        <span flex></span>
+        <span flex="10"></span>
 
-        <div layout="column">
-          <span class="hint">{{vm.lastRefreshTime | date:'HH:mm:ss'}}</span>
-          <span class="md-caption">Last Refreshed</span>
-        </div>
+        <!--   <div layout="row" ng-if="vm.selectedTimeFrameOptionObject != null" class="hint layout-padding-top">
+             <span>{{vm.selectedTimeFrameOptionObject.data.startTime | date:'MM/dd/yy HH:mm:ss'}}</span>
+             <span> - </span>
+             <span>{{vm.selectedTimeFrameOptionObject.data.endTime | date:'MM/dd/yy HH:mm:ss'}}</span>
+           </div>
+   -->
       </div>
       <nvd3 flex options="vm.statusPieChartOptions" data="vm.statusPieChartData" api="vm.statusPieChartApi"></nvd3>
       <div layout="row" flex>
         <div layout="column" flex="25">
-          <span class="hint">{{vm.jobsStarted}}</span>
-          <span class="md-caption">Jobs Started</span>
+          <span class="hint">{{vm.flowsStarted}}</span>
+          <span class="md-caption">Flows Started</span>
         </div>
         <div layout="column" flex="25">
-          <span class="hint">{{vm.jobsFinished}}</span>
-          <span class="md-caption">Jobs Finished</span>
+          <span class="hint">{{vm.flowsFinished}}</span>
+          <span class="md-caption">Flows Finished</span>
         </div>
         <div layout="column" flex="25">
-          <span class="hint">{{vm.jobsFailed}}</span>
-          <span class="md-caption">Jobs Failed</span>
+          <span class="hint">{{vm.flowsFailed}}</span>
+          <span class="md-caption">Flows Failed</span>
         </div>
         <div layout="column" flex="25">
-          <span class="hint">{{vm.avgJobDuration}}</span>
-          <span class="md-caption">Avg Job Duration (sec)</span>
+          <span class="hint">{{vm.avgFlowDuration}}</span>
+          <span class="md-caption">Flows Job Duration (sec)</span>
         </div>
       </div>
+      <nvd3 options="vm.feedChartOptions" data="vm.feedChartData" api="vm.feedChartApi"></nvd3>
+
 
       <md-input-container class="md-block layout-padding-top-bottom">
-        <label class="md-container-ignore label-small layout-padding-top">Time Frame</label>
+        <label class="md-container-ignore label-small layout-padding-top">Processor Metric</label>
         <md-select ng-model="vm.selectedProcessorStatisticFunction" ng-change="vm.onProcessorChartFunctionChanged()" aria-label="Rule Type">
           <md-option value="{{opt}}" ng-repeat="opt in vm.processorStatsFunctions">{{ opt }}</md-option>
         </md-select>
@@ -50,9 +59,10 @@
       <div>Sum {{vm.selectedProcessorStatisticFunction}} is {{vm.totalProcessorSelectedFunctionValue}}</div>
       <nvd3 flex options="vm.processorDurationChartOptions" data="vm.processorDurationChartData" api="vm.chartApi" config="{deepWatchOptions:true}"></nvd3>
 
-      <nvd3 options="vm.feedChartOptions" data="vm.feedChartData" api="vm.feedChartApi"></nvd3>
 
-      <nvd3 options="vm.feedBytesChartOptions" data="vm.feedBytesChartData" api="vm.feedBytesChartApi"></nvd3>
+      <!--
+            <nvd3 options="vm.feedBytesChartOptions" data="vm.feedBytesChartData" api="vm.feedBytesChartApi"></nvd3>
+            -->
 
     </div>
     <div ng-if="!vm.dataLoaded" class="kpi-loading">

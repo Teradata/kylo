@@ -367,7 +367,7 @@ angular.module(COMMON_APP_MODULE_NAME).directive('currentTime', function ($http,
             dateFormat: '@',
             refreshInterval: '@'
         },
-        template: "<span>{{currentTimeUtc}} UTC</span>",
+        template: "<span>{{currentTimeUtc}}</span>",
         link: function (scope, element, attrs) {
 
             if (scope.dateFormat == null) {

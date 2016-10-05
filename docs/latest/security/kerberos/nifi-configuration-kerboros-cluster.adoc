@@ -1,4 +1,6 @@
 = NiFi Configuration for a Kerberos Cluster
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
 Think Big Analytics
 June 2016
 
@@ -66,7 +68,7 @@ image::images/N1.png[]
 
     Hadoop Configuration Resource : /etc/hadoop/conf/core-site.xml,/etc/hadoop/conf/hdfs-site.xml
     Kerberos Principal: nifi
-    Kerberos Keytab : /home/nifi/nifi.headless.keytab
+    Kerberos Keytab : /etc/security/keytabs/nifi.headless.keytab
 
 image::images/N3.png[]
 
@@ -88,7 +90,9 @@ image::images/N7.png[]
 
 * Update HiveServer2 hostname and Hive principal name.
 
-     Database Connection URL :<HOSTNAME>:10000/default;principal=hive/<HOSTNAME>@HDP-TBRND-DEV
+     Database Connection URL: 'jdbc:hive2://:<HOSTNAME>:10000/default;principal=hive/<HOSTNAME>@HOSTNAME'
+
+     ex. 'jdbc:hive2://localhost:10000/default;principal=hive/sandbox.hortonworks.com@sandbox.hortonworks.com'
 
 image::images/N8.png[]
 

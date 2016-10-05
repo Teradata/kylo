@@ -7,6 +7,9 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementAction;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionValidation;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAssessment;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import javax.inject.Inject;
 
 /**
@@ -16,14 +19,17 @@ import javax.inject.Inject;
 @ClassNameChange(classNames = {"com.thinkbiganalytics.metadata.sla.alerts.EmailServiceLevelAgreementAction"})
 public class EmailServiceLevelAgreementAction implements ServiceLevelAgreementAction<EmailServiceLevelAgreementActionConfiguration> {
 
+    private static final Logger log = LoggerFactory.getLogger(EmailServiceLevelAgreementAction.class);
     @Inject
     private SlaEmailService emailService;
 
     @Override
     public boolean respond(EmailServiceLevelAgreementActionConfiguration actionConfiguration, ServiceLevelAssessment assessment, Alert a) {
+        log.info("Responding to SLA violation.");
         String desc = ServiceLevelAssessmentAlertUtil.getDescription(assessment);
         String slaName = assessment.getAgreement().getName();
         String email = actionConfiguration.getEmailAddresses();
+        log.info("Responding to SLA violation.  About to send an email for SLA {} ",slaName);
         //mail it
         emailService.sendMail(email, "SLA Violated: " + slaName, desc);
 

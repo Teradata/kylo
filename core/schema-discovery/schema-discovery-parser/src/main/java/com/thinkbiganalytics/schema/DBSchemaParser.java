@@ -8,6 +8,7 @@ import com.thinkbiganalytics.db.model.schema.Field;
 import com.thinkbiganalytics.db.model.schema.TableSchema;
 import com.thinkbiganalytics.kerberos.KerberosTicketConfiguration;
 import com.thinkbiganalytics.kerberos.KerberosTicketGenerator;
+import com.thinkbiganalytics.kerberos.KerberosUtil;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
@@ -50,29 +51,6 @@ public class DBSchemaParser {
         } catch (SQLException e) {
             throw new RuntimeException("Unable to list schemas", e);
         }
-    }
-
-    private Connection getConnectionWithKerberos() {
-        log.info("Initializing the Kerberos Ticket for hive connection");
-        Connection conn = null;
-        UserGroupInformation userGroupInformation;
-        try {
-            KerberosTicketGenerator t = new KerberosTicketGenerator();
-            userGroupInformation = t.generateKerberosTicket(kerberosTicketConfiguration);
-            conn = userGroupInformation.doAs(new PrivilegedExceptionAction<Connection>() {
-                @Override
-                public Connection run() throws Exception {
-
-                    return ds.getConnection();
-                }
-            });
-            log.info("Successfully got a datasource connection !!!!!");
-        } catch (Exception e) {
-            log.error("Error with kerberos authentication jeremy");
-
-            throw new RuntimeException(e);
-        }
-        return conn;
     }
 
     public List<String> listCatalogs() {
@@ -150,7 +128,7 @@ public class DBSchemaParser {
         ResultSet result = null;
         try {
             if(kerberosTicketConfiguration.isKerberosEnabled()) {
-                conn = getConnectionWithKerberos();
+                conn = KerberosUtil.getConnectionWithOrWithoutKerberos(ds, kerberosTicketConfiguration);
             }
             else {
                 conn = ds.getConnection();

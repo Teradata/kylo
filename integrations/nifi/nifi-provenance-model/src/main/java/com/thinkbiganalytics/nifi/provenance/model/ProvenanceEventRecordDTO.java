@@ -8,6 +8,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.thinkbiganalytics.nifi.provenance.model.util.ProvenanceEventUtil;
 
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -25,6 +27,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProvenanceEventRecordDTO implements Serializable {
+
+    private static final Logger log = LoggerFactory.getLogger(ProvenanceEventRecordDTO.class);
 
     private transient AtomicBoolean processed = new AtomicBoolean(false);
 
@@ -631,6 +635,8 @@ public class ProvenanceEventRecordDTO implements Serializable {
         sb.append(", eventType=").append(getEventType());
         sb.append(", eventDetails=").append(getDetails());
         sb.append(", isEndOfJob=").append(isEndOfJob());
+        sb.append(", isBatch=").append(isBatchJob());
+        sb.append(", isStream=").append(isStream());
         sb.append('}');
         return sb.toString();
     }

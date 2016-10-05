@@ -8,4 +8,8 @@ import com.thinkbiganalytics.metadata.api.jobrepo.job.BatchJobExecution;
 public interface NifiEventJobExecution {
 
     BatchJobExecution getJobExecution();
+
+    void setEventId(Long eventId);
+
+    Long getEventId();
 }

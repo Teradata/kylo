@@ -4,7 +4,15 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
-import com.thinkbiganalytics.jobrepo.query.job.*;
+import com.thinkbiganalytics.jobrepo.query.job.AugmentJobExecutionTimingDataQuery;
+import com.thinkbiganalytics.jobrepo.query.job.JobProgressQuery;
+import com.thinkbiganalytics.jobrepo.query.job.JobQueryConstants;
+import com.thinkbiganalytics.jobrepo.query.job.JobStatusCountByDayQuery;
+import com.thinkbiganalytics.jobrepo.query.job.JobStepQuery;
+import com.thinkbiganalytics.jobrepo.query.job.RelatedJobExecutionsQuery;
+import com.thinkbiganalytics.jobrepo.query.job.RunningJobsStartedBeforeSpecifiedTimeQuery;
+import com.thinkbiganalytics.jobrepo.query.job.RunningOrFailedJobCountsQuery;
+import com.thinkbiganalytics.jobrepo.query.job.StepExecutionTimingQuery;
 import com.thinkbiganalytics.jobrepo.query.model.DailyJobStatusCount;
 import com.thinkbiganalytics.jobrepo.query.model.DailyJobStatusCountResult;
 import com.thinkbiganalytics.jobrepo.query.model.DefaultExecutedJob;
@@ -463,8 +471,10 @@ public class JobRepositoryImpl implements JobRepository {
     Map<Long, JobExecution> fetchedJobs = new HashMap<>();
 
     List<Long> stepExecutionIds = new ArrayList<>();
+    Map<Long, JobStepQueryRow> stepRowData = new HashMap<>();
     for (JobStepQueryRow row : steps) {
       stepExecutionIds.add(row.getStepExecutionId());
+      stepRowData.put(row.getStepExecutionId(), row);
     }
     for (JobStepQueryRow row : steps) {
       Long jobExecutionId = row.getJobExecutionId();
@@ -474,7 +484,8 @@ public class JobRepositoryImpl implements JobRepository {
           for (StepExecution step : execution.getStepExecutions()) {
             if (stepExecutionIds.contains(step.getId())) {
               ExecutedStep executedStep = convertToExecutedStep(step);
-             addStepTimingData(executedStep);
+              executedStep.setNifiEventId(stepRowData.get(step.getId()) != null ? stepRowData.get(step.getId()).getNifiEventId() : null);
+              addStepTimingData(executedStep);
               executedSteps.add(executedStep);
             }
           }

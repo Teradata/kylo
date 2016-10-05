@@ -88,7 +88,6 @@ public class JpaBatchStepExecutionContextValue extends AbstractBatchExecutionCon
         this.keyName = keyName;
     }
 
-
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -100,25 +99,17 @@ public class JpaBatchStepExecutionContextValue extends AbstractBatchExecutionCon
 
         JpaBatchStepExecutionContextValue that = (JpaBatchStepExecutionContextValue) o;
 
-        if (id != null ? !id.equals(that.id) : that.id != null) {
-            return false;
-        }
         if (stepExecution != null ? !stepExecution.equals(that.stepExecution) : that.stepExecution != null) {
             return false;
         }
-        if (jobExecutionId != null ? !jobExecutionId.equals(that.jobExecutionId) : that.jobExecutionId != null) {
-            return false;
-        }
-        return keyName.equals(that.keyName);
+        return !(keyName != null ? !keyName.equals(that.keyName) : that.keyName != null);
 
     }
 
     @Override
     public int hashCode() {
-        int result = id != null ? id.hashCode() : 0;
-        result = 31 * result + (stepExecution != null ? stepExecution.hashCode() : 0);
-        result = 31 * result + (jobExecutionId != null ? jobExecutionId.hashCode() : 0);
-        result = 31 * result + keyName.hashCode();
+        int result = stepExecution != null ? stepExecution.hashCode() : 0;
+        result = 31 * result + (keyName != null ? keyName.hashCode() : 0);
         return result;
     }
 }

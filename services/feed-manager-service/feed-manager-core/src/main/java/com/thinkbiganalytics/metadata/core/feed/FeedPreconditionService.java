@@ -111,7 +111,12 @@ public class FeedPreconditionService {
             if (state == FeedOperation.State.SUCCESS) {
                 metadata.read(() -> {
                     for (Feed<?> feed : feedProvider.getFeeds()) {
-                        checkPrecondition(feed);
+                        // Don't check the precondition of the feed that that generated this change event.
+                        // TODO: this might not be the correct behavior but none of our current metrics
+                        // need to be assessed when the feed itself containing the precondition has changed state.
+                        if (! feed.getQualifiedName().equals(event.getFeedName())) {
+                            checkPrecondition(feed);
+                        }
                     }
                     return null;
                 }, MetadataAccess.SERVICE);

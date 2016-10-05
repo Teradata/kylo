@@ -18,6 +18,10 @@ public class RootFlowFile extends ActiveFlowFile {
 
     private ActiveFlowFile flowFile;
 
+    private boolean canExpire;
+
+    private DateTime minimiumExpireTime;
+
 
     private Set<String> rootFlowFileActiveChildren = new HashSet<>();
 
@@ -29,6 +33,10 @@ public class RootFlowFile extends ActiveFlowFile {
 
     public FIRST_EVENT_TYPE getFirstEventType() {
         return firstEventType;
+    }
+
+    public void markAsBatch() {
+        setFirstEventType(FIRST_EVENT_TYPE.BATCH);
     }
 
 
@@ -46,7 +54,7 @@ public class RootFlowFile extends ActiveFlowFile {
     }
 
     public boolean isStream() {
-        return getFirstEventType().equals(FIRST_EVENT_TYPE.STREAM);
+        return getFirstEventType() != null && FIRST_EVENT_TYPE.STREAM.equals(getFirstEventType());
     }
 
     private Set<RootFlowFile> relatedRootFlowFiles = new HashSet<>();
@@ -55,14 +63,14 @@ public class RootFlowFile extends ActiveFlowFile {
     public void addRootFileActiveChild(String flowFileId) {
         if (this.isRootFlowFile()) {
             getRootFlowFileActiveChildren().add(flowFileId);
-            log.info("adding active child {} to root {}. size: {} ", flowFileId, this.getId(), getRootFlowFileActiveChildren().size());
+            log.debug("adding active child {} to root {}. size: {} ", flowFileId, this.getId(), getRootFlowFileActiveChildren().size());
         }
     }
 
     public void removeRootFileActiveChild(String flowFileId) {
         if (this.isRootFlowFile()) {
             getRootFlowFileActiveChildren().remove(flowFileId);
-            log.info("removing active child {} from root {}. size: {} ", flowFileId, this.getId(), getRootFlowFileActiveChildren().size());
+            log.debug("removing active child {} from root {}. size: {} ", flowFileId, this.getId(), getRootFlowFileActiveChildren().size());
         }
     }
 
@@ -315,7 +323,7 @@ public class RootFlowFile extends ActiveFlowFile {
         this.relatedRootFlowFiles.add(rootFlowFile);
     }
 
-    public boolean areRelatedRootFlowFilesComplete() {
+    public boolean areRelatedRootFlowFilesCompleteOld() {
         if (getRelatedRootFlowFiles() != null || getRelatedRootFlowFiles().isEmpty()) {
             return true;
         } else {
@@ -330,4 +338,58 @@ public class RootFlowFile extends ActiveFlowFile {
         }
     }
 
+    public boolean isFlowAndRelatedRootFlowFilesComplete() {
+        boolean thisComplete = isFlowComplete();
+        if (thisComplete) {
+            DateTime now = DateTime.now();
+            boolean relatedCompleted = false;
+            if (getRootFlowFile().getRelatedRootFlowFiles().isEmpty()) {
+                relatedCompleted = true;
+                this.setMinimiumExpireTime(now);
+            } else {
+                relatedCompleted = getRelatedRootFlowFiles().stream().filter(ff -> !ff.equals(this)).allMatch(ff2 -> ff2.isFlowComplete());
+                if (relatedCompleted) {
+                    getRootFlowFile().getRelatedRootFlowFiles().stream().forEach(ff -> ff.setMinimiumExpireTime(now));
+                    this.setMinimiumExpireTime(now);
+
+                    //if complete then mark all related as complete too
+                    getRelatedRootFlowFiles().stream().forEach(ff -> ff.setMinimiumExpireTime(now));
+                }
+
+
+            }
+            thisComplete &= relatedCompleted;
+
+
+        }
+        return thisComplete;
+    }
+
+    public boolean isCanExpire() {
+        return getMinimiumExpireTime() != null;
+    }
+
+    /**
+     * Checks this flow and any related flow files for failure events
+     */
+    public boolean hasAnyFailures() {
+        boolean failures = this.hasFailedEvents();
+        if (!failures && !getRootFlowFile().getRelatedRootFlowFiles().isEmpty()) {
+
+            failures &= getRelatedRootFlowFiles().stream().anyMatch(ff -> ff.hasFailedEvents());
+        }
+        return failures;
+    }
+
+
+    private void setMinimiumExpireTime(DateTime minimiumExpireTime) {
+        if (this.minimiumExpireTime == null) {
+            this.minimiumExpireTime = minimiumExpireTime;
+            // log.info("set minimum ExpireTime on {} to be {} ",this.getId(),minimiumExpireTime);
+        }
+    }
+
+    public DateTime getMinimiumExpireTime() {
+        return minimiumExpireTime;
+    }
 }

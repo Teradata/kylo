@@ -64,9 +64,20 @@ public class JpaServiceLevelAssessmentProvider implements ServiceLevelAssessment
         return serviceLevelAssessmentRepository.findLatestAssessment(slaId.toString());
     }
 
+
+    @Override
+    public ServiceLevelAssessment findLatestAssessmentNotEqualTo(ServiceLevelAgreement.ID slaId, ServiceLevelAssessment.ID assessmentId) {
+        if (assessmentId != null) {
+            return serviceLevelAssessmentRepository.findLatestAssessmentNotEqualTo(slaId.toString(), assessmentId);
+        } else {
+            return findLatestAssessment(slaId);
+        }
+    }
+
     @Override
     public ServiceLevelAssessment findServiceLevelAssessment(ServiceLevelAssessment.ID id) {
-        return serviceLevelAssessmentRepository.findOne(id);
+        ServiceLevelAssessment assessment = serviceLevelAssessmentRepository.findOne(id);
+        return assessment;
     }
 
 

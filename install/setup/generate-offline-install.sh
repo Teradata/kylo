@@ -2,7 +2,7 @@
 
 cd /opt/thinkbig/setup
 
-wget http://ftp.wayne.edu/apache//activemq/5.13.3/apache-activemq-5.13.3-bin.tar.gz -P ./activemq
+wget https://archive.apache.org/dist/activemq/5.13.3/apache-activemq-5.13.3-bin.tar.gz -P ./activemq
 
 wget https://download.elasticsearch.org/elasticsearch/release/org/elasticsearch/distribution/rpm/elasticsearch/2.3.0/elasticsearch-2.3.0.rpm -P ./elasticsearch/
 

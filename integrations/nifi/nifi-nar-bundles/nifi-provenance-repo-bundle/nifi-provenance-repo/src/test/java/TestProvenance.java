@@ -1,19 +1,22 @@
+import com.google.common.collect.Lists;
 import com.thinkbiganalytics.activemq.config.ActiveMqConfig;
 import com.thinkbiganalytics.nifi.config.NifiProvenanceConfig;
+import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTOHolder;
+import com.thinkbiganalytics.nifi.provenance.v2.ProvenanceEventRecordConverter;
 import com.thinkbiganalytics.nifi.provenance.v2.writer.ProvenanceEventActiveMqWriter;
 
 import org.apache.nifi.provenance.ProvenanceEventRecord;
 import org.apache.nifi.provenance.ProvenanceEventType;
 import org.apache.nifi.provenance.StandardProvenanceEventRecord;
 import org.junit.Ignore;
-import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import javax.jms.JMSException;
 import java.util.UUID;
+
+import javax.jms.JMSException;
 
 /**
  * Created by sr186054 on 2/24/16.
@@ -54,8 +57,9 @@ public class TestProvenance {
                         .setCurrentContentClaim("container", "section", "identifier", 0L, 1000L)
                         .build();
 
-
-                activeMqWriter.writeEvent(record);
+                ProvenanceEventRecordDTOHolder eventHolder = new ProvenanceEventRecordDTOHolder();
+                eventHolder.setEvents(Lists.newArrayList(ProvenanceEventRecordConverter.convert(record)));
+                activeMqWriter.writeEvents(eventHolder);
                 try {
                     Thread.sleep(2000L);
                 } catch (InterruptedException e) {

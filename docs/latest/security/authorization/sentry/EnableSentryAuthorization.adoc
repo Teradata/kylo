@@ -1,4 +1,8 @@
 = Enable Sentry Authorization Guide
+ifdef::env-github,env-browser[:outfilesuffix: .adoc]
+
+IMPORTANT: This feature is a work in progress. It is not ready for use
+
 Think Big Analytics
 September 2016
 

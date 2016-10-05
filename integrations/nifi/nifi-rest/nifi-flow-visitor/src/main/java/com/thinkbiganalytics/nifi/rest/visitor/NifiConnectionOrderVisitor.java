@@ -307,17 +307,17 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
         ProcessGroupEntity processGroupEntity = null;
         try {
             try {
-                log.info("fetchProcessGroup {} ", groupId);
+                log.debug("fetchProcessGroup {} ", groupId);
                 processGroupEntity = restClient.getProcessGroup(groupId, false, true);
             } catch (NifiComponentNotFoundException e) {
-                log.info("Unable to find the process group " + groupId);
+                log.debug("Unable to find the process group " + groupId);
             }
             //if the parent is null the parent is the starting process group
             if (processGroupEntity != null) {
                 group = new NifiVisitableProcessGroup(processGroupEntity.getProcessGroup());
             }
         } catch (Exception e) {
-            log.info("Exception fetching the process group " + groupId);
+            log.error("Exception fetching the process group " + groupId);
         }
         return group;
     }
@@ -329,10 +329,10 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
         try {
             ProcessGroupEntity parent = null;
             try {
-                log.info("fetch ProcessGroup for searchConnectionMatchingSource {} ", parentGroupId);
+                log.debug("fetch ProcessGroup for searchConnectionMatchingSource {} ", parentGroupId);
                 parent = restClient.getProcessGroup(parentGroupId, false, true);
             } catch (NifiComponentNotFoundException e) {
-                log.info("Exception searching Connection matching the source. Parent Group ID: " + parentGroupId + ", and destinationId of  " + destinationId);
+                log.debug("Exception searching Connection matching the source. Parent Group ID: " + parentGroupId + ", and destinationId of  " + destinationId);
             }
             if (parent != null) {
                 //processGroup.getDto().setParent(parentParent.getProcessGroup());
@@ -348,7 +348,7 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
             }
 
         } catch (Exception e) {
-            log.info("Exception searching Connection matching the source.  Parent Group ID: " + parentGroupId + ", and destinationId of  " + destinationId);
+            log.error("Exception searching Connection matching the source.  Parent Group ID: " + parentGroupId + ", and destinationId of  " + destinationId);
         }
         return null;
 
@@ -362,7 +362,7 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
             try {
                 parent = restClient.getProcessGroup(parentGroupId, false, true);
             } catch (NifiComponentNotFoundException e) {
-                log.info("Exception searching Connection matching the destination. Parent Group ID: " + parentGroupId + ", and destinationId of  " + sourceId);
+                log.debug("Exception searching Connection matching the destination. Parent Group ID: " + parentGroupId + ", and destinationId of  " + sourceId);
             }
             if (parent != null) {
                 //processGroup.getDto().setParent(parentParent.getProcessGroup());
@@ -378,7 +378,7 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
             }
 
         } catch (Exception e) {
-            log.info("Exception searching Connection matching the destination.  Parent Group ID: " + parentGroupId + ", and source of  " + sourceId);
+            log.error("Exception searching Connection matching the destination.  Parent Group ID: " + parentGroupId + ", and source of  " + sourceId);
         }
         return null;
 
@@ -396,7 +396,7 @@ public class NifiConnectionOrderVisitor implements NifiFlowVisitor {
             if (!this.processorsMap.containsKey(id)) {
                 //if the current group is not related to this processgroup then attempt to walk this processors processgroup
                 try {
-                    log.info("fetch ProcessGroup for getConnectionProcessor {} ", groupId);
+                    log.debug("fetch ProcessGroup for getConnectionProcessor {} ", groupId);
                     ProcessGroupEntity processGroupEntity = restClient.getProcessGroup(groupId, false, true);
                     ProcessorDTO processorDTO = NifiProcessUtil.findFirstProcessorsById(
                         processGroupEntity.getProcessGroup().getContents().getProcessors(), id);

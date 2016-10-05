@@ -1,11 +1,15 @@
 package com.thinkbiganalytics.nifi.rest;
 
-import com.thinkbiganalytics.nifi.feedmgr.CreateFeedBuilder;
+import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
+import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
+import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
+import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.rest.JerseyClientException;
 
 import org.apache.commons.io.IOUtils;
@@ -20,6 +24,8 @@ import org.apache.nifi.web.api.entity.ProvenanceEventEntity;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringWriter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.ws.rs.NotFoundException;
@@ -42,12 +48,7 @@ public class NifiRestTest {
     }
 
 
-    //@Test
-    public void testCreateReusableFeedTemplate() throws JerseyClientException {
-        TemplateDTO templateDTO = restClient.getTemplateByName("Reusable Data Ingest");
 
-        CreateFeedBuilder.newFeed(restClient, "Reusable Templates", "Scotts Feed1", templateDTO.getId()).setReusableTemplate(true).build();
-    }
 
     //@Test
     public void testReplay() {
@@ -77,7 +78,7 @@ public class NifiRestTest {
 
 
     //@Test
-    public void testCreateFeed() throws JerseyClientException {
+    public void testCreateFeed1() throws JerseyClientException {
         TemplateDTO templateDTO = restClient.getTemplateByName("New Data Ingest");
         String inputType = "org.apache.nifi.processors.standard.GetFile";
 
@@ -87,9 +88,97 @@ public class NifiRestTest {
         String inputPortName = "From Data Ingest Feed";
 
         String feedOutputPortName = "To Data Ingest";
-        CreateFeedBuilder.newFeed(restClient, "abcdefg", "Scotts Feed1", templateDTO.getId()).inputProcessorType(inputType)
+
+        FeedMetadata feedMetadata = new FeedMetadata();
+        feedMetadata.setCategory(new FeedCategory());
+        feedMetadata.getCategory().setSystemName("online");
+        feedMetadata.setSystemFeedName("Scotts Feed");
+
+        CreateFeedBuilder.newFeed(restClient, feedMetadata, templateDTO.getId(), new PropertyExpressionResolver()).inputProcessorType(inputType)
             .feedSchedule(schedule).addInputOutputPort(new InputOutputPort(inputPortName, feedOutputPortName)).build();
     }
+
+
+
+    //@Test
+    public void testLoad() {
+        //setup constants for the test
+        String templateName = "Data Ingest";
+        int num = 10;
+        String processGroupName = "LoadTest";
+        String feedPrefix = "LT_";
+        String inputType = "org.apache.nifi.processors.standard.GetFile";
+        List<NifiProperty> templateProperties = new ArrayList<>();
+
+        String schedulePeriod = "10 sec";
+
+        String GET_FILE_PROCESSOR_NAME = "Poll filesystem";
+        String UPDATE_PARAMETERS_PROCESSOR_NAME = "Update flow parameters";
+
+        String INPUT_DIRECTORY_PROPERTY = "Input Directory";
+        String SOURCE_PROPERTY = "source";
+        String ENTITY_PROPERTY = "entity";
+
+        try {
+            TemplateDTO template = restClient.getTemplateByName(templateName);
+
+            List<NifiProperty> propertyList = restClient.getPropertiesForTemplate(template.getId());
+            NifiProperty inputDirectory = NifiPropertyUtil
+                .getProperty(GET_FILE_PROCESSOR_NAME, INPUT_DIRECTORY_PROPERTY, propertyList);
+            NifiProperty entity = NifiPropertyUtil.getProperty(UPDATE_PARAMETERS_PROCESSOR_NAME, SOURCE_PROPERTY, propertyList);
+            NifiProperty source = NifiPropertyUtil.getProperty(UPDATE_PARAMETERS_PROCESSOR_NAME, ENTITY_PROPERTY, propertyList);
+            templateProperties.add(inputDirectory);
+            templateProperties.add(entity);
+            templateProperties.add(source);
+
+            NifiProcessorSchedule schedule = new NifiProcessorSchedule();
+            schedule.setSchedulingStrategy("TIMER_DRIVEN");
+            schedule.setSchedulingPeriod(schedulePeriod);
+            for (int i = 0; i < num; i++) {
+                String feedName = feedPrefix + i;
+
+                List<NifiProperty> instanceProperties = NifiPropertyUtil.copyProperties(templateProperties);
+                //update the properties
+                NifiPropertyUtil.getProperty(GET_FILE_PROCESSOR_NAME, INPUT_DIRECTORY_PROPERTY, instanceProperties).setValue("/tmp/" + feedName);
+                NifiPropertyUtil.getProperty(UPDATE_PARAMETERS_PROCESSOR_NAME, SOURCE_PROPERTY, instanceProperties).setValue(processGroupName);
+                NifiPropertyUtil.getProperty(UPDATE_PARAMETERS_PROCESSOR_NAME, ENTITY_PROPERTY, instanceProperties).setValue(feedName);
+
+                FeedMetadata feedMetadata = new FeedMetadata();
+                feedMetadata.setCategory(new FeedCategory());
+                feedMetadata.getCategory().setSystemName(processGroupName);
+                feedMetadata.setSystemFeedName("feedPrefix + i");
+
+                 CreateFeedBuilder.newFeed(restClient,feedMetadata, template.getId(),new PropertyExpressionResolver()).inputProcessorType(inputType)
+                    .feedSchedule(schedule).properties(instanceProperties).build();
+
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    //@Test
+    public void testCreateFeed() throws Exception {
+        TemplateDTO templateDTO = restClient.getTemplateByName("New Data Ingest");
+        String inputType = "org.apache.nifi.processors.standard.GetFile";
+
+        NifiProcessorSchedule schedule = new NifiProcessorSchedule();
+        schedule.setSchedulingStrategy("TIMER_DRIVEN");
+        schedule.setSchedulingPeriod("10 sec");
+        String inputPortName = "From Data Ingest Feed";
+
+        String feedOutputPortName = "To Data Ingest";
+
+        FeedMetadata feedMetadata = new FeedMetadata();
+        feedMetadata.setCategory(new FeedCategory());
+        feedMetadata.getCategory().setSystemName("online");
+        feedMetadata.setSystemFeedName("Scotts Feed");
+
+        CreateFeedBuilder.newFeed(restClient,feedMetadata,templateDTO.getId(), new PropertyExpressionResolver()).inputProcessorType(inputType)
+            .feedSchedule(schedule).addInputOutputPort(new InputOutputPort(inputPortName, feedOutputPortName)).build();
+    }
+
+
 
 
     // @Test

@@ -66,7 +66,7 @@ public class ProvenanceEventRecordConverter implements Serializable {
         dto.setAttributes(attributes);
         dto.setEventId(event.getEventId());
         dto.setEventTime(new DateTime(event.getEventTime()));
-        dto.setEventDuration(event.getEventDuration());
+        // dto.setEventDuration(event.getEventDuration());
         dto.setEventType(event.getEventType().name());
         dto.setFileSize(FormatUtils.formatDataSize(event.getFileSize()));
         dto.setFileSizeBytes(event.getFileSize());
@@ -98,7 +98,7 @@ public class ProvenanceEventRecordConverter implements Serializable {
 
         // event duration
         if (event.getEventDuration() >= 0) {
-            dto.setEventDuration(event.getEventDuration());
+            //    dto.setEventDuration(event.getEventDuration());
         }
 
         // parent uuids

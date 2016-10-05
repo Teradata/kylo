@@ -51,7 +51,7 @@ public class EmailServiceLevelAgreementSpringConfiguration {
         if (emailConfiguration.isSslEnable()) {
             mailProperties.put("mail.smtp.ssl.enable", "true");
         }
-        mailProperties.put("mail.debug", "true");
+        mailProperties.put("mail.debug", emailConfiguration.isDebug());
 
         mailSender.setJavaMailProperties(mailProperties);
         mailSender.setHost(emailConfiguration.getHost());

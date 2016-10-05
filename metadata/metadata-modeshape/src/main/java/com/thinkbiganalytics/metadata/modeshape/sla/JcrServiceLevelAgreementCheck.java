@@ -3,16 +3,6 @@
  */
 package com.thinkbiganalytics.metadata.modeshape.sla;
 
-import java.io.Serializable;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.jcr.Node;
-import javax.jcr.NodeIterator;
-import javax.jcr.RepositoryException;
-
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.thinkbiganalytics.metadata.modeshape.MetadataRepositoryException;
 import com.thinkbiganalytics.metadata.modeshape.common.AbstractJcrAuditableSystemEntity;
 import com.thinkbiganalytics.metadata.modeshape.common.JcrPropertyConstants;
@@ -22,6 +12,16 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfig;
 import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreementActionConfiguration;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementCheck;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.jcr.Node;
+import javax.jcr.NodeIterator;
+import javax.jcr.RepositoryException;
 
 
 public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEntity implements ServiceLevelAgreementCheck, Serializable {
@@ -97,7 +97,7 @@ public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEnt
     }
 
     public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations() {
-       return getActionConfigurations(false);
+        return getActionConfigurations(false);
     }
 
     public List<? extends ServiceLevelAgreementActionConfiguration> getActionConfigurations(boolean allowClassNotFound) {
@@ -105,10 +105,11 @@ public class JcrServiceLevelAgreementCheck extends AbstractJcrAuditableSystemEnt
             @SuppressWarnings("unchecked")
             Iterator<Node> itr = (Iterator<Node>) this.node.getNodes(ACTION_CONFIGURATIONS);
 
-            return Lists.newArrayList(Iterators.transform(itr, (actionConfigNode) -> {
-                  return JcrUtil.getGenericJson(actionConfigNode, JcrPropertyConstants.JSON,allowClassNotFound);
-            }));
-
+            List<Node> list = new ArrayList<>();
+            itr.forEachRemaining((e) -> list.add(e));
+            return list.stream().map((actionConfigNode) -> {
+                return (ServiceLevelAgreementActionConfiguration) JcrUtil.getGenericJson(actionConfigNode, JcrPropertyConstants.JSON, allowClassNotFound);
+            }).filter(configuration -> configuration != null).collect(Collectors.toList());
 
 
         } catch (RepositoryException e) {

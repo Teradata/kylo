@@ -20,6 +20,7 @@ import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,6 +57,22 @@ public class NifiFlowCache {
 
     private AtomicBoolean isConnectionCheckTimerRunning = new AtomicBoolean(false);
 
+    public List<NifiRestConnectionListener> connectionListeners = new ArrayList<>();
+
+    public void subscribeConnectionListener(NifiRestConnectionListener connectionListener) {
+        connectionListeners.add(connectionListener);
+    }
+
+    private void notifyOnConnected() {
+        for (NifiRestConnectionListener connectionListener : connectionListeners) {
+            connectionListener.onConnected();
+        }
+    }
+
+    public boolean isConnected() {
+        return !isConnectionCheckTimerRunning.get();
+    }
+
    // public static NifiFlowCache instance() {
    //     return instance;
   //  }
@@ -72,7 +89,7 @@ public class NifiFlowCache {
     private void initClient() {
         if (active) {
             if(StringUtils.isNotBlank(username)){
-                log.info("attempt to create new NifiFlowClient using {}:<PASSWORD>@ {}",username,host);
+                log.info("attempt to create new NifiFlowClient using user: {} @ {}", username, host);
                 nifiFlowClient = new NifiFlowClient(URI.create(host), NifiFlowClient.createCredentialProvider(username,password));
             }
             else {
@@ -161,7 +178,10 @@ public class NifiFlowCache {
         if(group.getFailureConnectionIdToSourceProcessorMap() != null){
             failureConnectionIdToSourceProcessorMap.putAll(group.getFailureConnectionIdToSourceProcessorMap());
         }
+
+
     }
+
 
     public NifiFlowProcessor getProcessor(String processorId) {
         return processorIdProcessorMap.get(processorId);
@@ -284,8 +304,10 @@ public class NifiFlowCache {
                                 loadAll();
                             }
                             connectionCheckTimer.cancel();
+                            notifyOnConnected();
                             isConnectionCheckTimerRunning.set(false);
                             connectionRetryAttempts.set(0);
+
                         }
                         else {
                             log.info("Unable to connect to Nifi Rest.  Attempt Number: {}, Timer will try again in {} seconds ",retryAttempts, interval/1000);
@@ -316,6 +338,17 @@ public class NifiFlowCache {
          List<NifiFlowProcessor> processors = failureConnectionIdToSourceProcessorMap.get(connectionId);
         if(processors != null){
             return processors.get(0).getId();
+        }
+        return null;
+    }
+
+    /**
+     * Returns a set of all the matching Source Component Ids related to this connection
+     */
+    public Set<String> getProcessorIdsWithDestinationConnectionIdentifier(String connectionId) {
+        List<NifiFlowProcessor> processors = destinationConnectionIdProcessorMap.get(connectionId);
+        if (processors != null) {
+            return processors.stream().map(p -> p.getId()).collect(Collectors.toSet());
         }
         return null;
     }

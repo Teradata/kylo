@@ -136,7 +136,7 @@ public class ActiveFlowFile {
         }
         if (isRootFlowFile()) {
             //shouldnt get here.. but just in case
-            log.info("marking root flow in getRootFlowFile for {} ", this.getId());
+            log.debug("marking root flow in getRootFlowFile for {} ", this.getId());
             markAsRootFlowFile();
             root = this.rootFlowFile;
         } else {
@@ -321,35 +321,43 @@ public class ActiveFlowFile {
                         event.setPreviousEvent(previousEvent);
                         if (event.getParentUuids() == null && event.getParentUuids().isEmpty()) {
                             event.setParentUuids(getParents().stream().map(ff -> ff.getId()).collect(Collectors.toList()));
-                            log.info("Assigned Parent Flow File ids as {}, to event {} ", event.getParentUuids(), event);
+                            log.debug("Assigned Parent Flow File ids as {}, to event {} ", event.getParentUuids(), event);
                             //set children?
                             //previousEvents.addChild(event)
                         }
                         previousEvent.addChildUuid(this.getId());
                     }
             }
+            //ensure its relates to the correct connection
+
+
         }
     }
 
 
     private Long calculateEventDuration(ProvenanceEventRecordDTO event) {
 
+        Long dur = null;
         //lookup the flow file to get the prev event
         ProvenanceEventRecordDTO prev = getPreviousEvent(event);
         if (prev != null) {
-            long dur = event.getEventTime().getMillis() - prev.getEventTime().getMillis();
+            dur = event.getEventTime().getMillis() - prev.getEventTime().getMillis();
             if (dur < 0) {
                 log.warn("The Duration for event {} is <0.  prev event {}.  dur: {} ", event, prev, dur);
                 dur = 0L;
             }
-            event.setEventDuration(dur);
-            return dur;
+
         } else if (event.getEventDuration() == null || event.getEventDuration() < 0L) {
-            event.setEventDuration(0L);
-            return 0L;
+            dur = 0L;
         } else {
-            return event.getEventDuration() != null ? event.getEventDuration() : 0L;
+            dur = event.getEventDuration() != null ? event.getEventDuration() : 0L;
         }
+        if (dur == null) {
+            log.warn("Event duration could not be determined.  returning 0L for duration on event: {} ", event);
+            dur = 0L;
+        }
+        event.setEventDuration(dur);
+        return dur;
 
     }
 
@@ -401,16 +409,57 @@ public class ActiveFlowFile {
     }
 
     public ProvenanceEventRecordDTO getFirstCompletedEventsForProcessorId(String processorId) {
+        return getFirstCompletedEventsForProcessorId(processorId, true);
+    }
+
+    public ProvenanceEventRecordDTO getFirstCompletedEventsForProcessorId(String processorId, boolean lookupToParents) {
+        ProvenanceEventRecordDTO e = null;
         List<ProvenanceEventRecordDTO> processorEvents = completedEventsByProcessorId.get(processorId);
         if (processorEvents != null && !processorEvents.isEmpty()) {
-            return processorEvents.get(0);
+            e = processorEvents.get(0);
         }
-        return null;
+        if (lookupToParents && e == null && !getParents().isEmpty()) {
+            for (ActiveFlowFile ff : getParents()) {
+                if (!ff.equals(this)) {
+                    e = ff.getFirstCompletedEventsForProcessorId(processorId, lookupToParents);
+                    if (e != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return e;
+
+    }
+
+    public ProvenanceEventRecordDTO getLastCompletedEventForProcessorId(String processorId) {
+        return getLastCompletedEventForProcessorId(processorId, true);
+    }
+
+    public ProvenanceEventRecordDTO getLastCompletedEventForProcessorId(String processorId, boolean lookupToParents) {
+        ProvenanceEventRecordDTO e = null;
+        List<ProvenanceEventRecordDTO> processorEvents = completedEventsByProcessorId.get(processorId);
+        if (processorEvents != null && !processorEvents.isEmpty()) {
+            e = processorEvents.get(processorEvents.size() - 1);
+        }
+        if (lookupToParents && e == null && !getParents().isEmpty()) {
+            for (ActiveFlowFile ff : getParents()) {
+                if (!ff.equals(this)) {
+                    e = ff.getLastCompletedEventForProcessorId(processorId, lookupToParents);
+                    if (e != null) {
+                        break;
+                    }
+                }
+            }
+        }
+        return e;
+
     }
 
     public void addCompletionEvent(ProvenanceEventRecordDTO event) {
         getCompletedEvents().add(event);
         getCompletedProcessorIds().add(event.getComponentId());
+        log.info("completing processor {} for ff: {} ", event.getComponentId(), this.getId());
         completedEventsByProcessorId.computeIfAbsent(event.getComponentId(), (processorId) -> new ArrayList<>()).add(event);
         setPreviousEvent(event);
         calculateEventDuration(event);
@@ -421,8 +470,8 @@ public class ActiveFlowFile {
     public void checkAndMarkIfFlowFileIsComplete(ProvenanceEventRecordDTO event) {
         if ("DROP".equalsIgnoreCase(event.getEventType())) {
             currentFlowFileComplete = true;
-            log.info("Marking flow file {} as complete for event {}/{} with root file: {} ", this.getId(), event.getEventId(), event.getEventType(),
-                     (getRootFlowFile() != null ? getRootFlowFile().getId() + "" : "null root"));
+            log.debug("Marking flow file {} as complete for event {}/{} with root file: {} ", this.getId(), event.getEventId(), event.getEventType(),
+                      (getRootFlowFile() != null ? getRootFlowFile().getId() + "" : "null root"));
             lastEvent = event;
             getRootFlowFile().removeRootFileActiveChild(this.getId());
         }
@@ -444,7 +493,6 @@ public class ActiveFlowFile {
     /**
      * Walks the graph of this flow and all children to see if there is a DROP event associated with each and every flow file
      */
-
     public boolean isFlowComplete() {
         if (timeCompleted != null) {
             return true;
@@ -455,9 +503,9 @@ public class ActiveFlowFile {
             for (ActiveFlowFile child : directChildren) {
                 complete &= child.isCurrentFlowFileComplete();
                 if (!complete) {
-                    log.info("**** Failed isFlowComplete for {} because child was not complete: {} ", this.getId(), child.getId());
+                    log.debug("**** Failed isFlowComplete for {} because child was not complete: {} ", this.getId(), child.getId());
                     if (isRootFlowFile()) {
-                        log.info("Root flow failed completion for {} with active children of {} ", getId(), this.getRootFlowFile().getRootFlowFileActiveChildren().size());
+                        log.debug("Root flow failed completion for {} with active children of {} ", getId(), this.getRootFlowFile().getRootFlowFileActiveChildren().size());
                     }
                     break;
                 }
@@ -465,11 +513,14 @@ public class ActiveFlowFile {
         }
         if (complete && isRootFlowFile()) {
             complete = !this.getRootFlowFile().hasActiveRootChildren();
-            log.info(" isComplete for root file {} = {} with activechildren of {} ", getId(), complete, this.getRootFlowFile().getRootFlowFileActiveChildren().size());
+            log.debug(" isComplete for root file {} = {}.  Related flows complete: {}, with activechildren of {} ", getId(), complete, this.getRootFlowFile().getRootFlowFileActiveChildren().size());
         }
         if (complete && timeCompleted == null) {
             // log.info("****** COMPLETING FLOW FILE {} ",this);
             timeCompleted = new DateTime();
+        }
+        if (complete && isRootFlowFile()) {
+            log.debug("****** COMPLETING ROOT FLOW FILE {} # of related {} ", this);
         }
         return complete;
     }

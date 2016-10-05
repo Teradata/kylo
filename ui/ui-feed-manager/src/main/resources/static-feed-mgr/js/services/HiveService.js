@@ -163,15 +163,23 @@ angular.module(MODULE_FEED_MGR).factory('HiveService', function ($q,$http, $mdDi
 
         },
         getUTCTime:function(dateStr){
-          //20160222070231
-          //20160322224705
-            var year = parseInt(dateStr.substring(0,4));
-            var month = parseInt(dateStr.substring(4,6));
-            var day = parseInt(dateStr.substring(6,8));
-            var hrs = parseInt(dateStr.substring(8,10));
-            var min = parseInt(dateStr.substring(10,12));
-            var sec = parseInt(dateStr.substring(12,14));
-          return Date.UTC(year, (month-1), day, hrs, min, sec);
+            //If the date is 14 chars long then it is in the format of yyyyMMddHHMMSS
+            //otherwise its in millis
+            if(dateStr.length == 14) {
+                //20160222070231
+                //20160322224705
+                var year = parseInt(dateStr.substring(0, 4));
+                var month = parseInt(dateStr.substring(4, 6));
+                var day = parseInt(dateStr.substring(6, 8));
+                var hrs = parseInt(dateStr.substring(8, 10));
+                var min = parseInt(dateStr.substring(10, 12));
+                var sec = parseInt(dateStr.substring(12, 14));
+                return Date.UTC(year, (month - 1), day, hrs, min, sec);
+            }
+            else {
+                //string is timestamp in millis UTC format
+                return new moment(parseInt(dateStr)).toDate();
+            }
         },
 
         getColumnNamesForQueryResult:function(queryResult) {

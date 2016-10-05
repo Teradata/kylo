@@ -7,16 +7,18 @@ import org.apache.commons.collections.map.CaseInsensitiveMap;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * Auto Inject Property Values stored in the application.properties file
- * 2 use cases are supported
+ * 3 use cases are supported
  * 1) store properties in the file starting with the prefix defined in the "PropertyExpressionResolver class"  default = config.
  * 2) store properties in the file starting with "nifi.<PROCESSORTYPE>.<PROPERTY_KEY>   where PROCESSORTYPE and PROPERTY_KEY are all lowercase and the spaces are substituted with underscore
- *
+ * 3) Global property replacement.  properties starting with "nifi.all_processors.<PROPERTY_KEY> will globally replace the value when the template is instantiated
  */
 public class ConfigurationPropertyReplacer {
 
@@ -25,35 +27,45 @@ public class ConfigurationPropertyReplacer {
         return processorTypeName;
     }
 
+    public static String getGlobalAllProcessorsPropertyConfigName(NifiProperty property) {
+        String processorTypeName = "nifi.all_processors." + property.getKey().toLowerCase().trim().replaceAll(" +", "_");
+        return processorTypeName;
+    }
     /**
      * This will replace the Map of Properties in the DTO but not persist back to Nifi.  You need to call the rest client to persist the change
      */
-    public static void replaceControllerServiceProperties(ControllerServiceDTO controllerServiceDTO, Map<String, String> properties) {
+    public static boolean replaceControllerServiceProperties(ControllerServiceDTO controllerServiceDTO, Map<String, String> properties) {
+        Set<String> changedProperties = new HashSet<>();
         if (controllerServiceDTO != null) {
             //check both Nifis Internal Key name as well as the Displayname to match the properties
             CaseInsensitiveMap propertyMap = new CaseInsensitiveMap(properties);
             Map<String, String> controllerServiceProperties = controllerServiceDTO.getProperties();
 
+
             controllerServiceProperties.entrySet().stream().filter(
                 entry -> (propertyMap.containsKey(entry.getKey()) || (controllerServiceDTO.getDescriptors().get(entry.getKey()) != null && propertyMap
-                    .containsKey(controllerServiceDTO.getDescriptors().get(entry.getKey()).getDisplayName())))).
+                    .containsKey(controllerServiceDTO.getDescriptors().get(entry.getKey()).getDisplayName().toLowerCase())))).
                 forEach(entry -> {
                     boolean isSensitive = controllerServiceDTO.getDescriptors().get(entry.getKey()).isSensitive();
                     String value = (String) propertyMap.get(entry.getKey());
                     if (StringUtils.isBlank(value)) {
-                        value = (String) propertyMap.get(controllerServiceDTO.getDescriptors().get(entry.getKey()).getDisplayName());
+                        value = (String) propertyMap.get(controllerServiceDTO.getDescriptors().get(entry.getKey()).getDisplayName().toLowerCase());
                     }
-                    if (!isSensitive || (isSensitive && !StringUtils.isBlank(value))) {
+                    if (!isSensitive || (isSensitive && StringUtils.isNotBlank(value))) {
                         entry.setValue(value);
+                        changedProperties.add(entry.getKey());
                     }
 
                 });
         }
+        return !changedProperties.isEmpty();
     }
+
 
     /**
      *
-     * @param property
+     * @param property the NifiProperty to replace
+     * @param configProperties a Map of properties which will be looked to to match against thie property key
      * @return
      */
     public static boolean resolveStaticConfigurationProperty(NifiProperty property, Map<String,Object> configProperties){
@@ -93,6 +105,10 @@ public class ConfigurationPropertyReplacer {
                     String key = getProcessorPropertyConfigName(property);
 
                     Object resolvedValue =  configProperties != null ? configProperties.get(key) : null;
+                    if (resolvedValue == null) {
+                        String allKey = getGlobalAllProcessorsPropertyConfigName(property);
+                        resolvedValue = configProperties != null ? configProperties.get(allKey) : null;
+                    }
                     if (resolvedValue != null) {
                         sb = new StringBuffer();
                         sb.append(resolvedValue.toString());
