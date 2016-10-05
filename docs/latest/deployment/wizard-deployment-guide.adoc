@@ -125,6 +125,10 @@ In addition to adding the nifi/thinkbig user to the supergroup on the edge node 
 
   See the appendix section below "Cloudera Configuration File Changes"
 
+. Edit the properties files
+
+NOTE: The MySQL username and password is required in both the application.properties file and the metadata-repository.json file
+
 . Start the three Think Big services
 
            $ /opt/thinkbig/start-thinkbig-apps.sh
