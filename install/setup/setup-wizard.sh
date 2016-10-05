@@ -24,24 +24,31 @@ while [[ ! $install_db =~ $yes_no ]]; do
 done
 
 if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
-    while [[ ! $database_type =~ ^[1]{1}$ ]]; do
-        echo "Which database (Enter the number)?"
-        echo "1) MySQL"
-        echo "2) Postgress (Not yet supported)"
-        read -p "> " database_type;
+
+    # Only supporting MySql at this time
+    database_type=1
+#    while [[ ! $database_type =~ ^[1]{1}$ ]]; do
+#        echo "Which database (Enter the number)?"
+#        echo "1) MySQL"
+#        echo "2) Postgress (Not yet supported)"
+#        read -p "> " database_type;
+#    done
+
+    while : ; do
+        echo
+        echo "Please enter the database hostname or IP, hit Enter for 'localhost'";
+        read -p "> " hostname;
+        echo "Please enter the database ADMIN username";
+        read -p "> " username;
+        echo "Please enter the database ADMIN password";
+        read -p "> " -s password;
+
+        if [[ -z "$hostname" ]]; then
+            hostname=localhost
+        fi
+
+        ! mysql -h $hostname -u $username --password=$password -e ";" || break;
     done
-    echo "Please enter the database ADMIN username";
-    read -p "> " username;
-
-    echo "Please enter the database ADMIN password";
-    read -p "> " -s password;
-
-    #while ! mysql -u root -p$password  -e ";" ; do
-    #   echo "Please enter the database ADMIN password";
-    #   read -p "> " -s password;
-    #   echo "bla - $password"
-    #done
-
 fi
 
 echo " ";
@@ -84,7 +91,7 @@ if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
 
     if [ "$database_type" == "1"  ] ; then
         echo "Installing for MySQL"
-        ./sql/mysql/setup-mysql.sh $username $password
+        ./sql/mysql/setup-mysql.sh $hostname $username $password
     fi
     if [ "$database_type" == "2"  ] ; then
         echo "Installation for Postgres is not yet supported"

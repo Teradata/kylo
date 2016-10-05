@@ -1,3 +1,4 @@
-mysql -u $1 --password=$2 < /opt/thinkbig/setup/sql/mysql/thinkbig/stored_procedures/delete_feed_jobs.sql
-mysql -u $1 --password=$2 < /opt/thinkbig/setup/sql/mysql/thinkbig/stored_procedures/delete_feed_metadata.sql
-mysql -u $1 --password=$2 < /opt/thinkbig/setup/sql/mysql/thinkbig/stored_procedures/delete_feed.sql
+#!/usr/bin/env bash
+mysql -h $1 -u $2 --password=$3 < /opt/thinkbig/setup/sql/mysql/thinkbig/stored_procedures/delete_feed_jobs.sql
+mysql -h $1 -u $2 --password=$3 < /opt/thinkbig/setup/sql/mysql/thinkbig/stored_procedures/delete_feed_metadata.sql
+mysql -h $1 -u $2 --password=$3 < /opt/thinkbig/setup/sql/mysql/thinkbig/stored_procedures/delete_feed.sql

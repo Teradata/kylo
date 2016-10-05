@@ -16,7 +16,6 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.logging.ProcessorLog;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -29,6 +28,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_CATEGORY;
@@ -61,13 +61,14 @@ public class RegisterFeedTables extends AbstractProcessor {
     // Relationships
     private final Set<Relationship> relationships;
 
+    /** Property indicating which tables to register */
     public static final PropertyDescriptor TABLE_TYPE = new PropertyDescriptor.Builder()
-        .name("Table Type")
-        .description("Specifies the standard table type to create or ALL for standard set.")
-        .required(true)
-        .allowableValues(TableType.FEED.toString(), TableType.VALID.toString(), TableType.INVALID.toString(), TableType.PROFILE.toString(), TableType.MASTER.toString(), ALL_TABLES)
-        .defaultValue("ALL")
-        .build();
+            .name("Table Type")
+            .description("Specifies the standard table type to create or ALL for standard set.")
+            .required(true)
+            .allowableValues(TableType.FEED.toString(), TableType.VALID.toString(), TableType.INVALID.toString(), TableType.PROFILE.toString(), TableType.MASTER.toString(), ALL_TABLES)
+            .defaultValue("ALL")
+            .build();
 
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -104,52 +105,68 @@ public class RegisterFeedTables extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        final ProcessorLog logger = getLogger();
-        FlowFile flowFile = session.get();
+        // Verify flow file exists
+        final FlowFile flowFile = session.get();
         if (flowFile == null) {
             return;
         }
 
+        // Verify properties and attributes
+        final String feedFormatOptions = Optional.ofNullable(context.getProperty(FEED_FORMAT_SPECS).evaluateAttributeExpressions(flowFile).getValue())
+                .filter(StringUtils::isNotEmpty)
+                .orElse(DEFAULT_FEED_FORMAT_OPTIONS);
+        final String targetFormatOptions = Optional.ofNullable(context.getProperty(TARGET_FORMAT_SPECS).evaluateAttributeExpressions(flowFile).getValue())
+                .filter(StringUtils::isNotEmpty)
+                .orElse(DEFAULT_STORAGE_FORMAT);
+        final String targetTableProperties = context.getProperty(TARGET_TBLPROPERTIES).evaluateAttributeExpressions(flowFile).getValue();
+        final ColumnSpec[] partitions = Optional.ofNullable(context.getProperty(PARTITION_SPECS).evaluateAttributeExpressions(flowFile).getValue())
+                .filter(StringUtils::isNotEmpty)
+                .map(ColumnSpec::createFromString)
+                .orElse(new ColumnSpec[0]);
+        final String tableType = context.getProperty(TABLE_TYPE).getValue();
+
+        final ColumnSpec[] columnSpecs = Optional.ofNullable(context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue())
+                .filter(StringUtils::isNotEmpty)
+                .map(ColumnSpec::createFromString)
+                .orElse(new ColumnSpec[0]);
+        if (columnSpecs == null || columnSpecs.length == 0) {
+            getLogger().error("Missing field specification");
+            session.transfer(flowFile, ComponentProperties.REL_FAILURE);
+            return;
+        }
+
+        final String entity = context.getProperty(ComponentProperties.FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
+        if (entity == null || entity.isEmpty()) {
+            getLogger().error("Missing feed name");
+            session.transfer(flowFile, ComponentProperties.REL_FAILURE);
+            return;
+        }
+
+        final String source = context.getProperty(ComponentProperties.FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
+        if (source == null || source.isEmpty()) {
+            getLogger().error("Missing category name");
+            session.transfer(flowFile, ComponentProperties.REL_FAILURE);
+            return;
+        }
+
+        // Register the tables
         final ThriftService thriftService = context.getProperty(THRIFT_SERVICE).asControllerService(ThriftService.class);
 
         try (final Connection conn = thriftService.getConnection()) {
+            final TableRegisterSupport register = new TableRegisterSupport(conn);
 
-            String entity = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
-            String source = context.getProperty(FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
-            String feedFormatOptions = context.getProperty(FEED_FORMAT_SPECS).evaluateAttributeExpressions(flowFile).getValue();
-            String targetFormatOptions = context.getProperty(TARGET_FORMAT_SPECS).evaluateAttributeExpressions(flowFile).getValue();
-            String partitionSpecs = context.getProperty(PARTITION_SPECS).evaluateAttributeExpressions(flowFile).getValue();
-            String targetTableProperties = context.getProperty(TARGET_TBLPROPERTIES).evaluateAttributeExpressions(flowFile).getValue();
-            ColumnSpec[] partitions = ColumnSpec.createFromString(partitionSpecs);
-            String specString = context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue();
-            ColumnSpec[] columnSpecs = ColumnSpec.createFromString(specString);
-            String tableType = context.getProperty(TABLE_TYPE).evaluateAttributeExpressions(flowFile).getValue();
-
-            // Maintain backward compatibility
-            if (StringUtils.isEmpty(targetFormatOptions)) {
-                targetFormatOptions = DEFAULT_STORAGE_FORMAT;
-            }
-
-            if (StringUtils.isEmpty(feedFormatOptions)) {
-                feedFormatOptions = DEFAULT_FEED_FORMAT_OPTIONS;
-            }
-
-            TableRegisterSupport register = new TableRegisterSupport(conn);
-
-            Boolean result;
+            final boolean result;
             if (ALL_TABLES.equals(tableType)) {
                 result = register.registerStandardTables(source, entity, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties);
             } else {
-                result = register.registerTable(source, entity, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties, TableType.valueOf(tableType));
+                result = register.registerTable(source, entity, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, targetTableProperties, TableType.valueOf(tableType), true);
             }
-            Relationship relnResult = (result ? REL_SUCCESS : REL_FAILURE);
 
+            final Relationship relnResult = (result ? REL_SUCCESS : REL_FAILURE);
             session.transfer(flowFile, relnResult);
-
         } catch (final ProcessException | SQLException e) {
-            logger.error("Unable to obtain connection for {} due to {}; routing to failure", new Object[]{flowFile, e});
+            getLogger().error("Unable to obtain connection for {} due to {}; routing to failure", new Object[]{flowFile, e});
             session.transfer(flowFile, REL_FAILURE);
         }
     }
-
 }

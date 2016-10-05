@@ -12,23 +12,24 @@ NOTE: The setup wizard is designed for easy installation of all components on on
 * Thinkbig Applications - /opt/thinkbig
 * Java 8 - /opt/java/current
 * NiFi - /opt/nifi/current
-* ActiveMQ - RPM installation default location
+* ActiveMQ - /opt/activemq
 * Elasticsearch - RPM installation default location
 
 == Installation
 The steps below require root access
 
-=== Install Think Big Services
+=== Step 1: Download the RPM
 
-. Find and download the RPM file from artifactory and place on the host linux machine you want to install the data lake
+ Find and download the RPM file from artifactory and place on the host linux machine you want to install the data lake
    accelerator services on. You can right click the download link and copy the url to use wget instead
 
            http://54.152.98.43:8080/artifactory/webapp/search/artifact/?7&q=thinkbig-datalake-accelerator  (requires VPN)
 
-. Create the Linux Users/Groups
+=== Step 2: Create the Linux Users/Groups
 
 Creation of users and groups is done manually because many organizations have their own user and group
-management system. Therefore we cannot script it as part of the RPM install.
+management system. Therefore we cannot script it as part of the RPM install. Here is an example on how to
+create the users and groups:
 
     $ useradd -r -m -s /bin/bash nifi
     $ useradd -r -m -s /bin/bash thinkbig
@@ -45,13 +46,13 @@ management system. Therefore we cannot script it as part of the RPM install.
     $ groupadd nifi
     $ groupadd activemq
 
-. Run data lake accelerator RPM install
+=== Step 3: Run the Kylo RPM Install
 
            $ rpm -ivh thinkbig-datalake-accelerator-<version>.noarch.rpm
 
    NOTE: The RPM is hard coded at this time to install to /opt/thinkbig
 
-. Optional - Generate TAR file for offline mode
+=== Step 4: Optional - Generate TAR file for Offline Mode
 
     If you need to run the wizard on an edge node with no internet access you can generate a TAR file that contains everything in the /opt/thinkbig/setup folder including
     the downloaded application binaries.
@@ -63,7 +64,7 @@ management system. Therefore we cannot script it as part of the RPM install.
 
     The script will download all application binaries and puts them in their respective directory in the setup folder. Last it will TAR up the setup folder
 
-. Run the setup wizard
+=== Step 5: Run the Setup Wizard
 
     NOTE: If installing in a HDP or Cloudera sandbox choose option #2 on the Java step to download
     and install Java in the /opt/java/current directory
@@ -87,7 +88,7 @@ management system. Therefore we cannot script it as part of the RPM install.
 
     The Elasticsearch, NiFi, and ActiveMQ services will be started when the wizard is finished
 
-. Add "nifi" and "thinkbig" user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
+=== Step 6: Add "nifi" and "thinkbig" user to the HDFS supergroup or the group defined in hdfs-site.xml, for example:
 
     Hortonworks
     $ usermod -a -G hdfs nifi
@@ -101,7 +102,7 @@ management system. Therefore we cannot script it as part of the RPM install.
       Optional: If you want to perform actions as a root user in a development environment run the below command
       $ usermod -a -G supergroup root
 
-. For Clusters:
+=== Step 7: Additional Cluster Configuration
 
 In addition to adding the nifi/thinkbig user to the supergroup on the edge node you also need to add the users/groups to the name nodes on a cluster.
 
@@ -111,21 +112,27 @@ In addition to adding the nifi/thinkbig user to the supergroup on the edge node 
     $ usermod -G hdfs nifi
     $ usermod -G hdfs thinkbig
 
-    Cloudera - <Fill me in after testing >
+    Cloudera - TBD (need to test this out)
 
 
-. Create a dropzone folder on the edge node for file ingest, for example:
+=== Step 8: Create a Dropzone Folder
+
+    For example:
 
     $ mkdir -p /var/dropzone
     $ chown nifi /var/dropzone
 
     Note: Files should be copied into the dropzone such that user nifi can read and remove.
 
-. Complete this step for Cloudera installations ONLY
+=== Step 9: Cloudera Configuration (Cloudera Only)
 
   See the appendix section below "Cloudera Configuration File Changes"
 
-. Start the three Think Big services
+=== Step 10: Edit the Properties Files
+
+NOTE: The MySQL username and password is required in both the application.properties file and the metadata-repository.json file
+
+=== Step 11: Start the Three Think Big Services
 
            $ /opt/thinkbig/start-thinkbig-apps.sh
 
