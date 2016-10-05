@@ -33,15 +33,11 @@ if [ "$install_db" == "y"  ] || [ "$install_db" == "Y" ] ; then
     echo "Please enter the database ADMIN username";
     read -p "> " username;
 
-    echo "Please enter the database ADMIN password";
-    read -p "> " -s password;
-
-    #while ! mysql -u root -p$password  -e ";" ; do
-    #   echo "Please enter the database ADMIN password";
-    #   read -p "> " -s password;
-    #   echo "bla - $password"
-    #done
-
+    while : ; do
+       echo "Please enter the database ADMIN password";
+       read -p "> " -s password;
+       ! mysql -u $username --password=$password -e ";" || break;
+    done
 fi
 
 echo " ";
