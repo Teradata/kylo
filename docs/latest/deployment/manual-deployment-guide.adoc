@@ -8,6 +8,14 @@ This document explains how to install each component of the framework manually. 
 TIP: Many of the steps below are similar to running the wizard based install. If you want to take advantage of the same scripts as the wizard
 you can tar up the /opt/thinkbig/setup folder and untar it to a temp directory on each node.
 
+== Installation Locations
+
+* Thinkbig Applications - /opt/thinkbig
+* Java 8 - /opt/java/current
+* NiFi - /opt/nifi/current
+* ActiveMQ - /opt/activemq
+* Elasticsearch - RPM installation default location
+
 == Installation
 
 For each step below you will need to login with root access
