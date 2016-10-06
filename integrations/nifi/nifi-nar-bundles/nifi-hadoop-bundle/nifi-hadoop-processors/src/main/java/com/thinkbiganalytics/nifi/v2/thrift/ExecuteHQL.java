@@ -12,7 +12,7 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.flowfile.FlowFile;
-import org.apache.nifi.logging.ProcessorLog;
+import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.processor.AbstractProcessor;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -20,7 +20,6 @@ import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.io.OutputStreamCallback;
 import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.util.LongHolder;
 import org.apache.nifi.util.StopWatch;
 
 import java.io.IOException;
@@ -35,6 +34,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 
 /*
@@ -130,7 +130,7 @@ public class ExecuteHQL extends AbstractProcessor {
     }
 
     private void setQueryTimeout(Statement st, int queryTimeout) {
-        final ProcessorLog logger = getLogger();
+        final ComponentLog logger = getLogger();
         try {
             st.setQueryTimeout(queryTimeout); // timeout in seconds
         } catch (SQLException e) {
@@ -140,7 +140,7 @@ public class ExecuteHQL extends AbstractProcessor {
 
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) throws ProcessException {
-        final ProcessorLog logger = getLogger();
+        final ComponentLog logger = getLogger();
         FlowFile flowFile = null;
 
         try {
@@ -164,7 +164,7 @@ public class ExecuteHQL extends AbstractProcessor {
         try (final Connection con = thriftService.getConnection();
              final Statement st = con.createStatement()) {
             setQueryTimeout(st, queryTimeout);
-            final LongHolder nrOfRows = new LongHolder(0L);
+            final AtomicLong nrOfRows = new AtomicLong(0L);
 
             outgoing = session.write(outgoing, new OutputStreamCallback() {
                 @Override
@@ -180,7 +180,7 @@ public class ExecuteHQL extends AbstractProcessor {
             });
 
             // set attribute how many rows were selected
-            outgoing = session.putAttribute(outgoing, RESULT_ROW_COUNT, nrOfRows.get().toString());
+            outgoing = session.putAttribute(outgoing, RESULT_ROW_COUNT, Long.toString(nrOfRows.get()));
 
             logger.info("{} contains {} Avro records", new Object[]{nrOfRows.get()});
             logger.info("Transferred {} to 'success'", new Object[]{outgoing});

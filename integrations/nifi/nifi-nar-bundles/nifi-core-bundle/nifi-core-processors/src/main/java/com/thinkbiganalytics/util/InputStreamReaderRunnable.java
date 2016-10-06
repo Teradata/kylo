@@ -5,8 +5,8 @@
 package com.thinkbiganalytics.util;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.nifi.logging.ComponentLog;
 import org.apache.nifi.logging.LogLevel;
-import org.apache.nifi.logging.ProcessorLog;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -21,10 +21,10 @@ import java.io.InputStreamReader;
 public class InputStreamReaderRunnable implements Runnable {
 
     private BufferedReader reader;
-    private ProcessorLog logger;
+    private ComponentLog logger;
     private LogLevel level;
 
-    public InputStreamReaderRunnable(LogLevel level, ProcessorLog logger, InputStream is) {
+    public InputStreamReaderRunnable(LogLevel level, ComponentLog logger, InputStream is) {
         this.level = level;
         this.logger = logger;
         this.reader = new BufferedReader(new InputStreamReader(is));

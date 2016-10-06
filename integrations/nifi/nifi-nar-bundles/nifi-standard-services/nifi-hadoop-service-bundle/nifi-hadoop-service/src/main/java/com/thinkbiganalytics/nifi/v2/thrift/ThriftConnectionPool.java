@@ -20,11 +20,9 @@ import org.apache.nifi.components.Validator;
 import org.apache.nifi.controller.AbstractControllerService;
 import org.apache.nifi.controller.ConfigurationContext;
 import org.apache.nifi.logging.ComponentLog;
-import org.apache.nifi.logging.ProcessorLog;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 import org.apache.nifi.reporting.InitializationException;
-import org.apache.nifi.util.NiFiProperties;
 
 import java.io.File;
 import java.net.MalformedURLException;
@@ -131,14 +129,16 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         .name("Kerberos Principal")
         .required(false)
         .description("Kerberos principal to authenticate as. Requires nifi.kerberos.krb5.file to be set in your nifi.properties")
-        .addValidator(kerberosConfigValidator())
+// TODO(greg.hart): PC-659 Migrate to work with both NiFi 0.6 and 1.0
+//        .addValidator(kerberosConfigValidator())
         .build();
 
     public static final PropertyDescriptor KERBEROS_KEYTAB = new PropertyDescriptor.Builder()
         .name("Kerberos Keytab").required(false)
         .description("Kerberos keytab associated with the principal. Requires nifi.kerberos.krb5.file to be set in your nifi.properties")
         .addValidator(StandardValidators.FILE_EXISTS_VALIDATOR)
-        .addValidator(kerberosConfigValidator())
+// TODO(greg.hart): PC-659 Migrate to work with both NiFi 0.6 and 1.0
+//        .addValidator(kerberosConfigValidator())
         .build();
 
 
@@ -315,7 +315,7 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
 
                 loggerInstance.info("User anuthentication initiated");
 
-                boolean authenticationStatus = applySecurityObject.validateUserWithKerberos((ProcessorLog)loggerInstance,hadoopConfigurationResources,principal,keyTab);
+                boolean authenticationStatus = applySecurityObject.validateUserWithKerberos(loggerInstance, hadoopConfigurationResources, principal, keyTab);
                 if (authenticationStatus)
                 {
                     loggerInstance.info("User authenticated successfully.");
@@ -365,44 +365,45 @@ public class ThriftConnectionPool extends AbstractControllerService implements T
         };
     }
 
-    public static final Validator kerberosConfigValidator()
-    {
-        return new Validator() {
-
-            @Override
-            public ValidationResult validate(String subject, String input, ValidationContext context) {
-
-
-
-                File nifiProperties =  NiFiProperties.getInstance().getKerberosConfigurationFile();
-
-
-                // Check that the Kerberos configuration is set
-                if (nifiProperties == null) {
-                    return new ValidationResult.Builder()
-                        .subject(subject).input(input).valid(false)
-                        .explanation("you are missing the nifi.kerberos.krb5.file property which "
-                                     + "must be set in order to use Kerberos")
-                        .build();
-                }
-
-                // Check that the Kerberos configuration is readable
-                if (!nifiProperties.canRead()) {
-                    return new ValidationResult.Builder().subject(subject).input(input).valid(false)
-                        .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
-                                                   + "and nifi has adequate permissions", nifiProperties.getAbsoluteFile()))
-                        .build();
-                }
-
-                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
-            }
-
-
-
-
-
-        };
-    }
+// TODO(greg.hart): PC-659 Migrate to work with both NiFi 0.6 and 1.0
+//    public static final Validator kerberosConfigValidator()
+//    {
+//        return new Validator() {
+//
+//            @Override
+//            public ValidationResult validate(String subject, String input, ValidationContext context) {
+//
+//
+//
+//                File nifiProperties =  NiFiProperties.getInstance().getKerberosConfigurationFile();
+//
+//
+//                // Check that the Kerberos configuration is set
+//                if (nifiProperties == null) {
+//                    return new ValidationResult.Builder()
+//                        .subject(subject).input(input).valid(false)
+//                        .explanation("you are missing the nifi.kerberos.krb5.file property which "
+//                                     + "must be set in order to use Kerberos")
+//                        .build();
+//                }
+//
+//                // Check that the Kerberos configuration is readable
+//                if (!nifiProperties.canRead()) {
+//                    return new ValidationResult.Builder().subject(subject).input(input).valid(false)
+//                        .explanation(String.format("unable to read Kerberos config [%s], please make sure the path is valid "
+//                                                   + "and nifi has adequate permissions", nifiProperties.getAbsoluteFile()))
+//                        .build();
+//                }
+//
+//                return new ValidationResult.Builder().subject(subject).input(input).valid(true).build();
+//            }
+//
+//
+//
+//
+//
+//        };
+//    }
 
     @Override
     public String toString() {

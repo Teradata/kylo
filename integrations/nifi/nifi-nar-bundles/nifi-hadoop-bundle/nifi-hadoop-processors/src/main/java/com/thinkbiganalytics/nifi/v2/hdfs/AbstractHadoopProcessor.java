@@ -154,15 +154,16 @@ public abstract class AbstractHadoopProcessor extends AbstractProcessor {
         props.add(KERBEROS_KEYTAB);
         props.add(KERBEROS_RELOGIN_PERIOD);
         properties = Collections.unmodifiableList(props);
-        try {
-            NIFI_PROPERTIES = NiFiProperties.getInstance();
-        } catch (Exception e) {
-            // This will happen during tests
-            NIFI_PROPERTIES = null;
-        }
-        if (NIFI_PROPERTIES != null && NIFI_PROPERTIES.getKerberosConfigurationFile() != null) {
-            System.setProperty("java.security.krb5.conf", NIFI_PROPERTIES.getKerberosConfigurationFile().getAbsolutePath());
-        }
+// TODO(greg.hart): PC-659 Migrate to work with both NiFi 0.6 and 1.0
+//        try {
+//            NIFI_PROPERTIES = NiFiProperties.getInstance();
+//        } catch (Exception e) {
+//            // This will happen during tests
+//            NIFI_PROPERTIES = null;
+//        }
+//        if (NIFI_PROPERTIES != null && NIFI_PROPERTIES.getKerberosConfigurationFile() != null) {
+//            System.setProperty("java.security.krb5.conf", NIFI_PROPERTIES.getKerberosConfigurationFile().getAbsolutePath());
+//        }
     }
 
     // variables shared by all threads of this processor

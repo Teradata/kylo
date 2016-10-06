@@ -1,43 +1,30 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
-
 package com.thinkbiganalytics.nifi.security;
 
-    import java.io.IOException;
-    import java.net.InetSocketAddress;
-    import java.net.Socket;
-    import java.net.URI;
-    import java.security.PrivilegedExceptionAction;
-    import javax.net.SocketFactory;
-    import org.apache.commons.io.IOUtils;
-    import org.apache.hadoop.conf.Configuration;
-    import org.apache.hadoop.fs.FileSystem;
-    import org.apache.hadoop.fs.Path;
-    import org.apache.hadoop.net.NetUtils;
-    import org.apache.hadoop.security.UserGroupInformation;
-    import org.apache.nifi.util.NiFiProperties;
-    import  org.apache.nifi.logging.ProcessorLog;
+import org.apache.commons.io.IOUtils;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.FileSystem;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.net.NetUtils;
+import org.apache.hadoop.security.UserGroupInformation;
+import org.apache.nifi.logging.ComponentLog;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.URI;
+import java.security.PrivilegedExceptionAction;
+
+import javax.net.SocketFactory;
 
 /**
  * Apply Kerberos policies
  */
-
-
-public class ApplySecurityPolicy  {
+public class ApplySecurityPolicy {
 
     private static final Object RESOURCES_LOCK = new Object();
     private long lastKerberosReloginTime;
-    protected KerberosProperties kerberosProperties;
 
-    public ApplySecurityPolicy()
-    {
-        //Nothing to Do Here.
-    }
-
-
-    public  boolean validateUserWithKerberos(ProcessorLog loggerInstance , String HadoopConfigurationResources ,String Principal, String KeyTab) throws Exception
-    {
+    public boolean validateUserWithKerberos(ComponentLog loggerInstance, String HadoopConfigurationResources, String Principal, String KeyTab) throws Exception {
 
         ClassLoader savedClassLoader = Thread.currentThread().getContextClassLoader();
         Thread.currentThread().setContextClassLoader(this.getClass().getClassLoader());
@@ -47,9 +34,7 @@ public class ApplySecurityPolicy  {
             Configuration config = getConfigurationFromResources(HadoopConfigurationResources);
             config.set("hadoop.security.authentication", "Kerberos");
 
-
             loggerInstance.info("End of hadoop configuration read");
-
 
             // first check for timeout on HDFS connection, because FileSystem has a hard coded 15 minute timeout
             loggerInstance.info("Start of HDFS timeout check");
@@ -70,8 +55,7 @@ public class ApplySecurityPolicy  {
 
                 if (SecurityUtil.isSecurityEnabled(config)) {
                     loggerInstance.info("Start of Kerberos Security Check");
-                    kerberosProperties=KerberosProperties.create(NiFiProperties.getInstance());
-                    UserGroupInformation.setConfiguration(config) ;
+                    UserGroupInformation.setConfiguration(config);
                     UserGroupInformation.loginUserFromKeytab(Principal, KeyTab);
                     loggerInstance.info("End of Kerberos Security Check");
                 } else {
@@ -83,15 +67,11 @@ public class ApplySecurityPolicy  {
             }
             config.set(disableCacheName, "true");
             return true;
-        }
-
-        catch (Exception e )
-        {
-            loggerInstance.error("Unable to validate user : "+ e.getMessage());
+        } catch (Exception e) {
+            loggerInstance.error("Unable to validate user : " + e.getMessage());
             return false;
 
-        }
-        finally {
+        } finally {
             Thread.currentThread().setContextClassLoader(savedClassLoader);
         }
 
@@ -163,8 +143,8 @@ public class ApplySecurityPolicy  {
         }
     }
 
-
     static protected class HdfsResources {
+
         private final Configuration configuration;
         private final FileSystem fileSystem;
         private final UserGroupInformation userGroupInformation;
@@ -187,9 +167,5 @@ public class ApplySecurityPolicy  {
             return userGroupInformation;
         }
     }
-
-
-
-
 }
 
