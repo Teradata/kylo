@@ -137,6 +137,8 @@ public class MetadataClient {
         return new FeedBuilderImpl(categoryName, name);
     }
     
+    
+    
     public Feed addSource(String feedId, String datasourceId) {
         Form form = new Form();
         form.add("datasourceId", datasourceId);

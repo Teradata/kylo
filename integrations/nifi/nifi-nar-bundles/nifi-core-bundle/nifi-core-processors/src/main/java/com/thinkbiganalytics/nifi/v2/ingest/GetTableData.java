@@ -49,11 +49,11 @@ import java.util.Set;
 import java.util.Vector;
 import java.util.concurrent.TimeUnit;
 
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_CATEGORY;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_NAME;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.METADATA_SERVICE;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_FAILURE;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_SUCCESS;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_NAME;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.METADATA_SERVICE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_FAILURE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
 
 @TriggerWhenEmpty
 @InputRequirement(Requirement.INPUT_FORBIDDEN)

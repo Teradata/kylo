@@ -1,7 +1,7 @@
 /**
  *
  */
-package com.thinkbiganalytics.nifi.v2.metadata;
+package com.thinkbiganalytics.nifi.v2.common;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -22,6 +22,9 @@ public abstract class BaseProcessor extends AbstractProcessor {
     private Set<Relationship> relationships;
     private List<PropertyDescriptor> properties;
 
+    /* (non-Javadoc)
+     * @see org.apache.nifi.processor.AbstractSessionFactoryProcessor#init(org.apache.nifi.processor.ProcessorInitializationContext)
+     */
     @Override
     protected void init(final ProcessorInitializationContext context) {
         final Set<Relationship> relationships = new HashSet<>();
@@ -33,19 +36,37 @@ public abstract class BaseProcessor extends AbstractProcessor {
         this.properties = Collections.unmodifiableList(properties);
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.nifi.processor.AbstractSessionFactoryProcessor#getRelationships()
+     */
     @Override
     public Set<Relationship> getRelationships() {
         return relationships;
     }
 
+    /* (non-Javadoc)
+     * @see org.apache.nifi.components.AbstractConfigurableComponent#getSupportedPropertyDescriptors()
+     */
     @Override
     protected List<PropertyDescriptor> getSupportedPropertyDescriptors() {
         return properties;
     }
 
-    protected void addProperties(List<PropertyDescriptor> props) {
+    /**
+     * Convenience method for collecting the properties that the processor will support.
+     * Subclasses should call super.addProperties(list) before adding additional properties.
+     * 
+     * @param props the list to which is added this processor's properties
+     */
+    protected void addProperties(List<PropertyDescriptor> list) {
     }
 
-    protected void addRelationships(Set<Relationship> relationships2) {
+    /**
+     * Convenience method for collecting the relationships that the processor will support.
+     * Subclasses should call super.addRelationship(set) before adding additional relationships.
+     * 
+     * @param props the set to which is added this processor's relationships
+     */
+    protected void addRelationships(Set<Relationship> set) {
     }
 }

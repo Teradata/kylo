@@ -31,16 +31,16 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_CATEGORY;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_FORMAT_SPECS;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_NAME;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FIELD_SPECIFICATION;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.PARTITION_SPECS;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_FAILURE;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_SUCCESS;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.TARGET_FORMAT_SPECS;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.TARGET_TBLPROPERTIES;
-import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.THRIFT_SERVICE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_CATEGORY;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_FORMAT_SPECS;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FEED_NAME;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.FIELD_SPECIFICATION;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.PARTITION_SPECS;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_FAILURE;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.REL_SUCCESS;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.TARGET_FORMAT_SPECS;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.TARGET_TBLPROPERTIES;
+import static com.thinkbiganalytics.nifi.v2.ingest.IngestProperties.THRIFT_SERVICE;
 
 
 @EventDriven
@@ -131,21 +131,21 @@ public class RegisterFeedTables extends AbstractProcessor {
                 .orElse(new ColumnSpec[0]);
         if (columnSpecs == null || columnSpecs.length == 0) {
             getLogger().error("Missing field specification");
-            session.transfer(flowFile, ComponentProperties.REL_FAILURE);
+            session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
 
-        final String entity = context.getProperty(ComponentProperties.FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
+        final String entity = context.getProperty(IngestProperties.FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
         if (entity == null || entity.isEmpty()) {
             getLogger().error("Missing feed name");
-            session.transfer(flowFile, ComponentProperties.REL_FAILURE);
+            session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
 
-        final String source = context.getProperty(ComponentProperties.FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
+        final String source = context.getProperty(IngestProperties.FEED_CATEGORY).evaluateAttributeExpressions(flowFile).getValue();
         if (source == null || source.isEmpty()) {
             getLogger().error("Missing category name");
-            session.transfer(flowFile, ComponentProperties.REL_FAILURE);
+            session.transfer(flowFile, IngestProperties.REL_FAILURE);
             return;
         }
 
