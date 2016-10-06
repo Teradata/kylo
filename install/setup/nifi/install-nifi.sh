@@ -1,5 +1,6 @@
 #!/bin/bash
 NIFI_DATA=/opt/nifi/data
+NIFI_VERSION=1.0.0
 
 offline=false
 working_dir=$2
@@ -20,24 +21,25 @@ cd /opt/nifi
 
 if [ $offline = true ]
 then
-    cp $working_dir/nifi/nifi-0.6.1-bin.tar.gz .
+    cp $working_dir/nifi/nifi-${NIFI_VERSION}-bin.tar.gz .
 else
     echo "Download nifi distro and install"
-    curl -O https://archive.apache.org/dist/nifi/0.6.1/nifi-0.6.1-bin.tar.gz
+    curl -O https://archive.apache.org/dist/nifi/${NIFI_VERSION}/nifi-${NIFI_VERSION}-bin.tar.gz
 fi
 
-if ! [ -f nifi-0.6.1-bin.tar.gz ]
+if ! [ -f nifi-${NIFI_VERSION}-bin.tar.gz ]
 then
     echo "Working in online mode and file not found.. exiting"
     exit 1
 fi
 
-tar -xvf nifi-0.6.1-bin.tar.gz
-ln -s nifi-0.6.1 current
+tar -xvf nifi-${NIFI_VERSION}-bin.tar.gz
+rm -f current
+ln -s nifi-${NIFI_VERSION} current
 
 echo "Externalizing NiFi data files and folders to support upgrades"
 mkdir -p $NIFI_DATA/conf
-mv /opt/nifi/current/conf/authority-providers.xml $NIFI_DATA/conf
+mv /opt/nifi/current/conf/authorizers.xml $NIFI_DATA/conf
 mv /opt/nifi/current/conf/login-identity-providers.xml $NIFI_DATA/conf
 
 

@@ -6,4 +6,7 @@ if [ "$#" -ne 1 ]; then
 fi
 
 echo "Adding custom Java path to the NiFi startup script"
-sed -i "/\#\!\/bin\/sh/a export JAVA_HOME=$1\nexport PATH=\$JAVA_HOME\/bin\:\$PATH" /opt/nifi/current/bin/nifi.sh
+cat >>/opt/nifi/current/bin/nifi-env.sh <<EOF
+export JAVA_HOME=$1
+export PATH=\$JAVA_HOME/bin:\$PATH
+EOF
