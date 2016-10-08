@@ -8,7 +8,7 @@ import java.util.Map;
 /***
  * SearchPolicy class for setting search parameters and returns search query object
  *
- * @author sv186029
+ * @author Shashi Vishwakarma
  */
 public class SearchPolicy {
 

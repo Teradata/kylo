@@ -10,4 +10,5 @@ public interface HadoopAuthorizationGroup {
     String getName();
 
     String getDescription();
+   
 }

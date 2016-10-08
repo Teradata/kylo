@@ -1,11 +1,13 @@
 package com.thinkbiganalytics.datalake.authorization;
 
-import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
-
 import java.util.List;
+import java.util.Map;
 
-/***
- * @author sv186029
+import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
+import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationPolicy;
+
+/**
+ * Created by Shashi Vishwakarma on 9/9/16.
  */
 
 public interface HadoopAuthorizationService {
@@ -16,5 +18,13 @@ public interface HadoopAuthorizationService {
     HadoopAuthorizationGroup getGroupByName(String groupName);
 
     List<HadoopAuthorizationGroup> getAllGroups();
+    
+    void createPolicy(String policyName , List<String> group_List ,List<String> hdfs_paths, String permission_level , List<String> datebaseName, List<String>  tableName,  List<String>  hdfs_permission_list , List<String>  hive_permission_List );
+    
+    void deletePolicy(int id);
+    
+    List<HadoopAuthorizationPolicy> searchPolicy(Map<String, Object> searchCriteria);
+
+	void updatePolicy(String policyName , List<String> group_List ,List<String> hdfs_paths, String permission_level , List<String> datebaseName, List<String>  tableName,  List<String>  hdfs_permission_list , List<String>  hive_permission_List ) throws Exception;
 
 }
