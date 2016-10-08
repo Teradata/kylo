@@ -307,103 +307,108 @@ public class TemplateCreationHelper {
                     processGroupDTOMap.put(dto.getParentGroupId(), groupDTO);
                 }
                 properties.addAll(NifiPropertyUtil.getPropertiesForProcessor(groupDTO, dto));
-                //properties.addAll(NifiPropertyUtil.get.getPropertiesForProcessor(modifiedProperties, dto.getId()));
-                //properties.addAll(NifiPropertyUtil.getPropertiesForProcessor(modifiedProperties,dto.getId()));
             }
 
-            for (final NifiProperty property : properties) {
-                String controllerService = property.getPropertyDescriptor().getIdentifiesControllerService();
-                boolean isRequired = property.getPropertyDescriptor().isRequired();
-                if (StringUtils.isNotBlank(controllerService)) {
-                    boolean set = false;
-
-                    //if the service is not enabled, but it exists then try to enable that
-                    if (!enabledServices.containsKey(property.getValue()) && allServices.containsKey(property.getValue())) {
-                        ControllerServiceDTO dto = allServices.get(property.getValue());
-                        ControllerServiceEntity entity = tryToEnableControllerService(dto.getId(), dto.getName(), controllerServiceProperties);
-                        if (entity != null && entity.getControllerService() != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getControllerService().getState())) {
-                            enabledServices.put(entity.getControllerService().getId(), entity.getControllerService());
-                            set = true;
-                        }
-                    }
-                    if (!set) {
-                        boolean controllerServiceSet = false;
-                        String controllerServiceName = "";
-                        // match a allowable service and enable it
-                        List<PropertyDescriptorDTO.AllowableValueDTO>
-                            allowableValueDTOs =
-                            property.getPropertyDescriptor().getAllowableValues();
-                        //if any of the allowable values are enabled already use that and continue
-                        List<PropertyDescriptorDTO.AllowableValueDTO>
-                            enabledValues =
-                            Lists.newArrayList(Iterables.filter(allowableValueDTOs, new Predicate<PropertyDescriptorDTO.AllowableValueDTO>() {
-                                @Override
-                                public boolean apply(PropertyDescriptorDTO.AllowableValueDTO allowableValueDTO) {
-                                    return enabledServices.containsKey(allowableValueDTO.getValue()) || enabledServices.containsKey(allowableValueDTO.getDisplayName());
-                                }
-                            }));
-                        if (enabledValues != null && !enabledValues.isEmpty()) {
-                            PropertyDescriptorDTO.AllowableValueDTO enabledService = enabledValues.get(0);
-                            ControllerServiceDTO dto = enabledServices.get(enabledService.getValue());
-                            if (dto == null) {
-                                dto = enabledServices.get(enabledService.getDisplayName());
-                            }
-                            controllerServiceName = dto.getName();
-                            String previousValue = property.getValue();
-                            property.setValue(dto.getId());
-                            if (StringUtils.isBlank(previousValue) || !previousValue.equalsIgnoreCase(dto.getId())) {
-                                log.info("About to assign Controller Service {} ({}) to property {} on processor {} ({}). ", dto.getName(), dto.getId(), property.getKey(), property.getProcessorName(),
-                                         property.getProcessorId());
-                                //update it in nifi
-                                restClient.updateProcessorProperty(property.getProcessGroupId(), property.getProcessorId(), property);
-                                log.info("Finished Assigning Controller Service {} ({}) to property {} on processor {} ({}). ", dto.getName(), dto.getId(), property.getKey(),
-                                         property.getProcessorName(), property.getProcessorId());
-
-
-                            }
-                            controllerServiceSet = true;
-                        } else {
-                            //try to enable the service
-                            //match the service by Name...
-                            for (PropertyDescriptorDTO.AllowableValueDTO allowableValueDTO : allowableValueDTOs) {
-                                ControllerServiceDTO dto = allServices.get(allowableValueDTO.getValue());
-                                if (StringUtils.isBlank(controllerServiceName)) {
-                                    controllerServiceName = dto.getName();
-                                }
-                                if (allServices.containsKey(allowableValueDTO.getValue())) {
-                                    property.setValue(allowableValueDTO.getValue());
-                                    ControllerServiceEntity entity = tryToEnableControllerService(allowableValueDTO.getValue(), controllerServiceName, controllerServiceProperties);
-                                    if (entity != null && entity.getControllerService() != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getControllerService().getState())) {
-                                        enabledServices.put(entity.getControllerService().getId(), entity.getControllerService());
-                                        controllerServiceSet = true;
-                                    } else {
-                                        controllerServiceSet = false;
-                                    }
-
-                                }
-
-                            }
-                        }
-                        if (controllerServiceSet) {
-                            //update the processor
-                            restClient.updateProcessorProperty(property.getProcessGroupId(), property.getProcessorId(), property);
-                        }
-                        if (!controllerServiceSet && (StringUtils.isNotBlank(property.getValue()) || isRequired)) {
-                            errors.add(new NifiError(NifiError.SEVERITY.FATAL,
-                                                     "Error trying to enable Controller Service " + controllerServiceName
-                                                     + " on referencing Processor: " + property.getProcessorName() + " and field " + property
-                                                         .getKey()
-                                                     + ". Please go to Nifi and configure and enable this Service.",
-                                                     NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
-                        }
-
-                    }
-                }
-            }
+            enableServices(controllerServiceProperties, enabledServices, allServices, properties);
 
         } catch (NifiClientRuntimeException e) {
             errors.add(new NifiError(NifiError.SEVERITY.FATAL, "Error trying to identify Controller Services. " + e.getMessage(),
                                      NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
+        }
+    }
+
+    private void enableServices(Map<String, String> controllerServiceProperties,
+                                final Map<String, ControllerServiceDTO> enabledServices,
+                                Map<String, ControllerServiceDTO> allServices,
+                                List<NifiProperty> properties) {
+        for (final NifiProperty property : properties) {
+            String controllerService = property.getPropertyDescriptor().getIdentifiesControllerService();
+            boolean isRequired = property.getPropertyDescriptor().isRequired();
+            if (StringUtils.isNotBlank(controllerService)) {
+                boolean set = false;
+
+                //if the service is not enabled, but it exists then try to enable that
+                if (!enabledServices.containsKey(property.getValue()) && allServices.containsKey(property.getValue())) {
+                    ControllerServiceDTO dto = allServices.get(property.getValue());
+
+                    //if service depends on other services lets enable those upstream services first
+                    List<NifiProperty> serviceProperties = NifiPropertyUtil.getPropertiesForService(dto);
+                    enableServices(controllerServiceProperties, enabledServices, allServices, serviceProperties);
+
+                    ControllerServiceEntity entity = tryToEnableControllerService(dto.getId(), dto.getName(), controllerServiceProperties);
+                    if (entity != null && entity.getControllerService() != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getControllerService().getState())) {
+                        enabledServices.put(entity.getControllerService().getId(), entity.getControllerService());
+                        set = true;
+                    }
+                }
+                if (!set) {
+                    boolean controllerServiceSet = false;
+                    String controllerServiceName = "";
+                    // match a allowable service and enable it
+                    List<PropertyDescriptorDTO.AllowableValueDTO>
+                        allowableValueDTOs =
+                        property.getPropertyDescriptor().getAllowableValues();
+                    //if any of the allowable values are enabled already use that and continue
+                    List<PropertyDescriptorDTO.AllowableValueDTO>
+                        enabledValues =
+                        Lists.newArrayList(Iterables.filter(allowableValueDTOs, allowableValueDTO -> enabledServices.containsKey(allowableValueDTO.getValue()) || enabledServices.containsKey(allowableValueDTO.getDisplayName())));
+                    if (enabledValues != null && !enabledValues.isEmpty()) {
+                        PropertyDescriptorDTO.AllowableValueDTO enabledService = enabledValues.get(0);
+                        ControllerServiceDTO dto = enabledServices.get(enabledService.getValue());
+                        if (dto == null) {
+                            dto = enabledServices.get(enabledService.getDisplayName());
+                        }
+                        controllerServiceName = dto.getName();
+                        String previousValue = property.getValue();
+                        property.setValue(dto.getId());
+                        if (StringUtils.isBlank(previousValue) || !previousValue.equalsIgnoreCase(dto.getId())) {
+                            log.info("About to assign Controller Service {} ({}) to property {} on processor {} ({}). ", dto.getName(), dto.getId(), property.getKey(), property.getProcessorName(),
+                                     property.getProcessorId());
+                            //update it in nifi
+                            restClient.updateProcessorProperty(property.getProcessGroupId(), property.getProcessorId(), property);
+                            log.info("Finished Assigning Controller Service {} ({}) to property {} on processor {} ({}). ", dto.getName(), dto.getId(), property.getKey(),
+                                     property.getProcessorName(), property.getProcessorId());
+
+
+                        }
+                        controllerServiceSet = true;
+                    } else {
+                        //try to enable the service
+                        //match the service by Name...
+                        for (PropertyDescriptorDTO.AllowableValueDTO allowableValueDTO : allowableValueDTOs) {
+                            ControllerServiceDTO dto = allServices.get(allowableValueDTO.getValue());
+                            if (StringUtils.isBlank(controllerServiceName)) {
+                                controllerServiceName = dto.getName();
+                            }
+                            if (allServices.containsKey(allowableValueDTO.getValue())) {
+                                property.setValue(allowableValueDTO.getValue());
+                                ControllerServiceEntity entity = tryToEnableControllerService(allowableValueDTO.getValue(), controllerServiceName, controllerServiceProperties);
+                                if (entity != null && entity.getControllerService() != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getControllerService().getState())) {
+                                    enabledServices.put(entity.getControllerService().getId(), entity.getControllerService());
+                                    controllerServiceSet = true;
+                                } else {
+                                    controllerServiceSet = false;
+                                }
+
+                            }
+
+                        }
+                    }
+                    if (controllerServiceSet) {
+                        //update the processor
+                        restClient.updateProcessorProperty(property.getProcessGroupId(), property.getProcessorId(), property);
+                    }
+                    if (!controllerServiceSet && (StringUtils.isNotBlank(property.getValue()) || isRequired)) {
+                        errors.add(new NifiError(NifiError.SEVERITY.FATAL,
+                                                 "Error trying to enable Controller Service " + controllerServiceName
+                                                 + " on referencing Processor: " + property.getProcessorName() + " and field " + property
+                                                         .getKey()
+                                                 + ". Please go to Nifi and configure and enable this Service.",
+                                                 NifiProcessGroup.CONTROLLER_SERVICE_CATEGORY));
+                    }
+
+                }
+            }
         }
     }
 

@@ -29,5 +29,5 @@ The layout of code in the following subtrees follows particular reasoning descri
 | [integrations](integrations) | Pure integration projects with 3rd party software such as NiFi and Spark. 
 | [metadata](metadata) | The metadata server is a top-level project for providing a metadata repository, REST API for the recording of metadata
 | [plugins](plugins) | Alternative and often optional implementations for operating with different distributions or technology branches
-| [security](security) | Support for application security
+| [security](security) | Support for application security for both authentication and authorization
 | [services](services) | Provides REST endpoints and core server-side processing 
