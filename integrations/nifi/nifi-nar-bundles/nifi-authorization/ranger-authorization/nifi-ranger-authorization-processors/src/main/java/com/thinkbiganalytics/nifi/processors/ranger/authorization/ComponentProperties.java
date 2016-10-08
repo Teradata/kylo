@@ -1,13 +1,14 @@
-/**
- * Copyright (c) 2016. Teradata Inc.
- * @author sv186029
- * 
- */
+
 package com.thinkbiganalytics.nifi.processors.ranger.authorization;
 
 import org.apache.nifi.components.PropertyDescriptor;
 import org.apache.nifi.processor.util.StandardValidators;
 import com.thinkbiganalytics.nifi.authorization.ranger.service.RangerService;
+
+/**
+ * Created by Shashi Vishwakarma on 10/05/16.
+ */
+
 public interface ComponentProperties {
 
 	/**

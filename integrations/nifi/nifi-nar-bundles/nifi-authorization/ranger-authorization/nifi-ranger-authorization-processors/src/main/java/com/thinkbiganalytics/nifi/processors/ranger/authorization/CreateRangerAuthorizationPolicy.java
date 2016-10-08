@@ -1,14 +1,5 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
 package com.thinkbiganalytics.nifi.processors.ranger.authorization;
 
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import static com.thinkbiganalytics.nifi.processors.ranger.authorization.ComponentProperties.CATEGORY_NAME;
 import static  com.thinkbiganalytics.nifi.processors.ranger.authorization.ComponentProperties.FEED_NAME;
@@ -19,6 +10,12 @@ import static  com.thinkbiganalytics.nifi.processors.ranger.authorization.Compon
 import static  com.thinkbiganalytics.nifi.processors.ranger.authorization.ComponentProperties.HIVE_REPOSIROTY_NAME;
 import static  com.thinkbiganalytics.nifi.processors.ranger.authorization.ComponentProperties.PERMISSION_LEVEL;
 import static  com.thinkbiganalytics.nifi.processors.ranger.authorization.ComponentProperties.RANGER_SERVICE;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.nifi.annotation.behavior.ReadsAttribute;
 import org.apache.nifi.annotation.behavior.ReadsAttributes;
@@ -36,11 +33,16 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 
-import com.thinkbiganalytics.datalake.authorization.model.HDFSPolicy;
-import com.thinkbiganalytics.datalake.authorization.model.HivePolicy;
+
 import com.thinkbiganalytics.datalake.authorization.rest.client.RangerRestClient;
+import com.thinkbiganalytics.datalake.authorization.rest.model.RangerCreatePolicy;
+import com.thinkbiganalytics.datalake.authorization.rest.model.RangerUpdatePolicy;
 import com.thinkbiganalytics.nifi.authorization.ranger.service.RangerService;
 import com.thinkbiganalytics.nifi.processors.ranger.authorization.service.util.RangerUtil;
+
+/**
+ * Created by Shashi Vishwakarma on 10/05/16.
+ */
 
 @Tags({"ranger,thinkbig,authorization"})
 @CapabilityDescription("Creating group policies using Ranger.")
@@ -150,30 +152,30 @@ public class CreateRangerAuthorizationPolicy extends AbstractProcessor  {
 			logger.info("Creating HDFS Policy");
 			if (!(rangerUtil.checkIfPolicyExists(rangerClientObject, category_name,feed_name , permission_level , HDFS_REPOSITORY_TYPE)))
 			{
-				HDFSPolicy createhdfsPolicy = rangerUtil.getHDFSCreatePolicyJson( group_list, permission_level , category_name , feed_name ,hdfs_permission_list ,hdfs_reposiroty_name);
-				rangerClientObject.createPolicy(createhdfsPolicy.policyJson());
+				RangerCreatePolicy createhdfsPolicy = rangerUtil.getHDFSCreatePolicy( group_list, permission_level , category_name , feed_name ,hdfs_permission_list ,hdfs_reposiroty_name);
+				rangerClientObject.createPolicy(createhdfsPolicy);
 				logger.info("HDFS Policy got created for feed " +feed_name+ "." );
 			}
 			else
 			{
 				int policyId = rangerUtil.getIdForExistingPolicy(rangerClientObject, category_name, feed_name, permission_level, HDFS_REPOSITORY_TYPE);
-				HDFSPolicy updatehdfsPolicy = rangerUtil.updateHDFSPolicyJson( group_list, permission_level , category_name , feed_name ,hdfs_permission_list ,hdfs_reposiroty_name);
-				rangerClientObject.updatePolicy(updatehdfsPolicy.policyJson(), policyId);
+				RangerUpdatePolicy updatehdfsPolicy = rangerUtil.updateHDFSPolicy( group_list, permission_level , category_name , feed_name ,hdfs_permission_list ,hdfs_reposiroty_name);
+				rangerClientObject.updatePolicy(updatehdfsPolicy, policyId);
 				logger.warn("HDFS Policy already exists for feed " + feed_name +". Updating HDFS existing policy.");
 			}
 
 			logger.info("Creating HIVE Policy");
 			if (!(rangerUtil.checkIfPolicyExists(rangerClientObject, category_name,feed_name ,permission_level , HIVE_REPOSITORY_TYPE)))
 			{
-				HivePolicy createHivePolicy = rangerUtil.getHIVECreatePolicyJson( group_list, permission_level , category_name , feed_name ,hive_permission_list,hive_reposiroty_name);
-				rangerClientObject.createPolicy(createHivePolicy.policyJson());
+				RangerCreatePolicy createHivePolicy = rangerUtil.getHIVECreatePolicy( group_list, permission_level , category_name , feed_name ,hive_permission_list,hive_reposiroty_name);
+				rangerClientObject.createPolicy(createHivePolicy);
 				logger.info("Hive Policy got created for feed " +feed_name+ "." );
 			}
 			else
 			{
 				int policyId = rangerUtil.getIdForExistingPolicy(rangerClientObject, category_name, feed_name, permission_level, HIVE_REPOSITORY_TYPE);
-				HivePolicy updateHivePolicy = rangerUtil.updateHivePolicyJson( group_list, permission_level , category_name , feed_name ,hive_permission_list,hive_reposiroty_name);
-				rangerClientObject.updatePolicy(updateHivePolicy.policyJson(), policyId);
+				RangerUpdatePolicy updateHivePolicy = rangerUtil.updateHivePolicy( group_list, permission_level , category_name , feed_name ,hive_permission_list,hive_reposiroty_name);
+				rangerClientObject.updatePolicy(updateHivePolicy, policyId);
 				logger.warn("HIVE Policy already exists for feed " + feed_name +". Updating Hive existing policy.");
 			}
 
