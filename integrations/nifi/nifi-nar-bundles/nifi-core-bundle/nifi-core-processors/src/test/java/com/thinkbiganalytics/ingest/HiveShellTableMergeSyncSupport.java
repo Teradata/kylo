@@ -53,6 +53,7 @@ public class HiveShellTableMergeSyncSupport extends TableMergeSyncSupport {
 
     @Override
     protected void doExecuteSQL(String sql) {
+        logger.info("Executing SQL for MergeTable [%]", sql);
         shell.execute(sql);
     }
 

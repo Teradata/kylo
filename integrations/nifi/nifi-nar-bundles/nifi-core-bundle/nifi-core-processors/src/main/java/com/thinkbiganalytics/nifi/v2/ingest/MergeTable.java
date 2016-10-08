@@ -4,11 +4,9 @@
 
 package com.thinkbiganalytics.nifi.v2.ingest;
 
-
 import com.thinkbiganalytics.ingest.TableMergeSyncSupport;
 import com.thinkbiganalytics.nifi.v2.thrift.ThriftService;
-import com.thinkbiganalytics.util.ComponentAttributes;
-import com.thinkbiganalytics.util.PartitionBatch;
+import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.PartitionSpec;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,10 +30,12 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FEED_PARTITION;
+import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.FIELD_SPECIFICATION;
 import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.PARTITION_SPECIFICATION;
 import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_FAILURE;
 import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.REL_SUCCESS;
@@ -49,6 +49,11 @@ import static com.thinkbiganalytics.nifi.v2.ingest.ComponentProperties.THRIFT_SE
                        + "to match the source."
 )
 public class MergeTable extends AbstractProcessor {
+
+    /**
+     * Merge using primary key
+     **/
+    public static final String STRATEGY_PK_MERGE = "PK_MERGE";
 
     /**
      * Merge with dedupe
@@ -78,13 +83,17 @@ public class MergeTable extends AbstractProcessor {
 
     public static final PropertyDescriptor MERGE_STRATEGY = new PropertyDescriptor.Builder()
         .name("Merge Strategy")
-        .description("Specifies the algorithm used to merge. Valid values are SYNC,MERGE,DEDUPE_AND_MERGE.  Sync will completely overwrite the target table with the source data. Merge will append "
-                     + "the data into the target partitions. Dedupe will insert into the target partition but ensure no duplicate rows are remaining. ")
+        .description("Specifies the algorithm used to merge. Valid values are SYNC,MERGE,STRATEGY_PK_MERGE,DEDUPE_AND_MERGE.  Sync will completely overwrite the target table with the source data. "
+                     + "Merge will append "
+                     + "the data into the target partitions. Dedupe will insert into the target partition but ensure no duplicate rows are remaining. PK Merge will insert or update existing rows "
+                     + "matching the"
+                     + " same primary key.")
         .required(true)
         .expressionLanguageSupported(true)
-        .allowableValues(STRATEGY_MERGE, STRATEGY_DEDUPE_MERGE, STRATEGY_SYNC, "${metadata.table.targetMergeStrategy}")
+        .allowableValues(STRATEGY_MERGE, STRATEGY_DEDUPE_MERGE, STRATEGY_PK_MERGE, STRATEGY_SYNC, "${metadata.table.targetMergeStrategy}")
         .defaultValue("${metadata.table.targetMergeStrategy}")
         .build();
+
 
     private final List<PropertyDescriptor> propDescriptors;
 
@@ -101,6 +110,7 @@ public class MergeTable extends AbstractProcessor {
         pds.add(TARGET_TABLE);
         pds.add(FEED_PARTITION);
         pds.add(PARTITION_SPECIFICATION);
+        pds.add(FIELD_SPECIFICATION);
 
         propDescriptors = Collections.unmodifiableList(pds);
     }
@@ -129,9 +139,21 @@ public class MergeTable extends AbstractProcessor {
         String targetTable = context.getProperty(TARGET_TABLE).evaluateAttributeExpressions(flowFile).getValue();
         String feedPartitionValue = context.getProperty(FEED_PARTITION).evaluateAttributeExpressions(flowFile).getValue();
         String mergeStrategyValue = context.getProperty(MERGE_STRATEGY).evaluateAttributeExpressions(flowFile).getValue();
+        final ColumnSpec[] columnSpecs = Optional.ofNullable(context.getProperty(FIELD_SPECIFICATION).evaluateAttributeExpressions(flowFile).getValue())
+            .filter(StringUtils::isNotEmpty)
+            .map(ColumnSpec::createFromString)
+            .orElse(new ColumnSpec[0]);
+
+        if (STRATEGY_PK_MERGE.equals(mergeStrategyValue) && (columnSpecs == null || columnSpecs.length == 0)) {
+            getLogger().error("Missing required field specification for PK merge feature");
+            session.transfer(flowFile, ComponentProperties.REL_FAILURE);
+            return;
+        }
 
         // Maintain default for backward compatibility
-        if (StringUtils.isEmpty(mergeStrategyValue)) mergeStrategyValue = STRATEGY_DEDUPE_MERGE;
+        if (StringUtils.isEmpty(mergeStrategyValue)) {
+            mergeStrategyValue = STRATEGY_DEDUPE_MERGE;
+        }
 
         logger.info("Using Source: " + sourceTable + " Target: " + targetTable + " feed partition:" + feedPartitionValue + " partSpec: " + partitionSpecString);
 
@@ -144,26 +166,16 @@ public class MergeTable extends AbstractProcessor {
 
             PartitionSpec partitionSpec = new PartitionSpec(partitionSpecString);
 
-            List<PartitionBatch> batches = null;
-
             if (STRATEGY_DEDUPE_MERGE.equals(mergeStrategyValue)) {
                 mergeSupport.doMerge(sourceTable, targetTable, partitionSpec, feedPartitionValue, true);
             } else if (STRATEGY_MERGE.equals(mergeStrategyValue)) {
                 mergeSupport.doMerge(sourceTable, targetTable, partitionSpec, feedPartitionValue, false);
             } else if (STRATEGY_SYNC.equals(mergeStrategyValue)) {
                 mergeSupport.doSync(sourceTable, targetTable, partitionSpec, feedPartitionValue);
+            } else if (STRATEGY_PK_MERGE.equals(mergeStrategyValue)) {
+                mergeSupport.doPKMerge(sourceTable, targetTable, partitionSpec, feedPartitionValue, columnSpecs);
             } else {
                 throw new UnsupportedOperationException("Failed to resolve the merge strategy");
-            }
-
-            // Record detail of each batch
-            if (batches != null) {
-                flowFile = session.putAttribute(flowFile, ComponentAttributes.NUM_MERGED_PARTITIONS.key(), String.valueOf(batches.size()));
-                int i = 1;
-                for (PartitionBatch batch : batches) {
-                    flowFile = session.putAttribute(flowFile, ComponentAttributes.MERGED_PARTITION.key() + "." + i, batch.getBatchDescription());
-                    flowFile = session.putAttribute(flowFile, ComponentAttributes.MERGED_PARTITION_ROWCOUNT.key() + "." + i, String.valueOf(batch.getRecordCount()));
-                }
             }
 
             stopWatch.stop();

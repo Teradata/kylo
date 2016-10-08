@@ -20,7 +20,7 @@ import java.util.Vector;
 /**
  * Represents a partition specification for a target table
  */
-public class PartitionSpec {
+public class PartitionSpec implements Cloneable {
     private static final Logger log = LoggerFactory.getLogger(PartitionSpec.class);
 
     private List<PartitionKey> keys;
@@ -99,7 +99,7 @@ public class PartitionSpec {
     public String toDynamicPartitionSpec() {
         String[] parts = new String[keys.size()];
         for (int i = 0; i < keys.size(); i++) {
-            parts[i] = keys.get(i).getKey();
+            parts[i] = keys.get(i).getKeyWithAlias();
         }
         return "partition (" + toPartitionSelectSQL() + ")";
     }
@@ -107,7 +107,7 @@ public class PartitionSpec {
     public String toPartitionSelectSQL() {
         String[] parts = new String[keys.size()];
         for (int i = 0; i < keys.size(); i++) {
-            parts[i] = keys.get(i).getKey();
+            parts[i] = keys.get(i).getKeyWithAlias();
         }
         return StringUtils.join(parts, ",");
     }
@@ -115,11 +115,10 @@ public class PartitionSpec {
     public String toDynamicSelectSQLSpec() {
         String[] parts = new String[keys.size()];
         for (int i = 0; i < keys.size(); i++) {
-            parts[i] = keys.get(i).getFormula() + " " + keys.get(i).getKey();
+            parts[i] = keys.get(i).getFormulaWithAlias() + " " + keys.get(i).getKey();
         }
         return StringUtils.join(parts, ",");
     }
-
 
     /**
      * Generates a select statement that will find all unique data partitions in the source table
@@ -127,9 +126,14 @@ public class PartitionSpec {
     public String toDistinctSelectSQL(String sourceTable, String feedPartitionValue) {
         String[] parts = new String[keys.size()];
         for (int i = 0; i < keys.size(); i++) {
-            parts[i] = keys.get(i).getFormula();
+            parts[i] = keys.get(i).getFormulaWithAlias();
         }
         return "select " + StringUtils.join(parts, ",") + " , count(0) as tb_cnt from " + sourceTable + " where processing_dttm = '" + feedPartitionValue + "' group by " + StringUtils.join(parts, ",");
+    }
+
+    public PartitionSpec newForAlias(String alias) {
+        PartitionSpec spec = new PartitionSpec(PartitionKey.partitionKeysForTableAlias(this.keys.toArray(new PartitionKey[0]), alias));
+        return spec;
     }
 
 

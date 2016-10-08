@@ -3,6 +3,7 @@
  */
 package com.thinkbiganalytics.ingest;
 
+import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.PartitionBatch;
 import com.thinkbiganalytics.util.PartitionSpec;
 
@@ -16,6 +17,7 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Vector;
 
@@ -88,41 +90,67 @@ public class TableMergeSyncSupport implements Serializable {
     /**
      * Performs the doMerge and insert into the target table from the source table
      *
-     * @param sourceTable      the source table
-     * @param targetTable      the target table
-     * @param partitionSpec    the partition specification
-     * @param feedPartionValue the source processing partition value
-     * @param shouldDedupe     whether to perform dedupe during merge
+     * @param sourceTable        the source table
+     * @param targetTable        the target table
+     * @param partitionSpec      the partition specification
+     * @param feedPartitionValue the source processing partition value
+     * @param shouldDedupe       whether to perform dedupe during merge
      */
-    public List<PartitionBatch> doMerge(String sourceTable, String targetTable, PartitionSpec partitionSpec, String feedPartionValue, boolean shouldDedupe) {
+    public List<PartitionBatch> doMerge(String sourceTable, String targetTable, PartitionSpec partitionSpec, String feedPartitionValue, boolean shouldDedupe) {
 
         List<PartitionBatch> batches = null;
 
         Validate.notEmpty(sourceTable);
         Validate.notEmpty(targetTable);
         Validate.notNull(partitionSpec);
-        Validate.notNull(feedPartionValue);
+        Validate.notNull(feedPartitionValue);
 
         String[] selectFields = getSelectFields(sourceTable, targetTable, partitionSpec);
         String sql = null;
         if (partitionSpec.isNonPartitioned()) {
             if (shouldDedupe) {
-                sql = generateMergeNonPartitionQueryWithDedupe(selectFields, sourceTable, targetTable, feedPartionValue);
+                sql = generateMergeNonPartitionQueryWithDedupe(selectFields, sourceTable, targetTable, feedPartitionValue);
             } else {
-                sql = generateMergeNonPartitionQuery(selectFields, sourceTable, targetTable, feedPartionValue);
+                sql = generateMergeNonPartitionQuery(selectFields, sourceTable, targetTable, feedPartitionValue);
             }
         } else {
             if (shouldDedupe) {
-                batches = createPartitionBatches(partitionSpec, sourceTable, feedPartionValue);
+                batches = createPartitionBatches(partitionSpec, sourceTable, feedPartitionValue);
                 if (batches.size() > 0) {
-                    sql = generateMergeWithDedupePartitionQuery(selectFields, partitionSpec, batches, sourceTable, targetTable, feedPartionValue);
+                    sql = generateMergeWithDedupePartitionQuery(selectFields, partitionSpec, batches, sourceTable, targetTable, feedPartitionValue);
                 }
             } else {
-                sql = generateMergeWithPartitionQuery(selectFields, partitionSpec, sourceTable, targetTable, feedPartionValue);
+                sql = generateMergeWithPartitionQuery(selectFields, partitionSpec, sourceTable, targetTable, feedPartitionValue);
             }
         }
         doExecuteSQL(sql);
         return batches;
+    }
+
+    /**
+     * Updates any rows matching the same primary key, otherwise inserts the value into the appropriate partition
+     *
+     * @param sourceTable        the source table
+     * @param targetTable        the target table
+     * @param partitionSpec      the partition specification
+     * @param feedPartitionValue the source processing partition value
+     */
+    public void doPKMerge(String sourceTable, String targetTable, PartitionSpec partitionSpec, String feedPartitionValue, ColumnSpec[] columnSpecs) {
+
+        Validate.notEmpty(sourceTable);
+        Validate.notEmpty(targetTable);
+        Validate.notNull(partitionSpec);
+        Validate.notNull(feedPartitionValue);
+
+        String[] selectFields = getSelectFields(sourceTable, targetTable, partitionSpec);
+        String sql = null;
+        if (partitionSpec.isNonPartitioned()) {
+            sql = generatePKMergeNonPartitionQuery(selectFields, sourceTable, targetTable, feedPartitionValue, columnSpecs);
+        } else {
+            sql = generatePKMergePartitionQuery(selectFields, partitionSpec, createPartitionBatches(partitionSpec, sourceTable, feedPartitionValue), sourceTable, targetTable, feedPartitionValue,
+                                                columnSpecs);
+        }
+        doExecuteSQL(sql);
     }
 
     /**
@@ -235,6 +263,16 @@ public class TableMergeSyncSupport implements Serializable {
         return sb.toString();
     }
 
+    /*
+    Produces a where clause that limits to the impacted partitions of the target table
+     */
+    private String targetPartitionsWhereClause(List<PartitionBatch> batches) {
+        List<String> targetPartitionsItems = new Vector<>();
+        for (PartitionBatch batch : batches) {
+            targetPartitionsItems.add("(" + batch.getPartitionSpec().toTargetSQLWhere(batch.getPartionValues()) + ")");
+        }
+        return StringUtils.join(targetPartitionsItems.toArray(new String[0]), " or ");
+    }
 
     /**
      * Generates a merge query for inserting overwriting from a source table into the target table appending to any partitions
@@ -249,11 +287,7 @@ public class TableMergeSyncSupport implements Serializable {
 
         String selectSQL = StringUtils.join(selectFields, ",");
         StringBuffer sb = new StringBuffer();
-        List<String> targetPartitionsItems = new Vector<>();
-        for (PartitionBatch batch : batches) {
-            targetPartitionsItems.add("(" + batch.getPartitionSpec().toTargetSQLWhere(batch.getPartionValues()) + ")");
-        }
-        String targetPartitionWhereClause = StringUtils.join(targetPartitionsItems.toArray(new String[0]), " or ");
+        String targetPartitionWhereClause = targetPartitionsWhereClause(batches);
 
         sb.append("insert overwrite table ").append(targetTable).append(" ")
             .append(spec.toDynamicPartitionSpec())
@@ -341,84 +375,93 @@ public class TableMergeSyncSupport implements Serializable {
         return sb.toString();
     }
 
-//    /**
-//     * Generates a query for merging data from a source table into the target table adhering to partitions and using a last modify date and a primary key
-//     *
-//     * @param id              the primary key
-//     * @param lastModifyField the last modify date field used to determine
-//     * @param selectFields    the list of fields in the select clause of the source table
-//     * @param spec            the partition specification or null if none
-//     * @param partitionValues the values containing the distinct partition data to process this iterator
-//     * @param sourceTable     the source table
-//     * @param targetTable     the target table
-//     * @return the sql string
-//     */
-/*    protected String generateDedupePartitionQueryPK(String id, String lastModifyField, String[] selectFields, PartitionSpec spec, String[] partitionValues, String sourceTable, String targetTable,
-                                                    String feedPartitionValue) {
+    /**
+     * @param selectFields       the list of fields in the select clause of the source table
+     * @param sourceTable        the source table
+     * @param targetTable        the target table
+     * @param feedPartitionValue the partition of the source table to use
+     * @param columnSpecs        the column specifications
+     * @return the sql
+     */
+    protected String generatePKMergeNonPartitionQuery(String[] selectFields, String sourceTable, String
+        targetTable, String feedPartitionValue, ColumnSpec[] columnSpecs) {
 
-        String selectSQL = StringUtils.join(selectFields, ",");
-        String targetSqlWhereClause = spec.toTargetSQLWhere(partitionValues);
-        String sourceSqlWhereClause = spec.toSourceSQLWhere(partitionValues);
-        String partitionClause = spec.toPartitionSpec(partitionValues);
+        String[] selectFieldsWithAlias = selectFieldsForAlias(selectFields, "a");
+        String selectSQL = StringUtils.join(selectFieldsWithAlias, ",");
+        String joinOnClause = ColumnSpec.toPrimaryKeyJoinSQL(columnSpecs, "a", "b");
+        String[] primaryKeys = ColumnSpec.toPrimaryKeys(columnSpecs);
+        String anyPK = primaryKeys[0];
 
         StringBuffer sb = new StringBuffer();
 
-//        CREATE VIEW reconcile_view AS
-        sb.append("insert overwrite table ").append(targetTable).append(" ").append(partitionClause)
-            .append("SELECT t1.").append(selectSQL).append(" FROM")
-            .append("(SELECT ").append(selectSQL).append(" FROM ").append(targetTable).append(" where ").append(targetSqlWhereClause)
-            .append("  UNION ALL")
-            .append(" SELECT ").append(selectSQL).append(" FROM ").append(sourceTable)
-            .append(" where ")
-            .append(" processing_dttm='" + feedPartitionValue + "' and ")
-            .append(sourceSqlWhereClause).append(" ) t1")
-            .append(" JOIN")
-            .append("(SELECT ").append(id).append(", max(").append(lastModifyField).append(") max_modified FROM ")
-            .append("(SELECT ").append(selectSQL).append(" FROM ").append(targetTable).append(" where ").append(targetSqlWhereClause)
-            .append(" UNION ALL ")
-            .append(" SELECT ").append(selectSQL).append(" FROM ").append(sourceTable)
-            .append(" where ")
-            .append(" processing_dttm='" + feedPartitionValue + "' and ")
-            .append(sourceSqlWhereClause)
-            .append(") t2")
-            .append(" GROUP BY ").append(id).append(") s")
-            .append(" ON t1.").append(id).append(" = s.").append(id).append(" AND t1.").append(lastModifyField).append(" = ").append("s.max_modified");
+        // First finds all records in valid
+        // Second finds all records in target that should be preserved for impacted partitions
+        sb.append("insert overwrite table ").append(targetTable).append(" ")
+            .append("select ").append(selectSQL).append(" from (")
+            .append("  select ").append(selectSQL)
+            .append("  from ").append(sourceTable).append(" a")
+            .append("  where ")
+            .append("  a.processing_dttm='").append(feedPartitionValue)
+            .append(" union all ")
+            .append("  select ").append(selectSQL)
+            .append("  from ").append(targetTable).append(" a join ").append(sourceTable).append(" b ")
+            .append("  on (").append(joinOnClause).append(")")
+            .append("  where ")
+            .append("  (b.processing_dttm='").append(feedPartitionValue).append("' OR b.").append(anyPK).append(" is null)")
+            .append(") t");
 
         return sb.toString();
-    }*/
+    }
 
-    // /*   *//**
-//     * Generates a query for merging data from a source table into the target table and using a last modify date and a primary key
-//     *
-//     * @param id              the primary key
-//     * @param lastModifyField the last modify date field used to determine
-//     * @param selectFields    the list of fields in the select clause of the source table
-//     * @param sourceTable     the source table
-//     * @param targetTable     the target table
-//     * @return the sql string
-//     *//*
-//    protected String generateDedupeNonPartitionQueryPK(String id, String lastModifyField, String[] selectFields, String sourceTable, String targetTable, String feedPartitionValue) {
-//
-//        String selectSQL = StringUtils.join(selectFields, ",");
-//        StringBuffer sb = new StringBuffer();
-//
-////        CREATE VIEW reconcile_view AS
-//        sb.append("insert overwrite table ").append(targetTable).append(" ")
-//            .append("SELECT t1.").append(selectSQL).append(" FROM")
-//            .append("(SELECT ").append(selectSQL).append(" FROM ").append(targetTable)
-//            .append("  UNION ALL")
-//            .append(" SELECT ").append(selectSQL).append(" FROM ").append(sourceTable).append(" ) t1")
-//            .append(" JOIN")
-//            .append("(SELECT ").append(id).append(", max(").append(lastModifyField).append(") max_modified FROM ")
-//            .append("(SELECT ").append(selectSQL).append(" FROM ").append(targetTable)
-//            .append(" UNION ALL ")
-//            .append(" SELECT ").append(selectSQL).append(" FROM ").append(sourceTable)
-//            .append(") t2")
-//            .append(" GROUP BY ").append(id).append(") s")
-//            .append(" ON t1.").append(id).append(" = s.").append(id).append(" AND t1.").append(lastModifyField).append(" = ").append("s.max_modified");
-//
-//        return sb.toString();
-//    }
+    /**
+     * @param selectFields       the list of fields in the select clause of the source table
+     * @param partitionSpec      partition specification
+     * @param batches            the list of partitions impacted by the merge
+     * @param sourceTable        the source table
+     * @param targetTable        the target table
+     * @param feedPartitionValue the partition of the source table to use
+     * @param columnSpecs        the column specifications
+     * @return the sql
+     */
+    protected String generatePKMergePartitionQuery(String[] selectFields, PartitionSpec partitionSpec, List<PartitionBatch> batches, String sourceTable, String
+        targetTable, String feedPartitionValue, ColumnSpec[] columnSpecs) {
+
+        // Include alias
+        String selectSQL = StringUtils.join(selectFields, ",");
+        String[] selectFieldsWithAlias = selectFieldsForAlias(selectFields, "a");
+        String selectSQLWithAlias = StringUtils.join(selectFieldsWithAlias, ",");
+
+        String joinOnClause = ColumnSpec.toPrimaryKeyJoinSQL(columnSpecs, "a", "b");
+        String[] primaryKeys = ColumnSpec.toPrimaryKeys(columnSpecs);
+        PartitionSpec partitionSpecWithAlias = partitionSpec.newForAlias("a");
+        String targetPartitionWhereClause = targetPartitionsWhereClause(PartitionBatch.toPartitionBatchesForAlias(batches, "a"));
+        String anyPK = primaryKeys[0];
+
+        StringBuffer sbSourceQuery = new StringBuffer();
+        sbSourceQuery.append("select ").append(selectSQL).append(",").append(partitionSpec.toDynamicSelectSQLSpec()).append(" from "+sourceTable)
+            .append(" where processing_dttm='").append(feedPartitionValue).append("'");
+
+        StringBuffer sb = new StringBuffer();
+
+        // First finds all records in valid
+        // Second finds all records in target that should be preserved for impacted partitions
+        sb.append("insert overwrite table ").append(targetTable).append(" ")
+            .append(partitionSpec.toDynamicPartitionSpec())
+            .append("select ").append(selectSQL).append(",").append(partitionSpec.toPartitionSelectSQL()).append(" from (")
+            .append("  select ").append(selectSQLWithAlias).append(",").append(partitionSpecWithAlias.toDynamicSelectSQLSpec())
+            .append("  from ").append(sourceTable).append(" a")
+            .append("  where ")
+            .append("  a.processing_dttm='").append(feedPartitionValue).append("'")
+            .append(" union all ")
+            .append("  select ").append(selectSQLWithAlias).append(",").append(partitionSpecWithAlias.toDynamicSelectSQLSpec())
+            .append("  from ").append(targetTable).append(" a left outer join (").append(sbSourceQuery.toString()).append(") b ")
+            .append("  on (").append(joinOnClause).append(")")
+            .append("  where ")
+            .append("  (b.").append(anyPK).append(" is null)")
+            .append("  and (").append(targetPartitionWhereClause).append(")) t");
+
+        return sb.toString();
+    }
 
 
     protected void doExecuteSQL(String sql) {
@@ -499,9 +542,12 @@ public class TableMergeSyncSupport implements Serializable {
     }
 
     private String escaped(String item) {
-        return (!item.startsWith("`") ? "`"+item+"`" : item);
+        return (!item.startsWith("`") ? "`" + item + "`" : item);
     }
 
+    private String[] selectFieldsForAlias(String[] selectFields, String alias) {
+        return Arrays.stream(selectFields).map(s -> alias + "." + s).toArray(size -> new String[size]);
+    }
 
     protected List<String> resolveTableSchema(String qualifiedTablename) {
 

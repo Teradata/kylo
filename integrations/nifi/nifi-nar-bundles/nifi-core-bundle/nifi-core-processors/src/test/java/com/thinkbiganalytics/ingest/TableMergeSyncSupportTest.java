@@ -14,6 +14,7 @@ import com.klarna.hiverunner.annotations.HiveProperties;
 import com.klarna.hiverunner.annotations.HiveRunnerSetup;
 import com.klarna.hiverunner.annotations.HiveSQL;
 import com.klarna.hiverunner.config.HiveRunnerConfig;
+import com.thinkbiganalytics.util.ColumnSpec;
 import com.thinkbiganalytics.util.PartitionBatch;
 import com.thinkbiganalytics.util.PartitionSpec;
 
@@ -23,6 +24,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.sql.SQLException;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -136,6 +138,20 @@ public class TableMergeSyncSupportTest {
     /**
      * Tests the merge partition without dedupe and the merge partition with dedupe
      */
+    public void testMergePartitionPK() throws Exception {
+        // Insert one record to start
+        hiveShell.execute(
+            "insert into emp_sr.employee partition(country='USA',year=2015) (  `id`,  `timestamp`,`name`,`company`,`zip`,`phone`,`email`,  `hired`)  values (1,'1','Sally','OLD VALUE','94550',"
+            + "'555-1212',"
+            + "'sally@acme.org','2015-01-01');");
+
+        doTestMergePK(targetTable, spec);
+    }
+
+    @Test
+    /**
+     * Tests the merge partition without dedupe and the merge partition with dedupe
+     */
     public void testMergePartition() throws Exception {
         // Insert one record to start
         hiveShell.execute(
@@ -188,6 +204,65 @@ public class TableMergeSyncSupportTest {
             assertFalse(existing.contains(r));
             existing.add(r);
         }
+
+    }
+
+    private void doTestMergePK(String targetTable, PartitionSpec spec) throws SQLException {
+
+        List<String> results = fetchEmployees(targetTable);
+        assertEquals(1, results.size());
+
+        ColumnSpec columnSpec1 = new ColumnSpec("id", "String", "", true, false, false);
+        ColumnSpec columnSpec2 = new ColumnSpec("name", "String", "", false, false, false);
+        ColumnSpec[] columnSpecs = Arrays.asList(columnSpec1, columnSpec2).toArray(new ColumnSpec[0]);
+        // Call merge
+        mergeSyncSupport.doPKMerge(sourceTable, targetTable, spec, processingPartition, columnSpecs);
+
+        // We should have 4 records
+        results = fetchEmployees(targetTable);
+        assertEquals(4, results.size());
+        assertFalse("Should not have old valur", results.stream().anyMatch(s -> s.contains("OLD")));
+
+
+        // Run merge with dedupe and should get the following two additional results. The result should not include any duplicates in the target table.
+        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074340') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (100,'Bruce',"
+                          + "'OLD',"
+                          + "'94550','555-1212','bruce@acme.org','2016-01-01','Canada');");
+        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074340') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (101,'Harry',"
+                          + "'OLD',"
+                          + "'94550','555-1212','harry@acme.org','2016-01-01','Canada');");
+
+        mergeSyncSupport.doPKMerge(sourceTable, targetTable, spec, processingPartition, columnSpecs);
+
+        results = fetchEmployees(targetTable);
+        assertEquals(6, results.size());
+        // Verify no duplicates exist in the table
+        HashSet<String> existing = new HashSet<>();
+        for (String r : results) {
+            assertFalse(existing.contains(r));
+            existing.add(r);
+        }
+
+        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074540') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (100,'Bruce',"
+                          + "'ABC',"
+                          + "'94550','555-1212','bruce@acme.org','2016-01-01','Canada');");
+        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074540') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (101,'Harry',"
+                          + "'ABC',"
+                          + "'94550','555-1212','harry@acme.org','2016-01-01','Canada');");
+        hiveShell.execute("insert into emp_sr.employee_valid partition(processing_dttm='20160119074540') (  `id`,  `name`,`company`,`zip`,`phone`,`email`,  `hired`,`country`) values (102,'Buddy',"
+                          + "'ABC',"
+                          + "'94550','555-1212','buddy@acme.org','2016-01-01','Canada');");
+
+        mergeSyncSupport.doPKMerge(sourceTable, targetTable, spec, "20160119074540", columnSpecs);
+        results = fetchEmployees(targetTable);
+        assertEquals(7, results.size());
+        existing = new HashSet<>();
+        for (String r : results) {
+            assertFalse(existing.contains(r));
+            existing.add(r);
+        }
+
+        assertFalse("Should not have old valur", results.stream().anyMatch(s -> s.contains("OLD")));
 
     }
 
