@@ -143,13 +143,14 @@ public class TableMergeSyncSupport implements Serializable {
         Validate.notNull(feedPartitionValue);
 
         String[] selectFields = getSelectFields(sourceTable, targetTable, partitionSpec);
-        String sql = null;
+        String sql;
         if (partitionSpec.isNonPartitioned()) {
             sql = generatePKMergeNonPartitionQuery(selectFields, sourceTable, targetTable, feedPartitionValue, columnSpecs);
         } else {
-            sql = generatePKMergePartitionQuery(selectFields, partitionSpec, createPartitionBatches(partitionSpec, sourceTable, feedPartitionValue), sourceTable, targetTable, feedPartitionValue,
-                                                columnSpecs);
+
+            sql = generatePKMergePartitionQuery(selectFields, partitionSpec, sourceTable, targetTable, feedPartitionValue, columnSpecs);
         }
+
         doExecuteSQL(sql);
     }
 
@@ -396,7 +397,7 @@ public class TableMergeSyncSupport implements Serializable {
         String anyPK = primaryKeys[0];
 
         StringBuffer sbSourceQuery = new StringBuffer();
-        sbSourceQuery.append("select ").append(selectSQL).append(" from "+sourceTable)
+        sbSourceQuery.append("select ").append(selectSQL).append(" from " + sourceTable)
             .append(" where processing_dttm='").append(feedPartitionValue).append("'");
 
         StringBuffer sb = new StringBuffer();
@@ -422,15 +423,13 @@ public class TableMergeSyncSupport implements Serializable {
     /**
      * @param selectFields       the list of fields in the select clause of the source table
      * @param partitionSpec      partition specification
-     * @param batches            the list of partitions impacted by the merge
      * @param sourceTable        the source table
      * @param targetTable        the target table
-     * @param feedPartitionValue the partition of the source table to use
+     * @param feedPartitionValue the partition of the souesrce table to use
      * @param columnSpecs        the column specifications
      * @return the sql
      */
-    protected String generatePKMergePartitionQuery(String[] selectFields, PartitionSpec partitionSpec, List<PartitionBatch> batches, String sourceTable, String
-        targetTable, String feedPartitionValue, ColumnSpec[] columnSpecs) {
+    protected String generatePKMergePartitionQuery(String[] selectFields, PartitionSpec partitionSpec, String sourceTable, String targetTable, String feedPartitionValue, ColumnSpec[] columnSpecs) {
 
         // Include alias
         String selectSQL = StringUtils.join(selectFields, ",");
@@ -440,11 +439,13 @@ public class TableMergeSyncSupport implements Serializable {
         String joinOnClause = ColumnSpec.toPrimaryKeyJoinSQL(columnSpecs, "a", "b");
         String[] primaryKeys = ColumnSpec.toPrimaryKeys(columnSpecs);
         PartitionSpec partitionSpecWithAlias = partitionSpec.newForAlias("a");
-        String targetPartitionWhereClause = targetPartitionsWhereClause(PartitionBatch.toPartitionBatchesForAlias(batches, "a"));
         String anyPK = primaryKeys[0];
 
+        List<PartitionBatch> batches = createPartitionBatchesforPKMerge(partitionSpec, sourceTable, targetTable, feedPartitionValue, anyPK, joinOnClause);
+        String targetPartitionWhereClause = targetPartitionsWhereClause(PartitionBatch.toPartitionBatchesForAlias(batches, "a"));
+
         StringBuffer sbSourceQuery = new StringBuffer();
-        sbSourceQuery.append("select ").append(selectSQL).append(",").append(partitionSpec.toDynamicSelectSQLSpec()).append(" from "+sourceTable)
+        sbSourceQuery.append("select ").append(selectSQL).append(",").append(partitionSpec.toDynamicSelectSQLSpec()).append(" from " + sourceTable)
             .append(" where processing_dttm='").append(feedPartitionValue).append("'");
 
         StringBuffer sb = new StringBuffer();
@@ -467,6 +468,31 @@ public class TableMergeSyncSupport implements Serializable {
             .append("  and (").append(targetPartitionWhereClause).append(")) t");
 
         return sb.toString();
+    }
+
+
+    protected List<PartitionBatch> createPartitionBatchesforPKMerge(PartitionSpec spec, String sourceTable, String targetTable, String feedPartitionValue, String anyPK, String joinOnClause) {
+        List<PartitionBatch> v;
+        StringBuffer sbQuery = new StringBuffer();
+        PartitionSpec aliasSpecA = spec.newForAlias("a");
+
+        // Find all partitions that contain matching keys
+        sbQuery.append("select ").append(aliasSpecA.toPartitionSelectSQL()).append(", count(0)")
+            .append(" from ").append(targetTable).append(" a join ").append(sourceTable).append(" b")
+            .append(" on ").append(joinOnClause)
+            .append(" where b.processing_dttm = '" + feedPartitionValue + "'")
+            .append(" group by ").append(aliasSpecA.toPartitionSelectSQL());
+
+        String sql = sbQuery.toString();
+        try (final Statement st = conn.createStatement()) {
+            logger.info("Selecting target partitions query [" + sql + "]");
+            ResultSet rs = doSelectSQL(st, sql);
+            v = toPartitionBatches(spec, rs);
+        } catch (SQLException e) {
+            logger.error("Failed to select partition batches SQL {} with error {}", sql, e);
+            throw new RuntimeException("Failed to select partition batches", e);
+        }
+        return v;
     }
 
 
@@ -508,7 +534,6 @@ public class TableMergeSyncSupport implements Serializable {
 
         return v;
     }
-
 
     /*
     Generates batches of partitions in the source table
