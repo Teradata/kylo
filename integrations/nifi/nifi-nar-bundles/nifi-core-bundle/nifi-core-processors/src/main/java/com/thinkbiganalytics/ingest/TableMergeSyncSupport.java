@@ -386,11 +386,18 @@ public class TableMergeSyncSupport implements Serializable {
     protected String generatePKMergeNonPartitionQuery(String[] selectFields, String sourceTable, String
         targetTable, String feedPartitionValue, ColumnSpec[] columnSpecs) {
 
+        // Include alias
+        String selectSQL = StringUtils.join(selectFields, ",");
         String[] selectFieldsWithAlias = selectFieldsForAlias(selectFields, "a");
-        String selectSQL = StringUtils.join(selectFieldsWithAlias, ",");
+        String selectSQLWithAlias = StringUtils.join(selectFieldsWithAlias, ",");
+
         String joinOnClause = ColumnSpec.toPrimaryKeyJoinSQL(columnSpecs, "a", "b");
         String[] primaryKeys = ColumnSpec.toPrimaryKeys(columnSpecs);
         String anyPK = primaryKeys[0];
+
+        StringBuffer sbSourceQuery = new StringBuffer();
+        sbSourceQuery.append("select ").append(selectSQL).append(" from "+sourceTable)
+            .append(" where processing_dttm='").append(feedPartitionValue).append("'");
 
         StringBuffer sb = new StringBuffer();
 
@@ -401,14 +408,13 @@ public class TableMergeSyncSupport implements Serializable {
             .append("  select ").append(selectSQL)
             .append("  from ").append(sourceTable).append(" a")
             .append("  where ")
-            .append("  a.processing_dttm='").append(feedPartitionValue)
+            .append("  a.processing_dttm='").append(feedPartitionValue).append("'")
             .append(" union all ")
-            .append("  select ").append(selectSQL)
-            .append("  from ").append(targetTable).append(" a join ").append(sourceTable).append(" b ")
+            .append("  select ").append(selectSQLWithAlias)
+            .append("  from ").append(targetTable).append(" a left outer join (").append(sbSourceQuery.toString()).append(") b ")
             .append("  on (").append(joinOnClause).append(")")
             .append("  where ")
-            .append("  (b.processing_dttm='").append(feedPartitionValue).append("' OR b.").append(anyPK).append(" is null)")
-            .append(") t");
+            .append("  (b.").append(anyPK).append(" is null)) t");
 
         return sb.toString();
     }
