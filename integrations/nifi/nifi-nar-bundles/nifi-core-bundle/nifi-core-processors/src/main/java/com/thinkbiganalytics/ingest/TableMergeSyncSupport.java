@@ -444,6 +444,10 @@ public class TableMergeSyncSupport implements Serializable {
         List<PartitionBatch> batches = createPartitionBatchesforPKMerge(partitionSpec, sourceTable, targetTable, feedPartitionValue, anyPK, joinOnClause);
         String targetPartitionWhereClause = targetPartitionsWhereClause(PartitionBatch.toPartitionBatchesForAlias(batches, "a"));
 
+        // TODO: If the records matching the primary key between the source and target are in a different partition
+        // AND the matching records are the only remaining records of the partition, then the following sql will fail to overwrite the
+        // remaining record.  We need to detect this and then delete partition? This is a complex scenario..
+
         StringBuffer sbSourceQuery = new StringBuffer();
         sbSourceQuery.append("select ").append(selectSQL).append(",").append(partitionSpec.toDynamicSelectSQLSpec()).append(" from " + sourceTable)
             .append(" where processing_dttm='").append(feedPartitionValue).append("'");
