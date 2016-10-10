@@ -23,7 +23,7 @@
 
     <dependency>
       <groupId>com.thinkbiganalytics.datalake</groupId>
-      <artifactId>thinkbig-nifi-rest-client</artifactId>
+      <artifactId>thinkbig-nifi-rest-client-api</artifactId>
       <version>${project.version}</version>
     </dependency>
 
