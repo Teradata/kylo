@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.feedmgr.nifi;
 
 
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 
 /**
@@ -9,13 +9,13 @@ import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
  */
 public class NifiRestService {
 
-    public NifiRestClient nifiRestClient;
+    public LegacyNifiRestClient nifiRestClient;
 
     public NifiRestService(NifiRestClientConfig restClientConfig){
-           nifiRestClient = new NifiRestClient(restClientConfig);
+           nifiRestClient = new LegacyNifiRestClient(restClientConfig);
     }
 
-    public NifiRestClient getNifiRestClient() {
+    public LegacyNifiRestClient getNifiRestClient() {
         return nifiRestClient;
     }
 

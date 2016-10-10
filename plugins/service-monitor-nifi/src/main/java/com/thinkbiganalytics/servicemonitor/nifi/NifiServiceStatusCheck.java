@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.servicemonitor.nifi;
 
 
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.servicemonitor.check.ServiceStatusCheck;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceComponent;
 import com.thinkbiganalytics.servicemonitor.model.DefaultServiceStatusResponse;
@@ -24,7 +24,7 @@ public class NifiServiceStatusCheck implements ServiceStatusCheck {
 
   @Autowired
   @Qualifier("nifiRestClient")
- private NifiRestClient nifiRestClient;
+ private LegacyNifiRestClient nifiRestClient;
 
   public NifiServiceStatusCheck(){
   }
@@ -53,7 +53,7 @@ public class NifiServiceStatusCheck implements ServiceStatusCheck {
     return new DefaultServiceStatusResponse(serviceName, Arrays.asList(component));
   }
 
-  public void setNifiRestClient(NifiRestClient nifiRestClient) {
+  public void setNifiRestClient(LegacyNifiRestClient nifiRestClient) {
     this.nifiRestClient = nifiRestClient;
   }
 }

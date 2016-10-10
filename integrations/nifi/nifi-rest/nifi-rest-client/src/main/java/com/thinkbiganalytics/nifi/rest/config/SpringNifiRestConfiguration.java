@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.nifi.rest.config;
 
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,9 +22,9 @@ public class SpringNifiRestConfiguration {
     private Environment env;
 
     @Bean(name = "nifiRestClient")
-    public NifiRestClient nifiRestClient(@Qualifier("nifiRestClientConfig") NifiRestClientConfig clientConfig) {
+    public LegacyNifiRestClient nifiRestClient(@Qualifier("nifiRestClientConfig") NifiRestClientConfig clientConfig) {
 
-        NifiRestClient restClient = new NifiRestClient(clientConfig);
+        LegacyNifiRestClient restClient = new LegacyNifiRestClient(clientConfig);
         return restClient;
 
     }

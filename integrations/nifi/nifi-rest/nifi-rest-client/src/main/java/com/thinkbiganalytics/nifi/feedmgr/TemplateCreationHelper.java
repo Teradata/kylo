@@ -5,7 +5,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.ControllerServiceProperty;
 import com.thinkbiganalytics.nifi.rest.model.ControllerServicePropertyHolder;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
@@ -52,7 +52,7 @@ public class TemplateCreationHelper {
 
     private List<NifiError> errors = new ArrayList<>();
 
-    NifiRestClient restClient;
+    LegacyNifiRestClient restClient;
 
     private Set<ControllerServiceDTO> snapshotControllerServices;
 
@@ -67,7 +67,7 @@ public class TemplateCreationHelper {
     private Integer MAX_ENABLE_ATTEMPTS = 5;
     private Long ENABLE_CONTROLLER_SERVICE_WAIT_TIME = 2000L;
 
-    public TemplateCreationHelper(NifiRestClient restClient) {
+    public TemplateCreationHelper(LegacyNifiRestClient restClient) {
         this.restClient = restClient;
     }
 

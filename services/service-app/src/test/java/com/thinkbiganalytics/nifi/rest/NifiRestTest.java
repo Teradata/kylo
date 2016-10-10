@@ -5,7 +5,7 @@ import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedCategory;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -37,14 +37,14 @@ import javax.ws.rs.ProcessingException;
 public class NifiRestTest {
 
 
-    private NifiRestClient restClient;
+    private LegacyNifiRestClient restClient;
 
     //@Before
     public void setupRestClient() {
         NifiRestClientConfig config = new NifiRestClientConfig();
         config.setHost("localhost");
         config.setPort(8079);
-        restClient = new NifiRestClient(config);
+        restClient = new LegacyNifiRestClient(config);
     }
 
 

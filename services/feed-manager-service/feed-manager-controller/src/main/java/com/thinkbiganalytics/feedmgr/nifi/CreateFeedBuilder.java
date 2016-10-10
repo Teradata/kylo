@@ -8,7 +8,7 @@ import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
@@ -40,7 +40,7 @@ public class CreateFeedBuilder {
 
     private static final Logger log = LoggerFactory.getLogger(CreateFeedBuilder.class);
 
-    NifiRestClient restClient;
+    LegacyNifiRestClient restClient;
 
     private String templateId;
     private String category;
@@ -72,7 +72,7 @@ public class CreateFeedBuilder {
     TemplateCreationHelper templateCreationHelper;
 
 
-    protected CreateFeedBuilder(NifiRestClient restClient, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver) {
+    protected CreateFeedBuilder(LegacyNifiRestClient restClient, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver) {
         this.restClient = restClient;
         this.feedMetadata = feedMetadata;
         this.category = feedMetadata.getCategory().getSystemName();
@@ -83,7 +83,7 @@ public class CreateFeedBuilder {
     }
 
 
-    public static CreateFeedBuilder newFeed(NifiRestClient restClient, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver) {
+    public static CreateFeedBuilder newFeed(LegacyNifiRestClient restClient, FeedMetadata feedMetadata, String templateId, PropertyExpressionResolver propertyExpressionResolver) {
         return new CreateFeedBuilder(restClient, feedMetadata, templateId, propertyExpressionResolver);
     }
 

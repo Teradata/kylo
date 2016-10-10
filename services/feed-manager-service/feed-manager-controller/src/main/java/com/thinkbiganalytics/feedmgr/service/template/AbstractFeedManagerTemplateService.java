@@ -3,7 +3,7 @@ package com.thinkbiganalytics.feedmgr.service.template;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiFeedConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
@@ -31,7 +31,7 @@ public abstract class AbstractFeedManagerTemplateService {
     private AccessController accessController;
 
     @Autowired
-    private NifiRestClient nifiRestClient;
+    private LegacyNifiRestClient nifiRestClient;
 
     public String templateIdForTemplateName(String templateName) {
 
@@ -138,7 +138,7 @@ public abstract class AbstractFeedManagerTemplateService {
     public RegisteredTemplate mergeRegisteredTemplateProperties(RegisteredTemplate registeredTemplate) {
         if (registeredTemplate != null) {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_TEMPLATES);
-            
+
             log.info("Merging properties for template {} ({})", registeredTemplate.getTemplateName(), registeredTemplate.getId());
             List<NifiProperty> properties = null;
             int matchCount = 0;

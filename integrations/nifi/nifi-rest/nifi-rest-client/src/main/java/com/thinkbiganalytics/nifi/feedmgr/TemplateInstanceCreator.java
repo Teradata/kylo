@@ -1,7 +1,7 @@
 package com.thinkbiganalytics.nifi.feedmgr;
 
 import com.google.common.collect.Lists;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
@@ -29,7 +29,7 @@ public class TemplateInstanceCreator {
     private static final Logger log = LoggerFactory.getLogger(TemplateInstanceCreator.class);
 
     private String templateId;
-    private NifiRestClient restClient;
+    private LegacyNifiRestClient restClient;
 
     private boolean createReusableFlow;
 
@@ -37,7 +37,7 @@ public class TemplateInstanceCreator {
 
     private Map<String, String> staticConfigPropertyStringMap;
 
-    public TemplateInstanceCreator(NifiRestClient restClient, String templateId, Map<String, Object> staticConfigPropertyMap, boolean createReusableFlow) {
+    public TemplateInstanceCreator(LegacyNifiRestClient restClient, String templateId, Map<String, Object> staticConfigPropertyMap, boolean createReusableFlow) {
         this.restClient = restClient;
         this.templateId = templateId;
         this.createReusableFlow = createReusableFlow;

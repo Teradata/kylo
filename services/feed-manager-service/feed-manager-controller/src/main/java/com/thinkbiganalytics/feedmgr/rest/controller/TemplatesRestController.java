@@ -15,7 +15,7 @@ import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService
 import com.thinkbiganalytics.feedmgr.support.Constants;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
@@ -54,7 +54,7 @@ public class TemplatesRestController {
     private static final Logger log = LoggerFactory.getLogger(TemplatesRestController.class);
 
     @Autowired
-    NifiRestClient nifiRestClient;
+    LegacyNifiRestClient nifiRestClient;
 
     @Autowired
     MetadataService metadataService;

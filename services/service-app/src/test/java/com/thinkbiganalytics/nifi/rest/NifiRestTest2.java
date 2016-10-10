@@ -1,6 +1,6 @@
 package com.thinkbiganalytics.nifi.rest;
 
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.config.SpringNifiRestConfiguration;
 
 import org.apache.http.NoHttpResponseException;
@@ -25,7 +25,7 @@ public class NifiRestTest2 {
 
 
     @Inject
-    NifiRestClient restClient;
+    LegacyNifiRestClient restClient;
 
     // @Test
     public void testEvent() {

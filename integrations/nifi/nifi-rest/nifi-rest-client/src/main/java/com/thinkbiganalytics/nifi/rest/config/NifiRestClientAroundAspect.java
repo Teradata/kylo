@@ -13,7 +13,7 @@ import org.aspectj.lang.annotation.Aspect;
 public class NifiRestClientAroundAspect {
 
 
-    @Around("execution(* com.thinkbiganalytics.nifi.rest.client.NifiRestClient.*(..))")
+    @Around("execution(* com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient.*(..))")
     public Object NifiRestClientAroundAspect(ProceedingJoinPoint joinPoint) throws Throwable {
         try {
             Object obj = joinPoint.proceed();

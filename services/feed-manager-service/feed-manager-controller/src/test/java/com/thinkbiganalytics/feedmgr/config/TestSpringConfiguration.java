@@ -25,7 +25,7 @@ import com.thinkbiganalytics.metadata.sla.api.ServiceLevelAgreement;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementProvider;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementScheduler;
 import com.thinkbiganalytics.metadata.sla.spi.core.InMemorySLAProvider;
-import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.security.AccessController;
 
@@ -44,7 +44,7 @@ import javax.jcr.Repository;
  */
 @Configuration
 public class TestSpringConfiguration {
-    
+
     @Bean
     public AccessController accessController() {
         return Mockito.mock(AccessController.class);
@@ -255,8 +255,8 @@ public class TestSpringConfiguration {
     }
 
     @Bean
-    public NifiRestClient nifiRestClient() {
-        return new NifiRestClient(nifiRestClientConfig());
+    public LegacyNifiRestClient nifiRestClient() {
+        return new LegacyNifiRestClient(nifiRestClientConfig());
     }
 
 

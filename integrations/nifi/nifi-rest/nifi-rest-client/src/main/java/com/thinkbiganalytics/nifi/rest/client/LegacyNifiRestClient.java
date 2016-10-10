@@ -88,15 +88,15 @@ import javax.ws.rs.core.MediaType;
  *
  * @TODO break up into separate modules for the various units of work (i.e. TemplateRestClient, FeedRestClient,  or out into separate Working classes to make this more readable
  */
-public class NifiRestClient extends JerseyRestClient implements NifiFlowVisitorClient {
+public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVisitorClient {
 
-    private static final Logger log = LoggerFactory.getLogger(NifiRestClient.class);
+    private static final Logger log = LoggerFactory.getLogger(LegacyNifiRestClient.class);
 
     private String apiPath = "/nifi-api";
 
     private NifiRestClientConfig clientConfig;
 
-    public NifiRestClient(NifiRestClientConfig config) {
+    public LegacyNifiRestClient(NifiRestClientConfig config) {
         super(config);
         this.clientConfig = config;
 
