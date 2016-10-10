@@ -75,11 +75,11 @@ public class TemplatesRestController {
     @GET
     @Produces({MediaType.APPLICATION_JSON})
     public Response getTemplates(@QueryParam("includeDetails") boolean includeDetails) {
-        TemplatesEntity templatesEntity = nifiRestClient.getTemplates(includeDetails);
+        Set<TemplateDTO> nifiTemplates = nifiRestClient.getTemplates(includeDetails);
         List<RegisteredTemplate> registeredTemplates = metadataService.getRegisteredTemplates();
 
         Set<TemplateDtoWrapper> dtos = new HashSet<>();
-        for (final TemplateDTO dto : templatesEntity.getTemplates()) {
+        for (final TemplateDTO dto : nifiTemplates) {
             RegisteredTemplate match = metadataService.getRegisteredTemplateForNifiProperties(dto.getId(), dto.getName());
             TemplateDtoWrapper wrapper = new TemplateDtoWrapper(dto);
             if (match != null) {
@@ -94,11 +94,11 @@ public class TemplatesRestController {
     @Path("/unregistered")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getUnregisteredTemplates(@QueryParam("includeDetails") boolean includeDetails) {
-        TemplatesEntity templatesEntity = nifiRestClient.getTemplates(includeDetails);
+        Set<TemplateDTO> nifiTemplates = nifiRestClient.getTemplates(includeDetails);
         List<RegisteredTemplate> registeredTemplates = metadataService.getRegisteredTemplates();
 
         Set<TemplateDtoWrapper> dtos = new HashSet<>();
-        for (final TemplateDTO dto : templatesEntity.getTemplates()) {
+        for (final TemplateDTO dto : nifiTemplates) {
             RegisteredTemplate match = metadataService.getRegisteredTemplateForNifiProperties(dto.getId(), dto.getName());
             if (match == null) {
                 dtos.add(new TemplateDtoWrapper(dto));

@@ -1,7 +1,6 @@
 package com.thinkbiganalytics.nifi.rest.client;
 
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.feedmgr.ConfigurationPropertyReplacer;
@@ -24,7 +23,6 @@ import com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitor;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
-import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
@@ -57,15 +55,9 @@ import org.apache.nifi.web.api.entity.ProcessorEntity;
 import org.apache.nifi.web.api.entity.ProvenanceEntity;
 import org.apache.nifi.web.api.entity.ProvenanceEventEntity;
 import org.apache.nifi.web.api.entity.SearchResultsEntity;
-import org.apache.nifi.web.api.entity.TemplateEntity;
-import org.apache.nifi.web.api.entity.TemplatesEntity;
-import org.glassfish.jersey.media.multipart.MultiPart;
-import org.glassfish.jersey.media.multipart.file.FileDataBodyPart;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -81,18 +73,15 @@ import javax.ws.rs.NotFoundException;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
-import javax.ws.rs.core.MediaType;
 
-/**
- * Created by sr186054 on 1/9/16.
- *
- * @TODO break up into separate modules for the various units of work (i.e. TemplateRestClient, FeedRestClient,  or out into separate Working classes to make this more readable
- */
+@Deprecated
 public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVisitorClient {
 
     private static final Logger log = LoggerFactory.getLogger(LegacyNifiRestClient.class);
 
     private String apiPath = "/nifi-api";
+
+    private NiFiRestClient client;
 
     private NifiRestClientConfig clientConfig;
 
@@ -107,6 +96,7 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return target.path(apiPath);
     }
 
+    @Deprecated
     public String getClusterType() {
         return clientConfig.getClusterType();
     }
@@ -115,113 +105,43 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
     /**
      * Gets Template data, either a quick view or including all its content
      */
-    public TemplatesEntity getTemplates(boolean includeFlow) {
-
-        TemplatesEntity nifiTemplatesEntity = get("/controller/templates", null, TemplatesEntity.class);
-
-        //get the contents and update the returned DTO with the populated snippetDTO
-        for (TemplateDTO dto : ImmutableSet.copyOf(nifiTemplatesEntity.getTemplates())) {
-            if (includeFlow) {
-                nifiTemplatesEntity.getTemplates().remove(dto);
-                TemplateDTO populatedDto = populateTemplateDTO(dto);
-                nifiTemplatesEntity.getTemplates().add(populatedDto);
-            }
-        }
-        return nifiTemplatesEntity;
-
+    @Deprecated
+    public Set<TemplateDTO> getTemplates(boolean includeFlow) {
+        return client.templates().findAll();
     }
 
-    public TemplateEntity deleteTemplate(String templateId) {
-        return delete("/controller/templates/" + templateId, null, TemplateEntity.class);
+    @Deprecated
+    public TemplateDTO deleteTemplate(String templateId) {
+        return client.templates().delete(templateId).get();
     }
 
-
-    public TemplateDTO importTemplate(String templateXml) throws IOException {
-        return importTemplate(null, templateXml);
+    @Deprecated
+    public TemplateDTO importTemplate(String templateXml) {
+        return client.templates().create(null, templateXml);
     }
 
-    public TemplateDTO importTemplate(String templateName, String templateXml) throws IOException {
-        if (templateName == null) {
-            templateName = "import_template_" + System.currentTimeMillis();
-        }
-
-        MultiPart multiPart = new MultiPart();
-        multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-        File tmpFile = File.createTempFile(templateName, ".xml");
-        FileUtils.writeStringToFile(tmpFile, templateXml);
-
-        FileDataBodyPart fileDataBodyPart = new FileDataBodyPart("template", tmpFile,
-                                                                 MediaType.APPLICATION_OCTET_STREAM_TYPE);
-        multiPart.bodyPart(fileDataBodyPart);
-        multiPart.setMediaType(MediaType.MULTIPART_FORM_DATA_TYPE);
-
-        TemplateEntity templateEntity = postMultiPart("/controller/templates", multiPart, TemplateEntity.class);
-        if (templateEntity != null) {
-            return templateEntity.getTemplate();
-        }
-        return null;
+    @Deprecated
+    public TemplateDTO importTemplate(String templateName, String templateXml) {
+        return client.templates().create(templateName, templateXml);
     }
-
-    /**
-     * Populate a Template with the contents of its Flow
-     */
-    private TemplateDTO populateTemplateDTO(TemplateDTO dto) {
-        if (dto.getSnippet() == null) {
-            TemplateDTO populatedDto = getTemplateById(dto.getId());
-            populatedDto.setId(dto.getId());
-            populatedDto.setUri(dto.getUri());
-            populatedDto.setDescription(dto.getDescription());
-            return populatedDto;
-        } else {
-            return dto;
-        }
-    }
-
 
     /**
      * return the Template as an XML string
      */
+    @Deprecated
     public String getTemplateXml(String templateId) throws NifiComponentNotFoundException {
-        try {
-            String xml = get("/controller/templates/" + templateId, null, String.class);
-            return xml;
-        } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException(templateId, NifiConstants.NIFI_COMPONENT_TYPE.TEMPLATE, e);
-        }
+        return client.templates().download(templateId)
+                .orElseThrow(() -> new NifiComponentNotFoundException(templateId, NifiConstants.NIFI_COMPONENT_TYPE.TEMPLATE, null));
     }
 
 
     /**
      * Return a template, populated along with its Flow snippet
      */
+    @Deprecated
     public TemplateDTO getTemplateById(String templateId) throws NifiComponentNotFoundException {
-        try {
-            TemplateDTO dto = get("/controller/templates/" + templateId, null, TemplateDTO.class);
-            return dto;
-        } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException(templateId, NifiConstants.NIFI_COMPONENT_TYPE.TEMPLATE, e);
-        }
-    }
-
-    public List<TemplateDTO> getTemplatesMatchingInputPortName(final String inputPortName) {
-        TemplatesEntity entity = getTemplates(true);
-        if(entity != null) {
-
-          return  Lists.newArrayList(Iterables.filter(entity.getTemplates(), new Predicate<TemplateDTO>() {
-                @Override
-                public boolean apply(TemplateDTO templateDTO) {
-                    PortDTO match = Iterables.tryFind(templateDTO.getSnippet().getInputPorts(), new Predicate<PortDTO>() {
-                        @Override
-                        public boolean apply(PortDTO o) {
-                            return o.getName().equalsIgnoreCase(inputPortName);
-                        }
-                    }).orNull();
-                    return (match != null);
-                }
-            }));
-
-        }
-        return null;
+        return client.templates().findById(templateId)
+                .orElseThrow(() -> new NifiComponentNotFoundException(templateId, NifiConstants.NIFI_COMPONENT_TYPE.TEMPLATE, null));
     }
 
     /**
@@ -229,37 +149,23 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
      * @param inputPortName
      * @return
      */
+    @Deprecated
     public Map<String,String> getTemplatesAsXmlMatchingInputPortName(final String inputPortName) {
-        Map<String,String> map = new HashMap<>();
-        List<TemplateDTO> matchingTemplates = getTemplatesMatchingInputPortName(inputPortName);
-        if(matchingTemplates != null){
-
-         for(TemplateDTO templateDTO : matchingTemplates){
-             if(!map.containsKey(templateDTO.getName())){
-              String templateXml =  getTemplateXml(templateDTO.getId());
-                 map.put(templateDTO.getName(),templateXml);
-             }
-         }
+        final Set<TemplateDTO> templates = client.templates().findByInputPortName(inputPortName);
+        final Map<String, String> result = new HashMap<>(templates.size());
+        for (TemplateDTO template : templates) {
+            client.templates().download(template.getId())
+                    .ifPresent(xml -> result.put(template.getId(), xml));
         }
-        return map;
+        return result;
     }
 
     /**
      * return a template by Name, populated with its Flow snippet If not found it returns null
      */
+    @Deprecated
     public TemplateDTO getTemplateByName(String templateName) {
-        TemplatesEntity templatesEntity = getTemplates(false);
-        TemplateDTO templateDTO = null;
-        if (templatesEntity.getTemplates() != null && !templatesEntity.getTemplates().isEmpty()) {
-            for (TemplateDTO dto : templatesEntity.getTemplates()) {
-                if (dto.getName().equalsIgnoreCase(templateName)) {
-                    templateDTO = populateTemplateDTO(dto);
-                    break;
-                }
-            }
-        }
-
-        return templateDTO;
+        return client.templates().findByName(templateName).orElse(null);
     }
 
     public FlowSnippetEntity instantiateFlowFromTemplate(String processGroupId, String templateId) throws NifiComponentNotFoundException {
