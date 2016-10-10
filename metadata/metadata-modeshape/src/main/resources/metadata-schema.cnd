@@ -35,7 +35,7 @@
 <mix='http://www.jcp.org/jcr/mix/1.0'>
 <tba = 'http://thinkbiganalytics.com/metadata'>
 <usr = 'http://thinkbiganalytics.com/pcng/usr/1.0'>
-
+<nifi = 'http://thinkbiganalytics.com/pcng/nifi/1.0'>
 
 /*
  * // Tree structure /////

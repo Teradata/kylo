@@ -8,6 +8,8 @@ import com.thinkbiganalytics.metadata.api.category.CategoryProvider;
 import com.thinkbiganalytics.metadata.api.datasource.Datasource;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceNotFoundException;
 import com.thinkbiganalytics.metadata.api.datasource.DatasourceProvider;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.extension.ExtensibleTypeProvider;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
@@ -82,6 +84,9 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     
     @Inject
     private AccessController accessController;
+
+    @Inject
+    private MetadataEventService metadataEventService;
 
     @Override
     public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
@@ -636,6 +641,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         try {
             JcrFeed feed = (JcrFeed) getFeed(feedId);
             JcrMetadataAccess.ensureCheckoutNode(feed.getNode());
+            this.metadataEventService.notify(new FeedPropertyChangeEvent(feed.getProperties(), properties));
             return feed.mergeProperties(properties);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to merge Feed Properties for Feed " + feedId, e);
