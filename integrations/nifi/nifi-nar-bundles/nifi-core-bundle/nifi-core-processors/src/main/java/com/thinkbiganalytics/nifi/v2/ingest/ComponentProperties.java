@@ -37,12 +37,11 @@ public interface ComponentProperties {
     /**
      * Common component properties
      **/
-
     PropertyDescriptor FEED_CATEGORY = new PropertyDescriptor.Builder()
         .name("System feed category")
         .description("System category of feed this processor supports")
         .required(true)
-        .defaultValue("${category}")
+        .defaultValue("${metadata.category.systemName}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -50,7 +49,7 @@ public interface ComponentProperties {
     PropertyDescriptor FEED_NAME = new PropertyDescriptor.Builder()
         .name("System feed name")
         .description("Name of feed this processor supports")
-        .defaultValue("${feed}")
+        .defaultValue("${metadata.systemFeedName}")
         .required(true)
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
@@ -60,7 +59,7 @@ public interface ComponentProperties {
         .name("Target table")
         .description("Fully qualified name of the target table")
         .required(true)
-        .defaultValue("${category}.${feed}")
+        .defaultValue("${metadata.category.systemName}.${metadata.systemFeedName}")
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .expressionLanguageSupported(true)
         .build();
@@ -131,7 +130,7 @@ public interface ComponentProperties {
     // Standard Relationships
     Relationship REL_SUCCESS = new Relationship.Builder()
         .name("success")
-        .description("Successfully created FlowFile from .")
+        .description("Successfully relationship.")
         .build();
 
     Relationship REL_FAILURE = new Relationship.Builder()
