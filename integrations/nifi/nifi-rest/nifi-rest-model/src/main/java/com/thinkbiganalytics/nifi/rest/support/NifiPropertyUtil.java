@@ -10,6 +10,7 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
@@ -20,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Created by sr186054 on 1/11/16.
@@ -90,11 +92,15 @@ public class NifiPropertyUtil {
     }
 
 
-
-
+    public static List<NifiProperty> getPropertiesForService(ControllerServiceDTO service) {
+        return service.getProperties().entrySet().stream()
+                .map(entry -> new NifiProperty(service.getParentGroupId(), service.getId(), entry.getKey(),
+                        entry.getValue(), service.getDescriptors().get(entry.getKey())))
+                .collect(Collectors.toList());
+    }
 
     public static List<NifiProperty> getPropertiesForProcessor(ProcessGroupDTO processGroup, ProcessorDTO processor) {
-        List<NifiProperty> properties = new ArrayList<NifiProperty>();
+        List<NifiProperty> properties = new ArrayList<>();
         for(Map.Entry<String,String> entry : processor.getConfig().getProperties().entrySet()) {
             NifiProperty property = new NifiProperty(processor.getParentGroupId(),processor.getId(),entry.getKey(),entry.getValue(),processor.getConfig().getDescriptors().get(entry.getKey()));
            // property.setProcessor(processor);

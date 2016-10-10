@@ -33,6 +33,7 @@
         <commons.pool2>2.4.2</commons.pool2>
         <commons.io.version>2.5</commons.io.version>
         <commons.collections>3.2.2</commons.collections>
+        <commons.csv>1.4</commons.csv>
         <elasticsearch.version>2.2.0</elasticsearch.version>
         <guava.version>19.0</guava.version>
         <hadoop.version>2.6.2</hadoop.version>
@@ -484,7 +485,6 @@
                 <version>${commons.lang3.version}</version>
             </dependency>
 
-
             <dependency>
                 <groupId>commons-io</groupId>
                 <artifactId>commons-io</artifactId>
@@ -513,6 +513,12 @@
                 <groupId>commons-collections</groupId>
                 <artifactId>commons-collections</artifactId>
                 <version>${commons.collections}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-csv</artifactId>
+                <version>${commons.csv}</version>
             </dependency>
 
             <dependency>

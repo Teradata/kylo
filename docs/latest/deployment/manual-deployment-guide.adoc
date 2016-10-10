@@ -80,11 +80,11 @@ management system. Therefore we cannot script it as part of the RPM install.
 === Run the database scripts
 The database scripts will create one schema called "thinkbig" and install to that schema. Please run the following script
 
-    $ <SETUP_DIR>/sql/mysql/setup-mysql.sh [db_user] [db_password]
+    $ <SETUP_DIR>/sql/mysql/setup-mysql.sh [db_host_or_ip] [db_user] [db_password]
 
 
     NOTE: The HDP sandbox doesn't have a password set for the root user so
-    you would run "<SETUP_DIR>/sql/mysql/setup-mysql.sh root"
+    you would run "<SETUP_DIR>/sql/mysql/setup-mysql.sh localhost root"
 
 === Install and Configure Elasticsearch
 The project includes a script to stand up a single node Elasticsearch instance to get up and running quickly. You can also leverage an existing Elasticsearch instance. For example, if

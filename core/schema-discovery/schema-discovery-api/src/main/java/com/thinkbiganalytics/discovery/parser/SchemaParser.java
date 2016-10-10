@@ -25,4 +25,8 @@ public @interface SchemaParser {
 
     String[] tags() default "";
 
+    /**
+     * Returns a client-side helper for configuring the parser
+     */
+    String clientHelper() default "";
 }

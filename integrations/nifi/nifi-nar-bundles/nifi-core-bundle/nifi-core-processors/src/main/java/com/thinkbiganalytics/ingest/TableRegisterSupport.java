@@ -1,6 +1,3 @@
-/*
- * Copyright (c) 2016. Teradata Inc.
- */
 package com.thinkbiganalytics.ingest;
 
 import com.thinkbiganalytics.util.ColumnSpec;
@@ -20,6 +17,9 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+/**
+ * Generates and execute SQL queries for creating tables.
+ */
 public class TableRegisterSupport {
 
     public static Logger logger = LoggerFactory.getLogger(TableRegisterSupport.class);
@@ -50,11 +50,30 @@ public class TableRegisterSupport {
         return result;
     }
 
-
-    public boolean registerTable(String source, String tableEntity, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs, String
-        targetTableProperties, TableType tableType) {
+    /**
+     * Registers the specified table by generating and executing a {@code CREATE TABLE} query.
+     *
+     * @param source the name of the database
+     * @param tableEntity the name of the table
+     * @param feedFormatOptions the format for the feed table
+     * @param targetFormatOptions the format for the target table
+     * @param partitions the partitions for the target table
+     * @param columnSpecs the columns for the table
+     * @param targetTableProperties the properties for the target table
+     * @param tableType the type of table
+     * @param registerDatabase {@code true} to create the database if it does not exist, or {@code false} to require an existing database
+     * @return {@code true} if the table was registered, or {@code false} if there was an error
+     */
+    public boolean registerTable(String source, String tableEntity, String feedFormatOptions, String targetFormatOptions, ColumnSpec[] partitions, ColumnSpec[] columnSpecs,
+                                 String targetTableProperties, TableType tableType, boolean registerDatabase) {
         Validate.notNull(conn);
 
+        // Register the database
+        if (registerDatabase && !registerDatabase(source)) {
+            return false;
+        }
+
+        // Register the table
         String ddl = createDDL(source, tableEntity, columnSpecs, partitions, feedFormatOptions, targetFormatOptions, targetTableProperties, tableType);
         return createTable(ddl);
     }
@@ -105,7 +124,7 @@ public class TableRegisterSupport {
         TableType[] tableTypes = new TableType[]{TableType.FEED, TableType.INVALID, TableType.VALID, TableType.MASTER};
         for (TableType tableType : tableTypes) {
             if (!existingTables.contains(tableType.deriveTablename(tableEntity))) {
-                result = registerTable(source, tableEntity, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, tblProperties, tableType) && result;
+                result = registerTable(source, tableEntity, feedFormatOptions, targetFormatOptions, partitions, columnSpecs, tblProperties, tableType, false) && result;
             }
         }
         if (!existingTables.contains(TableType.PROFILE.deriveTablename(tableEntity))) {

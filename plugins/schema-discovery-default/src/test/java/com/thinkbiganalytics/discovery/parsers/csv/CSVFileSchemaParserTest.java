@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 /**
  */
@@ -77,13 +78,19 @@ public class CSVFileSchemaParserTest {
     public void testSparse() throws Exception {
         // Test extra columns
         parser.setSeparatorChar("\t");
-        validateSchema1("col1\tcol2\tcol3\nr1v1\tr1v2\tr1v3\tr1v4\nr2v1\tr2v2\tr2v3\n");
+        try {
+            validateSchema1("col1\tcol2\tcol3\nr1v1\tr1v2\tr1v3\tr1v4\nr2v1\tr2v2\tr2v3\n");
+            fail("Expecting unrecognized format");
+        } catch (IOException e) {
+            checkInvalidFormatException(e);
+        }
     }
 
     @org.junit.Test
     public void testCSVUnixFile() throws Exception {
         parser.setAutoDetect(true);
         validateSchema2("MOCK_DATA.csv_unix.txt");
+        assertTrue("Expecting csv delim", ",".equals(parser.getSeparatorChar()));
     }
 
     @org.junit.Test
@@ -96,6 +103,7 @@ public class CSVFileSchemaParserTest {
     public void testTABUnixFile() throws Exception {
         parser.setAutoDetect(true);
         validateSchema2("MOCK_DATA.tab_unix.txt");
+        assertTrue("Expecting tab delim", "\t".equals(parser.getSeparatorChar()));
     }
 
     @org.junit.Test
@@ -105,23 +113,95 @@ public class CSVFileSchemaParserTest {
     }
 
     @org.junit.Test
-    public void testPipeDelim() throws Exception {
-        parser.setAutoDetect(true);
-        validateSchema2("MOCK_DATA.pipe.txt");
+    public void testCustom() throws Exception {
+        parser.setAutoDetect(false);
+        parser.setSeparatorChar("*");
+        validateSchema2("MOCK_DATA.custom.txt");
+
     }
 
     @org.junit.Test
-    public void testJunk() throws Exception {
+    public void testPipeDelim() throws Exception {
         parser.setAutoDetect(true);
-        validateSchema2("junk.txt");
+        validateSchema2("MOCK_DATA.pipe.txt");
+        assertTrue("Expecting pipe delim", "|".equals(parser.getSeparatorChar()));
+    }
+
+    @org.junit.Test
+    public void testSingleQuotedDelim() throws Exception {
+        parser.setAutoDetect(true);
+        validateSchema2("MOCK_DATA_csv_singlequote.txt");
+        assertTrue("Expecting comma delim", ",".equals(parser.getSeparatorChar()));
+        assertTrue("Expecting single quote char", "'".equals(parser.getQuoteChar()));
+    }
+
+    @org.junit.Test
+    public void testSingleQuoted() throws Exception {
+        // Test single quoted string with embedded quote "
+        parser.setAutoDetect(true);
+        validateSchema1("col1,col2,col3\n'\"Edoceo, Inc.',Seattle,WA\nfoo,bar,fee");
+        assertTrue("Expecting comma delim", ",".equals(parser.getSeparatorChar()));
+        assertTrue("Expecting single quote char", "'".equals(parser.getQuoteChar()));
+    }
+
+    @org.junit.Test
+    public void testEmptyStream() throws Exception {
+        parser.setAutoDetect(true);
+        try {
+            validateSchema2("missingfile.txt");
+            fail("Expecting error for missing file or empty stream");
+        } catch (NullPointerException e) {
+            // ok
+        }
+    }
+
+    @org.junit.Test
+    public void testNoDelimFound() throws Exception {
+        // Should return defaults and not error
+        parser.setAutoDetect(true);
+        try (InputStream is = CSVFileSchemaParserTest.class.getClassLoader().getResourceAsStream("junk.txt")) {
+            try {
+                HiveTableSchema schema = toHiveTableSchema(is);
+                fail("Expecting unrecognized format");
+            } catch (IOException e) {
+                checkInvalidFormatException(e);
+            }
+        }
+    }
+
+    @org.junit.Test
+    public void testUTF16() throws Exception {
+        try (InputStream is = CSVFileSchemaParserTest.class.getClassLoader().getResourceAsStream("MOCK_DATA_utf16_encoded.txt")) {
+            parser.setAutoDetect(false);
+            parser.setSeparatorChar(",");
+            parser.setQuoteChar("\t");
+            HiveTableSchema schema = toHiveTableSchema(is, Charset.forName("UTF-16LE"));
+            assertEquals("UTF-16LE", schema.getCharset());
+            List<? extends Field> fields = schema.getFields();
+            assertTrue(fields.size() == 4);
+
+            IntStream.range(0, fields.size()).forEach(idx -> {
+                assertEquals(fields.get(idx).getName(), "col" + (idx + 1));
+                assertEquals(fields.get(idx).getSampleValues().size(), 4);
+            });
+        }
+    }
+
+    private void checkInvalidFormatException(IOException e) {
+        assertTrue("Expecting unrecognized format exception", e.getLocalizedMessage().contains("Unrecognized format"));
     }
 
     private HiveTableSchema toHiveTableSchema(InputStream is) throws IOException {
-        Schema schema = parser.parse(is, Charset.defaultCharset(), TableSchemaType.HIVE);
+        return toHiveTableSchema(is, Charset.defaultCharset());
+    }
+
+    private HiveTableSchema toHiveTableSchema(InputStream is, Charset cs) throws IOException {
+        Schema schema = parser.parse(is, cs, TableSchemaType.HIVE);
         assertTrue(schema != null);
         assertTrue(schema instanceof HiveTableSchema);
         return (HiveTableSchema) schema;
     }
+
 
     private HiveTableSchema validateSchema1(String text) throws IOException {
         try (InputStream is = toInputStream(text)) {
@@ -143,7 +223,7 @@ public class CSVFileSchemaParserTest {
         try (InputStream is = CSVFileSchemaParserTest.class.getClassLoader().getResourceAsStream(filename)) {
             HiveTableSchema schema = toHiveTableSchema(is);
             List<? extends Field> fields = schema.getFields();
-            assertTrue(fields.size() == 9);
+            assertTrue("Expecting 9 fields", fields.size() == 9);
 
             IntStream.range(0, fields.size()).forEach(idx -> {
                 assertEquals("Expecting 9 samples values", 9, fields.get(idx).getSampleValues().size());
@@ -181,8 +261,5 @@ public class CSVFileSchemaParserTest {
         }
     }
 
-    @org.junit.Test
-    public void testDeriveHiveRecordFormat() throws Exception {
 
-    }
 }

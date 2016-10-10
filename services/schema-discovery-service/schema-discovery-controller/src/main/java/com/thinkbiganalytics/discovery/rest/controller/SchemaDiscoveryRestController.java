@@ -5,8 +5,9 @@
 package com.thinkbiganalytics.discovery.rest.controller;
 
 import com.thinkbiganalytics.discovery.FileParserFactory;
-import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
+import com.thinkbiganalytics.discovery.model.DefaultHiveSchema;
 import com.thinkbiganalytics.discovery.model.SchemaParserDescriptor;
+import com.thinkbiganalytics.discovery.parser.FileSchemaParser;
 import com.thinkbiganalytics.discovery.schema.Schema;
 import com.thinkbiganalytics.discovery.util.TableSchemaType;
 import com.thinkbiganalytics.policy.PolicyTransformException;
@@ -22,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
 
+import javax.inject.Singleton;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.InternalServerErrorException;

@@ -5,12 +5,15 @@
 package com.thinkbiganalytics.discovery.parsers.csv;
 
 import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.csv.QuoteMode;
 import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -39,14 +42,13 @@ class CSVAutoDetect {
         CSVFormat format = CSVFormat.DEFAULT.withAllowMissingColumnNames();
         try (BufferedReader br = new BufferedReader(new StringReader(sampleText))) {
             List<LineStats> lineStats = generateStats(br);
-            Character delim = guessDelimiter(lineStats);
-            //boolean quotes = hasQuotes(lineStats);
-            //boolean escapes = hasEscapes(lineStats);
+            Character quote = guessQuote(lineStats);
+            Character delim = guessDelimiter(lineStats, sampleText, quote);
             if (delim == null) {
                 throw new IOException("Unrecognized format");
             }
             format = format.withDelimiter(delim);
-            format.withQuoteMode(QuoteMode.MINIMAL);
+            format = format.withQuoteMode(QuoteMode.MINIMAL).withQuote(quote);
         }
         return format;
     }
@@ -74,57 +76,73 @@ class CSVAutoDetect {
         return false;
     }
 
-    private boolean hasQuotes(List<LineStats> lineStats) {
-        for (LineStats lineStat : lineStats) {
-            if (lineStat.hasQuotedStrings()) {
-                return true;
+    private Character guessQuote(List<LineStats> lineStats) {
+        Character[] quoteTypeSupported = {Character.valueOf('"'), Character.valueOf('\'')};
+        boolean match = false;
+        for (Character quoteType : quoteTypeSupported) {
+            boolean quoteTypeFound = lineStats.stream().anyMatch(lineStat -> lineStat.containsNoDelimCharOfType(quoteType));
+            if (quoteTypeFound) {
+                match = lineStats.stream().allMatch(lineStat -> lineStat.hasLegalQuotedStringOfChar(quoteType));
+            }
+            if (match) {
+                return quoteType;
             }
         }
-        return false;
+        return CSVFormat.DEFAULT.getQuoteCharacter();
     }
 
-    private Character guessDelimiter(List<LineStats> lineStats) {
-        // Guess using most frequent occurrence of delimiter
-        Character retVal = null;
-        Map<Character, Integer> frequency = new HashMap<>();
-        for (LineStats lineStat : lineStats) {
-            Map<Character, Integer> sorted = lineStat.calcDelimCountsOrdered();
-            if (sorted.size() > 0) {
-                Set<Character> keys = sorted.keySet();
-                for (Character c : keys) {
-                    Integer val = frequency.get(c);
-                    val = (val == null ? 1 : val.intValue() + 1);
-                    frequency.put(c, val);
+    private Character guessDelimiter(List<LineStats> lineStats, String value, Character quote) throws IOException {
+
+        // Assume delimiter exists in first line and compare to subsequent lines
+        if (lineStats.size() > 0) {
+            LineStats firstLineStat = lineStats.get(0);
+            Map<Character, Integer> firstLineDelimCounts = firstLineStat.calcDelimCountsOrdered();
+            if (firstLineDelimCounts != null && firstLineDelimCounts.size() > 0) {
+                List<Character> candidates = new ArrayList<>();
+                // Attempt to parse given delimiter
+                Set<Character> firstLineDelimKeys = firstLineDelimCounts.keySet();
+                for (Character delim : firstLineDelimKeys) {
+                    CSVFormat format = CSVFormat.DEFAULT.withFirstRecordAsHeader().withDelimiter(delim).withQuote(quote);
+                    try (StringReader sr = new StringReader(value)) {
+                        try (CSVParser parser = format.parse(sr)) {
+                            if (parser.getHeaderMap() != null) {
+                                int size = parser.getHeaderMap().size();
+                                List<CSVRecord> records = parser.getRecords();
+                                boolean match = records.stream().allMatch(record -> record.size() == size);
+                                if (match) {
+                                    return delim;
+                                }
+                            }
+                        }
+                    }
+                    Integer delimCount = firstLineDelimCounts.get(delim);
+                    boolean match = true;
+                    for (int i = 1; i < lineStats.size() && match; i++) {
+                        LineStats thisLine = lineStats.get(i);
+                        Integer rowDelimCount = thisLine.delimStats.get(delim);
+                        match = delimCount.equals(rowDelimCount);
+                    }
+                    if (match) {
+                        candidates.add(delim);
+                    }
+                }
+                if (candidates.size() > 0) {
+                    // All agree on a single delimiter
+                    if (candidates.size() == 1) {
+                        return candidates.get(0);
+                    } else {
+                        // Return highest delimiter from candidates
+                        for (Character delim : firstLineDelimKeys) {
+                            if (candidates.get(delim) != null) {
+                                return delim;
+                            }
+                        }
+                    }
                 }
             }
         }
-        frequency = sortMapByValue(frequency);
-        // Check if all rows agree
-        if (frequency.size() == 1) {
-            // All agree so character delim should be the sole element
-            return (frequency.keySet().iterator().next());
-        } else {
-            // Since we don't agree try the first delim found
-            Map<Character, Integer> firstDelimFreq = new HashMap<>();
-            for (LineStats lineStat : lineStats) {
-                Character firstDelim = lineStat.firstDelim;
-                if (firstDelim != null) {
-                    Integer val = firstDelimFreq.get(firstDelim);
-                    val = (val == null ? 1 : val.intValue() + 1);
-                    firstDelimFreq.put(firstDelim, val);
-                }
-            }
-            firstDelimFreq = sortMapByValue(frequency);
-            // Check if all rows agree
-            if (firstDelimFreq.size() != 1) {
-                LOG.warn("Warning: initial delimiter changes");
-            }
-            // All agree so character delim should be the sole element
-            retVal = (firstDelimFreq.keySet().iterator().next());
-        }
-        return retVal;
+        return null;
     }
-
 
     private static <K, V extends Comparable<? super V>> Map<K, V> sortMapByValue(Map<K, V> map) {
         return map.entrySet()
@@ -152,6 +170,12 @@ class CSVAutoDetect {
             for (int i = 0; i < chars.length; i++) {
                 char c = chars[i];
                 switch (c) {
+                    case ' ':
+                        increment(' ', true);
+                        break;
+                    case ':':
+                        increment(':', true);
+                        break;
                     case ';':
                         increment(';', true);
                         break;
@@ -164,8 +188,14 @@ class CSVAutoDetect {
                     case '\t':
                         increment('\t', true);
                         break;
+                    case '+':
+                        increment('+', true);
+                        break;
                     case '"':
                         increment('"', false);
+                        break;
+                    case '\'':
+                        increment('\'', false);
                         break;
                     case '<':
                         increment('<', false);
@@ -181,9 +211,14 @@ class CSVAutoDetect {
             }
         }
 
-        boolean hasQuotedStrings() {
-            Integer count = nonDelimStats.get('"');
-            return (count != null && count.intValue() % 2 == 0);
+        boolean containsNoDelimCharOfType(Character quoteType) {
+            Integer count = nonDelimStats.get(quoteType);
+            return (count != null);
+        }
+
+        boolean hasLegalQuotedStringOfChar(Character quoteType) {
+            Integer count = nonDelimStats.get(quoteType);
+            return (count == null || count.intValue() % 2 == 0);
         }
 
         void increment(Character c, boolean delim) {
