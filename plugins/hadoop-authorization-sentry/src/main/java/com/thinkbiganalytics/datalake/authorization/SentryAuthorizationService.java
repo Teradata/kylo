@@ -51,12 +51,10 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
 		// TODO Auto-generated method stub
 		
 		
-		
-		
 	}
 
 	@Override
-	public void deletePolicy(int id) {
+	public void deletePolicy(String policyName , String repositoyType) throws Exception {
 		// TODO Auto-generated method stub
 		
 	}

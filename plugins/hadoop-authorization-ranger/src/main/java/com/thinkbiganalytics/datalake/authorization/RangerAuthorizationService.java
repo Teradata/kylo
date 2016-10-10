@@ -69,7 +69,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
 		/**
 		 * Create HDFS Policy 
 		 */
-		String ranger_hdfs_policy_name = NIFI+policyName +"_"+ HDFS_REPOSITORY_TYPE;
+		String ranger_hdfs_policy_name = policyName +"_"+ HDFS_REPOSITORY_TYPE;
 		String description = "Ranger policy created for group list " +group_List.toString()+ " for resource " + hdfs_paths.toString() ;
 		String hdfs_resource = convertListToString(hdfs_paths, ",");
 
@@ -88,13 +88,13 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
 		 * Creating Hive Policy
 		 */
 
-		String ranger_hive_policy_name = NIFI+policyName+"_"+HIVE_REPOSITORY_TYPE;
+		String ranger_hive_policy_name = policyName+"_"+HIVE_REPOSITORY_TYPE;
 		String hive_description = "Ranger policy created for group list " +group_List.toString()+ " for resource " + hdfs_paths.toString() ;
 		String hive_databases = convertListToString(datebaseNames, ",");
 		String hive_tables = convertListToString(tableNames, ",");
 
 		rangerCreatePolicy = new RangerCreatePolicy();
-		
+
 		rangerCreatePolicy.setPolicyName(ranger_hive_policy_name);
 		rangerCreatePolicy.setDatabases(hive_databases);
 		rangerCreatePolicy.setTables(hive_tables);
@@ -106,33 +106,25 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
 		rangerCreatePolicy.setIsAuditEnabled(IsAuditable);
 		rangerCreatePolicy.setIsEnabled(IsEnable);
 		rangerCreatePolicy.setPermMapList(group_List, hive_permission_List);
-		
+
 		rangerRestClient.createPolicy(rangerCreatePolicy);
 
 	}
 
-
-
-	@Override
-	public void deletePolicy(int id) {
-		rangerRestClient.deletePolicy(id);
-	}
-
-
-	@Override
+		@Override
 	public void updatePolicy(String policyName ,  List<String> group_List, List<String> hdfs_paths, String permission_level,
 			List<String> datebaseNames, List<String> tableNames, List<String> hdfs_permission_list,
 			List<String> hive_permission_List) throws Exception {
 
 		int policyId = 0 ;
-		String ranger_hdfs_policy_name = NIFI+policyName +"_"+ HDFS_REPOSITORY_TYPE;
+		String ranger_hdfs_policy_name = policyName +"_"+ HDFS_REPOSITORY_TYPE;
 
 		Map<String,Object> searchHDFSCriteria = new HashMap<>();
 		searchHDFSCriteria.put(POLICY_NAME,ranger_hdfs_policy_name);
 		searchHDFSCriteria.put(REPOSITORY_TYPE, HDFS_REPOSITORY_TYPE);
 		List<HadoopAuthorizationPolicy>  hadoopPolicyList = this.searchPolicy(searchHDFSCriteria);
 
-		
+
 		if (hadoopPolicyList.size() == 0)
 		{
 			throw new UnsupportedOperationException("Ranger Plugin : Unable to get ID for Ranger HDFS Policy");	
@@ -153,7 +145,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
 				}
 			}
 		}
-		
+
 		RangerUpdatePolicy rangerUpdatePolicy = new RangerUpdatePolicy();
 
 		/**
@@ -178,7 +170,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
 		 * Update Hive Policy
 		 */
 
-		String ranger_hive_policy_name = NIFI+policyName+"_"+HIVE_REPOSITORY_TYPE;
+		String ranger_hive_policy_name = policyName+"_"+HIVE_REPOSITORY_TYPE;
 		Map<String,Object> searchHiveCriteria = new HashMap<>();
 		searchHiveCriteria.put(POLICY_NAME,ranger_hive_policy_name);
 		searchHiveCriteria.put(REPOSITORY_TYPE, HIVE_REPOSITORY_TYPE);
@@ -252,6 +244,46 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
 			loopDelim = delim;
 		}
 		return sb.toString();
+	}
+
+
+	@Override
+	public void deletePolicy(String policyName, String repositoryType) throws Exception {
+		// TODO Auto-generated method stub
+		
+		int policyId =0;
+
+		repositoryType = repositoryType.toLowerCase();
+		String ranger_hdfs_policy_name = policyName +"_"+ repositoryType;
+
+		Map<String,Object> searchHDFSCriteria = new HashMap<>();
+		searchHDFSCriteria.put(POLICY_NAME,ranger_hdfs_policy_name);
+		searchHDFSCriteria.put(REPOSITORY_TYPE, repositoryType);
+		List<HadoopAuthorizationPolicy>  hadoopPolicyList = this.searchPolicy(searchHDFSCriteria);
+
+		if (hadoopPolicyList.size() == 0)
+		{
+			throw new UnsupportedOperationException("Ranger Plugin : Unable to get ID for Ranger "+policyName+" Policy");	
+		}
+		else
+		{
+			if(hadoopPolicyList.size() > 1)
+			{
+				throw new Exception("Unable to find HDFS unique policy.");
+			}
+			else
+			{
+
+				for(HadoopAuthorizationPolicy hadoopPolicy : hadoopPolicyList)
+				{
+					policyId = hadoopPolicy.getPolicyId();
+				}
+			}
+		}
+		rangerRestClient.deletePolicy(policyId);
+		
+		
+		
 	}
 
 

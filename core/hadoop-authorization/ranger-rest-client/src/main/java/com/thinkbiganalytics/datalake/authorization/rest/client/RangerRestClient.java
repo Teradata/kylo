@@ -85,7 +85,6 @@ public class RangerRestClient extends JerseyRestClient {
 			List<HadoopAuthorizationPolicy> rangerPolicies = new ArrayList<>();
 			for (RangerPolicy rangerPolicy : rangerPoliciesfromJson.getvXPolicies()) {
 				rangerPolicies.add(rangerPolicy);
-
 			}
 
 			return rangerPolicies;

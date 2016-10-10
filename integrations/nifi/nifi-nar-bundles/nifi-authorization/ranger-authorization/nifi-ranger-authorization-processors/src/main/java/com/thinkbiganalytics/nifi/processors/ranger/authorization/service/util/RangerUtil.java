@@ -164,50 +164,10 @@ public class RangerUtil
 
 		return rangerCreatePolicy;
 
-
-
-
-		/*		HivePolicy hivePolicy = new HivePolicy();
-
-		//Add remove users/groups/permissions to test createPolicy function
-		//Passing permission list is mandatory if 'usersList' or 'groupList' is passed otherwise createPolicy() will fail
-
-
-		//Covert group string to array list.
-		List<String> groupList = Arrays.asList(group_list.split("\\s*,\\s*"));
-		@SuppressWarnings("rawtypes")
-		ArrayList groupListHive = new ArrayList(groupList);
-
-		//Covert array string to array list.
-		List<String> hive_permission_list_LIST = Arrays.asList(hive_permission_list.split("\\s*,\\s*"));
-
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		ArrayList permListHive = new ArrayList(hive_permission_list_LIST);
-
-		String ranger_policy_name = NIFI+category_name+"_"+feed_name+"_"+permission_level;
-		String tablePermission = constructResourceforPermissionHIVE(category_name , feed_name , permission_level);
-		String description = "Ranger policy created for group list " +group_list+ " for resource " + feed_name ;
-
-		hivePolicy.setPolicyName(ranger_policy_name);
-		hivePolicy.setDatabases(category_name);
-		hivePolicy.setTables(tablePermission);
-		hivePolicy.setColumns(HIVE_COLUMN_PERMISSION);
-		hivePolicy.setUdfs("");
-		hivePolicy.setDescription(description);
-		hivePolicy.setRepositoryName(hive_reposiroty_name);
-		hivePolicy.setRepositoryType(HIVE_REPOSITORY_TYPE);
-		hivePolicy.setIsEnabled(IsEnable);
-		hivePolicy.setIsAuditEnabled(IsAuditable);
-		hivePolicy.setGroupList(groupListHive);
-		hivePolicy.setPermList(permListHive);
-
-		logger.info("End of getHIVECreatePolicyJson  - Contruct Hive Policy");
-
-		return hivePolicy;
-		 */	}
+	}
 
 	private String constructResourceforPermissionHIVE(String category_name, String feed_name, String permission_level) {
-		// TODO Auto-generated method stub
+
 		String final_table_PermissionList ="";
 		if (permission_level.equalsIgnoreCase("category"))
 		{
@@ -263,40 +223,6 @@ public class RangerUtil
 
 		return rangerUpdatePolicy;
 
-		/*
-		HDFSPolicy policy = new HDFSPolicy();
-
-		//Add remove users/groups/permissions to test createPolicy function
-		//Passing permission list is mandatory if 'usersList' or 'groupList' otherwise createPolicy() will fail
-
-		//Covert group string to array list.
-		List<String> groupList = Arrays.asList(group_list.split("\\s*,\\s*"));
-		@SuppressWarnings("rawtypes")
-		ArrayList Grouparraylist = new ArrayList(groupList);
-
-		//Covert array string to array list.
-		List<String> hdfs_permission_list_LIST = Arrays.asList(hdfs_permission_list.split("\\s*,\\s*"));
-		@SuppressWarnings("rawtypes")
-		ArrayList HDFSPermissionarraylist = new ArrayList(hdfs_permission_list_LIST);
-
-		String ranger_policy_name = NIFI+category_name+"_"+feed_name+"_"+permission_level;
-		String resource_name = constructResourceforPermissionHDFS(category_name,feed_name ,permission_level);
-		String description = "Ranger policy updated for group list " +group_list+ " for resource " + resource_name ;
-
-		policy.setPolicyName(ranger_policy_name);
-		policy.setResourceName(resource_name);
-		policy.setDescription(description);
-		policy.setRepositoryName(hdfs_reposiroty_name);
-		policy.setRepositorytype(HDFS_REPOSITORY_TYPE);
-		policy.setIsEnabled(IsEnable);
-		policy.setIsRecursive(IsRecursive);
-		policy.setIsAuditEnabled(IsAuditable);
-		policy.setGroups(Grouparraylist);
-		policy.setPermissions(HDFSPermissionarraylist);
-
-		logger.info("End of getHDFSUpdatePolicyJson");
-		return policy;
-		 */
 	}
 
 	public RangerUpdatePolicy updateHivePolicy(String group_list, String permission_level, String category_name,
@@ -342,45 +268,6 @@ public class RangerUtil
 
 		return rangerUpdatePolicy;
 
-		/*
-		HivePolicy hivePolicy = new HivePolicy();
-
-		//Add remove users/groups/permissions to test createPolicy function
-		//Passing permission list is mandatory if 'usersList' or 'groupList' is passed otherwise createPolicy() will fail
-
-
-		//Covert group string to array list.
-		List<String> groupList = Arrays.asList(group_list.split("\\s*,\\s*"));
-		@SuppressWarnings("rawtypes")
-		ArrayList groupListHive = new ArrayList(groupList);
-
-		//Covert array string to array list.
-		List<String> hive_permission_list_LIST = Arrays.asList(hive_permission_list.split("\\s*,\\s*"));
-
-		@SuppressWarnings({ "rawtypes", "unchecked" })
-		ArrayList permListHive = new ArrayList(hive_permission_list_LIST);
-
-		String ranger_policy_name = NIFI+category_name+"_"+feed_name+"_"+permission_level;
-		String tablePermission = constructResourceforPermissionHIVE(category_name , feed_name , permission_level);
-		String description = "Ranger policy updated for group list " +group_list+ " for resource " + feed_name ;
-
-		hivePolicy.setPolicyName(ranger_policy_name);
-		hivePolicy.setDatabases(category_name);
-		hivePolicy.setTables(tablePermission);
-		hivePolicy.setColumns(HIVE_COLUMN_PERMISSION);
-		hivePolicy.setUdfs("");
-		hivePolicy.setDescription(description);
-		hivePolicy.setRepositoryName(hive_reposiroty_name);
-		hivePolicy.setRepositoryType(HIVE_REPOSITORY_TYPE);
-		hivePolicy.setIsEnabled(IsEnable);
-		hivePolicy.setIsAuditEnabled(IsAuditable);
-		hivePolicy.setGroupList(groupListHive);
-		hivePolicy.setPermList(permListHive);
-
-		logger.info("End of getHIVEUpdatePolicyJson  - Update Hive Policy");
-
-		return hivePolicy;
-		 */
 	}
 	public boolean checkIfPolicyExists(RangerRestClient rangerClientObject, String category_name, String feed_name, String permission_level, String repositoryType)  throws
 	Exception {
@@ -409,44 +296,8 @@ public class RangerUtil
 				return true;
 			}
 
-			/*	HadoopAuthorizationPolicy  hadoopPolicy = hadoopPolicyList.get(1);
-			if(hadoopPolicy.getPolicyCount() > 0)
-			{
-				return true;
-			}
-			else
-			{
-				return false;
-			}*/
 		}
 
-		/*String policy_serach_criteria  = NIFI+category_name+"_"+feed_name+"_"+permission_level;
-		SearchPolicy  searchPolicyObj = getSearchPolicyJson(policy_serach_criteria,repositoryType);
-		String searchResponse = rangerClientObject.searchPolicies(searchPolicyObj.searchCriteria());
-
-		JSONParser parser = new JSONParser();
-		try {
-			JSONObject json = (JSONObject) parser.parse(searchResponse);
-
-			if (json.containsKey(TOTAL_COUNT))
-			{
-				int totalPolicyCount =  Integer.parseInt(json.get(TOTAL_COUNT).toString());
-
-				if (totalPolicyCount > 0)
-				{
-					return true;
-				}
-				else
-				{
-					return false;
-				}
-			}
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logger.error("Unable to parse search policy Json " + e.getMessage());
-		}
-		 */		
 
 	}
 
@@ -459,17 +310,6 @@ public class RangerUtil
 		searchHDFSCriteria.put(POLICY_NAME,policy_serach_criteria);
 		searchHDFSCriteria.put(REPOSITORY_TYPE, repositoryType);
 		List<HadoopAuthorizationPolicy>  hadoopPolicyList = rangerClientObject.searchPolicies(searchHDFSCriteria);  //this.searchPolicy(searchHDFSCriteria);
-
-		/*if (hadoopPolicyList.size() > 1)
-		{
-			throw new UnsupportedOperationException("Unable to get ID for Ranger Policy");
-		}
-		else
-		{
-			HadoopAuthorizationPolicy  hadoopPolicy = hadoopPolicyList.get(1);
-			policyId =hadoopPolicy.getPolicyId();
-
-		}*/
 
 		if (hadoopPolicyList.size() == 0)
 		{
@@ -492,30 +332,6 @@ public class RangerUtil
 			}
 		}
 
-		/*String policy_serach_criteria  = NIFI+category_name+"_"+feed_name+"_"+permission_level;
-		SearchPolicy  searchPolicyObj = getSearchPolicyJson(policy_serach_criteria,repositoryType);
-		String searchResponse = rangerClientObject.searchPolicies(searchPolicyObj.searchCriteria());
-
-		JSONParser parser = new JSONParser();
-		try {
-			JSONObject json = (JSONObject) parser.parse(searchResponse);
-
-			if (json.containsKey(VXPOLICIES))
-			{
-				JSONArray policyJsonArray = (JSONArray) json.get(VXPOLICIES);
-				JSONObject firstPolicy =  (JSONObject) policyJsonArray.get(0);
-				policyId =  Integer.parseInt(firstPolicy.get("id").toString());
-			}
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logger.error("Unable to get policy Id  " + e.getMessage());
-			throw new ParseException(policyId, "Unable to get ranger policy ID "  + e);
-		}
-
-		logger.info("Got Policy Id -" + policyId);
-
-		 */	
 		return policyId;
 
 	}

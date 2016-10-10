@@ -2,7 +2,6 @@ package com.thinkbiganalytics.datalake.authorization;
 
 import java.util.List;
 import java.util.Map;
-
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationPolicy;
 
@@ -21,7 +20,7 @@ public interface HadoopAuthorizationService {
     
     void createPolicy(String policyName , List<String> group_List ,List<String> hdfs_paths, String permission_level , List<String> datebaseName, List<String>  tableName,  List<String>  hdfs_permission_list , List<String>  hive_permission_List );
     
-    void deletePolicy(int id);
+    void deletePolicy(String policyName , String repositoryType) throws Exception;
     
     List<HadoopAuthorizationPolicy> searchPolicy(Map<String, Object> searchCriteria);
 
