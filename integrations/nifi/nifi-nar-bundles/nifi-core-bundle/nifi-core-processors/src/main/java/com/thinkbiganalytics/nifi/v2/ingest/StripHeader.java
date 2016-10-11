@@ -11,7 +11,6 @@ import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.behavior.InputRequirement.Requirement;
 import org.apache.nifi.annotation.behavior.SideEffectFree;
-import org.apache.nifi.annotation.behavior.SupportsBatching;
 import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.PropertyDescriptor;
@@ -27,13 +26,14 @@ import org.apache.nifi.processor.util.StandardValidators;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 @EventDriven
 @SideEffectFree
-@SupportsBatching
 @Tags({"header", "text"})
 @InputRequirement(Requirement.INPUT_REQUIRED)
 @CapabilityDescription("Splits a text file(s) content from its header. The content of the header is passed through a separate relationship for validation")
@@ -123,34 +123,44 @@ public class StripHeader extends AbstractProcessor {
             session.transfer(flowFile, REL_ORIGINAL);
             return;
         }
+
+        final Map<Relationship, FlowFile> flowFileMap = new HashMap();
+
         session.read(flowFile, true, rawIn -> {
             try {
                 // Identify the byte boundary of the header
-                long bytes = headerSupport.findHeaderBoundary(headerCount, rawIn);
+                long bytes = bytes = headerSupport.findHeaderBoundary(headerCount, rawIn);
                 if (bytes < 0) {
                     logger.error("Unable to strip header {} expecting at least {} lines in file", new Object[]{flowFile, headerCount});
-                    session.transfer(flowFile, REL_FAILURE);
+                    flowFileMap.put(REL_FAILURE, flowFile);
                     return;
                 }
 
                 // Transfer header
                 final FlowFile headerFlowFile = session.clone(flowFile, 0, bytes);
-                session.transfer(headerFlowFile, REL_HEADER);
+                flowFileMap.put(REL_HEADER, headerFlowFile);
 
                 // Transfer content
                 long contentBytes = flowFile.getSize() - bytes;
                 final FlowFile contentFlowFile = session.clone(flowFile, bytes, contentBytes);
-                session.transfer(contentFlowFile, REL_CONTENT);
+                flowFileMap.put(REL_CONTENT, contentFlowFile);
 
-                session.transfer(flowFile, REL_ORIGINAL);
+
+                flowFileMap.put(REL_ORIGINAL, flowFile);
 
             } catch (IOException e) {
                 logger.error("Unable to strip header {} due to {}; routing to failure", new Object[]{flowFile, e.getLocalizedMessage()}, e);
-                session.transfer(flowFile, REL_FAILURE);
+                flowFileMap.put(REL_FAILURE, flowFile);
                 return;
             }
 
         });
+
+        // Transfer relationships
+        flowFileMap.keySet().forEach(relationship -> {
+            session.transfer(flowFileMap.get(relationship), relationship);
+        });
+
         return;
     }
 
