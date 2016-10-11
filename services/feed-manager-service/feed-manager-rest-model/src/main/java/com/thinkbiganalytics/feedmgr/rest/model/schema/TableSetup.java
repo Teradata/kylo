@@ -146,6 +146,28 @@ public class TableSetup {
         sb.append(name);
     }
 
+    private Field getFieldForName(String name){
+        if (tableSchema != null && tableSchema.getFields() != null) {
+            return tableSchema.getFields().stream().filter(field -> field.getName().equalsIgnoreCase(name)).findFirst().orElse(null);
+        }
+        return null;
+    }
+
+    /**
+     * Ensure that the partition sourceFieldDataType matches the referencing source datatype
+     * This is needed for the partitoins with the "val" as it needs to use that datatype
+     */
+    private void ensurePartitionSourceDataTypes(){
+        if(partitions != null){
+            partitions.stream().forEach(partition ->  {
+                Field field = getFieldForName(partition.getSourceField());
+                if(field != null){
+                    partition.setSourceDataType(field.getDataTypeWithPrecisionAndScale());
+                }
+            });
+        }
+    }
+
 
     @JsonIgnore
     public void updateFieldStringData() {
@@ -292,6 +314,7 @@ public class TableSetup {
     }
 
     public void updateMetadataFieldValues() {
+        ensurePartitionSourceDataTypes();
         updatePartitionStructure();
         updateFieldStructure();
         updateFieldStringData();

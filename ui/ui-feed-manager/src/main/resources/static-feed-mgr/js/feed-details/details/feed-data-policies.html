@@ -1,6 +1,6 @@
 <vertical-section-layout section-title="Table Schema & Data Policies" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancelEdit()"
                          allow-edit="vm.model.state == 'ENABLED' && vm.allowEdit" editable="vm.editableSection" keep-editable-after-save="true"
-                         ng-if="vm.model.registeredTemplate.defineTable || vm.model.registeredTemplate.dataTransformation">
+                         ng-if="vm.model.registeredTemplate.defineTable || vm.model.registeredTemplate.dataTransformation" the-form="vm.editFeedDataPoliciesForm">
 
   <readonly-section>
 
@@ -40,21 +40,46 @@
           <div flex="15" class="md-list-item-text hint">
             Field Name
           </div>
-          <div flex="15" class="md-list-item-text hint">
-            Data Type
-          </div>
           <div flex="10" class="md-list-item-text hint">
             Primary
+            <md-tooltip md-direction="top">
+              Indicate this column is the Primary Key for the row
+            </md-tooltip>
           </div>
+          <!--
           <div flex="10" class="md-list-item-text hint">
             Nullable
+            <md-tooltip md-direction="top">
+             Allow null values?
+            </md-tooltip>
+          </div>
+          -->
+          <div flex="10" class="md-list-item-text hint">
+            <span>Created<br/>Date</span>
+            <md-tooltip md-direction="top">
+              Is this field an indicator of when the row was created?
+            </md-tooltip>
+          </div>
+          <div flex="10" class="md-list-item-text hint">
+            <span>Updated<br/>Date</span>
+            <md-tooltip md-direction="top">
+              Is this field an indicator of when the row was updated?
+            </md-tooltip>
           </div>
           <div flex="10" class="md-list-item-text hint">
             Index
+            <md-tooltip md-direction="top">
+              Define what should be sent to "Global Search"
+            </md-tooltip>
           </div>
-          <div flex="10" class="md-list-item-text hint">
+          <!--
+          <div flex="5" class="md-list-item-text hint">
             Profile
+            <md-tooltip md-direction="top">
+              Should this field be profiled?
+            </md-tooltip>
           </div>
+          -->
           <div flex="15" class="md-list-item-text hint">
             Standardize
           </div>
@@ -69,26 +94,30 @@
         <div layout="row" layout-fill>
           <div flex="15" class="md-list-item-text">
             <div>{{policy.name}}</div>
-          </div>
-          <div flex="15" class="md-list-item-text">
-            <div>{{policy.dataType}}</div>
+            <div class="hint">{{vm.fieldDataTypeDisplay(vm.fieldNameMap[policy.name])}}</div>
           </div>
           <div flex="10" class="md-list-item-text ">
-            <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.primaryKey"></ng-md-icon>
-            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.primaryKey"></ng-md-icon>
+            <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].primaryKey"></ng-md-icon>
+          </div>
+          <!--
+          <div flex="10" class="md-list-item-text ">
+            <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].nullable"></ng-md-icon>
+          </div>
+          -->
+          <div flex="10" class="md-list-item-text ">
+            <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].createdTracker"></ng-md-icon>
           </div>
           <div flex="10" class="md-list-item-text ">
-            <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.nullable"></ng-md-icon>
-            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.nullable"></ng-md-icon>
+            <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].updatedTracker"></ng-md-icon>
           </div>
           <div flex="10" class="md-list-item-text ">
             <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.index"></ng-md-icon>
-            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.index"></ng-md-icon>
           </div>
-          <div flex="10" class="md-list-item-text ">
+          <!--
+          <div flex="5" class="md-list-item-text ">
             <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.profile"></ng-md-icon>
-            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.profile"></ng-md-icon>
           </div>
+          -->
           <div flex="15" class="md-list-item-text hint">
             <ul ng-if="policy.standardization != null && policy.standardization.length >0">
               <li ng-repeat="rule in policy.standardization">{{rule.name}}</li>
@@ -114,13 +143,13 @@
       <md-list-item>
         <div layout="row" layout-fill>
           <div flex="50" class="md-list-item-text hint">
-            Field Name
+            Partition Name
           </div>
           <div flex="30" class="md-list-item-text hint">
             Source Field
           </div>
           <div flex="20" class="md-list-item-text hint">
-            Formula
+            Partition Formula
           </div>
         </div>
       </md-list-item>
@@ -150,7 +179,7 @@
       <span flex="25" class="property-name">Merge Strategy</span>
 
       <div flex layout="column">
-        <span>{{vm.model.table.targetMergeStrategy}}</span>
+        <span>{{vm.mergeStrategyDisplayName()}}</span>
       </div>
     </div>
     <div layout="row" class="layout-padding-top-bottom">
@@ -169,6 +198,12 @@
 
       <div flex layout="row" layout-align="start start" layout-wrap="true">
         <div layout="row">
+          <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.model.options.skipHeader"></ng-md-icon>
+          <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.model.options.skipHeader"></ng-md-icon>
+          <span class="property-name">Skip header</span>
+        </div>
+        <!--
+        <div layout="row">
           <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.model.table.options.auditLogging"></ng-md-icon>
           <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.model.table.options.auditLogging"></ng-md-icon>
           <span class="property-name">Audit Logging</span>
@@ -178,12 +213,14 @@
           <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.model.table.options.encrypt"></ng-md-icon>
           <span class="property-name">Encrypt</span>
         </div>
+        -->
       </div>
     </div>
 
 
   </readonly-section>
   <editable-section>
+    <ng-form name="vm.editFeedDataPoliciesForm">
     <div layout="row" class="layout-padding-top-bottom" ng-if="vm.model.registeredTemplate.defineTable">
       <span flex="25" class="property-name">Source Feed Record Format</span>
 
@@ -214,21 +251,46 @@
           <div flex="15" class="md-list-item-text hint">
             Field Name
           </div>
-          <div flex="15" class="md-list-item-text hint">
-            Data Type
-          </div>
           <div flex="10" class="md-list-item-text hint">
             Primary
+            <md-tooltip md-direction="top">
+              Indicate this column is the Primary Key for the row
+            </md-tooltip>
           </div>
+          <!--
           <div flex="10" class="md-list-item-text hint">
             Nullable
+            <md-tooltip md-direction="top">
+              Allow null values?
+            </md-tooltip>
+          </div>
+          -->
+          <div flex="10" class="md-list-item-text hint">
+            <span>Created<br/>Date</span>
+            <md-tooltip md-direction="top">
+              Is this field an indicator of when the row was created?
+            </md-tooltip>
+          </div>
+          <div flex="10" class="md-list-item-text hint">
+            <span>Updated<br/>Date</span>
+            <md-tooltip md-direction="top">
+              Is this field an indicator of when the row was updated?
+            </md-tooltip>
           </div>
           <div flex="10" class="md-list-item-text hint">
             Index
+            <md-tooltip md-direction="top">
+              Define what should be sent to "Global Search"
+            </md-tooltip>
           </div>
-          <div flex="10" class="md-list-item-text hint">
+          <!--
+          <div flex="5" class="md-list-item-text hint">
             Profile
+            <md-tooltip md-direction="top">
+              Should this field be profiled?
+            </md-tooltip>
           </div>
+          -->
           <div flex="15" class="md-list-item-text hint">
             Standardize
           </div>
@@ -244,33 +306,31 @@
           <div flex="15" class="md-list-item-text">
             <md-input-container class="md-block" flex-gt-sm>
               <div>{{policy.name}}</div>
-            </md-input-container>
-          </div>
-          <div flex="15" class="md-list-item-text">
-            <md-input-container class="md-block" flex-gt-sm>
-              <div>{{policy.dataType}}</div>
+              <div class="hint">{{vm.fieldDataTypeDisplay(policy.columnDef)}}</div>
             </md-input-container>
           </div>
           <div flex="10" class="md-list-item-text ">
-            <md-input-container class="md-block" flex-gt-sm>
-              <input type="checkbox" ng-model="policy.primaryKey" aria-label="Index" disabled/>
-            </md-input-container>
+            <md-checkbox ng-model="policy.columnDef.primaryKey" aria-label="Primary Key" ng-change="vm.onChangePrimaryKey()"></md-checkbox>
+          </div>
+          <!--
+          <div flex="10" class="md-list-item-text ">
+            <md-checkbox   ng-model="policy.columnDef.nullable" aria-label="Nullable" ></md-checkbox>
+          </div>
+          -->
+          <div flex="10" class="md-list-item-text ">
+            <md-checkbox ng-model="policy.columnDef.createdTracker" aria-label="Created Tracker" ng-if="policy.columnDef.dataType == 'date' || policy.columnDef.dataType == 'timestamp'"></md-checkbox>
           </div>
           <div flex="10" class="md-list-item-text ">
-            <md-input-container class="md-block" flex-gt-sm>
-              <input type="checkbox" ng-model="policy.nullable" aria-label="Index" disabled/>
-            </md-input-container>
+            <md-checkbox ng-model="policy.columnDef.updatedTracker" aria-label="Created Tracker" ng-if="policy.columnDef.dataType == 'date' || policy.columnDef.dataType == 'timestamp'"></md-checkbox>
           </div>
           <div flex="10" class="md-list-item-text ">
-            <md-input-container class="md-block" flex-gt-sm>
-              <input type="checkbox" ng-model="policy.index" aria-label="Index"/>
-            </md-input-container>
+            <md-checkbox ng-model="policy.index" aria-label="Index"></md-checkbox>
           </div>
-          <div flex="10" class="md-list-item-text ">
-            <md-input-container class="md-block" flex-gt-sm>
-              <input type="checkbox" ng-model="policy.profile" aria-label="Profile"/>
-            </md-input-container>
+          <!--
+          <div flex="5" class="md-list-item-text ">
+            <md-checkbox ng-model="policy.profile" aria-label="Profile" ></md-checkbox>
           </div>
+          -->
           <div flex="15" class="md-list-item-text hint" layout-align="start center">
             <div ng-click="vm.showFieldRuleDialog(policy,'standardization')" style="color:#2D78B1;">
               <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;">
@@ -301,16 +361,18 @@
 
     <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
       <label class="label-small md-container-ignore">Merge Strategy</label>
-      <md-radio-group ng-model="vm.editModel.table.targetMergeStrategy" layout="row" layout-wrap="true" class="layout-padding-top">
+      <md-radio-group ng-model="vm.editModel.table.targetMergeStrategy" layout="row" layout-wrap="true" class="layout-padding-top" name="targetMergeStrategy" ng-change="vm.onChangeMergeStrategy()">
         <md-radio-button ng-repeat="strategy in vm.mergeStrategies"
                          ng-value="strategy.type"
                          aria-label="{{strategy.name}}"
-                         ng-disabled="{{strategy.disabled}}">
+                         ng-disabled="strategy.disabled">
           {{strategy.name}}
           <div class="hint">{{strategy.hint}}</div>
         </md-radio-button>
       </md-radio-group>
-
+      <div ng-messages="vm.editFeedDataPoliciesForm['targetMergeStrategy'].$error" md-auto-hide="false">
+        <div ng-message="invalidPKOption">A Primary Key must be selected to use this strategy</div>
+      </div>
     </md-input-container>
 
 
@@ -338,16 +400,21 @@
       <label class="label-small md-container-ignore">Options</label>
 
       <div layout="row" class="layout-padding-top ">
+        <md-checkbox ng-model="vm.model.options.skipHeader" aria-label="Skip Header">
+          Skip header row
+        </md-checkbox>
+        <!--
         <md-checkbox ng-model="vm.editModel.table.options.auditLogging" aria-label="Audit Logging">
           Audit Logging
         </md-checkbox>
         <md-checkbox ng-model="vm.editModel.table.options.encrypt" aria-label="Encrypt">
           Encrypt
         </md-checkbox>
+        -->
       </div>
     </md-input-container>
 
-
+    </ng-form>
   </editable-section>
 
 </vertical-section-layout>

@@ -1,6 +1,6 @@
 (function () {
 
-    var directive = function ($window, $compile) {
+    var directive = function ($window, $compile, BroadcastService) {
         return {
 
             link: function ($scope, element, attrs) {
@@ -26,12 +26,18 @@
 
                 var headerHeight = header.height();
                 angular.element($window).on("resize.stickytab", function () {
-                    // if(element.is(':visible')) {
-                    var width = angular.element('#content').width();
-                    tabsWrapper.css('width',width+'px');
-                    //  }
+                    resize();
                 });
+                BroadcastService.subscribe($scope, BroadcastConstants.CONTENT_WINDOW_RESIZED, onContentWindowResized);
 
+                function onContentWindowResized() {
+                    resize();
+                }
+
+                function resize() {
+                    var width = angular.element('#content').width();
+                    tabsWrapper.css('width', width + 'px');
+                }
 /*
                 angular.element('#content').bind("scroll", function () {
                     var header = angular.element('.page-header');

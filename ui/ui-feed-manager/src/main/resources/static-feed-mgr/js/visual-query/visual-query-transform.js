@@ -564,12 +564,12 @@
 
             if (fields !== null) {
                 FeedService.setTableFields(fields);
-                self.sparkShellService.saveGlobalState();
+               // self.sparkShellService.save();
                 deferred.resolve(true);
             } else {
                 self.query().then(function() {
                     FeedService.setTableFields(self.sparkShellService.getFields());
-                    self.sparkShellService.saveGlobalState();
+                  //  self.sparkShellService.save();
                     deferred.resolve(true);
                 });
             }

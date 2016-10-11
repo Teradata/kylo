@@ -88,7 +88,8 @@ public class FeedsController {
 
     @GET
     @Produces(MediaType.APPLICATION_JSON)
-    public List<Feed> getFeeds(@QueryParam(FeedCriteria.NAME) final String name,
+    public List<Feed> getFeeds(@QueryParam(FeedCriteria.CATEGORY) final String category,
+                               @QueryParam(FeedCriteria.NAME) final String name,
                                @QueryParam(FeedCriteria.SRC_ID) final String srcId,
                                @QueryParam(FeedCriteria.DEST_ID) final String destId) {
         LOG.debug("Get feeds {}/{}/{}", name, srcId, destId);
@@ -96,9 +97,8 @@ public class FeedsController {
         return this.metadata.read(() -> {
             this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ACCESS_FEEDS);
 
-            com.thinkbiganalytics.metadata.api.feed.FeedCriteria criteria = createFeedCriteria(name, srcId, destId);
+            com.thinkbiganalytics.metadata.api.feed.FeedCriteria criteria = createFeedCriteria(category, name, srcId, destId);
             Collection<com.thinkbiganalytics.metadata.api.feed.Feed> domainFeeds = feedProvider.getFeeds(criteria);
-
             return new ArrayList<>(Collections2.transform(domainFeeds, Model.DOMAIN_TO_FEED));
         });
     }
@@ -642,10 +642,15 @@ public class FeedsController {
         }
     }
 
-    private com.thinkbiganalytics.metadata.api.feed.FeedCriteria createFeedCriteria(String name,
+    private com.thinkbiganalytics.metadata.api.feed.FeedCriteria createFeedCriteria(String category,
+                                                                                    String name,
                                                                                     String srcId,
                                                                                     String destId) {
         com.thinkbiganalytics.metadata.api.feed.FeedCriteria criteria = feedProvider.feedCriteria();
+
+        if (StringUtils.isNotEmpty(category)) {
+            criteria.category(category);
+        }
 
         if (StringUtils.isNotEmpty(name)) {
             criteria.name(name);

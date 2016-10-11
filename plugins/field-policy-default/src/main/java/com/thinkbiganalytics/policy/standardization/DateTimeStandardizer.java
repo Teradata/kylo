@@ -31,7 +31,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
 
     public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS}
 
-    @PolicyProperty(name = "Date Format", hint = "Format Example: MM/DD/YYYY")
+    @PolicyProperty(name = "Date Format", hint = "Format Example: MM/dd/YYYY")
     private String inputDateFormat;
 
     @PolicyProperty(name = "Output Format", hint = "Choose an output format", type = PolicyPropertyTypes.PROPERTY_TYPE.select,

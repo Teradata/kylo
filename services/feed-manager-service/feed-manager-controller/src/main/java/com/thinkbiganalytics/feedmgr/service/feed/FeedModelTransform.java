@@ -88,6 +88,8 @@ public class FeedModelTransform {
                         if (existingField != null) {
                             field.setPrimaryKey(existingField.getPrimaryKey());
                             field.setNullable(existingField.getNullable());
+                            field.setCreatedTracker(existingField.getCreatedTracker());
+                            field.setUpdatedTracker(existingField.getUpdatedTracker());
                         }
                     }
                     feed.getTable().setTableSchema(schema);

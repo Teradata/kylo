@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.thinkbiganalytics.feedmgr.metadata.MetadataField;
 import com.thinkbiganalytics.feedmgr.rest.model.json.UserPropertyDeserializer;
+import com.thinkbiganalytics.feedmgr.rest.model.schema.FeedProcessingOptions;
 import com.thinkbiganalytics.feedmgr.rest.model.schema.TableSetup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.support.FeedNameUtil;
@@ -72,6 +73,8 @@ public class FeedMetadata implements UIFeed {
     @JsonProperty("reusableFeed")
     private boolean isReusableFeed;
     boolean isNew = false;
+
+    private FeedProcessingOptions options;
 
     //deprecated
     private Long version;
@@ -417,5 +420,14 @@ public class FeedMetadata implements UIFeed {
 
     public void setIsNew(boolean isNew) {
         this.isNew = isNew;
+    }
+
+
+    public FeedProcessingOptions getOptions() {
+        return options;
+    }
+
+    public void setOptions(FeedProcessingOptions options) {
+        this.options = options;
     }
 }
