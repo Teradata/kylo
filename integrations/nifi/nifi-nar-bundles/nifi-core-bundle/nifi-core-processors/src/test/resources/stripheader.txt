@@ -1,0 +1,5 @@
+name,phone,zip
+Joe,phone,95121
+Sally,phone,95121
+Sam,phone,95120
+Michael,phone,94550

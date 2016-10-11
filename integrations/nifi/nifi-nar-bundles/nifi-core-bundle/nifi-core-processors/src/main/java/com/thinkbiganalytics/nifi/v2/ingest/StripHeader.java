@@ -7,7 +7,6 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 
 import com.thinkbiganalytics.ingest.StripHeaderSupport;
 
-import org.apache.commons.io.IOUtils;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.behavior.InputRequirement.Requirement;
@@ -24,9 +23,8 @@ import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.ProcessorInitializationContext;
 import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.util.StandardValidators;
-import org.apache.nifi.stream.io.ByteArrayOutputStream;
-import org.apache.nifi.util.ObjectHolder;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -47,6 +45,7 @@ public class StripHeader extends AbstractProcessor {
         .required(true)
         .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
         .defaultValue("false")
+        .allowableValues("true", "false")
         .expressionLanguageSupported(true)
         .build();
 
@@ -117,44 +116,41 @@ public class StripHeader extends AbstractProcessor {
         final boolean isEnabled = context.getProperty(ENABLED).evaluateAttributeExpressions(flowFile).asBoolean();
         final int headerCount = context.getProperty(HEADER_LINE_COUNT).evaluateAttributeExpressions(flowFile).asInteger();
 
-        if (!isEnabled || headerCount == 0) {
+        // Empty files and no work to do will simply pass along content
+        if (!isEnabled || headerCount == 0 || flowFile.getSize() == 0L) {
+            final FlowFile contentFlowFile = session.clone(flowFile);
+            session.transfer(contentFlowFile, REL_CONTENT);
             session.transfer(flowFile, REL_ORIGINAL);
-            session.transfer(flowFile, REL_CONTENT);
             return;
         }
-        final ObjectHolder<String> errorMessage = new ObjectHolder<>(null);
-
-        final FlowFile contentFlowFile = session.create(flowFile);
-        final FlowFile headerFlowFile = session.create(flowFile);
-
-        // Read the content separating header from remainder of file
-        session.read(flowFile, rawIn -> {
-
-            final ByteArrayOutputStream headerStream = new ByteArrayOutputStream();
-            session.write(contentFlowFile, rawContentOut -> {
-                int rows = headerSupport.doStripHeader(headerCount, rawIn, headerStream, rawContentOut);
-                if (rows < headerCount) {
-                    errorMessage.set("Header Line Count is set to " + headerCount + " but file had only " + rows + " lines");
+        session.read(flowFile, true, rawIn -> {
+            try {
+                // Identify the byte boundary of the header
+                long bytes = headerSupport.findHeaderBoundary(headerCount, rawIn);
+                if (bytes < 0) {
+                    logger.error("Unable to strip header {} expecting at least {} lines in file", new Object[]{flowFile, headerCount});
+                    session.transfer(flowFile, REL_FAILURE);
                     return;
-                } else {
-                    session.write(headerFlowFile, headerOS -> {
-                        headerStream.writeTo(headerOS);
-                        IOUtils.closeQuietly(headerStream);
-                    });
                 }
-            });
-        });
 
-        if (errorMessage.get() != null) {
-            logger.error("Unable to strip header {} due to {}; routing to failure", new Object[]{flowFile, errorMessage.get()});
-            session.transfer(flowFile, REL_FAILURE);
-            session.remove(contentFlowFile);
-            session.remove(headerFlowFile);
-            return;
-        }
-        session.transfer(flowFile, REL_ORIGINAL);
-        session.transfer(contentFlowFile, REL_CONTENT);
-        session.transfer(headerFlowFile, REL_HEADER);
+                // Transfer header
+                final FlowFile headerFlowFile = session.clone(flowFile, 0, bytes);
+                session.transfer(headerFlowFile, REL_HEADER);
+
+                // Transfer content
+                long contentBytes = flowFile.getSize() - bytes;
+                final FlowFile contentFlowFile = session.clone(flowFile, bytes, contentBytes);
+                session.transfer(contentFlowFile, REL_CONTENT);
+
+                session.transfer(flowFile, REL_ORIGINAL);
+
+            } catch (IOException e) {
+                logger.error("Unable to strip header {} due to {}; routing to failure", new Object[]{flowFile, e.getLocalizedMessage()}, e);
+                session.transfer(flowFile, REL_FAILURE);
+                return;
+            }
+
+        });
         return;
     }
 

@@ -12,3 +12,4 @@ com.thinkbiganalytics.nifi.v2.metadata.TriggerFeed
 #com.thinkbiganalytics.nifi.v2.metadata.TerminateDirectoryFeed
 #com.thinkbiganalytics.nifi.v2.metadata.TerminateHiveTableFeed
 com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup
+com.thinkbiganalytics.nifi.v2.ingest.StripHeader
