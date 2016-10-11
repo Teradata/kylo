@@ -111,9 +111,9 @@ public class NifiIntegrationRestController {
         ProcessGroupDTO processGroup = nifiRestClient.getProcessGroupByName("root", TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
         if (processGroup != null) {
             //fetch the ports
-            InputPortsEntity inputPortsEntity = nifiRestClient.getInputPorts(processGroup.getId());
-            if (inputPortsEntity != null && inputPortsEntity.getInputPorts() != null && !inputPortsEntity.getInputPorts().isEmpty()) {
-                ports.addAll(inputPortsEntity.getInputPorts());
+            Set<PortDTO> inputPortsEntity = nifiRestClient.getInputPorts(processGroup.getId());
+            if (inputPortsEntity != null && !inputPortsEntity.isEmpty()) {
+                ports.addAll(inputPortsEntity);
             }
         }
         return Response.ok(ports).build();

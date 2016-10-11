@@ -20,13 +20,12 @@ import com.thinkbiganalytics.nifi.rest.support.NifiTemplateNameUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
-import org.apache.nifi.web.api.entity.ConnectionsEntity;
 import org.apache.nifi.web.api.entity.ControllerServiceEntity;
 import org.apache.nifi.web.api.entity.ControllerServicesEntity;
-import org.apache.nifi.web.api.entity.FlowSnippetEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +70,7 @@ public class TemplateCreationHelper {
         this.restClient = restClient;
     }
 
-    public FlowSnippetEntity instantiateFlowFromTemplate(String processGroupId, String templateId) throws NifiComponentNotFoundException {
+    public FlowSnippetDTO instantiateFlowFromTemplate(String processGroupId, String templateId) throws NifiComponentNotFoundException {
         return restClient.instantiateFlowFromTemplate(processGroupId, templateId);
     }
 
@@ -458,12 +457,12 @@ public class TemplateCreationHelper {
      */
     private void deleteInputPortConnections(@Nonnull final ProcessGroupDTO processGroup) throws NifiClientRuntimeException {
         // Get the list of incoming connections coming from some source to this process group
-        final ConnectionsEntity connectionsEntity = restClient.getProcessGroupConnections(processGroup.getParentGroupId());
+        final Set<ConnectionDTO> connectionsEntity = restClient.getProcessGroupConnections(processGroup.getParentGroupId());
         if (connectionsEntity == null) {
             return;
         }
 
-        final List<ConnectionDTO> connections = NifiConnectionUtil.findConnectionsMatchingDestinationGroupId(connectionsEntity.getConnections(), processGroup.getId());
+        final List<ConnectionDTO> connections = NifiConnectionUtil.findConnectionsMatchingDestinationGroupId(connectionsEntity, processGroup.getId());
         if (connections == null) {
             return;
         }
@@ -534,20 +533,18 @@ public class TemplateCreationHelper {
         //rename the feedGroup to be name+timestamp
         //TODO change to work with known version passed in (get the rename to current version -1 or something.
         processGroup.setName(getVersionedProcessGroupName(processGroup.getName()));
-        ProcessGroupEntity entity = new ProcessGroupEntity();
-        entity.setProcessGroup(processGroup);
-        restClient.updateProcessGroup(entity);
+        restClient.updateProcessGroup(processGroup);
         log.info("Renamed ProcessGroup to  {}, ", processGroup.getName());
     }
 
     public void markProcessorsAsRunning(NifiProcessGroup newProcessGroup) {
         if (newProcessGroup.isSuccess()) {
             try {
-                restClient.markProcessorGroupAsRunning(newProcessGroup.getProcessGroupEntity().getProcessGroup());
+                restClient.markProcessorGroupAsRunning(newProcessGroup.getProcessGroupEntity());
             } catch (NifiClientRuntimeException e) {
                 String errorMsg = "Unable to mark feed as " + NifiProcessUtil.PROCESS_STATE.RUNNING + ".";
                 newProcessGroup
-                    .addError(newProcessGroup.getProcessGroupEntity().getProcessGroup().getId(), "", NifiError.SEVERITY.WARN, errorMsg,
+                    .addError(newProcessGroup.getProcessGroupEntity().getId(), "", NifiError.SEVERITY.WARN, errorMsg,
                               "Process State");
                 newProcessGroup.setSuccess(false);
             }
@@ -555,7 +552,7 @@ public class TemplateCreationHelper {
     }
 
 
-    public void markConnectionPortsAsRunning(ProcessGroupEntity entity) {
+    public void markConnectionPortsAsRunning(ProcessGroupDTO entity) {
 
         restClient.markConnectionPortsAsRunning(entity);
     }

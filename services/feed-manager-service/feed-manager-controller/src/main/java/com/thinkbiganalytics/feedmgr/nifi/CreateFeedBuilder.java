@@ -6,9 +6,9 @@ import com.thinkbiganalytics.nifi.feedmgr.FeedCreationException;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
+import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiClientRuntimeException;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
-import com.thinkbiganalytics.nifi.rest.client.LegacyNifiRestClient;
 import com.thinkbiganalytics.nifi.rest.model.NifiError;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessorSchedule;
@@ -136,8 +136,8 @@ public class CreateFeedBuilder {
 
     private void connectFeedToReusableTemplate(String feedGroupId) throws NifiComponentNotFoundException {
         ProcessGroupDTO reusableTemplateCategory = restClient.getProcessGroupByName("root", reusableTemplateCategoryName);
-        ProcessGroupEntity feedProcessGroup = restClient.getProcessGroup(feedGroupId, false, false);
-        String feedCategoryId = feedProcessGroup.getProcessGroup().getParentGroupId();
+        ProcessGroupDTO feedProcessGroup = restClient.getProcessGroup(feedGroupId, false, false);
+        String feedCategoryId = feedProcessGroup.getParentGroupId();
         if(reusableTemplateCategory == null){
             throw new NifiClientRuntimeException("Unable to find the Reusable Template Group. Please ensure NiFi has the 'reusable_templates' processgroup and appropriate reusable flow for this feed."
                                                  + " You may need to import the base reusable template for this feed.");
@@ -149,8 +149,8 @@ public class CreateFeedBuilder {
     }
 
     private void ensureInputPortsForReuseableTemplate(String feedGroupId) throws NifiComponentNotFoundException {
-        ProcessGroupEntity template = restClient.getProcessGroup(feedGroupId, false, false);
-        String categoryId = template.getProcessGroup().getParentGroupId();
+        ProcessGroupDTO template = restClient.getProcessGroup(feedGroupId, false, false);
+        String categoryId = template.getParentGroupId();
         restClient.createReusableTemplateInputPort(categoryId, feedGroupId);
 
     }
@@ -185,12 +185,12 @@ public class CreateFeedBuilder {
                     updateProcessGroupProperties(processGroupId);
 
                     //Fetch the Feed Group now that it has the flow in it
-                    ProcessGroupEntity entity = restClient.getProcessGroup(processGroupId, true, true);
+                    ProcessGroupDTO entity = restClient.getProcessGroup(processGroupId, true, true);
 
                     ProcessorDTO input = fetchInputProcessorForProcessGroup(entity);
-                    ProcessorDTO cleanupProcessor = NifiProcessUtil.findFirstProcessorsByType(NifiProcessUtil.getInputProcessors(entity.getProcessGroup()),
+                    ProcessorDTO cleanupProcessor = NifiProcessUtil.findFirstProcessorsByType(NifiProcessUtil.getInputProcessors(entity),
                                                                                               "com.thinkbiganalytics.nifi.v2.metadata.TriggerCleanup");
-                    List<ProcessorDTO> nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity.getProcessGroup());
+                    List<ProcessorDTO> nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
 
                     //update any references to the controller services and try to assign the value to an enabled service if it is not already
                     if (input != null) {
@@ -203,13 +203,13 @@ public class CreateFeedBuilder {
                     //refetch processors for updated errors
                     entity = restClient.getProcessGroup(processGroupId, true, true);
                     input = fetchInputProcessorForProcessGroup(entity);
-                    nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity.getProcessGroup());
+                    nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
 
                     newProcessGroup = new NifiProcessGroup(entity, input, nonInputProcessors);
 
                     //Validate and if invalid Delete the process group
                     if (newProcessGroup.hasFatalErrors()) {
-                        restClient.deleteProcessGroup(entity.getProcessGroup());
+                        restClient.deleteProcessGroup(entity);
                         // cleanupControllerServices();
                         newProcessGroup.setSuccess(false);
                     } else {
@@ -218,7 +218,7 @@ public class CreateFeedBuilder {
                         updateFeedSchedule(newProcessGroup, input);
 
                         //disable all inputs
-                       restClient.disableInputProcessors(newProcessGroup.getProcessGroupEntity().getProcessGroup().getId());
+                       restClient.disableInputProcessors(newProcessGroup.getProcessGroupEntity().getId());
                        //mark everything else as running
                         templateCreationHelper.markProcessorsAsRunning(newProcessGroup);
                        //if desired start the input processor
@@ -274,9 +274,9 @@ public class CreateFeedBuilder {
         }
     }
 
-    private ProcessorDTO fetchInputProcessorForProcessGroup(ProcessGroupEntity entity) {
+    private ProcessorDTO fetchInputProcessorForProcessGroup(ProcessGroupDTO entity) {
         // Find first processor by type
-        final List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity.getProcessGroup());
+        final List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity);
         final ProcessorDTO input = Optional.ofNullable(NifiProcessUtil.findFirstProcessorsByType(inputProcessors, inputProcessorType))
                 .orElseGet(() -> inputProcessors.stream()
                         .filter(processor -> !processor.getType().equals(NifiProcessUtil.CLEANUP_TYPE))
@@ -302,10 +302,10 @@ public class CreateFeedBuilder {
         }
     }
 
-    public ProcessGroupEntity rollback() throws FeedRollbackException {
+    public ProcessGroupDTO rollback() throws FeedRollbackException {
         if (newProcessGroup != null) {
             try {
-                restClient.deleteProcessGroup(newProcessGroup.getProcessGroupEntity().getProcessGroup());
+                restClient.deleteProcessGroup(newProcessGroup.getProcessGroupEntity());
             } catch (NifiClientRuntimeException e) {
                 log.error("Unable to delete the ProcessGroup on rollback {} ", e.getMessage());
             }
@@ -313,7 +313,7 @@ public class CreateFeedBuilder {
 
         String
             parentGroupId =
-            newProcessGroup != null ? newProcessGroup.getProcessGroupEntity().getProcessGroup().getParentGroupId()
+            newProcessGroup != null ? newProcessGroup.getProcessGroupEntity().getParentGroupId()
                                     : (previousFeedProcessGroup != null ? previousFeedProcessGroup.getProcessGroup().getParentGroupId() : null);
         try {
             if (StringUtils.isNotBlank(parentGroupId)) {
@@ -321,9 +321,7 @@ public class CreateFeedBuilder {
                 //rename this group to be something else if for some reason we were not able to delete it
                 if (feedGroup != null) {
                     feedGroup.setName(feedGroup.getName() + ".rollback - " + new Date().getTime());
-                    ProcessGroupEntity entity = new ProcessGroupEntity();
-                    entity.setProcessGroup(feedGroup);
-                    restClient.updateProcessGroup(entity);
+                    restClient.updateProcessGroup(feedGroup);
                     feedGroup = restClient.getProcessGroupByName(parentGroupId, feedName);
                 }
 
@@ -332,29 +330,29 @@ public class CreateFeedBuilder {
                 if (feedGroup == null) {
                     if (previousFeedProcessGroup != null) {
 
-                        ProcessGroupEntity entity = restClient.getProcessGroup(previousFeedProcessGroup.getProcessGroup().getId(), false, false);
+                        ProcessGroupDTO entity = restClient.getProcessGroup(previousFeedProcessGroup.getProcessGroup().getId(), false, false);
                         if (entity != null) {
-                            entity.getProcessGroup().setName(feedName);
+                            entity.setName(feedName);
                             entity = restClient.updateProcessGroup(entity);
 
-                            updatePortConnectionsForProcessGroup(entity.getProcessGroup().getId());
+                            updatePortConnectionsForProcessGroup(entity.getId());
 
                             //disable all inputs
-                            restClient.disableInputProcessors(entity.getProcessGroup().getId());
+                            restClient.disableInputProcessors(entity.getId());
 
                             //mark everything else as running
-                            restClient.markProcessorGroupAsRunning(entity.getProcessGroup());
+                            restClient.markProcessorGroupAsRunning(entity);
                             if (hasConnectionPorts()) {
                                 templateCreationHelper.markConnectionPortsAsRunning(entity);
                             }
 
                             //Set the state correctly for the inputs
                             if(enabled) {
-                                restClient.setInputProcessorState(entity.getProcessGroup().getId(),
+                                restClient.setInputProcessorState(entity.getId(),
                                                                   inputProcessorType, NifiProcessUtil.PROCESS_STATE.RUNNING);
                             }
                             else {
-                                restClient.setInputProcessorState(entity.getProcessGroup().getId(),
+                                restClient.setInputProcessorState(entity.getId(),
                                                                   inputProcessorType, NifiProcessUtil.PROCESS_STATE.STOPPED);
                             }
                             return entity;
@@ -377,8 +375,8 @@ public class CreateFeedBuilder {
 
         if (categoryGroup == null) {
             try {
-                ProcessGroupEntity group = restClient.createProcessGroup(category);
-                categoryGroup = group.getProcessGroup();
+                ProcessGroupDTO group = restClient.createProcessGroup(category);
+                categoryGroup = group;
             } catch (Exception e) {
                 //Swallow exception... it will be handled later
             }
@@ -403,9 +401,9 @@ public class CreateFeedBuilder {
             }
         }
 
-        ProcessGroupEntity group = restClient.createProcessGroup(categoryGroup.getId(), feedName);
+        ProcessGroupDTO group = restClient.createProcessGroup(categoryGroup.getId(), feedName);
         if (group != null) {
-            processGroupId = group.getProcessGroup().getId();
+            processGroupId = group.getId();
         }
         return processGroupId;
     }
@@ -417,9 +415,9 @@ public class CreateFeedBuilder {
     private void updateProcessGroupProperties(String processGroupId) throws FeedCreationException {
         List<NifiProperty> propertiesToUpdate = restClient.getPropertiesForProcessGroup(processGroupId);
         //get the Root processGroup
-        ProcessGroupEntity rootProcessGroup = restClient.getRootProcessGroup();
+        ProcessGroupDTO rootProcessGroup = restClient.getRootProcessGroup();
         //get this process group
-        ProcessGroupEntity activeProcessGroupName = restClient.getProcessGroup(processGroupId, false, false);
+        ProcessGroupDTO activeProcessGroupName = restClient.getProcessGroup(processGroupId, false, false);
 
         modifiedProperties = new ArrayList<>();
         //resolve the static properties
@@ -427,9 +425,9 @@ public class CreateFeedBuilder {
         List<NifiProperty> modifiedStaticProperties = propertyExpressionResolver.resolveStaticProperties(propertiesToUpdate);
         // now apply any of the incoming metadata properties to this
 
-        List<NifiProperty> modifiedFeedMetadataProperties = NifiPropertyUtil.matchAndSetPropertyValues(rootProcessGroup.getProcessGroup().getName(),
-                                                                                                       activeProcessGroupName.getProcessGroup().getName(),
-                                                                                                       propertiesToUpdate, properties);
+        List<NifiProperty> modifiedFeedMetadataProperties = NifiPropertyUtil.matchAndSetPropertyValues(rootProcessGroup.getName(),
+                                                                        activeProcessGroupName.getName(),
+                                                                        propertiesToUpdate, properties);
         modifiedProperties.addAll(modifiedStaticProperties);
         modifiedProperties.addAll(modifiedFeedMetadataProperties);
         restClient.updateProcessGroupProperties(modifiedProperties);
@@ -447,7 +445,7 @@ public class CreateFeedBuilder {
 
     private void setInputProcessorState(NifiProcessGroup newProcessGroup, ProcessorDTO input, NifiProcessUtil.PROCESS_STATE state) {
 
-            setInputProcessorState(newProcessGroup.getProcessGroupEntity().getProcessGroup(),
+            setInputProcessorState(newProcessGroup.getProcessGroupEntity(),
                                               input,state);
     }
 
@@ -472,7 +470,7 @@ public class CreateFeedBuilder {
                 "Unable to mark group as " + state + " for " + input.getName() + "("
                 + inputProcessorType + ").";
             newProcessGroup
-                .addError(newProcessGroup.getProcessGroupEntity().getProcessGroup().getId(), input.getId(), NifiError.SEVERITY.WARN,
+                .addError(newProcessGroup.getProcessGroupEntity().getId(), input.getId(), NifiError.SEVERITY.WARN,
                           errorMsg, "Process State");
             newProcessGroup.setSuccess(false);
         }

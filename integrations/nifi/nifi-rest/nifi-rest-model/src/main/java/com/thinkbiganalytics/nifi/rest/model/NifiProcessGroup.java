@@ -6,8 +6,8 @@ import com.google.common.collect.Lists;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessorValidationUtil;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
-import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,7 +18,7 @@ import java.util.List;
 public class NifiProcessGroup {
 
     public static String CONTROLLER_SERVICE_CATEGORY = "Controller Service";
-    private ProcessGroupEntity processGroupEntity;
+    private ProcessGroupDTO processGroupEntity;
 
     private List<ProcessorDTO> activeProcessors;
 
@@ -36,7 +36,7 @@ public class NifiProcessGroup {
 
     }
 
-    public NifiProcessGroup(ProcessGroupEntity processGroupEntity, ProcessorDTO inputProcessor, List<ProcessorDTO> downstreamProcessors) {
+    public NifiProcessGroup(ProcessGroupDTO processGroupEntity, ProcessorDTO inputProcessor, List<ProcessorDTO> downstreamProcessors) {
         this.processGroupEntity = processGroupEntity;
         this.inputProcessor = inputProcessor;
         this.downstreamProcessors = downstreamProcessors;
@@ -44,7 +44,7 @@ public class NifiProcessGroup {
         this.success =  !this.hasFatalErrors();
     }
 
-    public NifiProcessGroup(ProcessGroupEntity processGroupEntity) {
+    public NifiProcessGroup(ProcessGroupDTO processGroupEntity) {
         this.processGroupEntity = processGroupEntity;
         populateErrors();
 
@@ -53,14 +53,14 @@ public class NifiProcessGroup {
 
     private void populateErrors(){
         this.errors = new ArrayList<NifiProcessorDTO>();
-        if(this.inputProcessor != null && this.processGroupEntity  != null && this.processGroupEntity.getProcessGroup() != null)
+        if(this.inputProcessor != null && this.processGroupEntity != null)
         {
             NifiProcessorDTO error = NifiProcessorValidationUtil.getProcessorValidationErrors(this.inputProcessor, false);
             if(error != null && !error.getValidationErrors().isEmpty()) {
                 errors.add(error);
             }
         }
-        if(this.downstreamProcessors != null && this.processGroupEntity  != null && this.processGroupEntity.getProcessGroup() != null)
+        if(this.downstreamProcessors != null && this.processGroupEntity != null)
         {
             List<NifiProcessorDTO> processorErrors = NifiProcessorValidationUtil.getProcessorValidationErrors(this.downstreamProcessors, true);
             if(processorErrors != null) {
@@ -90,16 +90,16 @@ public class NifiProcessGroup {
 
 
     public void addError(NifiError.SEVERITY severity,String error, String errorType){
-       addError(processGroupEntity.getProcessGroup().getName(),"",severity,error,errorType);
+       addError(processGroupEntity.getName(),"",severity,error,errorType);
 
     }
 
     public void addError(NifiError error){
-        addError(processGroupEntity.getProcessGroup().getName(),"",error.getSeverity(),error.getMessage(),error.getCategory());
+        addError(processGroupEntity.getName(),"",error.getSeverity(),error.getMessage(),error.getCategory());
 
     }
 
-    public ProcessGroupEntity getProcessGroupEntity() {
+    public ProcessGroupDTO getProcessGroupEntity() {
         return processGroupEntity;
     }
 

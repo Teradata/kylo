@@ -27,7 +27,7 @@ public interface NiFiTemplatesRestClient {
      * Deletes a template.
      *
      * @param id the template id
-     * @return the template, if deleted
+     * @return the template, if found
      */
     @Nonnull
     Optional<TemplateDTO> delete(@Nonnull String id);

@@ -9,6 +9,14 @@ import javax.annotation.Nullable;
 public interface NiFiRestClient {
 
     /**
+     * Gets the client for accessing process groups, including creating components, instantiating a template, and uploading a template.
+     *
+     * @return the NiFi Process Groups client
+     */
+    @Nonnull
+    NiFiProcessGroupsRestClient processGroups();
+
+    /**
      * Gets the client for downloading or deleting templates.
      *
      * @return the NiFi Templates client

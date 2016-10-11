@@ -56,8 +56,8 @@ public class TemplateInstanceCreator {
     }
 
     private void ensureInputPortsForReuseableTemplate(String processGroupId) {
-        ProcessGroupEntity template = restClient.getProcessGroup(processGroupId, false, false);
-        String categoryId = template.getProcessGroup().getParentGroupId();
+        ProcessGroupDTO template = restClient.getProcessGroup(processGroupId, false, false);
+        String categoryId = template.getParentGroupId();
         restClient.createReusableTemplateInputPort(categoryId, processGroupId);
     }
 
@@ -73,13 +73,13 @@ public class TemplateInstanceCreator {
                 TemplateCreationHelper templateCreationHelper = new TemplateCreationHelper(this.restClient);
                 String processGroupId = null;
 
-                ProcessGroupEntity group = null;
+                ProcessGroupDTO group = null;
                 if (isCreateReusableFlow()) {
                     log.info("Creating a new Reusable flow instance for template: {} ", template.getName());
                     //1 get/create the parent "reusable_templates" processgroup
                     ProcessGroupDTO reusableParentGroup = restClient.getProcessGroupByName("root", TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
                     if (reusableParentGroup == null) {
-                        reusableParentGroup = restClient.createProcessGroup("root", TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME).getProcessGroup();
+                        reusableParentGroup = restClient.createProcessGroup("root", TemplateCreationHelper.REUSABLE_TEMPLATES_PROCESS_GROUP_NAME);
                     }
                     ProcessGroupDTO thisGroup = restClient.getProcessGroupByName(reusableParentGroup.getId(), template.getName());
                     if (thisGroup != null) {
@@ -94,7 +94,7 @@ public class TemplateInstanceCreator {
                     group = restClient.createProcessGroup(tmpName);
                     log.info("Creating a temporary process group with name {} for template {} ", tmpName, template.getName());
                 }
-                processGroupId = group.getProcessGroup().getId();
+                processGroupId = group.getId();
                 if (StringUtils.isNotBlank(processGroupId)) {
                     //snapshot the existing controller services
                     templateCreationHelper.snapshotControllerServiceReferences();
@@ -111,11 +111,11 @@ public class TemplateInstanceCreator {
                     //mark the new services that were created as a result of creating the new flow from the template
                     templateCreationHelper.identifyNewlyCreatedControllerServiceReferences();
 
-                    ProcessGroupEntity entity = restClient.getProcessGroup(processGroupId, true, true);
+                    ProcessGroupDTO entity = restClient.getProcessGroup(processGroupId, true, true);
 
                     //replace static properties and inject values into the flow
 
-                    List<NifiProperty> processorProperties = NifiPropertyUtil.getProperties(entity.getProcessGroup());
+                    List<NifiProperty> processorProperties = NifiPropertyUtil.getProperties(entity);
                     if (processorProperties != null) {
                         boolean didReplace = false;
                         for (NifiProperty property : processorProperties) {
@@ -133,10 +133,10 @@ public class TemplateInstanceCreator {
                     }
 
                     //identify the various processors (first level initial processors)
-                    List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity.getProcessGroup());
+                    List<ProcessorDTO> inputProcessors = NifiProcessUtil.getInputProcessors(entity);
 
                     ProcessorDTO input = null;
-                    List<ProcessorDTO> nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity.getProcessGroup());
+                    List<ProcessorDTO> nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
 
                     //if the input is null attempt to get the first input available on the template
                     if (input == null && inputProcessors != null && !inputProcessors.isEmpty()) {
@@ -154,7 +154,7 @@ public class TemplateInstanceCreator {
                     log.info("Controller service validation complete");
                     //refetch processors for updated errors
                     entity = restClient.getProcessGroup(processGroupId, true, true);
-                    nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity.getProcessGroup());
+                    nonInputProcessors = NifiProcessUtil.getNonInputProcessors(entity);
 
                     ///make the input/output ports in the category group as running
                     if (isCreateReusableFlow()) {

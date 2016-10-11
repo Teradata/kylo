@@ -164,9 +164,9 @@ public class FeedRestController {
         Map<String, Set<PortDTO>> portMap = new HashMap<>();
         for (FeedMetadata metadata : reusableFeeds) {
             //fetch the ports
-            InputPortsEntity inputPortsEntity = nifiRestClient.getInputPorts(metadata.getNifiProcessGroupId());
+            Set<PortDTO> inputPortsEntity = nifiRestClient.getInputPorts(metadata.getNifiProcessGroupId());
             if (inputPortsEntity != null) {
-                portMap.put(metadata.getFeedName(), inputPortsEntity.getInputPorts());
+                portMap.put(metadata.getFeedName(), inputPortsEntity);
             }
         }
         return Response.ok(portMap).build();

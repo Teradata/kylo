@@ -122,7 +122,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
         feed = new NifiFeed(feedMetadata, entity);
         if (entity.isSuccess()) {
-            feedMetadata.setNifiProcessGroupId(entity.getProcessGroupEntity().getProcessGroup().getId());
+            feedMetadata.setNifiProcessGroupId(entity.getProcessGroupEntity().getId());
 
             try {
                 saveFeed(feedMetadata);
