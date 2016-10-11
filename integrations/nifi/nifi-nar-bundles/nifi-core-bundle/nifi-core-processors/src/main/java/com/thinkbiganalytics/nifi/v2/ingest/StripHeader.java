@@ -44,7 +44,6 @@ public class StripHeader extends AbstractProcessor {
         .required(true)
         .addValidator(StandardValidators.BOOLEAN_VALIDATOR)
         .defaultValue("false")
-        .allowableValues("true", "false")
         .expressionLanguageSupported(true)
         .build();
 
