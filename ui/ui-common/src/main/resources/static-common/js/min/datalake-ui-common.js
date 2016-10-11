@@ -171,7 +171,7 @@ var ArrayUtils = (function () {
  * to notify call this:
  * -  BroadcastService.notify('SOME_EVENT,{optional data object},### optional timeout);
  */
-angular.module(COMMON_APP_MODULE_NAME).factory('BroadcastService', function($rootScope, $timeout) {
+angular.module(COMMON_APP_MODULE_NAME).factory('BroadcastService', function ($rootScope, $timeout) {
     /**
      * map to check if multiple events come in for those that {@code data.notifyAfterTime}
      * to ensure multiple events are not fired.
@@ -186,11 +186,11 @@ angular.module(COMMON_APP_MODULE_NAME).factory('BroadcastService', function($roo
          * @param data
          * @param waitTime
          */
-        notify: function(event, data, waitTime) {
-            if(waitTime == undefined){
-                waitTime =0;
+        notify: function (event, data, waitTime) {
+            if (waitTime == undefined) {
+                waitTime = 0;
             }
-            if(waitingEvents[event] == undefined) {
+            if (waitingEvents[event] == undefined) {
                 waitingEvents[event] = event;
                 $timeout(function () {
                     $rootScope.$emit(event, data);
@@ -213,10 +213,10 @@ angular.module(COMMON_APP_MODULE_NAME).factory('BroadcastService', function($roo
     return data;
 });
 
-
 var BroadcastConstants = (function () {
     function BroadcastConstants() {
     }
+
     BroadcastConstants.CONTENT_WINDOW_RESIZED = 'CONTENT_WINDOW_RESIZED';
 
     return BroadcastConstants;
@@ -2052,15 +2052,13 @@ var SortUtils = (function () {
                 });
                 BroadcastService.subscribe($scope, BroadcastConstants.CONTENT_WINDOW_RESIZED, onContentWindowResized);
 
-
-                function onContentWindowResized(){
-                    console.log('RESIZED!!!')
-                   resize();
+                function onContentWindowResized() {
+                    resize();
                 }
 
-                function resize(){
+                function resize() {
                     var width = angular.element('#content').width();
-                    tabsWrapper.css('width',width+'px');
+                    tabsWrapper.css('width', width + 'px');
                 }
 /*
                 angular.element('#content').bind("scroll", function () {
