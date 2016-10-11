@@ -31,7 +31,6 @@
                 BroadcastService.subscribe($scope, BroadcastConstants.CONTENT_WINDOW_RESIZED, onContentWindowResized);
 
                 function onContentWindowResized() {
-                    console.log('RESIZED!!!')
                     resize();
                 }
 
