@@ -40,7 +40,6 @@ import org.apache.nifi.web.api.entity.ConnectionsEntity;
 import org.apache.nifi.web.api.entity.ControllerServiceEntity;
 import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
 import org.apache.nifi.web.api.entity.ControllerServicesEntity;
-import org.apache.nifi.web.api.entity.ControllerStatusEntity;
 import org.apache.nifi.web.api.entity.DropRequestEntity;
 import org.apache.nifi.web.api.entity.Entity;
 import org.apache.nifi.web.api.entity.InputPortEntity;
@@ -215,10 +214,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
 
     }
 
-    public ControllerStatusEntity getControllerStatus() {
-        return get("/controller/status", null, ControllerStatusEntity.class);
-    }
-
     /**
      * Gets the current Revision and Version of Nifi instance. This is needed when performing an update to pass over the revision.getVersion() for locking purposes
      */
@@ -302,34 +297,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return client.processGroups().create(parentGroupId, name);
     }
 
-    /**
-     * //mark everything as running //http://localhost:8079/nifi-api/controller/process-groups/2f0e55cb-34af-4e5b-8bf9-38909ea3af51/processors/bbef9df7-ff67-49fb-aa2e-3200ece92128
-     */
-    public List<ProcessorDTO> markProcessorsAsRunning(List<ProcessorDTO> processors) {
-        Entity status = getControllerRevision();
-        List<ProcessorDTO> dtos = new ArrayList<>();
-        for (ProcessorDTO dto : processors) {
-            if (NifiProcessUtil.PROCESS_STATE.STOPPED.name().equalsIgnoreCase(dto.getState())) {
-                //start it
-                ProcessorEntity entity = new ProcessorEntity();
-                dto.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-                entity.setProcessor(dto);
-                entity.setRevision(status.getRevision());
-
-                updateEntityForSave(entity);
-                ProcessorEntity
-                    processorEntity =
-                    put("/controller/process-groups/" + dto.getParentGroupId() + "/processors/" + dto.getId(), entity,
-                        ProcessorEntity.class);
-                if (processorEntity != null) {
-                    dtos.add(processorEntity.getProcessor());
-                }
-            }
-        }
-        return dtos;
-
-    }
-
     public ProcessGroupEntity markProcessorGroupAsRunning(ProcessGroupDTO groupDTO) {
         ProcessGroupEntity entity = new ProcessGroupEntity();
         entity.setProcessGroup(groupDTO);
@@ -407,23 +374,16 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return null;
     }
 
-    public ProcessGroupEntity stopAllProcessors(String processGroupId, String parentProcessGroupId) throws NifiClientRuntimeException {
-        ProcessGroupEntity entity = new ProcessGroupEntity();
-        entity.setProcessGroup(getProcessGroup(processGroupId, false, false));
-        entity.getProcessGroup().setRunning(false);
-        updateEntityForSave(entity);
-        return put("/controller/process-groups/" + parentProcessGroupId + "/process-group-references/" + processGroupId,
-                   entity, ProcessGroupEntity.class);
+    @Deprecated
+    public ProcessGroupDTO stopAllProcessors(String processGroupId, String parentProcessGroupId) throws NifiClientRuntimeException {
+        client.processGroups().schedule(processGroupId, parentProcessGroupId, NiFiComponentState.RUNNING);
+        return client.processGroups().findById(processGroupId, false, false).get();
     }
 
-
-    public ProcessGroupEntity startAll(String processGroupId, String parentProcessGroupId) throws NifiClientRuntimeException {
-        ProcessGroupEntity entity = new ProcessGroupEntity();
-        entity.setProcessGroup(getProcessGroup(processGroupId, false, false));
-        entity.getProcessGroup().setRunning(true);
-        updateEntityForSave(entity);
-        return put("/controller/process-groups/" + parentProcessGroupId + "/process-group-references/" + processGroupId,
-                   entity, ProcessGroupEntity.class);
+    @Deprecated
+    public ProcessGroupDTO startAll(String processGroupId, String parentProcessGroupId) throws NifiClientRuntimeException {
+        client.processGroups().schedule(processGroupId, parentProcessGroupId, NiFiComponentState.RUNNING);
+        return client.processGroups().findById(processGroupId, false, false).get();
     }
 
     public InputPortEntity stopInputPort(String groupId, String portId) throws NifiClientRuntimeException {
@@ -466,47 +426,16 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return put("/controller/process-groups/" + groupId + "/output-ports/" + portId, entity, OutputPortEntity.class);
     }
 
+    @Deprecated
     public ProcessGroupDTO deleteProcessGroup(ProcessGroupDTO groupDTO) throws NifiClientRuntimeException {
-        return deleteProcessGroup(groupDTO, null);
+        return client.processGroups().delete(groupDTO)
+                .orElseThrow(() -> new NifiClientRuntimeException("Unable to delete Process Group " + groupDTO.getName()));
     }
 
-    private ProcessGroupDTO deleteProcessGroup(ProcessGroupDTO groupDTO, Integer retryAttempt) throws NifiClientRuntimeException {
-
-        if (retryAttempt == null) {
-            retryAttempt = 0;
-        }
-        ProcessGroupDTO entity = stopProcessGroup(groupDTO).getProcessGroup();
-        try {
-            entity = client.processGroups().delete(groupDTO).orElseThrow(() -> new NifiClientRuntimeException("Unable to delete Process Group " + groupDTO.getName()));
-
-        } catch (WebApplicationException e) {
-            NifiClientRuntimeException clientException = new NifiClientRuntimeException(e);
-            if (clientException.is409Error() && retryAttempt < 2) {
-                //wait and retry?
-                retryAttempt++;
-                try {
-                    Thread.sleep(300);
-                    deleteProcessGroup(groupDTO, retryAttempt);
-                } catch (InterruptedException e2) {
-                    throw new NifiClientRuntimeException("Unable to delete Process Group " + groupDTO.getName(), e2);
-                }
-            } else {
-                throw clientException;
-            }
-        }
-        return entity;
-
-
-    }
-
-    public ProcessGroupEntity stopProcessGroup(ProcessGroupDTO groupDTO) throws NifiClientRuntimeException {
-        ProcessGroupEntity entity = new ProcessGroupEntity();
-        entity.setProcessGroup(groupDTO);
-        entity.getProcessGroup().setRunning(false);
-        entity.getProcessGroup().setRunning(false);
-        updateEntityForSave(entity);
-        return put("/controller/process-groups/" + groupDTO.getParentGroupId() + "/process-group-references/" + groupDTO.getId(),
-                   entity, ProcessGroupEntity.class);
+    @Deprecated
+    public ProcessGroupDTO stopProcessGroup(ProcessGroupDTO groupDTO) throws NifiClientRuntimeException {
+        client.processGroups().schedule(groupDTO.getId(), groupDTO.getParentGroupId(), NiFiComponentState.STOPPED);
+        return client.processGroups().findById(groupDTO.getId(), false, false).get();
     }
 
     public List<ProcessGroupDTO> deleteChildProcessGroups(String processGroupId) throws NifiClientRuntimeException {

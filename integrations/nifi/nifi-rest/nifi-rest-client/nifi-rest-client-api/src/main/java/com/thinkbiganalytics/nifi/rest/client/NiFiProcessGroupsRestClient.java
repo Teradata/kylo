@@ -132,6 +132,16 @@ public interface NiFiProcessGroupsRestClient {
     FlowSnippetDTO instantiateTemplate(@Nonnull String processGroupId, @Nonnull String templateId);
 
     /**
+     * Schedule or unschedule components in the specified Process Group.
+     *
+     * @param processGroupId the process group id
+     * @param parentGroupId the parent process group id
+     * @param state the desired state of the descendant components
+     * @throws NifiComponentNotFoundException if the process group does not exist
+     */
+    void schedule(@Nonnull String processGroupId, @Nonnull String parentGroupId, @Nonnull NiFiComponentState state);
+
+    /**
      * Updates a process group.
      *
      * @param processGroupEntity the process group

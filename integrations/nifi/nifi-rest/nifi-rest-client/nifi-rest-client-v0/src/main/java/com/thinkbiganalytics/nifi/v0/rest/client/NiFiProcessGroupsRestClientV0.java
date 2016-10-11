@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.nifi.v0.rest.client;
 
 import com.thinkbiganalytics.nifi.rest.client.AbstractNiFiProcessGroupsRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiComponentState;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessGroupsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiComponentNotFoundException;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
@@ -163,6 +164,19 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
         } catch (ClientErrorException e) {
             final String msg = e.getResponse().readEntity(String.class);
             throw new NifiComponentNotFoundException("Unable to create Template instance for templateId: " + templateId + " under Process group " + processGroupId + ". " + msg);
+        }
+    }
+
+    @Override
+    public void schedule(@Nonnull final String processGroupId, @Nonnull final String parentGroupId, @Nonnull final NiFiComponentState state) {
+        ProcessGroupEntity entity = new ProcessGroupEntity();
+        entity.setProcessGroup(findById(processGroupId, false, false).orElseThrow(() -> new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, null)));
+        entity.getProcessGroup().setRunning(state.equals(NiFiComponentState.RUNNING));
+        client.updateEntityForSave(entity);
+        try {
+            client.put(BASE_PATH + "/" + parentGroupId + "/process-group-references/" + processGroupId, entity, ProcessGroupEntity.class);
+        } catch (NotFoundException e) {
+            throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
     }
 

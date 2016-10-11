@@ -204,7 +204,7 @@ public class FeedManagerMetadataService implements MetadataService {
                 ProcessGroupDTO feed = nifiRestClient.getProcessGroupByName(group.getId(), feedSummary.getSystemFeedName());
                 if (feed != null) {
                     if (state.equals(Feed.State.ENABLED)) {
-                        ProcessGroupEntity entity = nifiRestClient.startAll(feed.getId(), feed.getParentGroupId());
+                        ProcessGroupDTO entity = nifiRestClient.startAll(feed.getId(), feed.getParentGroupId());
                         updatedNifi = (entity != null);
                     } else if (state.equals(Feed.State.DISABLED)) {
                         ProcessGroupDTO entity = nifiRestClient.stopInputs(feed.getId());
