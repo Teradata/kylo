@@ -102,7 +102,8 @@ public class HCatDataTypeTest {
         assertTrue(type.isValueConvertibleToType(""));
 
         assertFalse(type.isValueConvertibleToType("-1000"));
-        assertFalse(type.isValueConvertibleToType("5.123"));
+        assertFalse(type.isValueConvertibleToType("5.123", true));
+        assertTrue(type.isValueConvertibleToType("5.123", false));
 
         assertFalse(type.isValueConvertibleToType("No number"));
     }
@@ -190,6 +191,13 @@ public class HCatDataTypeTest {
         assertFalse(type.isValueConvertibleToType("2015/01/15 11:10:20"));
         assertFalse(type.isValueConvertibleToType("2016-05-10"));
         assertFalse(type.isValueConvertibleToType("05-10-2015"));
+    }
+
+    @Test
+    public void testDecimalType() throws Exception {
+        HCatDataType decimalType = HCatDataType.createFromDataType("decimal_type", "decimal(10,3)");
+        boolean valid = decimalType.isValueConvertibleToType("29.3456");
+        assertTrue(valid);
     }
 
 }
