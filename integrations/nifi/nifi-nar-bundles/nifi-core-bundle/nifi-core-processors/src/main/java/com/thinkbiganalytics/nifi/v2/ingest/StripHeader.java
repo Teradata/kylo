@@ -7,6 +7,7 @@ package com.thinkbiganalytics.nifi.v2.ingest;
 
 import com.thinkbiganalytics.ingest.StripHeaderSupport;
 
+import org.apache.commons.lang3.mutable.MutableLong;
 import org.apache.nifi.annotation.behavior.EventDriven;
 import org.apache.nifi.annotation.behavior.InputRequirement;
 import org.apache.nifi.annotation.behavior.InputRequirement.Requirement;
@@ -26,10 +27,8 @@ import org.apache.nifi.processor.util.StandardValidators;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 @EventDriven
@@ -124,44 +123,39 @@ public class StripHeader extends AbstractProcessor {
             return;
         }
 
-        final Map<Relationship, FlowFile> flowFileMap = new HashMap();
+        final MutableLong headerBoundaryInBytes = new MutableLong(-1);
 
-        session.read(flowFile, true, rawIn -> {
+        session.read(flowFile, false, rawIn -> {
             try {
                 // Identify the byte boundary of the header
-                long bytes = bytes = headerSupport.findHeaderBoundary(headerCount, rawIn);
+                long bytes = headerSupport.findHeaderBoundary(headerCount, rawIn);
+                headerBoundaryInBytes.setValue(bytes);
+
                 if (bytes < 0) {
                     logger.error("Unable to strip header {} expecting at least {} lines in file", new Object[]{flowFile, headerCount});
-                    flowFileMap.put(REL_FAILURE, flowFile);
-                    return;
                 }
-
-                // Transfer header
-                final FlowFile headerFlowFile = session.clone(flowFile, 0, bytes);
-                flowFileMap.put(REL_HEADER, headerFlowFile);
-
-                // Transfer content
-                long contentBytes = flowFile.getSize() - bytes;
-                final FlowFile contentFlowFile = session.clone(flowFile, bytes, contentBytes);
-                flowFileMap.put(REL_CONTENT, contentFlowFile);
-
-
-                flowFileMap.put(REL_ORIGINAL, flowFile);
 
             } catch (IOException e) {
                 logger.error("Unable to strip header {} due to {}; routing to failure", new Object[]{flowFile, e.getLocalizedMessage()}, e);
-                flowFileMap.put(REL_FAILURE, flowFile);
-                return;
             }
 
         });
 
-        // Transfer relationships
-        flowFileMap.keySet().forEach(relationship -> {
-            session.transfer(flowFileMap.get(relationship), relationship);
-        });
+        long headerBytes = headerBoundaryInBytes.getValue();
+        if (headerBytes < 0) {
+            session.transfer(flowFile, REL_FAILURE);
+        } else {
+            // Transfer header
+            final FlowFile headerFlowFile = session.clone(flowFile, 0, headerBytes);
+            session.transfer(headerFlowFile, REL_HEADER);
 
+            // Transfer content
+            long contentBytes = flowFile.getSize() - headerBytes;
+            final FlowFile contentFlowFile = session.clone(flowFile, headerBytes, contentBytes);
+            session.transfer(contentFlowFile, REL_CONTENT);
+
+            session.transfer(flowFile, REL_ORIGINAL);
+        }
         return;
     }
-
 }
