@@ -15,7 +15,7 @@
         };
     }
 
-    var controller = function ($scope, $mdDialog, AccessControlService, FeedService, FeedSecurityGroups) {
+    var controller = function ($scope, $mdDialog, $timeout, AccessControlService, FeedService, FeedSecurityGroups) {
 
         var self = this;
 
@@ -26,6 +26,12 @@
         self.allowEdit = false;
 
         this.model = FeedService.editFeedModel;
+        /**
+         * The form for angular errors
+         * @type {{}}
+         */
+        this.editFeedDataPoliciesForm = {};
+
         this.editableSection = false;
 
         $scope.$watch(function () {
@@ -34,22 +40,55 @@
             //only update the model if it is not set yet
             if (self.model == null) {
                 self.model = FeedService.editFeedModel;
+                populateFieldNameMap();
+                applyDefaults();
+
             }
-        })
+        });
+
+        /**
+         * apply default values to the read only model
+         */
+        function applyDefaults() {
+            if (self.model.table.targetFormat === undefined || self.model.table.targetFormat === '' || self.model.table.targetFormat === null) {
+                //default to ORC
+                self.model.table.targetFormat = 'STORED AS ORC'
+            }
+            if (self.model.table.options.compressionFormat === undefined || self.model.table.options.compressionFormat === '' || self.model.table.options.compressionFormat === null) {
+                self.model.table.options.compressionFormat = 'NONE'
+            }
+        }
+
+        self.fieldNameMap = {};
+
+        function populateFieldNameMap() {
+            self.fieldNameMap = {};
+
+            _.each(self.model.table.tableSchema.fields, function (field) {
+                self.fieldNameMap[field.name] = field;
+            });
+        }
+
+        populateFieldNameMap();
+        applyDefaults();
 
         this.permissionGroups = ['Marketing', 'Human Resources', 'Administrators', 'IT'];
-        this.compressionOptions = ['NONE', 'SNAPPY', 'ZLIB'];
+        this.compressionOptions = FeedService.allCompressionOptions();
 
-        this.mergeStrategies = [{name: 'Sync', type: 'SYNC', hint: 'Sync and overwrite table', disabled: false}, {name: 'Merge', type: 'MERGE', hint: 'Merges content into existing table', disabled: false},
-                {name: 'Dedupe and Merge', type: 'DEDUPE_AND_MERGE', hint: 'Dedupe and Merge content into existing table', disabled: false}];
+        this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
 
-        this.targetFormatOptions = [{label: "ORC", value: 'STORED AS ORC'}, {label: "PARQUET", value: 'STORED AS PARQUET'}];
+        this.targetFormatOptions = FeedService.targetFormatOptions;
 
         this.feedSecurityGroups = FeedSecurityGroups;
 
         self.securityGroupChips = {};
         self.securityGroupChips.selectedItem = null;
         self.securityGroupChips.searchText = null;
+
+        this.fieldDataTypeDisplay = function (columnDef) {
+            return FeedService.getDataTypeDisplay(columnDef);
+        }
+
 
         this.transformChip = function (chip) {
             // If it is an object, it's already a known chip
@@ -69,21 +108,67 @@
             });
         }
 
+        /**
+         * Returns the readable display name for the mergeStrategy on the edited feed model
+         * @returns {*}
+         */
+        this.mergeStrategyDisplayName = function () {
+            var mergeStrategyObject = _.find(FeedService.mergeStrategies, function (strategy) {
+                return strategy.type == self.model.table.targetMergeStrategy;
+            });
+            return mergeStrategyObject != null ? mergeStrategyObject.name : self.model.table.targetMergeStrategy
+        }
+
+        /**
+         * Enable/Disable the PK Merge Strategy
+         */
+        this.onChangePrimaryKey = function () {
+            validateMergeStrategies();
+        }
+
+        this.onChangeMergeStrategy = function () {
+            validateMergeStrategies();
+        }
+
+        function validateMergeStrategies() {
+            var valid = FeedService.enableDisablePkMergeStrategy(self.editModel, self.mergeStrategies);
+            self.editFeedDataPoliciesForm['targetMergeStrategy'].$setValidity('invalidPKOption', valid);
+        }
+
         this.onEdit = function () {
             //copy the model
             var fieldPolicies = angular.copy(FeedService.editFeedModel.table.fieldPolicies);
+            var fields = angular.copy(FeedService.editFeedModel.table.tableSchema.fields);
+            //assign the field to the policy
+            var fieldMap = _.groupBy(fields, function (field) {
+                return field.name
+            });
+            _.each(fieldPolicies, function (policy) {
+                var columnDef = fieldMap[policy.name][0];
+                policy.columnDef = columnDef;
+            });
 
             self.editModel = {};
             self.editModel.fieldPolicies = fieldPolicies;
 
             self.editModel.table = {};
+            self.editModel.table.tableSchema = {};
+            self.editModel.table.tableSchema.fields = fields;
             self.editModel.table.targetFormat = FeedService.editFeedModel.table.targetFormat;
+            if (self.editModel.table.targetFormat === undefined) {
+                //default to ORC
+                self.editModel.table.targetFormat = 'ORC'
+            }
             self.editModel.table.targetMergeStrategy = FeedService.editFeedModel.table.targetMergeStrategy;
             self.editModel.table.options = angular.copy(FeedService.editFeedModel.table.options);
+            if (self.editModel.table.options.compressionFormat === undefined) {
+                self.editModel.options.compressionFormat = 'NONE'
+            }
             self.editModel.table.securityGroups = angular.copy(FeedService.editFeedModel.table.securityGroups);
             if (self.editModel.table.securityGroups == undefined) {
                 self.editModel.table.securityGroups = [];
             }
+            $timeout(validateMergeStrategies, 400);
         }
 
         this.onCancel = function () {
@@ -97,6 +182,24 @@
 
             copy.table.targetFormat = self.editModel.table.targetFormat;
             copy.table.fieldPolicies = self.editModel.fieldPolicies;
+
+            //add back in the changes to the pk, nullable, created, updated tracker columns
+            var policyMap = _.groupBy(copy.table.fieldPolicies, function (policy) {
+                return policy.name
+            });
+            _.each(copy.table.tableSchema.fields, function (field) {
+                //find the respective changes in the ui object for this field
+                var updatedColumnDef = policyMap[field.name][0];
+                if (updatedColumnDef) {
+                    var def = updatedColumnDef.columnDef;
+                    angular.extend(field, def);
+                }
+            });
+            //strip off the added 'columnDef' property
+            _.each(self.editModel.fieldPolicies, function (policy) {
+                policy.columnDef = undefined;
+            });
+
             copy.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
             copy.table.options = self.editModel.table.options;
             copy.table.securityGroups = self.editModel.table.securityGroups;
@@ -106,11 +209,13 @@
                 FeedService.hideFeedSavingDialog();
                 self.editableSection = false;
                 //save the changes back to the model
+                self.model.table.tableSchema.fields = copy.table.tableSchema.fields;
                 self.model.table.targetFormat = self.editModel.table.targetFormat;
                 self.model.table.fieldPolicies = self.editModel.fieldPolicies;
                 self.model.table.targetMergeStrategy = self.editModel.table.targetMergeStrategy;
                 self.model.table.options = self.editModel.table.options;
                 self.model.table.securityGroups = self.editModel.table.securityGroups;
+                populateFieldNameMap();
             }, function (response) {
                 FeedService.hideFeedSavingDialog();
                 FeedService.buildErrorData(self.model.feedName, response.data);

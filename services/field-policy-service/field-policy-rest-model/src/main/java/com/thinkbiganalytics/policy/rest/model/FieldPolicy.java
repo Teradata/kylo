@@ -13,6 +13,8 @@ public class FieldPolicy {
     private boolean partition;
     private boolean profile;
     private boolean index;
+    private boolean enforcePrecision;
+    private Integer decimalPrecision;
     private String fieldName;
 
     private List<FieldStandardizationRule> standardization;
@@ -70,5 +72,21 @@ public class FieldPolicy {
 
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
+    }
+
+    public boolean isEnforcePrecision() {
+        return enforcePrecision;
+    }
+
+    public void setEnforcePrecision(boolean enforcePrecision) {
+        this.enforcePrecision = enforcePrecision;
+    }
+
+    public Integer getDecimalPrecision() {
+        return decimalPrecision;
+    }
+
+    public void setDecimalPrecision(Integer decimalPrecision) {
+        this.decimalPrecision = decimalPrecision;
     }
 }

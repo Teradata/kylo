@@ -12,6 +12,7 @@ public class FieldPolicyBuilder {
   private boolean profile;
   private boolean index;
   private String fieldName;
+  private boolean enforcePrecision;
 
   private List<FieldStandardizationRule> standardization;
 
@@ -48,6 +49,11 @@ public class FieldPolicyBuilder {
   }
 
 
+  public FieldPolicyBuilder enforcePrecision(boolean enforcePrecision){
+    this.enforcePrecision = enforcePrecision;
+    return this;
+  }
+
   public FieldPolicy build(){
     FieldPolicy policy = new FieldPolicy();
     policy.setFieldName(this.fieldName);
@@ -56,6 +62,7 @@ public class FieldPolicyBuilder {
     policy.setPartition(this.partition);
     policy.setProfile(this.profile);
     policy.setIndex(this.index);
+    policy.setEnforcePrecision(this.enforcePrecision);
     return policy;
   }
 

@@ -6,6 +6,9 @@ package com.thinkbiganalytics.db.model.schema;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import java.sql.Types;
 import java.util.List;
 import java.util.Vector;
@@ -19,9 +22,21 @@ public class Field {
 
     private String dataType;
 
+    private String precisionScale;
+
     private Boolean primaryKey = false;
 
     private Boolean nullable = true;
+
+    /**
+     * is this field an indicator of when the row was created?
+     */
+    private Boolean createdTracker = false;
+
+    /**
+     * is this field an indicator of when thie row was updated
+     */
+    private Boolean updatedTracker = false;
 
     public List<String> sampleValues = new Vector<>();
 
@@ -104,7 +119,41 @@ public class Field {
         return null;
     }
 
+    /**
+     * Returns the structure in the format: Name | DataType | Desc | Primary \ CreatedTracker | UpdatedTracker
+     * @return
+     */
     public String asFieldStructure(){
-        return name+"|"+dataType;
+        return name+"|"+getDataTypeWithPrecisionAndScale()+"|"+description+"|"+BooleanUtils.toInteger(primaryKey)+"|"+BooleanUtils.toInteger(createdTracker)+"|"+BooleanUtils.toInteger(updatedTracker);
+    }
+
+    public String getDataTypeWithPrecisionAndScale(){
+        return dataType + (StringUtils.isNotBlank(precisionScale) ? "("+precisionScale+")" : "");
+    }
+
+
+    public String getPrecisionScale() {
+        return precisionScale;
+    }
+
+    public void setPrecisionScale(String precisionScale) {
+        this.precisionScale = precisionScale;
+    }
+
+
+    public Boolean getCreatedTracker() {
+        return createdTracker;
+    }
+
+    public void setCreatedTracker(Boolean createdTracker) {
+        this.createdTracker = createdTracker;
+    }
+
+    public Boolean getUpdatedTracker() {
+        return updatedTracker;
+    }
+
+    public void setUpdatedTracker(Boolean updatedTracker) {
+        this.updatedTracker = updatedTracker;
     }
 }

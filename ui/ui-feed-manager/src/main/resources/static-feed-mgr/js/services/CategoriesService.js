@@ -138,18 +138,27 @@ angular.module(MODULE_FEED_MGR).factory('CategoriesService', function ($q,$http,
             return null;
         },
         categories:[],
-        simulateQuery:false,
         querySearch: function (query) {
+
             var self = this;
-            var results = query ? self.categories.filter( createFilterFor(query) ) : self.categories,
-                deferred;
-            if (self.simulateQuery) {
-                deferred = $q.defer();
-                $timeout(function () { deferred.resolve( results ); }, Math.random() * 1000, false);
-                return deferred.promise;
-            } else {
-                return results;
+            var deferred = $q.defer();
+            if (self.categories.length == 0) {
+                loadAll().then(function (response) {
+                    if (query) {
+                        var results = response.filter(createFilterFor(query))
+                        deferred.resolve(results);
+                    }
+                    else {
+                        deferred.resolve(response);
+                    }
+                });
             }
+            else {
+                var results = query ? self.categories.filter(createFilterFor(query)) : self.categories;
+                deferred.resolve(results);
+            }
+            return deferred.promise;
+
         },
 
         /**

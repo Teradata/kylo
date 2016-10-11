@@ -21,7 +21,7 @@
         };
     }
 
-    var controller =  function($scope, $http,$mdDialog,RestUrlService, FeedService,FeedSecurityGroups) {
+    var controller = function ($scope, $http, $mdDialog, RestUrlService, FeedService, FeedSecurityGroups, BroadcastService, StepperService) {
         this.isValid = true;
 
         var self = this;
@@ -29,15 +29,29 @@
         this.feedSecurityGroups = FeedSecurityGroups;
         this.stepNumber = parseInt(this.stepIndex)+1
 
+        /**
+         * The form in angular
+         * @type {{}}
+         */
+        this.dataProcessingForm = {};
 
-        this.mergeStrategies = [{name:'Sync',type:'SYNC',hint:'Replaces table data',disabled:false},{name:'Merge',type:'MERGE',hint:'Append table data',disabled:false},{name:'Dedupe and Merge',type:'DEDUPE_AND_MERGE',hint:'Append data without duplicates',disabled:false}];
+        this.mergeStrategies = angular.copy(FeedService.mergeStrategies);
+        FeedService.enableDisablePkMergeStrategy(self.model, self.mergeStrategies);
         this.permissionGroups = ['Marketing','Human Resources','Administrators','IT'];
 
        // this.compressionOptions = ['NONE','SNAPPY','ZLIB'];
 
-        this.allCompressionOptions = {'ORC':['NONE','SNAPPY','ZLIB'],'PARQUET':['NONE','SNAPPY']};
+        BroadcastService.subscribe($scope, StepperService.ACTIVE_STEP_EVENT, onActiveStep)
 
-        this.targetFormatOptions = [{label:"ORC",value:'STORED AS ORC'},{label:"PARQUET",value:'STORED AS PARQUET'}];
+        function onActiveStep(event, index) {
+            if (index == parseInt(self.stepIndex)) {
+                validateMergeStrategies();
+            }
+        }
+
+        this.allCompressionOptions = FeedService.compressionOptions;
+
+        this.targetFormatOptions = FeedService.targetFormatOptions;
 
         self.securityGroupChips = {};
         self.securityGroupChips.selectedItem = null;
@@ -77,7 +91,16 @@
             });
         }
 
+        this.onChangeMergeStrategy = function () {
+            validateMergeStrategies();
+        }
 
+        function validateMergeStrategies() {
+            var valid = FeedService.enableDisablePkMergeStrategy(self.model, self.mergeStrategies);
+            self.dataProcessingForm['targetMergeStrategy'].$setValidity('invalidPKOption', valid);
+
+            self.isValid = valid;
+        }
 
 
         this.showFieldRuleDialog = function(field,policyParam) {
