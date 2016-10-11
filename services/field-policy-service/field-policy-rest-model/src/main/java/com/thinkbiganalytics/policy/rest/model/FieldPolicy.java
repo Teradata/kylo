@@ -10,11 +10,8 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FieldPolicy {
 
-    private boolean partition;
     private boolean profile;
     private boolean index;
-    private boolean enforcePrecision;
-    private Integer decimalPrecision;
     private String fieldName;
 
     private List<FieldStandardizationRule> standardization;
@@ -24,15 +21,6 @@ public class FieldPolicy {
     public FieldPolicy(){
 
     }
-
-    public boolean isPartition() {
-        return partition;
-    }
-
-    public void setPartition(boolean partition) {
-        this.partition = partition;
-    }
-
     public boolean isProfile() {
         return profile;
     }
@@ -74,19 +62,4 @@ public class FieldPolicy {
         this.fieldName = fieldName;
     }
 
-    public boolean isEnforcePrecision() {
-        return enforcePrecision;
-    }
-
-    public void setEnforcePrecision(boolean enforcePrecision) {
-        this.enforcePrecision = enforcePrecision;
-    }
-
-    public Integer getDecimalPrecision() {
-        return decimalPrecision;
-    }
-
-    public void setDecimalPrecision(Integer decimalPrecision) {
-        this.decimalPrecision = decimalPrecision;
-    }
 }
