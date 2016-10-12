@@ -11,8 +11,7 @@ import org.apache.nifi.flowfile.attributes.FlowFileAttributeKey;
  */
 public enum ComponentAttributes implements FlowFileAttributeKey {
     NUM_SOURCE_RECORDS("source.record.count"),
-    PREVIOUS_HIGHWATER_DATE("previous.highwater.date"),
-    NEW_HIGHWATER_DATE("new.highwater.date"),
+    HIGH_WATER_DATE("high.water.date"),
     NUM_MERGED_PARTITIONS("num.merged.partitions"),
     MERGED_PARTITION("merged.partition"),
     MERGED_PARTITION_ROWCOUNT("merged.partition.rowcount"),

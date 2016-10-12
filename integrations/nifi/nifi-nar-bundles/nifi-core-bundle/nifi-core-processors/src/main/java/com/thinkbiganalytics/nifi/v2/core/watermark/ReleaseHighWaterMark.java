@@ -11,10 +11,14 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
 import org.apache.nifi.processor.exception.ProcessException;
 
+import com.sun.tools.internal.ws.processor.ProcessorException;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
+import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 
 /**
@@ -46,6 +50,7 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
                                     + "Otherwise, commits/rolls back only the named water mark property.")
                     .allowableValues(CommonProperties.BOOLEANS)
                     .defaultValue("true")
+                    .required(true)
                     .build();
 
     /* (non-Javadoc)
@@ -53,7 +58,35 @@ public class ReleaseHighWaterMark extends HighWaterMarkProcessor {
      */
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
-        // TODO Auto-generated method stub
+        MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
+        FlowFile ff = session.get();
+        
+        if (ff != null) {
+            String mode = context.getProperty(MODE).evaluateAttributeExpressions(ff).toString();
+            
+            try {
+                if (context.getProperty(RELEASE_ALL).evaluateAttributeExpressions(ff).asBoolean()) {
+                    if (mode.equals("COMMIT")) {
+                        ff = recorder.commitAllWaterMarks(session, ff, getFeedId());
+                    } else {
+                        ff = recorder.releaseAllWaterMarks(session, ff, getFeedId());
+                    }
+                } else {
+                    String waterMarkName = context.getProperty(HIGH_WATER_MARK).evaluateAttributeExpressions(ff).toString();
+                    
+                    if (mode.equals("COMMIT")) {
+                        ff = recorder.commitWaterMark(session, ff, getFeedId(), waterMarkName);
+                    } else {
+                        ff = recorder.releaseWaterMark(session, ff, getFeedId(), waterMarkName);
+                    }
+                }
+                
+                session.transfer(ff, CommonProperties.REL_SUCCESS);
+            } catch (Exception e) {
+                getLogger().warn("Failure to release water mark(s)", e);
+                throw new ProcessorException(e);
+            }
+        }
         
     }
 

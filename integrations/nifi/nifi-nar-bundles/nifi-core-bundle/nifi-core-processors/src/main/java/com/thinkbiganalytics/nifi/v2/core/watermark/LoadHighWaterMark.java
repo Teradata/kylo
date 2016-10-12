@@ -13,6 +13,7 @@ import org.apache.nifi.annotation.documentation.CapabilityDescription;
 import org.apache.nifi.annotation.documentation.Tags;
 import org.apache.nifi.components.AllowableValue;
 import org.apache.nifi.components.PropertyDescriptor;
+import org.apache.nifi.components.PropertyValue;
 import org.apache.nifi.flowfile.FlowFile;
 import org.apache.nifi.processor.ProcessContext;
 import org.apache.nifi.processor.ProcessSession;
@@ -20,9 +21,9 @@ import org.apache.nifi.processor.Relationship;
 import org.apache.nifi.processor.exception.ProcessException;
 import org.apache.nifi.processor.util.StandardValidators;
 
-import com.thinkbiganalytics.nifi.core.api.metadata.HighWaterMarkState;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataProviderService;
 import com.thinkbiganalytics.nifi.core.api.metadata.MetadataRecorder;
+import com.thinkbiganalytics.nifi.core.api.metadata.WaterMarkActiveException;
 import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 
 /**
@@ -34,8 +35,6 @@ import com.thinkbiganalytics.nifi.v2.common.CommonProperties;
 @Tags({"load", "high-water", "mark", "thinkbig"})
 @CapabilityDescription("Loadeds and makes active a watermark associated with a feed.")
 public class LoadHighWaterMark extends HighWaterMarkProcessor {
-
-    private static final String ACTIVE_WATERMARKS = "activeWatermarks";
 
     protected static final AllowableValue[] ACTIVE_STRATEGY_VALUES = new AllowableValue[] { 
                              new AllowableValue("YIELD", "Yield", "Yield processing so that another attempt to obtain the high-water mark can be made later"),
@@ -74,31 +73,32 @@ public class LoadHighWaterMark extends HighWaterMarkProcessor {
     @Override
     public void onTrigger(ProcessContext context, ProcessSession session) throws ProcessException {
         FlowFile ff = session.get();
+        FlowFile resultFF = ff;
         
         if (ff != null) {
             MetadataRecorder recorder = context.getProperty(CommonProperties.METADATA_SERVICE).asControllerService(MetadataProviderService.class).getRecorder();
             String waterMark = context.getProperty(HIGH_WATER_MARK).getValue();
             String propName = context.getProperty(PROPERTY_NAME).getValue();
-            
-            HighWaterMarkState<?> state = recorder.loadWaterMark(ff, waterMark);
-            ff = session.putAttribute(ff, propName, state.getValue().toString());
-            ff = addActive(session, ff, waterMark);
-            
-            session.transfer(ff, CommonProperties.REL_SUCCESS);
+
+            try {
+                resultFF = recorder.loadWaterMark(session, resultFF, getFeedId(), waterMark, propName, "");
+                this.yieldCount.set(0);
+                session.transfer(resultFF, CommonProperties.REL_SUCCESS);
+            } catch (WaterMarkActiveException e) {
+                PropertyValue value = context.getProperty("");
+                int maxCount = value.isSet() ? value.asInteger() : -1;
+                int count = this.yieldCount.incrementAndGet();
+                
+                if (maxCount > 0 && count > maxCount) {
+                    getLogger().debug("Water mark {} is active - routing to \"activeFailure\"", new Object[] { waterMark });
+                    session.transfer(resultFF, ACTIVE_FAILURE);
+                } else {
+                    getLogger().debug("Yielding because water mark {} is active - attempt {} of {}", new Object[] { waterMark, count, maxCount });
+                    context.yield();
+                }
+            }
         }
         
-    }
-
-    /**
-     * @param waterMark
-     * @return
-     */
-    private FlowFile addActive(ProcessSession session, FlowFile ff, String waterMark) {
-        String active = ff.getAttribute(ACTIVE_WATERMARKS);
-        
-        return active != null 
-                        ? session.putAttribute(ff, ACTIVE_WATERMARKS, active + "," + waterMark)
-                        : session.putAttribute(ff, ACTIVE_WATERMARKS, waterMark);
     }
 
     /* (non-Javadoc)

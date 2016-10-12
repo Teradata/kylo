@@ -68,4 +68,8 @@ public abstract class HighWaterMarkProcessor extends BaseProcessor {
         set.add(CommonProperties.REL_SUCCESS);
         set.add(CommonProperties.REL_FAILURE);
     }
+    
+    protected String getFeedId() {
+        return feedId;
+    }
 }
