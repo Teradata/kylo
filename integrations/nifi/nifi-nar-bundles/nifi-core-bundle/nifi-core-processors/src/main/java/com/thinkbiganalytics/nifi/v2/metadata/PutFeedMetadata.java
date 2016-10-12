@@ -43,7 +43,10 @@ public class PutFeedMetadata extends AbstractProcessor {
     private static final String METADATA_FIELD_PREFIX = "nifi:metadata:";
 
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
-        .description("All FlowFiles are routed to this relationship").name("success").build();
+        .description("All FlowFiles are routed to this relationship on success").name("success").build();
+
+    public static final Relationship REL_FAILURE = new Relationship.Builder()
+        .description("All FlowFiles are routed to this relationship on failure").name("failure").build();
 
     public static final PropertyDescriptor METADATA_SERVICE = new PropertyDescriptor.Builder()
         .name("Metadata Provider Service")
@@ -72,7 +75,7 @@ public class PutFeedMetadata extends AbstractProcessor {
 
     private static final List<PropertyDescriptor> properties = ImmutableList.of(METADATA_SERVICE, CATEGORY_NAME, FEED_NAME);
 
-    private static final Set<Relationship> relationships = ImmutableSet.of(REL_SUCCESS);
+    private static final Set<Relationship> relationships = ImmutableSet.of(REL_SUCCESS, REL_FAILURE);
 
     @Override
     public Set<Relationship> getRelationships() {
@@ -99,49 +102,54 @@ public class PutFeedMetadata extends AbstractProcessor {
     @Override
     public void onTrigger(final ProcessContext context, final ProcessSession session) {
         final ComponentLog logger = getLogger();
-
         FlowFile flowFile = null;
-        if (context.hasIncomingConnection()) {
-            flowFile = session.get();
 
-            // If we have no FlowFile, and all incoming connections are self-loops then we can continue on.
-            // However, if we have no FlowFile and we have connections coming from other Processors, then
-            // we know that we should run only if we have a FlowFile.
-            if (flowFile == null && context.hasNonLoopConnection()) {
-                return;
-            }
-        }
+        try {
+            if (context.hasIncomingConnection()) {
+                flowFile = session.get();
 
-        final FlowFile incoming = flowFile;
-
-        // Get the feed id
-        String category = context.getProperty(CATEGORY_NAME).evaluateAttributeExpressions(flowFile).getValue();
-        String feed = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
-
-        getLogger().debug("The category is: " + category + " and feed is " + feed);
-
-        MetadataProvider metadataProvider = getMetadataService(context).getProvider();
-
-        // Ignore the 3 required properties and send the rest to the metadata server
-        Map<PropertyDescriptor, String> properties = context.getProperties();
-        Set<PropertyDescriptor> propertyKeys = properties.keySet();
-
-        Properties metadataProperties = new Properties();
-        for (PropertyDescriptor property : propertyKeys) {
-            String propertyName = property.getName();
-            String value = properties.get(property);
-            
-
-            if (!PROPERTY_LIST_TO_IGNORE.contains(propertyName)) {
-                metadataProperties.setProperty(METADATA_FIELD_PREFIX + propertyName, value);
-                getLogger().info("Sending feed metadata Property for Jeremy Test " + propertyName + " : " + value);
+                // If we have no FlowFile, and all incoming connections are self-loops then we can continue on.
+                // However, if we have no FlowFile and we have connections coming from other Processors, then
+                // we know that we should run only if we have a FlowFile.
+                if (flowFile == null && context.hasNonLoopConnection()) {
+                    return;
+                }
             }
 
-        }
-        String feedId = metadataProvider.getFeedId(category, feed);
-        metadataProvider.updateFeedProperties(feedId, metadataProperties);
+            final FlowFile incoming = flowFile;
 
-        session.transfer(flowFile, REL_SUCCESS);
+            // Get the feed id
+            String category = context.getProperty(CATEGORY_NAME).evaluateAttributeExpressions(flowFile).getValue();
+            String feed = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
+
+            getLogger().debug("The category is: " + category + " and feed is " + feed);
+
+            MetadataProvider metadataProvider = getMetadataService(context).getProvider();
+
+            // Ignore the 3 required properties and send the rest to the metadata server
+            Map<PropertyDescriptor, String> properties = context.getProperties();
+            Set<PropertyDescriptor> propertyKeys = properties.keySet();
+
+            Properties metadataProperties = new Properties();
+            for (PropertyDescriptor property : propertyKeys) {
+                String propertyName = property.getName();
+                String value = context.getProperty(propertyName).evaluateAttributeExpressions(flowFile).getValue();
+
+                if (!PROPERTY_LIST_TO_IGNORE.contains(propertyName)) {
+                    metadataProperties.setProperty(METADATA_FIELD_PREFIX + propertyName, value);
+                    getLogger().info("Sending feed metadata Property for Jeremy Test " + propertyName + " : " + value);
+                }
+
+            }
+
+            String feedId = metadataProvider.getFeedId(category, feed);
+            metadataProvider.updateFeedProperties(feedId, metadataProperties);
+
+            session.transfer(flowFile, REL_SUCCESS);
+        } catch(Exception e) {
+            logger.error("Error processing custom feed metadata", e);
+            session.transfer(flowFile, REL_FAILURE);
+        }
     }
 
     /**
