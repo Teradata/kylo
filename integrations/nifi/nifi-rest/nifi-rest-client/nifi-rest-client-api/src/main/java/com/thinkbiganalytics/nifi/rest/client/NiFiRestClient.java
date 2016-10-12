@@ -17,6 +17,14 @@ public interface NiFiRestClient {
     NiFiControllerServicesRestClient controllerServices();
 
     /**
+     * Gets the client for managing ports.
+     *
+     * @return the NiFi Ports client
+     */
+    @Nonnull
+    NiFiPortsRestClient ports();
+
+    /**
      * Gets the client for accessing process groups, including creating components, instantiating a template, and uploading a template.
      *
      * @return the NiFi Process Groups client

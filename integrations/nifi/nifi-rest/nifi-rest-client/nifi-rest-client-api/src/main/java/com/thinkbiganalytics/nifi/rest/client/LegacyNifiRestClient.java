@@ -37,9 +37,7 @@ import org.apache.nifi.web.api.entity.BulletinBoardEntity;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
 import org.apache.nifi.web.api.entity.DropRequestEntity;
 import org.apache.nifi.web.api.entity.Entity;
-import org.apache.nifi.web.api.entity.InputPortEntity;
 import org.apache.nifi.web.api.entity.ListingRequestEntity;
-import org.apache.nifi.web.api.entity.OutputPortEntity;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
 import org.apache.nifi.web.api.entity.ProvenanceEventEntity;
 import org.apache.nifi.web.api.entity.SearchResultsEntity;
@@ -361,44 +359,32 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return client.processGroups().findById(processGroupId, false, false).get();
     }
 
-    public InputPortEntity stopInputPort(String groupId, String portId) throws NifiClientRuntimeException {
-        InputPortEntity entity = new InputPortEntity();
+    public PortDTO stopInputPort(String groupId, String portId) throws NifiClientRuntimeException {
         PortDTO portDTO = new PortDTO();
         portDTO.setId(portId);
         portDTO.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-        entity.setInputPort(portDTO);
-        updateEntityForSave(entity);
-        return put("/controller/process-groups/" + groupId + "/input-ports/" + portId, entity, InputPortEntity.class);
+        return client.ports().updateInputPort(groupId, portDTO);
     }
 
-    public OutputPortEntity stopOutputPort(String groupId, String portId) throws NifiClientRuntimeException {
-        OutputPortEntity entity = new OutputPortEntity();
+    public PortDTO stopOutputPort(String groupId, String portId) throws NifiClientRuntimeException {
         PortDTO portDTO = new PortDTO();
         portDTO.setId(portId);
         portDTO.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-        entity.setOutputPort(portDTO);
-        updateEntityForSave(entity);
-        return put("/controller/process-groups/" + groupId + "/output-ports/" + portId, entity, OutputPortEntity.class);
+        return client.ports().updateOutputPort(groupId, portDTO);
     }
 
-    public InputPortEntity startInputPort(String groupId, String portId) throws NifiClientRuntimeException {
-        InputPortEntity entity = new InputPortEntity();
+    public PortDTO startInputPort(String groupId, String portId) throws NifiClientRuntimeException {
         PortDTO portDTO = new PortDTO();
         portDTO.setId(portId);
         portDTO.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-        entity.setInputPort(portDTO);
-        updateEntityForSave(entity);
-        return put("/controller/process-groups/" + groupId + "/input-ports/" + portId, entity, InputPortEntity.class);
+        return client.ports().updateInputPort(groupId, portDTO);
     }
 
-    public OutputPortEntity startOutputPort(String groupId, String portId) throws NifiClientRuntimeException {
-        OutputPortEntity entity = new OutputPortEntity();
+    public PortDTO startOutputPort(String groupId, String portId) throws NifiClientRuntimeException {
         PortDTO portDTO = new PortDTO();
         portDTO.setId(portId);
         portDTO.setState(NifiProcessUtil.PROCESS_STATE.RUNNING.name());
-        entity.setOutputPort(portDTO);
-        updateEntityForSave(entity);
-        return put("/controller/process-groups/" + groupId + "/output-ports/" + portId, entity, OutputPortEntity.class);
+        return client.ports().updateOutputPort(groupId, portDTO);
     }
 
     @Deprecated

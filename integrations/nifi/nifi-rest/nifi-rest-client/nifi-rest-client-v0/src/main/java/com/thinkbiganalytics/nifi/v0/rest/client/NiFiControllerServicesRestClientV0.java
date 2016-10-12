@@ -10,6 +10,7 @@ import org.apache.nifi.web.api.entity.ControllerServiceEntity;
 import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
 import org.apache.nifi.web.api.entity.ControllerServicesEntity;
 
+import java.util.HashMap;
 import java.util.Optional;
 import java.util.Set;
 
@@ -40,7 +41,7 @@ public class NiFiControllerServicesRestClientV0 implements NiFiControllerService
     @Override
     public Optional<ControllerServiceDTO> delete(@Nonnull final String id) {
         try {
-            return Optional.of(client.delete(BASE_PATH + "/" + client.getClusterType() + "/" + id, client.getUpdateParams(), ControllerServiceEntity.class).getControllerService());
+            return Optional.of(client.delete(BASE_PATH + "/" + client.getClusterType() + "/" + id, new HashMap<>(), ControllerServiceEntity.class).getControllerService());
         } catch (NotFoundException e) {
             return Optional.empty();
         }
