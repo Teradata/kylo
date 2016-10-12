@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.nifi.v0.rest.client;
 
+import com.thinkbiganalytics.nifi.rest.client.NiFiConnectionsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiControllerServicesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiPortsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessGroupsRestClient;
@@ -33,6 +34,10 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
     @Nonnull
     private final NifiRestClientConfig clientConfig;
 
+    /** NiFi Connections REST client */
+    @Nullable
+    private NiFiConnectionsRestClientV0 connections;
+
     /** NiFi Controller Services REST client */
     @Nullable
     private NiFiControllerServicesRestClientV0 controllerServices;
@@ -57,6 +62,15 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
     public NiFiRestClientV0(@Nonnull final NifiRestClientConfig config) {
         super(config);
         clientConfig = config;
+    }
+
+    @Nonnull
+    @Override
+    public NiFiConnectionsRestClient connections() {
+        if (connections == null) {
+            connections = new NiFiConnectionsRestClientV0(this);
+        }
+        return connections;
     }
 
     @Nonnull

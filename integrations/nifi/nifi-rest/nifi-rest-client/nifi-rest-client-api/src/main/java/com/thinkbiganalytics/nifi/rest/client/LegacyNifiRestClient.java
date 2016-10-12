@@ -27,6 +27,7 @@ import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
 import org.apache.nifi.web.api.dto.DocumentedTypeDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
+import org.apache.nifi.web.api.dto.ListingRequestDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
@@ -34,10 +35,7 @@ import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
 import org.apache.nifi.web.api.entity.AboutEntity;
 import org.apache.nifi.web.api.entity.BulletinBoardEntity;
-import org.apache.nifi.web.api.entity.ConnectionEntity;
-import org.apache.nifi.web.api.entity.DropRequestEntity;
 import org.apache.nifi.web.api.entity.Entity;
-import org.apache.nifi.web.api.entity.ListingRequestEntity;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
 import org.apache.nifi.web.api.entity.ProvenanceEventEntity;
 import org.apache.nifi.web.api.entity.SearchResultsEntity;
@@ -434,34 +432,24 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return deleteProcessGroup(processGroup);
     }
 
-    public ConnectionEntity getConnection(String processGroupId, String connectionId) throws NifiComponentNotFoundException {
-        try {
-            return get("/controller/process-groups/" + processGroupId + "/connections/" + connectionId, null, ConnectionEntity.class);
-        } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException("Unable to find Connection for process Group: " + processGroupId + " and Connection Id " + connectionId, connectionId,
-                                                     NifiConstants.NIFI_COMPONENT_TYPE.CONNECTION, e);
-        }
+    @Deprecated
+    public ConnectionDTO getConnection(String processGroupId, String connectionId) throws NifiComponentNotFoundException {
+        return client.connections().findById(processGroupId, connectionId)
+                .orElseThrow(() -> new NifiComponentNotFoundException("Unable to find Connection for process Group: " + processGroupId + " and Connection Id " + connectionId, connectionId,
+                                                                            NifiConstants.NIFI_COMPONENT_TYPE.CONNECTION, null));
     }
 
-    public ListingRequestEntity getConnectionQueue(String processGroupId, String connectionId) {
-        return postForm("/controller/process-groups/" + processGroupId + "/connections/" + connectionId + "/listing-requests", null, ListingRequestEntity.class);
+    @Deprecated
+    public ListingRequestDTO getConnectionQueue(String processGroupId, String connectionId) {
+        return client.connections().getQueue(processGroupId, connectionId);
     }
 
     public void deleteConnection(ConnectionDTO connection, boolean emptyQueue) {
 
-        Map<String, Object> params = getUpdateParams();
         try {
             if (emptyQueue) {
                 //empty connection Queue
-                DropRequestEntity
-                    dropRequestEntity =
-                    delete("/controller/process-groups/" + connection.getParentGroupId() + "/connections/" + connection.getId() + "/contents", params,
-                           DropRequestEntity.class);
-                if (dropRequestEntity != null && dropRequestEntity.getDropRequest() != null) {
-                    params = getUpdateParams();
-                    delete("/controller/process-groups/" + connection.getParentGroupId() + "/connections/" + connection.getId() + "/drop-requests/"
-                           + dropRequestEntity.getDropRequest().getId(), params, DropRequestEntity.class);
-                }
+                client.connections().deleteQueue(connection.getParentGroupId(), connection.getId());
             }
             //before deleting the connection we need to stop the source
             LOG.info("Before deleting the connection we need to stop Sources and destinations.");
@@ -494,8 +482,7 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
                 //TODO LOG IT
             }
             LOG.info("Deleting the connection {} ", connection.getId());
-            delete("/controller/process-groups/" + connection.getParentGroupId() + "/connections/" + connection.getId(), params,
-                   ConnectionEntity.class);
+            client.connections().delete(connection.getParentGroupId(), connection.getId());
             try {
                 type = connection.getSource().getType();
                 //now start the inputs again

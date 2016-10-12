@@ -9,6 +9,14 @@ import javax.annotation.Nullable;
 public interface NiFiRestClient {
 
     /**
+     * Gets the client for managing connections, including creating a connection, setting queue priority, and updating the connection destination.
+     *
+     * @return the NiFi Connections client
+     */
+    @Nonnull
+    NiFiConnectionsRestClient connections();
+
+    /**
      * Gets the client for managing controller services and updating controller service references.
      *
      * @return the NiFi Controller Services client

@@ -15,10 +15,10 @@ import com.thinkbiganalytics.rest.JerseyClientException;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.NoHttpResponseException;
 import org.apache.http.conn.HttpHostConnectException;
+import org.apache.nifi.web.api.dto.ConnectionDTO;
+import org.apache.nifi.web.api.dto.ListingRequestDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
-import org.apache.nifi.web.api.entity.ConnectionEntity;
-import org.apache.nifi.web.api.entity.ListingRequestEntity;
 import org.apache.nifi.web.api.entity.ProvenanceEventEntity;
 
 import java.io.IOException;
@@ -212,9 +212,9 @@ public class NifiRestTest {
 
     // @Test
     public void testConnection() throws JerseyClientException {
-        ConnectionEntity entity = restClient.getConnection("72f23ad8-2b7f-47e6-a6db-f8e92b7d1f59", "9ed6ea0f-8401-4e56-826e-f5b7556976b9");
+        ConnectionDTO entity = restClient.getConnection("72f23ad8-2b7f-47e6-a6db-f8e92b7d1f59", "9ed6ea0f-8401-4e56-826e-f5b7556976b9");
 
-        ListingRequestEntity queue = restClient.getConnectionQueue("72f23ad8-2b7f-47e6-a6db-f8e92b7d1f59", "9ed6ea0f-8401-4e56-826e-f5b7556976b9");
+        ListingRequestDTO queue = restClient.getConnectionQueue("72f23ad8-2b7f-47e6-a6db-f8e92b7d1f59", "9ed6ea0f-8401-4e56-826e-f5b7556976b9");
 
         int i = 0;
 
@@ -232,8 +232,8 @@ public class NifiRestTest {
         }
         String connectionId = "61e16428-9368-4f40-a0bb-7acaae92b286";
         String groupId = "01fd0596-0bb7-47b3-a5b7-eaccbe10d645";
-        ConnectionEntity connectionEntity = restClient.getConnection(groupId, connectionId);
-        restClient.deleteConnection(connectionEntity.getConnection(), false);
+        ConnectionDTO connectionEntity = restClient.getConnection(groupId, connectionId);
+        restClient.deleteConnection(connectionEntity, false);
 
     }
 
