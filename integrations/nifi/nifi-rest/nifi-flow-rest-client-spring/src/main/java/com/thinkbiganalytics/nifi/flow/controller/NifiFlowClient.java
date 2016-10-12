@@ -23,7 +23,6 @@ import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
 import org.apache.nifi.web.api.entity.AboutEntity;
-import org.apache.nifi.web.api.entity.ProcessorEntity;
 import org.apache.nifi.web.api.entity.SearchResultsEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,7 +83,7 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
         return client.getRootProcessGroup();
     }
 
-    public ProcessorEntity getProcessor(String processGroupId, String processorId) throws NifiComponentNotFoundException {
+    public ProcessorDTO getProcessor(String processGroupId, String processorId) throws NifiComponentNotFoundException {
         return client.getProcessor(processGroupId, processorId);
     }
 
@@ -96,10 +95,10 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
             ComponentSearchResultDTO processorResult = results.getSearchResultsDTO().getProcessorResults().get(0);
             String id = processorResult.getId();
             String groupId = processorResult.getGroupId();
-            ProcessorEntity processorEntity = getProcessor(groupId, id);
+            ProcessorDTO processorEntity = getProcessor(groupId, id);
 
             if (processorEntity != null) {
-                return processorEntity.getProcessor();
+                return processorEntity;
             }
         } else {
             log.info("Unable to find Processor in Nifi for id: {}", processorId);

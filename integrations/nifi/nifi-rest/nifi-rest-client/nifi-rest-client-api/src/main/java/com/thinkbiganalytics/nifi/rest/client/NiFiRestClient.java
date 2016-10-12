@@ -41,6 +41,14 @@ public interface NiFiRestClient {
     NiFiProcessGroupsRestClient processGroups();
 
     /**
+     * Gets the client for creating a processor, setting properties, and scheduling.
+     *
+     * @return the NiFi Processors client
+     */
+    @Nonnull
+    NiFiProcessorsRestClient processors();
+
+    /**
      * Gets the client for downloading or deleting templates.
      *
      * @return the NiFi Templates client

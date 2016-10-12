@@ -140,9 +140,8 @@ public class NifiRestTest {
     public void getProcessor() {
 
         try {
-            ProcessorEntity
-                entity = restClient.getProcessor("9e75099f-d689-4d57-a113-dbe43fef0af5", "58b5da24-8f14-452f-b8cb-8e6a052a629e");
-            ProcessorDTO dto = entity.getProcessor();
+            ProcessorDTO
+                dto = restClient.getProcessor("9e75099f-d689-4d57-a113-dbe43fef0af5", "58b5da24-8f14-452f-b8cb-8e6a052a629e");
             int i = 1;
         } catch (Exception e) {
             e.printStackTrace();

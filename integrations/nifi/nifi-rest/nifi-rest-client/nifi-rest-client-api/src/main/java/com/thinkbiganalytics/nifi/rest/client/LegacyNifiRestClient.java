@@ -54,7 +54,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.NotFoundException;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 
@@ -282,17 +281,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
     public ProcessGroupDTO markProcessorGroupAsRunning(ProcessGroupDTO groupDTO) {
         client.processGroups().schedule(groupDTO.getId(), groupDTO.getParentGroupId(), NiFiComponentState.RUNNING);
         return client.processGroups().findById(groupDTO.getId(), false, false).get();
-    }
-
-
-
-
-    private Map<String, Object> getUpdateParams() {
-        Entity status = getControllerRevision();
-        Map<String, Object> params = new HashMap<>();
-        params.put("version", status.getRevision().getVersion().toString());
-        params.put("clientId", status.getRevision().getClientId());
-        return params;
     }
 
     public void stopProcessor(ProcessorDTO processorDTO) {
@@ -814,31 +802,23 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
     /**
      * gets a Processor
      */
-    public ProcessorEntity getProcessor(String processGroupId, String processorId) throws NifiComponentNotFoundException {
-        try {
-            return get("/controller/process-groups/" + processGroupId + "/processors/" + processorId, null, ProcessorEntity.class);
-        } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException(processorId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESSOR, e);
-        }
+    @Deprecated
+    public ProcessorDTO getProcessor(String processGroupId, String processorId) throws NifiComponentNotFoundException {
+        return client.processors().findById(processGroupId, processorId)
+                .orElseThrow(() -> new NifiComponentNotFoundException(processorId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESSOR, null));
     }
 
     /**
      * Saves the Processor
      */
-    public ProcessorEntity updateProcessor(ProcessorEntity processorEntity) {
-        updateEntityForSave(processorEntity);
-        return put(
-            "/controller/process-groups/" + processorEntity.getProcessor().getParentGroupId() + "/processors/" + processorEntity
-                .getProcessor().getId(), processorEntity, ProcessorEntity.class);
+    @Deprecated
+    public ProcessorDTO updateProcessor(ProcessorEntity processorEntity) {
+        return client.processors().update(processorEntity.getProcessor());
     }
 
-    public ProcessorEntity updateProcessor(ProcessorDTO processorDTO) {
-        ProcessorEntity processorEntity = new ProcessorEntity();
-        processorEntity.setProcessor(processorDTO);
-        updateEntityForSave(processorEntity);
-        return put(
-            "/controller/process-groups/" + processorEntity.getProcessor().getParentGroupId() + "/processors/" + processorEntity
-                .getProcessor().getId(), processorEntity, ProcessorEntity.class);
+    @Deprecated
+    public ProcessorDTO updateProcessor(ProcessorDTO processorDTO) {
+        return client.processors().update(processorDTO);
     }
 
     @Deprecated
@@ -870,19 +850,19 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
     public void updateProcessorProperties(String processGroupId, String processorId, List<NifiProperty> properties) {
         Map<String, NifiProperty> propertyMap = NifiPropertyUtil.propertiesAsMap(properties);
         // fetch the processor
-        ProcessorEntity processor = getProcessor(processGroupId, processorId);
+        ProcessorDTO processor = getProcessor(processGroupId, processorId);
         //iterate through and update the properties
         for (Map.Entry<String, NifiProperty> property : propertyMap.entrySet()) {
-            processor.getProcessor().getConfig().getProperties().put(property.getKey(), property.getValue().getValue());
+            processor.getConfig().getProperties().put(property.getKey(), property.getValue().getValue());
         }
         updateProcessor(processor);
     }
 
     public void updateProcessorProperty(String processGroupId, String processorId, NifiProperty property) {
         // fetch the processor
-        ProcessorEntity processor = getProcessor(processGroupId, processorId);
+        ProcessorDTO processor = getProcessor(processGroupId, processorId);
         //iterate through and update the properties
-        processor.getProcessor().getConfig().getProperties().put(property.getKey(), property.getValue());
+        processor.getConfig().getProperties().put(property.getKey(), property.getValue());
         updateProcessor(processor);
     }
 
@@ -1215,10 +1195,10 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
             ComponentSearchResultDTO processorResult =  results.getSearchResultsDTO().getProcessorResults().get(0);
             String id = processorResult.getId();
             String groupId = processorResult.getGroupId();
-            ProcessorEntity processorEntity = getProcessor(groupId,id);
+            ProcessorDTO processorEntity = getProcessor(groupId,id);
 
             if(processorEntity != null){
-                return processorEntity.getProcessor();
+                return processorEntity;
             }
         }
         else {

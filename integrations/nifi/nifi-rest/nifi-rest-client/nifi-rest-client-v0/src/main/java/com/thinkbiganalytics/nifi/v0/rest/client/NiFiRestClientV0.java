@@ -4,6 +4,7 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiConnectionsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiControllerServicesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiPortsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessGroupsRestClient;
+import com.thinkbiganalytics.nifi.rest.client.NiFiProcessorsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiTemplatesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
@@ -49,6 +50,10 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
     /** NiFi Process Groups REST client */
     @Nullable
     private NiFiProcessGroupsRestClientV0 processGroups;
+
+    /** NiFi Processors REST client */
+    @Nullable
+    private NiFiProcessorsRestClientV0 processors;
 
     /** NiFi Templates REST client */
     @Nullable
@@ -141,6 +146,15 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
             processGroups = new NiFiProcessGroupsRestClientV0(this);
         }
         return processGroups;
+    }
+
+    @Nonnull
+    @Override
+    public NiFiProcessorsRestClient processors() {
+        if (processors == null) {
+            processors = new NiFiProcessorsRestClientV0(this);
+        }
+        return processors;
     }
 
     @Nonnull
