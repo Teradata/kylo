@@ -11,29 +11,13 @@ public class RangerConnection implements AuthorizationConfiguration {
     private int port;
     private String username;
     private String password;
-    private String hdfs_repository_name;
-    private String hive_repository_name;
+    private String hdfsRepositoryName;
+    private String hiveRepositoryName;
 
     public String getHostName() {
         return hostName;
     }
-
-    public String getHdfs_repository_name() {
-		return hdfs_repository_name;
-	}
-
-	public void setHdfs_repository_name(String hdfs_repository_name) {
-		this.hdfs_repository_name = hdfs_repository_name;
-	}
-
-	public String getHive_repository_name() {
-		return hive_repository_name;
-	}
-
-	public void setHive_repository_name(String hive_repository_name) {
-		this.hive_repository_name = hive_repository_name;
-	}
-
+ 
 	public void setHostName(String hostName) {
         this.hostName = hostName;
     }
@@ -41,6 +25,26 @@ public class RangerConnection implements AuthorizationConfiguration {
     public String getPassword() {
         return password;
     }
+
+    public String getHdfsRepositoryName() {
+        return hdfsRepositoryName;
+    }
+
+
+    public void setHdfsRepositoryName(String hdfsRepositoryName) {
+        this.hdfsRepositoryName = hdfsRepositoryName;
+    }
+
+
+    public String getHiveRepositoryName() {
+        return hiveRepositoryName;
+    }
+
+
+    public void setHiveRepositoryName(String hiveRepositoryName) {
+        this.hiveRepositoryName = hiveRepositoryName;
+    }
+
 
     public void setPassword(String password) {
         this.password = password;

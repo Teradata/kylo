@@ -46,37 +46,34 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
         return null;
     }
 
-	@Override
-	public void createPolicy(String policyName, List<String> groupList, List<String> hdfsPaths,
-                                 String datebaseName, List<String> tableNames, List<String> hdfsPermissions,
-                                 List<String> hivePermissions) {
-		// TODO Auto-generated method stub
-		
-		
-	}
+    @Override
+    public void createReadOnlyPolicy(String categoryName, String feedName, List<String> hadoopAuthorizationGroups, List<String> hdfsPaths, String datebaseName, List<String> tableNames) {
+        // TODO Auto-generated method stub
+        
+    }
 
-	@Override
-	public void deletePolicy(String policyName , String repositoyType) throws Exception {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void deletePolicy(String categoryName, String feedName, String repositoryType) throws Exception {
+        // TODO Auto-generated method stub
+        
+    }
 
-	@Override
-	public List<HadoopAuthorizationPolicy> searchPolicy(Map<String, Object> searchCriteria) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+    @Override
+    public List<HadoopAuthorizationPolicy> searchPolicy(Map<String, Object> searchCriteria) {
+        // TODO Auto-generated method stub
+        return null;
+    }
 
-	@Override
-	public void updatePolicy(String policyName, List<String> group_List, List<String> hdfs_paths,
-			String permission_level, List<String> datebaseName, List<String> tableName,
-			List<String> hdfs_permission_list, List<String> hive_permission_List) {
-		// TODO Auto-generated method stub
-		
-	}
+    @Override
+    public void updateReadOnlyPolicy(String categoryName, String feedName, List<String> group_List, List<String> hdfs_paths, String datebaseName, List<String> tableName) throws Exception {
+        // TODO Auto-generated method stub
+        
+    }
 
     @Override
     public String getType() {
-	return HADOOP_AUTHORIZATION_TYPE_SENTRY;
+        // TODO Auto-generated method stub
+        return null;
     }
+
 }

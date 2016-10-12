@@ -199,7 +199,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
                 //List<String> securityGroups =  metadataEvent.getHadoopSecurityGroups().stream().map(group -> group.getName()).collect(Collectors.toList());
 
-                hadoopAuthorizationService.createPolicy("kylo_" + metadataEvent.getFeedCategory() + "_" + metadataEvent.getFeedName()
+                 hadoopAuthorizationService.createReadOnlyPolicy("kylo_" + metadataEvent.getFeedCategory() ,metadataEvent.getFeedName()
                     , metadataEvent.getHadoopSecurityGroupNames()
                     , hdfsFolders.collect(Collectors.toList())
                     , hiveSchema
