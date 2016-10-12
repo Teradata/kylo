@@ -20,6 +20,7 @@ import com.thinkbiganalytics.metadata.api.feed.FeedNotFoundExcepton;
 import com.thinkbiganalytics.metadata.api.feed.FeedProvider;
 import com.thinkbiganalytics.metadata.api.feed.FeedSource;
 import com.thinkbiganalytics.metadata.api.feed.PreconditionBuilder;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 import com.thinkbiganalytics.metadata.modeshape.AbstractMetadataCriteria;
 import com.thinkbiganalytics.metadata.modeshape.BaseJcrProvider;
 import com.thinkbiganalytics.metadata.modeshape.JcrMetadataAccess;
@@ -52,6 +53,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 import javax.inject.Inject;
@@ -641,7 +643,14 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         try {
             JcrFeed feed = (JcrFeed) getFeed(feedId);
             JcrMetadataAccess.ensureCheckoutNode(feed.getNode());
-            this.metadataEventService.notify(new FeedPropertyChangeEvent(feed.getProperties(), properties));
+
+            List<String> securityGroupNames = new ArrayList<>();
+            for(Object o: feed.getSecurityGroups()) {
+                HadoopSecurityGroup securityGroup = (HadoopSecurityGroup)o;
+                securityGroupNames.add(securityGroup.getName());
+            }
+            this.metadataEventService.notify(new FeedPropertyChangeEvent(feed.getCategory().getName(), feed.getName(), securityGroupNames , feed.getProperties(), properties));
+
             return feed.mergeProperties(properties);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to merge Feed Properties for Feed " + feedId, e);

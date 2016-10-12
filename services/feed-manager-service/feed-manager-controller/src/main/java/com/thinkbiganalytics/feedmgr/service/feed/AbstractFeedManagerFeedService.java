@@ -1,6 +1,7 @@
 package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.thinkbiganalytics.datalake.authorization.HadoopAuthorizationService;
+import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 import com.thinkbiganalytics.feedmgr.nifi.CreateFeedBuilder;
 import com.thinkbiganalytics.feedmgr.nifi.PropertyExpressionResolver;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
@@ -8,6 +9,9 @@ import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
 import com.thinkbiganalytics.feedmgr.rest.model.RegisteredTemplate;
 import com.thinkbiganalytics.feedmgr.rest.model.ReusableTemplateConnectionInfo;
 import com.thinkbiganalytics.feedmgr.security.FeedsAccessControl;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.nifi.feedmgr.FeedRollbackException;
 import com.thinkbiganalytics.nifi.feedmgr.InputOutputPort;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClient;
@@ -16,16 +20,23 @@ import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.security.AccessController;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 /**
@@ -34,10 +45,6 @@ import javax.inject.Inject;
 public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedService {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractFeedManagerFeedService.class);
-
-    private static final String HADOOP_AUTHORIZATION_TYPE_NONE = "NONE";
-    private static final String HADOOP_AUTHORIZATION_TYPE_RANGER = "RANGER";
-    private static final String HADOOP_AUTHORIZATION_TYPE_SENTRY = "SENTRY";
 
     @Autowired
     private NifiRestClient nifiRestClient;
@@ -48,13 +55,34 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
     @Inject
     private AccessController accessController;
 
+    @Inject
+    private MetadataEventService metadataEventService;
+
     // I had to use autowired instead of Inject to allow null values.
     @Autowired(required = false)
     @Qualifier("hadoopAuthorizationService")
     private HadoopAuthorizationService hadoopAuthorizationService;
 
+    /** Event listener for precondition events */
+    private final MetadataEventListener<FeedPropertyChangeEvent> feedPropertyChangeListener = new FeedPropertyChangeDispatcher();
+
     protected abstract RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
 
+    /**
+     * Adds listeners for transferring events.
+     */
+    @PostConstruct
+    public void addEventListener() {
+        metadataEventService.addListener(feedPropertyChangeListener);
+    }
+
+    /**
+     * Removes listeners and stops transferring events.
+     */
+    @PreDestroy
+    public void removeEventListener() {
+        metadataEventService.removeListener(feedPropertyChangeListener);
+    }
 
     public NifiFeed createFeed(FeedMetadata feedMetadata) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
@@ -74,7 +102,12 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
         feedMetadata.updateHadoopSecurityGroups();
 
-        setHadoopAuthorizationType(feedMetadata);
+        if (hadoopAuthorizationService == null) {
+            feedMetadata.setHadoopAuthorizationType(hadoopAuthorizationService.HADOOP_AUTHORIZATION_TYPE_NONE);
+        }
+        else {
+            feedMetadata.setHadoopAuthorizationType(hadoopAuthorizationService.getType());
+        }
 
         //get all the properties for the metadata
         RegisteredTemplate
@@ -149,22 +182,28 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
         return feed;
     }
 
-    private void setHadoopAuthorizationType(FeedMetadata feedMetadata) {
-        if (hadoopAuthorizationService == null) {
-            feedMetadata.setHadoopAuthorizationType(HADOOP_AUTHORIZATION_TYPE_NONE);
-        }
-        else {
-            String fullyQualifiedClassName = hadoopAuthorizationService.getClass().getTypeName();
-            String className = fullyQualifiedClassName.substring(fullyQualifiedClassName.lastIndexOf(".") + 1);
+    private class FeedPropertyChangeDispatcher implements MetadataEventListener<FeedPropertyChangeEvent> {
 
-            if(className.equals("RangerAuthorizationService")) {
-                feedMetadata.setHadoopAuthorizationType(HADOOP_AUTHORIZATION_TYPE_RANGER);
-            }
-            else if(className.equals("SentryAuthorizationService")) {
-                feedMetadata.setHadoopAuthorizationType(HADOOP_AUTHORIZATION_TYPE_SENTRY);
-            }
-            else {
-                throw new UnsupportedOperationException("Hadoop authorization type not supported");
+        @Override
+        public void notify(@Nonnull final FeedPropertyChangeEvent metadataEvent) {
+            // TODO Remove metadata properties if they were removed from NiFI
+
+            // TODO Only update if the nifi metadata properties that we care about changed
+            if (hadoopAuthorizationService != null && metadataEvent.getHadoopSecurityGroupNames() != null) {
+                String hdfsFoldersWithCommas = metadataEvent.getNewProperties().getProperty("nifi:metadata:securityGroupHdfsFolders").replace("\n", ",");
+                Stream<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas);
+
+                String hiveTablesWithCommas = metadataEvent.getNewProperties().getProperty("nifi:metadata:securityGroupHiveTableNames").replace("\n", ",");
+                Stream<String> hiveTables = Stream.of(hiveTablesWithCommas);
+                String hiveSchema = metadataEvent.getNewProperties().getProperty("nifi:metadata:securityGroupHiveSchema");
+
+                //List<String> securityGroups =  metadataEvent.getHadoopSecurityGroups().stream().map(group -> group.getName()).collect(Collectors.toList());
+
+                hadoopAuthorizationService.createPolicy("kylo_" + metadataEvent.getFeedCategory() + "_" + metadataEvent.getFeedName()
+                    , metadataEvent.getHadoopSecurityGroupNames()
+                    , hdfsFolders.collect(Collectors.toList())
+                    , hiveSchema
+                    , hiveTables.collect(Collectors.toList()));
             }
         }
     }

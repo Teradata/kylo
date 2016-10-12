@@ -21,6 +21,11 @@
         </dependency>
         <dependency>
             <groupId>com.thinkbiganalytics.datalake</groupId>
+            <artifactId>thinkbig-hadoop-authorization-api</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thinkbiganalytics.datalake</groupId>
             <artifactId>thinkbig-commons-util</artifactId>
             <version>${project.version}</version>
         </dependency>

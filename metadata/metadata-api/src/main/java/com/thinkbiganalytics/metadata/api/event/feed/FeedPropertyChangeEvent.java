@@ -1,8 +1,11 @@
 package com.thinkbiganalytics.metadata.api.event.feed;
 
+import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationGroup;
 import com.thinkbiganalytics.metadata.api.event.AbstractMetadataEvent;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
+import com.thinkbiganalytics.metadata.api.security.HadoopSecurityGroup;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
@@ -15,11 +18,17 @@ public class FeedPropertyChangeEvent extends AbstractMetadataEvent<String> {
 
     private Properties oldProperties;
     private Properties newProperties;
+    private String feedCategory;
+    private String feedName;
+    private List<String> hadoopSecurityGroupNames;
 
-    public FeedPropertyChangeEvent(Map<String, Object> oldProperties, Map<String, Object> newProperties) {
+    public FeedPropertyChangeEvent(String feedCategory, String feedName, List<String> hadoopSecurityGroupNames, Map<String, Object> oldProperties, Map<String, Object> newProperties) {
         super("");
         this.oldProperties = convertMapToProperties(oldProperties);
         this.newProperties = convertMapToProperties(newProperties);
+        this.feedCategory = feedCategory;
+        this.feedName = feedName;
+        this.hadoopSecurityGroupNames = hadoopSecurityGroupNames;
     }
 
     public Properties getOldProperties() {
@@ -36,5 +45,17 @@ public class FeedPropertyChangeEvent extends AbstractMetadataEvent<String> {
             properties.setProperty(entry.getKey(), String.valueOf(entry.getValue()));
         }
         return properties;
+    }
+
+    public String getFeedCategory() {
+        return feedCategory;
+    }
+
+    public String getFeedName() {
+        return feedName;
+    }
+
+    public List<String> getHadoopSecurityGroupNames() {
+        return hadoopSecurityGroupNames;
     }
 }

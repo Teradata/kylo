@@ -21,6 +21,8 @@ import com.thinkbiganalytics.datalake.authorization.model.HadoopAuthorizationPol
 public class SentryAuthorizationService implements HadoopAuthorizationService {
 
     private static final Logger log = LoggerFactory.getLogger(SentryAuthorizationService.class);
+
+    private static final String HADOOP_AUTHORIZATION_TYPE_SENTRY = "SENTRY";
     
     SentryClient sentryClientObject;
 
@@ -45,9 +47,9 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
     }
 
 	@Override
-	public void createPolicy(String policyName, List<String> group_List, List<String> hdfs_paths,
-			String permission_level, List<String> datebaseName, List<String> tableName,
-			List<String> hdfs_permission_list, List<String> hive_permission_List) {
+	public void createPolicy(String policyName, List<String> groupList, List<String> hdfsPaths,
+                                 String datebaseName, List<String> tableNames, List<String> hdfsPermissions,
+                                 List<String> hivePermissions) {
 		// TODO Auto-generated method stub
 		
 		
@@ -73,4 +75,8 @@ public class SentryAuthorizationService implements HadoopAuthorizationService {
 		
 	}
 
+    @Override
+    public String getType() {
+	return HADOOP_AUTHORIZATION_TYPE_SENTRY;
+    }
 }

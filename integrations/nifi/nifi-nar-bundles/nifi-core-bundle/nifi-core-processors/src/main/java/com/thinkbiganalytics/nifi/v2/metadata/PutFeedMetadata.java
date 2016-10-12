@@ -118,7 +118,7 @@ public class PutFeedMetadata extends AbstractProcessor {
         String category = context.getProperty(CATEGORY_NAME).evaluateAttributeExpressions(flowFile).getValue();
         String feed = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
 
-        getLogger().info("The category is: " + category + " and feed is " + feed);
+        getLogger().debug("The category is: " + category + " and feed is " + feed);
 
         MetadataProvider metadataProvider = getMetadataService(context).getProvider();
 
@@ -130,6 +130,7 @@ public class PutFeedMetadata extends AbstractProcessor {
         for (PropertyDescriptor property : propertyKeys) {
             String propertyName = property.getName();
             String value = properties.get(property);
+            
 
             if (!PROPERTY_LIST_TO_IGNORE.contains(propertyName)) {
                 metadataProperties.setProperty(METADATA_FIELD_PREFIX + propertyName, value);
