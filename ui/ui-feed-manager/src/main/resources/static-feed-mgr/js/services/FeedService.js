@@ -273,7 +273,6 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
          * @param fields
          */
         setTableFields:function(fields){
-            console.log('SET TABLE FIELDS ', fields)
             var self =this;
             this.createFeedModel.table.tableSchema.fields = [];
             this.createFeedModel.table.fieldPolicies = [];

@@ -29,7 +29,8 @@
                 <div class="{{vm.steps[3].type}} step-label"><ng-md-icon nomorph md-icon icon="{{vm.steps[3].icon}}" size="{{vm.steps[3].iconSize}}" style="fill-rule:evenodd;fill:{{vm.steps[1].iconStyle}}"></ng-md-icon>Transform Data</div>
             </md-tab-label>
             <md-tab-body>
-                <thinkbig-visual-query-transform step-index="3" ng-if="vm.selectedStepIndex == 3 " ></thinkbig-visual-query-transform>
+                <!-- keep this transform step visible if its been visited once since it needs to update the model after a user leaves this step -->
+                <thinkbig-visual-query-transform step-index="3" ng-if="vm.selectedStepIndex == 3 || vm.steps[3].visited"></thinkbig-visual-query-transform>
             </md-tab-body>
         </md-tab>
         <md-tab ng-disabled="vm.steps[4].disabled">

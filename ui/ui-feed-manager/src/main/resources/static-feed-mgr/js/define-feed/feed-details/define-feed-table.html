@@ -117,7 +117,8 @@
                             <div flex="20" class="md-list-item-text  ">
                                 <md-input-container md-no-float class="md-block condensed" flex-gt-sm>
                                     <input ng-model="columnDef.name" placeholder="Field Name" required name="name_{{columnDef._id}}" ng-change="vm.onFieldNameChange(columnDef)"
-                                           ng-pattern="/^[a-zA-Z0-9_-\s]*$/"/>
+                                           ng-pattern="/^[a-zA-Z0-9_-\s]*$/"
+                                           ng-disabled="vm.model.dataTransformationFeed"/>
 
                                     <div ng-messages="vm.defineFeedTableForm['name_'+columnDef._id].$error" md-auto-hide="false">
                                         <div ng-message="notUnique">Name must be unique</div>
@@ -134,7 +135,7 @@
                             <div flex="20" class="md-list-item-text " style="padding-left:5px;">
                                 <div layout="column">
                                     <md-input-container class="md-block md-dense condensed" flex-gt-sm>
-                                        <md-select ng-model="columnDef.dataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required>
+                                        <md-select ng-model="columnDef.dataType" placeholder="Data Type" name="datatype_{{columnDef._id}}" required ng-disabled="vm.model.dataTransformationFeed">
                                             <md-option ng-repeat="dataType in vm.columnDefinitionDataTypes | orderBy:'toString()' track by $index" value="{{dataType}}" aria-label="{{dataType}}">
                                                 {{dataType}}
                                     </md-option>
@@ -184,7 +185,8 @@
                             </md-input-container>
                         </div>
                         <div flex="5" class="md-list-item-text" >
-                            <md-button class="md-icon-button" ng-click="vm.removeColumn($index)" aria-label="Remove Field" ng-if="vm.model.table.method != 'SAMPLE_FILE'">
+                            <md-button class="md-icon-button" ng-click="vm.removeColumn($index)" aria-label="Remove Field"
+                                       ng-if="vm.model.table.method != 'SAMPLE_FILE' && vm.model.dataTransformationFeed == false">
                                 <ng-md-icon md-icon icon="clear"></ng-md-icon>
                             </md-button>
                             <span ng-if="vm.model.table.method == 'SAMPLE_FILE'"></span>
