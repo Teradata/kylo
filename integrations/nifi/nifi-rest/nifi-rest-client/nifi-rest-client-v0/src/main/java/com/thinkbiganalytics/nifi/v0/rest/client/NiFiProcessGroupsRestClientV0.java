@@ -13,7 +13,6 @@ import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
 import org.apache.nifi.web.api.entity.ConnectionsEntity;
-import org.apache.nifi.web.api.entity.Entity;
 import org.apache.nifi.web.api.entity.FlowSnippetEntity;
 import org.apache.nifi.web.api.entity.InputPortEntity;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
@@ -62,7 +61,7 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
         ProcessGroupEntity entity = new ProcessGroupEntity();
         ProcessGroupDTO group = new ProcessGroupDTO();
         group.setName(name);
-        client.updateEntityForSave(entity);
+
         try {
             entity.setProcessGroup(group);
             ProcessGroupEntity
@@ -84,7 +83,7 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
             connectionDTO.setName(source.getName() + " - " + dest.getName());
             ConnectionEntity connectionEntity = new ConnectionEntity();
             connectionEntity.setConnection(connectionDTO);
-            client.updateEntityForSave(connectionEntity);
+
             return client.post(BASE_PATH + "/" + processGroupId + "/connections", connectionEntity, ConnectionEntity.class).getConnection();
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
@@ -97,7 +96,7 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
         try {
             final InputPortEntity entity = new InputPortEntity();
             entity.setInputPort(inputPort);
-            client.updateEntityForSave(entity);
+
             return client.post(BASE_PATH + "/" + processGroupId + "/input-ports", entity, InputPortEntity.class).getInputPort();
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
@@ -110,7 +109,7 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
         try {
             final OutputPortEntity entity = new OutputPortEntity();
             entity.setOutputPort(outputPort);
-            client.updateEntityForSave(entity);
+
             return client.post(BASE_PATH + "/" + processGroupId + "/output-ports", entity, OutputPortEntity.class).getOutputPort();
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
@@ -174,18 +173,14 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
     @Override
     public FlowSnippetDTO instantiateTemplate(@Nonnull final String processGroupId, @Nonnull final String templateId) {
         try {
-            Entity status = client.getControllerRevision();
-            String clientId = status.getRevision().getClientId();
             String originX = "10";
             String originY = "10";
             Form form = new Form();
             form.param("templateId", templateId);
-            form.param("clientId", clientId);
             form.param("originX", originX);
             form.param("originY", originY);
-            form.param("version", status.getRevision().getVersion().toString());
-            FlowSnippetEntity response = client.postForm(BASE_PATH + "/" + processGroupId + "/template-instance", form, FlowSnippetEntity.class);
-            return response.getContents();
+
+            return client.postForm(BASE_PATH + "/" + processGroupId + "/template-instance", form, FlowSnippetEntity.class).getContents();
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException("Unable to create Template instance for templateId: " + templateId + " under Process group " + processGroupId
                                                      + ".  Unable find the processGroup or template");
@@ -200,7 +195,7 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
         ProcessGroupEntity entity = new ProcessGroupEntity();
         entity.setProcessGroup(findById(processGroupId, false, false).orElseThrow(() -> new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, null)));
         entity.getProcessGroup().setRunning(state.equals(NiFiComponentState.RUNNING));
-        client.updateEntityForSave(entity);
+
         try {
             client.put(BASE_PATH + "/" + parentGroupId + "/process-group-references/" + processGroupId, entity, ProcessGroupEntity.class);
         } catch (NotFoundException e) {
@@ -214,7 +209,7 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
         try {
             final ProcessGroupEntity entity = new ProcessGroupEntity();
             entity.setProcessGroup(processGroupEntity);
-            client.updateEntityForSave(entity);
+
             return client.put(BASE_PATH + "/" + processGroupEntity.getId(), processGroupEntity, ProcessGroupEntity.class).getProcessGroup();
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupEntity.getId(), NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
@@ -224,10 +219,9 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
     @Nonnull
     @Override
     protected Optional<ProcessGroupDTO> doDelete(@Nonnull final ProcessGroupDTO processGroup) {
-        Map<String, Object> params = client.getUpdateParams();
         try {
-            ProcessGroupEntity entity = client.delete(BASE_PATH + "/" + processGroup.getParentGroupId() + "/process-group-references/" + processGroup.getId(), params,
-                                                      ProcessGroupEntity.class);
+            final ProcessGroupEntity entity = client.delete(BASE_PATH + "/" + processGroup.getParentGroupId() + "/process-group-references/" + processGroup.getId(), new HashMap<>(),
+                                                            ProcessGroupEntity.class);
             return Optional.of(entity.getProcessGroup());
         } catch (NotFoundException e) {
             return Optional.empty();

@@ -73,7 +73,6 @@ public class NiFiControllerServicesRestClientV0 implements NiFiControllerService
     public ControllerServiceDTO update(@Nonnull final ControllerServiceDTO controllerService) {
         final ControllerServiceEntity entity = new ControllerServiceEntity();
         entity.setControllerService(controllerService);
-        client.updateEntityForSave(entity);
 
         try {
             return client.put(BASE_PATH + "/" + client.getClusterType() + "/" + controllerService.getId(), entity, ControllerServiceEntity.class).getControllerService();
