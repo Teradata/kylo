@@ -9,7 +9,6 @@ import com.thinkbiganalytics.nifi.feedmgr.TemplateCreationHelper;
 import com.thinkbiganalytics.nifi.feedmgr.TemplateInstanceCreator;
 import com.thinkbiganalytics.nifi.rest.model.NifiProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.NifiProperty;
-import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowDeserializer;
 import com.thinkbiganalytics.nifi.rest.model.flow.NifiFlowProcessGroup;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiFlowBuilder;
 import com.thinkbiganalytics.nifi.rest.model.visitor.NifiVisitableProcessGroup;
@@ -18,7 +17,6 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConnectionUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
-import com.thinkbiganalytics.nifi.rest.support.NifiTemplateUtil;
 import com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitor;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.support.FeedNameUtil;
@@ -37,17 +35,12 @@ import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
 import org.apache.nifi.web.api.entity.AboutEntity;
 import org.apache.nifi.web.api.entity.BulletinBoardEntity;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
-import org.apache.nifi.web.api.entity.ConnectionsEntity;
-import org.apache.nifi.web.api.entity.ControllerServicesEntity;
 import org.apache.nifi.web.api.entity.DropRequestEntity;
 import org.apache.nifi.web.api.entity.Entity;
 import org.apache.nifi.web.api.entity.InputPortEntity;
-import org.apache.nifi.web.api.entity.LineageEntity;
 import org.apache.nifi.web.api.entity.ListingRequestEntity;
 import org.apache.nifi.web.api.entity.OutputPortEntity;
-import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
-import org.apache.nifi.web.api.entity.ProvenanceEntity;
 import org.apache.nifi.web.api.entity.ProvenanceEventEntity;
 import org.apache.nifi.web.api.entity.SearchResultsEntity;
 import org.slf4j.Logger;
@@ -91,12 +84,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         WebTarget target = super.getBaseTarget();
         return target.path(apiPath);
     }
-
-    @Deprecated
-    public String getClusterType() {
-        return clientConfig.getClusterType();
-    }
-
 
     /**
      * Gets Template data, either a quick view or including all its content
@@ -295,15 +282,10 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return client.processGroups().create(parentGroupId, name);
     }
 
-    public ProcessGroupEntity markProcessorGroupAsRunning(ProcessGroupDTO groupDTO) {
-        ProcessGroupEntity entity = new ProcessGroupEntity();
-        entity.setProcessGroup(groupDTO);
-        entity.getProcessGroup().setRunning(true);
-        updateEntityForSave(entity);
-        return put("/controller/process-groups/" + groupDTO.getParentGroupId() + "/process-group-references/" + groupDTO.getId(),
-                   entity, ProcessGroupEntity.class);
-
-
+    @Deprecated
+    public ProcessGroupDTO markProcessorGroupAsRunning(ProcessGroupDTO groupDTO) {
+        client.processGroups().schedule(groupDTO.getId(), groupDTO.getParentGroupId(), NiFiComponentState.RUNNING);
+        return client.processGroups().findById(groupDTO.getId(), false, false).get();
     }
 
 
@@ -315,11 +297,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         params.put("version", status.getRevision().getVersion().toString());
         params.put("clientId", status.getRevision().getClientId());
         return params;
-    }
-
-
-    public void stopAllProcessors(ProcessGroupDTO groupDTO) {
-        stopAllProcessors(groupDTO.getId(), groupDTO.getParentGroupId());
     }
 
     public void stopProcessor(ProcessorDTO processorDTO) {
@@ -428,12 +405,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
     public ProcessGroupDTO deleteProcessGroup(ProcessGroupDTO groupDTO) throws NifiClientRuntimeException {
         return client.processGroups().delete(groupDTO)
                 .orElseThrow(() -> new NifiClientRuntimeException("Unable to delete Process Group " + groupDTO.getName()));
-    }
-
-    @Deprecated
-    public ProcessGroupDTO stopProcessGroup(ProcessGroupDTO groupDTO) throws NifiClientRuntimeException {
-        client.processGroups().schedule(groupDTO.getId(), groupDTO.getParentGroupId(), NiFiComponentState.STOPPED);
-        return client.processGroups().findById(groupDTO.getId(), false, false).get();
     }
 
     public List<ProcessGroupDTO> deleteChildProcessGroups(String processGroupId) throws NifiClientRuntimeException {
@@ -701,24 +672,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         */
     }
 
-
-    public void stopAllInputProcessors(String processGroupId) throws NifiComponentNotFoundException {
-        List<ProcessorDTO> processorDTOs = getInputProcessors(processGroupId);
-        ProcessorDTO updateDto = new ProcessorDTO();
-        if (processorDTOs != null) {
-            for (ProcessorDTO dto : processorDTOs) {
-                updateDto.setParentGroupId(dto.getParentGroupId());
-                updateDto.setId(dto.getId());
-                //fetch the processor and update it
-                if (NifiProcessUtil.PROCESS_STATE.RUNNING.name().equals(dto.getState())) {
-                    //if its stopped you can disable it.. otherwise stop it and then disable it
-                    updateDto.setState(NifiProcessUtil.PROCESS_STATE.STOPPED.name());
-                    updateProcessor(updateDto);
-                }
-            }
-        }
-    }
-
     /**
      * Finds an input processor of the specified type within the specified process group and sets it to {@code RUNNING}. Other input processors are set to {@code DISABLED}.
      *
@@ -867,15 +820,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
     }
 
     /**
-     * @param template
-     * @return
-     */
-    public List<ProcessorDTO> getInputProcessorsForTemplate(TemplateDTO template) {
-        return NifiTemplateUtil.getInputProcessorsForTemplate(template);
-    }
-
-
-    /**
      * get a set of all ProcessorDTOs in a template and optionally remove the initial input ones
      */
     public Set<ProcessorDTO> getProcessorsForTemplate(String templateId, boolean excludeInputs) throws NifiComponentNotFoundException {
@@ -890,65 +834,9 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
      * returns a list of Processors in a group that dont have any connection destinations (1st in the flow)
      */
     public List<String> getInputProcessorIds(String processGroupId) throws NifiComponentNotFoundException {
-        List<String> processorIds = new ArrayList<>();
-        ConnectionsEntity connections = null;
-        try {
-            connections = get("/controller/process-groups/" + processGroupId + "/connections", null,
-                              ConnectionsEntity.class);
-        } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
-        }
-        if (connections != null) {
-            processorIds = NifiConnectionUtil.getInputProcessorIds(connections.getConnections());
-        }
-        return processorIds;
+        final Set<ConnectionDTO> connections = client.processGroups().getConnections(processGroupId);
+        return NifiConnectionUtil.getInputProcessorIds(connections);
     }
-
-    public List<String> getInputPortIds(String processGroupId) throws NifiComponentNotFoundException {
-        List<String> ids = new ArrayList<>();
-        ConnectionsEntity connections = null;
-        try {
-            connections = get("/controller/process-groups/" + processGroupId + "/connections", null,
-                              ConnectionsEntity.class);
-        } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
-        }
-        if (connections != null) {
-            ids = NifiConnectionUtil.getInputPortIds(connections.getConnections());
-        }
-        return ids;
-    }
-
-    /**
-     * returns a list of Processors in a group that dont have any connection destinations (1st in the flow)
-     */
-    public List<String> getEndingProcessorIds(String processGroupId) throws NifiComponentNotFoundException {
-        List<String> processorIds = new ArrayList<>();
-        ConnectionsEntity connections = null;
-        try {
-            connections = get("/controller/process-groups/" + processGroupId + "/connections", null,
-                              ConnectionsEntity.class);
-        } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
-        }
-        if (connections != null) {
-            processorIds = NifiConnectionUtil.getEndingProcessorIds(connections.getConnections());
-        }
-        return processorIds;
-    }
-
-    /**
-     * return the Source Processors for a given group
-     */
-    public List<ProcessorDTO> getEndingProcessors(String processGroupId) {
-        //get the group
-        ProcessGroupDTO processGroupEntity = getProcessGroup(processGroupId, false, true);
-        //get the Source Processors
-        List<String> sourceIds = getEndingProcessorIds(processGroupId);
-
-        return NifiProcessUtil.findProcessorsByIds(processGroupEntity.getContents().getProcessors(), sourceIds);
-    }
-
 
     /**
      * gets a Processor
@@ -1130,32 +1018,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return client.controllerServices().getTypes();
     }
 
-
-    public LineageEntity postLineageQuery(LineageEntity lineageEntity) {
-
-        return post("/controller/provenance/lineage", lineageEntity, LineageEntity.class);
-    }
-
-
-    public ProvenanceEntity getProvenanceEntity(String provenanceId) {
-
-        ProvenanceEntity entity = get("/controller/provenance/" + provenanceId, null, ProvenanceEntity.class);
-        if (entity != null) {
-            if (!entity.getProvenance().isFinished()) {
-                return getProvenanceEntity(provenanceId);
-            } else {
-                //if it is finished you must delete the provenance entity
-                try {
-                    delete("/controller/provenance/" + provenanceId, null, ProvenanceEntity.class);
-                } catch (ClientErrorException e) {
-                    //swallow the exception.  Nothing we can do about it
-                }
-                return entity;
-            }
-        }
-        return null;
-    }
-
     public ProvenanceEventEntity getProvenanceEvent(String eventId) {
         ProvenanceEventEntity eventEntity = get("/controller/provenance/events/" + eventId, null, ProvenanceEventEntity.class);
         return eventEntity;
@@ -1177,64 +1039,15 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return entity;
     }
 
-    public BulletinBoardEntity getProcessGroupBulletins(String processGroupId) {
-        Map<String, Object> params = new HashMap<>();
-        if (processGroupId != null) {
-            params.put("groupId", processGroupId);
-        }
-        BulletinBoardEntity entity = get("/controller/bulletin-board", params, BulletinBoardEntity.class);
-        return entity;
-    }
-
-    public BulletinBoardEntity getProcessorBulletins(String processorId) {
-        Map<String, Object> params = new HashMap<>();
-        if (processorId != null) {
-            params.put("sourceId", processorId);
-        }
-        BulletinBoardEntity entity = get("/controller/bulletin-board", params, BulletinBoardEntity.class);
-        return entity;
-    }
-
-
-    public InputPortEntity getInputPort(String groupId, String portId) throws NifiComponentNotFoundException {
-        try {
-            return get("/controller/process-groups/" + groupId + "/input-ports/" + portId, null, InputPortEntity.class);
-        } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException("Unable to find Input Port " + portId + " Under Process Group " + groupId, NifiConstants.NIFI_COMPONENT_TYPE.INPUT_PORT, e);
-        }
-    }
-
     @Deprecated
     public Set<PortDTO> getInputPorts(String groupId) throws NifiComponentNotFoundException {
         return client.processGroups().getInputPorts(groupId);
 
     }
 
-    public OutputPortEntity getOutputPort(String groupId, String portId) {
-        try {
-            return get("/controller/process-groups/" + groupId + "/output-ports/" + portId, null, OutputPortEntity.class);
-        } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException("Unable to find Output Port " + portId + " Under Process Group " + groupId, NifiConstants.NIFI_COMPONENT_TYPE.OUTPUT_PORT, e);
-        }
-    }
-
     @Deprecated
     public Set<PortDTO> getOutputPorts(String groupId) throws NifiComponentNotFoundException {
         return client.processGroups().getOutputPorts(groupId);
-    }
-
-    public List<ConnectionDTO> findAllConnectionsMatchingDestinationId(String parentGroupId, String destinationId) throws NifiComponentNotFoundException {
-        //get this parentGroup and find all connections under this parent that relate to this inputPortId
-        //1. get this processgroup
-        ProcessGroupDTO parentGroup = getProcessGroup(parentGroupId, false, false);
-        //2 get the parent
-        String parent = parentGroup.getParentGroupId();
-        Set<ConnectionDTO> connectionDTOs = findConnectionsForParent(parent);
-        List<ConnectionDTO> matchingConnections = NifiConnectionUtil.findConnectionsMatchingDestinationId(connectionDTOs,
-                                                                                                          destinationId);
-
-        return matchingConnections;
-
     }
 
     public void createReusableTemplateInputPort(String reusableTemplateCategoryGroupId, String reusableTemplateGroupId) throws NifiComponentNotFoundException {
@@ -1259,16 +1072,10 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         if (inputPort == null) {
 
             //1 create the inputPort on the Category Group
-            InputPortEntity inputPortEntity = new InputPortEntity();
             PortDTO portDTO = new PortDTO();
             portDTO.setParentGroupId(reusableTemplateCategoryGroupId);
             portDTO.setName(inputPortName);
-            inputPortEntity.setInputPort(portDTO);
-            updateEntityForSave(inputPortEntity);
-            inputPortEntity =
-                post("/controller/process-groups/" + reusableTemplateCategoryGroupId + "/input-ports", inputPortEntity,
-                     InputPortEntity.class);
-            inputPort = inputPortEntity.getInputPort();
+            inputPort = client.processGroups().createInputPort(reusableTemplateCategoryGroupId, portDTO);
         }
         //2 check and create the connection frmo the inputPort to the actual templateGroup
         PortDTO templateInputPort = null;
@@ -1334,16 +1141,10 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         }
         if (categoryOutputPort == null) {
             //create it
-            OutputPortEntity outputPortEntity = new OutputPortEntity();
             PortDTO portDTO = new PortDTO();
             portDTO.setParentGroupId(categoryProcessGroupId);
             portDTO.setName(categoryOutputPortName);
-            outputPortEntity.setOutputPort(portDTO);
-            updateEntityForSave(outputPortEntity);
-            outputPortEntity =
-                post("/controller/process-groups/" + categoryProcessGroupId + "/output-ports", outputPortEntity,
-                     OutputPortEntity.class);
-            categoryOutputPort = outputPortEntity.getOutputPort();
+            categoryOutputPort = client.processGroups().createOutputPort(categoryProcessGroupId, portDTO);
         }
         //Now create a connection from the Feed PRocessGroup to this outputPortEntity
 
@@ -1400,13 +1201,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return connections;
     }
 
-
-    public ConnectionDTO findConnection(String parentProcessGroupId, final String sourceProcessGroupId,
-                                        final String destProcessGroupId) throws NifiComponentNotFoundException {
-        return NifiConnectionUtil.findConnection(findConnectionsForParent(parentProcessGroupId), sourceProcessGroupId,
-                                                 parentProcessGroupId);
-    }
-
     @Deprecated
     public ConnectionDTO createConnection(String processGroupId, ConnectableDTO source, ConnectableDTO dest) {
         return client.processGroups().createConnection(processGroupId, source, dest);
@@ -1432,29 +1226,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
             //orderVisitor.printOrder();
         }
         return group;
-    }
-
-    public NifiFlowProcessGroup getFlowForProcessGroup(String processGroupId) {
-        NifiFlowProcessGroup group = getFeedFlow(processGroupId);
-        log.info("********************** getFlowForProcessGroup  ({})", group);
-        NifiFlowDeserializer.constructGraph(group);
-        return group;
-    }
-
-
-
-    public List<NifiFlowProcessGroup> getAllFlows() {
-        log.info("********************** STARTING getAllFlows  ");
-        System.out.println("********************** STARTING getAllFlows  ");
-        List<NifiFlowProcessGroup> groups = getFeedFlows();
-        if (groups != null) {
-            System.out.println("********************** finished getAllFlows .. construct graph   " + groups.size());
-            log.info("********************** getAllFlows  ({})", groups.size());
-            groups.stream().forEach(group -> NifiFlowDeserializer.constructGraph(group));
-        } else {
-            log.info("********************** getAllFlows  (NULL!!!!)");
-        }
-        return groups;
     }
 
     public SearchResultsEntity search(String query) {
@@ -1578,8 +1349,4 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
 
         return postForm("/controller/provenance/replays", form, ProvenanceEventEntity.class);
     }
-
-
 }
-
-

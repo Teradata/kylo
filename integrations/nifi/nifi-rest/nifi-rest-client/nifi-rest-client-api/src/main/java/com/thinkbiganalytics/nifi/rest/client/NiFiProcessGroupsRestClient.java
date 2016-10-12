@@ -40,6 +40,28 @@ public interface NiFiProcessGroupsRestClient {
     ConnectionDTO createConnection(@Nonnull String processGroupId, @Nonnull ConnectableDTO source, @Nonnull ConnectableDTO dest);
 
     /**
+     * Creates an input port.
+     *
+     * @param processGroupId the process group id
+     * @param inputPort the input port to create
+     * @return the new input port
+     * @throws NifiComponentNotFoundException if the process group does not exist
+     */
+    @Nonnull
+    PortDTO createInputPort(@Nonnull String processGroupId, @Nonnull PortDTO inputPort);
+
+    /**
+     * Creates an output port.
+     *
+     * @param processGroupId the process group id
+     * @param outputPort the output port to create
+     * @return the new output port
+     * @throws NifiComponentNotFoundException if the process group does not exist
+     */
+    @Nonnull
+    PortDTO createOutputPort(@Nonnull String processGroupId, @Nonnull PortDTO outputPort);
+
+    /**
      * Deletes a process group.
      *
      * @param processGroup the process group to delete

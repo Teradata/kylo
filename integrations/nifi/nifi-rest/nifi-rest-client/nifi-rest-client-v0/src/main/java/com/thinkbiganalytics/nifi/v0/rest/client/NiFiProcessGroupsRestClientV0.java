@@ -15,7 +15,9 @@ import org.apache.nifi.web.api.entity.ConnectionEntity;
 import org.apache.nifi.web.api.entity.ConnectionsEntity;
 import org.apache.nifi.web.api.entity.Entity;
 import org.apache.nifi.web.api.entity.FlowSnippetEntity;
+import org.apache.nifi.web.api.entity.InputPortEntity;
 import org.apache.nifi.web.api.entity.InputPortsEntity;
+import org.apache.nifi.web.api.entity.OutputPortEntity;
 import org.apache.nifi.web.api.entity.OutputPortsEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.apache.nifi.web.api.entity.ProcessGroupsEntity;
@@ -84,6 +86,32 @@ public class NiFiProcessGroupsRestClientV0 extends AbstractNiFiProcessGroupsRest
             connectionEntity.setConnection(connectionDTO);
             client.updateEntityForSave(connectionEntity);
             return client.post(BASE_PATH + "/" + processGroupId + "/connections", connectionEntity, ConnectionEntity.class).getConnection();
+        } catch (NotFoundException e) {
+            throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
+        }
+    }
+
+    @Nonnull
+    @Override
+    public PortDTO createInputPort(@Nonnull final String processGroupId, @Nonnull final PortDTO inputPort) {
+        try {
+            final InputPortEntity entity = new InputPortEntity();
+            entity.setInputPort(inputPort);
+            client.updateEntityForSave(entity);
+            return client.post(BASE_PATH + "/" + processGroupId + "/input-ports", entity, InputPortEntity.class).getInputPort();
+        } catch (NotFoundException e) {
+            throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
+        }
+    }
+
+    @Nonnull
+    @Override
+    public PortDTO createOutputPort(@Nonnull String processGroupId, @Nonnull PortDTO outputPort) {
+        try {
+            final OutputPortEntity entity = new OutputPortEntity();
+            entity.setOutputPort(outputPort);
+            client.updateEntityForSave(entity);
+            return client.post(BASE_PATH + "/" + processGroupId + "/output-ports", entity, OutputPortEntity.class).getOutputPort();
         } catch (NotFoundException e) {
             throw new NifiComponentNotFoundException(processGroupId, NifiConstants.NIFI_COMPONENT_TYPE.PROCESS_GROUP, e);
         }
