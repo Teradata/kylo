@@ -40,7 +40,7 @@ import javax.annotation.Nonnull;
                  description = "Updates a feed attribute specified by the Dynamic Property's key with the value specified by the Dynamic Property's value")
 public class PutFeedMetadata extends AbstractProcessor {
 
-    private static final String METADATA_FIELD_PREFIX = "nifi:metadata:";
+    private static final String METADATA_FIELD_PREFIX = "nifi";
 
     public static final Relationship REL_SUCCESS = new Relationship.Builder()
         .description("All FlowFiles are routed to this relationship on success").name("success").build();
@@ -71,9 +71,17 @@ public class PutFeedMetadata extends AbstractProcessor {
         .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
         .build();
 
-    private static final List<String> PROPERTY_LIST_TO_IGNORE = ImmutableList.of(METADATA_SERVICE.getName(), CATEGORY_NAME.getName(), FEED_NAME.getName());
+    public static final PropertyDescriptor NAMESPACE = new PropertyDescriptor.Builder()
+        .name("Namespace")
+        .description("Namespace for the attributes you create. This value will be prepended to the attribute name for storage in the metadata store  ")
+        .required(true)
+        .expressionLanguageSupported(true)
+        .addValidator(StandardValidators.NON_EMPTY_VALIDATOR)
+        .build();
 
-    private static final List<PropertyDescriptor> properties = ImmutableList.of(METADATA_SERVICE, CATEGORY_NAME, FEED_NAME);
+    private static final List<String> PROPERTY_LIST_TO_IGNORE = ImmutableList.of(METADATA_SERVICE.getName(), CATEGORY_NAME.getName(), FEED_NAME.getName(), NAMESPACE.getName());
+
+    private static final List<PropertyDescriptor> properties = ImmutableList.of(METADATA_SERVICE, CATEGORY_NAME, FEED_NAME, NAMESPACE);
 
     private static final Set<Relationship> relationships = ImmutableSet.of(REL_SUCCESS, REL_FAILURE);
 
@@ -121,6 +129,7 @@ public class PutFeedMetadata extends AbstractProcessor {
             // Get the feed id
             String category = context.getProperty(CATEGORY_NAME).evaluateAttributeExpressions(flowFile).getValue();
             String feed = context.getProperty(FEED_NAME).evaluateAttributeExpressions(flowFile).getValue();
+            String namespace = context.getProperty(NAMESPACE).evaluateAttributeExpressions(flowFile).getValue();
 
             getLogger().debug("The category is: " + category + " and feed is " + feed);
 
@@ -136,10 +145,8 @@ public class PutFeedMetadata extends AbstractProcessor {
                 String value = context.getProperty(propertyName).evaluateAttributeExpressions(flowFile).getValue();
 
                 if (!PROPERTY_LIST_TO_IGNORE.contains(propertyName)) {
-                    metadataProperties.setProperty(METADATA_FIELD_PREFIX + propertyName, value);
-                    getLogger().info("Sending feed metadata Property for Jeremy Test " + propertyName + " : " + value);
+                    metadataProperties.setProperty(METADATA_FIELD_PREFIX + ":" + namespace + ":" + propertyName, value);
                 }
-
             }
 
             String feedId = metadataProvider.getFeedId(category, feed);
