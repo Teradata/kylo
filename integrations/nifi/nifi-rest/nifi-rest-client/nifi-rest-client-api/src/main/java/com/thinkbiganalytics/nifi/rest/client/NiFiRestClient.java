@@ -9,6 +9,14 @@ import javax.annotation.Nullable;
 public interface NiFiRestClient {
 
     /**
+     * Gets the client for managing controller services and updating controller service references.
+     *
+     * @return the NiFi Controller Services client
+     */
+    @Nonnull
+    NiFiControllerServicesRestClient controllerServices();
+
+    /**
      * Gets the client for accessing process groups, including creating components, instantiating a template, and uploading a template.
      *
      * @return the NiFi Process Groups client

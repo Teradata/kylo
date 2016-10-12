@@ -124,9 +124,9 @@ public class NifiControllerServiceProperties {
     public ControllerServiceDTO getControllerServiceById(String serviceId) {
         ControllerServiceDTO controllerService = null;
         try {
-            ControllerServiceEntity entity = nifiRestClient.getControllerService(null, serviceId);
-            if (entity != null && entity.getControllerService() != null) {
-                controllerService = entity.getControllerService();
+            ControllerServiceDTO entity = nifiRestClient.getControllerService(null, serviceId);
+            if (entity != null) {
+                controllerService = entity;
             }
         } catch (NifiComponentNotFoundException e) {
             log.error("Unable to find Nifi Controller Service with ID: " + serviceId + ".  " + e.getMessage(), e);

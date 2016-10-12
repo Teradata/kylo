@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
+import org.apache.nifi.web.api.dto.DocumentedTypeDTO;
 import org.apache.nifi.web.api.dto.FlowSnippetDTO;
 import org.apache.nifi.web.api.dto.PortDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
@@ -37,8 +38,6 @@ import org.apache.nifi.web.api.entity.AboutEntity;
 import org.apache.nifi.web.api.entity.BulletinBoardEntity;
 import org.apache.nifi.web.api.entity.ConnectionEntity;
 import org.apache.nifi.web.api.entity.ConnectionsEntity;
-import org.apache.nifi.web.api.entity.ControllerServiceEntity;
-import org.apache.nifi.web.api.entity.ControllerServiceTypesEntity;
 import org.apache.nifi.web.api.entity.ControllerServicesEntity;
 import org.apache.nifi.web.api.entity.DropRequestEntity;
 import org.apache.nifi.web.api.entity.Entity;
@@ -67,7 +66,6 @@ import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.ClientErrorException;
 import javax.ws.rs.NotFoundException;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.Form;
 
@@ -581,14 +579,10 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
 
     }
 
+    @Deprecated
     public void deleteControllerService(String controllerServiceId) throws NifiClientRuntimeException {
-
-        try { //http://localhost:8079/nifi-api/controller/controller-services/node/3c475f44-b038-4cb0-be51-65948de72764?version=1210&clientId=86af0022-9ba6-40b9-ad73-6d757b6f8d25
-            Map<String, Object> params = getUpdateParams();
-            delete("/controller/controller-services/" + getClusterType() + "/" + controllerServiceId, params, ControllerServiceEntity.class);
-        } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException(controllerServiceId, NifiConstants.NIFI_COMPONENT_TYPE.CONTROLLER_SERVICE, e);
-        }
+        client.controllerServices().delete(controllerServiceId)
+                .orElseThrow(() -> new NifiComponentNotFoundException(controllerServiceId, NifiConstants.NIFI_COMPONENT_TYPE.CONTROLLER_SERVICE, null));
     }
 
     public void deleteControllerServices(Collection<ControllerServiceDTO> services) throws NifiClientRuntimeException {
@@ -1031,27 +1025,20 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         updateProcessor(processor);
     }
 
-    public ControllerServicesEntity getControllerServices() {
-        return getControllerServices(null);
+    @Deprecated
+    public Set<ControllerServiceDTO> getControllerServices() {
+        return client.controllerServices().findAll();
     }
 
-    public ControllerServicesEntity getControllerServices(String type) {
-
-        if (StringUtils.isBlank(type)) {
-            type = getClusterType();
-        }
-        return get("/controller/controller-services/" + type, null, ControllerServicesEntity.class);
+    @Deprecated
+    public Set<ControllerServiceDTO> getControllerServices(String type) {
+        return getControllerServices();
     }
 
-    public ControllerServiceEntity getControllerService(String type, String id) throws NifiComponentNotFoundException {
-        try {
-            if (StringUtils.isBlank(type)) {
-                type = getClusterType();
-            }
-            return get("/controller/controller-services/" + type + "/" + id, null, ControllerServiceEntity.class);
-        } catch (NotFoundException e) {
-            throw new NifiComponentNotFoundException(id, NifiConstants.NIFI_COMPONENT_TYPE.CONTROLLER_SERVICE, e);
-        }
+    @Deprecated
+    public ControllerServiceDTO getControllerService(String type, String id) throws NifiComponentNotFoundException {
+        return client.controllerServices().findById(id)
+                .orElseThrow(() -> new NifiComponentNotFoundException(id, NifiConstants.NIFI_COMPONENT_TYPE.CONTROLLER_SERVICE, null));
     }
 
     /**
@@ -1060,9 +1047,9 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
     public ControllerServiceDTO getControllerServiceByName(String type, final String serviceName) {
         ControllerServiceDTO controllerService = null;
 
-        ControllerServicesEntity entity = getControllerServices(type);
+        Set<ControllerServiceDTO> entity = getControllerServices(type);
         if (entity != null) {
-            List<ControllerServiceDTO> services = Lists.newArrayList(Iterables.filter(entity.getControllerServices(), new Predicate<ControllerServiceDTO>() {
+            List<ControllerServiceDTO> services = Lists.newArrayList(Iterables.filter(entity, new Predicate<ControllerServiceDTO>() {
                 @Override
                 public boolean apply(ControllerServiceDTO controllerServiceDTO) {
                     return controllerServiceDTO.getName().equalsIgnoreCase(serviceName);
@@ -1085,27 +1072,12 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return controllerService;
     }
 
-    //http://localhost:8079/nifi-api/controller/controller-services/node/edfe9a53-4fde-4437-a798-1305830c15ac
-    public ControllerServiceEntity enableControllerService(String id) throws NifiClientRuntimeException {
-        ControllerServiceEntity entity = getControllerService(null, id);
-        ControllerServiceDTO dto = entity.getControllerService();
-        if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
-            dto.setState(NifiProcessUtil.SERVICE_STATE.ENABLED.name());
-
-            entity.setControllerService(dto);
-            updateEntityForSave(entity);
-            return put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
-        } else {
-            return entity;
-        }
-    }
-
     /**
      * Enables the ControllerService and also replaces the properties if they match their keys
      */
-    public ControllerServiceEntity enableControllerServiceAndSetProperties(String id, Map<String, String> properties) throws NifiClientRuntimeException {
-        ControllerServiceEntity entity = getControllerService(null, id);
-        ControllerServiceDTO dto = entity.getControllerService();
+    public ControllerServiceDTO enableControllerServiceAndSetProperties(String id, Map<String, String> properties) throws NifiClientRuntimeException {
+        ControllerServiceDTO entity = getControllerService(null, id);
+        ControllerServiceDTO dto = entity;
         //only need to do this if it is not enabled
         if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
             if (properties != null) {
@@ -1118,32 +1090,27 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
                 }
                 if (changed) {
                     //first save the property change
-                    entity.setControllerService(dto);
-                    updateEntityForSave(entity);
-                    put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
+                    client.controllerServices().update(dto);
                 }
             }
 
             if (!dto.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
                 dto.setState(NifiProcessUtil.SERVICE_STATE.ENABLED.name());
-
-                entity.setControllerService(dto);
-                updateEntityForSave(entity);
-                entity = put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
+                entity = client.controllerServices().update(dto);
             }
         }
         //initially when trying to enable the service the state will be ENABLING
         //This will last until the service is up.
         //if it is in the ENABLING state it needs to wait and try again to get the status.
 
-        dto = entity.getControllerService();
+        dto = entity;
         if (dto.getState().equalsIgnoreCase(NifiProcessUtil.SERVICE_STATE.ENABLING.name())) {
             //attempt to retry x times before returning
             int retryCount = 0;
             int maxRetries = 5;
             while (retryCount <= maxRetries) {
                 entity = getControllerService(null, id);
-                if (!entity.getControllerService().getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
+                if (!entity.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
                     try {
                         Thread.sleep(3000);
                         retryCount++;
@@ -1158,18 +1125,9 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return entity;
     }
 
-    public ControllerServiceEntity disableControllerService(String id) throws NifiComponentNotFoundException {
-        ControllerServiceEntity entity = new ControllerServiceEntity();
-        ControllerServiceDTO dto = new ControllerServiceDTO();
-        dto.setState(NifiProcessUtil.SERVICE_STATE.DISABLED.name());
-        entity.setControllerService(dto);
-        updateEntityForSave(entity);
-        return put("/controller/controller-services/" + getClusterType() + "/" + id, entity, ControllerServiceEntity.class);
-    }
-
-
-    public ControllerServiceTypesEntity getControllerServiceTypes() {
-        return get("/controller/controller-service-types", null, ControllerServiceTypesEntity.class);
+    @Deprecated
+    public Set<DocumentedTypeDTO> getControllerServiceTypes() {
+        return client.controllerServices().getTypes();
     }
 
 

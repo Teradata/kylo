@@ -124,7 +124,8 @@ public class NifiIntegrationRestController {
     @Path("/controller-services")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getServices() {
-        ControllerServicesEntity entity = nifiRestClient.getControllerServices("NODE");
+        final ControllerServicesEntity entity = new ControllerServicesEntity();
+        entity.setControllerServices(nifiRestClient.getControllerServices("NODE"));
         return Response.ok(entity).build();
     }
 
@@ -133,7 +134,8 @@ public class NifiIntegrationRestController {
     @Path("/controller-services/types")
     @Produces({MediaType.APPLICATION_JSON})
     public Response getServiceTypes() {
-        ControllerServiceTypesEntity entity = nifiRestClient.getControllerServiceTypes();
+        final ControllerServiceTypesEntity entity = new ControllerServiceTypesEntity();
+        entity.setControllerServiceTypes(nifiRestClient.getControllerServiceTypes());
         return Response.ok(entity).build();
     }
 

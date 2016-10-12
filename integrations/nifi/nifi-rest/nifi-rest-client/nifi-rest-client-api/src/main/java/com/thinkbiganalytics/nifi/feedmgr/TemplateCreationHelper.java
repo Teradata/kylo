@@ -25,8 +25,6 @@ import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.PropertyDescriptorDTO;
 import org.apache.nifi.web.api.entity.ControllerServiceEntity;
-import org.apache.nifi.web.api.entity.ControllerServicesEntity;
-import org.apache.nifi.web.api.entity.ProcessGroupEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,10 +74,10 @@ public class TemplateCreationHelper {
 
 
     public void snapshotControllerServiceReferences() throws TemplateCreationException {
-        ControllerServicesEntity controllerServiceEntity = restClient.getControllerServices();
+        Set<ControllerServiceDTO> controllerServiceEntity = restClient.getControllerServices();
         if (controllerServiceEntity != null) {
-            snapshotControllerServices = controllerServiceEntity.getControllerServices();
-            for (ControllerServiceDTO serviceDTO : controllerServiceEntity.getControllerServices()) {
+            snapshotControllerServices = controllerServiceEntity;
+            for (ControllerServiceDTO serviceDTO : controllerServiceEntity) {
                 if (serviceDTO.getState().equals(NifiProcessUtil.SERVICE_STATE.ENABLED.name())) {
                     snapshottedEnabledControllerServices.add(serviceDTO);
                 }
@@ -122,9 +120,9 @@ public class TemplateCreationHelper {
         }
 
         if (!controllerServiceProperties.isEmpty()) {
-            ControllerServicesEntity controllerServicesEntity = restClient.getControllerServices();
+            Set<ControllerServiceDTO> controllerServicesEntity = restClient.getControllerServices();
             Map<String, ControllerServiceDTO> controllerServices = new HashMap<>();
-            for (ControllerServiceDTO controllerServiceDTO : controllerServicesEntity.getControllerServices()) {
+            for (ControllerServiceDTO controllerServiceDTO : controllerServicesEntity) {
                 controllerServices.put(controllerServiceDTO.getId(), controllerServiceDTO);
             }
 
@@ -166,16 +164,16 @@ public class TemplateCreationHelper {
      */
     public Set<ControllerServiceDTO> identifyNewlyCreatedControllerServiceReferences() {
         Set<ControllerServiceDTO> newServices = new HashSet<>();
-        ControllerServicesEntity controllerServiceEntity = restClient.getControllerServices();
+        Set<ControllerServiceDTO> controllerServiceEntity = restClient.getControllerServices();
         if (controllerServiceEntity != null) {
             if (snapshotControllerServices != null) {
-                for (ControllerServiceDTO dto : controllerServiceEntity.getControllerServices()) {
+                for (ControllerServiceDTO dto : controllerServiceEntity) {
                     if (!snapshotControllerServices.contains(dto)) {
                         newServices.add(dto);
                     }
                 }
             } else {
-                newServices = controllerServiceEntity.getControllerServices();
+                newServices = controllerServiceEntity;
             }
         }
         newlyCreatedControllerServices = newServices;
@@ -184,9 +182,9 @@ public class TemplateCreationHelper {
         return newServices;
     }
 
-    private ControllerServiceEntity tryToEnableControllerService(String serviceId, String name, Map<String, String> properties) {
+    private ControllerServiceDTO tryToEnableControllerService(String serviceId, String name, Map<String, String> properties) {
         try {
-            ControllerServiceEntity entity = restClient.enableControllerServiceAndSetProperties(serviceId, properties);
+            ControllerServiceDTO entity = restClient.enableControllerServiceAndSetProperties(serviceId, properties);
             return entity;
         } catch (Exception e) {
             NifiClientRuntimeException clientRuntimeException = null;
@@ -334,9 +332,9 @@ public class TemplateCreationHelper {
                     List<NifiProperty> serviceProperties = NifiPropertyUtil.getPropertiesForService(dto);
                     enableServices(controllerServiceProperties, enabledServices, allServices, serviceProperties);
 
-                    ControllerServiceEntity entity = tryToEnableControllerService(dto.getId(), dto.getName(), controllerServiceProperties);
-                    if (entity != null && entity.getControllerService() != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getControllerService().getState())) {
-                        enabledServices.put(entity.getControllerService().getId(), entity.getControllerService());
+                    ControllerServiceDTO entity = tryToEnableControllerService(dto.getId(), dto.getName(), controllerServiceProperties);
+                    if (entity != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getState())) {
+                        enabledServices.put(entity.getId(), entity);
                         set = true;
                     }
                 }
@@ -385,9 +383,9 @@ public class TemplateCreationHelper {
                             }
                             if (allServices.containsKey(allowableValueDTO.getValue())) {
                                 property.setValue(allowableValueDTO.getValue());
-                                ControllerServiceEntity entity = tryToEnableControllerService(allowableValueDTO.getValue(), controllerServiceName, controllerServiceProperties);
-                                if (entity != null && entity.getControllerService() != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getControllerService().getState())) {
-                                    enabledServices.put(entity.getControllerService().getId(), entity.getControllerService());
+                                ControllerServiceDTO entity = tryToEnableControllerService(allowableValueDTO.getValue(), controllerServiceName, controllerServiceProperties);
+                                if (entity != null && NifiProcessUtil.SERVICE_STATE.ENABLED.name().equals(entity.getState())) {
+                                    enabledServices.put(entity.getId(), entity);
                                     controllerServiceSet = true;
                                 } else {
                                     controllerServiceSet = false;

@@ -152,8 +152,8 @@ public class NifiRestTest {
     // @Test
     public void getControllerServices() {
         try {
-            ControllerServicesEntity servicesEntity = restClient.getControllerServices(null);
-            for (ControllerServiceDTO dto : servicesEntity.getControllerServices()) {
+            Set<ControllerServiceDTO> servicesEntity = restClient.getControllerServices(null);
+            for (ControllerServiceDTO dto : servicesEntity) {
                 for (Map.Entry<String, String> property : dto.getProperties().entrySet()) {
                     String key = property.getKey();
                     PropertyDescriptorDTO descriptorDTO = dto.getDescriptors().get(key);

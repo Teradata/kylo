@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.nifi.v0.rest.client;
 
+import com.thinkbiganalytics.nifi.rest.client.NiFiControllerServicesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiProcessGroupsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiTemplatesRestClient;
@@ -20,6 +21,14 @@ import javax.ws.rs.client.WebTarget;
  */
 public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient {
 
+    /** NiFi REST client configuration */
+    @Nonnull
+    private final NifiRestClientConfig clientConfig;
+
+    /** NiFi Controller Services REST client */
+    @Nullable
+    private NiFiControllerServicesRestClientV0 controllerServices;
+
     /** NiFi Process Groups REST client */
     @Nullable
     private NiFiProcessGroupsRestClientV0 processGroups;
@@ -35,6 +44,16 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
      */
     public NiFiRestClientV0(@Nonnull final NifiRestClientConfig config) {
         super(config);
+        clientConfig = config;
+    }
+
+    @Nonnull
+    @Override
+    public NiFiControllerServicesRestClient controllerServices() {
+        if (controllerServices == null) {
+            controllerServices = new NiFiControllerServicesRestClientV0(this);
+        }
+        return controllerServices;
     }
 
     @Nonnull
@@ -53,6 +72,10 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
             templates = new NiFiTemplatesRestClientV0(this);
         }
         return templates;
+    }
+
+    String getClusterType() {
+        return clientConfig.getClusterType();
     }
 
     Map<String, Object> getUpdateParams() {
