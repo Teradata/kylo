@@ -41,41 +41,8 @@ public class NifiRestTest {
 
     //@Before
     public void setupRestClient() {
-        NifiRestClientConfig config = new NifiRestClientConfig();
-        config.setHost("localhost");
-        config.setPort(8079);
-        restClient = new LegacyNifiRestClient(config);
+        restClient = new LegacyNifiRestClient();
     }
-
-
-
-
-    //@Test
-    public void testReplay() {
-
-        ProvenanceEventEntity e = restClient.replayProvenanceEvent(3382L);
-    }
-
-    // @Test
-    public void testEvent() {
-        try {
-            ProvenanceEventEntity provenanceEventEntity = restClient.getProvenanceEvent("123456");
-        } catch (Exception e) {
-
-            if (e instanceof NotFoundException) {
-                int i = 0;
-            } else if (e instanceof ProcessingException) {
-                if (e.getCause() instanceof NoHttpResponseException) {
-                    //connection error
-
-                } else if (e.getCause() instanceof HttpHostConnectException) {
-                    //connection error
-                }
-            }
-        }
-
-    }
-
 
     //@Test
     public void testCreateFeed1() throws JerseyClientException {

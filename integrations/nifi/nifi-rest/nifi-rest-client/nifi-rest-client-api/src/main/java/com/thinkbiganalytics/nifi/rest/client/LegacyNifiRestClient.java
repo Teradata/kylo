@@ -18,10 +18,10 @@ import com.thinkbiganalytics.nifi.rest.support.NifiConstants;
 import com.thinkbiganalytics.nifi.rest.support.NifiProcessUtil;
 import com.thinkbiganalytics.nifi.rest.support.NifiPropertyUtil;
 import com.thinkbiganalytics.nifi.rest.visitor.NifiConnectionOrderVisitor;
-import com.thinkbiganalytics.rest.JerseyRestClient;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.nifi.web.api.dto.AboutDTO;
 import org.apache.nifi.web.api.dto.ConnectableDTO;
 import org.apache.nifi.web.api.dto.ConnectionDTO;
 import org.apache.nifi.web.api.dto.ControllerServiceDTO;
@@ -33,12 +33,8 @@ import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.TemplateDTO;
 import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
-import org.apache.nifi.web.api.entity.AboutEntity;
-import org.apache.nifi.web.api.entity.BulletinBoardEntity;
-import org.apache.nifi.web.api.entity.Entity;
+import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
 import org.apache.nifi.web.api.entity.ProcessorEntity;
-import org.apache.nifi.web.api.entity.ProvenanceEventEntity;
-import org.apache.nifi.web.api.entity.SearchResultsEntity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,31 +50,14 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.inject.Inject;
 import javax.ws.rs.ClientErrorException;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Form;
 
 @Deprecated
-public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVisitorClient {
+public class LegacyNifiRestClient implements NifiFlowVisitorClient {
 
     private static final Logger log = LoggerFactory.getLogger(LegacyNifiRestClient.class);
 
-    private String apiPath = "/nifi-api";
-
     @Inject
     private NiFiRestClient client;
-
-    private NifiRestClientConfig clientConfig;
-
-    public LegacyNifiRestClient(NifiRestClientConfig config) {
-        super(config);
-        this.clientConfig = config;
-
-    }
-
-    protected WebTarget getBaseTarget() {
-        WebTarget target = super.getBaseTarget();
-        return target.path(apiPath);
-    }
 
     /**
      * Gets Template data, either a quick view or including all its content
@@ -195,13 +174,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
     }
 
     /**
-     * Gets the current Revision and Version of Nifi instance. This is needed when performing an update to pass over the revision.getVersion() for locking purposes
-     */
-    public Entity getControllerRevision() {
-        return get("/controller/revision", null, Entity.class);
-    }
-
-    /**
      * Expose all Properties for a given Template as parameters for external use
      */
     public List<NifiProperty> getPropertiesForTemplate(String templateId) {
@@ -260,11 +232,6 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
     public List<NifiProperty> getPropertiesForProcessGroup(String processGroupId) throws NifiComponentNotFoundException {
         ProcessGroupDTO processGroup = getProcessGroup(processGroupId, true, true);
         return NifiPropertyUtil.getProperties(processGroup);
-    }
-
-    private void updateEntityForSave(Entity entity) {
-        Entity status = getControllerRevision();
-        entity.setRevision(status.getRevision());
     }
 
     public ProcessGroupDTO createProcessGroup(String name) {
@@ -440,8 +407,8 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
                 client.connections().deleteQueue(connection.getParentGroupId(), connection.getId());
             }
             //before deleting the connection we need to stop the source
-            LOG.info("Before deleting the connection we need to stop Sources and destinations.");
-            LOG.info("Stopping Source {} ({}) for connection {} ", connection.getSource().getId(), connection.getSource().getType(), connection.getId());
+            log.info("Before deleting the connection we need to stop Sources and destinations.");
+            log.info("Stopping Source {} ({}) for connection {} ", connection.getSource().getId(), connection.getSource().getType(), connection.getId());
             String type = connection.getSource().getType();
             try {
                 if (NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)) {
@@ -456,7 +423,7 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
                 //TODO LOG IT
             }
             type = connection.getDestination().getType();
-            LOG.info("Stopping Destination {} ({}) for connection {} ", connection.getDestination().getId(), connection.getDestination().getType(), connection.getId());
+            log.info("Stopping Destination {} ({}) for connection {} ", connection.getDestination().getId(), connection.getDestination().getType(), connection.getId());
             try {
                 if (NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)) {
                     stopOutputPort(connection.getDestination().getGroupId(), connection.getDestination().getId());
@@ -469,12 +436,12 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
                 //swallow the  stop  exception.  it is ok at this point because Nifi might throw the exception if its still in the process of stopping...
                 //TODO LOG IT
             }
-            LOG.info("Deleting the connection {} ", connection.getId());
+            log.info("Deleting the connection {} ", connection.getId());
             client.connections().delete(connection.getParentGroupId(), connection.getId());
             try {
                 type = connection.getSource().getType();
                 //now start the inputs again
-                LOG.info("After Delete... Starting source again {} ({}) ", connection.getSource().getId(), connection.getSource().getType());
+                log.info("After Delete... Starting source again {} ({}) ", connection.getSource().getId(), connection.getSource().getType());
                 if (NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)) {
                     startOutputPort(connection.getSource().getGroupId(), connection.getSource().getId());
                 } else if (NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)) {
@@ -490,7 +457,7 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
             try {
                 type = connection.getDestination().getType();
                 //now start the inputs again
-                LOG.info("After Delete... Starting dest again {} ({}) ", connection.getDestination().getId(), connection.getDestination().getType());
+                log.info("After Delete... Starting dest again {} ({}) ", connection.getDestination().getId(), connection.getDestination().getType());
                 if (NifiConstants.NIFI_PORT_TYPE.OUTPUT_PORT.name().equalsIgnoreCase(type)) {
                     startOutputPort(connection.getDestination().getGroupId(), connection.getDestination().getId());
                 } else if (NifiConstants.NIFI_PORT_TYPE.INPUT_PORT.name().equalsIgnoreCase(type)) {
@@ -971,25 +938,15 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return client.controllerServices().getTypes();
     }
 
-    public ProvenanceEventEntity getProvenanceEvent(String eventId) {
-        ProvenanceEventEntity eventEntity = get("/controller/provenance/events/" + eventId, null, ProvenanceEventEntity.class);
-        return eventEntity;
-    }
-
-    public AboutEntity getNifiVersion() {
-        return get("/controller/about", null, AboutEntity.class);
+    @Deprecated
+    public AboutDTO getNifiVersion() {
+        return client.about();
     }
 
 
     public boolean isConnected(){
-        AboutEntity aboutEntity = getNifiVersion();
+        AboutDTO aboutEntity = getNifiVersion();
         return aboutEntity != null;
-    }
-
-    public BulletinBoardEntity getBulletins(Map<String, Object> params) {
-
-        BulletinBoardEntity entity = get("/controller/bulletin-board", params, BulletinBoardEntity.class);
-        return entity;
     }
 
     @Deprecated
@@ -1181,18 +1138,17 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         return group;
     }
 
-    public SearchResultsEntity search(String query) {
-        Map<String,Object> map = new HashMap<>();
-        map.put("q", query);
-        return get("/controller/search-results", map, SearchResultsEntity.class);
+    @Deprecated
+    public SearchResultsDTO search(String query) {
+        return client.search(query);
     }
 
     public ProcessorDTO findProcessorById(String processorId){
-        SearchResultsEntity results = search(processorId);
+        SearchResultsDTO results = search(processorId);
         //log this
-        if(results != null && results.getSearchResultsDTO() != null && results.getSearchResultsDTO().getProcessorResults() != null && !results.getSearchResultsDTO().getProcessorResults().isEmpty()){
-            log.info("Attempt to find processor by id {}. Processors Found: {} ",processorId,results.getSearchResultsDTO().getProcessorResults().size());
-            ComponentSearchResultDTO processorResult =  results.getSearchResultsDTO().getProcessorResults().get(0);
+        if(results != null && results.getProcessorResults() != null && !results.getProcessorResults().isEmpty()){
+            log.info("Attempt to find processor by id {}. Processors Found: {} ",processorId,results.getProcessorResults().size());
+            ComponentSearchResultDTO processorResult =  results.getProcessorResults().get(0);
             String id = processorResult.getId();
             String groupId = processorResult.getGroupId();
             ProcessorDTO processorEntity = getProcessor(groupId,id);
@@ -1285,21 +1241,5 @@ public class LegacyNifiRestClient extends JerseyRestClient implements NifiFlowVi
         }
 
         return failureProcessors;
-    }
-
-
-    public ProvenanceEventEntity replayProvenanceEvent(Long eventId) {
-        Form form = new Form();
-        form.param("eventId", eventId.toString());
-        try {
-            Entity controller = getControllerRevision();
-            if (controller != null && controller.getRevision() != null) {
-                form.param("clientId", controller.getRevision().getClientId());
-            }
-        } catch (ClientErrorException e) {
-
-        }
-
-        return postForm("/controller/provenance/replays", form, ProvenanceEventEntity.class);
     }
 }

@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.nifi.v0.rest.client;
 
+import com.google.common.collect.ImmutableMap;
 import com.thinkbiganalytics.nifi.rest.client.NiFiConnectionsRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiControllerServicesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NiFiPortsRestClient;
@@ -10,9 +11,14 @@ import com.thinkbiganalytics.nifi.rest.client.NiFiTemplatesRestClient;
 import com.thinkbiganalytics.nifi.rest.client.NifiRestClientConfig;
 import com.thinkbiganalytics.rest.JerseyRestClient;
 
+import org.apache.nifi.web.api.dto.AboutDTO;
 import org.apache.nifi.web.api.dto.RevisionDTO;
+import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
+import org.apache.nifi.web.api.entity.AboutEntity;
 import org.apache.nifi.web.api.entity.Entity;
+import org.apache.nifi.web.api.entity.SearchResultsEntity;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nonnull;
@@ -67,6 +73,12 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
     public NiFiRestClientV0(@Nonnull final NifiRestClientConfig config) {
         super(config);
         clientConfig = config;
+    }
+
+    @Nonnull
+    @Override
+    public AboutDTO about() {
+        return get("/controller/about", null, AboutEntity.class).getAbout();
     }
 
     @Nonnull
@@ -155,6 +167,12 @@ public class NiFiRestClientV0 extends JerseyRestClient implements NiFiRestClient
             processors = new NiFiProcessorsRestClientV0(this);
         }
         return processors;
+    }
+
+    @Nonnull
+    @Override
+    public SearchResultsDTO search(@Nonnull final String term) {
+        return get("/controller/search-results", ImmutableMap.of("q", term), SearchResultsEntity.class).getSearchResultsDTO();
     }
 
     @Nonnull

@@ -19,11 +19,11 @@ import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
 import org.apache.http.impl.client.BasicCredentialsProvider;
+import org.apache.nifi.web.api.dto.AboutDTO;
 import org.apache.nifi.web.api.dto.ProcessGroupDTO;
 import org.apache.nifi.web.api.dto.ProcessorDTO;
 import org.apache.nifi.web.api.dto.search.ComponentSearchResultDTO;
-import org.apache.nifi.web.api.entity.AboutEntity;
-import org.apache.nifi.web.api.entity.SearchResultsEntity;
+import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -64,7 +64,7 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
 
     public boolean isConnected(boolean logException) {
         try {
-            AboutEntity aboutEntity = client.getNifiVersion();
+            AboutDTO aboutEntity = client.getNifiVersion();
             return aboutEntity != null;
         }catch (Exception e){
             if(logException) {
@@ -88,11 +88,11 @@ public class NifiFlowClient implements NifiFlowVisitorClient {
     }
 
     public ProcessorDTO findProcessorById(String processorId) {
-        SearchResultsEntity results = client.search(processorId);
+        SearchResultsDTO results = client.search(processorId);
         //log this
-        if (results != null && results.getSearchResultsDTO() != null && results.getSearchResultsDTO().getProcessorResults() != null && !results.getSearchResultsDTO().getProcessorResults().isEmpty()) {
-            log.debug("Attempt to find processor by id {}. Processors Found: {} ", processorId, results.getSearchResultsDTO().getProcessorResults().size());
-            ComponentSearchResultDTO processorResult = results.getSearchResultsDTO().getProcessorResults().get(0);
+        if (results != null && results.getProcessorResults() != null && !results.getProcessorResults().isEmpty()) {
+            log.debug("Attempt to find processor by id {}. Processors Found: {} ", processorId, results.getProcessorResults().size());
+            ComponentSearchResultDTO processorResult = results.getProcessorResults().get(0);
             String id = processorResult.getId();
             String groupId = processorResult.getGroupId();
             ProcessorDTO processorEntity = getProcessor(groupId, id);

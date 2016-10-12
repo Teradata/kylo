@@ -1,5 +1,8 @@
 package com.thinkbiganalytics.nifi.rest.client;
 
+import org.apache.nifi.web.api.dto.AboutDTO;
+import org.apache.nifi.web.api.dto.search.SearchResultsDTO;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
@@ -7,6 +10,14 @@ import javax.annotation.Nullable;
  * Communicates with a NiFi service using a REST interface.
  */
 public interface NiFiRestClient {
+
+    /**
+     * Retrieves details about the NiFi service.
+     *
+     * @return about NiFi details
+     */
+    @Nonnull
+    AboutDTO about();
 
     /**
      * Gets the client for managing connections, including creating a connection, setting queue priority, and updating the connection destination.
@@ -47,6 +58,15 @@ public interface NiFiRestClient {
      */
     @Nonnull
     NiFiProcessorsRestClient processors();
+
+    /**
+     * Performs a search against the NiFi service using the specified search term.
+     *
+     * @param term the search term
+     * @return the search results
+     */
+    @Nonnull
+    SearchResultsDTO search(@Nonnull String term);
 
     /**
      * Gets the client for downloading or deleting templates.

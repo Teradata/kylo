@@ -41,10 +41,7 @@ public class NifiRestTest {
 
     @Before
     public void setupRestClient() {
-        NifiRestClientConfig config = new NifiRestClientConfig();
-        config.setHost("localhost");
-        config.setPort(8079);
-        restClient = new LegacyNifiRestClient(config);
+        restClient = new LegacyNifiRestClient();
     }
 
 
@@ -99,18 +96,6 @@ public class NifiRestTest {
             e.printStackTrace();
         }
     }
-
-    //@Test
-    public void testBulletins() {
-        String groupId = "root";
-        try {
-            BulletinBoardEntity entity = restClient.getBulletins(null);
-            int i = 0;
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
 
     // @Test
     public void testDeleteRootGroups() {

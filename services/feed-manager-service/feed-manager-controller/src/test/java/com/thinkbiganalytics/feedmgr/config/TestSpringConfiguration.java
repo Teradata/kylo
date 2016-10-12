@@ -256,7 +256,7 @@ public class TestSpringConfiguration {
 
     @Bean
     public LegacyNifiRestClient nifiRestClient() {
-        return new LegacyNifiRestClient(nifiRestClientConfig());
+        return new LegacyNifiRestClient();
     }
 
 

@@ -8,7 +8,7 @@ import com.thinkbiganalytics.servicemonitor.model.DefaultServiceStatusResponse;
 import com.thinkbiganalytics.servicemonitor.model.ServiceComponent;
 import com.thinkbiganalytics.servicemonitor.model.ServiceStatusResponse;
 
-import org.apache.nifi.web.api.entity.AboutEntity;
+import org.apache.nifi.web.api.dto.AboutDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -40,9 +40,9 @@ public class NifiServiceStatusCheck implements ServiceStatusCheck {
     Map<String, Object> properties = new HashMap<>();
 
     try {
-      AboutEntity aboutEntity = nifiRestClient.getNifiVersion();
+      AboutDTO aboutEntity = nifiRestClient.getNifiVersion();
 
-      String nifiVersion = aboutEntity.getAbout().getVersion();
+      String nifiVersion = aboutEntity.getVersion();
       component =
           new DefaultServiceComponent.Builder(componentName + " - " + nifiVersion, ServiceComponent.STATE.UP)
               .message("Nifi is up.").properties(properties).build();

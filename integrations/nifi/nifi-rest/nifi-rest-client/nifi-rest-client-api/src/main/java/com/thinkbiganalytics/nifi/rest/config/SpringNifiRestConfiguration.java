@@ -22,9 +22,9 @@ public class SpringNifiRestConfiguration {
     private Environment env;
 
     @Bean(name = "nifiRestClient")
-    public LegacyNifiRestClient nifiRestClient(@Qualifier("nifiRestClientConfig") NifiRestClientConfig clientConfig) {
+    public LegacyNifiRestClient nifiRestClient() {
 
-        LegacyNifiRestClient restClient = new LegacyNifiRestClient(clientConfig);
+        LegacyNifiRestClient restClient = new LegacyNifiRestClient();
         return restClient;
 
     }

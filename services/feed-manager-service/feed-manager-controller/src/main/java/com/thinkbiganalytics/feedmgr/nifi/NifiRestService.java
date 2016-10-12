@@ -12,7 +12,7 @@ public class NifiRestService {
     public LegacyNifiRestClient nifiRestClient;
 
     public NifiRestService(NifiRestClientConfig restClientConfig){
-           nifiRestClient = new LegacyNifiRestClient(restClientConfig);
+           nifiRestClient = new LegacyNifiRestClient();
     }
 
     public LegacyNifiRestClient getNifiRestClient() {
