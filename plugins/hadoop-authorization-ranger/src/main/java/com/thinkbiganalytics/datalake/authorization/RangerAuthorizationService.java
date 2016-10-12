@@ -35,9 +35,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
     private static final String HIVE_READ_ONLY_PERMISSION="select";
 
     private RangerRestClient rangerRestClient;
-
-
-    RangerConnection rangerConnHelper;
+    private RangerConnection rangerConnection;
 
     /**
      * Implement Ranger Authentication Service. Initiate RangerClient and RangerClientConfig for initializing service and invoke different methods of it.
@@ -45,9 +43,9 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
 
     @Override
     public void initialize(AuthorizationConfiguration config) {
-        rangerConnHelper = (RangerConnection) config;
-        RangerRestClientConfig rangerClientConfiguration = new RangerRestClientConfig(rangerConnHelper.getHostName(), rangerConnHelper.getUsername(), rangerConnHelper.getPassword());
-        rangerClientConfiguration.setPort(rangerConnHelper.getPort());
+        rangerConnection = (RangerConnection) config;
+        RangerRestClientConfig rangerClientConfiguration = new RangerRestClientConfig(rangerConnection.getHostName(), rangerConnection.getUsername(), rangerConnection.getPassword());
+        rangerClientConfiguration.setPort(rangerConnection.getPort());
         rangerRestClient = new RangerRestClient(rangerClientConfiguration);
     }
 
@@ -81,7 +79,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
         rangerCreatePolicy.setPolicyName(rangerHdfsPolicyName);
         rangerCreatePolicy.setResourceName(hdfsResource);
         rangerCreatePolicy.setDescription(description);
-        rangerCreatePolicy.setRepositoryName(rangerConnHelper.getHdfsRepositoryName());
+        rangerCreatePolicy.setRepositoryName(rangerConnection.getHdfsRepositoryName());
         rangerCreatePolicy.setRepositoryType(HDFS_REPOSITORY_TYPE);
         rangerCreatePolicy.setIsEnabled(IsEnable);
         rangerCreatePolicy.setIsRecursive(IsRecursive);
@@ -113,7 +111,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
         rangerCreatePolicy.setColumns(HIVE_COLUMN_PERMISSION);
         rangerCreatePolicy.setUdfs("");
         rangerCreatePolicy.setDescription(hiveDescription);
-        rangerCreatePolicy.setRepositoryName(rangerConnHelper.getHiveRepositoryName());
+        rangerCreatePolicy.setRepositoryName(rangerConnection.getHiveRepositoryName());
         rangerCreatePolicy.setRepositoryType(HIVE_REPOSITORY_TYPE);
         rangerCreatePolicy.setIsAuditEnabled(IsAuditable);
         rangerCreatePolicy.setIsEnabled(IsEnable);
@@ -167,7 +165,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
         rangerUpdatePolicy.setPolicyName(rangerHdfsPolicyName);
         rangerUpdatePolicy.setResourceName(hdfs_resource);
         rangerUpdatePolicy.setDescription(description);
-        rangerUpdatePolicy.setRepositoryName(rangerConnHelper.getHdfsRepositoryName());
+        rangerUpdatePolicy.setRepositoryName(rangerConnection.getHdfsRepositoryName());
         rangerUpdatePolicy.setRepositoryType(HDFS_REPOSITORY_TYPE);
         rangerUpdatePolicy.setIsEnabled(IsEnable);
         rangerUpdatePolicy.setIsRecursive(IsRecursive);
@@ -219,7 +217,7 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
         rangerUpdatePolicy.setColumns(HIVE_COLUMN_PERMISSION);
         rangerUpdatePolicy.setUdfs("");
         rangerUpdatePolicy.setDescription(hiveDescription);
-        rangerUpdatePolicy.setRepositoryName(rangerConnHelper.getHiveRepositoryName());
+        rangerUpdatePolicy.setRepositoryName(rangerConnection.getHiveRepositoryName());
         rangerUpdatePolicy.setRepositoryType(HIVE_REPOSITORY_TYPE);
         rangerUpdatePolicy.setIsAuditEnabled(IsAuditable);
         rangerUpdatePolicy.setIsEnabled(IsEnable);

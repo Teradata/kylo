@@ -16,8 +16,7 @@
   <modules>
     <module>hadoop-authorization-api</module>
     <module>hadoop-authorization-core</module>
-    <module>ranger-rest-client</module>
-	<module>sentry-client</module>
+    <module>sentry-client</module>
   </modules>
 
 </project>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <parent>
+    <artifactId>thinkbig-ranger</artifactId>
+    <groupId>com.thinkbiganalytics.datalake</groupId>
+    <version>0.4.1-SNAPSHOT</version>
+  </parent>
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>thinkbig-ranger-rest-client</artifactId>
+
+  <dependencies>
+    <dependency>
+      <artifactId>thinkbig-commons-rest-client</artifactId>
+      <version>${project.version}</version>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>thinkbig-hadoop-authorization-core</artifactId>
+      <version>${project.version}</version>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>thinkbig-hadoop-authorization-api</artifactId>
+      <version>${project.version}</version>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+    </dependency>
+    <dependency>
+      <artifactId>thinkbig-commons-util</artifactId>
+      <version>${project.version}</version>
+      <groupId>com.thinkbiganalytics.datalake</groupId>
+    </dependency>
+    <dependency>
+      <groupId>com.googlecode.json-simple</groupId>
+      <artifactId>json-simple</artifactId>
+      <version>1.1</version>
+    </dependency>
+  </dependencies>
+</project>

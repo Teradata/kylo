@@ -17,8 +17,8 @@ public class RangerConnection implements AuthorizationConfiguration {
     public String getHostName() {
         return hostName;
     }
- 
-	public void setHostName(String hostName) {
+
+    public void setHostName(String hostName) {
         this.hostName = hostName;
     }
 
