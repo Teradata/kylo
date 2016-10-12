@@ -183,27 +183,90 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
     }
 
     private class FeedPropertyChangeDispatcher implements MetadataEventListener<FeedPropertyChangeEvent> {
+        private static final String REGISTRATION_HDFS_FOLDERS = "nifi:registration:hdfsFolders";
+        private static final String REGISTRATION_HIVE_SCHEMA = "nifi:registration:hiveSchema";
+        private static final String REGISTRATION_HIVE_TABLES = "nifi:registration:tableNames";
 
         @Override
         public void notify(@Nonnull final FeedPropertyChangeEvent metadataEvent) {
             // TODO Remove metadata properties if they were removed from NiFI
 
-            // TODO Only update if the nifi metadata properties that we care about changed
-            if (hadoopAuthorizationService != null && metadataEvent.getHadoopSecurityGroupNames() != null) {
-                String hdfsFoldersWithCommas = metadataEvent.getNewProperties().getProperty("nifi:metadata:securityGroupHdfsFolders").replace("\n", ",");
+            if (hadoopAuthorizationService != null && metadataEvent.getHadoopSecurityGroupNames() != null && hadoopAuthorizationChangesRequired(metadataEvent)) {
+                String hdfsFoldersWithCommas = metadataEvent.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS).replace("\n", ",");
                 Stream<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas);
 
-                String hiveTablesWithCommas = metadataEvent.getNewProperties().getProperty("nifi:metadata:securityGroupHiveTableNames").replace("\n", ",");
+                String hiveTablesWithCommas = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_SCHEMA).replace("\n", ",");
                 Stream<String> hiveTables = Stream.of(hiveTablesWithCommas);
-                String hiveSchema = metadataEvent.getNewProperties().getProperty("nifi:metadata:securityGroupHiveSchema");
+                String hiveSchema = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_TABLES);
 
                 //List<String> securityGroups =  metadataEvent.getHadoopSecurityGroups().stream().map(group -> group.getName()).collect(Collectors.toList());
 
-                 hadoopAuthorizationService.createReadOnlyPolicy("kylo_" + metadataEvent.getFeedCategory() ,metadataEvent.getFeedName()
-                    , metadataEvent.getHadoopSecurityGroupNames()
-                    , hdfsFolders.collect(Collectors.toList())
-                    , hiveSchema
-                    , hiveTables.collect(Collectors.toList()));
+                 hadoopAuthorizationService.createReadOnlyPolicy("kylo_" + metadataEvent.getFeedCategory(), metadataEvent.getFeedName()
+                     , metadataEvent.getHadoopSecurityGroupNames()
+                     , hdfsFolders.collect(Collectors.toList())
+                     , hiveSchema
+                     , hiveTables.collect(Collectors.toList()));
+            }
+        }
+
+        private boolean hadoopAuthorizationChangesRequired(final FeedPropertyChangeEvent metadataEvent) {
+            String hdfsFoldersWithCommasNew = metadataEvent.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS);
+            String hiveTablesWithCommasNew = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_TABLES);
+            String hiveSchemaNew = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_SCHEMA);
+
+            String hdfsFoldersWithCommasOld = metadataEvent.getOldProperties().getProperty(REGISTRATION_HDFS_FOLDERS);
+            String hiveTablesWithCommasOld = metadataEvent.getOldProperties().getProperty(REGISTRATION_HIVE_TABLES);
+            String hiveSchemaOld = metadataEvent.getOldProperties().getProperty(REGISTRATION_HIVE_SCHEMA);
+
+            if(hdfsFoldersChanged(hdfsFoldersWithCommasNew, hdfsFoldersWithCommasOld) || hiveTablesChanged(hiveTablesWithCommasNew, hiveTablesWithCommasOld)
+            || hiveSchemaChanged(hiveSchemaNew, hiveSchemaOld)) {
+                return true;
+            }
+            return false;
+        }
+
+        private boolean hdfsFoldersChanged(String hdfsFoldersWithCommasNew, String hdfsFoldersWithCommasOld) {
+            if(hdfsFoldersWithCommasNew == null && hdfsFoldersWithCommasOld == null) {
+                return false;
+            }
+            else if(hdfsFoldersWithCommasNew == null && hdfsFoldersWithCommasOld != null) {
+                return true;
+            }
+            else if(hdfsFoldersWithCommasNew != null && hdfsFoldersWithCommasOld == null) {
+                return true;
+            }
+            else {
+                return !hdfsFoldersWithCommasNew.equals(hdfsFoldersWithCommasOld);
+            }
+        }
+
+        private boolean hiveTablesChanged(String hiveTablesWithCommasNew, String hiveTablesWithCommasOld) {
+            if(hiveTablesWithCommasNew == null && hiveTablesWithCommasOld == null) {
+                return false;
+            }
+            else if(hiveTablesWithCommasNew == null && hiveTablesWithCommasOld != null) {
+                return true;
+            }
+            else if(hiveTablesWithCommasNew != null && hiveTablesWithCommasOld == null) {
+                return true;
+            }
+            else {
+                return !hiveTablesWithCommasNew.equals(hiveTablesWithCommasOld);
+            }
+        }
+
+        private boolean hiveSchemaChanged(String hiveSchemaNew, String hiveSchemaOld) {
+            if(hiveSchemaNew == null && hiveSchemaOld == null) {
+                return false;
+            }
+            else if(hiveSchemaNew == null && hiveSchemaOld != null) {
+                return true;
+            }
+            else if(hiveSchemaNew != null && hiveSchemaOld == null) {
+                return true;
+            }
+            else {
+                return !hiveSchemaNew.equals(hiveSchemaOld);
             }
         }
     }
