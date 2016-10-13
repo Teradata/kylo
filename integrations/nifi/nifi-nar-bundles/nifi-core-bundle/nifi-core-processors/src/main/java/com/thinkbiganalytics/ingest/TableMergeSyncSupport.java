@@ -116,9 +116,7 @@ public class TableMergeSyncSupport implements Serializable {
         } else {
             if (shouldDedupe) {
                 batches = createPartitionBatches(partitionSpec, sourceTable, feedPartitionValue);
-                if (batches.size() > 0) {
-                    sql = generateMergeWithDedupePartitionQuery(selectFields, partitionSpec, batches, sourceTable, targetTable, feedPartitionValue);
-                }
+                sql = generateMergeWithDedupePartitionQuery(selectFields, partitionSpec, batches, sourceTable, targetTable, feedPartitionValue);
             } else {
                 sql = generateMergeWithPartitionQuery(selectFields, partitionSpec, sourceTable, targetTable, feedPartitionValue);
             }
@@ -272,7 +270,7 @@ public class TableMergeSyncSupport implements Serializable {
         for (PartitionBatch batch : batches) {
             targetPartitionsItems.add("(" + batch.getPartitionSpec().toTargetSQLWhere(batch.getPartionValues()) + ")");
         }
-        return StringUtils.join(targetPartitionsItems.toArray(new String[0]), " or ");
+        return (targetPartitionsItems.size() == 0 ? null : StringUtils.join(targetPartitionsItems.toArray(new String[0]), " or "));
     }
 
     /**
@@ -299,8 +297,11 @@ public class TableMergeSyncSupport implements Serializable {
             .append(" processing_dttm='").append(feedPartitionValue).append("'")
             .append(" union all ")
             .append(" select ").append(selectSQL).append(",").append(spec.toPartitionSelectSQL())
-            .append(" from ").append(targetTable).append(" ")
-            .append(" where ").append(targetPartitionWhereClause).append(") t");
+            .append(" from ").append(targetTable).append(" ");
+        if (targetPartitionWhereClause != null) {
+            sb.append(" where (").append(targetPartitionWhereClause).append(")");
+        }
+        sb.append(") t");
 
         return sb.toString();
     }
@@ -468,8 +469,11 @@ public class TableMergeSyncSupport implements Serializable {
             .append("  from ").append(targetTable).append(" a left outer join (").append(sbSourceQuery.toString()).append(") b ")
             .append("  on (").append(joinOnClause).append(")")
             .append("  where ")
-            .append("  (b.").append(anyPK).append(" is null)")
-            .append("  and (").append(targetPartitionWhereClause).append(")) t");
+            .append("  (b.").append(anyPK).append(" is null)");
+        if (targetPartitionWhereClause != null) {
+            sb.append(" and (").append(targetPartitionWhereClause).append(")");
+        }
+        sb.append(") t");
 
         return sb.toString();
     }

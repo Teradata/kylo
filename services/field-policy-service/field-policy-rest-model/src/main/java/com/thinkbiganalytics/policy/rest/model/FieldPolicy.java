@@ -10,7 +10,6 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class FieldPolicy {
 
-    private boolean partition;
     private boolean profile;
     private boolean index;
     private String fieldName;
@@ -22,15 +21,6 @@ public class FieldPolicy {
     public FieldPolicy(){
 
     }
-
-    public boolean isPartition() {
-        return partition;
-    }
-
-    public void setPartition(boolean partition) {
-        this.partition = partition;
-    }
-
     public boolean isProfile() {
         return profile;
     }
@@ -71,4 +61,5 @@ public class FieldPolicy {
     public void setFieldName(String fieldName) {
         this.fieldName = fieldName;
     }
+
 }

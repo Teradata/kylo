@@ -1,17 +1,25 @@
 /**
- * ui-router service.  Controllers that link/navigate to other controllers/pages use this service.
- * See the corresponding name references in app.js
+ * Used to programmatically open/close the side nav bar
  */
-angular.module(MODULE_FEED_MGR).service('SideNavService', function () {
+angular.module(MODULE_FEED_MGR).service('SideNavService', function (BroadcastService) {
 
     var self = this;
     this.isLockOpen = true;
 
     this.hideSideNav = function(){
-        self.isLockOpen = false;
+        if (self.isLockOpen) {
+            self.isLockOpen = false;
+            BroadcastService.notify(BroadcastConstants.CONTENT_WINDOW_RESIZED, null, 600);
+        }
+
     }
+
     this.showSideNav = function () {
-        self.isLockOpen = true;
+        if (!self.isLockOpen) {
+            self.isLockOpen = true;
+            BroadcastService.notify(BroadcastConstants.CONTENT_WINDOW_RESIZED, null, 600);
+        }
+
     }
 
 });

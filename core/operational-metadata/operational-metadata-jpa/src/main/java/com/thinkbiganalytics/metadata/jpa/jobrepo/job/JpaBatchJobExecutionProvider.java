@@ -2,6 +2,7 @@ package com.thinkbiganalytics.metadata.jpa.jobrepo.job;
 
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import com.thinkbiganalytics.DateTimeUtil;
+import com.thinkbiganalytics.jobrepo.common.constants.CheckDataStepConstants;
 import com.thinkbiganalytics.jobrepo.common.constants.FeedConstants;
 import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
 import com.thinkbiganalytics.metadata.api.jobrepo.ExecutionConstants;
@@ -19,7 +20,10 @@ import com.thinkbiganalytics.metadata.jpa.jobrepo.step.BatchStepExecutionReposit
 import com.thinkbiganalytics.metadata.jpa.jobrepo.step.JpaBatchStepExecution;
 import com.thinkbiganalytics.metadata.jpa.jobrepo.step.JpaBatchStepExecutionContextValue;
 import com.thinkbiganalytics.nifi.provenance.model.ProvenanceEventRecordDTO;
+import com.thinkbiganalytics.support.FeedNameUtil;
 
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,6 +51,8 @@ import javax.persistence.OptimisticLockException;
 public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
 
     private static final Logger log = LoggerFactory.getLogger(JpaBatchJobExecutionProvider.class);
+
+    private static String PARAM_TB_JOB_TYPE = "tb.jobType";
 
 
     /**
@@ -194,6 +200,17 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
     }
 
     /**
+     * Check to see if the NifiEvent has the attributes indicating it is a Check Data Job
+     */
+    private boolean isCheckDataJob(ProvenanceEventRecordDTO event) {
+        if (event.getAttributeMap() != null) {
+            String jobType = event.getAttributeMap().get(PARAM_TB_JOB_TYPE);
+            return StringUtils.isNotBlank(jobType) && FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK.equalsIgnoreCase(jobType);
+        }
+        return false;
+    }
+
+    /**
      * When the job is complete determine its status, write out exection context, and determine if all related jobs are complete
      */
     private void finishJob(ProvenanceEventRecordDTO event, JpaBatchJobExecution jobExecution) {
@@ -209,8 +226,23 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
         }
 
         ///END OF THE JOB... fail or complete the job?
-      //  ensureFailureSteps(jobExecution);
+        //  ensureFailureSteps(jobExecution);
         //jobExecution.completeOrFailJob();
+
+        //ensure check data jobs are property failed if they dont pass
+        if (isCheckDataJob(event)) {
+            String valid = event.getAttributeMap().get(CheckDataStepConstants.VALIDATION_KEY);
+            String msg = event.getAttributeMap().get(CheckDataStepConstants.VALIDATION_MESSAGE_KEY);
+            if (StringUtils.isNotBlank(valid)) {
+                if (!BooleanUtils.toBoolean(valid)) {
+                    jobExecution.failJob();
+                }
+            }
+            if (StringUtils.isNotBlank(msg)) {
+                jobExecution.setExitMessage(msg);
+            }
+        }
+
         jobExecution.setEndTime(DateTimeUtil.convertToUTC(event.getEventTime()));
         log.info("Finishing Job: {} with a status of: {}", jobExecution.getJobExecutionId(), jobExecution.getStatus());
         //add in execution contexts
@@ -220,6 +252,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
                 JpaBatchJobExecutionContextValue executionContext = new JpaBatchJobExecutionContextValue(jobExecution, entry.getKey());
                 executionContext.setStringVal(entry.getValue());
                 jobExecution.addJobExecutionContext(executionContext);
+
             }
             //also persist to spring batch tables
             batchExecutionContextProvider.saveJobExecutionContext(jobExecution.getJobExecutionId(), allAttrs);
@@ -407,7 +440,7 @@ public class JpaBatchJobExecutionProvider implements BatchJobExecutionProvider {
             String jobType = event.getUpdatedAttributes().get(NIFI_JOB_TYPE_PROPERTY);
             String nifiCategory = event.getAttributeMap().get(NIFI_CATEGORY_PROPERTY);
             String nifiFeedName = event.getAttributeMap().get(NIFI_FEED_PROPERTY);
-            String feedName = nifiCategory + "." + nifiFeedName;
+            String feedName = FeedNameUtil.fullName(nifiCategory, nifiFeedName);
             if (FeedConstants.PARAM_VALUE__JOB_TYPE_CHECK.equalsIgnoreCase(jobType)) {
                 Set<JpaBatchJobExecutionParameter> updatedParams = ((JpaBatchJobExecution) jobExecution).setAsCheckDataJob(feedName);
                 jobParametersRepository.save(updatedParams);

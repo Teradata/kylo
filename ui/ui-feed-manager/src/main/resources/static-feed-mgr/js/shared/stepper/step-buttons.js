@@ -6,7 +6,9 @@
             scope: {
                 stepIndex:'@',
                 canContinue: '=',
-                onClickFinalButton:'&'
+                onClickFinalButton: '&',
+                beforeNext: '&?beforeNextStep',
+                beforePrevious: '&?beforePreviousStep'
 
             },
             require:'^thinkbigStepper',
@@ -39,12 +41,18 @@
 
                 $scope.gotoNextStep = function () {
                     if ($scope.showNext()) {
+                        if ($scope.beforeNext && angular.isFunction($scope.beforeNext)) {
+                            $scope.beforeNext()($scope.stepIndex, $scope.step.nextActiveStepIndex);
+                        }
                         //stepperController.selectedStepIndex = $scope.stepIndex + 1;
                         stepperController.selectedStepIndex = $scope.step.nextActiveStepIndex;
                     }
                 };
                 $scope.gotoPreviousStep = function () {
                     if ($scope.showPrevious()) {
+                        if ($scope.beforePrevious && angular.isFunction($scope.beforePrevious)) {
+                            $scope.beforePrevious()($scope.stepIndex, $scope.step.previousActiveStepIndex);
+                        }
                         //stepperController.selectedStepIndex =$scope.stepIndex - 1;
                         stepperController.selectedStepIndex = $scope.step.previousActiveStepIndex;
                     }

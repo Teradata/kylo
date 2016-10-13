@@ -528,15 +528,20 @@
         };
 
         //Listen for when the next step is active
-        BroadcastService.subscribe($scope,StepperService.ACTIVE_STEP_EVENT,onNextStepActive)
+        BroadcastService.subscribe($scope, StepperService.STEP_CHANGED_EVENT, updateModel);
 
-        function onNextStepActive(event,index){
+        /**
+         * Update the feed model when changing from this transform step to a different step
+         * @param event
+         * @param changedSteps
+         */
+        function updateModel(event, changedSteps) {
             var thisIndex = parseInt(self.stepIndex);
-            //if we are on the next step then call out to get the model
-            if(index == thisIndex +1) {
-              saveToFeedModel().then(function(){
-                  BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED','SCHEMA_LOADED');
-              });
+            if (changedSteps.oldStep == thisIndex) {
+                saveToFeedModel().then(function () {
+                    // notify those that the data is loaded/updated
+                    BroadcastService.notify('DATA_TRANSFORM_SCHEMA_LOADED', 'SCHEMA_LOADED');
+                });
             }
         }
 
@@ -558,18 +563,19 @@
             feedModel.table.method = "EXISTING_TABLE";
             feedModel.table.sourceTableSchema.name = "";
 
+
             // Get list of fields
             var deferred = $q.defer();
             var fields = self.sparkShellService.getFields();
 
             if (fields !== null) {
                 FeedService.setTableFields(fields);
-                self.sparkShellService.saveGlobalState();
+                self.sparkShellService.save();
                 deferred.resolve(true);
             } else {
                 self.query().then(function() {
                     FeedService.setTableFields(self.sparkShellService.getFields());
-                    self.sparkShellService.saveGlobalState();
+                    self.sparkShellService.save();
                     deferred.resolve(true);
                 });
             }

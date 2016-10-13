@@ -84,6 +84,9 @@
         $scope.$watch(function(){
             return self.selectedStepIndex;
         }, function(current, old){
+            //Broadcast that we changed steps
+            BroadcastService.notify(StepperService.STEP_CHANGED_EVENT, {newStep: current, oldStep: old});
+
             WindowUnloadService.clear();
             self.previousStepIndex = old;
 
@@ -106,8 +109,8 @@
             self.selectedStepIndex = 0;
         }
 
-        this.onStepSelect = function(){
-          //  console.log('SELECTED ',self.selectedStepIndex);
+        this.onStepSelect = function (index) {
+            console.log('SELECTED ', self.selectedStepIndex, index);
         }
 
         this.resetAndGoToFirstStep = function(){

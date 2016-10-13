@@ -84,6 +84,22 @@ md-list md-datepicker .md-button.md-icon-button {
   padding:0 !important;
 }
 
+#define-feed-dest-schema-container, #define-feed-data-processing-container {
+  /*min-height: 500px;*/
+  width: 100%;
+}
+
+#define-feed-dest-schema-container .repeated-item {
+  box-sizing: border-box;
+  height: 80px;
+  margin-right: 16px;
+}
+
+#define-feed-data-processing-container .repeated-item {
+  box-sizing: border-box;
+  height: 60px;
+  margin-right: 16px;
+}
 
 .layout-padding-left-right, .layout-padding-left-right-gt-sm, .layout-padding-left-right-gt-sm > *, .layout-padding-left-right-md, .layout-padding-left-right-md > *, .layout-padding-left-right > *, .layout-padding-left-right > .flex, .layout-padding-left-right > .flex-gt-sm, .layout-padding-left-right > .flex-md {
   padding-left:8px;
@@ -105,6 +121,14 @@ md-list md-datepicker .md-button.md-icon-button {
 }
 .layout-padding-indent button {
 margin-left:0px;
+}
+
+.layout-padding-indent-20 {
+  padding-left: 20px;
+}
+
+.layout-padding-indent button, .layout-padding-indent-20 button {
+  margin-left: 0px;
 }
 
 .layout-padding-top-bottom, .layout-padding-top-bottom md-item {
@@ -954,7 +978,7 @@ md-tab-content.md-right:not(.md-active),md-tab-content.md-left:not(.md-active)  
   padding-bottom:15px;
 }
 
-md-radio-button {
+md-radio-button.padding-right {
   padding-right:10px;
 }
 md-radio-group.layout-row md-radio-button {
@@ -1235,4 +1259,8 @@ md-list-item .md-list-item-inner > md-checkbox.permissions-indent-1 {
 }
 md-list-item .md-list-item-inner > md-checkbox.permissions-indent-2 {
   margin-left: 115px;
+}
+
+.table-schema-checkbox {
+  margin-top: -10px;
 }

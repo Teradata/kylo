@@ -11,6 +11,7 @@
    </header-section>
  <body-section md-content >
 
+   <ng-form name="vm.dataProcessingForm">
    <md-list  layout-fill class="list-item-table list-condensed" id="policy-list">
 
       <md-list-item  >
@@ -20,10 +21,18 @@
             </div>
             <div flex="10" class="md-list-item-text hint">
                Index
+              <md-tooltip md-direction="top">
+                Define what should be sent to "Global Search"
+              </md-tooltip>
             </div>
+           <!--
             <div flex="10" class="md-list-item-text hint">
                Profile
+              <md-tooltip md-direction="top">
+                Should this field be profiled?
+              </md-tooltip>
             </div>
+            -->
             <div flex="25" class="md-list-item-text hint">
                Standardize
             </div>
@@ -33,25 +42,27 @@
          </div>
       </md-list-item>
 
+     <md-virtual-repeat-container style="height:600px;" md-auto-shrink id="define-feed-data-processing-container">
+       <div md-virtual-repeat="policy in vm.model.table.fieldPolicies" md-item-size="60" class="repeated-item" layout="row" layout-fill style="max-height:100%;">
 
-       <md-virtual-repeat-container browser-height browser-height-offset="400" browser-height-scroll-y="false">
-           <md-list-item md-virtual-repeat="policy in vm.model.table.fieldPolicies">
-             <div layout="row" layout-fill>
                 <div flex="25" class="md-list-item-text">
                    <md-input-container class="md-block" flex-gt-sm>
                       <div>{{policy.name}}</div>
+                     <div class="hint">{{policy.field.dataTypeDisplay()}}</div>
                    </md-input-container>
                 </div>
-                <div flex="10" class="md-list-item-text ">
-                   <md-input-container class="md-block"  flex-gt-sm>
-                      <input type="checkbox" ng-model="policy.index" aria-label="Index"/>
-                   </md-input-container>
+         <div flex="10" class="md-list-item-text " layout="column">
+           <md-input-container class="md-block" flex-gt-sm>
+             <md-checkbox flex-gt-sm ng-model="policy.index" aria-label="Index">
+             </md-checkbox>
+           </md-input-container>
                 </div>
-                <div flex="10" class="md-list-item-text ">
-                   <md-input-container class="md-block"  flex-gt-sm>
-                      <input type="checkbox" ng-model="policy.profile" aria-label="Profile"/>
-                   </md-input-container>
-                </div>
+         <!--
+          <div flex="10" class="md-list-item-text " layout="column">
+            <md-checkbox flex-gt-sm ng-model="policy.profile" aria-label="Nullable">
+            </md-checkbox>
+          </div>
+          -->
                 <div flex="25" class="md-list-item-text hint" layout-align="start center">
                   <div ng-click="vm.showFieldRuleDialog(policy,'standardization')" style="color:#2D78B1;">
                      <md-button class="icon-btn" style="padding-left:2px;padding-right:2px;"><ng-md-icon icon="add_circle_outline" style="fill:#2D78B1;"></ng-md-icon></md-button>ADD</div>
@@ -66,23 +77,25 @@
                       {{policy.validation.length}} Added
                    </div>
                 </div>
-             </div>
-           </md-list-item>
+       </div>
        </md-virtual-repeat-container>
       </md-list>
 
 
    <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
       <label class="label-small md-container-ignore">Merge Strategy</label>
-      <md-radio-group ng-model="vm.model.table.targetMergeStrategy" layout="row" layout-wrap="true" class="layout-padding-top">
+     <md-radio-group ng-model="vm.model.table.targetMergeStrategy" layout="row" layout-wrap="true" class="layout-padding-top" name="targetMergeStrategy" ng-change="vm.onChangeMergeStrategy()">
          <md-radio-button ng-repeat="strategy in vm.mergeStrategies"
                           ng-value="strategy.type"
                           aria-label="{{strategy.name}}"
-                          ng-disabled="{{strategy.disabled}}">
+                          ng-disabled="strategy.disabled">
             {{strategy.name}}
             <div class="hint">{{strategy.hint}}</div>
          </md-radio-button>
       </md-radio-group>
+     <div ng-messages="vm.dataProcessingForm['targetMergeStrategy'].$error" md-auto-hide="false">
+       <div ng-message="invalidPKOption">A Primary Key must be selected to use this strategy</div>
+     </div>
 
    </md-input-container>
 
@@ -111,12 +124,17 @@
       <md-input-container class="md-block layout-padding-top-bottom">
          <label class="label-small md-container-ignore">Options</label>
           <div layout="row" class="layout-padding-top ">
+            <md-checkbox ng-model="vm.model.options.skipHeader" aria-label="Skip Header">
+              Skip header row
+            </md-checkbox>
+            <!--
                 <md-checkbox  ng-model="vm.model.table.options.auditLogging" aria-label="Audit Logging">
                 Audit Logging
                    </md-checkbox>
                 <md-checkbox  ng-model="vm.model.table.options.encrypt" aria-label="Encrypt">
                    Encrypt
                    </md-checkbox>
+                   -->
               <!--  <md-checkbox ng-model="vm.model.table.options.trackHistory" aria-label="Track History">
                    Track History
                    </md-checkbox> -->
@@ -147,6 +165,7 @@
    </md-input-container>
 
    <thinkbig-step-buttons can-continue="vm.isValid" step-index="{{::vm.stepIndex}}" ></thinkbig-step-buttons>
+   </ng-form>
 </body-section>
 
 </card-layout>

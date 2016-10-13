@@ -34,8 +34,8 @@
     </md-radio-group>
 
     <md-select ng-model="property.value"  ng-if="property.renderType == 'select' && property.propertyDescriptor.allowableValues != null" ng-disabled="propertyDisabled"  ng-change="onPropertyChanged(property)">
-            <md-option ng-repeat="allowableValue in ::property.propertyDescriptor.allowableValues" value="{{::allowableValue.value}}">
-                {{::allowableValue.displayName}}
+      <md-option ng-repeat="allowableValue in property.propertyDescriptor.allowableValues" value="{{allowableValue.value}}">
+        {{allowableValue.displayName}}
             </md-option>
     </md-select>
 
