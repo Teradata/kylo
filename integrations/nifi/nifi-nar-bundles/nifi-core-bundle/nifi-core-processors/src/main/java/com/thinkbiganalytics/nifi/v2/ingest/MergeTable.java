@@ -83,7 +83,7 @@ public class MergeTable extends AbstractProcessor {
 
     public static final PropertyDescriptor MERGE_STRATEGY = new PropertyDescriptor.Builder()
         .name("Merge Strategy")
-        .description("Specifies the algorithm used to merge. Valid values are SYNC,MERGE,STRATEGY_PK_MERGE,DEDUPE_AND_MERGE.  Sync will completely overwrite the target table with the source data. "
+        .description("Specifies the algorithm used to merge. Valid values are SYNC,MERGE,PK_MERGE,DEDUPE_AND_MERGE.  Sync will completely overwrite the target table with the source data. "
                      + "Merge will append "
                      + "the data into the target partitions. Dedupe will insert into the target partition but ensure no duplicate rows are remaining. PK Merge will insert or update existing rows "
                      + "matching the"
@@ -155,7 +155,7 @@ public class MergeTable extends AbstractProcessor {
             mergeStrategyValue = STRATEGY_DEDUPE_MERGE;
         }
 
-        logger.info("Using Source: " + sourceTable + " Target: " + targetTable + " feed partition:" + feedPartitionValue + " partSpec: " + partitionSpecString);
+        logger.info("Merge strategy: " + mergeStrategyValue + " Using Source: " + sourceTable + " Target: " + targetTable + " feed partition:" + feedPartitionValue + " partSpec: " + partitionSpecString);
 
         final StopWatch stopWatch = new StopWatch(true);
 

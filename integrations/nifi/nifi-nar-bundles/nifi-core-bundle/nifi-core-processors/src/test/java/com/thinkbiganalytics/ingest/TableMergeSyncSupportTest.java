@@ -136,6 +136,25 @@ public class TableMergeSyncSupportTest {
 
     @Test
     /**
+     * Tests the merge partition with empty target table
+     */
+    public void testMergePartitionPKWithEmptyTargetTable() throws Exception {
+        List<String> results = fetchEmployees(targetTable);
+        assertEquals(0, results.size());
+
+        ColumnSpec columnSpec1 = new ColumnSpec("id", "String", "", true, false, false);
+        ColumnSpec columnSpec2 = new ColumnSpec("name", "String", "", false, false, false);
+        ColumnSpec[] columnSpecs = Arrays.asList(columnSpec1, columnSpec2).toArray(new ColumnSpec[0]);
+        // Call merge
+        mergeSyncSupport.doPKMerge(sourceTable, targetTable, spec, processingPartition, columnSpecs);
+
+        // We should have 4 records
+        results = fetchEmployees(targetTable);
+        assertEquals(4, results.size());
+    }
+
+    @Test
+    /**
      * Tests the merge partition without dedupe and the merge partition with dedupe
      */
     public void testMergePartitionPK() throws Exception {
