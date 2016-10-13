@@ -106,7 +106,7 @@ angular.module(MODULE_FEED_MGR).factory('FeedService', function ($http, $q,$mdTo
                 table: {
                     tableSchema: {name: null, fields: []},
                     sourceTableSchema: {name: null, fields: []},
-                    method: 'MANUAL',
+                    method: 'SAMPLE_FILE',
                     existingTableName: null,
                     targetMergeStrategy: 'DEDUPE_AND_MERGE',
                     feedFormat: "ROW FORMAT DELIMITED FIELDS TERMINATED BY ',' LINES TERMINATED BY '\\n' STORED AS TEXTFILE",

@@ -24,7 +24,7 @@ public class LookupValidator implements ValidationPolicy<String> {
 
     private static final Logger log = LoggerFactory.getLogger(LookupValidator.class);
 
-    @PolicyProperty(name = "List", hint = "Comma separated list of values")
+    @PolicyProperty(name = "List", hint = "Comma separated list of values", required = true)
     private String lookupList;
 
     private Set<String> lookupValues = new HashSet<>();

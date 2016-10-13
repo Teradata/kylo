@@ -1,7 +1,7 @@
 <div ng-repeat="group in vm.rule.groups" class="layout-padding-left-right" layout="{{group.layout}}">
 
   <div ng-repeat="property in group.properties" ng-if="property.hidden == false">
-    <md-input-container class="md-block"
+    <md-input-container class="md-block condensed-medium  "
                         ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' || property.type == 'feedSelect' || property.type == 'email' || property.type == 'currentFeed' ">
       <label>{{property.displayName}}</label>
       <input name="{{property.formKey}}" string-to-number type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"
@@ -21,12 +21,12 @@
       <div ng-if="property.hint" class="hint">
         {{property.hint}}
       </div>
-      <div ng-messages="vm.theForm[property.formKey].$error ">
+      <div ng-messages="vm.theForm[property.formKey].$error " md-auto-hide="false">
         <div ng-message="required">This field is required.</div>
       </div>
     </md-input-container>
 
-    <md-input-container class="md-block" ng-if="property.type == 'cron'">
+    <md-input-container class="md-block condensed-medium  " ng-if="property.type == 'cron'">
       <label>{{property.displayName}}</label>
       <input required ng-model="property.value" name="{{property.formKey}}"
              cron-expression-validator
@@ -44,27 +44,25 @@
         <div ng-show="vm.theForm[property.formKey].$error.cronExpression"
              ng-message="cronExpression">Invalid Cron Expression.
         </div>
-        <div ng-show="vm.theForm[property.formKey].$error.required" ng-message="required">
-          Required.
-        </div>
       </div>
       <cron-expression-preview cron-expression="property.value"
                                ng-if="vm.theForm[property.formKey].$valid"></cron-expression-preview>
     </md-input-container>
 
-
-    <md-datepicker name="{{property.formKey}}" ng-required="property.required" ng-if="property.type == 'date' " ng-model="property.value" md-placeholder="property.placeholder"
-                   ng-disabled="!vm.rule.editable">
-    </md-datepicker>
-    <div ng-if="property.hint && property.type == 'date' " class="hint">
-      {{property.hint}}
-    </div>
-    <div ng-messages="vm.theForm[property.formKey].$error " ng-if="property.type == 'date' ">
-      <div ng-message="required">This field is required.</div>
+    <div ng-if="property.type == 'date' ">
+      <md-datepicker name="{{property.formKey}}" ng-required="property.required" ng-if="property.type == 'date' " ng-model="property.value" md-placeholder="property.placeholder"
+                     ng-disabled="!vm.rule.editable">
+      </md-datepicker>
+      <div ng-if="property.hint && property.type == 'date' " class="hint">
+        {{property.hint}}
+      </div>
+      <div ng-messages="vm.theForm[property.formKey].$error " ng-if="property.type == 'date' " md-auto-hide="false">
+        <div ng-message="required">This field is required.</div>
+      </div>
     </div>
     <div ng-if="property.type == 'regex'">
       <span>Test your Regex Pattern</span>
-      <md-input-container class="md-block condensed">
+      <md-input-container class="md-block condensed-medium ">
         <label>Sample String</label>
         <input name="{{property.formKey}}" ng-model="property.regexSampleString" md-placeholder="Sample String" ng-required="property.required" ng-disabled="!vm.rule.editable"/>
 
@@ -77,7 +75,7 @@
       </div>
     </div>
     <div ng-if="property.type == 'chips' || property.type == 'feedChips'">
-      <md-input-container class="md-block flex-gt-sm" flex-gt-sm="" style="" md-is-error="property.invalid == true">
+      <md-input-container class="md-block flex-gt-sm condensed-medium " flex-gt-sm="" style="" md-is-error="property.invalid == true">
         <label class="label-small md-container-ignore">{{property.displayName}}</label>
         <md-chips name="{{property.formKey}}" ng-model="property.values" md-autocomplete-snap md-on-add="vm.validateRequiredChips(property)"
                   md-on-remove="vm.validateRequiredChips(property) "
@@ -102,7 +100,7 @@
         <div ng-if="property.hint" class="hint">
           {{property.hint}}
         </div>
-        <div ng-messages="vm.theForm[property.formKey].$error " ng-if="property.invalid == true">
+        <div ng-messages="vm.theForm[property.formKey].$error " ng-if="property.invalid == true" md-auto-hide="false">
           <div ng-message="required">This field is required.</div>
         </div>
       </md-input-container>

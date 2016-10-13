@@ -650,7 +650,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
                 securityGroupNames.add(securityGroup.getName());
             }
             this.metadataEventService.notify(new FeedPropertyChangeEvent(feed.getCategory().getName(), feed.getName(), securityGroupNames , feed.getProperties(), properties));
-
+            
             return feed.mergeProperties(properties);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to merge Feed Properties for Feed " + feedId, e);

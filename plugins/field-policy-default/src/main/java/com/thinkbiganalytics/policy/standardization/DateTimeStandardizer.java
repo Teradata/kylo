@@ -31,12 +31,13 @@ public class DateTimeStandardizer implements StandardizationPolicy {
 
     public enum OutputFormats {DATE_ONLY, DATETIME, DATETIME_NOMILLIS}
 
-    @PolicyProperty(name = "Date Format", hint = "Format Example: MM/dd/YYYY")
+    @PolicyProperty(name = "Date Format", hint = "Format Example: MM/dd/YYYY", required = true)
     private String inputDateFormat;
 
     @PolicyProperty(name = "Output Format", hint = "Choose an output format", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
-                    selectableValues = {"DATE_ONLY", "DATETIME", "DATETIME_NOMILLIS"})
-    private OutputFormats outputFormat;
+                    selectableValues = {"DATE_ONLY", "DATETIME", "DATETIME_NOMILLIS"}, required = true)
+    private OutputFormats outputFormat = OutputFormats.DATE_ONLY;
+
 
     /**
      * Unix timestamp is in seconds.. not ms.  detect if the string has only 10 chars being its in seconds, not ms
@@ -51,7 +52,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
      * Whether the reference timezone is encoded in the ISO8601 date or specified as configuration
      */
     @PolicyProperty(name = "Input timezone", hint = "Input timezone (optional)", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
-                    selectableValues = {"ACT",
+                    selectableValues = {"", "ACT",
                                         "AET",
                                         "AGT",
                                         "ART",
@@ -86,7 +87,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
      * Whether the reference timezone is encoded in the ISO8601 date or specified as configuration
      */
     @PolicyProperty(name = "Output timezone", hint = "Targeted timezone (optional)", type = PolicyPropertyTypes.PROPERTY_TYPE.select,
-                    selectableValues = {"ACT",
+                    selectableValues = {"", "ACT",
                                         "AET",
                                         "AGT",
                                         "ART",
@@ -163,6 +164,7 @@ public class DateTimeStandardizer implements StandardizationPolicy {
 
 
                 DateTime dt = inputFormatter.parseDateTime(value);
+
                 return outputFormatter.print(dt);
 
             } catch (IllegalArgumentException e) {
@@ -194,6 +196,9 @@ public class DateTimeStandardizer implements StandardizationPolicy {
     protected void initializeFormatters() {
         try {
             valid = false;
+            if (outputFormat == null) {
+                outputFormat = OutputFormats.DATE_ONLY;
+            }
             switch (outputFormat) {
                 case DATE_ONLY:
                     this.outputFormatter = DateTimeFormat.forPattern("yyyy-MM-dd");

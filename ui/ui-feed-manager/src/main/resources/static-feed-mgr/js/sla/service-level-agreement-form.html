@@ -1,13 +1,13 @@
 <ng-form name="vm.slaForm" ng-if="vm.editSla != null" class="layout-padding-left-right layout-padding-top">
   <md-button class="md-raised" ng-click="vm.onBackToList($event)">Back to List</md-button>
 
-  <div layout="column" layout-padding>
-    <md-input-container class="md-block">
+  <div layout="column" class="layout-padding-top">
+    <md-input-container class="md-block condensed">
       <label>Name</label>
       <input name="slaName" type="text" ng-model="vm.editSla.name" md-placeholder="SLA name"
              required/>
     </md-input-container>
-    <md-input-container class="md-block">
+    <md-input-container class="md-block condensed">
       <label>Description</label>
       <input name="slaDescription" type="text" ng-model="vm.editSla.description" md-placeholder="SLA Description"
              required/>
@@ -16,11 +16,11 @@
 
 
   <div>
-    <h4 class="subhead">SLA Conditions</h4>
+    <span class="md-body-2">SLA Conditions</span>
 
     <div ng-repeat="rule in vm.editSla.rules" layout="column" class="layout-padding-left-right">
-      <div layout="row" flex class="md-subhead ">
-        <div style="padding-top:25px;" class="layout-padding-right bold">{{($index+1)}}.</div>
+      <div layout="row" flex>
+        <div class="layout-padding-right md-body-2">{{($index+1)}}.</div>
         <md-input-container class="md-block layout-padding-left" ng-if="!$first" md-no-float>
           <md-select ng-model="rule.condition" aria-label="Condition" ng-disabled="!rule.editable" placeholder="Condition">
             <md-option value="REQUIRED">AND</md-option>
@@ -28,19 +28,19 @@
           </md-select>
         </md-input-container>
 
-        <div layout="column" flex class="layout-padding-left bold" style="padding-top:25px">
+        <div layout="column" flex class="layout-padding-left md-body-2">
           <span>{{rule.name}}</span>
           <span class="hint">{{rule.description}}</span>
         </div>
         <div>
-          <div style="padding-top:25px;">
+          <div>
             <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.onDeleteSlaMetric($index)" ng-if="rule.editable">
               <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
             </md-button>
           </div>
         </div>
       </div>
-      <thinkbig-policy-input-form the-form="vm.slaForm" rule="rule" mode="vm.mode" feed="vm.feed"></thinkbig-policy-input-form>
+      <thinkbig-policy-input-form class="layout-padding-top" the-form="vm.slaForm" rule="rule" mode="vm.mode" feed="vm.feed"></thinkbig-policy-input-form>
 
       <md-divider ng-if="!$last"></md-divider>
       <div ng-if="vm.addingSlaCondition == false && $last" flex layout="row">
@@ -73,9 +73,9 @@
     </div>
 
     <div>
-      <h4 class="subhead">SLA Actions</h4>
+      <span class="md-body-2">SLA Actions</span>
 
-      <div class="layout-padding" ng-if="vm.editSla.actionConfigurations.length ==0" layout="column">
+      <div ng-if="vm.editSla.actionConfigurations.length ==0" layout="column">
         <span>All SLA violations will generate an Alert.</span>
         <span ng-if="vm.showActionOptions">Click the 'Add Action' button to add additional actions when an SLA is violated</span>
       </div>
@@ -93,16 +93,16 @@
       </div>
       <div ng-repeat="rule in vm.editSla.actionConfigurations" layout="column" class="layout-padding-left-right">
 
-        <div layout="row" flex class="md-subhead">
-          <div style="padding-top:25px;" class="layout-padding-right bold">{{($index+1)}}.</div>
+        <div layout="row" flex class="">
+          <div class="layout-padding-right md-body-2">{{($index+1)}}.</div>
 
-          <div layout="column" flex class="layout-padding-left bold" style="padding-top:25px">
+          <div layout="column" flex class="layout-padding-left md-body-2">
             <span>{{rule.name}}</span>
             <span class="hint">{{rule.description}}</span>
             <span ng-if="rule.validConfiguration == false" class="error"><strong>Warning</strong>  Configuration Error!  You can still assign this action, but it may not fire due to configuration issues. {{rule.validationMessage}}</span>
           </div>
           <div>
-            <div style="padding-top:25px;">
+            <div>
               <md-button class="icon-btn md-icon-button auto-height" ng-click="vm.onDeleteSlaAction($index)" ng-if="rule.editable">
                 <ng-md-icon icon="delete" size="20" style="fill:grey;"></ng-md-icon>
               </md-button>

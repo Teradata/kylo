@@ -1,109 +1,44 @@
-p<md-dialog aria-label="Validation Results"  ng-cloak>
-    <form>
+<md-dialog aria-label="Validation Results" ng-cloak>
+    <ng-form name="policyForm">
         <div  class="md-toolbar-tools">
-            <h4 class="md-title">
-                <span>{{title}} for field {{field.name}}</span></h4>
+            <h4 class="md-title"><span>{{title}} for field {{field.name}}</span></h4>
             <span flex></span>
         </div>
-        <md-dialog-content layout="column" style="min-width:500px;" layout-padding>
+        <md-dialog-content layout="column" style="min-width:500px;padding-top:0px;" layout-padding>
 
-                <div ng-if="policyRules != null && policyRules.length >0 ">
-                    <md-list>
-                        <md-list-item ng-repeat="rule in policyRules track by $index" >
-                            <span class="md-list-item-text">{{rule.name}}</span>
+            <div ng-if="policyRules != null && policyRules.length >0 ">
+                <md-list>
+                    <md-list-item ng-repeat="rule in policyRules track by $index">
+                        <span class="md-list-item-text">{{rule.name}}</span>
                         <span class="md-secondary">
                             <md-button class="md-icon-button" ng-click="editPolicy($event,$index,rule)">
                                 <ng-md-icon icon="edit" ></ng-md-icon>
                             </md-button>
-                              <md-button  class="md-icon-button" ng-click="deletePolicyByIndex($index)">
+                              <md-button class="md-icon-button" ng-click="deletePolicyByIndex(index)">
                                   <ng-md-icon icon="delete" ></ng-md-icon>
                               </md-button>
                         </span>
-                            <md-divider></md-divider>
-                        </md-list-item>
-                    </md-list>
-                </div>
+                        <md-divider></md-divider>
+                    </md-list-item>
+                </md-list>
+            </div>
 
-
-             <div class="edit-form">
+            <div class="edit-form" style="padding-top:0px;">
                  <md-progress-linear md-mode="indeterminate" ng-if="loadingPolicies"></md-progress-linear>
 
-                <md-input-container class="md-block layout-padding-top-bottom">
+                <md-input-container class="md-block layout-padding-top-bottom" style="margin-top:0px;">
                     <label class="md-container-ignore label-small layout-padding-top">Select Rule Type</label>
                     <md-select ng-model="ruleType" ng-model-options="{trackBy: '$value.name'}" ng-change="onRuleTypeChange()" aria-label="Rule Type">
                         <md-option ng-value="opt" ng-repeat="opt in options">{{ opt.name }}</md-option>
                     </md-select>
                     <span class="hint">{{editRule.description}}</span>
                 </md-input-container>
-
-                <div ng-repeat="property in editRule.properties">
-                    <md-input-container class="md-block" ng-if="property.type == 'number' || property.type =='string' || property.type == 'regex' || property.type == 'select' ">
-                        <label>{{property.displayName}}</label>
-                        <input type="number" ng-if="property.type == 'number'" ng-model="property.value" md-placeholder="property.placeholder"/>
-                        <input ng-if="property.type == 'string' || property.type =='regex'" ng-model="property.value" md-placeholder="property.placeholder" ng-trim="false"/>
-                        <md-select ng-model="property.value" ng-if="property.type == 'select' " >
-                            <md-option ng-repeat="value in property.selectableValues" value="{{value.value}}">
-                                {{value.label}}
-                            </md-option>
-                        </md-select>
-                        <div ng-if="property.hint" class="hint">
-                            {{property.hint}}
-                        </div>
-                    </md-input-container>
-
-                    <md-datepicker ng-if="property.type == 'date' " ng-model="property.value" md-placeholder="property.placeholder"></md-datepicker>
-                    <div ng-if="property.hint && property.type == 'date' " class="hint">
-                        {{property.hint}}
-                    </div>
-                    <div ng-if="property.type == 'regex'">
-                        <span>Test your Regex Pattern</span>
-                        <md-input-container class="md-block">
-                            <label>Sample String</label>
-                            <input  ng-model="property.regexSampleString" md-placeholder="Sample String"/>
-                        </md-input-container>
-                        <div>
-                            {{property.regexValid}}
-                        </div>
-                    </div>
-
-                    <div ng-if="property.type == 'chips'">
-                        <md-input-container class="md-block layout-padding-top-bottom flex-gt-sm condensed" flex-gt-sm="" style="">
-                            <label class="label-small md-container-ignore">{{property.displayName}}</label>
-                            <md-chips ng-model="property.values" md-autocomplete-snap
-                                      md-transform-chip="transformChip($chip)"
-                                      md-require-match="true">
-                                <md-autocomplete
-                                    md-selected-item="editChips.selectedItem"
-                                    md-search-text="editChips.searchText"
-                                    md-items="item in queryChipSearch(property,editChips.searchText)"
-                                    md-item-text="item.label"
-                                    md-min-length="0"
-                                    placeholder="{{property.placeholder}}">
-                                    <span md-highlight-text="editChips.searchText">{{item.label}}</span>
-                                </md-autocomplete>
-                                <md-chip-template>
-                                        <span>
-                                          <strong>{{$chip.label}}</strong>
-                                        </span>
-                                </md-chip-template>
-                            </md-chips>
-                            <div ng-if="property.hint" class="hint">
-                                {{property.hint}}
-                            </div>
-                        </md-input-container>
-                    </div>
-
-                </div>
-
-
-
-
-
+                <thinkbig-policy-input-form the-form="policyForm" rule="editRule" mode="ruleMode" feed="feed"></thinkbig-policy-input-form>
 
                 <div layout="row" layout-align="start stretch" flex>
-                    <md-button ng-if="ruleType != null" ng-click="cancelEdit($event)">{{cancelText}}</md-button>
+                    <md-button ng-if="editRule != null" ng-click="cancelEdit($event)">{{cancelText}}</md-button>
                     <span flex></span>
-                    <md-button class="md-primary" ng-if="ruleType != null" ng-click="addPolicy($event)">{{addText}}</md-button>
+                    <md-button class="md-primary" ng-if="editRule != null" ng-click="addPolicy($event)" ng-disabled="policyForm.$invalid">{{addText}}</md-button>
                 </div>
             </div>
 
@@ -113,9 +48,10 @@ p<md-dialog aria-label="Validation Results"  ng-cloak>
             <md-button ng-click="cancel($event)">
                 Cancel
             </md-button>
-            <md-button class="md-raised md-primary" ng-click="done($event)" ng-disabled="!pendingEdits || ruleType != null">
+            <md-button class="md-raised md-primary" ng-click="done($event)" ng-disabled="!pendingEdits || editRule != null || policyForm.$invalid">
                 Done
             </md-button>
         </md-dialog-actions>
-    </form>
+    </ng-form>
 </md-dialog>
+

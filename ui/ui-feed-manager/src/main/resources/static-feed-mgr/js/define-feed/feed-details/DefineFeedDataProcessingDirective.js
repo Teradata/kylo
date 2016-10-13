@@ -46,6 +46,7 @@
         function onActiveStep(event, index) {
             if (index == parseInt(self.stepIndex)) {
                 validateMergeStrategies();
+                console.log(self.model);
             }
         }
 
@@ -111,6 +112,7 @@
                 clickOutsideToClose:false,
                 fullscreen: true,
                 locals : {
+                    feed: self.model,
                     field:field,
                     policyParameter:policyParam
                 }

@@ -98,6 +98,7 @@
           </div>
           <div flex="10" class="md-list-item-text ">
             <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].primaryKey"></ng-md-icon>
+            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.fieldNameMap[policy.name].primaryKey"></ng-md-icon>
           </div>
           <!--
           <div flex="10" class="md-list-item-text ">
@@ -106,12 +107,15 @@
           -->
           <div flex="10" class="md-list-item-text ">
             <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].createdTracker"></ng-md-icon>
+            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.fieldNameMap[policy.name].createdTracker"></ng-md-icon>
           </div>
           <div flex="10" class="md-list-item-text ">
             <ng-md-icon class="primary-color-1" icon="check_box" ng-if="vm.fieldNameMap[policy.name].updatedTracker"></ng-md-icon>
+            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!vm.fieldNameMap[policy.name].updatedTracker"></ng-md-icon>
           </div>
           <div flex="10" class="md-list-item-text ">
             <ng-md-icon class="primary-color-1" icon="check_box" ng-if="policy.index"></ng-md-icon>
+            <ng-md-icon class="primary-color-1" icon="check_box_outline_blank" ng-if="!policy.index"></ng-md-icon>
           </div>
           <!--
           <div flex="5" class="md-list-item-text ">
@@ -326,10 +330,12 @@
           </div>
           -->
           <div flex="10" class="md-list-item-text ">
-            <md-checkbox ng-model="policy.columnDef.createdTracker" aria-label="Created Tracker" ng-if="policy.columnDef.dataType == 'date' || policy.columnDef.dataType == 'timestamp'"></md-checkbox>
+            <md-checkbox ng-model="policy.columnDef.createdTracker" aria-label="Created Tracker"
+                         ng-disabled="!(policy.columnDef.dataType == 'date' || policy.columnDef.dataType == 'timestamp')"></md-checkbox>
           </div>
           <div flex="10" class="md-list-item-text ">
-            <md-checkbox ng-model="policy.columnDef.updatedTracker" aria-label="Created Tracker" ng-if="policy.columnDef.dataType == 'date' || policy.columnDef.dataType == 'timestamp'"></md-checkbox>
+            <md-checkbox ng-model="policy.columnDef.updatedTracker" aria-label="Created Tracker"
+                         ng-disabled="!(policy.columnDef.dataType == 'date' || policy.columnDef.dataType == 'timestamp')"></md-checkbox>
           </div>
           <div flex="10" class="md-list-item-text ">
             <md-checkbox ng-model="policy.index" aria-label="Index"></md-checkbox>

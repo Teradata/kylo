@@ -15,7 +15,7 @@ import org.apache.commons.lang3.StringUtils;
 @Standardizer(name = "Default Value", description = "Applies a default value if null")
 public class DefaultValueStandardizer implements StandardizationPolicy, AcceptsEmptyValues {
 
-    @PolicyProperty(name = "Default Value", hint = "If the value is null it will use this supplied value")
+    @PolicyProperty(name = "Default Value", hint = "If the value is null it will use this supplied value", required = true)
     private String defaultStr;
 
 

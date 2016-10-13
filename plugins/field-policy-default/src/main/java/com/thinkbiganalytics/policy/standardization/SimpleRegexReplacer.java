@@ -21,7 +21,7 @@ import java.util.regex.PatternSyntaxException;
 public class SimpleRegexReplacer implements StandardizationPolicy {
     private static final Logger log = LoggerFactory.getLogger(SimpleRegexReplacer.class);
 
-    @PolicyProperty(name = "Regex Pattern")
+    @PolicyProperty(name = "Regex Pattern", required = true)
     private String inputPattern;
 
     private Pattern pattern;
