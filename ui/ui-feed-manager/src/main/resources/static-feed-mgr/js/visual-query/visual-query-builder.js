@@ -100,13 +100,8 @@
 
             },
             querySearch: function(txt) {
-                return HiveService.queryTablesSearch(txt)
-                        .filter(function(table) {
-                            var name = table.schema  + "." + table.tableName;
-                            return !_.some(self.chartViewModel.data.nodes, function(node) {
-                                return (node.name == name);
-                            });
-                        })
+                return HiveService.queryTablesSearch(txt);
+
             }
         };
 

@@ -56,7 +56,7 @@ public class RegisterFeedTablesTest {
     public void testRegisterTables() throws Exception {
         // Test with only required properties
         runner.setProperty(ComponentProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
-        runner.enqueue(new byte[0], ImmutableMap.of("category", "movies", "feed", "artists"));
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
@@ -91,7 +91,7 @@ public class RegisterFeedTablesTest {
         runner.setProperty(ComponentProperties.FEED_FORMAT_SPECS, "ROW FORMAT DELIMITED LINES TERMINATED BY '\n' STORED AS TEXTFILE");
         runner.setProperty(ComponentProperties.TARGET_FORMAT_SPECS, "STORED AS PARQUET");
         runner.setProperty(ComponentProperties.TARGET_TBLPROPERTIES, "TBLPROPERTIES (\"comment\"=\"Movie Actors\")");
-        runner.enqueue(new byte[0], ImmutableMap.of("category", "movies", "feed", "artists"));
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
@@ -137,7 +137,7 @@ public class RegisterFeedTablesTest {
 
         // Run flow
         runner.setProperty(ComponentProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
-        runner.enqueue(new byte[0], ImmutableMap.of("category", "movies", "feed", "artists"));
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
@@ -164,7 +164,7 @@ public class RegisterFeedTablesTest {
     @Test
     public void testRegisterTablesWithMissingCategory() {
         runner.setProperty(ComponentProperties.FIELD_SPECIFICATION, "data|string");
-        runner.enqueue(new byte[0], ImmutableMap.of("category", "movies"));
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.systemFeedName", "artists"));
         runner.run();
 
         Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
@@ -175,6 +175,7 @@ public class RegisterFeedTablesTest {
     @Test
     public void testRegisterTablesWithMissingFeed() {
         runner.setProperty(ComponentProperties.FIELD_SPECIFICATION, "data|string");
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies"));
         runner.enqueue(new byte[0], ImmutableMap.of("feed", "artists"));
         runner.run();
 
@@ -185,7 +186,7 @@ public class RegisterFeedTablesTest {
     /** Verify error for missing field specification. */
     @Test
     public void testRegisterTablesWithMissingFieldSpecification() {
-        runner.enqueue(new byte[0], ImmutableMap.of("category", "movies", "feed", "artists"));
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
         Assert.assertEquals(1, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
@@ -197,7 +198,7 @@ public class RegisterFeedTablesTest {
     public void testRegisterTablesWithTableType() throws Exception {
         runner.setProperty(ComponentProperties.FIELD_SPECIFICATION, "id|int\nfirst_name|string\nlast_name|string");
         runner.setProperty(RegisterFeedTables.TABLE_TYPE, "MASTER");
-        runner.enqueue(new byte[0], ImmutableMap.of("category", "movies", "feed", "artists"));
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());

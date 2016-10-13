@@ -185,7 +185,7 @@ public class HCatDataType implements Cloneable, Serializable {
             if (decSize != null) {
                 hcatType.digits = decDigits;
                 hcatType.max =
-                    BigDecimal.valueOf(Integer.parseInt(StringUtils.repeat("9", decSize)) + (1 - Math.pow(.1, hcatType.digits)));
+                    BigDecimal.valueOf(Long.parseLong(StringUtils.repeat("9", decSize)) + (1 - Math.pow(.1, hcatType.digits)));
                 hcatType.min = ((BigDecimal) hcatType.max).negate();
             } else if (strLen != null) {
                 hcatType.maxlength = strLen;
@@ -255,6 +255,11 @@ public class HCatDataType implements Cloneable, Serializable {
      * @return whether value is valid
      */
     public boolean isValueConvertibleToType(String val) {
+        return isValueConvertibleToType(val,false);
+    }
+
+
+    public boolean isValueConvertibleToType(String val, boolean enforcePrecision) {
         try {
             if (val != null && !isnumeric) {
                 if (convertibleType == Timestamp.class) {
@@ -273,7 +278,7 @@ public class HCatDataType implements Cloneable, Serializable {
                     if (max != null && max.compareTo(nativeValue) < 0) {
                         return false;
                     }
-                    if (digits != null && !validatePrecision(nativeValue)) {
+                    if (digits != null && ! (!enforcePrecision || (enforcePrecision && validatePrecision(nativeValue)))) {
                         return false;
                     }
 

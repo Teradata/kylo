@@ -47,6 +47,7 @@
             if(item != null && item != undefined) {
                 self.model.category.name = item.name;
                 self.model.category.id = item.id;
+                self.model.category.systemName = item.systemName;
                 $http.get(RestUrlService.GET_FEEDS_URL).then(function(response) {
                     self.existingFeedNames = {};
                     angular.forEach(response.data, function(feed) {
@@ -60,6 +61,7 @@
             else {
                 self.model.category.name = null;
                 self.model.category.id = null;
+                self.model.category.systemName = null;
                 self.existingFeedNames = {};
             }
         }

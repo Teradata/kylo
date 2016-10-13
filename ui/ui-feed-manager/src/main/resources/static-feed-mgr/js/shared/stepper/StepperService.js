@@ -8,7 +8,20 @@
 angular.module(MODULE_FEED_MGR).service('StepperService', function ($rootScope, $http) {
 
     var self = this;
+    /**
+     * subscribers of this event will get the following data passed to them
+     * current  - number datatype
+     * @type {string}
+     */
     this.ACTIVE_STEP_EVENT = 'ACTIVE_STEP_EVENT';
+    /**
+     * subscribers of this event will get the following data passed to them:
+     * {newStep:current,oldStep:old}
+     * newStep - number datatype
+     * oldStep - number datatype
+     * @type {string}
+     */
+    this.STEP_CHANGED_EVENT = 'STEP_CHANGED_EVENT';
 
     this.steppers = {};
     this.newNameIndex = 0;

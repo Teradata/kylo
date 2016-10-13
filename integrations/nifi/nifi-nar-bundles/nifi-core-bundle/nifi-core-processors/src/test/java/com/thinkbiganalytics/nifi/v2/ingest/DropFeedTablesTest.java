@@ -63,7 +63,7 @@ public class DropFeedTablesTest {
     public void testDropTables() throws Exception {
         // Test dropping tables
         runner.setProperty(DropFeedTables.TABLE_TYPE, "ALL");
-        runner.enqueue(new byte[0], ImmutableMap.of("category", "movies", "feed", "artists"));
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
@@ -84,7 +84,7 @@ public class DropFeedTablesTest {
         // Test dropping tables
         runner.setProperty(DropFeedTables.ADDITIONAL_TABLES, "test.sample_07,test.sample_08");
         runner.setProperty(DropFeedTables.TABLE_TYPE, "MASTER");
-        runner.enqueue(new byte[0], ImmutableMap.of("category", "movies", "feed", "artists"));
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());
@@ -124,7 +124,7 @@ public class DropFeedTablesTest {
     public void testDropTablesWithTableType() throws Exception {
         // Test dropping tables
         runner.setProperty(DropFeedTables.TABLE_TYPE, "MASTER");
-        runner.enqueue(new byte[0], ImmutableMap.of("category", "movies", "feed", "artists"));
+        runner.enqueue(new byte[0], ImmutableMap.of("metadata.category.systemName", "movies", "metadata.systemFeedName", "artists"));
         runner.run();
 
         Assert.assertEquals(0, runner.getFlowFilesForRelationship(ComponentProperties.REL_FAILURE).size());

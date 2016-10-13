@@ -249,9 +249,11 @@ angular.module(MODULE_FEED_MGR).factory("SparkShellService", function($http, $md
             // Get field list
             return _.map(columns, function(col) {
                 var dataType;
-                if (col.dataType.startsWith("decimal")) {
-                    dataType = "double";
-                } else if (col.dataType === "smallint") {
+                //comment out decimal to double.  Decimals are supported ... will remove after testing
+                //if (col.dataType.startsWith("decimal")) {
+                //   dataType = "decimal";
+                //}
+                if (col.dataType === "smallint") {
                     dataType = "int";
                 } else {
                     dataType = col.dataType;

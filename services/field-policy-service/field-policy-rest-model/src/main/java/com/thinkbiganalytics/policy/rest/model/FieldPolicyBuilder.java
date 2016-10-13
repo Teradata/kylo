@@ -8,7 +8,6 @@ import java.util.List;
  */
 public class FieldPolicyBuilder {
 
-  private boolean partition;
   private boolean profile;
   private boolean index;
   private String fieldName;
@@ -37,10 +36,7 @@ public class FieldPolicyBuilder {
     this.index = index;
     return this;
   }
-  public FieldPolicyBuilder partition(boolean partition){
-    this.partition = partition;
-    return this;
-  }
+
 
   public FieldPolicyBuilder profile(boolean profile){
     this.profile = profile;
@@ -53,7 +49,6 @@ public class FieldPolicyBuilder {
     policy.setFieldName(this.fieldName);
     policy.setStandardization(this.standardization);
     policy.setValidation(this.validation);
-    policy.setPartition(this.partition);
     policy.setProfile(this.profile);
     policy.setIndex(this.index);
     return policy;

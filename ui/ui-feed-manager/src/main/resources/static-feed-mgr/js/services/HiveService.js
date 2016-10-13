@@ -31,7 +31,6 @@ angular.module(MODULE_FEED_MGR).factory('HiveService', function ($q,$http, $mdDi
             }
             else {
                 var results = query ? self.allTables.filter(createFilterForTable(query)) : [];
-
                 return results;
             }
         },

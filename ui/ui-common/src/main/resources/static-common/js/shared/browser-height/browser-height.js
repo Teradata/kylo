@@ -1,3 +1,15 @@
+/**
+ * Directive to auto size the container to fill the rest of the screen based upon the height of the browser window
+ *
+ * attrs:
+ *  - browser-height-selector=  some css selector (i.e. #content) this will be used to determine the height of the element instead of the current element
+ *  - browser-height-scroll-y=true/false   show the scroll bar on the content
+ *  - browser-height-wait-and-calc= true/false  if true it will wait before calculating the height to get the items in the page default=false
+ *  - browser-height-scroll-left or browser-height-scroll-x=##
+ *  - browser-height-resize-event=binding to on resize of the window
+ *  - browser-height-offset=offset to apply to the height of the element after getting the window size
+ *
+ */
 (function () {
 
     var directive = function ($window, $compile) {
@@ -5,6 +17,10 @@
 
             link: function ($scope, element, attrs) {
                 element.addClass('browser-height');
+                /**
+                 *
+                 */
+
                 var eleSelector = attrs.browserHeightSelector;
 
                 var scrollY = attrs.browserHeightScrollY;
