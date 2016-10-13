@@ -299,7 +299,7 @@ public class TableMergeSyncSupport implements Serializable {
             .append(" select ").append(selectSQL).append(",").append(spec.toPartitionSelectSQL())
             .append(" from ").append(targetTable).append(" ");
         if (targetPartitionWhereClause != null) {
-            sb.append(" where and (").append(targetPartitionWhereClause).append(")");
+            sb.append(" where (").append(targetPartitionWhereClause).append(")");
         }
         sb.append(") t");
 
