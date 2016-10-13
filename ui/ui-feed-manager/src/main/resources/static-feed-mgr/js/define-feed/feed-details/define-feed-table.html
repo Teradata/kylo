@@ -12,15 +12,15 @@
     <ng-form name="vm.defineFeedTableForm">
 
         <div layout="row" layout-align="start center" >
-            <div class="" flex="45" layout="row">
-                <span>Table Name</span>
+            <div class="md-subhead" flex="45" layout="row">
+                <span>Table Name:</span>
                 <span class="layout-padding-left">{{vm.model.category.systemName}}.{{vm.model.table.tableSchema.name}}</span>
             </div>
             <span flex></span>
         </div>
 
         <div ng-if="vm.model.table.method != 'EXISTING_TABLE'" class="layout-padding-top">
-        <div class="md-subhead">Choose a method for specifing the schema</div>
+            <div class="md-subhead">Choose a method for specifing the target schema</div>
         <div layout="column" layout-align="start start" class="layout-padding-top-bottom">
             <div class="layout-padding-indent-20" style="padding-top:8px;">
                 <md-radio-group ng-model="vm.model.table.method" layout="row" >
@@ -30,32 +30,32 @@
                         {{method.name}}
                     </md-radio-button>
                 </md-radio-group>
-                <div ng-if="vm.model.table.method == 'SAMPLE_FILE'" layout="column" layout-align="center stretch" style="padding-left:5px;">
+                <div ng-if="vm.model.table.method == 'SAMPLE_FILE'" layout="column" layout-align="center stretch">
                     <div layout="row" layout-align="center start">
                         <upload-file upload-file-model="vm.sampleFile" input-size="20" style="margin-top: -10px;" ></upload-file>
                     </div>
-                    <md-switch ng-model="vm.sampleFileOverrideDelimiter" aria-label="Override delimiter">
+                    <md-checkbox ng-model="vm.sampleFileOverrideDelimiter" aria-label="Override delimiter">
                         Override delimiter
-                    </md-switch>
-                    <md-input-container ng-if="vm.sampleFileOverrideDelimiter" class="md-block">
+                    </md-checkbox>
+                    <md-input-container ng-if="vm.sampleFileOverrideDelimiter" class="md-block condensed">
                         <label>Override delimiter</label>
                         <input type="text" ng-model="vm.sampleFileDelimiter" ng-maxlength="1" maxlength="1" input-size="1" size="1" />
-                        <div class="hint">Delimiter should be auto-detected; but can be overridden</div>
+
+                        <div class="hint" style="margin-top:-10px;">Delimiter should be auto-detected; but can be overridden</div>
                     </md-input-container>
-                    <md-button style="margin-top: -5px;" id="upload-sample-file-btn" class="md-raised md-primary" ng-click="vm.uploadSampleFile();" ng-if="vm.sampleFile != null" ng-disabled="vm.uploadBtnDisabled">
+                </div>
+                <div layout="column" layout-align="start start">
+                    <md-checkbox ng-model="vm.useUnderscoreInsteadOfSpaces" aria-label="Use underscore instead of spaces">
+                        Replace spaces in field names
+                    </md-checkbox>
+                    <span class="hint" style="margin-top: -10px;"> Spaces in field names will be replaced with an '_' </span>
+                    <md-button id="upload-sample-file-btn" class="md-raised md-primary md-block" ng-click="vm.uploadSampleFile();" ng-if="vm.sampleFile != null" ng-disabled="vm.uploadBtnDisabled">
                         Upload
                     </md-button>
                 </div>
             </div>
         </div>
     </div>
-        <div class="layout-padding-indent-20">
-            <md-input-container flex-gt-sm layout="row" layout-fill class="condensed">
-                <md-switch ng-model="vm.useUnderscoreInsteadOfSpaces" aria-label="Use underscore instead of spaces">
-                    Replace spaces in field names <span class="layout-padding-left hint" ng-if="vm.useUnderscoreInsteadOfSpaces"> Spaces in field names will be replaced with an '_' </span>
-                </md-switch>
-            </md-input-container>
-        </div>
         <div class="layout-padding-top">
         <div class="md-subhead">Schema Definition</div>
             <div ng-show="vm.model.table.tableSchema.fields.length ==0" class="hint layout-padding-top-bottom layout-padding-indent-20">
@@ -96,7 +96,7 @@
                         </md-tooltip>
                     </div>
                     <div flex="10" class="md-list-item-text hint" layout-align="start center" layout="column">
-                        <span>Update<br/>Date</span>
+                        <span>Updated<br/>Date</span>
                         <md-tooltip md-direction="top">
                             Is this field an indicator of when the row was updated?
                         </md-tooltip>
@@ -166,13 +166,14 @@
                             </div>
                             -->
                             <div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
-                                <md-checkbox flex-gt-sm ng-model="columnDef.createdTracker" aria-label="createdTracker" ng-if="columnDef.dataType == 'date' || columnDef.dataType == 'timestamp'"
+                                <md-checkbox flex-gt-sm ng-model="columnDef.createdTracker" aria-label="createdTracker"
+                                             ng-disabled="!(columnDef.dataType == 'date' || columnDef.dataType == 'timestamp')"
                                              class="table-schema-checkbox">
                                 </md-checkbox>
                             </div>
 
                             <div flex="10" class="md-list-item-text " layout-align="start center" layout="column">
-                                <md-checkbox flex-gt-sm ng-model="columnDef.updatedTracker" aria-label="lastModified" ng-if="columnDef.dataType == 'date' || columnDef.dataType == 'timestamp'"
+                                <md-checkbox flex-gt-sm ng-model="columnDef.updatedTracker" aria-label="lastModified" ng-disabled="!(columnDef.dataType == 'date' || columnDef.dataType == 'timestamp')"
                                              class="table-schema-checkbox"></md-checkbox>
                             </div>
                             <div flex="10" class="md-list-item-text " ng-if="vm.model.table.method != 'EXISTING_TABLE'">

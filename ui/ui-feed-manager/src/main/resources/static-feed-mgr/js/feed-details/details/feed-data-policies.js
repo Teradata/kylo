@@ -183,13 +183,14 @@
             copy.table.targetFormat = self.editModel.table.targetFormat;
             copy.table.fieldPolicies = self.editModel.fieldPolicies;
 
+
             //add back in the changes to the pk, nullable, created, updated tracker columns
             var policyMap = _.groupBy(copy.table.fieldPolicies, function (policy) {
                 return policy.name
             });
             _.each(copy.table.tableSchema.fields, function (field) {
                 //find the respective changes in the ui object for this field
-                var updatedColumnDef = policyMap[field.name][0];
+                var updatedColumnDef = policyMap[field.name] != undefined ? policyMap[field.name][0] : undefined;
                 if (updatedColumnDef) {
                     var def = updatedColumnDef.columnDef;
                     angular.extend(field, def);
@@ -233,6 +234,7 @@
                 clickOutsideToClose: false,
                 fullscreen: true,
                 locals: {
+                    feed:self.model,
                     field: field,
                     policyParameter: policyParam
                 }

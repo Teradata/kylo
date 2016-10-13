@@ -828,6 +828,11 @@ md-input-container.condensed {
   margin-bottom:0;
   margin:0;
 }
+
+md-input-container.condensed-medium {
+  margin: 12px 0
+}
+
 /*
 thinkbig-stepper .step-default {
 
