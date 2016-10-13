@@ -7,6 +7,7 @@ import com.thinkbiganalytics.policy.standardization.AcceptsEmptyValues;
 import com.thinkbiganalytics.policy.standardization.StandardizationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationPolicy;
 import com.thinkbiganalytics.policy.validation.ValidationResult;
+import com.thinkbiganalytics.spark.util.InvalidFormatException;
 import com.thinkbiganalytics.spark.validation.HCatDataType;
 
 import org.apache.commons.lang.StringUtils;
@@ -30,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.Serializable;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -37,8 +39,7 @@ import java.util.Map;
 import java.util.Vector;
 
 /**
- * Cleanses and validates a table of strings according to defined field-level policies. Records are split into good and bad. <p>
- * blog.cloudera.com/blog/2015/07/how-to-do-data-quality-checks-using-apache-spark-dataframes/
+ * Cleanses and validates a table of strings according to defined field-level policies. Records are split into good and bad. <p> blog.cloudera.com/blog/2015/07/how-to-do-data-quality-checks-using-apache-spark-dataframes/
  */
 public class Validator implements Serializable {
 
@@ -51,7 +52,7 @@ public class Validator implements Serializable {
     /*
     Valid validation result
      */
-    private static ValidationResult VALID_RESULT = new ValidationResult();
+    protected static ValidationResult VALID_RESULT = new ValidationResult();
 
     /* Initialize Spark */
     private HiveContext hiveContext;
@@ -73,10 +74,14 @@ public class Validator implements Serializable {
     private HCatDataType[] schema;
     private Map<String, FieldPolicy> policyMap = new HashMap<>();
 
+    /*
+    Cache for performance. Validators accept different paramters (numeric,string, etc) so we need to resolve the type using reflection
+     */
+    private Map<Class, Class> validatorParamType = new HashMap<>();
+
     /**
-     * Path to the file containing the JSON for the Field Policies. If called from NIFI it will pass it in as a command argument
-     * in the Validate processor The JSON should conform to the array of FieldPolicy objects found in the
-     * thinkbig-field-policy-rest-model module
+     * Path to the file containing the JSON for the Field Policies. If called from NIFI it will pass it in as a command argument in the Validate processor The JSON should conform to the array of
+     * FieldPolicy objects found in the thinkbig-field-policy-rest-model module
      */
     private String fieldPolicyJsonPath;
 
@@ -84,9 +89,6 @@ public class Validator implements Serializable {
 
     public Validator(String targetDatabase, String entity, String partition, String fieldPolicyJsonPath) {
         super();
-        SparkContext sparkContext = SparkContext.getOrCreate();
-        hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
-        sqlContext = new SQLContext(sparkContext);
 
         this.validTableName = entity + "_valid";
         this.invalidTableName = entity + "_invalid";
@@ -98,7 +100,6 @@ public class Validator implements Serializable {
         this.partition = partition;
         this.targetDatabase = targetDatabase;
         this.fieldPolicyJsonPath = fieldPolicyJsonPath;
-        loadPolicies();
     }
 
     /**
@@ -141,6 +142,11 @@ public class Validator implements Serializable {
 
     public void doValidate() {
         try {
+            SparkContext sparkContext = SparkContext.getOrCreate();
+            hiveContext = new org.apache.spark.sql.hive.HiveContext(sparkContext);
+            sqlContext = new SQLContext(sparkContext);
+            loadPolicies();
+
             // Extract fields from a source table
             StructField[] fields = resolveSchema();
             this.schema = resolveDataTypes(fields);
@@ -155,9 +161,9 @@ public class Validator implements Serializable {
             StructType sourceSchema = createModifiedSchema(feedTablename);
 
             // Initialize accumulators to track error statistics on each column
-            JavaSparkContext sparkContext = new JavaSparkContext(SparkContext.getOrCreate());
+            JavaSparkContext javaSparkContext = new JavaSparkContext(SparkContext.getOrCreate());
             for (int i = 0; i < this.schema.length; i++) {
-                this.accumList.add(sparkContext.accumulator(0));
+                this.accumList.add(javaSparkContext.accumulator(0));
             }
 
             // Return a new dataframe based on whether values are valid or invalid
@@ -185,7 +191,7 @@ public class Validator implements Serializable {
 
             // Record the validation stats
             writeStatsToProfileTable(validCount, invalidCount);
-            sparkContext.close();
+            javaSparkContext.close();
 
 
         } catch (Exception e) {
@@ -373,15 +379,49 @@ public class Validator implements Serializable {
             List<ValidationPolicy> validators = fieldPolicy.getValidators();
             if (validators != null) {
                 for (ValidationPolicy validator : validators) {
-                    if (!validator.validate(fieldValue)) {
-                        return ValidationResult
-                            .failFieldRule("rule", fieldDataType.getName(), validator.getClass().getSimpleName(),
-                                           "Rule violation");
+                    ValidationResult result = validateValue(validator, fieldDataType, fieldValue);
+                    if (result != VALID_RESULT) {
+                        return result;
                     }
                 }
             }
         }
         return VALID_RESULT;
+    }
+
+    protected ValidationResult validateValue(ValidationPolicy validator, HCatDataType fieldDataType, String fieldValue) {
+        try {
+            // Resolve the type of parameter required by the validator. We use a cache to avoid cost of reflection
+            Class expectedParamClazz = resolveValidatorParamType(validator);
+            Object nativeValue = fieldValue;
+            if (expectedParamClazz != String.class) {
+                nativeValue = fieldDataType.toNativeValue(fieldValue);
+            }
+            if (!validator.validate(nativeValue)) {
+                return ValidationResult
+                    .failFieldRule("rule", fieldDataType.getName(), validator.getClass().getSimpleName(),
+                                   "Rule violation");
+            }
+            return VALID_RESULT;
+        } catch (InvalidFormatException | ClassCastException e) {
+            return ValidationResult
+                .failField("incompatible", fieldDataType.getName(),
+                           "Not convertible to " + fieldDataType.getNativeType());
+        }
+
+    }
+
+    /* Resolve the type of param required by the validator. We use a cache to avoid cost of reflection */
+    protected Class resolveValidatorParamType(ValidationPolicy validator) {
+        Class expectedParamClazz = validatorParamType.get(validator.getClass());
+        if (expectedParamClazz == null) {
+            // Cache for future references
+
+            ParameterizedType type = (ParameterizedType)validator.getClass().getGenericInterfaces()[0];
+            expectedParamClazz = (Class)type.getActualTypeArguments()[0];
+            validatorParamType.put(validator.getClass(), expectedParamClazz);
+        }
+        return expectedParamClazz;
     }
 
     /**
