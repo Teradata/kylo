@@ -15,6 +15,7 @@ import org.springframework.core.io.ClassPathResource;
 import com.thinkbiganalytics.alerts.api.AlertProvider;
 import com.thinkbiganalytics.alerts.spi.AlertManager;
 import com.thinkbiganalytics.auth.jaas.LoginConfiguration;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.op.FeedOperationsProvider;
 import com.thinkbiganalytics.scheduler.JobScheduler;
 
@@ -49,6 +50,11 @@ public class JcrTestConfig {
     @Bean
     public AlertProvider alertProvider() {
         return Mockito.mock(AlertProvider.class);
+    }
+
+    @Bean
+    public MetadataEventService metadataEventService() {
+        return Mockito.mock(MetadataEventService.class);
     }
     
 
