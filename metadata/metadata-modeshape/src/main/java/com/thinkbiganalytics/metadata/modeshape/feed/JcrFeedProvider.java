@@ -85,8 +85,8 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
     @Inject
     private AccessController accessController;
 
-    @Inject
-    private MetadataEventService metadataEventService;
+    //@Inject
+    //private MetadataEventService metadataEventService;
 
     @Override
     public String getNodeType(Class<? extends JcrEntity> jcrEntityType) {
@@ -641,7 +641,7 @@ public class JcrFeedProvider extends BaseJcrProvider<Feed, Feed.ID> implements F
         try {
             JcrFeed feed = (JcrFeed) getFeed(feedId);
             JcrMetadataAccess.ensureCheckoutNode(feed.getNode());
-            this.metadataEventService.notify(new FeedPropertyChangeEvent(feed.getProperties(), properties));
+            //this.metadataEventService.notify(new FeedPropertyChangeEvent(feed.getProperties(), properties));
             return feed.mergeProperties(properties);
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Unable to merge Feed Properties for Feed " + feedId, e);
