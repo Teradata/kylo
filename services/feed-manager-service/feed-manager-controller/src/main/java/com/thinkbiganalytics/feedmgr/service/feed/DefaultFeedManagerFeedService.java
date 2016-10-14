@@ -2,6 +2,7 @@ package com.thinkbiganalytics.feedmgr.service.feed;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Sets;
+import com.thinkbiganalytics.datalake.authorization.HadoopAuthorizationService;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedMetadata;
 import com.thinkbiganalytics.feedmgr.rest.model.FeedSummary;
 import com.thinkbiganalytics.feedmgr.rest.model.NifiFeed;
@@ -15,7 +16,9 @@ import com.thinkbiganalytics.feedmgr.service.template.FeedManagerTemplateService
 import com.thinkbiganalytics.jobrepo.repository.FeedRepository;
 import com.thinkbiganalytics.metadata.api.MetadataAccess;
 import com.thinkbiganalytics.metadata.api.OperationalMetadataAccess;
+import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
+import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 import com.thinkbiganalytics.metadata.api.extension.UserFieldDescriptor;
 import com.thinkbiganalytics.metadata.api.feed.Feed;
 import com.thinkbiganalytics.metadata.api.feed.FeedProperties;
@@ -27,6 +30,7 @@ import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeed;
 import com.thinkbiganalytics.metadata.api.feedmgr.feed.FeedManagerFeedProvider;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplate;
 import com.thinkbiganalytics.metadata.api.feedmgr.template.FeedManagerTemplateProvider;
+import com.thinkbiganalytics.metadata.modeshape.feed.JcrFeed;
 import com.thinkbiganalytics.metadata.rest.model.sla.Obligation;
 import com.thinkbiganalytics.metadata.sla.api.ObligationGroup;
 import com.thinkbiganalytics.metadata.sla.spi.ServiceLevelAgreementBuilder;
@@ -39,6 +43,8 @@ import com.thinkbiganalytics.security.AccessController;
 import com.thinkbiganalytics.support.FeedNameUtil;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -46,9 +52,12 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 
 import javax.annotation.Nonnull;
+import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 import javax.inject.Inject;
 
 public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedService implements FeedManagerFeedService {
@@ -99,9 +108,36 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
     @Inject
     private AccessController accessController;
 
+    @Inject
+    private MetadataEventService metadataEventService;
+
     @Override
     public List<FeedMetadata> getReusableFeeds() {
         return null;
+    }
+
+    // I had to use autowired instead of Inject to allow null values.
+    @Autowired(required = false)
+    @Qualifier("hadoopAuthorizationService")
+    private HadoopAuthorizationService hadoopAuthorizationService;
+
+    /** Event listener for precondition events */
+    private final MetadataEventListener<FeedPropertyChangeEvent> feedPropertyChangeListener = new FeedPropertyChangeDispatcher();
+
+    /**
+     * Adds listeners for transferring events.
+     */
+    @PostConstruct
+    public void addEventListener() {
+        metadataEventService.addListener(feedPropertyChangeListener);
+    }
+
+    /**
+     * Removes listeners and stops transferring events.
+     */
+    @PreDestroy
+    public void removeEventListener() {
+        metadataEventService.removeListener(feedPropertyChangeListener);
     }
 
     @Override
@@ -446,5 +482,23 @@ public class DefaultFeedManagerFeedService extends AbstractFeedManagerFeedServic
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.ADMIN_FEEDS);
 
         feedProvider.setUserFields(UserPropertyTransform.toUserFieldDescriptors(userFields));
+    }
+
+    private class FeedPropertyChangeDispatcher implements MetadataEventListener<FeedPropertyChangeEvent> {
+
+
+        @Override
+        public void notify(@Nonnull final FeedPropertyChangeEvent metadataEvent) {
+            Properties oldProperties = metadataEvent.getNifiPropertiesToDelete();
+            metadataAccess.commit(() -> {
+                Feed feed = feedProvider.getFeed(feedProvider.resolveFeed(metadataEvent.getFeedId()));
+                oldProperties.forEach((k,v) -> {
+                    feed.removeProperty((String)k);
+                });
+            }, MetadataAccess.SERVICE) ;
+
+            System.out.println("bla");
+        }
+
     }
 }

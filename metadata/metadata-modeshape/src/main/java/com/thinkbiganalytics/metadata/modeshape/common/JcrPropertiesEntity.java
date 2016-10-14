@@ -199,6 +199,6 @@ public class JcrPropertiesEntity extends JcrEntity implements Propertied {
 
     @Override
     public void removeProperty(String key) {
-
+        setProperty(key, null);
     }
 }

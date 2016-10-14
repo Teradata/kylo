@@ -43,6 +43,7 @@ public class PutFeedMetadataTest {
     public void testTriggered() {
         runner.setProperty(PutFeedMetadata.CATEGORY_NAME, "cat");
         runner.setProperty(PutFeedMetadata.FEED_NAME, "feed");
+        runner.setProperty(PutFeedMetadata.NAMESPACE, "registration");
         runner.setProperty("testProperty1", "myValue1");
         runner.setProperty("testProperty2", "myValue2");
         runner.run();

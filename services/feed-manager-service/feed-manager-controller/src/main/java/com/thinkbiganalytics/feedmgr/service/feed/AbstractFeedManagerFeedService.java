@@ -55,34 +55,7 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
     @Inject
     private AccessController accessController;
 
-    @Inject
-    private MetadataEventService metadataEventService;
-
-    // I had to use autowired instead of Inject to allow null values.
-    @Autowired(required = false)
-    @Qualifier("hadoopAuthorizationService")
-    private HadoopAuthorizationService hadoopAuthorizationService;
-
-    /** Event listener for precondition events */
-    private final MetadataEventListener<FeedPropertyChangeEvent> feedPropertyChangeListener = new FeedPropertyChangeDispatcher();
-
     protected abstract RegisteredTemplate getRegisteredTemplateWithAllProperties(String templateId);
-
-    /**
-     * Adds listeners for transferring events.
-     */
-    @PostConstruct
-    public void addEventListener() {
-        metadataEventService.addListener(feedPropertyChangeListener);
-    }
-
-    /**
-     * Removes listeners and stops transferring events.
-     */
-    @PreDestroy
-    public void removeEventListener() {
-        metadataEventService.removeListener(feedPropertyChangeListener);
-    }
 
     public NifiFeed createFeed(FeedMetadata feedMetadata) {
         this.accessController.checkPermission(AccessController.SERVICES, FeedsAccessControl.EDIT_FEEDS);
@@ -98,15 +71,6 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
 
         if (feedMetadata.getProperties() == null) {
             feedMetadata.setProperties(new ArrayList<NifiProperty>());
-        }
-
-        feedMetadata.updateHadoopSecurityGroups();
-
-        if (hadoopAuthorizationService == null) {
-            feedMetadata.setHadoopAuthorizationType(hadoopAuthorizationService.HADOOP_AUTHORIZATION_TYPE_NONE);
-        }
-        else {
-            feedMetadata.setHadoopAuthorizationType(hadoopAuthorizationService.getType());
         }
 
         //get all the properties for the metadata
@@ -180,15 +144,6 @@ public abstract class AbstractFeedManagerFeedService implements FeedManagerFeedS
             }
         }
         return feed;
-    }
-
-    private class FeedPropertyChangeDispatcher implements MetadataEventListener<FeedPropertyChangeEvent> {
-        @Override
-        public void notify(@Nonnull final FeedPropertyChangeEvent metadataEvent) {
-            log.debug("in the generic property change listener");
-        }
-
-
     }
 
 }
