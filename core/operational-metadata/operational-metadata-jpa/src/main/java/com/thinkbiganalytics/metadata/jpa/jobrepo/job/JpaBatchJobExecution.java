@@ -14,6 +14,7 @@ import com.thinkbiganalytics.metadata.jpa.jobrepo.step.JpaBatchStepExecution;
 
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
+import org.hibernate.annotations.Parameter;
 import org.hibernate.annotations.Type;
 import org.joda.time.DateTime;
 
@@ -85,6 +86,7 @@ public class JpaBatchJobExecution implements BatchJobExecution {
     private ExecutionConstants.ExitCode exitCode = ExecutionConstants.ExitCode.EXECUTING;
 
     @Column(name = "EXIT_MESSAGE")
+    @Type(type = "com.thinkbiganalytics.jpa.TruncateStringUserType", parameters = {@Parameter(name = "length", value = "2500")})
     private String exitMessage;
     @Type(type = "org.jadira.usertype.dateandtime.joda.PersistentDateTime")
     @Column(name = "LAST_UPDATED")
