@@ -46,6 +46,12 @@
             return self.viewType;
         }, function(newVal) {
             self.onViewTypeChange(newVal);
+        });
+
+        $scope.$watch(function () {
+            return self.filter;
+        }, function (newVal) {
+            PaginationDataService.filter(self.pageName, newVal)
         })
 
         this.onViewTypeChange = function(viewType) {
@@ -79,12 +85,8 @@
          */
         function loadSortOptions() {
             var options = {'Template': 'templateName', 'Last Modified': 'updateDate'};
-
             var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'templateName', 'asc');
-            var currentOption = TableOptionsService.getCurrentSort(self.pageName);
-            if (currentOption) {
-                TableOptionsService.saveSortOption(self.pageName, currentOption)
-            }
+            TableOptionsService.initializeSortOption(self.pageName);
             return sortOptions;
         }
 

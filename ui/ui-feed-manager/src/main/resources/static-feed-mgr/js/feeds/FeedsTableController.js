@@ -47,6 +47,12 @@
             self.onViewTypeChange(newVal);
         })
 
+        $scope.$watch(function () {
+            return self.filter;
+        }, function (newVal) {
+            PaginationDataService.filter(self.pageName, newVal)
+        })
+
         this.onViewTypeChange = function(viewType) {
             PaginationDataService.viewType(this.pageName, self.viewType);
         }
@@ -67,7 +73,7 @@
          */
         this.selectedTableOption = function(option) {
             var sortString = TableOptionsService.toSortString(option);
-            PaginationDataService.sort(self.pageName, sortString);
+            var savedSort = PaginationDataService.sort(self.pageName, sortString);
             var updatedOption = TableOptionsService.toggleSort(self.pageName, option);
             TableOptionsService.setSortOption(self.pageName, sortString);
         }
@@ -78,12 +84,8 @@
          */
         function loadSortOptions() {
             var options = {'Feed': 'feedName', 'State': 'state', 'Category': 'category.name', 'Type': 'templateName', 'Last Modified': 'updateDate'};
-
             var sortOptions = TableOptionsService.newSortOptions(self.pageName, options, 'feedName', 'asc');
-            var currentOption = TableOptionsService.getCurrentSort(self.pageName);
-            if (currentOption) {
-                TableOptionsService.saveSortOption(self.pageName, currentOption)
-            }
+            TableOptionsService.initializeSortOption(self.pageName);
             return sortOptions;
         }
 
