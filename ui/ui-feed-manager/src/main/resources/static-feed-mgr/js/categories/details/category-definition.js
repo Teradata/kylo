@@ -22,6 +22,12 @@
         self.categoryForm = {};
 
         /**
+         * Prevent users from creating categories with these names
+         * @type {string[]}
+         */
+        var reservedCategoryNames = ['thinkbig']
+
+        /**
          * Indicates if the category definition may be edited.
          * @type {boolean}
          */
@@ -122,10 +128,12 @@
                         return (category.systemName === systemName || (newVal && category.name == newVal));
                             });
 
+                    var reservedCategoryName = newVal && _.indexOf(reservedCategoryNames, newVal.toLowerCase()) >= 0;
                     if (self.categoryForm['categoryName']) {
                         self.categoryForm['categoryName'].$setValidity('duplicateName', !exists);
+                        self.categoryForm['categoryName'].$setValidity('reservedCategoryName', !reservedCategoryName);
                     }
-                        });
+                });
 
         };
 
