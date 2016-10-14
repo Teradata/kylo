@@ -12,6 +12,7 @@ import com.thinkbiganalytics.metadata.api.event.MetadataEventListener;
 import com.thinkbiganalytics.metadata.api.event.MetadataEventService;
 import com.thinkbiganalytics.metadata.api.event.feed.FeedPropertyChangeEvent;
 
+import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -331,26 +332,37 @@ public class RangerAuthorizationService implements HadoopAuthorizationService {
         private static final String REGISTRATION_HDFS_FOLDERS = "nifi:registration:hdfsFolders";
         private static final String REGISTRATION_HIVE_SCHEMA = "nifi:registration:hiveSchema";
         private static final String REGISTRATION_HIVE_TABLES = "nifi:registration:tableNames";
+        private static final String KYLO_POLICY_PREFIX = "kylo_";
 
         @Override
         public void notify(final FeedPropertyChangeEvent metadataEvent) {
-            // TODO Remove metadata properties if they were removed from NiFI
-
             if (metadataEvent.getHadoopSecurityGroupNames() != null && hadoopAuthorizationChangesRequired(metadataEvent)) {
-                String hdfsFoldersWithCommas = metadataEvent.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS).replace("\n", ",");
-                Stream<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas);
+                try {
+                    validateFieldsNotNull(metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_TABLES), metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_SCHEMA), metadataEvent.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS));
 
-                String hiveTablesWithCommas = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_SCHEMA).replace("\n", ",");
-                Stream<String> hiveTables = Stream.of(hiveTablesWithCommas);
-                String hiveSchema = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_TABLES);
+                    String hdfsFoldersWithCommas = metadataEvent.getNewProperties().getProperty(REGISTRATION_HDFS_FOLDERS).replace("\n", ",");
+                    Stream<String> hdfsFolders = Stream.of(hdfsFoldersWithCommas);
 
-                //List<String> securityGroups =  metadataEvent.getHadoopSecurityGroups().stream().map(group -> group.getName()).collect(Collectors.toList());
+                    String hiveTablesWithCommas = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_TABLES).replace("\n", ",");
+                    Stream<String> hiveTables = Stream.of(hiveTablesWithCommas);
+                    String hiveSchema = metadataEvent.getNewProperties().getProperty(REGISTRATION_HIVE_SCHEMA);
 
-                createReadOnlyPolicy("kylo_" + metadataEvent.getFeedCategory(), metadataEvent.getFeedName()
-                    , metadataEvent.getHadoopSecurityGroupNames()
-                    , hdfsFolders.collect(Collectors.toList())
-                    , hiveSchema
-                    , hiveTables.collect(Collectors.toList()));
+                    createReadOnlyPolicy(KYLO_POLICY_PREFIX + metadataEvent.getFeedCategory(), metadataEvent.getFeedName()
+                        , metadataEvent.getHadoopSecurityGroupNames()
+                        , hdfsFolders.collect(Collectors.toList())
+                        , hiveSchema
+                        , hiveTables.collect(Collectors.toList()));
+                } catch(Exception e) {
+                    log.error("Error creating Ranger policy after metadata property change event", e);
+                    throw new RuntimeException("Error creating Ranger policy after metadata property change event");
+                }
+            }
+        }
+
+        private void validateFieldsNotNull(String hiveTables, String hiveSchema, String hdfsFolders) {
+            if(StringUtils.isEmpty(hiveTables) || StringUtils.isEmpty(hiveSchema) || StringUtils.isEmpty(hdfsFolders)) {
+                throw new IllegalArgumentException("Three properties are required in the metadata to create Ranger policies. " + REGISTRATION_HDFS_FOLDERS + ", " + REGISTRATION_HIVE_SCHEMA +
+                ", and" +  REGISTRATION_HIVE_TABLES);
             }
         }
 
