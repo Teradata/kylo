@@ -16,10 +16,10 @@
         var self = this;
 
         /**
-         * Error message object that maps keys to a boolean indicating the error state.
-         * @type {{duplicateName: boolean}}
+         * The Angular form for validation
+         * @type {{}}
          */
-        self.$error = {duplicateName: false};
+        self.categoryForm = {};
 
         /**
          * Indicates if the category definition may be edited.
@@ -39,11 +39,7 @@
          */
         self.isEditable = !angular.isString(CategoriesService.model.id);
 
-        /**
-         * Indicates if the edit form is valid.
-         * @type {boolean}
-         */
-        self.isValid = false;
+
 
         /**
          * Category data used in "normal" mode.
@@ -56,16 +52,6 @@
         self.securityGroupChips.selectedItem = null;
         self.securityGroupChips.searchText = null;
 
-        // Update isValid when $error is updated
-        $scope.$watch(
-                function() {return self.$error},
-                function() {
-                    self.isValid = _.reduce(self.$error, function(memo, value) {
-                        return memo && !value;
-                    }, true);
-                },
-                true
-        );
 
         self.splitSecurityGroups = function() {
             if(self.model.securityGroups) {
@@ -127,18 +113,20 @@
         /**
          * Check for duplicate system names.
          */
-        self.onNameChange = function() {
-            if (!angular.isString(self.model.systemName)) {
-                FeedService.getSystemName(self.editModel.name)
-                        .then(function(response) {
+        self.onNameChange = function (newVal, oldVal) {
+            var exists = false;
+            FeedService.getSystemName(newVal)
+                .then(function (response) {
                             var systemName = response.data;
-                            self.$error.duplicateName = _.some(CategoriesService.categories, function(category) {
-                                return (category.systemName === systemName);
+                    exists = _.some(CategoriesService.categories, function (category) {
+                        return (category.systemName === systemName || (newVal && category.name == newVal));
                             });
+
+                    if (self.categoryForm['categoryName']) {
+                        self.categoryForm['categoryName'].$setValidity('duplicateName', !exists);
+                    }
                         });
-            } else {
-                self.$error.duplicateName = false;
-            }
+
         };
 
         /**
@@ -194,7 +182,11 @@
                 });
 
         // Fetch the existing categories
-        CategoriesService.reload().then(self.onNameChange);
+        CategoriesService.reload().then(function (response) {
+            if (self.editModel) {
+                self.onNameChange(self.editModel.name);
+            }
+        });
 
         // Watch for changes to name
         $scope.$watch(

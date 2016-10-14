@@ -1,6 +1,5 @@
-<form name="categoryForm">
     <vertical-section-layout section-title="Category Definition" on-delete="vm.onDelete()" allow-delete="vm.canDelete()" on-save-edit="vm.onSave()" on-edit="vm.onEdit()" on-cancel-edit="vm.onCancel()"
-                             editable="vm.isEditable" is-valid="categoryForm.$valid && vm.isValid" allow-edit="vm.allowEdit">
+                             editable="vm.isEditable" allow-edit="vm.allowEdit" the-form="vm.categoryForm">
         <readonly-section>
             <div layout="row" class="layout-padding-top-bottom">
                 <span flex="25" class="property-name">Category Name</span>
@@ -31,13 +30,13 @@
             </div>
         </readonly-section>
         <editable-section>
+            <ng-form name="vm.categoryForm">
             <md-input-container class="md-block">
                 <label>Name</label>
-                <input name="name" ng-model="vm.editModel.name" required="required"/>
-                <div ng-messages="categoryForm.name.$error">
+                <input name="categoryName" ng-model="vm.editModel.name" required/>
+
+                <div ng-messages="vm.categoryForm.categoryName.$error" md-auto-hide="false">
                     <div ng-message="required">A category name is required.</div>
-                </div>
-                <div ng-messages="vm.$error" md-auto-hide="false">
                     <div ng-message="duplicateName">There is an existing category with that name.</div>
                 </div>
             </md-input-container>
@@ -79,6 +78,7 @@
             </div>
 
             <thinkbig-property-list-editor properties="vm.editModel.userProperties" is-valid="vm.isValid" ng-if="vm.model.id == null"></thinkbig-property-list-editor>
+            </ng-form>
         </editable-section>
     </vertical-section-layout>
-</form>
+
