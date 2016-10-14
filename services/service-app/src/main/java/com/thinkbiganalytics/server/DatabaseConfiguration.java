@@ -1,5 +1,6 @@
 package com.thinkbiganalytics.server;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -23,17 +24,22 @@ import javax.sql.DataSource;
 public class DatabaseConfiguration {
 
   /**
-   * Access to the jdbc template for persisting job executions
+   * Access to the jdbc template for querying Job Data
+   * NOTE: This will be removed when everything is switched to JPA
    *
-   * @param dataSource The datasource injected from spring boot
+   * @param dataSource The datasource  from the {@see this#jdbcDataSource()}
    * @return The jdbc template
    */
   @Bean
   @Primary
-  public JdbcTemplate jdbcTemplate(final DataSource dataSource) {
+  public JdbcTemplate jdbcTemplate(@Qualifier("jdbcDataSource") final DataSource dataSource) {
     return new JdbcTemplate(dataSource);
   }
 
+
+  /**
+   * This is the datasource used by JPA
+   */
   @Bean(name = "dataSource")
   @Primary
   @ConfigurationProperties(prefix = "spring.datasource")
@@ -43,7 +49,18 @@ public class DatabaseConfiguration {
     return newDataSource;
   }
 
+  /**
+   * This the datasource used by the jdbcTemplate
+   * NOTE:  This datasource will be removed along with the {@see this#jdbcTemplate(Datasource)}
+   * @return the JDBC Datasource
+   */
+  @Bean(name = "jdbcDataSource")
+  @ConfigurationProperties(prefix = "spring.datasource")
+  public DataSource jdbcDataSource() {
+    DataSource newDataSource = DataSourceBuilder.create().build();
 
+    return newDataSource;
+  }
 
 
   @Configuration
