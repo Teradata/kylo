@@ -1,7 +1,10 @@
 package com.thinkbiganalytics.datalake.authorization.client;
 
+import javax.sql.DataSource;
+
 import org.apache.hadoop.conf.Configuration;
 import org.apache.hadoop.fs.FileSystem;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 /**
  * Sentry Client configuration class for setting sentry connection information.
@@ -15,21 +18,40 @@ public class SentryClientConfig {
     private Configuration config;
     private String username;
     private String password;
-	private String keyTab;
-	private String principle;
-	private FileSystem fileSystem;
-	
+    private String keyTab;
+    private String principle;
+    private FileSystem fileSystem;
+    private DataSource dataSrouce;
+    private JdbcTemplate sentryJdbcTemplate;
+
     public SentryClientConfig(String driverName, String connectionString) {
         this.driverName = driverName;
         this.connectionString = connectionString;
     }
 
-    
+
+    public JdbcTemplate getSentryJdbcTemplate() {
+        return sentryJdbcTemplate;
+    }
+
+
+    public void setSentryJdbcTemplate(JdbcTemplate sentryJdbcTemplate) {
+        this.sentryJdbcTemplate = sentryJdbcTemplate;
+    }
+
+
     public SentryClientConfig(String driverName, String connectionString, String username, String password) {
         this.username = driverName;
         this.connectionString = connectionString;
         this.setUsername(username);
         this.setPassword(password);
+    }
+
+    public SentryClientConfig(DataSource dataSrouce)
+    {
+        this.dataSrouce = dataSrouce;
+        this.sentryJdbcTemplate = new JdbcTemplate(this.dataSrouce);
+        setSentryJdbcTemplate(this.sentryJdbcTemplate);
     }
 
     public SentryClientConfig() {
@@ -52,52 +74,61 @@ public class SentryClientConfig {
         this.connectionString = connectionString;
     }
 
-	public String getPrinciple() {
-		return principle;
-	}
+    public String getPrinciple() {
+        return principle;
+    }
 
-	public void setPrinciple(String principle) {
-		this.principle = principle;
-	}
+    public void setPrinciple(String principle) {
+        this.principle = principle;
+    }
 
-	public Configuration getConfig() {
-		return config;
-	}
+    public Configuration getConfig() {
+        return config;
+    }
 
-	public void setConfig(Configuration config) {
-		this.config = config;
-	}
+    public void setConfig(Configuration config) {
+        this.config = config;
+    }
 
-	public String getKeyTab() {
-		return keyTab;
-	}
+    public String getKeyTab() {
+        return keyTab;
+    }
 
-	public void setKeyTab(String keyTab) {
-		this.keyTab = keyTab;
-	}
+    public void setKeyTab(String keyTab) {
+        this.keyTab = keyTab;
+    }
 
-	public FileSystem getFileSystem() {
-		return fileSystem;
-	}
+    public FileSystem getFileSystem() {
+        return fileSystem;
+    }
 
-	public void setFileSystem(FileSystem fileSystem) {
-		this.fileSystem = fileSystem;
-	}
+    public void setFileSystem(FileSystem fileSystem) {
+        this.fileSystem = fileSystem;
+    }
 
-	public String getUsername() {
-		return username;
-	}
+    public String getUsername() {
+        return username;
+    }
 
-	public void setUsername(String username) {
-		this.username = username;
-	}
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public DataSource getDataSrouce() {
+        return dataSrouce;
+    }
+
+    public void setDataSrouce(DataSource dataSrouce) {
+        this.dataSrouce = dataSrouce;
+    }
+
 
 }
