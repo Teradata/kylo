@@ -107,9 +107,13 @@ public class JcrMetadataAccess implements MetadataAccess {
      *
      */
     public static void ensureCheckoutNode(Node n) throws RepositoryException {
-        if (JcrUtil.isVersionable(n) && (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n)))) {
+        if (n.getSession().getRootNode().equals(n.getParent())) {
+            return;
+        } else if (JcrUtil.isVersionable(n) && (!n.isCheckedOut() || (n.isNew() && !checkedOutNodes.get().contains(n)))) {
             JcrVersionUtil.checkout(n);
             checkedOutNodes.get().add(n);
+        } else {
+            ensureCheckoutNode(n.getParent());
         }
     }
 

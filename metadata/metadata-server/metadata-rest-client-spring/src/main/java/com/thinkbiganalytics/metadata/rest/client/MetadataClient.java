@@ -118,13 +118,6 @@ public class MetadataClient {
         this.template.getMessageConverters().add(new MappingJackson2HttpMessageConverter(mapper));
     }
     
-    private ObjectMapper createObjectMapper() {
-        ObjectMapper mapper = new ObjectMapper();
-        mapper.registerModule(new JodaModule());
-        mapper.setSerializationInclusion(Include.NON_NULL);
-        return mapper;
-    }
-
     public List<ExtensibleTypeDescriptor> getExtensibleTypes() {
         return get(path("extension", "type"), null, TYPE_LIST);
     }
@@ -271,6 +264,13 @@ public class MetadataClient {
     
     public String getPreconditionResult(String id) {
         return get(path("feed", id, "precondition", "assessment", "result"), String.class);
+    }
+
+    private ObjectMapper createObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        mapper.registerModule(new JodaModule());
+        mapper.setSerializationInclusion(Include.NON_NULL);
+        return mapper;
     }
 
     private FeedPrecondition createTrigger(List<Metric> metrics) {

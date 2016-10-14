@@ -17,11 +17,13 @@ import org.joda.time.DateTime;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -48,6 +50,7 @@ public class BaseFeed<C extends Category> implements Feed<C> {
     private Map<String, Object> properties;
     private List<ServiceLevelAgreement> feedServiceLevelAgreements;
     private List<? extends HadoopSecurityGroup> hadoopSecurityGroups;
+    private Map<String, String> waterMarkValues = new HashMap<>();
 
     /**
      * User-defined properties
@@ -251,6 +254,52 @@ public class BaseFeed<C extends Category> implements Feed<C> {
         hadoopSecurityGroups = securityGroups;
     }
 
+    @Override
+    public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
+        return feedServiceLevelAgreements;
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, String> getUserProperties() {
+        return userProperties;
+    }
+
+    @Override
+    public void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields) {
+        this.userProperties = userProperties;
+    }
+
+    @Override
+    public AllowedActions getAllowedActions() {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getWaterMarkValue(java.lang.String)
+     */
+    @Override
+    public Optional<String> getWaterMarkValue(String waterMarkName) {
+        return Optional.ofNullable(this.waterMarkValues.get(waterMarkName));
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#getWaterMarkNames()
+     */
+    @Override
+    public Set<String> getWaterMarkNames() {
+        return new HashSet<>(this.waterMarkValues.keySet());
+    }
+
+    /* (non-Javadoc)
+     * @see com.thinkbiganalytics.metadata.api.feed.Feed#setWaterMarkValue(java.lang.String, java.lang.String)
+     */
+    @Override
+    public void setWaterMarkValue(String waterMarkName, String value) {
+        this.waterMarkValues.put(waterMarkName, waterMarkName);
+    }
+
     private static class BaseId {
 
         private final UUID uuid;
@@ -416,27 +465,5 @@ public class BaseFeed<C extends Category> implements Feed<C> {
         public void setLastAssessment(ServiceLevelAssessment assmnt) {
             this.lastAssessment = assmnt;
         }
-    }
-
-    @Override
-    public List<? extends ServiceLevelAgreement> getServiceLevelAgreements() {
-        return feedServiceLevelAgreements;
-    }
-
-    @Nonnull
-    @Override
-    public Map<String, String> getUserProperties() {
-        return userProperties;
-    }
-
-    @Override
-    public void setUserProperties(@Nonnull Map<String, String> userProperties, @Nonnull Set<UserFieldDescriptor> userFields) {
-        this.userProperties = userProperties;
-    }
-
-    @Override
-    public AllowedActions getAllowedActions() {
-        // TODO Auto-generated method stub
-        return null;
     }
 }

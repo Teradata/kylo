@@ -16,8 +16,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nonnull;
 import javax.jcr.Binary;
@@ -92,6 +95,14 @@ public class JcrPropertyUtil {
             return node.getName();
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to access name property of node: " + node, e);
+        }
+    }
+    
+    public static String getName(Property prop) {
+        try {
+            return prop.getName();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get the name of property: " + prop, e);
         }
     }
     
@@ -187,6 +198,18 @@ public class JcrPropertyUtil {
             setProperty(node, name, json);
         } catch (IOException e) {
             throw new MetadataRepositoryException("Failed to serialize JSON property: " + value, e);
+        }
+    }
+    
+    public static Optional<Property> findProperty(Node node, String name) {
+        try {
+            if (node.hasProperty(name)) {
+                return Optional.of(node.getProperty(name));
+            } else {
+                return Optional.empty();
+            }
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed attempting to locate a property: " + name, e);
         }
     }
 
@@ -312,6 +335,14 @@ public class JcrPropertyUtil {
 //    public static <T> T asValue(Property prop) {
 //        return asValue(prop, null);
 //    }
+    
+    public static String toString(Property prop) {
+        try {
+            return prop.getString();
+        } catch (RepositoryException e) {
+            throw new MetadataRepositoryException("Failed to get string value of property: " + prop, e);
+        }
+    }
 
     @SuppressWarnings("unchecked")
     public static <T> T asValue(Property prop) {
@@ -920,6 +951,24 @@ public class JcrPropertyUtil {
         } catch (RepositoryException e) {
             throw new MetadataRepositoryException("Failed to get the parent node of the property: " + prop, e);
         }
+    }
+    
+    @SuppressWarnings("unchecked")
+    public static Iterable<Property> propertiesIterable(Node node) {
+        return () -> {
+            try {
+                return node.getProperties();
+            } catch (RepositoryException e) {
+                throw new MetadataRepositoryException("Failed to get the properties of node: " + node, e);
+            }
+        };
+    }
+    
+    /**
+     * @param wmNode
+     */
+    public static Stream<Property> streamProperties(Node node) {
+        return StreamSupport.stream(propertiesIterable(node).spliterator(), false);
     }
 
     /**
